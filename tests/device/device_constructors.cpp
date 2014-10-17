@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
@@ -37,14 +37,19 @@ public:
     {
         try
         {
-            log.pass();
+            cl::sycl::device device;
 
-            cl::sycl::device( );
+            cl::sycl::host_selector hs;
+#if ENABLE_FULL_TEST
+            cl::sycl::device host_dev(hs);
+#endif
+
+            cl::sycl::device device_c(device);
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 

@@ -28,7 +28,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
@@ -38,33 +38,22 @@ public:
     {
         try
         {
-            log.pass( );
-
-            // construct the cts default selector
-            cts_selector selector;
-            cl::sycl::context context( selector );
+            cl::sycl::context context;
 
             auto cxt = context.get( );
             if ( typeid( cxt ) != typeid( cl_context ) )
-                log.fail( "cl::sycl::context::get() does not return cl_context" );
+                FAIL( log, "cl::sycl::context::get() does not" \
+                    "return cl_context" );
 
             auto isHost = context.is_host( );
             if ( typeid( isHost ) != typeid( bool ) )
-                log.fail( "cl::sycl::context::is_host() does not return bool" );
-
-            // get a list of devices
-            VECTOR_CLASS<cl::sycl::device> devices = context.get_devices();
-
-            // loop over all devices
-            for (int i = 0; i < devices.size(); i++)
-            {
-                cl::sycl::device &dev = devices[i];
-            }
+                FAIL( log, "cl::sycl::context::is_host() does not" \
+                    "return bool" );
         }
         catch (cl::sycl::sycl_error e)
         {
             log_exception(log, e);
-            log.fail();
+            FAIL( log, "" );
         }
     }
 

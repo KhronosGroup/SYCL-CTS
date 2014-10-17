@@ -26,7 +26,7 @@ class TEST_NAME
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
@@ -36,18 +36,13 @@ class TEST_NAME
     {
         try
         {
-            log.pass();
-
-            cl::sycl::context cxt1;
-
-            // construct the cts default selector
-            cts_selector selector;
-            cl::sycl::context cxt2(selector);
+            cl::sycl::context ctxt;
+            cl::sycl::context ctxt_copy(ctxt);
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 

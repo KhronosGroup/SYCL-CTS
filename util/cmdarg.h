@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <vector>
-
+#include "stl.h"
 #include "singleton.h"
 
 namespace sycl_cts
@@ -18,8 +17,7 @@ namespace util
 {
 
 /** command line parser
-    *
-    */
+ */
 class cmdarg
     : public singleton<cmdarg>
 {
@@ -33,19 +31,19 @@ public:
 
     /** search for a specific key
      */
-    bool find_key( const std::string & key ) const;
+    bool find_key( const STRING & key ) const;
 
     /** find a value from a given key
      *  @param, key, the key to try and locate
      *  @param, value, string to receive the value that was associated
      *                 with the given key
      */
-    bool get_value( const std::string & key, std::string & value ) const;
+    bool get_value( const STRING & key, STRING & value ) const;
 
     /** return the last error message given
      *  @param, string to receive the last error message
      */
-    bool get_last_error( std::string & out ) const;
+    bool get_last_error( STRING & out ) const;
 
 protected:
 
@@ -53,20 +51,20 @@ protected:
      */
     struct pair
     {
-        std::string key;
-        std::string value;
+        STRING key;
+        STRING value;
     };
     
     /** the options list
      */
-    std::vector<pair> m_pairs;
+    VECTOR<pair> m_pairs;
 
     /** add a pair to the list
      */
     void push_pair( const pair & opt );
 
     // the last error message
-    std::string m_error;
+    STRING m_error;
 
 };
 

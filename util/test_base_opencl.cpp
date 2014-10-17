@@ -7,6 +7,7 @@
 **************************************************************************/
 
 #include "test_base_opencl.h"
+#include "../tests/common/macros.h"
 
 // conformance test suite namespace
 namespace sycl_cts
@@ -28,12 +29,22 @@ test_base_opencl::test_base_opencl() :
     ;
 }
 
-// TODO: move this somewhere useful!
-void checkCLSuccess(cl_int error)
+void test_base_opencl::check_cl_success(
+    cl_int error,
+    const char * file,
+    int line,
+    logger & log)
 {
-    // TODO: do something meaningful here!
-    if(error != CL_SUCCESS)
-        ;
+    if (error != CL_SUCCESS)
+    {
+        std::string err_msg("Expected CL_SUCCESS in ");
+        err_msg.append(file);
+        err_msg.append(":");
+        err_msg.append(std::to_string(line));
+        err_msg.append(", got ");
+        err_msg.append(std::to_string(error));
+        FAIL( log, err_msg );
+    }
 }
 
 /** called before this test is executed
@@ -48,16 +59,18 @@ bool test_base_opencl::setup( logger & log )
         0,
         nullptr,
         &N);
-    checkCLSuccess(error);
+    check_cl_success(error,__FILE__,__LINE__,log);
 
-    // TODO: deal with this case!
-    if(N < 1)
-        ;
+    if (N < 1)
+    {
+        FAIL( log, "Unable to retrieve list of platforms via clGetPlatformIDs()" );
+        return false;
+    }
 
     m_platforms = (cl_platform_id *) malloc(sizeof(cl_platform_id) * N);
     if(m_platforms == nullptr)
     {
-        log.fail("Malloc failed to allocate memory for platform list");
+        FAIL( log, "Malloc failed to allocate memory for platform list" );
         return false;
     }
 
@@ -65,7 +78,7 @@ bool test_base_opencl::setup( logger & log )
         N,
         m_platforms,
         nullptr);
-    checkCLSuccess(error);
+    check_cl_success(error, __FILE__, __LINE__, log);
 
     error = clGetDeviceIDs(
         m_platforms[0],
@@ -73,16 +86,18 @@ bool test_base_opencl::setup( logger & log )
         0,
         nullptr,
         &N);
-    checkCLSuccess(error);
+    check_cl_success(error, __FILE__, __LINE__, log);
 
-    // TODO: deal with this case!
     if(N < 1)
-        ;
+    {
+        FAIL( log, "Unable to retrieve list of devices via clGetDeviceIDs()" );
+        return false;
+    }
 
     m_devices = (cl_device_id *) malloc(sizeof(cl_device_id) * N);
     if(m_devices == nullptr)
     {
-        log.fail("Malloc failed to allocate memory for device list");
+        FAIL( log, "Malloc failed to allocate memory for device list" );
         return false;
     }
 
@@ -92,7 +107,7 @@ bool test_base_opencl::setup( logger & log )
         N,
         m_devices,
         nullptr);
-    checkCLSuccess(error);
+    check_cl_success(error, __FILE__, __LINE__, log);
 
     cl_context_properties properties[3] = {
         CL_CONTEXT_PLATFORM,
@@ -105,7 +120,7 @@ bool test_base_opencl::setup( logger & log )
         nullptr,
         nullptr,
         &error);
-    checkCLSuccess(error);
+    check_cl_success(error, __FILE__, __LINE__, log);
 
     // No special queue properties wanted
     m_cl_command_queue = clCreateCommandQueue(
@@ -113,7 +128,7 @@ bool test_base_opencl::setup( logger & log )
         m_devices[0],
         0,
         &error);
-    checkCLSuccess(error);
+    check_cl_success(error, __FILE__, __LINE__, log);
 
     m_cl_platform_id    = m_platforms[0];
     m_cl_device         = m_devices[0];

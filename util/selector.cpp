@@ -28,7 +28,7 @@ selector::selector( )
  *      'opencl_cpu'
  *      'opencl_gpu'
  */
-void selector::set_default( const std::string & name )
+void selector::set_default( const STRING & name )
 {
     if ( name == "host" )
         m_device = ctsdevice::host;

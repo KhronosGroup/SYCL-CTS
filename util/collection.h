@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include <vector>
-
+#include "stl.h"
 #include "test_base.h"
 #include "singleton.h"
-#include "csv.h"
 
 namespace sycl_cts
 {
@@ -25,6 +23,15 @@ class collection
     : public singleton<collection>
 {
 public:
+
+    /** test structure
+     */
+    struct testinfo
+    {
+        test_base  *m_test;
+        bool        m_skip;
+        int         m_timeout;
+    };
 
     /** constructor
      */
@@ -47,11 +54,14 @@ public:
      */
     void list( );
 
-    /** specify the test session parameters
-     *  via a csv file
-     *  @param csv, the csv file containing the parameters
+    /** load a test filter (csv file)
+     *  @param csvPath, the csv file path fir filtering the tests
      */
-    void set_test_parameters( const csv & params );
+    bool filter_tests_csv( const STRING & csvPath );
+
+    /** filter tests by name
+     */
+    bool filter_tests_name( const STRING & testName );
 
     /** get the total number of tests in this collection
      */
@@ -59,7 +69,7 @@ public:
 
     /** return a specific test 
      */
-    test_base * get_test( int index );
+    testinfo & get_test( int index );
 
     /** prepare the list of tests for execution
      */
@@ -67,8 +77,12 @@ public:
 
 protected:
     
+    /** set the skip status of a test by name
+     */
+    void set_test_skip( const STRING & testName, bool skip );
+
     // the test collection itself
-    std::vector<test_base*> m_tests;
+    VECTOR<testinfo> m_tests;
 
 };
 

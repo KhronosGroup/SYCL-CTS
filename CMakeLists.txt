@@ -11,18 +11,22 @@ project(sycl_cts)
 # set host compiler flags
 if(WIN32)
 # need c++ exception handling
-	set(HOST_COMPILER_FLAGS "/EHsc")
+    set(HOST_COMPILER_FLAGS "/EHsc")
 elseif(APPLE)
 # need c++11
-	set(HOST_COMPILER_FLAGS "-std=c++0x")
+    set(HOST_COMPILER_FLAGS "-std=c++0x")
 else(WIN32)
 # need c++11
-	set(HOST_COMPILER_FLAGS "-std=c++0x")
+    set(HOST_COMPILER_FLAGS "-std=c++0x")
 endif(WIN32)
 set(CMAKE_CXX_FLAGS ${HOST_COMPILER_FLAGS})
 # ------------------
 
 include(cmake/build_sycl.cmake)
 
+# find the python interpreter
+find_package(PythonInterp REQUIRED)
+
 add_subdirectory (util)
 add_subdirectory (tests)
+add_subdirectory (oclmath)

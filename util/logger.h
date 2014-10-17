@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include "stl.h"
 
 namespace sycl_cts
 {
@@ -39,9 +38,12 @@ public:
      */
     struct info
     {
-        std::vector<std::string> m_log;
-        result                   m_result;
-        int                      m_time;
+        VECTOR<STRING> m_log;
+        result         m_result;
+        int            m_time;
+
+        // line number associated with result
+        int            m_line;
     };
 
     /** signal the beginning of a test
@@ -54,28 +56,29 @@ public:
     
     /** notify a test has failed
      *  @param reason, optional descriptive string for fail
+     *  @param line, line number in test that reports the failure
      */
-    void fail( const std::string & reason = std::string() );
+    void fail( const STRING & reason, const int line );
 
     /** notify a test has passed
      *  @param reason, optional descriptive string for pass
      */
-    void pass( const std::string & reason = std::string() );
+    void pass( const STRING & reason = STRING() );
 
     /** notify a test has been skipped
      *  @param reason, optional descriptive string for skip
      */
-    void skip( const std::string & reason = std::string() );
+    void skip( const STRING & reason = STRING() );
     
     /** report fatal error and abort program
      *  @param reason, optional descriptive string for fatal error
      */
-    void fatal( const std::string & reason = std::string() );
+    void fatal( const STRING & reason = STRING() );
     
     /** output verbose information
      *  @param string
      */
-    void note( const std::string & str );
+    void note( const STRING & str );
 
     /** output verbose information
      *  @param variable argument list, printf syntax
@@ -94,7 +97,7 @@ public:
 protected:
     
     // add a string to the log
-    void add_to_log( const std::string & str );
+    void add_to_log( const STRING & str );
 
     // the internal state structure
     info m_info;

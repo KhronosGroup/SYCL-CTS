@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
@@ -37,19 +37,18 @@ public:
     {
         try
         {
-            log.pass();
+            cl::sycl::platform p;
 
-            cl::sycl::platform plat1;
-
-            cl::sycl::default_selector ds;
 #if ENABLE_FULL_TEST
-            cl::sycl::platform plat2(ds);
+            cl::sycl::host_selector hs;
+            cl::sycl::platform p_selector(ds);
 #endif
+            cl::sycl::platform p_copy(p);
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "Failed to construct platform object in platform_constructors" );
         }
     }
 

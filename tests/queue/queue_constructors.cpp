@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
@@ -37,14 +37,28 @@ public:
     {
         try
         {
-            log.pass();
+            cl::sycl::queue queue;
 
-            cl::sycl::queue myQueue;
+            // construct the cts default selector
+            cts_selector selector;
+            cl::sycl::queue queue_ds(selector);
+
+#if ENABLE_FULL_TEST
+            cl::sycl::device device(selector);
+            cl::sycl::queue queue_device(device);
+#endif
+
+            cl::sycl::context context;
+            cl::sycl::queue queue_ctext_ds(context, selector);
+
+#if ENABLE_FULL_TEST
+            cl::sycl::queue queue_copy(queue);
+#endif
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 

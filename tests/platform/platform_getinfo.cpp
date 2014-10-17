@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
@@ -37,7 +37,6 @@ public:
     {
         try
         {
-            log.pass();
             cl::sycl::platform plat;
 
             STRING_CLASS platform_info;
@@ -50,7 +49,7 @@ public:
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 

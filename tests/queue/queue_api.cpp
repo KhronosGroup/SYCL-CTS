@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ));
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
@@ -37,44 +37,50 @@ public:
     {
         try
         {
-            // set the test to pass until overwritten when it fails
-            log.pass( );
-            
             // construct the cts default selector
             cts_selector selector;
 
             // construct command queue
-            cl::sycl::queue myQueue( selector );
+            cl::sycl::queue myQueue(selector);
 
-            auto cxt = myQueue.get_context( );
-            if (typeid( cxt ) != typeid( cl::sycl::context ))
+            if (!myQueue.is_host())
             {
-                log.fail( "cl::sycl::queue::get_context() does not return cl::sycl::context" );
+                auto cmdq = myQueue.get();
+                if (typeid(cmdq) != typeid(cl_command_queue))
+                {
+                    FAIL(log, "cl::sycl::queue::get() does not return cl_command_queue");
+                }
+            }
+
+            auto ctxt = myQueue.get_context( );
+            if (typeid( ctxt ) != typeid( cl::sycl::context ))
+            {
+                FAIL( log, "cl::sycl::queue::get_context() does not return cl::sycl::context" );
             }
 
             auto dev = myQueue.get_device( );
             if (typeid( dev ) != typeid( cl::sycl::device ))
             {
-                log.fail( "cl::sycl::queue::get_device() does not return cl::sycl::device" );
+                FAIL( log, "cl::sycl::queue::get_device() does not return cl::sycl::device" );
             }
-            
+
+#if ENABLE_FULL_TEST
+            myQueue.wait();
+            myQueue.wait_and_throw();
+            myQueue.throw_asynchronous();
+#endif
+
             auto host = myQueue.is_host( );
             if (typeid( host ) != typeid( bool ))
             {
-                log.fail( "cl::sycl::queue::is_host() does not return bool" );
-            }
-
-            auto cmdq = myQueue.get( );
-            if (typeid( cmdq ) != typeid( cl_command_queue ))
-            {
-                log.fail( "cl::sycl::queue::get() does not return cl_command_queue" );
+                FAIL( log, "cl::sycl::queue::is_host() does not return bool" );
             }
 
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 };

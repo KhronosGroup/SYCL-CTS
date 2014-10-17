@@ -1,14 +1,127 @@
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+#  SYCL CONFORMANCE TEST SUITE
+#  Usage guide
+#  16/10/14
+#
 
-Usage information for the sycl_cts executable as of 12/09/2014
 
-SYCL CONFORMANCE TEST SUITE
-Usage:
-    --help         Show this help message
-    --json   -j    Print test results in JSON format
-    --text   -t    Print test results in text format
-    --csv    -c    CSV file for specifying tests to run
-    --list   -l    List the tests compiled in this executable
-    --device       Select a device to target:
-            'host'
-            'opencl_cpu'
-            'opencl_gpu'
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Introduction
+#
+    This conformance test suite is divided into two parts, a binary
+    executable containing all of the tests and a python user interface.
+    It is intended that the user only runs the test suite via the python
+    frontend.
+
+    The test executable must be compiled before running the test suite, a
+    step which requires CMake.  Executables are produced for each category
+    and one 'fat' executable that contains the tests from all categories.
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Compilation and execution prerequisites
+#
+    - An implementation of SYCL
+    - A conformant implementation of OpenCL
+    - Python 2.7
+    - GCC 4.8.2 or Visual C++ 2013
+    - CMake 2.8.12
+
+    The SYCL conformance test suite assumes that an underlying OpenCL
+    implementation has passed the Khronos OpenCL CTS.
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Building on Linux
+#
+    - Checkout the SYCL test suite repository.
+
+    - Run CMake
+        - point the source directory to the root of the sycl-cts folder
+		- select makefiles project
+        - set the build directory to a 'build' folder inside the sycl-cts folder
+        - set the CMake parameters.
+
+    - Run make inside the build folder
+
+        After compilation, the test executables will be places in the
+        sycl-cts 'build/bin' directory.  The 'test_all' executable
+        contains all tests in the suite.
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Building on Windows
+#
+    - Checkout the SYCL test suite repository.
+
+    - Run CMake
+		- point the source directory to the root of the sycl-cts folder
+		- select 64bit visual studio 2013 generator
+		- set the build directory to a 'build' folder inside the sycl-cts folder
+		- set the CMake parameters.
+
+    - Open the generated solution in visual studio 2013 and rebuild all
+
+        After compilation, the test executables will be places in the
+        sycl-cts 'build/bin' directory.  The 'test_all' executable
+        contains all tests in the suite.
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Launching the test suite
+#
+
+    The SYCL test suite can be launched via the following command:
+
+        $ python runtests.py --help
+        usage: runtests.py [-h] [-b BINPATH] [-c CSVPATH]
+
+        Khronos SYCL CTS
+
+        optional arguments:
+          -h, --help            show this help message and exit
+          -b BINPATH, --binpath BINPATH
+                                path the cts executable file
+          -c CSVPATH, --csvpath CSVPATH
+                                path to csv file for filtering tests
+
+
+    The '--binpath' argument is mandatory and must point to one of the CTS
+    test executables built in the previous step.
+
+    An optional CSV file can be given which can be used to narrow the range
+    of tests that will be executed.
+
+    The filters work using the principal of partial string matching.  Any
+    test in a CTS executable with a name that begins with one of the items
+    in CSV file will be scheduled to be run.  Those tests that don't match
+    will not be run.
+
+	In the future the CSV file will also be used to specify timeout values
+	on a per-test basis.
+
+    The following command will start a typical test run:
+
+        $ python runtests.py --binpath tests/common/test_all
+
+    During testing any fails will be reported with details about the failure.
+    The following failure importantly shows the source file containing the
+    test and the line number that signalled the failure.
+
+        ## platform_api
+         ?   note: sycl exception caught
+         ?   note: what - Failed to get platform information.
+         + result: fail
+         !   file: ../../tests/platform/platform_api.cpp
+         !  built: Sep 30 2014, 14:06:45
+         !   line: 96
+
+    After the test suit is finished a summary is produced helping programmers
+    quickly identify failures and conformance rate.
+
+        16 tests ran in total
+         - passed : 13
+         - failed : 1
+           + platform_api
+         - skipped: 2
+         = 81% conformance

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <CL/sycl.hpp>
+
 #define	TEST_FILE       __FILE__
 #define	TEST_BUILD_DATE __DATE__
 #define	TEST_BUILD_TIME __TIME__
@@ -22,10 +24,11 @@
  */
 static void set_test_info(
     sycl_cts::util::test_base::info & out,
-    const char *name )
+    const char *name,
+    const char *file )
 {
     out.m_name      = name;
-    out.m_file      = TEST_FILE;
+    out.m_file      = file;
     out.m_buildDate = TEST_BUILD_DATE;
     out.m_buildTime = TEST_BUILD_TIME;
 }
@@ -46,7 +49,7 @@ static void log_exception(
     // log exception error string
     const char *what = e.what( );
     if ( what != nullptr )
-        log.note( "what - " + std::string( what ) );
+        log.note( "what - " + sycl_cts::util::STRING( what ) );
 
 #else
     // this part may be specific to SYCLONE
@@ -54,11 +57,16 @@ static void log_exception(
     // log an opencl error message
     const char *cl_error_msg   = e.get_cl_error_message( );
     if ( cl_error_msg != nullptr )
-        log.note( "cl_error - " + std::string( cl_error_msg ) );
+        log.note( "cl_error - " + sycl_cts::util::STRING( cl_error_msg ) );
 
     // log a sycl error message
     const char *sycl_error_msg = e.get_sycl_error_message( );
     if ( sycl_error_msg != nullptr )
-        log.note( "sycl_error - " + std::string( sycl_error_msg ) );
+        log.note( "sycl_error - " + sycl_cts::util::STRING( sycl_error_msg ) );
 #endif
 }
+
+/**
+ * macro to record line numbers for failures
+ */
+#define FAIL( LOG, MSG ) ( LOG .fail( MSG, __LINE__ ) )

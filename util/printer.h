@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <mutex>
-
+#include "stl.h"
 #include "singleton.h"
 #include "logger.h"
 #include "test_base.h"
@@ -41,6 +40,15 @@ public:
         transcript ,
     };
 
+    /**
+     */
+    typedef int logid;
+
+    /** ask the printer to generate a new log id so that
+     *  log headers and footers can be matched up
+     */
+    logid new_log_id( );
+
     /** constructor
      */
     printer( );
@@ -56,11 +64,13 @@ public:
     /** output a tests info header
      */
     void write( 
+        printer::logid id,
         const test_base::info & testInfo );
     
     /** output a test log
      */
     void write(
+        printer::logid id,
         const logger::info & logInfo );
 
     /** instruct the printer to finish all printing
@@ -72,15 +82,15 @@ protected:
 
     /** Convert a logger::result enum to a string
      */
-    std::string result_as_string( logger::result res );
+    STRING result_as_string( logger::result res );
 
     /** output a string to stdout
      */
-    void output( const std::string & str );
+    void output( const STRING & str );
 
     /** output a string to stdout followed by a new line
      */
-    void outputln( const std::string & str );
+    void outputln( const STRING & str );
 
     /** output a key value pair in JSON style
      *  @param key, key to emit
@@ -88,8 +98,8 @@ protected:
      *  @param comma, true=postfix comma
      */
     void output_kvp(
-        const std::string & key,
-        const std::string & value,
+        const STRING & key,
+        const STRING & value,
         const bool comma );
 
     /** output a key value pair in JSON style
@@ -98,41 +108,55 @@ protected:
      *  @param comma, true=postfix comma
      */
     void output_kvp(
-        const std::string & key,
+        const STRING & key,
         const int & value,
         const bool comma );
 
     /** announce the start of a test
-     *  
+     *  @param id, identifier to match up test headers and transcripts
+     *  @param testInfo, details of the test about the be executed
      */
     void write_json( 
+        printer::logid id,
         const test_base::info & testInfo );
 
     /** output a test log in JSON form
-     *  
+     *  @param id, identifier to match up test headers and transcripts
+     *  @param logInfo, a test execution transcript
      */
     void write_json(
+        printer::logid id,
         const logger::info & logInfo );
 
     /** announce the start of a test
-     *  
+     *  @param id, identifier to match up test headers and transcripts
+     *  @param testInfo, details of the test about the be executed
      */
     void write_text( 
+        printer::logid id,
         const test_base::info & testInfo );
     
     /** output the results of a test
-     *  @param log, the log object to output
+     *  @param id, identifier to match up test headers and transcripts
+     *  @param logInfo, a test execution transcript
      */
     void write_text(
+        printer::logid id,
         const logger::info & logInfo );
 
     // mutex for write operations so that two tests
     // wont be written to stdout at the same time
-    std::mutex m_outputMutex;
+    MUTEX m_outputMutex;
 
     // the output format
     eformat m_format;
     
+    // mutex for issuing log ids
+    MUTEX m_logIdMutex;
+
+    // next log id to be issued from new_log_id()
+    volatile logid m_nextLogId;
+
 };
 
 }; // namespace util

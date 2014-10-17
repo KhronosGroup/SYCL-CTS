@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <string>
-
+#include "stl.h"
 #include "singleton.h"
 
 namespace sycl_cts
@@ -46,7 +45,7 @@ public:
      *      'opencl_cpu'
      *      'opencl_gpu'
      */
-    void set_default( const std::string & name );
+    void set_default( const STRING & name );
 
     /** set the default device type via enum
      */

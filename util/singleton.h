@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <memory>
-#include <assert.h>
+#include "stl.h"
 
 namespace sycl_cts
 {
@@ -26,7 +25,7 @@ class singleton
     friend T;
     
     // singleton instance
-    static std::unique_ptr<T> m_instance;
+    static UNIQUE_PTR<T> m_instance;
 
 public:
 
@@ -62,10 +61,19 @@ public:
     
 };
 
-// instance of the singleton
-// due to #pragma once this will only be implemented once
+/** instance of the singleton
+ */
 template <class T>
 std::unique_ptr<T> singleton<T>::m_instance;
+
+/** easy singleton accessors
+ */
+template <class T>
+static inline
+T & get()
+{
+    return T::instance( );
+}
 
 }; // namespace util
 }; // namespace sycl_cts

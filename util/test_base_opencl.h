@@ -87,6 +87,12 @@ public:
         return m_cl_command_queue;
     }
 
+    virtual void check_cl_success(
+        cl_int error,
+        const char * file,
+        int line,
+        logger & log);
+
 protected:
 
     /* instances of open cl objects */

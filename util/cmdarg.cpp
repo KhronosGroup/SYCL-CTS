@@ -72,14 +72,14 @@ bool cmdarg::parse(
             // check if we have a key for this value
             if ( kvp.key.empty( ) )
             {
-                m_error = (std::string( "expecting key before '" ) + arg) + "'";
+                m_error = (STRING( "expecting key before '" ) + arg) + "'";
                 return false;
             }
 
             // check if we are overwriting a value
             if (! kvp.value.empty( ) )
             {
-                m_error = (std::string( "duplicate argument to '" ) + kvp.key) + "'";
+                m_error = (STRING( "duplicate argument to '" ) + kvp.key) + "'";
                 return false;
             }
 
@@ -96,7 +96,7 @@ bool cmdarg::parse(
 
 /** return the last error message set
  */
-bool cmdarg::get_last_error( std::string & out ) const
+bool cmdarg::get_last_error( STRING & out ) const
 {
     out = m_error;
     return ! m_error.empty( );
@@ -105,7 +105,7 @@ bool cmdarg::get_last_error( std::string & out ) const
 /** return the last error message given
  *  @param, string to receive the last error message
  */
-bool cmdarg::find_key( const std::string & key ) const
+bool cmdarg::find_key( const STRING & key ) const
 {
     // number of pairs that have been parsed
     size_t nPairs = m_pairs.size( );
@@ -129,8 +129,8 @@ bool cmdarg::find_key( const std::string & key ) const
  *                 with the given key
  */
 bool cmdarg::get_value( 
-    const std::string & key, 
-    std::string & value ) const
+    const STRING & key, 
+    STRING & value ) const
 {
     // number of pairs that have been parsed
     size_t nPairs = m_pairs.size( );

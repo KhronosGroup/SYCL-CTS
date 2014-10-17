@@ -27,7 +27,7 @@ public:
      */
     virtual void get_info( test_base::info & out ) const
     {
-        set_test_info( out, TOSTRING( TEST_NAME ) );
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
@@ -37,44 +37,51 @@ public:
     {
         try
         {
-            // mark pass, which will be overwritten by a fail
-            log.pass( );
-
             cl::sycl::device device;
 
+            auto devid = device.get();
+            if (typeid(devid) != typeid(cl_device_id))
+            {
+                FAIL(log, "cl::sycl::device::get( ) does not" \
+                    "return cl_device_id type");
+            }
+
+            auto platform = device.get_platform();
+            if (typeid(platform) != typeid(cl::sycl::platform))
+            {
+                FAIL(log, "cl::sycl::device::get_platform does not" \
+                    "return cl::sycl::platform");
+            }
+
             auto ret = device.is_host( );
-            // validate return type
             if ( typeid( ret ) != typeid( bool ) )
             {
-                log.fail( "cl::sycl::device::is_host( ) does not return bool type" );
+                FAIL( log, "cl::sycl::device::is_host( ) does not"\
+                    "return bool type" );
             }
 
-            auto devid = device.get( );
-            // validate return type
-            if ( typeid( devid ) != typeid( cl_device_id ) )
-            {
-                log.fail( "cl::sycl::device::get( ) does not return cl_device_id type" );
-            }
-
-            auto hext = device.has_extension( "" );
-            // validate return type
+            auto hext = device.has_extension( "cl_khr_fp64" );
             if ( typeid( hext ) != typeid( bool ) )
             {
-                log.fail( "cl::sycl::device::has_extension( ) does not return bool type" );
+                FAIL( log, "cl::sycl::device::has_extension( ) does not" \
+                    "return bool type" );
             }
 
-            // get a list of all devices
-            VECTOR_CLASS<cl::sycl::device> devices = device.get_devices(CL_DEVICE_TYPE_ALL);
+#if ENABLE_FULL_TEST
+            //create_sub_devices should go here: see redmine #4377
+#endif
 
-            for (int i = 0; i < devices.size(); i++)
+            auto devices = cl::sycl::device::get_devices();
+            if (typeid(devices) != typeid(VECTOR_CLASS<cl::sycl::device>))
             {
-                cl::sycl::device & dev = devices[i];
+                FAIL(log, "cl::sycl::device::get_devices does not" \
+                    "return VECTOR_CLASS<cl::sycl::device>");
             }
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            log.fail( );
+            FAIL( log, "" );
         }
     }
 

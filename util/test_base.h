@@ -26,10 +26,10 @@ public:
      */
     struct info
     {
-        std::string m_name;
-        std::string m_file;
-        std::string m_buildDate;
-        std::string m_buildTime;
+        STRING m_name;
+        STRING m_file;
+        STRING m_buildDate;
+        STRING m_buildTime;
     };
 
     /** virtual destructor

@@ -20,6 +20,7 @@ namespace util
  */
 printer::printer( )
     : m_format( printer::etext )
+    , m_nextLogId( 0 )
 {
 }
 
@@ -28,6 +29,17 @@ printer::printer( )
 printer::~printer()
 {
     release( );
+}
+
+/**
+ * 
+ */
+printer::logid printer::new_log_id( )
+{
+    // acquire the log id issue mutex
+    LOCK_GUARD<MUTEX> lock( m_logIdMutex );
+
+    return m_nextLogId++;
 }
 
 /** set the current output format for the printer
@@ -40,20 +52,21 @@ void printer::set_format( printer::eformat fmt )
 /** output a test log in the currently set format
  *  @param log, the log object to output
  */
-void printer::write( 
+void printer::write(
+    printer::logid id,
     const test_base::info & testInfo )
 {
     // acquire the output lock
-    std::lock_guard<std::mutex> lock( m_outputMutex );
+    LOCK_GUARD<MUTEX> lock( m_outputMutex );
 
     switch ( m_format )
     {
     case ( ejson ) :
-        write_json( testInfo );
+        write_json( id, testInfo );
         break;
 
     case ( etext ) :
-        write_text( testInfo );
+        write_text( id, testInfo );
         break;
 
     default:
@@ -61,25 +74,25 @@ void printer::write(
     }
 
 }
-
 
 /** output a test log in the currently set format
  *  @param log, the log object to output
  */
 void printer::write(
+    printer::logid id,
     const logger::info & logInfo )
 {
     // acquire the output lock
-    std::lock_guard<std::mutex> lock( m_outputMutex );
+    LOCK_GUARD<MUTEX> lock( m_outputMutex );
 
     switch ( m_format )
     {
     case ( ejson ) :
-        write_json( logInfo );
+        write_json( id, logInfo );
         break;
 
     case ( etext ) :
-        write_text( logInfo );
+        write_text( id, logInfo );
         break;
 
     default:
@@ -88,10 +101,10 @@ void printer::write(
 
 }
 
-/** convert a logger::result enum to a std::string
+/** convert a logger::result enum to a STRING
  *  @param res, an enum value
  */
-std::string printer::result_as_string( logger::result res )
+STRING printer::result_as_string( logger::result res )
 {
     switch ( res )
     {
@@ -114,7 +127,7 @@ std::string printer::result_as_string( logger::result res )
 /** output a string to stdout
  *  @param str, the string to output
  */
-void printer::output( const std::string & str )
+void printer::output( const STRING & str )
 {
     // write output to stdout
     std::cout << str;
@@ -123,7 +136,7 @@ void printer::output( const std::string & str )
 /** output a string to stdout followed by a new line
  *  @param str, the string to output
  */
-void printer::outputln( const std::string & str )
+void printer::outputln( const STRING & str )
 {
     // forward on to the main output function
     output( str + "\n" );
@@ -133,8 +146,8 @@ void printer::outputln( const std::string & str )
  *
  */
 void printer::output_kvp(
-    const std::string & key,
-    const std::string & value,
+    const STRING & key,
+    const STRING & value,
     const bool comma )
 {
     output( "\"" + key + "\":\"" + value + "\"" );
@@ -145,7 +158,7 @@ void printer::output_kvp(
 /** output a key value pair with integer value
  */
 void printer::output_kvp(
-    const std::string & key,
+    const STRING & key,
     const int & value,
     const bool comma )
 {
@@ -155,10 +168,14 @@ void printer::output_kvp(
 }
 
 void printer::write_json(
+    printer::logid id,
     const test_base::info & testInfo )
 {
     // signal that this is a test header
-    output( "{\"type\"=1," );
+    output( "{\"type\":1," );
+
+    // output the log id to bind header to footer
+    output_kvp( "id", id, true );
 
     // JSON object string
     output_kvp( "name"     , testInfo.m_name     , true  );
@@ -174,30 +191,37 @@ void printer::write_json(
  *  @param info, info about the test that generated the log
  */
 void printer::write_json(
+    printer::logid id,
     const logger::info & logInfo )
 {
     // signal that these are test results
-    output( "{\"type\"=2," );
+    output( "{\"type\":2," );
+    
+    // output the log id to bind header to footer
+    output_kvp( "id", id, true );
+
+    // if logs were made
+    const size_t nLogs = logInfo.m_log.size( );
+    if ( nLogs > 0 )
     {
-        // basic test information
-        output_kvp( "result", logInfo.m_result, true );
-        
-        // if logs were made
-        const size_t nLogs = logInfo.m_log.size( );
-        if ( nLogs > 0 )
+        // JSON value array
+        output( "\"notes\":[" );
+        for ( int i = 0; i < nLogs; i++ )
         {
-            // JSON value array
-            output( "\"notes\":[" );
-            for ( int i = 0; i < nLogs; i++ )
-            {
-                // commas prefix all but the first note
-                if ( i > 0 )
-                    output( "," );
-                output( "\"" + logInfo.m_log[i] + "\"" );
-            }
-            output( "]" );
+            // commas prefix all but the first note
+            if ( i > 0 )
+                output( "," );
+            output( "\"" + logInfo.m_log[i] + "\"" );
         }
+        output( "]," );
     }
+    
+    // output line number
+    output_kvp( "line", logInfo.m_line, true );
+
+    // basic test information
+    output_kvp( "result", logInfo.m_result, false );
+
     outputln( "}" );
 }
 
@@ -215,14 +239,16 @@ void printer::finish( )
  *  @param info, info about the test that generated the log
  */
 void printer::write_text(
+    printer::logid id,
     const test_base::info & testInfo )
 {
+    outputln( "#" + std::to_string( id ) );
+
     // output test name
     outputln( "    test: " + testInfo.m_name );
     
     // output compilation info
     outputln( "compiled: " + testInfo.m_buildDate + " - " + testInfo.m_buildTime );
-
 }
 
 /** output a test log in a text form
@@ -230,6 +256,7 @@ void printer::write_text(
  *  @param info, info about the test that generated the log
  */
 void printer::write_text(
+    printer::logid id,
     const logger::info & logInfo )
 {
     // all verbose log entries
@@ -241,6 +268,10 @@ void printer::write_text(
 
     // output test result
     outputln( "  result: " + result_as_string( logInfo.m_result ) );
+
+    // display line number for non passes
+    if ( logInfo.m_result != logger::result::epass )
+        outputln( "    line: " + std::to_string( logInfo.m_line ) );
 
     // blank line between tests
     outputln( "" );

@@ -24,7 +24,7 @@ namespace util
 /** add one entry into the test log
  *  @param str, string entry to add
  */
-void logger::add_to_log( const std::string & str )
+void logger::add_to_log( const STRING & str )
 {
     if ( ( str.empty( ) ) || ( str.length( ) == 0 ) )
         return;
@@ -35,21 +35,30 @@ void logger::add_to_log( const std::string & str )
  */
 logger::logger( )
 {
+    // record a pass initially until it is overridden
+    // by a failing test
+    m_info.m_result = result::epass;
+
+    m_info.m_time = 0;
+
+    m_info.m_line = 0;
 }
 
 /** notify a test has failed
  *  @param reason, optional descriptive string for fail
+ *  @param line, test line number that threw the error
  */
-void logger::fail( const std::string & str )
+void logger::fail( const STRING & str, const int line )
 {
     add_to_log( str );
     m_info.m_result = logger::efail;
+    m_info.m_line = line;
 }
 
 /** notify a test has passed
  *  @param reason, optional descriptive string for pass
  */
-void logger::pass( const std::string & str )
+void logger::pass( const STRING & str )
 {
     add_to_log( str );
     m_info.m_result = logger::epass;
@@ -58,7 +67,7 @@ void logger::pass( const std::string & str )
 /** notify a test has been skipped
  *  @param reason, optional descriptive string for skip
  */
-void logger::skip( const std::string & str )
+void logger::skip( const STRING & str )
 {
     add_to_log( str );
     m_info.m_result = logger::eskip;
@@ -67,7 +76,7 @@ void logger::skip( const std::string & str )
 /** report fatal error and abort program
  *  @param reason, optional descriptive string for fatal error
  */
-void logger::fatal( const std::string & str )
+void logger::fatal( const STRING & str )
 {
     add_to_log( str );
     m_info.m_result = logger::efatal;
@@ -76,7 +85,7 @@ void logger::fatal( const std::string & str )
 /** output verbose information
  *  @param string
  */
-void logger::note( const std::string & str )
+void logger::note( const STRING & str )
 {
     // push this into the log list
     add_to_log( str );
@@ -105,7 +114,7 @@ void logger::note( const char *fmt, ... )
     // enforce terminal character
     buffer[sizeof(buffer)-1] = '\0';
     // cast to a string object
-    std::string newLogItem( buffer );
+    STRING newLogItem( buffer );
     // push this into the log list
     add_to_log( newLogItem );
 

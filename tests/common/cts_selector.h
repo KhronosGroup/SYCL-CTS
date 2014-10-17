@@ -18,7 +18,7 @@ class cts_selector
     : public cl::sycl::device_selector
 {
 public:
-
+    
     /** device selection operator
      *  return <  0  : device will never be selected
      *  return >= 0  : positive device rating
@@ -26,7 +26,7 @@ public:
     virtual int operator( ) ( const cl::sycl::device & dev ) const
     {
         sycl_cts::util::selector::ctsdevice ctsDevType = 
-            sycl_cts::util::selector::instance().get_default( );
+            sycl_cts::util::get<sycl_cts::util::selector>().get_default( );
 
         if ( dev.is_host( ) )
         {
