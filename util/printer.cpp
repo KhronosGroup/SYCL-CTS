@@ -6,21 +6,154 @@
 //
 **************************************************************************/
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#include <stdarg.h>
 #include <iostream>
 #include <assert.h>
+#include <cstdio>
 
 #include "printer.h"
+#include "logger.h"
 
 namespace sycl_cts
 {
 namespace util
 {
 
+/** standard output channel
+ */
+class stdout_channel : public printer::channel
+{
+    MUTEX m_outputMutex;
+
+public:
+    virtual void write( const STRING &msg )
+    {
+        if ( !msg.empty() )
+        {
+            LOCK_GUARD<MUTEX> lock( m_outputMutex );
+            std::cout << msg;
+        }
+    }
+
+    virtual void writeln( const STRING &msg )
+    {
+        if ( !msg.empty() )
+        {
+            LOCK_GUARD<MUTEX> lock( m_outputMutex );
+            std::cout << msg << std::endl;
+        }
+    }
+
+    virtual void flush()
+    {
+        fflush( stdout );
+    }
+};
+
+/** JSON printer
+ */
+class json_formatter : public printer::formatter
+{
+public:
+    virtual void write( printer::channel &out, int32_t id, printer::epacket packet, const STRING &data )
+    {
+        STRING strId = std::to_string( id );
+        STRING strPacket = std::to_string( packet );
+        out.writeln( "{\"id\":" + strId + ",\"type\":" + strPacket + ",\"data\":\"" + data + "\"}" );
+    }
+
+    virtual void write( printer::channel &out, int32_t id, printer::epacket packet, int data )
+    {
+        STRING strId = std::to_string( id );
+        STRING strPacket = std::to_string( packet );
+        STRING strData = std::to_string( data );
+        out.writeln( "{\"id\":" + strId + ",\"type\":" + strPacket + ",\"data\":\"" + strData + "\"}" );
+    }
+};
+
+/** human readable text printer
+ */
+class text_formatter : public printer::formatter
+{
+public:
+    virtual void write( printer::channel &out, int32_t id, printer::epacket packet, const STRING &data )
+    {
+        switch ( packet )
+        {
+        default:
+            // ignore packets we dont know
+            return;
+        case ( printer::name ):
+            out.write( "--- " );
+            break;
+        case ( printer::line ):
+            out.write( "  . line: " );
+            break;
+        case ( printer::note ):
+        case ( printer::list_test_name ):
+            out.write( "  . " );
+            break;
+        case ( printer::list_test_count ):
+            out.writeln( data + " tests in executable" );
+            return;
+        }
+        out.writeln( data );
+    }
+
+    virtual void write( printer::channel &out, int32_t id, printer::epacket packet, int data )
+    {
+        switch ( packet )
+        {
+        case ( printer::result ):
+        {
+            switch ( data )
+            {
+            case ( logger::epass ):
+                out.writeln( "  - pass\n" );
+                break;
+            case ( logger::efail ):
+                out.writeln( "  - fail\n" );
+                break;
+            case ( logger::eskip ):
+                out.writeln( "  - skip\n" );
+                break;
+            case ( logger::efatal ):
+                out.writeln( "  - fatal\n" );
+                break;
+            }
+        }
+            return;
+        case ( printer::progress ):
+            out.write( "\r  . progress " + std::to_string( data ) + "%" );
+            if ( data == 100 )
+                out.write( "\n" );
+            return;
+        default:
+            // stringify and pass to string handler
+            write( out, id, packet, std::to_string( data ) );
+        }
+    }
+};
+
+/** local static variables
+ */
+namespace
+{
+stdout_channel gStdoutChannel;
+json_formatter gJsonFormat;
+text_formatter gTextFormat;
+};
+
 /** constructor
  */
-printer::printer( )
-    : m_format( printer::etext )
-    , m_nextLogId( 0 )
+printer::printer()
+    : m_nextLogId()
+    , m_formatter( &gTextFormat )
+    , m_channel( &gStdoutChannel )
 {
 }
 
@@ -28,254 +161,87 @@ printer::printer( )
  */
 printer::~printer()
 {
-    release( );
+    release();
 }
 
-/**
- * 
+/** generate a new unique identifier
  */
-printer::logid printer::new_log_id( )
+int32_t printer::new_log_id()
 {
-    // acquire the log id issue mutex
-    LOCK_GUARD<MUTEX> lock( m_logIdMutex );
-
-    return m_nextLogId++;
+    int32_t newId = m_nextLogId.fetch_add( 1 );
+    return newId;
 }
 
 /** set the current output format for the printer
  */
 void printer::set_format( printer::eformat fmt )
 {
-    m_format = fmt;
-}
-
-/** output a test log in the currently set format
- *  @param log, the log object to output
- */
-void printer::write(
-    printer::logid id,
-    const test_base::info & testInfo )
-{
-    // acquire the output lock
-    LOCK_GUARD<MUTEX> lock( m_outputMutex );
-
-    switch ( m_format )
+    switch ( fmt )
     {
-    case ( ejson ) :
-        write_json( id, testInfo );
+    case ( printer::eformat::ejson ):
+        m_formatter = &gJsonFormat;
         break;
-
-    case ( etext ) :
-        write_text( id, testInfo );
+    case ( printer::eformat::etext ):
+        m_formatter = &gTextFormat;
         break;
-
     default:
-        assert( !"should not get here" );
-    }
-
-}
-
-/** output a test log in the currently set format
- *  @param log, the log object to output
- */
-void printer::write(
-    printer::logid id,
-    const logger::info & logInfo )
-{
-    // acquire the output lock
-    LOCK_GUARD<MUTEX> lock( m_outputMutex );
-
-    switch ( m_format )
-    {
-    case ( ejson ) :
-        write_json( id, logInfo );
-        break;
-
-    case ( etext ) :
-        write_text( id, logInfo );
-        break;
-
-    default:
-        assert( !"should not get here" );
-    }
-
-}
-
-/** convert a logger::result enum to a STRING
- *  @param res, an enum value
- */
-STRING printer::result_as_string( logger::result res )
-{
-    switch ( res )
-    {
-    case ( logger::efail ):
-        return "fail";
-    case ( logger::efatal ):
-        return "fatal";
-    case ( logger::epass ):
-        return "pass";
-    case ( logger::eskip ):
-        return "skip";
-    case ( logger::epending ):
-        return "pending";
-    default:
-        assert( !"should not get here" );
-        return "";
+        assert( !"Unknown printer format" );
     }
 }
 
-/** output a string to stdout
- *  @param str, the string to output
+/** write a packet using the set formatter and channel
  */
-void printer::output( const STRING & str )
+void printer::write( int32_t id, epacket packet, STRING data )
 {
-    // write output to stdout
-    std::cout << str;
+    if ( m_formatter )
+        m_formatter->write( *m_channel, id, packet, data );
 }
 
-/** output a string to stdout followed by a new line
- *  @param str, the string to output
+/** write a packet using the set formatter and channel
  */
-void printer::outputln( const STRING & str )
+void printer::write( int32_t id, epacket packet, int data )
 {
-    // forward on to the main output function
-    output( str + "\n" );
+    if ( m_formatter )
+        m_formatter->write( *m_channel, id, packet, data );
 }
 
-/** output a key value pair with string value
- *
+/** global printf
  */
-void printer::output_kvp(
-    const STRING & key,
-    const STRING & value,
-    const bool comma )
+void printer::print( const char *fmt, ... )
 {
-    output( "\"" + key + "\":\"" + value + "\"" );
-    if ( comma )
-        output( "," );
+    assert( fmt != nullptr );
+
+    char buffer[1024];
+
+    va_list args;
+    va_start( args, fmt );
+    if ( vsnprintf( buffer, sizeof( buffer ), fmt, args ) <= 0 )
+        assert( !"vsnprintf() failed" );
+    va_end( args );
+
+    // enforce terminal character
+    buffer[sizeof( buffer ) - 1] = '\0';
+
+    // output string via channel
+    if ( m_channel )
+        m_channel->write( STRING( buffer ) );
 }
 
-/** output a key value pair with integer value
+/** global print
  */
-void printer::output_kvp(
-    const STRING & key,
-    const int & value,
-    const bool comma )
+void printer::print( const STRING &str )
 {
-    output( "\"" + key + "\":" + std::to_string( value ) );
-    if ( comma )
-        output( "," );
+    if ( m_channel )
+        m_channel->write( str );
 }
 
-void printer::write_json(
-    printer::logid id,
-    const test_base::info & testInfo )
-{
-    // signal that this is a test header
-    output( "{\"type\":1," );
-
-    // output the log id to bind header to footer
-    output_kvp( "id", id, true );
-
-    // JSON object string
-    output_kvp( "name"     , testInfo.m_name     , true  );
-    output_kvp( "file"     , testInfo.m_file     , true  );
-    output_kvp( "buildTime", testInfo.m_buildTime, true  );
-    output_kvp( "buildDate", testInfo.m_buildDate, false );
-    
-    outputln( "}" );
-}
-
-/** output a test log in JSON form
- *  @param log, the log object to output
- *  @param info, info about the test that generated the log
+/** finish all writing operations
  */
-void printer::write_json(
-    printer::logid id,
-    const logger::info & logInfo )
+void printer::finish()
 {
-    // signal that these are test results
-    output( "{\"type\":2," );
-    
-    // output the log id to bind header to footer
-    output_kvp( "id", id, true );
-
-    // if logs were made
-    const size_t nLogs = logInfo.m_log.size( );
-    if ( nLogs > 0 )
-    {
-        // JSON value array
-        output( "\"notes\":[" );
-        for ( int i = 0; i < nLogs; i++ )
-        {
-            // commas prefix all but the first note
-            if ( i > 0 )
-                output( "," );
-            output( "\"" + logInfo.m_log[i] + "\"" );
-        }
-        output( "]," );
-    }
-    
-    // output line number
-    output_kvp( "line", logInfo.m_line, true );
-
-    // basic test information
-    output_kvp( "result", logInfo.m_result, false );
-
-    outputln( "}" );
+    if ( m_channel )
+        m_channel->flush();
 }
 
-/** instruct the printer to finish all printing
- *  operations. importantly, this terminates the root JSON object
- */
-void printer::finish( )
-{
-    // make sure stdout was flushed
-    fflush( stdout );
-}
-
-/** output a test log in a text form
- *  @param log, the log object to output
- *  @param info, info about the test that generated the log
- */
-void printer::write_text(
-    printer::logid id,
-    const test_base::info & testInfo )
-{
-    outputln( "#" + std::to_string( id ) );
-
-    // output test name
-    outputln( "    test: " + testInfo.m_name );
-    
-    // output compilation info
-    outputln( "compiled: " + testInfo.m_buildDate + " - " + testInfo.m_buildTime );
-}
-
-/** output a test log in a text form
- *  @param log, the log object to output
- *  @param info, info about the test that generated the log
- */
-void printer::write_text(
-    printer::logid id,
-    const logger::info & logInfo )
-{
-    // all verbose log entries
-    const size_t nLogs = logInfo.m_log.size( );
-    for ( int i = 0; i < nLogs; i++ )
-    {
-        outputln( "        - " + logInfo.m_log[i] );
-    }
-
-    // output test result
-    outputln( "  result: " + result_as_string( logInfo.m_result ) );
-
-    // display line number for non passes
-    if ( logInfo.m_result != logger::result::epass )
-        outputln( "    line: " + std::to_string( logInfo.m_line ) );
-
-    // blank line between tests
-    outputln( "" );
-}
-
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

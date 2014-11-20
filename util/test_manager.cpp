@@ -15,9 +15,8 @@
 #include "selector.h"
 #include "executor.h"
 
-#if defined (_MSC_VER)
-extern "C"
-extern long __stdcall IsDebuggerPresent( );
+#if defined( _MSC_VER )
+extern "C" extern long __stdcall IsDebuggerPresent();
 #endif
 
 namespace sycl_cts
@@ -27,31 +26,34 @@ namespace util
 
 /**
  */
-test_manager::test_manager( )
-    : m_willExecute ( false )
-    , m_wimpyMode   ( false )
+test_manager::test_manager()
+    : m_willExecute( false )
+    , m_wimpyMode( false )
 {
 }
 
 /**
  */
-void test_manager::on_start( )
+void test_manager::on_start()
 {
     // prepare the test collection for use
-    get<util::collection>( ).prepare( );
+    get<util::collection>().prepare();
 }
 
 /**
  */
-void test_manager::on_exit( )
+void test_manager::on_exit()
 {
     // flush the printer so all output appears on stdout
-    get<util::printer>( ).finish( );
+    get<util::printer>().finish();
 
-    // in debug mode, halt before exit
+// in debug mode, halt before exit
 #if defined( _MSC_VER )
-    if ( IsDebuggerPresent( ) != 0 )
-        getchar( );
+    if ( IsDebuggerPresent() != 0 )
+    {
+        get<util::printer>().print( "press [enter] to exit..." );
+        getchar();
+    }
 #endif
 }
 
@@ -60,11 +62,11 @@ void test_manager::on_exit( )
 bool test_manager::parse( const int argc, const char **args )
 {
     // get more convenient references to each singleton
-    util::cmdarg     & cmdarg     = get<util::cmdarg>( );
-    util::printer    & printer    = get<util::printer>( );
-    util::collection & collection = get<util::collection>( );
-    util::selector   & selector   = get<util::selector>( );
-    
+    util::cmdarg &cmdarg = get<util::cmdarg>();
+    util::printer &printer = get<util::printer>();
+    util::collection &collection = get<util::collection>();
+    util::selector &selector = get<util::selector>();
+
     // try to parse all of the command line arguments
     if ( !cmdarg.parse( argc, args ) )
     {
@@ -78,14 +80,18 @@ bool test_manager::parse( const int argc, const char **args )
     // show the usage information
     if ( cmdarg.find_key( "--help" ) )
     {
-        print_usage( );
+        print_usage();
         return true;
     }
+
+    // set JSON output formatting
+    if ( cmdarg.find_key( "--json" ) || cmdarg.find_key( "-j" ) )
+        printer.set_format( sycl_cts::util::printer::ejson );
 
     // list all of the tests in this binary
     if ( cmdarg.find_key( "--list" ) || cmdarg.find_key( "-l" ) )
     {
-        collection.list( );
+        collection.list();
         return true;
     }
 
@@ -94,16 +100,12 @@ bool test_manager::parse( const int argc, const char **args )
     if ( cmdarg.get_value( "--csv", csvfile ) || cmdarg.find_key( "-c" ) )
     {
         // forward the csv file on to the collection for filtering
-        if (! collection.filter_tests_csv( csvfile ) )
+        if ( !collection.filter_tests_csv( csvfile ) )
         {
             puts( "unable to load csv file" );
             return false;
         }
     }
-
-    // set JSON output formatting
-    if ( cmdarg.find_key( "--json" ) || cmdarg.find_key( "-j" ) )
-        printer.set_format( sycl_cts::util::printer::ejson );
 
     // set text output formatting
     if ( cmdarg.find_key( "--text" ) || cmdarg.find_key( "-t" ) )
@@ -128,19 +130,19 @@ bool test_manager::parse( const int argc, const char **args )
     return true;
 }
 
-/** 
+/**
  */
-bool test_manager::run( )
+bool test_manager::run()
 {
     // execute all tests
-    get<util::executor>( ).run_all( );
-    
+    get<util::executor>().run_all();
+
     return true;
 }
 
-/** 
+/**
  */
-void test_manager::print_usage( )
+void test_manager::print_usage()
 {
     const char *usage = R"(
 SYCL CONFORMANCE TEST SUITE
@@ -163,19 +165,19 @@ Usage:
     puts( usage );
 }
 
-/** 
+/**
  */
-bool test_manager::will_execute( ) const
+bool test_manager::will_execute() const
 {
     return m_willExecute;
 }
 
-/** 
+/**
  */
-bool test_manager::wimpy_mode_enabled( ) const
+bool test_manager::wimpy_mode_enabled() const
 {
     return m_wimpyMode;
 }
 
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

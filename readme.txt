@@ -1,7 +1,7 @@
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 #  SYCL CONFORMANCE TEST SUITE
 #  Usage guide
-#  16/10/14
+#  20/11/14
 #
 
 
@@ -84,8 +84,9 @@
                                 path the cts executable file
           -c CSVPATH, --csvpath CSVPATH
                                 path to csv file for filtering tests
+          --list                list all tests in a test binary
 
-
+ 
     The '--binpath' argument is mandatory and must point to one of the CTS
     test executables built in the previous step.
 
@@ -100,6 +101,15 @@
 	In the future the CSV file will also be used to specify timeout values
 	on a per-test basis.
 
+    The '--list' argument can be used to examine all of the tests that are
+    stored in a test executable.  For instance:
+    
+        $ python runtests.py -b build\bin\test_context.exe --list
+        3 tests in executable
+          . context_api
+          . context_constructors
+          . context_getinfo
+    
     The following command will start a typical test run:
 
         $ python runtests.py --binpath tests/common/test_all
@@ -124,4 +134,4 @@
          - failed : 1
            + platform_api
          - skipped: 2
-         = 81% conformance
+         = 81% pass rate

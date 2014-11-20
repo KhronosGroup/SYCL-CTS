@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "logger.h"
-
 // conformance test suite namespace
 namespace sycl_cts
 {
@@ -21,7 +19,6 @@ namespace util
 class test_base
 {
 public:
-
     /** encapsulate information about a test
      */
     struct info
@@ -34,21 +31,21 @@ public:
 
     /** virtual destructor
      */
-    virtual ~test_base( )
+    virtual ~test_base()
     {
         /* call cleanup to ensure internals are released */
-        cleanup( );
+        cleanup();
     }
 
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info & out ) const = 0;
+    virtual void get_info( info &out ) const = 0;
 
     /** called before this test is executed
      *  @param log for emitting test notes and results
      */
-    virtual bool setup( logger & log )
+    virtual bool setup( class logger &log )
     {
         // stub
         return true;
@@ -57,17 +54,17 @@ public:
     /** execute this test
      *  @param log for emitting test notes and results
      */
-    virtual void run( logger & log ) = 0;
+    virtual void run( class logger &log ) = 0;
 
     /** called after this test has executed
      *  @param log for emitting test notes and results
      */
-    virtual void cleanup( )
+    virtual void cleanup()
     {
         // empty
     }
 
-}; // class test_base
+};  // class test_base
 
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

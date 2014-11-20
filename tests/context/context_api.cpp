@@ -16,17 +16,15 @@
 namespace sycl_cts
 {
 
-/** 
+/**
  */
-class TEST_NAME
-    : public util::test_base
+class TEST_NAME : public util::test_base
 {
 public:
-
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info & out ) const
+    virtual void get_info( test_base::info &out ) const
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -34,32 +32,33 @@ public:
     /** execute the test
      *  @param log, test transcript logging class
      */
-    virtual void run( util::logger & log )
+    virtual void run( util::logger &log )
     {
         try
         {
             cl::sycl::context context;
 
-            auto cxt = context.get( );
+            auto cxt = context.get();
             if ( typeid( cxt ) != typeid( cl_context ) )
-                FAIL( log, "cl::sycl::context::get() does not" \
-                    "return cl_context" );
+                FAIL( log,
+                      "cl::sycl::context::get() does not "
+                      "return cl_context" );
 
-            auto isHost = context.is_host( );
-            if ( typeid( isHost ) != typeid( bool ) )
-                FAIL( log, "cl::sycl::context::is_host() does not" \
-                    "return bool" );
+            auto isHost = context.is_host();
+            if ( typeid( isHost ) != typeid(bool))
+                FAIL( log,
+                      "cl::sycl::context::is_host() does not "
+                      "return bool" );
         }
-        catch (cl::sycl::sycl_error e)
+        catch ( cl::sycl::sycl_error e )
         {
-            log_exception(log, e);
-            FAIL( log, "" );
+            log_exception( log, e );
+            FAIL( log, "sycl exception caught" );
         }
     }
-
 };
 
 // construction of this proxy will register the above test
 static util::test_proxy<TEST_NAME> proxy;
 
-}; // sycl_cts
+};  // sycl_cts

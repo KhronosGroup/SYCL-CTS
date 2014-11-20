@@ -1,0 +1,297 @@
+/*************************************************************************
+//
+//  SYCL Conformance Test Suite
+//
+//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//
+**************************************************************************/
+
+#include <CL/sycl.hpp>
+
+#include "./../../util/stl.h"
+#include "./../../util/math_reference.h"
+#include "./../../util/math_helper.h"
+
+#include "./../../oclmath/reference_math.h"
+#include "./../../oclmath/Utility.h"
+#include "./../../oclmath/mt19937.h"
+
+#include "../common/common.h"
+
+using namespace cl::sycl;
+
+/** test specifiers
+ */
+#define TEST_NAME math_relational_$TEST_FUNC$
+#define NUM_ELMS $NUM_ELMS$
+#define TEST_FUNC $TEST_FUNC$
+#define KERNEL_NAME cKernel_$TEST_FUNC$
+
+/**
+ */
+namespace sycl_cts
+{
+
+/** kernel functor
+ */
+template <typename T_in, typename T_out>
+class KERNEL_NAME
+{
+protected:
+    typedef accessor<T_in, 1, access::read, access::global_buffer> t_readAccess;
+    typedef accessor<T_out, 1, access::write, access::global_buffer> t_writeAccess;
+
+    t_writeAccess m_o; /* output     */
+    t_readAccess m_x;  /* argument X */
+    t_readAccess m_y;  /* argument Y */
+
+public:
+    KERNEL_NAME( t_writeAccess out_, t_readAccess x_, t_readAccess y_ )
+        : m_o( out_ )
+        , m_x( x_ )
+        , m_y( y_ )
+    {
+    }
+
+    void operator()( item item )
+    {
+        auto &o = m_o[item.get_global_id()];
+        auto x = m_x[item.get_global_id()];
+        auto y = m_y[item.get_global_id()];
+        o = cl::sycl::TEST_FUNC( x, y );
+    }
+};
+
+/**
+ */
+template <typename T_in, typename T_out>
+class TEST_NAME : public sycl_cts::util::test_base
+{
+protected:
+    /* size of the data buffer to process */
+    static const uint32_t nBufferSize = 512;
+
+    /* data buffers */
+    util::UNIQUE_PTR<T_in> m_xbuf;  /* x_arguments */
+    util::UNIQUE_PTR<T_in> m_ybuf;  /* y_arguments */
+    util::UNIQUE_PTR<T_out> m_obuf; /* output vals */
+
+    /*  */
+    MTdata m_randData;
+
+public:
+    /** constructor
+     */
+    TEST_NAME()
+        : m_xbuf( nullptr )
+        , m_ybuf( nullptr )
+        , m_obuf( nullptr )
+        , m_randData()
+    {
+    }
+
+    /** fill the buffer with new values
+     */
+    void generate( util::logger &log, MTdata &rng )
+    {
+        assert( m_xbuf.get() != nullptr );
+        assert( m_ybuf.get() != nullptr );
+        assert( m_obuf.get() != nullptr );
+
+        math::rand( rng, m_xbuf.get(), nBufferSize );
+        math::rand( rng, m_ybuf.get(), nBufferSize );
+    }
+
+    /** process an entire buffer
+     */
+    bool execute( util::logger &log )
+    {
+        /* create device selector */
+        intel_selector l_selector;
+
+        /* create command queue */
+        queue l_queue( l_selector );
+
+        try
+        {
+            buffer<T_in, 1> xbuf( m_xbuf.get(), nBufferSize );
+            buffer<T_in, 1> ybuf( m_ybuf.get(), nBufferSize );
+            buffer<T_out, 1> obuf( m_obuf.get(), nBufferSize );
+
+            /* add command to queue */
+            command_group( l_queue, [&]()
+                           {
+                auto xptr = xbuf.template get_access<access::read>();
+                auto yptr = ybuf.template get_access<access::read>();
+                auto optr = obuf.template get_access<access::write>();
+
+                /* instantiate the kernel */
+                auto kern = KERNEL_NAME<T_in, T_out>( optr, xptr, yptr );
+
+                /* execute the kernel */
+                parallel_for( nd_range<>( range<>( nBufferSize ), range<>( nBufferSize / 8 ) ), kern );
+            } );
+        }
+        catch ( cl::sycl::sycl_error e )
+        {
+            log_exception( log, e );
+            FAIL( log, "" );
+            return false;
+        }
+
+        return true;
+    }
+
+    /* verify scalar result
+     */
+    bool verifyScl( int result, float x, float y )
+    {
+        /* scalar results are 1 on pass
+         * and 0 on fail */
+        return result == reference::TEST_FUNC( x, y );
+    }
+
+    /* verify vector result
+     */
+    bool verifyVec( int result, float x, float y )
+    {
+        /* vector results are -1 on pass (all bits set)
+         * and 0 on fail */
+        return result == -reference::TEST_FUNC( x, y );
+    }
+
+    /* verify the buffer is valid
+     */
+    bool verify( util::logger &log )
+    {
+        auto x = m_xbuf.get();
+        auto y = m_ybuf.get();
+        auto o = m_obuf.get();
+
+        bool isVectorType = math::numElements( *x ) > 1;
+
+        for ( int i = 0; i < nBufferSize; i++ )
+        {
+            for ( int j = 0; j < math::numElements( *x ); j++ )
+            {
+                bool pass = false;
+
+                auto eo = math::getElement( o[i], j );
+                auto ex = math::getElement( x[i], j );
+                auto ey = math::getElement( y[i], j );
+
+                /* if the base data type is a vector type */
+                if ( isVectorType )
+                    pass = verifyVec( eo, ex, ey );
+                /* if the base data type is a scalar type */
+                else
+                    pass = verifyScl( eo, ex, ey );
+
+                if ( !pass )
+                {
+                    log.note( "fail at item %d element %d", i, j );
+                    log.note( TOSTRING( TEST_FUNC ) "( %f, %f ) returned %d", ex, ey, eo );
+
+                    FAIL( log, "" );
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /** return information about this test
+     *  @param info, test_base::info structure as output
+     */
+    virtual void get_info( test_base::info &out ) const
+    {
+        const char *l_name = "";
+#define MAKENAME( X )                          \
+    if ( typeid( T_in ) == typeid( X ) )       \
+    {                                          \
+        l_name = TOSTRING( TEST_NAME ) "_" #X; \
+    }
+        MAKENAME( float );
+        MAKENAME( float2 );
+        MAKENAME( float3 );
+        MAKENAME( float4 );
+        MAKENAME( float8 );
+        MAKENAME( float16 );
+        MAKENAME( int );
+        MAKENAME( int2 );
+        MAKENAME( int3 );
+        MAKENAME( int4 );
+        MAKENAME( int8 );
+        MAKENAME( int16 );
+#undef MAKENAME
+        set_test_info( out, l_name, TEST_FILE );
+    }
+
+    /** clear values required during testing
+     *  @return, success
+     */
+    virtual bool setup( util::logger &log )
+    {
+        m_xbuf.reset( new T_in[nBufferSize] );
+        assert( m_xbuf.get() != nullptr );
+
+        m_ybuf.reset( new T_in[nBufferSize] );
+        assert( m_ybuf.get() != nullptr );
+
+        m_obuf.reset( new T_out[nBufferSize] );
+        assert( m_obuf.get() != nullptr );
+
+        m_randData = init_genrand( 0 );
+
+        return true;
+    }
+
+    /** execute this test
+     *  @param log, test transcript logging class
+     */
+    virtual void run( util::logger &log )
+    {
+        MTdata rng = init_genrand( 0 );
+
+        generate( log, rng );
+
+        if ( !execute( log ) )
+            return;
+
+        if ( !verify( log ) )
+            return;
+    }
+
+    /** release all test resources
+     *
+     */
+    virtual void cleanup( util::logger &log )
+    {
+        m_xbuf.reset( nullptr );
+        m_ybuf.reset( nullptr );
+        m_obuf.reset( nullptr );
+    }
+};
+
+/* register this test with the test_collection */
+#if ( NUM_ELMS == 1 )
+static util::test_proxy<TEST_NAME<float, int>> proxy1;
+#endif
+#if ( NUM_ELMS == 2 )
+static util::test_proxy<TEST_NAME<float2, int2>> proxy2;
+#endif
+#if ( NUM_ELMS == 3 )
+static util::test_proxy<TEST_NAME<float3, int3>> proxy3;
+#endif
+#if ( NUM_ELMS == 4 )
+static util::test_proxy<TEST_NAME<float4, int4>> proxy4;
+#endif
+#if ( NUM_ELMS == 8 )
+static util::test_proxy<TEST_NAME<float8, int8>> proxy5;
+#endif
+#if ( NUM_ELMS == 16 )
+static util::test_proxy<TEST_NAME<float16, int16>> proxy6;
+#endif
+
+};  // sycl_cts

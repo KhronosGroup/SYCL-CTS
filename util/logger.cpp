@@ -7,7 +7,7 @@
 **************************************************************************/
 
 #ifdef _MSC_VER
-# define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <stdarg.h>
@@ -15,80 +15,81 @@
 #include <cstdio>
 
 #include "logger.h"
+#include "printer.h"
 
 namespace sycl_cts
 {
 namespace util
 {
 
-/** add one entry into the test log
- *  @param str, string entry to add
- */
-void logger::add_to_log( const STRING & str )
-{
-    if ( ( str.empty( ) ) || ( str.length( ) == 0 ) )
-        return;
-    m_info.m_log.push_back( str );
-}
-
 /** constructor
  */
-logger::logger( )
+logger::logger()
+    : m_result( result::epass )
 {
-    // record a pass initially until it is overridden
-    // by a failing test
-    m_info.m_result = result::epass;
+    /* get a new unique log identifier */
+    m_logId = get<printer>().new_log_id();
+}
 
-    m_info.m_time = 0;
-
-    m_info.m_line = 0;
+/** test preamble
+ */
+void logger::preamble( const test_base::info &info )
+{
+    get<printer>().write( m_logId, printer::epacket::name, info.m_name );
+    get<printer>().write( m_logId, printer::epacket::file, info.m_file );
 }
 
 /** notify a test has failed
  *  @param reason, optional descriptive string for fail
  *  @param line, test line number that threw the error
  */
-void logger::fail( const STRING & str, const int line )
+void logger::fail( const STRING &str, const int line )
 {
-    add_to_log( str );
-    m_info.m_result = logger::efail;
-    m_info.m_line = line;
-}
-
-/** notify a test has passed
- *  @param reason, optional descriptive string for pass
- */
-void logger::pass( const STRING & str )
-{
-    add_to_log( str );
-    m_info.m_result = logger::epass;
+    m_result = logger::efail;
+    get<printer>().write( m_logId, printer::epacket::line, line );
+    get<printer>().write( m_logId, printer::epacket::note, str );
 }
 
 /** notify a test has been skipped
  *  @param reason, optional descriptive string for skip
  */
-void logger::skip( const STRING & str )
+void logger::skip( const STRING &str )
 {
-    add_to_log( str );
-    m_info.m_result = logger::eskip;
+    m_result = logger::eskip;
+    get<printer>().write( m_logId, printer::epacket::note, str );
 }
 
 /** report fatal error and abort program
  *  @param reason, optional descriptive string for fatal error
  */
-void logger::fatal( const STRING & str )
+void logger::fatal( const STRING &str )
 {
-    add_to_log( str );
-    m_info.m_result = logger::efatal;
+    m_result = logger::efatal;
+    get<printer>().write( m_logId, printer::epacket::note, str );
 }
 
 /** output verbose information
  *  @param string
  */
-void logger::note( const STRING & str )
+void logger::note( const STRING &str )
 {
-    // push this into the log list
-    add_to_log( str );
+    // output via the printer
+    get<printer>().write( m_logId, printer::epacket::note, str );
+}
+
+/** beginning of a test
+ */
+void logger::test_start()
+{
+    get<printer>().write( m_logId, printer::epacket::test_start, 0 );
+}
+
+/** tests end
+ */
+void logger::test_end()
+{
+    get<printer>().write( m_logId, printer::epacket::result, m_result );
+    get<printer>().write( m_logId, printer::epacket::test_end, 0 );
 }
 
 /** output verbose information
@@ -98,50 +99,43 @@ void logger::note( const char *fmt, ... )
 {
     assert( fmt != nullptr );
 
-    va_list args;
-    va_start( args, fmt );
-    
-    // temporary buffer of 1kb
     char buffer[1024];
 
-    // use string formatting to print into buffer
+    va_list args;
+    va_start( args, fmt );
     if ( vsnprintf( buffer, sizeof( buffer ), fmt, args ) <= 0 )
-    {
-        // error
-        assert( !"sprintf failed" );
-        return;
-    }
-    // enforce terminal character
-    buffer[sizeof(buffer)-1] = '\0';
-    // cast to a string object
-    STRING newLogItem( buffer );
-    // push this into the log list
-    add_to_log( newLogItem );
-
+        assert( !"vsnprintf failed" );
     va_end( args );
+
+    // enforce terminal character
+    buffer[sizeof( buffer ) - 1] = '\0';
+
+    // output via the printer
+    get<printer>().write( m_logId, printer::epacket::note, STRING( buffer ) );
 }
 
-/** return the the internal state structure
+/** send a progress report
  */
-const logger::info & logger::get_info( ) const
+void logger::progress( int item, int total )
 {
-    return m_info;
+    int percent = ( total > 0 ) ? ( ( item * 100 ) / total ) : 0;
+    get<printer>().write( m_logId, printer::epacket::progress, percent );
 }
 
 /** destructor
  *  will terminate log output appropriately
  */
-logger::~logger( )
+logger::~logger()
 {
 }
 
 /** has a test result been emitted
-    *  @return, false = result not yet specified
-    */
-logger::result logger::get_result( ) const
+ *  @return, false = result not yet specified
+ */
+logger::result logger::get_result() const
 {
-    return m_info.m_result;
+    return m_result;
 }
 
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

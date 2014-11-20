@@ -14,53 +14,50 @@ namespace sycl_cts
 {
 namespace util
 {
-    
-    /** category, testname, timeout, regression y/n
+
+/** category, testname, timeout, regression y/n
+ */
+
+/** comma separated values file parser
+ */
+class csv
+{
+public:
+    /** constructor destructor
      */
+    csv();
+    ~csv();
 
-    /** comma separated values file parser
+    /** load a CSV file from disk
      */
-    class csv
-    {
-    public:
+    bool load_file( const STRING &path );
 
-        /** constructor destructor
-         */
-         csv( );
-        ~csv( );
+    /** release all stored csv information
+     */
+    void release();
 
-        /** load a CSV file from disk
-         */
-        bool load_file( const STRING & path );
-        
-        /** release all stored csv information
-         */
-        void release( );
+    /** return the number of csv rows (lines)
+     */
+    int size();
 
-        /** return the number of csv rows (lines)
-         */
-        int size( );
+    /** return the last error message set
+     */
+    bool get_last_error( STRING &out );
 
-        /** return the last error message set
-         */
-        bool get_last_error( STRING & out );
+    /** extract a csv value
+     */
+    bool get_item( int row, int column, STRING &out );
 
-        /** extract a csv value
-         */
-        bool get_item( int row, int column, STRING & out );
+protected:
+    // the last error message set
+    STRING m_error;
 
-    protected:
-        
-        // the last error message set
-        STRING m_error;
+    // raw items from the csv file
+    VECTOR<STRING> m_items;
 
-        // raw items from the csv file
-        VECTOR<STRING> m_items;
+    // indices for the start of a row
+    VECTOR<int> m_rowIndex;
+};
 
-        // indices for the start of a row
-        VECTOR<int> m_rowIndex;
-
-    };
-
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

@@ -16,10 +16,10 @@ using namespace sycl_cts::util;
 
 /** program exit callback
  */
-void exit_handler( )
+void exit_handler()
 {
     // inform the test manager of program exit
-    get<test_manager>( ).on_exit( );
+    get<test_manager>().on_exit();
 }
 
 /** test suite entry point
@@ -30,29 +30,29 @@ int main( int argc, const char **args )
     atexit( exit_handler );
 
     // prepare the test collection for use
-    get<collection>( ).prepare( );
+    get<collection>().prepare();
 
     // get a handle to the test manager instance
-    test_manager & l_testManager = get<test_manager>( );
+    test_manager &testManager = get<test_manager>();
 
     // inform the test manager the cts has launched
-    l_testManager.on_start( );
+    testManager.on_start();
 
     // parse the command line
-    if (! l_testManager.parse( argc, args ) )
+    if ( !testManager.parse( argc, args ) )
     {
         return -1;
     }
 
     // if the test harness will execute
-    if ( l_testManager.will_execute())
+    if ( testManager.will_execute() )
     {
         // run all of the specified tests
-        if (! l_testManager.run( ) )
+        if ( !testManager.run() )
         {
             return -1;
         }
     }
-    
+
     return 0;
 }

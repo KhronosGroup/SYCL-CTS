@@ -16,7 +16,7 @@ namespace util
 
 /** constructor
  */
-selector::selector( )
+selector::selector()
     : m_device( ctsdevice::unknown )
 {
 }
@@ -28,7 +28,7 @@ selector::selector( )
  *      'opencl_cpu'
  *      'opencl_gpu'
  */
-void selector::set_default( const STRING & name )
+void selector::set_default( const STRING &name )
 {
     if ( name == "host" )
         m_device = ctsdevice::host;
@@ -49,7 +49,7 @@ void selector::set_default( ctsdevice deviceType )
 
 /** return the default device of choice for this cts run
  */
-selector::ctsdevice selector::get_default( )
+selector::ctsdevice selector::get_default()
 {
     // default to host device if a valid one was not specified
     if ( m_device == ctsdevice::unknown )
@@ -59,5 +59,5 @@ selector::ctsdevice selector::get_default( )
     return m_device;
 }
 
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

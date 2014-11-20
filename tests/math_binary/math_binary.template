@@ -1,0 +1,418 @@
+/*************************************************************************
+//
+//  SYCL Conformance Test Suite
+//
+//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//
+**************************************************************************/
+
+#include <CL/sycl.hpp>
+
+#include "./../../util/stl.h"
+#include "./../../util/math_helper.h"
+
+#include "./../../oclmath/reference_math.h"
+#include "./../../oclmath/Utility.h"
+#include "./../../oclmath/mt19937.h"
+
+#include "../common/common.h"
+
+using namespace cl::sycl;
+
+/** test specifiers
+ */
+#define TEST_NAME math_binary_$TEST_FUNC$
+#define WIMPY_MODE 1
+#define MAX_ULPS $MAX_ULPS$
+#define TEST_FUNC $TEST_FUNC$
+#define REF_FUNC reference_$TEST_FUNC$
+#define KERNEL_NAME cKernel_$TEST_FUNC$
+
+/* list of special edge cases to test stored as floating
+ * point bit patterns.
+ */
+namespace
+{
+/* each value in this list will be used for both
+ * x and y arguments to a math function.
+ *
+ * for ( int i=0; i<nEdgeCases*nEdgeCases; i++ )
+ * {
+ *     xarg = gEdgeCases[ i % nEdgeCases ];
+ *     yarg = gEdgeCases[ i / nEdgeCases ];
+ *     ...
+ * }
+ */
+uint32_t gEdgeCases[] = { 0x7fc00000, 0xff800000, 0xff7fffff, 0xdf800001, 0xdf800000, 0xdf7fffff, 0xdf000001, 0xdf000000, 0xdeffffff,
+                          0xcf800001, 0xcf800000, 0xcf7fffff, 0xcf000001, 0xcf000000, 0xceffffff, 0xc47a0000, 0xc2c80000, 0xc0800000,
+                          0xc0600000, 0xc0400000, 0xc0400001, 0xc0200000, 0xc03fffff, 0xc0000000, 0xbfc00001, 0xbfc00000, 0xbfbfffff,
+                          0xbf800001, 0xbf800000, 0xbf7fffff, 0xbf000001, 0xbf000000, 0xbeffffff, 0xbe800001, 0xbe800000, 0xbe7fffff,
+                          0x80800001, 0x80800000, 0x807fffff, 0x800007ff, 0x8000007f, 0x80000007, 0x80000006, 0x80000005, 0x80000004,
+                          0x80000003, 0x80000002, 0x80000001, 0x80000000, 0xffc00000, 0x7f800000, 0x7f7fffff, 0x5f800001, 0x5f800000,
+                          0x5f7fffff, 0x5f000001, 0x5f000000, 0x5effffff, 0x4f800001, 0x4f800000, 0x4f7fffff, 0x4f000001, 0x4f000000,
+                          0x4effffff, 0x447a0000, 0x42c80000, 0x40800000, 0x40600000, 0x40400000, 0x40400001, 0x40200000, 0x403fffff,
+                          0x40000000, 0x3fc00001, 0x3fc00000, 0x3fbfffff, 0x3f800001, 0x3f800000, 0x3f7fffff, 0x3f000001, 0x3f000000,
+                          0x3effffff, 0x3e800001, 0x3e800000, 0x3e7fffff, 0x00800001, 0x00800000, 0x007fffff, 0x000007ff, 0x0000007f,
+                          0x00000007, 0x00000006, 0x00000005, 0x00000004, 0x00000003, 0x00000002, 0x00000001, 0x00000000 };
+const uint32_t nEdgeCases = sizeof( gEdgeCases ) / sizeof( uint32_t );
+};
+
+/**
+ */
+namespace sycl_cts
+{
+
+/** kernel functor
+ */
+template <typename T>
+class KERNEL_NAME
+{
+protected:
+    typedef accessor<T, 1, access::read, access::global_buffer> t_readAccess;
+    typedef accessor<T, 1, access::write, access::global_buffer> t_writeAccess;
+
+    t_writeAccess m_o; /* output     */
+    t_readAccess m_x;  /* argument X */
+    t_readAccess m_y;  /* argument Y */
+
+public:
+    KERNEL_NAME( t_writeAccess out_, t_readAccess x_, t_readAccess y_ )
+        : m_o( out_ )
+        , m_x( x_ )
+        , m_y( y_ )
+    {
+    }
+
+    void operator()( item item )
+    {
+        auto &o = m_o[item.get_global_id()];
+        auto x = m_x[item.get_global_id()];
+        auto y = m_y[item.get_global_id()];
+        o = TEST_FUNC( x, y );
+    }
+};
+
+/** unary brute force math test
+ */
+template <typename T>
+class TEST_NAME : public sycl_cts::util::test_base
+{
+protected:
+#if WIMPY_MODE
+    /* wimpy mode constants */
+    static const uint32_t nStep = 0x08000000;
+    static const uint32_t nScale = 0x100;
+#else
+    /* full (brutal) mode constants */
+    static const uint32_t nStep = 0x00080000;
+    static const uint32_t nScale = 0x1;
+#endif
+
+    /* size of the data buffer to process */
+    static const uint32_t nBufferSize = nStep / nScale;
+
+    /** number of chunks the main buffer should be split into
+     *  so that one chunk is processed at a time */
+    static const uint32_t nSubBuffers = 16;
+
+    /* data buffers */
+    util::UNIQUE_PTR<T> m_xbuf; /* x_arguments */
+    util::UNIQUE_PTR<T> m_ybuf; /* y_arguments */
+    util::UNIQUE_PTR<T> m_obuf; /* output vals */
+
+    /*  */
+    MTdata m_randData;
+
+    /* record the max ULP error */
+    float m_max_ulp;
+
+    /* edge case index */
+    uint32_t m_edgeCaseIdx;
+
+public:
+    /** constructor
+     */
+    TEST_NAME()
+        : m_xbuf( nullptr )
+        , m_ybuf( nullptr )
+        , m_obuf( nullptr )
+        , m_randData()
+        , m_max_ulp( 0.f )
+        , m_edgeCaseIdx( 0 )
+    {
+    }
+
+    /** fill the buffer with new values
+     */
+    void generate( util::logger &log, const uint32_t j, MTdata &rng )
+    {
+        assert( m_xbuf.get() != nullptr );
+        assert( m_ybuf.get() != nullptr );
+        assert( m_obuf.get() != nullptr );
+
+        /* fill data buffer */
+        for ( uint32_t i = 0; i < nBufferSize; i++ )
+        {
+            const uint32_t totalEdgeCases = nEdgeCases * nEdgeCases;
+
+            uint32_t x = 0;
+            uint32_t y = 0;
+
+            /* generate input values */
+            if ( m_edgeCaseIdx < totalEdgeCases )
+            {
+                x = gEdgeCases[m_edgeCaseIdx % nEdgeCases];
+                y = gEdgeCases[m_edgeCaseIdx / nEdgeCases];
+                m_edgeCaseIdx++;
+            }
+            else
+            {
+                x = genrand_int32( rng );
+                y = genrand_int32( rng );
+            }
+
+            /* pack into buffers */
+            math::fill( m_xbuf.get()[i], math::int_to_float( x ) );
+            math::fill( m_ybuf.get()[i], math::int_to_float( y ) );
+
+            /* clear output buffer */
+            math::fill( m_obuf.get()[i], math::int_to_float( 0xF8888888 ) );
+        }
+    }
+
+    /** pass the buffer through the kernel
+     */
+    bool executeChunk( util::logger &log, queue &a_queue, const uint32_t chunkStart, const uint32_t chunkSize )
+    {
+        /* check we are always in the buffer */
+        assert( ( chunkStart + chunkSize ) <= nBufferSize );
+
+        try
+        {
+            buffer<T, 1> xbuf( m_xbuf.get() + chunkStart, chunkSize );
+            buffer<T, 1> ybuf( m_ybuf.get() + chunkStart, chunkSize );
+            buffer<T, 1> obuf( m_obuf.get() + chunkStart, chunkSize );
+
+            /* add command to queue */
+            command_group( a_queue, [&]()
+                           {
+                auto xptr = xbuf.template get_access<access::read>();
+                auto yptr = ybuf.template get_access<access::read>();
+                auto optr = obuf.template get_access<access::write>();
+
+                /* instantiate the kernel */
+                auto kern = KERNEL_NAME<T>( optr, xptr, yptr );
+
+                /* execute the kernel */
+                parallel_for( nd_range<>( range<>( chunkSize ), range<>( chunkSize / 8 ) ), kern );
+
+            } );
+        }
+        catch ( cl::sycl::sycl_error e )
+        {
+            log_exception( log, e );
+            FAIL( log, "" );
+            return false;
+        }
+
+        return true;
+    }
+
+    /** process an entire buffer
+     */
+    bool execute( util::logger &log, queue &a_queue, const uint32_t j )
+    {
+        /* number of chunks in this buffer */
+        const uint32_t nChunkSize = nBufferSize / nSubBuffers;
+
+        /* step through chunks */
+        for ( uint32_t i = 0; i < nBufferSize; i += nChunkSize )
+        {
+            /* process this chunk */
+            if ( !executeChunk( log, a_queue, i, nChunkSize ) )
+                return false;
+        }
+
+        return true;
+    }
+
+    /** verify the buffer is valid
+     */
+    bool verify( util::logger &log, const uint32_t j )
+    {
+        /* iterate over results buffer */
+        for ( unsigned int i = 0; i < nBufferSize; i++ )
+        {
+            /* get all buffer values */
+            auto xv = m_xbuf.get()[i];
+            auto yv = m_ybuf.get()[i];
+            auto ov = m_obuf.get()[i];
+
+            /* iterate over vector type */
+            for ( int j = 0; j < math::numElements( xv ); j++ )
+            {
+                float x = math::getElement( xv, j );
+                float y = math::getElement( yv, j );
+                float res = math::getElement( ov, j );
+
+                if ( !verify( log, res, x, y ) )
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     */
+    bool verify( util::logger &log, const float res, const float x, const float y )
+    {
+        /* ULP threshold value */
+        const float nULPS = MAX_ULPS;
+
+        /* find the reference value */
+        const double ref = REF_FUNC( (double)x, (double)y );
+
+        /* check for correct rounding */
+        if ( (float)ref == res )
+            return true;
+
+        /* get abs ULP error */
+        const float l_ulp_error = fabs( Ulp_Error( res, ref ) );
+
+        /* record the abs max ulps */
+        m_max_ulp = fmax( m_max_ulp, l_ulp_error );
+
+        /* check if abs(ULP) exceeds tolerance */
+        if ( !( l_ulp_error <= nULPS ) )
+        {
+            log.note( "ULP fail @ %f", res );
+            return false;
+        }
+
+        return true;
+    }
+
+    /** return information about this test
+     *  @param info, test_base::info structure as output
+     */
+    virtual void get_info( test_base::info &out ) const
+    {
+        const char *l_name = "";
+#define MAKENAME( X )                          \
+    if ( typeid( T ) == typeid( X ) )          \
+    {                                          \
+        l_name = TOSTRING( TEST_NAME ) "_" #X; \
+    }
+        MAKENAME( float );
+        MAKENAME( float2 );
+        MAKENAME( float3 );
+        MAKENAME( float4 );
+        MAKENAME( float8 );
+        MAKENAME( float16 );
+#undef MAKENAME
+        set_test_info( out, l_name, TEST_FILE );
+    }
+
+    /** clear values required during testing
+     *  @return, success
+     */
+    virtual bool setup( util::logger &log )
+    {
+        m_max_ulp = 0.f;
+
+        m_xbuf.reset( new T[nBufferSize] );
+        assert( m_xbuf.get() != nullptr );
+
+        m_ybuf.reset( new T[nBufferSize] );
+        assert( m_ybuf.get() != nullptr );
+
+        m_obuf.reset( new T[nBufferSize] );
+        assert( m_obuf.get() != nullptr );
+
+        m_randData = init_genrand( 0 );
+
+        m_edgeCaseIdx = 0;
+
+        return true;
+    }
+
+    /** execute this test
+     *  @param log, test transcript logging class
+     */
+    virtual void run( util::logger &log )
+    {
+        try
+        {
+            /* create device selector */
+            intel_selector l_selector;
+
+            /* create command queue */
+            queue l_queue( l_selector );
+
+            /* find the number of iterations to perform so that we
+             * cover the space we want with the step size we are given.
+             */
+            uint64_t nItts = ( 1ull << 32ull ) / nStep;
+
+            /*  */
+            for ( int j = 0; j < nItts; j++ )
+            {
+                /* send progress report */
+                log.progress( j, nItts );
+
+                /* random number generator for this session */
+                MTdata rng = init_genrand( genrand_int32( m_randData ) );
+
+                /* generate a buffer of x values */
+                generate( log, j, rng );
+
+                /* convert x values to y values */
+                if ( !execute( log, l_queue, j ) )
+                {
+                    FAIL( log, "kernel failed execution" );
+                    break;
+                }
+
+                /* compare y values to reference y values */
+                if ( !verify( log, j ) )
+                {
+                    FAIL( log, "ULP exceeds tolerance" );
+                    break;
+                }
+            }
+
+            /* send 100% progress report */
+            log.progress( nItts, nItts );
+
+            /* record the max ulps */
+            log.note( "max_ulp = %8.2f", m_max_ulp );
+        }
+        catch ( cl::sycl::sycl_error e )
+        {
+            FAIL( log, "big fail" );
+        }
+    }
+
+    /** release all test resources
+     *
+     */
+    virtual void cleanup( util::logger &log )
+    {
+        m_xbuf.reset( nullptr );
+        m_ybuf.reset( nullptr );
+        m_obuf.reset( nullptr );
+    }
+};
+
+/* register this test with the test_collection */
+static util::test_proxy<TEST_NAME<float4>> proxy4;
+#if 0
+static util::test_proxy<TEST_NAME<float  >> proxy1;
+static util::test_proxy<TEST_NAME<float2 >> proxy2;
+static util::test_proxy<TEST_NAME<float3 >> proxy3;
+static util::test_proxy<TEST_NAME<float8 >> proxy5;
+static util::test_proxy<TEST_NAME<float16>> proxy6;
+#endif
+
+};  // sycl_cts

@@ -20,9 +20,33 @@ __author__ = "Codeplay"
 #
 g_binary_path   = None
 g_csv_path      = None
-g_results       = []
-g_headers       = {}
+g_packets       = {}
 g_list_tests    = False
+
+g_types = \
+    [
+        "name"           ,
+        "file"           ,
+        "line"           ,
+        "date"           ,
+        "progress"       ,
+        "note"           ,
+        "result"         ,
+        "test_start"     ,
+        "test_end"       ,
+        "list_test_name" ,
+        "list_test_count",
+    ]
+
+g_results = \
+    [
+        "pending" ,
+        "pass"    ,
+        "fail"    ,
+        "skip"    ,
+        "fatal"   ,
+        "timeout"
+    ]
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # exit with an error message
@@ -32,149 +56,132 @@ def error_exit( string ):
     exit( )
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# display a summary of all test executed
+#
+#
+def find_packet_data( id, type ):
+
+    l_list = []
+
+    try:
+        # find list of packet with this id
+        l_packet = g_packets[ id ]
+        # itterate over those packets
+        for x in l_packet:
+            # if packet is of correct type
+            if x[ 'type' ] == type:
+                # return the data field
+                l_list.append( x[ 'data' ] )
+
+    except Exception as e:
+        pass
+
+    return l_list
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# lookup the test result for a given test ID
+#
+def get_test_result( id ):
+
+    try:
+        #
+        if not id in g_packets:
+            return None
+
+        # get list of packets with this id
+        l_list = g_packets[id]
+
+        for x in l_list:
+            # check for result packet
+            if x[ 'type' ] == 'result':
+                l_data = x[ 'data' ]
+                return g_results[ int( l_data ) ]
+
+    except Exception as e:
+        pass
+
+    return None
+
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# print a final test summary
 #
 def print_summary( ):
-    global g_results
-    global g_headers
+    global g_packets
 
-    l_results = [0,0,0,0]
-    l_total = 0
-
-    l_fails = []
+    l_total   = 0
+    l_passes  = 0
+    l_fails   = 0
+    l_skipped = 0
+    l_failing_tests = []
 
     try:
-        # loop threw each packet
-        for packet in g_results:
+        # itterate over all the test ids
+        for id in g_packets:
 
-            # increment total test executed
+            # get the test result for this id
+            l_result = get_test_result( id )
+
+            if l_result == 'pass':
+                l_passes += 1
+
+            if l_result == 'fail':
+                l_fails += 1
+                l_failing_tests.append( find_packet_data( id, 'name' )[0] )
+
+            if l_result == 'skip':
+                l_skipped += 1
+
             l_total += 1
 
-            if 'result' in packet:
-                # find the test result
-                l_result = int( packet[ 'result' ])
+        print " " + str( l_total ) + ' tests ran in total'
 
-                if 'id' in packet:
-                    l_id = packet[ 'id' ]
-                    if l_id in g_headers:
-                        l_header = g_headers[ l_id ]
+        print '  - passed : ' + str( l_passes )
+        print '  - failed : ' + str( l_fails )
+        for x in l_failing_tests:
+            print '    + ' + str( x )
+        print '  - skipped: ' + str( l_skipped )
 
-                # check for a fail
-                if l_result is 2 and l_header:
-                    l_fails.append( l_header )
-
-                # increment this result type
-                l_results[ l_result ] += 1
-
-            else:
-                print "Test result missing result field"
+        l_percent = (100 * l_passes) / l_total
+        print '  = ' + str( l_percent ) + '% pass rate'
 
     except Exception as e:
-        print "Error constructing summary"
-
-    # print the summary
-    print str( l_total ) + ' tests ran in total'
-    print ' - passed : ' + str( l_results[1] )
-    print ' - failed : ' + str( l_results[2] )
-    for x in l_fails:
-        if 'name' in x:
-            print '   + ' + x[ 'name' ]
-    print ' - skipped: ' + str( l_results[3] )
-
-    # calculate conformance percentage
-    l_score = 0
-    if l_total > 0:
-        l_score = ((l_results[1] * 100) / l_total)
-    print ' = ' + str( l_score ) + '% conformance'
+        pass
 
     return
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# store a received json packet
-#
-def store_result( object ):
-    global g_results
-
-    # g_packets must be a valid list
-    if not g_results:
-        g_results = []
-
-    try:
-        g_results.append( object )
-
-    except Exception as e:
-        print "error storing JSON object"
-
-    return
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# store a test header packet
 #
-def store_header( object ):
-    global g_headers
-
-    if not g_headers:
-        g_headers = {}
-
-    # add this item to the header dictionary
-    if 'id' in object:
-        l_id = object['id']
-        g_headers[ l_id ] = object
-
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# print a test header
 #
-def print_test_header( object ):
+def dispatch_packet( id, type, data ):
 
-    # print out the test name
-    if 'name' in object:
-        print '## ' + object[ 'name' ]
+    if ( type is "test_start" ):
+        print "--- " + find_packet_data( id, 'name' )[0]
+        pass
 
-    return
+    if ( type is "test_end" ):
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# print test body
-#
-def print_test_body( object ):
-    global g_headers
+        l_notes = find_packet_data( id, 'note' )
+        l_result = g_results[ int( find_packet_data( id, 'result' )[0] ) ]
 
-    # check header has been received
-    if 'id' in object:
-        l_id = object['id']
-        if l_id in g_headers:
-            l_header = g_headers[l_id]
-        else:
-            print ' !  error:  test body received before header'
+        # print all of the notes
+        for x in l_notes:
+            print "  . " + str( x )
 
-    # if there are any notes
-    if 'notes' in object:
-        for x in object[ 'notes' ]:
-            print " ?   note: " + x
+        # print extended test info for non passes
+        if not l_result == 'pass':
 
-    # print out the result
-    if 'result' in object:
-        l_result = object[ 'result' ]
-        l_res_to_string = [ 'pending', 'pass', 'fail', 'skip' ]
-        print ' + result: ' +  l_res_to_string[ l_result ]
+            l_file = find_packet_data( id, 'file' )
+            l_date = find_packet_data( id, 'date' )
+            l_line = find_packet_data( id, 'line' )
+            if l_file: print "  - " + l_file[0]
+            if l_date: print "  - " + l_date[0]
+            if l_line: print "  - line " + l_line[0]
 
-        # print line number of failure
-        if (l_result is 2) and ('line' in object):
-
-            # if we could match this body with its header
-            if l_header:
-
-                # print the test source path
-                if 'file' in l_header:
-                    print ' !   file: ' + l_header[ 'file' ]
-
-                # print the test build time
-                if ('buildDate' in l_header) and ('buildTime' in l_header):
-                    print ' !  built: ' + l_header[ 'buildDate' ] + ", " + l_header[ 'buildTime' ]
-
-            # print the line number of the fail
-            print " !   line: " + str( object[ 'line' ] )
-
-    print ""
+        # print the result
+        print "  - " + l_result
+        print " "
 
     return
 
@@ -182,20 +189,41 @@ def print_test_body( object ):
 # process a fully formed JSON object
 #
 def process_json( object ):
+    global g_packets
+    global g_types
 
-    if 'type' in object:
+    try:
 
-        l_type = object[ 'type' ]
+        # packet must have an ID field
+        if not ('id' in object):
+            return
+        l_id = int( object[ 'id' ] )
 
-        # packet is a header
-        if l_type is 1:
-            store_header( object )
-            print_test_header( object )
+        # packet must have type field
+        if not ('type' in object):
+            return
+        l_type = g_types[ int( object[ 'type' ]) ]
+        object['type'] = l_type
 
-        # packet is a test transcript
-        if l_type is 2:
-            store_result( object )
-            print_test_body( object )
+        # packet must have data field
+        if not ('data' in object):
+            return
+        l_data = object[ 'data' ]
+        # convert to string
+        if type( l_data ) is int:
+            l_data = str( l_data )
+            object['data'] = l_data
+
+        # add this packet to the packet store
+        if not (l_id in g_packets):
+            g_packets[l_id] = []
+        g_packets[ l_id ].append( object )
+
+        # dispatch the packet we just received
+        dispatch_packet( l_id, l_type, l_data )
+
+    except Exception as e:
+        pass
 
     return
 
@@ -233,7 +261,7 @@ def dispatch_line( line ):
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # launch cts test binary
 #
-def launch_cts_binary( ):
+def launch_cts_binary( list ):
     global g_binary_path
     global g_csv_path
 
@@ -244,6 +272,10 @@ def launch_cts_binary( ):
     l_args = " --json"
     if g_csv_path:
         l_args = l_args + " --csv " + g_csv_path
+
+    # add list flag if listing
+    if list:
+        l_args += " --list"
 
     # generate a temporary file name
     (output_fd, temp_name) = tempfile.mkstemp()
@@ -297,14 +329,20 @@ def launch_cts_binary( ):
 # list the tests contained in a test executable
 #
 def list_tests( ):
-    global g_binary_path
 
-    # construct argument
-    l_args = " --json --list"
+    if not ( -1 in g_packets ):
+        return
+    l_list = g_packets[ -1 ]
 
+    l_count = find_packet_data( -1, 'list_test_count' )
 
+    print l_count[0] + " tests in executable"
 
-    print "listing tests..."
+    for x in l_list:
+        if x['type'] == 'list_test_name':
+            print "  . " + x['data']
+
+    return
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # parse command line arguments
@@ -347,17 +385,16 @@ def main( ):
     if not parse_args( ):
         return
 
+    # launch test suite
+    if not launch_cts_binary( g_list_tests ):
+        return
+
     # are we in test list mode
     if g_list_tests:
-
         # list all of the tests
         list_tests( )
 
     else:
-        # launch test suite
-        if not launch_cts_binary( ):
-            return
-
         # print a summary of the test
         print_summary( )
 

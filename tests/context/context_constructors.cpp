@@ -17,14 +17,13 @@ namespace sycl_cts
 
 /** check we can construct a SYCL context
  */
-class TEST_NAME
-    : public util::test_base
+class TEST_NAME : public util::test_base
 {
-    
+
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info & out ) const
+    virtual void get_info( test_base::info &out ) const
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -32,23 +31,22 @@ class TEST_NAME
     /** execute the test
      *  @param log, test transcript logging class
      */
-    virtual void run( util::logger & log )
+    virtual void run( util::logger &log )
     {
         try
         {
             cl::sycl::context ctxt;
-            cl::sycl::context ctxt_copy(ctxt);
+            cl::sycl::context ctxt_copy( ctxt );
         }
         catch ( cl::sycl::sycl_error e )
         {
             log_exception( log, e );
-            FAIL( log, "" );
+            FAIL( log, "sycl exception caught" );
         }
     }
-
 };
 
 // construction of this proxy will register the above test
 static util::test_proxy<TEST_NAME> proxy;
 
-}; // sycl_cts
+};  // sycl_cts

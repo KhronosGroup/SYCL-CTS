@@ -23,42 +23,40 @@ class singleton
 {
     // must be a friend of class T to access the constructor
     friend T;
-    
+
     // singleton instance
     static UNIQUE_PTR<T> m_instance;
 
 public:
-
     /** destructor
      *  ensure that we release the singleton instance
      */
-    virtual ~singleton( )
+    virtual ~singleton()
     {
-        release( );
+        release();
     }
 
     /** get singleton instance
      */
-    static T & instance( )
+    static T &instance()
     {
         // if the instance has not be created
-        if (m_instance.get() == nullptr) 
+        if ( m_instance.get() == nullptr )
         {
-            m_instance.reset( new T( ) );
+            m_instance.reset( new T() );
         }
-        assert( m_instance.get( ) != nullptr );
+        assert( m_instance.get() != nullptr );
 
         // return the singleton instance
-        return *( m_instance.get( ) );
+        return *( m_instance.get() );
     }
 
     /** release this instance
      */
-    static void release( )
+    static void release()
     {
         m_instance.release();
     }
-    
 };
 
 /** instance of the singleton
@@ -69,11 +67,10 @@ std::unique_ptr<T> singleton<T>::m_instance;
 /** easy singleton accessors
  */
 template <class T>
-static inline
-T & get()
+static inline T &get()
 {
-    return T::instance( );
+    return T::instance();
 }
 
-}; // namespace util
-}; // namespace sycl_cts
+};  // namespace util
+};  // namespace sycl_cts

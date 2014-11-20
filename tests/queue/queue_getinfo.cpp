@@ -15,51 +15,45 @@
 namespace sycl_cts
 {
 
-    /**
-    */
-    class TEST_NAME
-        : public util::test_base
+/**
+ */
+class TEST_NAME : public util::test_base
+{
+public:
+    /** return information about this test
+     *  @param info, test_base::info structure as output
+     */
+    virtual void get_info( test_base::info &out ) const
     {
-    public:
+        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
+    }
 
-        /** return information about this test
-        *  @param info, test_base::info structure as output
-        */
-        virtual void get_info(test_base::info & out) const
+    /** execute this test
+     *  @param log, test transcript logging class
+     */
+    virtual void run( util::logger &log )
+    {
+        try
         {
-            set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-        }
+            // construct the cts default selector
+            cts_selector selector;
 
-        /** execute this test
-        *  @param log, test transcript logging class
-        */
-        virtual void run(util::logger & log)
+            cl::sycl::queue queue( selector );
+
+            cl_context ctext = queue.get_info<CL_QUEUE_CONTEXT>();
+            cl_device_id dev = queue.get_info<CL_QUEUE_DEVICE>();
+            cl_uint refcount = queue.get_info<CL_QUEUE_REFERENCE_COUNT>();
+            cl_command_queue_properties properties = queue.get_info<CL_QUEUE_PROPERTIES>();
+        }
+        catch ( cl::sycl::sycl_error e )
         {
-            try
-            {
-                // construct the cts default selector
-                cts_selector selector;
-
-                cl::sycl::queue queue(selector);
-
-#if ENABLE_FULL_TEST
-                cl_context ctext = queue.get_info<CL_QUEUE_CONTEXT>();
-                cl_device_id dev = queue.get_info<CL_QUEUE_DEVICE>();
-                cl_uint refcount = queue.get_info<CL_QUEUE_REFERENCE_COUNT>();
-                cl_command_queue_properties properties =
-                    queue.get_info<CL_QUEUE_PROPERTIES>();
-#endif
-            }
-            catch (cl::sycl::sycl_error e)
-            {
-                log_exception(log, e);
-                FAIL(log, "");
-            }
+            log_exception( log, e );
+            FAIL( log, "sycl exception caught" );
         }
+    }
+};
 
-    };
+// register this test with the test_collection
+static util::test_proxy<TEST_NAME> proxy;
 
-    // register this test with the test_collection
-    static util::test_proxy<TEST_NAME> proxy;
-
-}; // sycl_cts
+};  // sycl_cts

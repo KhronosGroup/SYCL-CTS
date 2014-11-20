@@ -31,38 +31,44 @@
 // std::sort()
 #include <algorithm>
 
+// std::atomic_uint
+#include <atomic>
 
 namespace sycl_cts
 {
 namespace util
 {
 
-    /** alias to STRING
-     */
-    using STRING = std::string;
+/** alias to STRING
+ */
+using STRING = std::string;
 
-    /** alias to std::vector
-     */
-    template<class T>
-    using VECTOR = std::vector<T>;
+/** alias to std::vector
+ */
+template <class T>
+using VECTOR = std::vector<T>;
 
-    /** alias to std::mutex
-     */
-    using MUTEX = std::mutex;
-    
-    /** alias to std::lock_guard
-     */
-    template<class T>
-    using LOCK_GUARD = std::lock_guard<std::mutex>;
+/** alias to std::mutex
+ */
+using MUTEX = std::mutex;
 
-    /** alias to std::unique_ptr
-     */
-    template<class T>
-    using UNIQUE_PTR = std::unique_ptr<T>;
+/** alias to std::lock_guard
+ */
+template <class T>
+using LOCK_GUARD = std::lock_guard<std::mutex>;
 
-    /** alias to std::ifstream
-     */
-    using IFSTREAM = std::ifstream;
+/** alias to std::unique_ptr
+ */
+template <class T>
+using UNIQUE_PTR = std::unique_ptr<T>;
 
-}; // util
-}; // sycl_cts
+/** alias to std::ifstream
+ */
+using IFSTREAM = std::ifstream;
+
+/** std atomic
+ */
+using ATOMIC_INT = std::atomic_int;
+
+};  // util
+};  // sycl_cts
