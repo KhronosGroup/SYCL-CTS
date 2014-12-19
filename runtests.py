@@ -22,6 +22,7 @@ g_binary_path   = None
 g_csv_path      = None
 g_packets       = {}
 g_list_tests    = False
+g_junit_path    = None
 
 g_types = \
     [
@@ -45,7 +46,17 @@ g_results = \
         "fail"    ,
         "skip"    ,
         "fatal"   ,
-        "timeout"
+        "timeout" ,
+    ]
+
+g_xml_escapes = \
+    [
+        # note '&' MUST be handled first!
+        ( '&' , '&amp;' ),
+        ( '>' , '&gt;'  ),
+        ( '<' , '&lt;'  ),
+        ( '\'', '&apos;'),
+        ( '\"', '&quot;'),
     ]
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -54,6 +65,95 @@ g_results = \
 def error_exit( string ):
     print string
     exit( )
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# process with xml escape codes
+#
+def xml_escape( msg ):
+    for e in g_xml_escapes:
+        msg = msg.replace( e[0], e[1] )
+    return msg
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+#
+#
+def write_junit_test_case( id ):
+
+    l_name = find_packet_data( id, 'name' )[0]
+    l_result = get_test_result( id )
+
+    l_xml = "  <testcase name='" + l_name + "' time='0'"
+
+    # test pass
+    if l_result == 'pass':
+        return l_xml + "/>\n"
+
+    # test fail or skip
+    if l_result == 'fail' or l_result == 'skip':
+        l_xml += ">\n"
+
+        l_note_list = find_packet_data( id, 'note' )
+        l_stacktrace = ""
+        for x in l_note_list:
+            l_stacktrace += '. ' + x + '\n'
+
+        l_stacktrace = xml_escape( l_stacktrace )
+        if l_result == 'fail':
+
+            l_file = find_packet_data( id, 'file' )
+            if len( l_file ) > 0:
+                l_stacktrace += "@file: " + l_file[0] + "\n"
+            l_line = find_packet_data( id, 'line' )
+            if len( l_line ) > 0:
+                l_stacktrace += "@line: " + l_line[0] + "\n"
+
+            l_xml += "    <failure message='error'>\n" + l_stacktrace \
+                  +  "    </failure>\n"
+
+        if l_result == 'skip':
+            l_xml += "    <skipped>\n" + l_stacktrace \
+                  +  "    </skipped>\n"
+
+        return l_xml + "  </testcase>\n"
+
+    # fatal or unknown result
+    return l_xml + ">\n" \
+                 + "    <failure message='fatal'>\nresult was " + l_result + "\n" \
+                 + "    </failure>\n" \
+                 + "  </testcase>\n"
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# produce a junit xml file
+#
+def write_junit_summary( ):
+    global g_packets
+    global g_junit_path
+    global g_xml_escapes
+
+    print 'exporting JUNIT XML to: \'' + g_junit_path + '\''
+
+    try:
+        l_xml  = "<?xml version='1.0' ?>\n"
+        l_xml += "<testsuite" \
+              +  " name='SYCL_CTS'" \
+              +  ">\n"
+
+        # itterate over all the tests
+        for id in g_packets:
+
+            l_xml += write_junit_test_case( id )
+
+        l_xml += "</testsuite>\n"
+
+        with open( g_junit_path, "w") as f:
+            f.write( l_xml )
+
+    except Exception as e:
+        print "Exception thrown while writing junit output"
+        print str( e )
+        pass
+
+    return
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 #
@@ -76,7 +176,6 @@ def find_packet_data( id, type ):
         pass
 
     return l_list
-
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # lookup the test result for a given test ID
@@ -101,7 +200,6 @@ def get_test_result( id ):
         pass
 
     return None
-
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # print a final test summary
@@ -149,7 +247,6 @@ def print_summary( ):
         pass
 
     return
-
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 #
@@ -228,35 +325,61 @@ def process_json( object ):
     return
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# use brace matching to isolate json packets
+#
+def find_packet( in_buffer ):
+
+    l_start = in_buffer.find( '{' )
+    l_end   =-1
+    l_scope = 1
+
+    if l_start > -1:
+        for x in range( l_start+1, len( in_buffer ) ):
+            if in_buffer[x] == '{':
+                l_scope += 1
+            if in_buffer[x] == '}':
+                l_scope -= 1
+            if l_scope is 0:
+                l_end = x+1
+                break
+
+    return l_start, l_end
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # dispatch a line of JSON
 #
-def dispatch_line( line ):
+def dispatch_buffer( in_buffer ):
 
-    # trim any garbage from the start of the packet
-    l_ix = line.find( '{' )
-    if l_ix > -1:
-        line = line[ l_ix : ]
+    # try to extract a single packet
+    (l_start,l_end) = find_packet( in_buffer )
+    if l_start is -1 or l_end is -1:
+        return in_buffer
+    l_packet  = in_buffer[ l_start : l_end ]
+    # work out the remainder of the packet
+    in_buffer = in_buffer[ l_end : ]
 
     # convert any file path '\' to unix '/'
-    line = line.replace( "\\", "/")
+    l_packet = l_packet.replace( "\\", "/")
 
-    # simple check for json input
-    if line[0] == '{':
+    # convert json string
+    try:
+        l_json = json.loads( l_packet )
 
-        # strip new line characters
-        line = line.rstrip('\r\n')
+    except Exception as e:
+        error_exit( "received malformed json input: " + l_packet )
 
-        # convert json string
-        try:
-            l_json = json.loads( line )
+    # pass the json object on for processing
+    process_json( l_json )
 
-        except Exception as e:
-            error_exit( "received malformed json input" )
+    return in_buffer
 
-        # pass the json object on for processing
-        process_json( l_json )
-
-    return
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# generate a valid temporary file name
+#
+def get_temp_filename( ):
+    (l_fd, l_name) = tempfile.mkstemp()
+    os.close( l_fd )
+    return l_name
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # launch cts test binary
@@ -278,50 +401,54 @@ def launch_cts_binary( list ):
         l_args += " --list"
 
     # generate a temporary file name
-    (output_fd, temp_name) = tempfile.mkstemp()
-    os.close( output_fd )
+    intermediate_file = os.path.abspath( "log.txt" )
+    # touch the file to make sure it exists
+    output_fd = open( intermediate_file, "w" )
+    output_fd.close()
 
-    # create a temporary
-    with open( temp_name, "w" ) as l_stdOutLogW:
+    # generate command line for launching test binary
+    l_command = g_binary_path + l_args + " --file " + intermediate_file
 
-        # generate command
-        l_command = g_binary_path + l_args
+    # execute the cts test suite executable
+    with open( get_temp_filename(), "w" ) as scrap_io:
+        l_exe = subprocess.Popen( l_command, stdout=scrap_io, stderr=scrap_io, shell=True )
 
-        # execute the cts test suite
-        l_exe = subprocess.Popen( l_command, stdout=l_stdOutLogW, stderr=None, shell=True )
+    # read the intermediate file
+    with open( intermediate_file, "r" ) as l_stdOutLogR:
 
-    # read the newly created temporary file
-    with open( temp_name, "r" ) as l_stdOutLogR:
+        l_buffer = ""
 
         # iterate over all lines
         while True:
 
             # read a line of input
             l_line = l_stdOutLogR.readline()
+            # strip new line characters
+            l_line = l_line.rstrip('\r\n')
+            # append to the buffer
+            l_buffer += l_line
 
-            # if we are at the eof
-            if l_line == "":
+            # while we are dispatching packets
+            l_old_len = 0
+            while l_old_len != len( l_buffer ):
+                l_old_len = len( l_buffer )
+                l_buffer = dispatch_buffer( l_buffer )
+
+            # check if we are at the eof
+            if l_line == '':
                 # check for program exit
                 l_exe.poll()
                 if not l_exe.returncode is None:
                     # done reading
                     break
 
-            # pass this line to the dispatcher
-            else:
-                dispatch_line( l_line )
-
-    # close the file handles
-    if l_stdOutLogW:
-        l_stdOutLogW.close()
+    # close the file handle
     if l_stdOutLogR:
         l_stdOutLogR.close()
 
     # make sure the exe has terminates
     l_exe.wait()
-
-    # delete the temporary file
-    os.remove( temp_name )
+    scrap_io.close()
 
     return True
 
@@ -333,7 +460,6 @@ def list_tests( ):
     if not ( -1 in g_packets ):
         return
     l_list = g_packets[ -1 ]
-
     l_count = find_packet_data( -1, 'list_test_count' )
 
     print l_count[0] + " tests in executable"
@@ -350,14 +476,16 @@ def list_tests( ):
 def parse_args( ):
     global g_binary_path
     global g_csv_path
+    global g_junit_path
     global g_list_tests
 
     parser = argparse.ArgumentParser( description="Khronos SYCL CTS" )
 
-    parser.add_argument( "-b", "--binpath", help="path to the cts executable file" )
+    parser.add_argument( "-b", "--binpath", help="specify path to the cts executable file" )
 
-    parser.add_argument( "--csvpath", help="path to csv file for filtering tests" )
+    parser.add_argument( "--csvpath", help="specify path to csv file for filtering tests" )
     parser.add_argument( "--list", help="list all tests in a test binary", action="store_true" )
+    parser.add_argument( "-j", "--junit", help="specify output path for a junit xml file" )
 
     args = parser.parse_args()
 
@@ -372,6 +500,9 @@ def parse_args( ):
 
     if 'list' in args:
         g_list_tests = args.list
+
+    if 'junit' in args:
+        g_junit_path = args.junit
 
     return True
 
@@ -393,10 +524,14 @@ def main( ):
     if g_list_tests:
         # list all of the tests
         list_tests( )
+        return
 
-    else:
-        # print a summary of the test
-        print_summary( )
+    # print a summary of the test
+    print_summary( )
+
+    if g_junit_path:
+        # print a junit summary
+        write_junit_summary()
 
     return
 

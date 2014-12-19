@@ -15,8 +15,7 @@ import sys
 # global variables
 #
 
-g_binary_map = [{"$TEST_FUNC$" : "atan2",     "$MAX_ULPS$" : "6.0f" }]
-"""
+g_binary_map = [{"$TEST_FUNC$" : "pow",       "$MAX_ULPS$" : "16.0f"},
                 {"$TEST_FUNC$" : "fdim",      "$MAX_ULPS$" : "0.0f" },
                 {"$TEST_FUNC$" : "copysign",  "$MAX_ULPS$" : "0.0f" },
                 {"$TEST_FUNC$" : "atan2pi",   "$MAX_ULPS$" : "6.0f" },
@@ -26,10 +25,9 @@ g_binary_map = [{"$TEST_FUNC$" : "atan2",     "$MAX_ULPS$" : "6.0f" }]
                 {"$TEST_FUNC$" : "hypot",     "$MAX_ULPS$" : "4.0f" },
                 {"$TEST_FUNC$" : "maxmag",    "$MAX_ULPS$" : "0.0f" },
                 {"$TEST_FUNC$" : "minmag",    "$MAX_ULPS$" : "0.0f" },
-                {"$TEST_FUNC$" : "pow",       "$MAX_ULPS$" : "16.0f"},
+                {"$TEST_FUNC$" : "atan2",     "$MAX_ULPS$" : "6.0f" },
                 {"$TEST_FUNC$" : "powr",      "$MAX_ULPS$" : "16.0f"},
                 {"$TEST_FUNC$" : "remainder", "$MAX_ULPS$" : "0.0f" }]
-"""
 
 g_generated_header = \
 """

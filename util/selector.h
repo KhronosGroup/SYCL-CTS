@@ -59,5 +59,5 @@ protected:
     ctsdevice m_device;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

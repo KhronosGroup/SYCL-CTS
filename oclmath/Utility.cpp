@@ -9,6 +9,11 @@
 
 #include "Utility.h"
 
+#if defined( _MSC_VER )
+# pragma warning( push )
+# pragma warning( disable : 4756 ) /* overflow in constant arithmetic                                       */
+#endif
+
 #if defined(__PPC__)
 // Global varaiable used to hold the FPU control register state. The FPSCR register can not
 // be used because not all Power implementations retain or observed the NI (non-IEEE 
@@ -370,3 +375,7 @@ float Ulp_Error( float test, double reference )
     // Scale the exponent of the error
     return (float) scalbn( testVal - reference, ulp_exp );
 }
+
+#if defined( _MSC_VER )
+# pragma warning( pop )
+#endif

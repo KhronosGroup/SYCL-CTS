@@ -64,5 +64,5 @@ protected:
     STRING m_error;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

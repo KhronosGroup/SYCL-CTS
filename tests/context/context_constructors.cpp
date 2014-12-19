@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME context_constructors
 
-namespace sycl_cts
+namespace context_constructors__
 {
+using namespace sycl_cts;
 
 /** check we can construct a SYCL context
  */
@@ -38,7 +37,7 @@ class TEST_NAME : public util::test_base
             cl::sycl::context ctxt;
             cl::sycl::context ctxt_copy( ctxt );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -47,6 +46,6 @@ class TEST_NAME : public util::test_base
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace context_constructors__ */

@@ -45,7 +45,7 @@ public:
     /** called before this test is executed
      *  @param log for emitting test notes and results
      */
-    virtual bool setup( class logger &log )
+    virtual bool setup( class logger & )
     {
         // stub
         return true;
@@ -66,5 +66,5 @@ public:
 
 };  // class test_base
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

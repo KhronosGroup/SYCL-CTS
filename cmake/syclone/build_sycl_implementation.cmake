@@ -28,13 +28,14 @@ function(BUILD_SPIR exe_name spir_target_name source_file output_path)
            ${output_stub}
     COMMAND ${DEVICE_COMPILER}
             ${DEVICE_COMPILER_FLAGS}
-              -O2
             -Wno-ignored-attributes
             -O2
             -sycl
             -emit-llvm
             -D${SPIR32_PREDEFINE}
             -DBUILD_PLATFORM_SPIR
+            -fdiagnostics-format=msvc
+            -intelspirmetadata
             ${PLATFORM_SPECIFIC_ARGS}
             ${device_compiler_includes}
             -o ${output_bc}
@@ -99,7 +100,7 @@ function(BUILD_SYCL_IMPLEMENTATION exe_name test_main test_cases_list destinatio
         foreach(output_stub ${output_stubs_list})
             set(output_stubs_include_string "${output_stubs_include_string} -include ${output_stub}")
         endforeach()
-        set(compile_flags "${output_stub_include_string} ${HOST_COMPILER_FLAGS}")
+        set(compile_flags "${output_stubs_include_string} ${HOST_COMPILER_FLAGS}")
     endif()
     set_target_properties(${exe_name} PROPERTIES COMPILE_FLAGS "${compile_flags}")  
 

@@ -6,16 +6,14 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME accessor_constructors
 
-using namespace cl::sycl;
-
-namespace sycl_cts
+namespace accessor_constructors__
 {
+using namespace sycl_cts;
+using namespace cl::sycl;
 
 /**
  * Class that constructs all the different kinds of accessor
@@ -32,20 +30,15 @@ public:
         // which means we can't use data = { 0 };
         memset( data, 0, sizeof( data ) );
 
-        buffer<T, dims> buf( data, size );
+        buffer<T, dims> buf( data, r );
 
         cl::sycl::command_group( q, [&]()
-                                 {
+        {
             auto acc = buf.template get_access<mode, target>();
 
             accessor<T, dims, mode, target> acc_range( r );
-            range<dims> base( r );
-            range<dims> offset( r );
-            for ( int i = 0; i < dims; ++i )
-            {
-                base[i] /= 4;
-                offset[i] /= 2;
-            }
+            range<dims> base = r / r;
+            range<dims> offset = r - base;
             accessor<T, dims, mode, target> acc_sub( buf, base, offset );
 
         } );
@@ -63,24 +56,9 @@ public:
     void operator()( util::logger &log, queue &q, range<dims> &r )
     {
         cl::sycl::command_group( q, [&]()
-                                 {
-
+        {
             accessor<T, dims, mode, target> acc( r );
-
-            accessor<T, dims, mode, target> acc_size( size );
         } );
-    }
-};
-
-template <typename T, int dims, int size, int mode, int target>
-class accessors_images
-{
-public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
-    {
-
-        cl::sycl::image<dims> img;
-
     }
 };
 
@@ -99,14 +77,6 @@ public:
         hb( log, q, r );
         accessors_local<T, dims, size, mode, access::local> l;
         l( log, q, r );
-        accessors_images<T, dims, size, mode, access::image> i;
-        i( log, q, r );
-        accessors_images<T, dims, size, mode, access::host_image> hi;
-        hi( log, q, r );
-
-        accessors_images<T, mode, access::image_array> a;
-        a( log, q, r );
-
     }
 };
 
@@ -156,12 +126,10 @@ public:
 
         accessors_modes<T, 1, size> acc1d;
         acc1d( log, q, range1d );
-
         accessors_modes<T, 2, size * size> acc2d;
         acc2d( log, q, range2d );
         accessors_modes<T, 3, size * size * size> acc3d;
         acc3d( log, q, range3d );
-
     }
 
     /** execute the test
@@ -179,7 +147,7 @@ public:
             test_accessors<cl::sycl::int2>( log, queue );
             test_accessors<double>( log, queue );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -188,6 +156,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace accessor_constructors__ */

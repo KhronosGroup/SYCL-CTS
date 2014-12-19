@@ -137,5 +137,5 @@ logger::result logger::get_result() const
     return m_result;
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

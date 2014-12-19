@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME queue_api
 
-namespace sycl_cts
+namespace queue_api__
 {
+using namespace sycl_cts;
 
 /**
  */
@@ -87,7 +86,7 @@ public:
             myQueue.wait_and_throw();
             myQueue.throw_asynchronous();
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -96,6 +95,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace kernel_as_functor */

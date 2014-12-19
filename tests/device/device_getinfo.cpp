@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME device_get_info
 
-namespace sycl_cts
+namespace device_getinfo__
 {
+using namespace sycl_cts;
 
 /** test cl::sycl::device initialization
 */
@@ -73,7 +72,7 @@ public:
             info_uint = dev.get_info<CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE>();
             info_long = dev.get_info<CL_DEVICE_GLOBAL_MEM_SIZE>();
 
-            // fpconfig = dev.get_info<CL_DEVICE_HALF_FP_CONFIG>();
+            fpconfig = dev.get_info<CL_DEVICE_HALF_FP_CONFIG>();
             info_bool = dev.get_info<CL_DEVICE_HOST_UNIFIED_MEMORY>();
             info_bool = dev.get_info<CL_DEVICE_IMAGE_SUPPORT>();
             info_size_t = dev.get_info<CL_DEVICE_IMAGE2D_MAX_HEIGHT>();
@@ -139,7 +138,7 @@ public:
             info_str = dev.get_info<CL_DEVICE_VERSION>();
             info_str = dev.get_info<CL_DRIVER_VERSION>();
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -148,6 +147,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace device_getinfo__ */

@@ -22,12 +22,11 @@ namespace util
 void executor::run_all()
 {
     // find the number of tests in the collection
-    const int nTests = get<collection>().get_test_count();
+    const int32_t nTests = get<collection>().get_test_count();
 
     // iterate over all tests
-    for ( int i = 0; i < nTests; i++ )
+    for ( int32_t i = 0; i < nTests; i++ )
     {
-
         // locate a specific test
         collection::test_info &info = get<collection>().get_test( i );
         test_base *test = info.m_test;
@@ -79,5 +78,5 @@ void executor::run_all()
     }
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

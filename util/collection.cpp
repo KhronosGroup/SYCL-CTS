@@ -57,11 +57,12 @@ void collection::add_test( test_base *testobj )
 void collection::release()
 {
     // iterate over all tests in the collection
-    const size_t numTests = m_tests.size();
-    for ( int i = 0; i < numTests; i++ )
+    const int32_t numTests = int32_t( m_tests.size() );
+
+    for ( int32_t i = 0; i < numTests; i++ )
     {
         // locate a specific test
-        test_info &test = m_tests[i];
+        test_info &test = m_tests.at( size_t( i ) );
 
         assert( test.m_test != nullptr );
 
@@ -79,16 +80,16 @@ void collection::release()
 void collection::list()
 {
     // iterate over all tests in the collection
-    const size_t numTests = m_tests.size();
+    const int32_t numTests = int32_t( m_tests.size() );
 
     // output test count
     get<printer>().write( -1, printer::epacket::list_test_count, numTests );
 
     // iterate over all of the contained tests
-    for ( int i = 0; i < numTests; i++ )
+    for ( int32_t i = 0; i < numTests; i++ )
     {
         // locate a specific test
-        test_info &test = m_tests[i];
+        test_info &test = m_tests.at( size_t( i ) );
 
         assert( test.m_test != nullptr );
 
@@ -102,24 +103,23 @@ void collection::list()
 
 /** get the total number of tests in this collection
  */
-int collection::get_test_count() const
+int32_t collection::get_test_count() const
 {
-    size_t size = m_tests.size();
-    return (int)size;
+    return int32_t( m_tests.size() );
 }
 
 /** return a specific test
  */
-collection::test_info &collection::get_test( int index )
+collection::test_info &collection::get_test( int32_t index )
 {
     // get the number of tests in the collection
-    size_t nTests = m_tests.size();
+    int32_t nTests = int32_t( m_tests.size() );
 
     // check that index is in range
     assert( index >= 0 && index < nTests );
 
     // grab the test info structure
-    test_info &test = m_tests[index];
+    test_info &test = m_tests.at( size_t( index ) );
 
     // check that test is really valid
     assert( test.m_test != nullptr );
@@ -154,13 +154,13 @@ static inline bool partial_strcmp( const STRING &a, const STRING &b )
 
 /** set the skip status of a test by name
  */
-void collection::set_test_skip( const STRING &testName, bool skip )
+void collection::set_test_skip( const STRING &testName, bool )
 {
     // TODO: since all tests are in alphabetic order this could be optimized
     //       yet the linear search here is likely not a hot spot
-    for ( int i = 0; i < m_tests.size(); i++ )
+    for ( int32_t i = 0; i < int32_t( m_tests.size() ); i++ )
     {
-        test_info &info = m_tests[i];
+        test_info &info = m_tests.at( size_t( i ) );
         sycl_cts::util::test_base::info testInfo;
         info.m_test->get_info( testInfo );
 
@@ -187,14 +187,14 @@ bool collection::filter_tests_csv( const STRING &csvPath )
     }
 
     // pre-pass sets all tests to be skipped
-    for ( int i = 0; i < m_tests.size(); i++ )
+    for ( int32_t i = 0; i < int32_t( m_tests.size() ); i++ )
     {
-        test_info &info = m_tests[i];
+        test_info &info = m_tests.at( size_t( i ) );
         info.m_skip = true;
     }
 
     // loop over all rows in the CSV file
-    for ( int r = 0; r < csvFile.size(); r++ )
+    for ( int32_t r = 0; r < csvFile.size(); r++ )
     {
         // first column is test name
         STRING csvName;
@@ -219,9 +219,9 @@ bool collection::filter_tests_name( const STRING &name )
     // todo: extend to take a comma separated list of names
 
     // pre-pass sets all tests to be skipped
-    for ( int i = 0; i < m_tests.size(); i++ )
+    for ( int32_t i = 0; i < int32_t( m_tests.size() ); i++ )
     {
-        test_info &info = m_tests[i];
+        test_info &info = m_tests.at( size_t( i ) );
         info.m_skip = true;
     }
 
@@ -262,5 +262,5 @@ void collection::prepare()
     std::sort( m_tests.begin(), m_tests.end(), test_order_func );
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

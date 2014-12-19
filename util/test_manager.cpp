@@ -88,6 +88,19 @@ bool test_manager::parse( const int argc, const char **args )
     if ( cmdarg.find_key( "--json" ) || cmdarg.find_key( "-j" ) )
         printer.set_format( sycl_cts::util::printer::ejson );
 
+    // redirect all output to a file
+    std::string filePath;
+    if ( cmdarg.get_value( "--file", filePath ) )
+    {
+        if (! printer.set_file_channel( filePath.c_str( ) ) )
+        {
+            std::cout << "unable to create output file!" << std::endl;;
+            return false;
+        }
+        else
+            std::cout << "writing output to: \'" << filePath << "\'" << std::endl;;
+    }
+
     // list all of the tests in this binary
     if ( cmdarg.find_key( "--list" ) || cmdarg.find_key( "-l" ) )
     {
@@ -102,7 +115,7 @@ bool test_manager::parse( const int argc, const char **args )
         // forward the csv file on to the collection for filtering
         if ( !collection.filter_tests_csv( csvfile ) )
         {
-            puts( "unable to load csv file" );
+            std::cout << "unable to load csv file" << std::endl;;
             return false;
         }
     }
@@ -153,16 +166,16 @@ Usage:
     --csv    -c      CSV file for specifying tests to run
     --list   -l      List the tests compiled in this executable
     --wimpy  -w      Run with reduced test complexity (faster)
-
     --device [name]  Select a device to target:
             'host'
             'opencl_cpu'
             'opencl_gpu'
     --test [name]   Specify a specific test to run by name, eg:
             '--test unary_math_sin'
+    --file [path]   Redirect test output to a file
 
 )";
-    puts( usage );
+    std::cout << usage << std::endl;
 }
 
 /**
@@ -179,5 +192,5 @@ bool test_manager::wimpy_mode_enabled() const
     return m_wimpyMode;
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -6,14 +6,14 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME opencl_interop_buffer
 
-namespace sycl_cts
+namespace opencl_interop_buffer__
 {
+using namespace sycl_cts;
+
 /** Test for the SYCL buffer OpenCL interoperation
     */
 class TEST_NAME : public sycl_cts::util::test_base_opencl
@@ -55,7 +55,7 @@ public:
             if ( !CHECK_CL_SUCCESS( log, error ) )
                 return;
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -64,6 +64,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace opencl_interop_buffer__ */

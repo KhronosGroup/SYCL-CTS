@@ -27,5 +27,5 @@ public:
     bool check_cl_success( logger &log, const cl_int clError, const int line );
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -55,5 +55,5 @@ protected:
     bool m_wimpyMode;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

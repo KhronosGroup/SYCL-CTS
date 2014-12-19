@@ -6,15 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME context_api
 
-// conformance test suite namespace
-namespace sycl_cts
+namespace context_api__
 {
+using namespace sycl_cts;
 
 /**
  */
@@ -50,7 +48,7 @@ public:
                       "cl::sycl::context::is_host() does not "
                       "return bool" );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -59,6 +57,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace context_api */

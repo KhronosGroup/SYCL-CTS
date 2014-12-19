@@ -34,6 +34,8 @@ public:
     {
     }
 
+protected:
+
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
@@ -81,14 +83,37 @@ public:
         return m_cl_command_queue;
     }
 
-protected:
+    /** create an opencl program
+     */
+    bool create_program
+    (
+        const STRING & source     ,
+        cl_program   & outProgram,
+        logger       & log
+    );
+
+    /** create and opencl kernel
+     */
+    bool create_kernel
+    (
+        const cl_program & clProgram,
+        const STRING     & name     ,
+        cl_kernel        & outKernel,
+        logger           & log
+    );
+
+
     /* instances of open cl objects */
-    cl_platform_id m_cl_platform_id;
-    cl_device_id m_cl_device;
-    cl_context m_cl_context;
+    cl_platform_id   m_cl_platform_id;
+    cl_device_id     m_cl_device;
+    cl_context       m_cl_context;
     cl_command_queue m_cl_command_queue;
+
+    /*  */
+    VECTOR<cl_kernel>  m_openKernels;
+    VECTOR<cl_program> m_openPrograms;
 
 };  // class test_base
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

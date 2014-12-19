@@ -6,16 +6,16 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME device_api
 
-namespace sycl_cts
+namespace device_api__
 {
+using namespace sycl_cts;
 
-/** test cl::sycl::device::is_host() return type
+/**
+ * Test for the device class API
  */
 class TEST_NAME : public util::test_base
 {
@@ -88,7 +88,7 @@ public:
                       "return VECTOR_CLASS<cl::sycl::device>" );
             }
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -97,6 +97,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace device_api__ */

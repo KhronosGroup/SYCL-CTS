@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME device_constructors
 
-namespace sycl_cts
+namespace device_constructors__
 {
+using namespace sycl_cts;
 
 /** test cl::sycl::device initialization
  */
@@ -43,7 +42,7 @@ public:
 
             cl::sycl::device device_c( device );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -52,6 +51,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace device_constructors__ */

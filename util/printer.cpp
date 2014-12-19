@@ -54,6 +54,93 @@ public:
     }
 };
 
+/** file output channel
+ */
+class file_channel : public printer::channel
+{
+    MUTEX m_outputMutex;
+    FILE *m_file;
+
+public:
+
+    file_channel( )
+        : m_outputMutex()
+        , m_file( nullptr )
+    {
+    }
+
+    ~file_channel( )
+    {
+        close( );
+    }
+
+    bool open( const char * path )
+    {
+        LOCK_GUARD<MUTEX> lock( m_outputMutex );
+        if ( m_file != nullptr )
+            fclose( m_file );
+        m_file = nullptr;
+        m_file = fopen( path, "wb" );
+        return m_file != nullptr;
+    }
+
+    void close( )
+    {
+        if ( m_file != nullptr )
+        {
+            LOCK_GUARD<MUTEX> lock( m_outputMutex );
+            fflush( m_file );
+            fclose( m_file );
+            m_file = nullptr;
+        }
+    }
+
+    STRING sanitize( const STRING & in )
+    {
+        STRING t = STRING( in );
+        for ( uint32_t i = 0; i < t.length( ); i++ )
+        {
+            char & ch = t[i];
+            if ( ch < 0x20 || ch >= 0x7f )
+                ch = '.';
+        }
+        return t;
+    }
+
+    virtual void write( const STRING &msg )
+    {
+        STRING t = sanitize( msg );
+        if ( t.empty( ) || m_file == nullptr )
+            return;
+        else
+        {
+            LOCK_GUARD<MUTEX> lock( m_outputMutex );
+            fputs( t.c_str(), m_file );
+            fflush( m_file );
+        }
+    }
+
+    virtual void writeln( const STRING &msg )
+    {
+        STRING t = sanitize( msg );
+        if ( t.empty( ) || m_file == nullptr )
+            return;
+        else
+        {
+            LOCK_GUARD<MUTEX> lock( m_outputMutex );
+            fputs( t.c_str(), m_file );
+            fputs( "\n", m_file );
+            fflush( m_file );
+        }
+    }
+
+    virtual void flush()
+    {
+        if ( m_file != nullptr )
+            fflush( m_file );
+    }
+};
+
 /** JSON printer
  */
 class json_formatter : public printer::formatter
@@ -80,7 +167,7 @@ public:
 class text_formatter : public printer::formatter
 {
 public:
-    virtual void write( printer::channel &out, int32_t id, printer::epacket packet, const STRING &data )
+    virtual void write( printer::channel &out, int32_t, printer::epacket packet, const STRING &data )
     {
         switch ( packet )
         {
@@ -144,6 +231,7 @@ public:
 namespace
 {
 stdout_channel gStdoutChannel;
+file_channel   gFileChannel;
 json_formatter gJsonFormat;
 text_formatter gTextFormat;
 };
@@ -187,6 +275,16 @@ void printer::set_format( printer::eformat fmt )
     default:
         assert( !"Unknown printer format" );
     }
+}
+
+/** redirect the printer to write to a file
+ */
+bool printer::set_file_channel( const char *path )
+{
+    if ( !gFileChannel.open( path ) )
+        return false;
+    m_channel = &gFileChannel;
+    return true;
 }
 
 /** write a packet using the set formatter and channel
@@ -243,5 +341,5 @@ void printer::finish()
         m_channel->flush();
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -8,23 +8,25 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
+#include "sycl.h"
+#include "../../util/opencl_helper.h"
 
 #define TEST_FILE __FILE__
 #define TEST_BUILD_DATE __DATE__
 #define TEST_BUILD_TIME __TIME__
-
-#include "../../util/opencl_helper.h"
 
 /** convert a parameter to a string
  */
 #define TOSTRING( X ) STRINGIFY( X )
 #define STRINGIFY( X ) #X
 
+namespace
+{
+
 /** helper function used to construct a typical test info
  *  structure
  */
-static void set_test_info( sycl_cts::util::test_base::info &out, const char *name, const char *file )
+void set_test_info( sycl_cts::util::test_base::info &out, const char *name, const char *file )
 {
     out.m_name = name;
     out.m_file = file;
@@ -35,7 +37,7 @@ static void set_test_info( sycl_cts::util::test_base::info &out, const char *nam
 /**
  *
  */
-static void log_exception( sycl_cts::util::logger &log, cl::sycl::sycl_error &e )
+void log_exception( sycl_cts::util::logger &log, cl::sycl::exception &e )
 {
     // notify that an exception was thrown
     log.note( "sycl exception caught" );
@@ -60,9 +62,15 @@ static void log_exception( sycl_cts::util::logger &log, cl::sycl::sycl_error &e 
 #endif
 }
 
-/* helper function for test failure cases
- */
-static bool fail_proxy( sycl_cts::util::logger &log, const char *msg, int line )
+/* helper function for test failure cases */
+bool fail_proxy( sycl_cts::util::logger &log, const char *msg, int line )
+{
+    log.fail( msg, line );
+    return false;
+}
+
+/* helper function for test failure cases */
+bool fail_proxy( sycl_cts::util::logger &log, const sycl_cts::util::STRING & msg, int line )
 {
     log.fail( msg, line );
     return false;
@@ -72,7 +80,7 @@ static bool fail_proxy( sycl_cts::util::logger &log, const char *msg, int line )
 #define FAIL( LOG, MSG ) ( fail_proxy( LOG, MSG, __LINE__ ) )
 
 /* proxy to the check_cl_success function */
-static bool check_cl_success_proxy( sycl_cts::util::logger &log, int error, int line )
+bool check_cl_success_proxy( sycl_cts::util::logger &log, int error, int line )
 {
     using sycl_cts::util::get;
     using sycl_cts::util::opencl_helper;
@@ -81,3 +89,28 @@ static bool check_cl_success_proxy( sycl_cts::util::logger &log, int error, int 
 
 /*  */
 #define CHECK_CL_SUCCESS( LOG, ERROR ) check_cl_success_proxy( LOG, ERROR, __LINE__ )
+
+/* macro to check if provided value is equal to expected value */
+template<typename T>
+bool check_value_proxy( sycl_cts::util::logger &log, T got, T expected, int element, int line )
+{
+    if ( got != expected )
+    {
+        sycl_cts::util::STRING msg = 
+            "Expected "    + std::to_string( expected ) + 
+            " but got "    + std::to_string( got ) + 
+            " at element " + std::to_string( element  );
+        fail_proxy( log, msg.c_str(), line );
+        /* values are different */
+        return false;
+    }
+    /* values are equal */
+    return true;
+}
+
+#define CHECK_VALUE( LOG, GOT, EXPECTED, INDEX ) check_value_proxy( LOG, GOT, EXPECTED, INDEX, __LINE__ )
+
+/* macro to silence unused variables warnings */
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
+} /* namespace {} */

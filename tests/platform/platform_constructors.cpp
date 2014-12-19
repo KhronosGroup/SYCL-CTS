@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME platform_constructors
 
-namespace sycl_cts
+namespace platform_constructors__
 {
+using namespace sycl_cts;
 
 /** check that we can instantiate a sycl platform class
  */
@@ -42,7 +41,7 @@ public:
 
             cl::sycl::platform p_copy( p );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log,
@@ -53,6 +52,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace platform_constructors__ */

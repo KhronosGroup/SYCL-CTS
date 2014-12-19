@@ -63,11 +63,11 @@ public:
 
     /** get the total number of tests in this collection
      */
-    int get_test_count() const;
+    int32_t get_test_count() const;
 
     /** return a specific test
      */
-    test_info &get_test( int index );
+    test_info &get_test( int32_t index );
 
     /** prepare the list of tests for execution
      */
@@ -82,5 +82,5 @@ protected:
     VECTOR<test_info> m_tests;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

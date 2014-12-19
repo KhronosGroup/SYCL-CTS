@@ -38,7 +38,7 @@ public:
 
     /** return the number of csv rows (lines)
      */
-    int size();
+    int32_t size();
 
     /** return the last error message set
      */
@@ -46,7 +46,7 @@ public:
 
     /** extract a csv value
      */
-    bool get_item( int row, int column, STRING &out );
+    bool get_item( int32_t row, int32_t column, STRING &out );
 
 protected:
     // the last error message set
@@ -59,5 +59,5 @@ protected:
     VECTOR<int> m_rowIndex;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

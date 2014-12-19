@@ -6,15 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME context_getinfo
 
-// conformance test suite namespace
-namespace sycl_cts
+namespace contect_getinfo__
 {
+using namespace sycl_cts;
 
 /**
 */
@@ -40,17 +38,23 @@ public:
             cl::sycl::context context( selector );
 
             cl_uint info_uint;
-            cl_bool info_bool;
-
-            VECTOR_CLASS<cl_device_id> ctext_devices;
-            VECTOR_CLASS<cl_context_properties> ctext_properties;
-
             info_uint = context.get_info<CL_CONTEXT_REFERENCE_COUNT>();
             info_uint = context.get_info<CL_CONTEXT_NUM_DEVICES>();
+            UNUSED(info_uint);
+
+            VECTOR_CLASS<cl_device_id> ctext_devices;
             ctext_devices = context.get_info<CL_CONTEXT_DEVICES>();
+            
+            VECTOR_CLASS<cl_context_properties> ctext_properties;
             ctext_properties = context.get_info<CL_CONTEXT_PROPERTIES>();
+
+            cl_bool info_bool;
+            info_bool = context.get_info
+                <CL_CONTEXT_D3D10_PREFER_SHARED_RESOURCES_KHR>();
+            info_bool = context.get_info
+                <CL_CONTEXT_D3D11_PREFER_SHARED_RESOURCES_KHR>();
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -59,6 +63,6 @@ public:
 };
 
 // construction of this proxy will register the above test
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace context_getinfo__ */

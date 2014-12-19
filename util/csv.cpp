@@ -45,12 +45,12 @@ bool csv::load_file( const STRING &path )
     m_rowIndex.push_back( 0 );
 
     // make a buffer to pull together each entry
-    int index = 0;
+    int32_t index = 0;
     char buffer[64];
 
     // parse all characters in the input file
     char ch = '\0';
-    while ( true )
+    for ( ;; )
     {
         // read a character from the stream
         stream.read( &ch, sizeof( ch ) );
@@ -74,7 +74,7 @@ bool csv::load_file( const STRING &path )
             index = 0;
 
             // index of next item marks start of new row
-            int items = m_items.size();
+            int32_t items = int32_t( m_items.size() );
             m_rowIndex.push_back( items );
         }
         break;
@@ -93,7 +93,7 @@ bool csv::load_file( const STRING &path )
         // add new character to the buffer
         default:
             // check for buffer overflow
-            if ( index >= ( sizeof( buffer ) - 1 ) )
+            if ( index >= int32_t( sizeof( buffer ) - 1u ) )
             {
                 m_error = "value exceeds buffer length";
                 return false;
@@ -126,24 +126,26 @@ void csv::release()
 
 /**
  */
-bool csv::get_item( int row, int column, STRING &out )
+bool csv::get_item( int32_t row, int32_t column, STRING &out )
 {
-    out = STRING();
+    out = STRING("");
+    const int32_t nRowIndices = int32_t( m_rowIndex.size( ) );
+    const int32_t nItems = int32_t( m_items.size( ) );
 
     // test if row is valid
-    if ( row < 0 || row >= m_rowIndex.size() )
+    if ( row < 0 || row >= nRowIndices )
     {
         m_error = "row index out of bounds";
         return false;
     }
 
     // find the location of the requested element
-    int index = m_rowIndex[row] + column;
+    int32_t index = m_rowIndex.at( size_t( row ) ) + column;
 
     // find the index of the end of this row
-    int limit = m_items.size() - 1;
-    if ( ( row + 1 ) < m_rowIndex.size() )
-        limit = ( m_rowIndex[row + 1] - 1 );
+    int32_t limit = nItems - 1;
+    if ( ( row + 1 ) < nRowIndices )
+        limit = m_rowIndex.at( size_t( row + 1 ) ) - 1;
 
     // test the index doesn't pass end of the row
     if ( index < 0 || index > limit )
@@ -153,8 +155,8 @@ bool csv::get_item( int row, int column, STRING &out )
     }
 
     // output the item asked for
-    assert( index < m_items.size() );
-    out = m_items[index];
+    assert( index < nItems && index >= 0 );
+    out = m_items.at( size_t( index ) );
 
     // success
     return true;
@@ -162,9 +164,9 @@ bool csv::get_item( int row, int column, STRING &out )
 
 /** return the number of csv rows (line)
  */
-int csv::size()
+int32_t csv::size()
 {
-    return m_rowIndex.size();
+    return int32_t( m_rowIndex.size() );
 }
 
 /** return the last error message set by a csv object
@@ -175,5 +177,5 @@ bool csv::get_last_error( STRING &out )
     return !m_error.empty();
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -72,5 +72,5 @@ static inline T &get()
     return T::instance();
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

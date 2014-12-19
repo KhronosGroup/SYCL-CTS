@@ -102,5 +102,5 @@ protected:
 
 };  // class logger
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

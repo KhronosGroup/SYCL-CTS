@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME platform_getinfo
 
-namespace sycl_cts
+namespace platform_getinfo__
 {
+using namespace sycl_cts;
 
 /** check that we can instantiate a sycl platform class
  */
@@ -44,7 +43,7 @@ public:
             platform_info = plat.get_info<CL_PLATFORM_VENDOR>();
             platform_info = plat.get_info<CL_PLATFORM_NAME>();
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -53,6 +52,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace platform_getinfo__ */

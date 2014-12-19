@@ -106,11 +106,11 @@ bool cmdarg::get_last_error( STRING &out ) const
 bool cmdarg::find_key( const STRING &key ) const
 {
     // number of pairs that have been parsed
-    size_t nPairs = m_pairs.size();
+    int32_t nPairs = int32_t( m_pairs.size() );
 
-    for ( int i = 0; i < nPairs; i++ )
+    for ( int32_t i = 0; i < nPairs; i++ )
     {
-        const pair &kvp = m_pairs[i];
+        const pair &kvp = m_pairs.at( size_t( i ) );
 
         // check if we can match the key
         if ( kvp.key == key )
@@ -129,11 +129,11 @@ bool cmdarg::find_key( const STRING &key ) const
 bool cmdarg::get_value( const STRING &key, STRING &value ) const
 {
     // number of pairs that have been parsed
-    size_t nPairs = m_pairs.size();
+    int32_t nPairs = int32_t( m_pairs.size() );
 
-    for ( int i = 0; i < nPairs; i++ )
+    for ( int32_t i = 0; i < nPairs; i++ )
     {
-        const pair &kvp = m_pairs[i];
+        const pair &kvp = m_pairs.at( size_t( i ) );
 
         // check if we can match the key
         if ( kvp.key == key )
@@ -148,5 +148,5 @@ bool cmdarg::get_value( const STRING &key, STRING &value ) const
     return false;
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

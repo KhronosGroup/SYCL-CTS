@@ -54,7 +54,7 @@ public:
     class channel
     {
     public:
-        virtual ~channel(){};
+        virtual ~channel(){}
 
         /* output string over channel */
         virtual void write( const STRING &msg ) = 0;
@@ -99,6 +99,10 @@ public:
      */
     void set_format( eformat fmt );
 
+    /** redirect the printer to write to a file
+     */
+    bool set_file_channel( const char *m_path );
+
     /** write a packet to the printer
      */
     void write( int32_t id, epacket packet, STRING data );
@@ -128,5 +132,5 @@ protected:
     channel *m_channel;
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

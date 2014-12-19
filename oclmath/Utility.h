@@ -22,6 +22,9 @@
 #include "rounding_mode.h"
 #include "fpcontrol.h"
 
+#if defined( UNUSED )
+    #undef UNUSED
+#endif
 #if defined( __GNUC__ )
     #define UNUSED  __attribute__ ((unused))
 #else   

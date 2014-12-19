@@ -6,6 +6,15 @@
 //
 ******************************************************************/
 
+#if defined( _MSC_VER )
+# pragma warning( push )
+# pragma warning( disable : 4056 ) /* overflow in floating-point constant arithmetic                        */
+# pragma warning( disable : 4101 ) /* unreferenced local variable                                           */
+# pragma warning( disable : 4146 ) /* unary minus operator applied to unsigned type, result still unsigned  */
+# pragma warning( disable : 4244 ) /* conversion from 'double' to 'float', possible loss of data            */
+# pragma warning( disable : 4723 ) /* potential divide by 0                                                 */
+# pragma warning( disable : 4756 ) /* overflow in constant arithmetic                                       */
+#endif
 
 //
 //  Todo
@@ -5511,4 +5520,6 @@ int reference_notl( long double x )
     return r;
 }
 
-
+#if defined( _MSC_VER )
+# pragma warning( pop )
+#endif

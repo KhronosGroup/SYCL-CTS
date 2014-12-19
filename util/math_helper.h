@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
+#include "../tests/common/sycl.h"
 #include "./../oclmath/mt19937.h"
 
+namespace sycl_cts
+{
 /** math utility functions
  */
 namespace math
@@ -68,4 +70,9 @@ void rand( MTdata &rng, float4 *buf, int num );
 void rand( MTdata &rng, float8 *buf, int num );
 void rand( MTdata &rng, float16 *buf, int num );
 
-} /* namespace math */
+/* generate a stream of random integer data
+ */
+void rand( MTdata &rng, uint8_t *buf, int size );
+
+} /* namespace math     */
+} /* namespace sycl_cts */

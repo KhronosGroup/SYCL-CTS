@@ -40,7 +40,7 @@
         - point the source directory to the root of the sycl-cts folder
 		- select makefiles project
         - set the build directory to a 'build' folder inside the sycl-cts folder
-        - set the CMake parameters.
+		- set the CMake parameters specific to your sycl implementation.
 
     - Run make inside the build folder
 
@@ -58,7 +58,7 @@
 		- point the source directory to the root of the sycl-cts folder
 		- select 64bit visual studio 2013 generator
 		- set the build directory to a 'build' folder inside the sycl-cts folder
-		- set the CMake parameters.
+		- set the CMake parameters specific to your sycl implementation.
 
     - Open the generated solution in visual studio 2013 and rebuild all
 
@@ -85,6 +85,7 @@
           -c CSVPATH, --csvpath CSVPATH
                                 path to csv file for filtering tests
           --list                list all tests in a test binary
+          -j JUNITPATH, --junit output path for generated junit file
 
  
     The '--binpath' argument is mandatory and must point to one of the CTS
@@ -109,6 +110,9 @@
           . context_api
           . context_constructors
           . context_getinfo
+    
+    Passing the '--junit' option will output test results in junit format
+    when the test suit has finished executing.
     
     The following command will start a typical test run:
 

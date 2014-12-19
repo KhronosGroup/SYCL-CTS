@@ -26,5 +26,5 @@ public:
     void run_all();
 };
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

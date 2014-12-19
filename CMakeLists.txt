@@ -11,15 +11,16 @@ project(sycl_cts)
 # set host compiler flags
 if(WIN32)
 # need c++ exception handling
-    set(HOST_COMPILER_FLAGS "/EHsc")
+#   set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} /EHsc")
+    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS}")
 elseif(APPLE)
 # need c++11
-    set(HOST_COMPILER_FLAGS "-std=c++0x")
+    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} -std=c++0x")
 else(WIN32)
 # need c++11
-    set(HOST_COMPILER_FLAGS "-std=c++0x")
+    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} -std=c++0x -Wall -Wno-unused-variable -Wno-reorder -Wno-unneeded-internal-declaration")
 endif(WIN32)
-set(CMAKE_CXX_FLAGS ${HOST_COMPILER_FLAGS})
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${HOST_COMPILER_FLAGS})
 # ------------------
 
 include(cmake/build_sycl.cmake)

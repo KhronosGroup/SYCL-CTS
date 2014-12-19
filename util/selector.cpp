@@ -59,5 +59,5 @@ selector::ctsdevice selector::get_default()
     return m_device;
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -6,7 +6,7 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
+#include "../common/common.h"
 
 #include "./../../util/stl.h"
 #include "./../../util/math_helper.h"
@@ -14,23 +14,20 @@
 #include "./../../oclmath/reference_math.h"
 #include "./../../oclmath/Utility.h"
 
-#include "../common/common.h"
-
-using namespace cl::sycl;
-
 /** test specifiers
  */
-#define TEST_NAME math_unary_$TEST_FUNC$
-#define WIMPY_MODE 1
-#define MAX_ULPS $MAX_ULPS$
-#define TEST_FUNC $TEST_FUNC$
-#define REF_FUNC reference_$TEST_FUNC$
+#define TEST_NAME   math_unary_$TEST_FUNC$
+#define WIMPY_MODE  1
+#define MAX_ULPS    $MAX_ULPS$
+#define TEST_FUNC   $TEST_FUNC$
+#define REF_FUNC    reference_$TEST_FUNC$
 #define KERNEL_NAME cKernel_$TEST_FUNC$
+#define NAMESPACE   math_unary_$TEST_FUNC$__
 
-/**
- */
-namespace sycl_cts
+namespace NAMESPACE
 {
+using namespace sycl_cts;
+using namespace cl::sycl;
 
 /** kernel functor
  */
@@ -41,7 +38,7 @@ public:
     typedef accessor<T, 1, access::read, access::global_buffer> t_read;
     typedef accessor<T, 1, access::write, access::global_buffer> t_write;
 
-    t_read m_in;
+    t_read  m_in;
     t_write m_out;
 
     KERNEL_NAME( t_read r_, t_write w_ )
@@ -50,12 +47,11 @@ public:
     {
     }
 
-    void operator()( item item )
+    void operator()( item<1> item )
     {
         auto in = m_in[item.get_global()];
         auto &out = m_out[item.get_global()];
-
-        out = cl::sycl::TEST_FUNC( in );
+        out = cl::sycl::$TEST_FUNC$( in );
     }
 };
 
@@ -83,8 +79,8 @@ protected:
     static const uint32_t nSubBuffers = 16;
 
     /* data buffer */
-    util::UNIQUE_PTR<T> m_input;
-    util::UNIQUE_PTR<T> m_output;
+    util::UNIQUE_PTR<T[]> m_input;
+    util::UNIQUE_PTR<T[]> m_output;
 
     /* record the max ULP error */
     float m_max_ulp;
@@ -120,7 +116,7 @@ public:
             math::fill( m_input.get()[i], l_val );
 
             /* clear output buffer */
-            math::fill( m_output.get()[i], 0xF8888888 );
+            math::fill( m_output.get()[i], math::int_to_float( 0xF8888888 ) );
         }
     }
 
@@ -146,11 +142,11 @@ public:
                 auto kern = KERNEL_NAME<T>( ptrIn, ptrOut );
 
                 /* execute the kernel */
-                parallel_for( nd_range<>( range<>( chunkSize ), range<>( chunkSize / 8 ) ), kern );
+                parallel_for( nd_range<1>( range<1>( chunkSize ), range<1>( chunkSize / 8 ) ), kern );
 
             } );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "" );
@@ -197,7 +193,7 @@ public:
             /* iterate over vector type */
             for ( int j = 0; j < math::numElements( xv ); j++ )
             {
-                float x = math::getElement( xv, j );
+                float x   = math::getElement( xv, j );
                 float res = math::getElement( ov, j );
 
                 if ( !verify( log, res, x ) )
@@ -297,7 +293,7 @@ public:
             for ( int j = 0; j < nItts; j++ )
             {
                 /* send progress report */
-                log.progress( j, nItts );
+                log.progress( j, int( nItts ) );
 
                 /* generate a buffer of x values */
                 generate( log, j );
@@ -318,12 +314,12 @@ public:
             }
 
             /* send 100% progress report */
-            log.progress( nItts, nItts );
+            log.progress( int( nItts ), int( nItts ) );
 
             /* record the max ulps */
             log.note( "max_ulp = %8.2f", m_max_ulp );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             FAIL( log, "big fail" );
         }
@@ -332,7 +328,7 @@ public:
     /** release all test resources
      *
      */
-    virtual void cleanup( util::logger &log )
+    virtual void cleanup( )
     {
         m_input.reset( nullptr );
         m_output.reset( nullptr );
@@ -340,11 +336,11 @@ public:
 };
 
 /* register this test with the test_collection */
-static util::test_proxy<TEST_NAME<float  >> proxy1;
-static util::test_proxy<TEST_NAME<float2 >> proxy2;
-static util::test_proxy<TEST_NAME<float3 >> proxy3;
-static util::test_proxy<TEST_NAME<float4 >> proxy4;
-static util::test_proxy<TEST_NAME<float8 >> proxy5;
-static util::test_proxy<TEST_NAME<float16>> proxy6;
+util::test_proxy<TEST_NAME<float  >> proxy1;
+util::test_proxy<TEST_NAME<float2 >> proxy2;
+util::test_proxy<TEST_NAME<float3 >> proxy3;
+util::test_proxy<TEST_NAME<float4 >> proxy4;
+util::test_proxy<TEST_NAME<float8 >> proxy5;
+util::test_proxy<TEST_NAME<float16>> proxy6;
 
-};  // sycl_cts
+} /* namespace NAMESPACE */

@@ -34,6 +34,9 @@
 // std::atomic_uint
 #include <atomic>
 
+// memcpy
+#include <cstring>
+
 namespace sycl_cts
 {
 namespace util
@@ -70,5 +73,5 @@ using IFSTREAM = std::ifstream;
  */
 using ATOMIC_INT = std::atomic_int;
 
-};  // util
-};  // sycl_cts
+}  // util
+}  // sycl_cts

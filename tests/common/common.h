@@ -8,6 +8,9 @@
 
 #pragma once
 
+// include our proxy to the real sycl header
+#include "sycl.h"
+
 // test framework specific device selector
 #include "../common/cts_selector.h"
 #include "../../util/proxy.h"

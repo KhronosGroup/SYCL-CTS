@@ -24,6 +24,8 @@ test_base_opencl::test_base_opencl()
     , m_cl_device( nullptr )
     , m_cl_context( nullptr )
     , m_cl_command_queue( nullptr )
+    , m_openKernels( )
+    , m_openPrograms( )
 {
 }
 
@@ -102,14 +104,76 @@ bool test_base_opencl::setup( logger &log )
     return true;
 }
 
+/**
+ *
+ */
+bool test_base_opencl::create_program
+( 
+    const STRING & source     , 
+    cl_program   & out_program,
+    logger       & log
+)
+{
+    assert( !source.empty( ) );
+
+
+    const char *source_c    = source.c_str();
+    const size_t sourceSize = source.length();
+    assert( source_c != nullptr );
+    
+    cl_int error = CL_SUCCESS;
+    out_program = clCreateProgramWithSource
+        ( m_cl_context, 1, &source_c, &sourceSize, &error );
+    if ( !CHECK_CL_SUCCESS( log, error ) )
+        return false;
+    error = clBuildProgram(out_program, 1, &m_cl_device, nullptr, nullptr, nullptr );
+    if ( !CHECK_CL_SUCCESS( log, error ) )
+        return false;
+    
+    m_openPrograms.push_back( out_program );
+    return true;
+}
+
+/**
+ */
+bool test_base_opencl::create_kernel
+(
+    const cl_program & clProgram ,
+    const STRING     & name      ,
+    cl_kernel        & out_kernel,
+    logger           & log
+)
+{
+    assert( clProgram != nullptr );
+    assert(! name.empty( ) );
+
+    cl_int error = CL_SUCCESS;
+    out_kernel = clCreateKernel( clProgram, name.c_str(), &error );
+    if ( !CHECK_CL_SUCCESS( log, error ) )
+        return false;
+
+    assert(out_kernel);
+
+    m_openKernels.push_back( out_kernel );
+    return true;
+}
+
 /** called after this test has executed
- *  @param log for emitting test notes and results
  */
 void test_base_opencl::cleanup()
 {
     clReleaseCommandQueue( m_cl_command_queue );
     clReleaseContext( m_cl_context );
+
+    size_t i = 0;
+    for ( i = 0; i < m_openKernels.size( ); i++ )
+        clReleaseKernel( m_openKernels[i] );
+    m_openKernels.clear( );
+
+    for ( i = 0; i < m_openPrograms.size( ); i++ )
+        clReleaseProgram( m_openPrograms[i] );
+    m_openPrograms.clear( );
 }
 
-};  // namespace util
-};  // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

@@ -6,7 +6,7 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
+#include "../common/common.h"
 
 #include "./../../util/stl.h"
 #include "./../../util/math_helper.h"
@@ -15,25 +15,25 @@
 #include "./../../oclmath/Utility.h"
 #include "./../../oclmath/mt19937.h"
 
-#include "../common/common.h"
-
-using namespace cl::sycl;
-
 /** test specifiers
  */
-#define TEST_NAME math_binary_$TEST_FUNC$
-#define WIMPY_MODE 1
-#define MAX_ULPS $MAX_ULPS$
-#define TEST_FUNC $TEST_FUNC$
-#define REF_FUNC reference_$TEST_FUNC$
-#define KERNEL_NAME cKernel_$TEST_FUNC$
+#define TEST_NAME    math_binary_$TEST_FUNC$
+#define WIMPY_MODE   1
+#define MAX_ULPS     $MAX_ULPS$
+#define TEST_FUNC    $TEST_FUNC$
+#define REF_FUNC     reference_$TEST_FUNC$
+#define KERNEL_NAME  cKernel_$TEST_FUNC$
+#define NAMESPACE    math_relational_binary_$TEST_FUNC$_$NUM_ELMS$__
+
+namespace NAMESPACE
+{
+using namespace sycl_cts;
+using namespace cl::sycl;
 
 /* list of special edge cases to test stored as floating
  * point bit patterns.
- */
-namespace
-{
-/* each value in this list will be used for both
+ *
+ * each value in this list will be used for both
  * x and y arguments to a math function.
  *
  * for ( int i=0; i<nEdgeCases*nEdgeCases; i++ )
@@ -55,12 +55,6 @@ uint32_t gEdgeCases[] = { 0x7fc00000, 0xff800000, 0xff7fffff, 0xdf800001, 0xdf80
                           0x3effffff, 0x3e800001, 0x3e800000, 0x3e7fffff, 0x00800001, 0x00800000, 0x007fffff, 0x000007ff, 0x0000007f,
                           0x00000007, 0x00000006, 0x00000005, 0x00000004, 0x00000003, 0x00000002, 0x00000001, 0x00000000 };
 const uint32_t nEdgeCases = sizeof( gEdgeCases ) / sizeof( uint32_t );
-};
-
-/**
- */
-namespace sycl_cts
-{
 
 /** kernel functor
  */
@@ -83,12 +77,12 @@ public:
     {
     }
 
-    void operator()( item item )
+    void operator()( item<1> item )
     {
-        auto &o = m_o[item.get_global_id()];
-        auto x = m_x[item.get_global_id()];
-        auto y = m_y[item.get_global_id()];
-        o = TEST_FUNC( x, y );
+        auto &o = m_o[item.get_global()];
+        auto  x = m_x[item.get_global()];
+        auto  y = m_y[item.get_global()];
+        o = cl::sycl::TEST_FUNC( x, y );
     }
 };
 
@@ -116,9 +110,9 @@ protected:
     static const uint32_t nSubBuffers = 16;
 
     /* data buffers */
-    util::UNIQUE_PTR<T> m_xbuf; /* x_arguments */
-    util::UNIQUE_PTR<T> m_ybuf; /* y_arguments */
-    util::UNIQUE_PTR<T> m_obuf; /* output vals */
+    util::UNIQUE_PTR<T[]> m_xbuf; /* x_arguments */
+    util::UNIQUE_PTR<T[]> m_ybuf; /* y_arguments */
+    util::UNIQUE_PTR<T[]> m_obuf; /* output vals */
 
     /*  */
     MTdata m_randData;
@@ -204,11 +198,11 @@ public:
                 auto kern = KERNEL_NAME<T>( optr, xptr, yptr );
 
                 /* execute the kernel */
-                parallel_for( nd_range<>( range<>( chunkSize ), range<>( chunkSize / 8 ) ), kern );
+                parallel_for( nd_range<1>( range<1>( chunkSize ), range<1>( chunkSize / 8 ) ), kern );
 
             } );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "" );
@@ -359,7 +353,7 @@ public:
             for ( int j = 0; j < nItts; j++ )
             {
                 /* send progress report */
-                log.progress( j, nItts );
+                log.progress( j, int( nItts ) );
 
                 /* random number generator for this session */
                 MTdata rng = init_genrand( genrand_int32( m_randData ) );
@@ -383,12 +377,12 @@ public:
             }
 
             /* send 100% progress report */
-            log.progress( nItts, nItts );
+            log.progress( int( nItts ), int( nItts ) );
 
             /* record the max ulps */
             log.note( "max_ulp = %8.2f", m_max_ulp );
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             FAIL( log, "big fail" );
         }
@@ -397,7 +391,7 @@ public:
     /** release all test resources
      *
      */
-    virtual void cleanup( util::logger &log )
+    virtual void cleanup( )
     {
         m_xbuf.reset( nullptr );
         m_ybuf.reset( nullptr );
@@ -406,13 +400,11 @@ public:
 };
 
 /* register this test with the test_collection */
-static util::test_proxy<TEST_NAME<float4>> proxy4;
-#if 0
-static util::test_proxy<TEST_NAME<float  >> proxy1;
-static util::test_proxy<TEST_NAME<float2 >> proxy2;
-static util::test_proxy<TEST_NAME<float3 >> proxy3;
-static util::test_proxy<TEST_NAME<float8 >> proxy5;
-static util::test_proxy<TEST_NAME<float16>> proxy6;
-#endif
+util::test_proxy<TEST_NAME<float  >> proxy1;
+util::test_proxy<TEST_NAME<float2 >> proxy2;
+util::test_proxy<TEST_NAME<float3 >> proxy3;
+util::test_proxy<TEST_NAME<float4 >> proxy4;
+util::test_proxy<TEST_NAME<float8 >> proxy5;
+util::test_proxy<TEST_NAME<float16>> proxy6;
 
-};  // sycl_cts
+} /* namespace NAMESPACE */

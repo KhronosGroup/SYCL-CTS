@@ -6,9 +6,10 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
 #include "math_helper.h"
 
+namespace sycl_cts
+{
 /** math utility functions
  */
 namespace math
@@ -18,12 +19,10 @@ using namespace cl::sycl;
 /* cast an integer to a float */
 float int_to_float( uint32_t x )
 {
-    union
-    {
-        uint32_t i;
-        float f;
-    } u = { x };
-    return u.f;
+    static_assert( sizeof( x ) == sizeof( float ), "incompatible type sizes" );
+    float f;
+    memcpy( &f, &x, sizeof( x ) );
+    return f;
 }
 
 void fill( float &e, float v )
@@ -33,23 +32,23 @@ void fill( float &e, float v )
 
 void fill( float2 &e, float v )
 {
-    e.x = v;
-    e.y = v;
+    e.data[0] = v;
+    e.data[1] = v;
 }
 
 void fill( float3 &e, float v )
 {
-    e.x = v;
-    e.y = v;
-    e.z = v;
+    e.data[0] = v;
+    e.data[1] = v;
+    e.data[2] = v;
 }
 
 void fill( float4 &e, float v )
 {
-    e.x = v;
-    e.y = v;
-    e.z = v;
-    e.w = v;
+    e.data[0] = v;
+    e.data[1] = v;
+    e.data[2] = v;
+    e.data[3] = v;
 }
 
 void fill( float8 &e, float v )
@@ -205,4 +204,18 @@ void rand( MTdata &rng, float16 *buf, int num )
     rand( rng, (float *)buf, num * nDim );
 }
 
-}; /* namespace math */
+/* generate a stream of random integer data */
+void rand( MTdata &rng, uint8_t *buf, int size )
+{
+    uint32_t r = 0;
+    for ( int i = 0; i < size; i++ )
+    {
+        if ( (i % 4) == 0 )
+            r = genrand_int32( rng );
+        buf[i] = r & 0xff;
+        r >>= 8;
+    }
+}
+
+} /* namespace math     */
+} /* namespace sycl_cts */

@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME device_selector_constructors
 
-namespace sycl_cts
+namespace device_selector_constructors__
 {
+using namespace sycl_cts;
 
 /** check that we can instantiate various device selectors
  */
@@ -51,13 +50,13 @@ public:
                 FAIL( log, "dev_gpu is not a GPU device" );
 
             if ( !( dev_cpu.get_info<CL_DEVICE_TYPE>() & CL_DEVICE_TYPE_CPU ) )
-                FAIL( log, "dev_cpu is not a GPU device" );
+                FAIL( log, "dev_cpu is not a CPU device" );
 
             if ( !dev_host.is_host() )
                 FAIL( log, "dev_host is not a host device" );
 
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -66,6 +65,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-}  // namespace sycl_cts
+} /* namespace device_selector_constructors__ */

@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
-
+#include "sycl.h"
 #include "../../util/selector.h"
 
 /** test suite specific device selector

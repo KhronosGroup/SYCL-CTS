@@ -6,14 +6,13 @@
 //
 **************************************************************************/
 
-#include <CL/sycl.hpp>
-
 #include "../common/common.h"
 
 #define TEST_NAME queue_getinfo
 
-namespace sycl_cts
+namespace queue_getinfo__
 {
+using namespace sycl_cts;
 
 /**
  */
@@ -45,7 +44,7 @@ public:
             cl_uint refcount = queue.get_info<CL_QUEUE_REFERENCE_COUNT>();
             cl_command_queue_properties properties = queue.get_info<CL_QUEUE_PROPERTIES>();
         }
-        catch ( cl::sycl::sycl_error e )
+        catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
             FAIL( log, "sycl exception caught" );
@@ -54,6 +53,6 @@ public:
 };
 
 // register this test with the test_collection
-static util::test_proxy<TEST_NAME> proxy;
+util::test_proxy<TEST_NAME> proxy;
 
-};  // sycl_cts
+} /* namespace queue_getinfo__ */

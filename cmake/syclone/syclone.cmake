@@ -14,43 +14,49 @@ message(STATUS "OPENCL_LIBRARY='${OPENCL_LIBRARY}'")
 if(OPENCL_LIBRARY STREQUAL "OPENCL_LIBRARY-NOTFOUND")
     MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the OpenCL library.\n\n")
 endif()
+
 message(STATUS "DEVICE_COMPILER='${DEVICE_COMPILER}'")
 if(DEVICE_COMPILER STREQUAL "DEVICE_COMPILER-NOTFOUND")
     MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the device compiler.\n\n")
 endif()
+
 message(STATUS "SYCLONE_INCLUDE_PATH='${SYCLONE_INCLUDE_PATH}'")
 if(SYCLONE_INCLUDE_PATH STREQUAL "SYCLONE_INCLUDE_PATH-NOTFOUND")
     MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE runtime headers.\n\n")
 endif()
+
 message(STATUS "SYCLONE_SYCL_LIBRARY='${SYCLONE_SYCL_LIBRARY}'")
 if(SYCLONE_SYCL_LIBRARY STREQUAL "SYCLONE_SYCL_LIBRARY-NOTFOUND")
     MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE SYCL library.\n\n")
 endif()
+
 message(STATUS "SYCLONE_IMAGE_LIBRARY_INCLUDE_PATH='${SYCLONE_IMAGE_LIBRARY_INCLUDE_PATH}'")
 if(SYCLONE_IMAGE_LIBRARY_INCLUDE_PATH STREQUAL "SYCLONE_IMAGE_LIBRARY_INCLUDE_PATH-NOTFOUND")
-MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image library headers.\n\n")
+    MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image library headers.\n\n")
 endif()
+
 message(STATUS "SYCLONE_IMAGE_KERNEL_LIBRARY='${SYCLONE_IMAGE_KERNEL_LIBRARY}'")
 if(SYCLONE_IMAGE_KERNEL_LIBRARY STREQUAL "SYCLONE_IMAGE_KERNEL_LIBRARY-NOTFOUND")
-MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image kernel library.\n\n")
+    MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image kernel library.\n\n")
 endif()
+
 message(STATUS "SYCLONE_IMAGE_HOST_LIBRARY='${SYCLONE_IMAGE_HOST_LIBRARY}'")
 if(SYCLONE_IMAGE_HOST_LIBRARY STREQUAL "SYCLONE_IMAGE_HOST_LIBRARY-NOTFOUND")
-MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image host library.\n\n")
+    MESSAGE(FATAL_ERROR "\n\nPlease provide the path to the SYCLONE image host library.\n\n")
 endif()
 # ------------------
 
 
 # ------------------
-set(SYCL_LIB_NAME "SYCL")
+set(SYCL_LIB_NAME "sycl_library")
 set(IMAGE_KERNEL_LIB_NAME "image_library_kernel")
 set(IMAGE_HOST_LIB_NAME "image_library_host")
-set(OPENCL_LIB_NAME "OpenCL")
+set(OPENCL_LIB_NAME "OpenCL_library")
 
 if(WIN32)
-    set(RUNTIME_COMPILER_FLAGS " ")
-    set(DEVICE_COMPILER_FLAGS "-D_SIZE_T_DEFINED")
-    set(HOST_COMPILER_FLAGS " ")
+#    set(RUNTIME_COMPILER_FLAGS " ")
+    set(DEVICE_COMPILER_FLAGS ${DEVICE_COMPILER_FLAGS} "-D_SIZE_T_DEFINED" -nobuiltininc)
+#    set(HOST_COMPILER_FLAGS " ")
 elseif(APPLE)
     set(RUNTIME_COMPILER_FLAGS "-std=c++0x -stdlib=libc++ -D\"_XOPEN_SOURCE\"") 
     set(DEVICE_COMPILER_FLAGS -std=c++0x -stdlib=libc++ -mno-sse -D_ANSI_SOURCE)
@@ -66,13 +72,26 @@ endif(WIN32)
 
 # ------------------
 include_directories(${SYCLONE_INCLUDE_PATH})
+
+if(WIN32)
+add_library(${OPENCL_LIB_NAME} STATIC IMPORTED )
+else(WIN32)
+add_library(${OPENCL_LIB_NAME} SHARED IMPORTED )
+endif(WIN32)
+set_target_properties(${OPENCL_LIB_NAME} PROPERTIES IMPORTED_LOCATION ${OPENCL_LIBRARY})
+message(STATUS "OPENCL_LIBRARY='${OPENCL_LIBRARY}'")
+message(STATUS "OPENCL_LIB_NAME='${OPENCL_LIB_NAME}'")
+
 add_library(${SYCL_LIB_NAME} STATIC IMPORTED )
 set_target_properties(${SYCL_LIB_NAME} PROPERTIES IMPORTED_LOCATION ${SYCLONE_SYCL_LIBRARY})
-add_library(${OPENCL_LIB_NAME} STATIC IMPORTED )
-set_target_properties(${OPENCL_LIB_NAME} PROPERTIES IMPORTED_LOCATION ${OPENCL_LIBRARY})
+message(STATUS "SYCLONE_SYCL_LIBRARY='${SYCLONE_SYCL_LIBRARY}'")
+message(STATUS "SYCL_LIB_NAME='${SYCL_LIB_NAME}'")
+
 include_directories(${SYCLONE_IMAGE_LIBRARY_INCLUDE_PATH})
+
 add_library(${IMAGE_KERNEL_LIB_NAME} STATIC IMPORTED )
 set_target_properties(${IMAGE_KERNEL_LIB_NAME} PROPERTIES IMPORTED_LOCATION ${SYCLONE_IMAGE_KERNEL_LIBRARY})
+
 add_library(${IMAGE_HOST_LIB_NAME} STATIC IMPORTED )
 set_target_properties(${IMAGE_HOST_LIB_NAME} PROPERTIES IMPORTED_LOCATION ${SYCLONE_IMAGE_HOST_LIBRARY})
 # ------------------
