@@ -14,7 +14,17 @@ import sys
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # global variables
 #
-g_func_map = [{"$TEST_FUNC$" : "add_sat"}]
+g_func_map = [{"$TEST_FUNC$" : "abs_diff"},
+              {"$TEST_FUNC$" : "add_sat" },
+              {"$TEST_FUNC$" : "hadd"    },
+              {"$TEST_FUNC$" : "rhadd"   },
+              {"$TEST_FUNC$" : "max"     },
+              {"$TEST_FUNC$" : "min"     },
+              {"$TEST_FUNC$" : "mul_hi"  },
+              {"$TEST_FUNC$" : "rotate"  },
+              {"$TEST_FUNC$" : "sub_sat" },
+              {"$TEST_FUNC$" : "upsample"},
+              {"$TEST_FUNC$" : "mul24"   }]
 
 g_generated_header = \
 """

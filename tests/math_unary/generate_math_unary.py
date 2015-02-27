@@ -15,8 +15,7 @@ import sys
 # global variables
 #               
 g_unary_map  = [{"$TEST_FUNC$" : "cos",      "$MAX_ULPS$" : "4.0f"},
-                {"$TEST_FUNC$" : "sin",      "$MAX_ULPS$" : "4.0f"}]
-"""
+                {"$TEST_FUNC$" : "sin",      "$MAX_ULPS$" : "4.0f"},
                 {"$TEST_FUNC$" : "acos",     "$MAX_ULPS$" : "4.0f"},
                 {"$TEST_FUNC$" : "acosh",    "$MAX_ULPS$" : "4.0f"},
                 {"$TEST_FUNC$" : "acospi",   "$MAX_ULPS$" : "5.0f"},
@@ -45,8 +44,7 @@ g_unary_map  = [{"$TEST_FUNC$" : "cos",      "$MAX_ULPS$" : "4.0f"},
                 {"$TEST_FUNC$" : "tanh",     "$MAX_ULPS$" : "5.0f"},
                 {"$TEST_FUNC$" : "tanpi",    "$MAX_ULPS$" : "6.0f"},
                 {"$TEST_FUNC$" : "trunc",    "$MAX_ULPS$" : "0.0f"}]
-"""
-                
+
 g_generated_header = \
 """
 /*************************************************************************

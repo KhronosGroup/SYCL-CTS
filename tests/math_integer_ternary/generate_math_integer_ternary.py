@@ -14,7 +14,10 @@ import sys
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # global variables
 #
-g_func_map = [{"$TEST_FUNC$" : "mad_hi"}]
+g_func_map = [{"$TEST_FUNC$" : "clamp"  },
+              {"$TEST_FUNC$" : "mad_hi" },
+              {"$TEST_FUNC$" : "mad_sat"},
+              {"$TEST_FUNC$" : "mad24"  }]
 
 g_generated_header = \
 """

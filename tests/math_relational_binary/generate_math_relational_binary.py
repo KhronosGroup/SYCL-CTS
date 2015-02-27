@@ -15,8 +15,7 @@ import sys
 # global variables
 #
 g_relational_binary_map = \
-               [{"$TEST_FUNC$" : "isequal"       }]
-"""
+               [{"$TEST_FUNC$" : "isequal"       },
                 {"$TEST_FUNC$" : "isnotequal"    },
                 {"$TEST_FUNC$" : "isless"        },
                 {"$TEST_FUNC$" : "isgreater"     },
@@ -24,8 +23,7 @@ g_relational_binary_map = \
                 {"$TEST_FUNC$" : "isgreaterequal"},
                 {"$TEST_FUNC$" : "islessgreater" },
                 {"$TEST_FUNC$" : "isordered"     },
-                {"$TEST_FUNC$" : "isunordered"   },
-"""
+                {"$TEST_FUNC$" : "isunordered"   }]
 
 g_generated_header = \
 """

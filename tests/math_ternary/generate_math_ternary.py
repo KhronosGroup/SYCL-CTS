@@ -14,14 +14,12 @@ import sys
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # global variables
 #
-g_ternary_map = [{"$TEST_FUNC$" : "clamp",       "$MAX_ULPS$" : "4.0f"}]
-"""
-                {"$TEST_FUNC$" : "fma",         "$MAX_ULPS$" : "4.0f"},
-                {"$TEST_FUNC$" : "mad",         "$MAX_ULPS$" : "4.0f"},
-                {"$TEST_FUNC$" : "remquo",      "$MAX_ULPS$" : "4.0f"},
-                {"$TEST_FUNC$" : "mix",         "$MAX_ULPS$" : "4.0f"},
-                {"$TEST_FUNC$" : "smoothstep",  "$MAX_ULPS$" : "4.0f"}]
-"""
+g_ternary_map = [{"$TEST_FUNC$" : "clamp",       "$MAX_ULPS$" : "4.0f"},
+                 {"$TEST_FUNC$" : "fma",         "$MAX_ULPS$" : "4.0f"},
+                 {"$TEST_FUNC$" : "mad",         "$MAX_ULPS$" : "4.0f"},
+                 {"$TEST_FUNC$" : "remquo",      "$MAX_ULPS$" : "4.0f"},
+                 {"$TEST_FUNC$" : "mix",         "$MAX_ULPS$" : "4.0f"},
+                 {"$TEST_FUNC$" : "smoothstep",  "$MAX_ULPS$" : "4.0f"}]
 
 g_generated_header = \
 """

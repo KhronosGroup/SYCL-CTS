@@ -14,7 +14,9 @@ import sys
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # global variables
 #
-g_unary_map  = [{"$TEST_FUNC$" : "clz"}]
+g_unary_map  = [{"$TEST_FUNC$" : "abs"},
+                {"$TEST_FUNC$" : "clz"},
+                {"$TEST_FUNC$" : "popcount"}]
 
 g_generated_header = \
 """
