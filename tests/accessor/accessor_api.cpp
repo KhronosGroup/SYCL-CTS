@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -13,198 +13,465 @@
 namespace accessor_api__
 {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
-template <typename T, int dims, int mode, int target>
-class accessor_kernel
+template <int dims>
+util::VECTOR<cl::sycl::id<dims>> ids_list( cl::sycl::range<dims> &r );
+
+template <>
+util::VECTOR<cl::sycl::id<1>> ids_list<1>( cl::sycl::range<1> &r )
 {
-    accessor<T, dims, mode, target> acc;
+    util::VECTOR<cl::sycl::id<1>> ret;
+    for ( size_t i = 0; i < r[0]; ++i )
+        ret.push_back( cl::sycl::id<1>( i ) );
+    return ret;
+}
 
-public:
+template <>
+util::VECTOR<cl::sycl::id<2>> ids_list<2>( cl::sycl::range<2> &r )
+{
+    util::VECTOR<cl::sycl::id<2>> ret;
+    for ( size_t i = 0; i < r[0]; ++i )
+        for ( size_t j = 0; j < r[1]; ++j )
+            ret.push_back( cl::sycl::id<2>( i, j ) );
+    return ret;
+}
 
-    accessor_kernel(accessor<T, dims, mode, target> a)
-        : acc(a)
-    {
-        ;
-    }
+template <>
+util::VECTOR<cl::sycl::id<3>> ids_list<3>( cl::sycl::range<3> &r )
+{
+    util::VECTOR<cl::sycl::id<3>> ret;
+    for ( size_t i = 0; i < r[0]; ++i )
+        for ( size_t j = 0; j < r[1]; ++j )
+            for ( size_t k = 0; k < r[2]; ++k )
+                ret.push_back( cl::sycl::id<3>( i, j, k ) );
+    return ret;
+}
 
-    void operator()( item<dims> i )
-    {
-        T var = acc[i.get_global_linear()];
-    }
-};
-
-// TODO: When mode and target are enum classes, update this
-// to use them exclusively, to disallow illegal values!
-/**
-* Class that constructs all the different kinds of accessor
-* exclusively from buffers. Size depends on dims.
-*/
 template <typename T, int dims, int size, int mode, int target>
-class accessors_buffers
+class accessors_other_apis
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
-        T data[size];
-        // Use memset because T might be some complicated type,
-        // which means we can't use data = { 0 };
-        memset( data, 0, sizeof( data ) );
-
-        buffer<T, dims> buf( data, r );
-
-        cl::sycl::command_group( q, [&]()
+        q.submit( [&]( cl::sycl::handler &cgh )
         {
-            auto acc = buf.template get_access<mode, target>();
+            cl::sycl::accessor<T, dims, mode, target> acc( r, cgh );
 
-            accessor_kernel<T, dims, mode, target> kern( acc );
+            /** check get_size() method
+            */
+            auto size = acc.get_size();
+
+            if ( typeid( size ) != typeid( size_t ) )
+            {
+                FAIL( log, "accessor::get_size() does not return size_t" );
+            }
+
+            if ( size != size )
+            {
+                FAIL( log, "accessor is not the correct size" );
+            }
+
+            /** check get_event() method
+            */
+            auto accessorEvent = acc.get();
+
+            if ( typeid( accessorEvent ) != typeid( cl::sycl::event ) )
+            {
+                FAIL( log, "accessor::get_event() does not return cl::sycl::event" );
+            }
         } );
     }
 };
 
-template <typename T, int dims, int mode, int target>
-class my_functor
-{
-    typedef accessor<T, dims, access::write, access::global_buffer> write_t;
-    typedef accessor<T, dims, access::read , access::global_buffer> read_t;
-    accessor<T, dims, mode, target> m_lcl;
-    write_t m_out;
-    read_t m_in;
-public:
-    my_functor( accessor<T, dims, mode, target> lcl, write_t out, read_t in )
-        : m_lcl( lcl )
-        , m_in ( in  )
-        , m_out( out )
-    { }
-
-    void operator()( item<dims> it )
-    {
-        m_lcl[0] = m_in [0];
-        m_out[0] = m_lcl[0];
-    }
-};
-
-/**
-* Class that is used only for the local accessor - local
-* accessors can have no interaction with the host.
-*/
 template <typename T, int dims, int size, int mode, int target>
-class accessors_local
+class accessors_writes;
+
+template <typename T, int size, int mode, int target>
+class accessors_writes<T, 1, size, mode, target>
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r, T expected, T init )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<1> &r )
     {
-        T input = init;
-        T output = init;
-        {
-            cl::sycl::buffer<T, dims> buffer_input ( &input,  r / r);
-            cl::sycl::buffer<T, dims> buffer_output( &output, r / r);
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
 
-            cl::sycl::command_group( q, [&]()
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_writes<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<1> i )
             {
-                accessor<T, dims, mode, target> acc(r);
-                auto out = buffer_output.template  get_access<access::write, access::global_buffer >();
-                auto in = buffer_input.template  get_access<access::read, access::global_buffer >();
+                auto ids = ids_list<dims>( r );
 
-                if( acc.get_size() != static_cast<size_t>( size * sizeof(T) ) )
+                size_t linearID = i[0];
+
+                for ( auto i : ids )
                 {
-                    FAIL(log, "get_size() value is not as expected");
+                    acc[i] = linearID;
+                    acc[i[0]] = linearID;
                 }
-
-                auto my_kernel = my_functor<T, dims, mode, target>( acc,out, in );
-                parallel_for( nd_range<dims>( r, r / r ), my_kernel );
             } );
-        }
-
-        if ( output != expected )
-        {
-            FAIL(log, "Output value is not as expected");
-        }
-
+                  } );
     }
 };
 
-template <typename T, int dims, int size, int mode>
-class accessors_targets
+template <typename T, int size, int mode, int target>
+class accessors_writes<T, 1, size, mode, target>
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r, T expected, T init )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<2> &r )
     {
-        // Generate classes for each access target
-        accessors_buffers<T, dims, size, mode, access::global_buffer> g;
-        g( log, q, r );
-        accessors_buffers<T, dims, size, mode, access::constant_buffer> c;
-        c( log, q, r );
-        accessors_buffers<T, dims, size, mode, access::host_buffer> hb;
-        hb( log, q, r );
-        accessors_local<T, dims, size, mode, access::local> l;
-        l( log, q, r, expected, init );
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
+
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_writes<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<2> i )
+            {
+                auto ids = ids_list<dims>( r );
+
+                size_t linearID = i[0] + ( i[1] * r[0] );
+
+                for ( auto i : ids )
+                {
+                    acc[i] = linearID;
+                    acc[i[0]][i[1]] = linearID;
+                }
+            } );
+                  } );
+    }
+};
+
+template <typename T, int size, int mode, int target>
+class accessors_writes<T, 1, size, mode, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<3> &r )
+    {
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
+
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_writes<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<3> i )
+            {
+                auto ids = ids_list<dims>( r );
+
+                size_t linearID = i[0] + ( i[1] * r[0] ) + ( i[2] * r[0] * r[1] );
+
+                for ( auto i : ids )
+                {
+                    acc[i] = linearID;
+                    acc[i[0]][i[1]][i[2]] = linearID;
+                }
+            } );
+                  } );
+    }
+};
+
+template <typename T, int dims, int size, int mode, int target>
+class accessors_reads;
+
+template <typename T, int size, int mode, int target>
+class accessors_reads<T, 1, size, mode, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<1> &r )
+    {
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
+
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_reads<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<1> i )
+            {
+                T elem;
+
+                auto ids = ids_list<dims>( r );
+
+                for ( auto i : ids )
+                {
+                    elem = acc[i];
+                    elem = acc[i[0]];
+                }
+            } );
+                  } );
+    }
+};
+
+template <typename T, int size, int mode, int target>
+class accessors_reads<T, 1, size, mode, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<2> &r )
+    {
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
+
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_reads<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<2> i )
+            {
+                T elem;
+
+                auto ids = ids_list<dims>( r );
+
+                for ( auto i : ids )
+                {
+                    elem = acc[i];
+                    elem = acc[i[0]][i[1]];
+                }
+            } );
+                  } );
+    }
+};
+
+template <typename T, int size, int mode, int target>
+class accessors_reads<T, 1, size, mode, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<3> &r )
+    {
+        T data[size];
+        memset( data, 0xFF, sizeof( data ) );
+
+        cl::sycl::buffer<T, dims> buf( data, r );
+
+        q.submit( [&]( cl::sycl::handler &cgh )
+                  {
+                      cl::sycl::accessor<T, dims, mode, target> acc( buf, cgh );
+
+            cgh.parallel_for<class accessor_reads<T, dims, size, mode, target>>( r, [=]( cl::sycl::id<3> i )
+            {
+                T elem;
+
+                auto ids = ids_list<dims>( r );
+
+                for ( auto i : ids )
+                {
+                    elem = acc[i];
+                    elem = acc[i[0]][i[1]][i[2]];
+                }
+            } );
+                  } );
+    }
+};
+
+template <typename T, int dims, int size, int mode, int target>
+class accessors_subscripts;
+
+template <typename T, int dims, int size, int target>
+class accessors_subscripts<T, dims, size, cl::sycl::access::mode::read, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_reads<T, dims, size, cl::sycl::access::mode::read, target> read;
+        read( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int target>
+class accessors_subscripts<T, dims, size, cl::sycl::access::mode::write, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_writes<T, dims, size, cl::sycl::access::mode::write, target> write;
+        write( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int target>
+class accessors_subscripts<T, dims, size, cl::sycl::access::mode::read_write, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_reads<T, dims, size, cl::sycl::access::mode::read_write, target> read;
+        read( log, q, r );
+        accessors_writes<T, dims, size, cl::sycl::access::mode::read_write, target> write;
+        write( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int target>
+class accessors_subscripts<T, dims, size, cl::sycl::access::mode::discard_write, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_writes<T, dims, size, cl::sycl::access::mode::discard_write, target> write;
+        write( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int target>
+class accessors_subscripts<T, dims, size, cl::sycl::access::mode::discard_read_write, target>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_reads<T, dims, size, cl::sycl::access::mode::discard_read_write, target> read;
+        read( log, q, r );
+        accessors_writes<T, dims, size, cl::sycl::access::mode::discard_read_write, target> write;
+        write( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int mode, int target>
+class accessors_apis
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_subscripts<T, dims, size, mode, target> subscripts;
+        subscripts( log, q, r );
+        accessors_other_apis<T, dims, size, mode, target> otherAPIs;
+        otherAPIs( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size, int target>
+class accessors_modes;
+
+template <typename T, int dims, int size>
+class accessors_modes<T, dims, size, cl::sycl::access::target::global_buffer>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_apis<T, dims, size, cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer> read;
+        read( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> write;
+        write( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer> rw;
+        rw( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::discard_write, cl::sycl::access::target::global_buffer> discard_write;
+        discard_write( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::discard_read_write, cl::sycl::access::target::global_buffer> discard_rw;
+        discard_rw( log, q, r );
     }
 };
 
 template <typename T, int dims, int size>
-class accessors_modes
+class accessors_modes<T, dims, size, cl::sycl::access::target::host_buffer>
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r, T expected, T init )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
-        // Generate classes for each access mode
-        accessors_targets<T, dims, size, access::read> read;
-        read( log, q, r, expected, init );
-        accessors_targets<T, dims, size, access::write> write;
-        write( log, q, r, expected, init );
-        accessors_targets<T, dims, size, access::read_write> rw;
-        rw( log, q, r, expected, init );
-        accessors_targets<T, dims, size, access::discard_write> discard_write;
-        discard_write(log, q, r, expected, init);
-        accessors_targets<T, dims, size, access::discard_read_write> discard_rw;
-        discard_rw(log, q, r, expected, init);
+        accessors_apis<T, dims, size, cl::sycl::access::mode::read, cl::sycl::access::target::host_buffer> read;
+        read( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::write, cl::sycl::access::target::host_buffer> write;
+        write( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::read_write, cl::sycl::access::target::host_buffer> rw;
+        rw( log, q, r );
+        accessors_apis<T, dims, size, cl::sycl::access::mode::discard_write, cl::sycl::access::target::host_buffer> discard_write;
+        discard_write( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size>
+class accessors_modes<T, dims, size, cl::sycl::access::target::constant_buffer>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_apis<T, dims, size, access::mode::read, cl::sycl::access::target::constant_buffer> read;
+        read( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size>
+class accessors_modes<T, dims, size, cl::sycl::access::target::local>
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        accessors_apis<T, dims, size, access::mode::read_write, cl::sycl::access::target::local> rw;
+        rw( log, q, r );
+    }
+};
+
+template <typename T, int dims, int size>
+class accessors_targets
+{
+public:
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
+    {
+        // Generate classes for each access target
+        accessors_modes<T, dims, mode, access::target::global_buffer> g;
+        g( log, q, r );
+        accessors_modes<T, dims, mode, access::target::constant_buffer> c;
+        c( log, q, r );
+        accessors_modes<T, dims, mode, access::target::host_buffer> h;
+        h( log, q, r );
+        accessors_modes<T, dims, mode, access::target::local> l;
+        l( log, q, r );
     }
 };
 
 /** test cl::sycl::image initialization
-*/
+ */
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-    *  @param info, test_base::info structure as output
-    */
-    virtual void get_info( test_base::info &out ) const
+     */
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     template <typename T>
-    void test_accessors( util::logger &log, cl::sycl::queue &q, T expeced, T init )
+    void test_accessors( util::logger &log, cl::sycl::queue &q )
     {
         // Ranges of each dimension
         const int size = 32;
-        range<1> range1d( size );
-        range<2> range2d( size, size );
-        range<3> range3d( size, size, size );
+        cl::sycl::range<1> range1d( size );
+        cl::sycl::range<2> range2d( size, size );
+        cl::sycl::range<3> range3d( size, size, size );
 
-        accessors_modes<T, 1, size> acc1d;
-        acc1d( log, q, range1d, expeced, init );
-        accessors_modes<T, 2, size * size> acc2d;
-        acc2d( log, q, range2d, expeced, init );
-        accessors_modes<T, 3, size * size * size> acc3d;
-        acc3d( log, q, range3d, expeced, init );
+        accessors_targets<T, 1, size> acc1d;
+        acc1d( log, q, range1d );
+        accessors_targets<T, 2, size * size> acc2d;
+        acc2d( log, q, range2d );
+        accessors_targets<T, 3, size * size * size> acc3d;
+        acc3d( log, q, range3d );
     }
 
     /** execute the test
-    *  @param log, test transcript logging class
-    */
-    virtual void run( util::logger &log )
+     */
+    virtual void run( util::logger &log ) override
     {
         try
         {
             cts_selector selector;
             cl::sycl::queue queue( selector );
 
-            test_accessors<int>( log, queue, 42, 0 );
-            test_accessors<float>( log, queue, 42.0f, 0.0f );
-            test_accessors<double>( log, queue, 42.0, 0.0 );
+            test_accessors<int>( log, queue );
+            test_accessors<float>( log, queue );
+            test_accessors<double>( log, queue );
+
+            queue.wait_and_throw();
         }
         catch ( cl::sycl::exception e )
         {

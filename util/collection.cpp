@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -156,7 +156,7 @@ static inline bool partial_strcmp( const STRING &a, const STRING &b )
  */
 void collection::set_test_skip( const STRING &testName, bool )
 {
-    // TODO: since all tests are in alphabetic order this could be optimized
+    
     //       yet the linear search here is likely not a hot spot
     for ( int32_t i = 0; i < int32_t( m_tests.size() ); i++ )
     {

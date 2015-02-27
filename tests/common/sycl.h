@@ -2,17 +2,19 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
 #pragma once
 
 #if defined( _MSC_VER )
-# pragma warning( push )
-// disable any sycl header warnings here
-# include <cl/sycl.hpp>
-# pragma warning( pop )
+#  pragma warning( push )
+#  pragma warning( disable : 4267 )
+#  pragma warning( disable : 4201 )
+#  pragma warning( disable : 4189 )
+#  include <cl/sycl.hpp>
+#  pragma warning( pop )
 #else
-# include <CL/sycl.hpp>
+#  include <CL/sycl.hpp>
 #endif

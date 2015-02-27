@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,26 +14,44 @@ namespace device_selector_custom__
 {
 using namespace sycl_cts;
 
-/** device selection functor
+/** tests custom selectors for cl::sycl::device_selector
  */
-class custom_selector : public cl::sycl::device_selector
+class call_selector : public cl::sycl::device_selector
 {
 public:
-    mutable bool m_hasBeenCalled;
+    mutable bool called;
 
-    custom_selector()
-        : m_hasBeenCalled( false )
+    call_selector()
+        : called( false )
     {
     }
 
-    /** device selection operator
-     *  return <  0  : device will never be selected
-     *  return >= 0  : positive device rating
-     */
-    virtual int operator()( const cl::sycl::device &dev ) const
+    virtual int operator()( const cl::sycl::device &device ) const
     {
-        m_hasBeenCalled = true;
+        called = true;
         return 1;
+    }
+};
+
+/** create a selector for testing negative scores
+ */
+class negative_selector : public cl::sycl::device_selector
+{
+public:
+    negative_selector()
+    {
+    }
+
+    virtual int operator()( const cl::sycl::device &device ) const
+    {
+        if ( !device.is_host() )
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
     }
 };
 
@@ -43,33 +61,87 @@ class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            // instantiate a custom device selector
-            custom_selector selector;
+            /** check a custom selector for a device
+            */
+            {
+                call_selector selector;
+                cl::sycl::device device( selector );
 
-            cl::sycl::platform platform( selector );
+                /* check our device selector was used */
+                if ( !selector.called )
+                {
+                    FAIL( log, "custom selector was never used for creating a device" );
+                }
+            }
 
-            /* check our device selector was used */
-            if ( !selector.m_hasBeenCalled )
-                FAIL( log, "custom selector never used!" );
+            /** check a custom selector for a platform
+            */
+            {
+                call_selector selector;
+                cl::sycl::platform platform( selector );
+
+                /* check our device selector was used */
+                if ( !selector.called )
+                {
+                    FAIL( log, "custom selector was never used for creating a platform" );
+                }
+            }
+
+            /** check a custom selector for a context
+            */
+            {
+                call_selector selector;
+                cl::sycl::context context( selector );
+
+                /* check our device selector was used */
+                if ( !selector.called )
+                {
+                    FAIL( log, "custom selector was never used for creating a context" );
+                }
+            }
+
+            /** check a custom selector for a queue
+            */
+            {
+                call_selector selector;
+                cl::sycl::queue queue( selector );
+
+                /* check our device selector was used */
+                if ( !selector.called )
+                {
+                    FAIL( log, "custom selector was never used for creating a queue" );
+                }
+            }
+
+            /** check the ability to set negative scores
+            */
+            {
+                negative_selector selector;
+                cl::sycl::device device( selector );
+
+                /* check our device selector was used */
+                if ( !device.is_host() )
+                {
+                    FAIL( log, "custom selector selected a device with a negative score" );
+                }
+            }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };

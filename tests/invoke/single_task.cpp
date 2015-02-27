@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,8 +14,6 @@ namespace single_task__
 {
 using namespace sycl_cts;
 
-#define MEANING 42.0f
-
 /** test cl::sycl::kernel from functor
  */
 class TEST_NAME : public sycl_cts::util::test_base
@@ -23,40 +21,43 @@ class TEST_NAME : public sycl_cts::util::test_base
 public:
 
     /** return information about this test
-     *  @param out, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
+        static const int MEANING = 42;
+
         try
         {
             using namespace cl::sycl;
             default_selector sel;
             queue queue(sel);
 
-            float f = 0;
+            int f = 0;
             {
-                cl::sycl::buffer<float,1> buf(&f, cl::sycl::range<1>(1));
-                command_group(queue, [&] () {
-                    auto a_dev = buf.get_access<access::read_write>();
+                cl::sycl::buffer<int, 1> buf( &f, cl::sycl::range<1>( 1 ) );
+                queue.submit( [&]( handler& cgh )
+                {
+                    auto a_dev = buf.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-                    single_task<class TEST_NAME>( [=] () {
+                    cgh.single_task<class TEST_NAME>( [=]()
+                    {
                         a_dev[0] = MEANING;
-                    });
-                });
+                    } );
+                } );
             }
 
             if(f != MEANING)
-            {
                 FAIL( log, "buffer returned wrong value." );
-            }
+
+            queue.wait_and_throw();
+
         }
         catch ( cl::sycl::exception e )
         {

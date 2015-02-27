@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -120,6 +120,13 @@ void logger::progress( int item, int total )
 {
     int percent = ( total > 0 ) ? ( ( item * 100 ) / total ) : 0;
     get<printer>().write( m_logId, printer::epacket::progress, percent );
+}
+
+/** return true if the log has been marked as fail
+    */
+bool logger::has_failed( )
+{
+    return (m_result == efail) || (m_result == efatal);
 }
 
 /** destructor

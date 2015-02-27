@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -18,14 +18,13 @@ using namespace cl::sycl;
 class kernel_item_3d
 {
 protected:
-    typedef accessor<int, 3, access::read,  access::global_buffer> t_readAccess;
-    typedef accessor<int, 3, access::write, access::global_buffer> t_writeAccess;
+    typedef accessor<int, 3, cl::sycl::access::mode::read,  cl::sycl::access::target::global_buffer> t_readAccess;
+    typedef accessor<int, 3, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> t_writeAccess;
     
     t_readAccess  m_x;
     t_writeAccess m_o;
 
 public:
-
     kernel_item_3d( t_readAccess in_, t_writeAccess out_ )
         : m_x( in_  )
         , m_o( out_ )
@@ -35,16 +34,14 @@ public:
     void operator()( item<3> item )
     {
         id<3> gid = item.get_global( );
-        
+
         size_t dim_a = item.get( 0 );
         size_t dim_b = item[0];
 
         range<3> globalRange = item.get_global_range( );
         range<3> localRange  = item.get_local_range( );
-        UNUSED(localRange);
 
         size_t group = item.get_group( 0 );
-        UNUSED(group);
 
         int numGroups = item.get_num_groups( 0 );
         id<1> offset = item.get_offset( );
@@ -53,18 +50,15 @@ public:
         const size_t nWidth  = globalRange.get( )[0];
         const size_t nHeight = globalRange.get( )[1];
         const size_t nDepth  = globalRange.get( )[2];
-        UNUSED(nDepth);
+        
         /* find the array id for this work item */
         size_t index = 
              gid.get()[0] +                         /* x */
             (gid.get()[1] * nWidth) +               /* y */
             (gid.get()[2] * nWidth * nHeight);      /* z */
         
-        /* get the global linear id */
-        const size_t glid = item.get_global_linear();
-
         /* compare against the precomputed index */
-        m_o[int(glid)] = (m_x[int(glid)] == static_cast<int>(index));
+        m_o[item] = (m_x[item] == static_cast<int>(index));
     }
 };
 
@@ -118,19 +112,22 @@ bool test_item_3d( util::logger & log )
         buffer<int, 3> bufIn ( dataIn .get(), dataRange );
         buffer<int, 3> bufOut( dataOut.get(), dataRange );
 
-        intel_selector selector;
+        cts_selector selector;
         queue cmdQueue( selector );
 
-        command_group( cmdQueue, [&]()
+        cmdQueue.submit( [&]( handler& cgh )
         {
-            auto accIn  = bufIn  .template get_access<access::read >( );
-            auto accOut = bufOut .template get_access<access::write>( );
+            auto accIn  = bufIn  .template get_access<cl::sycl::access::mode::read >( cgh );
+            auto accOut = bufOut .template get_access<cl::sycl::access::mode::write>( cgh );
 
             kernel_item_3d kern = kernel_item_3d( accIn, accOut );
 
             auto r = nd_range<3>( dataRange, range<3>( 1, 1, 1 ) );
-            parallel_for( r, kern );
+            cgh.parallel_for( r, kern );
         });
+
+        cmdQueue.wait_and_throw();
+
     }
     catch ( cl::sycl::exception e )
     {
@@ -155,17 +152,15 @@ class TEST_NAME : public util::test_base
 public:
 
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         test_item_3d( log );
     }

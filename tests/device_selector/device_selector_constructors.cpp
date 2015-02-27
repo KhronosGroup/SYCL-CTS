@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,52 +14,48 @@ namespace device_selector_constructors__
 {
 using namespace sycl_cts;
 
-/** check that we can instantiate various device selectors
+/** tests the constructors for cl::sycl::device_selector
  */
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            /* Predefined selectors */
-            cl::sycl::default_selector ds;
-            cl::sycl::gpu_selector gs;
-            cl::sycl::cpu_selector cs;
-            cl::sycl::host_selector hs;
+            /** check default constructor and destructor
+            */
+            {
+                cts_selector selector;
+            }
 
-            /* Create device from each selector */
-            cl::sycl::device dev( ds );
-            cl::sycl::device dev_gpu( gs );
-            cl::sycl::device dev_cpu( cs );
-            cl::sycl::device dev_host( hs );
+            /** check copy constructor
+            */
+            {
+                cts_selector selectorA;
+                cts_selector selectorB( selectorA );
+            }
 
-            if ( !( dev_gpu.get_info<CL_DEVICE_TYPE>() & CL_DEVICE_TYPE_GPU ) )
-                FAIL( log, "dev_gpu is not a GPU device" );
-
-            if ( !( dev_cpu.get_info<CL_DEVICE_TYPE>() & CL_DEVICE_TYPE_CPU ) )
-                FAIL( log, "dev_cpu is not a CPU device" );
-
-            if ( !dev_host.is_host() )
-                FAIL( log, "dev_host is not a host device" );
-
+            /** check assignment operator
+            */
+            {
+                cts_selector selectorA;
+                cts_selector selectorB = selectorA );
+            }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };

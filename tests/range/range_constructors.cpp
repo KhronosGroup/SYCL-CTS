@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -22,7 +22,7 @@ public:
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -30,16 +30,16 @@ public:
     /** execute the test
      *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            cl::sycl::range<1> rangeOne( 1 );
-            cl::sycl::range<2> rangeTwo( 1, 2 );
-            cl::sycl::range<3> rangeThree( 1, 2, 3 );
-            cl::sycl::range<1> rangeFour( rangeOne );
-            cl::sycl::range<2> rangeFive( rangeTwo );
-            cl::sycl::range<3> rangeSix( rangeThree );
+            cl::sycl::range<1> range_one( 1 );
+            cl::sycl::range<2> range_two( 1, 2 );
+            cl::sycl::range<3> range_three( 1, 2, 3 );
+            cl::sycl::range<1> range_four( range_one );
+            cl::sycl::range<2> range_five( range_two );
+            cl::sycl::range<3> range_six( range_three );
         }
         catch ( cl::sycl::exception e )
         {

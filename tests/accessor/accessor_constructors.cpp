@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -15,15 +15,11 @@ namespace accessor_constructors__
 using namespace sycl_cts;
 using namespace cl::sycl;
 
-/**
- * Class that constructs all the different kinds of accessor
- * exclusively from buffers. Size depends on dims.
- */
-template <typename T, int dims, int size, int mode, int target>
+template <typename T, int dims, int size, cl::sycl::access::mode mode, cl::sycl::access::target target>
 class accessors_buffers
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
         T data[size];
         // Use memset because T might be some complicated type,
@@ -32,32 +28,43 @@ public:
 
         buffer<T, dims> buf( data, r );
 
-        cl::sycl::command_group( q, [&]()
+        q.submit( [&]( cl::sycl::handler& cgh )
         {
-            auto acc = buf.template get_access<mode, target>();
-
-            accessor<T, dims, mode, target> acc_range( r );
+            accessor<T, dims, mode, target> acc (buf, cgh );
             range<dims> base = r / r;
             range<dims> offset = r - base;
             accessor<T, dims, mode, target> acc_sub( buf, base, offset );
-
         } );
     }
 };
 
-/**
- * Class that is used only for the local accessor - local
- * accessors can have no interaction with the host.
+template <typename T, int dims, int size, cl::sycl::access::mode mode>
+class accessors_buffers < T, dims, size, mode, cl::sycl::access::target::host_buffer >
+{
+public:
+    void operator()( util::logger & log, cl::sycl::queue & q, cl::sycl::range<dims> & r )
+    {
+        T data[size];
+        memset( data, 0, sizeof( data ) );
+
+        buffer<T, dims> buf( data, r );
+
+        accessor<T, dims, mode, cl::sycl::access::target::host_buffer> acc( buf );
+    }
+};
+
+/** Class that is used only for the local accessor - local
+ *  accessors can have no interaction with the host.
  */
-template <typename T, int dims, int size, int mode, int target>
+template <typename T, int dims, int size, cl::sycl::access::mode mode, cl::sycl::access::target target>
 class accessors_local
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
-        cl::sycl::command_group( q, [&]()
+        q.submit( [&]( cl::sycl::handler& cgh )
         {
-            accessor<T, dims, mode, target> acc( r );
+            accessor<T, dims, mode, target> acc( r, cgh );
         } );
     }
 };
@@ -66,16 +73,16 @@ template <typename T, int dims, int size, int mode>
 class accessors_targets
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
         // Generate classes for each access target
-        accessors_buffers<T, dims, size, mode, access::global_buffer> g;
+        accessors_buffers<T, dims, size, mode, cl::sycl::access::target::global_buffer> g;
         g( log, q, r );
-        accessors_buffers<T, dims, size, mode, access::constant_buffer> c;
+        accessors_buffers<T, dims, size, mode, cl::sycl::access::target::::constant_buffer> c;
         c( log, q, r );
-        accessors_buffers<T, dims, size, mode, access::host_buffer> hb;
+        accessors_buffers<T, dims, size, mode, cl::sycl::access::target::::host_buffer> hb;
         hb( log, q, r );
-        accessors_local<T, dims, size, mode, access::local> l;
+        accessors_local<T, dims, size, mode, cl::sycl::access::target::::local> l;
         l( log, q, r );
     }
 };
@@ -84,21 +91,19 @@ template <typename T, int dims, int size>
 class accessors_modes
 {
 public:
-    void operator()( util::logger &log, queue &q, range<dims> &r )
+    void operator()( util::logger &log, cl::sycl::queue &q, cl::sycl::range<dims> &r )
     {
         // Generate classes for each access mode
-        accessors_targets<T, dims, size, access::read> read;
+        accessors_targets<T, dims, size, cl::sycl::access::mode::read> read;
         read( log, q, r );
-        accessors_targets<T, dims, size, access::write> write;
+        accessors_targets<T, dims, size, cl::sycl::access::mode::write> write;
         write( log, q, r );
-        accessors_targets<T, dims, size, access::read_write> rw;
+        accessors_targets<T, dims, size, cl::sycl::access::mode::read_write> rw;
         rw( log, q, r );
-
-        accessors_targets<T, dims, size, access::discard_write> discard_write;
+        accessors_targets<T, dims, size, cl::sycl::access::mode::discard_write> discard_write;
         discard_write( log, q, r );
-        accessors_targets<T, dims, size, access::discard_read_write> discard_rw;
+        accessors_targets<T, dims, size, cl::sycl::access::mode::discard_read_write> discard_rw;
         discard_rw( log, q, r );
-
     }
 };
 
@@ -108,9 +113,8 @@ class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-    *  @param info, test_base::info structure as output
-    */
-    virtual void get_info( test_base::info &out ) const
+     */
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -118,7 +122,6 @@ public:
     template <typename T>
     void test_accessors( util::logger &log, cl::sycl::queue &q )
     {
-        // Ranges of each dimension
         const int size = 32;
         range<1> range1d( size );
         range<2> range2d( size, size );
@@ -133,9 +136,8 @@ public:
     }
 
     /** execute the test
-    *  @param log, test transcript logging class
-    */
-    virtual void run( util::logger &log )
+     */
+    virtual void run( util::logger &log ) override
     {
         try
         {
@@ -146,6 +148,9 @@ public:
             test_accessors<float>( log, queue );
             test_accessors<cl::sycl::int2>( log, queue );
             test_accessors<double>( log, queue );
+
+            queue.wait_and_throw();
+
         }
         catch ( cl::sycl::exception e )
         {

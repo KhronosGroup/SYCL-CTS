@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -47,28 +47,22 @@ public:
     void preamble( const struct test_base::info &testInfo );
 
     /** notify a test has failed
-     *  @param reason, optional descriptive string for fail
-     *  @param line, line number in test that reports the failure
      */
     void fail( const STRING &reason, const int line );
 
     /** notify a test has been skipped
-     *  @param reason, optional descriptive string for skip
      */
     void skip( const STRING &reason = STRING() );
 
     /** report fatal error and abort program
-     *  @param reason, optional descriptive string for fatal error
      */
     void fatal( const STRING &reason = STRING() );
 
     /** output verbose information
-     *  @param string
      */
     void note( const STRING &str );
 
     /** output verbose information
-     *  @param variable argument list, printf syntax
      */
     void note( const char *fmt, ... );
 
@@ -82,9 +76,13 @@ public:
 
     /** send a progress update
      *
-     *  sent as 'items' done of 'total'
+     *  sent as number of 'items' done of 'total'
      */
     void progress( int item, int total );
+
+    /** return true if the log has been marked as fail
+     */
+    bool has_failed( );
 
     /** return the test result as result enum
      */

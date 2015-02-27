@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -26,6 +26,7 @@ test_base_opencl::test_base_opencl()
     , m_cl_command_queue( nullptr )
     , m_openKernels( )
     , m_openPrograms( )
+    , m_cl_sampler( nullptr )
 {
 }
 
@@ -95,6 +96,10 @@ bool test_base_opencl::setup( logger &log )
 
     // No special queue properties wanted
     m_cl_command_queue = clCreateCommandQueue( m_cl_context, devices.get()[0], 0, &error );
+    if ( !CHECK_CL_SUCCESS( log, error ) )
+        return false;
+
+    cl_sampler m_cl_sampler = clCreateSampler(m_cl_context, 0, CL_ADDRESS_REPEAT, CL_FILTER_LINEAR, &error);
     if ( !CHECK_CL_SUCCESS( log, error ) )
         return false;
 

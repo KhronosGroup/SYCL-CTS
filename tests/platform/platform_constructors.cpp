@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,39 +14,87 @@ namespace platform_constructors__
 {
 using namespace sycl_cts;
 
-/** check that we can instantiate a sycl platform class
+/** tests the constructors for cl::sycl::platform
  */
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            cl::sycl::platform p;
+            /** check default constructor and destructor
+            */
+            {
+                cl::sycl::platform platform;
 
-            cl::sycl::host_selector hs;
-            cl::sycl::platform p_selector( ds );
+                if ( !platform.is_host() )
+                {
+                    FAIL( log, "platform was not constructed correctly." );
+                }
 
-            cl::sycl::platform p_copy( p );
+                if ( platform.get() != 0 )
+                {
+                    FAIL( log, "platform was not constructed correctly" );
+                }
+            }
+
+            /** check (device_selector) constructor
+            */
+            {
+                cts_selector selector;
+                cl::sycl::platform platform( selector );
+
+                if ( platform.is_host() )
+                {
+                    FAIL( log, "platform was not constructed correctly." );
+                }
+
+                if ( platform.get() == 0 )
+                {
+                    FAIL( log, "platform was not constructed correctly." );
+                }
+            }
+
+            /** check copy constructor
+            */
+            {
+                cts_selector selector;
+                cl::sycl::platform platformA( selector );
+                cl::sycl::platform platformB( platformA );
+
+                if ( platformA.get() != platformB.get() )
+                {
+                    FAIL( log, "platform was not copied correctly." );
+                }
+            }
+
+            /** check assignment operator
+            */
+            {
+                cts_selector selector;
+                cl::sycl::platform platformA( selector );
+                cl::sycl::platform platformB = platformA;
+
+                if ( platformA.get() != platformB.get() )
+                {
+                    FAIL( log, "platform was not assigned correctly." );
+                }
+            }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log,
-                  "Failed to construct platform object in "
-                  "platform_constructors" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };

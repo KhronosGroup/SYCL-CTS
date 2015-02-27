@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -15,7 +15,7 @@ namespace program_api__
 using namespace sycl_cts;
 using namespace cl::sycl;
 
-/** simple test kernel
+/** simple OpenCL test kernel
  */
 util::STRING kernel_source = R"(
 __kernel void sample(__global float * input)
@@ -31,17 +31,15 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl
 public:
 
     /** return information about this test
-     *  @param out, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
@@ -72,18 +70,20 @@ public:
                     FAIL( log, "Wrong value for program.get_binaries()" );
                 }
 
-                for(int i =0; i < 42; i++)
+                for(int i = 0; i < 42; i++)
                 {
                     {
-                        command_group(queue, [&] () {
-                            auto in_dev = in.get_access<access::read>();
-                            auto out_dev = out.get_access<access::write>();
+                        queue.submit( [&]( handler& cgh )
+                        {
+                            auto in_dev = in.get_access<cl::sycl::access::mode::read>( cgh );
+                            auto out_dev = out.get_access<cl::sycl::access::mode::write>( cgh );
 
-                            parallel_for<class build_without_options>( nd_range<1>(1), prog,
-                            ([=] () {
+                            cgh.parallel_for<class build_without_options>(
+                                nd_range<1>(1), prog, [=]()
+                            {
                                 out_dev[0] = out_dev[0] + in_dev[0];
-                            }));
-                        });
+                            } );
+                        } );
                     }
                 }
             }
@@ -113,18 +113,22 @@ public:
                 for(int i =0; i < 42; i++)
                 {
                     {
-                        command_group(queue, [&] () {
-                            auto in_dev = in.get_access<access::read>();
-                            auto out_dev = out.get_access<access::write>();
+                        queue.submit( [&]( handler& cgh )
+                        {
+                            auto in_dev = in.get_access<cl::sycl::access::mode::read>( cgh );
+                            auto out_dev = out.get_access<cl::sycl::access::mode::write>( cgh );
 
-                            parallel_for<class build_with_options>( nd_range<1>(1), prog,
-                            ([=] () {
+                            cgh.parallel_for<class build_with_options>(
+                                nd_range<1>( 1 ), prog, [=]()
+                            {
                                 out_dev[0] = out_dev[0] + in_dev[0];
-                            }));
-                        });
+                            } );
+                        } );
                     }
                 }
 
+                
+                /// taken from page 98 section 3.7.2.3
                 {
                     class compile_without_options; //Forward declaration of the name of the lambda functor
                     cl::sycl::queue myQueue;
@@ -152,8 +156,13 @@ public:
                                 //[kernel code]
                             }));
                     });
+
+                    myQueue.wait_and_throw();
+
                 }
 
+                
+                /// taken from page 98 section 3.7.2.3
                 {
                     class compile_without_options; //Forward declaration of the name of the lambda functor
                     cl::sycl::queue myQueue;
@@ -181,6 +190,9 @@ public:
                                 //[kernel code]
                             }));
                     });
+
+                    myQueue.wait_and_throw();
+
                 }
             }
         }

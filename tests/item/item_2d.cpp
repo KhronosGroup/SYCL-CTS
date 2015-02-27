@@ -2,16 +2,15 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME item_2d
-#define TEST_NAMESPACE test_##TEST_NAME
 
-namespace TEST_NAMESPACE
+namespace test_item_2d__
 {
 using namespace sycl_cts;
 using namespace cl::sycl;
@@ -19,14 +18,13 @@ using namespace cl::sycl;
 class kernel_item_2d
 {
 protected:
-    typedef accessor<int, 2, access::read,  access::global_buffer> t_readAccess;
-    typedef accessor<int, 2, access::write, access::global_buffer> t_writeAccess;
+    typedef accessor<int, 2, cl::sycl::access::mode::read,  cl::sycl::access::target::global_buffer> t_readAccess;
+    typedef accessor<int, 2, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> t_writeAccess;
     
     t_readAccess  m_x;
     t_writeAccess m_o;
 
 public:
-
     kernel_item_2d( t_readAccess in_, t_writeAccess out_ )
         : m_x( in_  )
         , m_o( out_ )
@@ -42,17 +40,15 @@ public:
 
         range<2> globalRange = item.get_global_range( );
         range<2> localRange  = item.get_local_range( );
-        UNUSED(localRange);
-        size_t group = item.get_group( 0 );
-        UNUSED(group);
 
+        size_t group = item.get_group( 0 );
+        
         int numGroups = item.get_num_groups( 0 );
         id<1> offset = item.get_offset( );
-                
+        
         /* get work item range */
         const size_t nWidth  = globalRange.get( )[0];
         const size_t nHeight = globalRange.get( )[1];
-        UNUSED(nHeight);
 
         /* find the array id for this work item */
         size_t index = 
@@ -60,10 +56,9 @@ public:
             (gid.get()[1] * nWidth);    /* y */
         
         /* get the global linear id */
-        const size_t glid = item.get_global_linear();
         
         /* compare against the precomputed index */
-        m_o[int(glid)] = (m_x[int(glid)] == static_cast<int>(index));
+        m_o[item] = (m_x[item] == static_cast<int>(index));
     }
 };
 
@@ -115,19 +110,22 @@ bool test_item_2d( util::logger & log )
         buffer<int, 2> bufIn ( dataIn .get(), dataRange_i );
         buffer<int, 2> bufOut( dataOut.get(), dataRange_o );
 
-        intel_selector selector;
+        cts_selector selector;
         queue cmdQueue( selector );
 
-        command_group( cmdQueue, [&]()
+        cmdQueue.submit( [&]( handler& cgh )
         {
-            auto accIn  = bufIn  .template get_access<access::read >( );
-            auto accOut = bufOut .template get_access<access::write>( );
+            auto accIn  = bufIn  .template get_access<cl::sycl::access::mode::read >( cgh );
+            auto accOut = bufOut .template get_access<cl::sycl::access::mode::write>( cgh );
 
             kernel_item_2d kern = kernel_item_2d( accIn, accOut );
 
             auto r = nd_range<2>( range<2>( nWidth, nHeight ), range<2>( 1, 1 ) );
-            parallel_for( r, kern );
+            cgh.parallel_for( r, kern );
         });
+
+        cmdQueue.wait_and_throw();
+
     }
     catch ( cl::sycl::exception e )
     {
@@ -152,17 +150,15 @@ class TEST_NAME : public util::test_base
 public:
 
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         test_item_2d( log );
     }

@@ -1,7 +1,7 @@
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 #  SYCL CONFORMANCE TEST SUITE
 #  Usage guide
-#  20/11/14
+#  27/02/14
 #
 
 
@@ -23,6 +23,7 @@
 #
     - An implementation of SYCL
     - A conformant implementation of OpenCL
+    - OpenGL (optional for opengl interop tests)
     - Python 2.7
     - GCC 4.8.2 or Visual C++ 2013
     - CMake 2.8.12
@@ -40,7 +41,7 @@
         - point the source directory to the root of the sycl-cts folder
 		- select makefiles project
         - set the build directory to a 'build' folder inside the sycl-cts folder
-		- set the CMake parameters specific to your sycl implementation.
+        - set the cmake parameters
 
     - Run make inside the build folder
 
@@ -58,7 +59,7 @@
 		- point the source directory to the root of the sycl-cts folder
 		- select 64bit visual studio 2013 generator
 		- set the build directory to a 'build' folder inside the sycl-cts folder
-		- set the CMake parameters specific to your sycl implementation.
+		- set the CMake parameters
 
     - Open the generated solution in visual studio 2013 and rebuild all
 

@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -18,24 +18,24 @@ class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-    *  @param info, test_base::info structure as output
-    */
-    virtual void get_info(test_base::info &out) const
+     */
+    virtual void get_info(test_base::info &out) const override
     {
         set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
     }
 
     /** execute the test
-    *  @param log, test transcript logging class
-    */
-    virtual void run(util::logger &log)
+     */
+    virtual void run(util::logger &log) override
     {
         try
         {
             bool normalise = true;
-            cl::sycl::sampler s( normalise,
+            cl::sycl::sampler s(
+                normalise,
                 sampler_addressing_mode::SYCL_SAMPLER_ADDRESS_CLAMP,
-                sampler_filter_mode::SYCL_SAMPLER_FILTER_LINEAR );
+                sampler_filter_mode::SYCL_SAMPLER_FILTER_LINEAR
+                );
 
             auto address_mode = s.get_address();
             if ( typeid( address_mode ) != typeid( cl_addressing_mode ) )

@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -32,35 +32,35 @@ void fill( float &e, float v )
 
 void fill( float2 &e, float v )
 {
-    e.data[0] = v;
-    e.data[1] = v;
+    e[0] = v;
+    e[1] = v;
 }
 
 void fill( float3 &e, float v )
 {
-    e.data[0] = v;
-    e.data[1] = v;
-    e.data[2] = v;
+    e[0] = v;
+    e[1] = v;
+    e[2] = v;
 }
 
 void fill( float4 &e, float v )
 {
-    e.data[0] = v;
-    e.data[1] = v;
-    e.data[2] = v;
-    e.data[3] = v;
+    e[0] = v;
+    e[1] = v;
+    e[2] = v;
+    e[3] = v;
 }
 
 void fill( float8 &e, float v )
 {
     for ( int i = 0; i < 8; i++ )
-        e.data[i] = v;
+        e[i] = v;
 }
 
 void fill( float16 &e, float v )
 {
     for ( int i = 0; i < 16; i++ )
-        e.data[i] = v;
+        e[i] = v;
 }
 
 /* return number of elements in a type */
@@ -122,23 +122,23 @@ float getElement( const float &f, int ix )
 }
 float getElement( const float2 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 float getElement( const float3 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 float getElement( const float4 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 float getElement( const float8 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 float getElement( const float16 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 
 /* extract individual elements of an integer type */
@@ -148,23 +148,23 @@ int getElement( const int &f, int ix )
 }
 int getElement( const int2 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 int getElement( const int3 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 int getElement( const int4 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 int getElement( const int8 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 int getElement( const int16 &f, int ix )
 {
-    return f.data[ix];
+    return f[ix];
 }
 
 /* create random floats with full integer range */

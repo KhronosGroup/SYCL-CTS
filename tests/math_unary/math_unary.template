@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:  (c) 2014 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -10,6 +10,7 @@
 
 #include "./../../util/stl.h"
 #include "./../../util/math_helper.h"
+#include "./../../util/type_names.h"
 
 #include "./../../oclmath/reference_math.h"
 #include "./../../oclmath/Utility.h"
@@ -19,132 +20,212 @@
 #define TEST_NAME   math_unary_$TEST_FUNC$
 #define WIMPY_MODE  1
 #define MAX_ULPS    $MAX_ULPS$
-#define TEST_FUNC   $TEST_FUNC$
+#define HOST_FUNC   $TEST_FUNC$
 #define REF_FUNC    reference_$TEST_FUNC$
-#define KERNEL_NAME cKernel_$TEST_FUNC$
-#define NAMESPACE   math_unary_$TEST_FUNC$__
 
-namespace NAMESPACE
+namespace math_unary_$TEST_FUNC$__
 {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
+/**
+ */
+enum {
+    e_ulp_func_half   = 0,
+    e_ulp_func_float  ,
+    e_ulp_func_double ,
+};
+
 /** kernel functor
  */
 template <typename T>
-class KERNEL_NAME
+class test_kernel
 {
 public:
-    typedef accessor<T, 1, access::read, access::global_buffer> t_read;
-    typedef accessor<T, 1, access::write, access::global_buffer> t_write;
+    typedef accessor<T, 1, cl::sycl::access::mode::read , cl::sycl::access::target::global_buffer> t_read;
+    typedef accessor<T, 1, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> t_write;
 
-    t_read  m_in;
     t_write m_out;
+    t_read  m_in;
 
-    KERNEL_NAME( t_read r_, t_write w_ )
-        : m_in( r_ )
-        , m_out( w_ )
+    test_kernel( t_write w_, t_read r_ )
+        : m_out( w_ )
+        , m_in ( r_ )
     {
     }
 
-    void operator()( item<1> item )
+    void operator()( id<1> item )
     {
-        auto in = m_in[item.get_global()];
-        auto &out = m_out[item.get_global()];
-        out = cl::sycl::$TEST_FUNC$( in );
+        auto  in  = m_in [ item ];
+        auto &out = m_out[ item ];
+
+        out = cl::sycl::HOST_FUNC( in );
     }
 };
 
+template <class T, int length>
+uint32_t type_length( const vec<T,length> & ref ) {
+    return ref.count();
+}
+
+uint32_t type_length( const float & ref ) {
+    return 1;
+}
+
+uint32_t type_length( const double & ref ) {
+    return 1;
+}
+
+template <class type_t, int length>
+type_t type_get( vec<type_t, length> & ref, const uint32_t index ) {
+    assert( index < length );
+    return ref[index];
+}
+
+float & type_get( float & ref, uint32_t index ) {
+    assert( index == 0 );
+    return ref;
+}
+
+double & type_get( double & ref, uint32_t index ) {
+    assert( index == 0 );
+    return ref;
+}
+
+template <class type_t, int length>
+void type_set( vec<type_t, length> & ref, const uint32_t index, type_t val ) {
+    assert( index < length );
+    ref[index] = val;
+}
+
+void type_set( float & ref, uint32_t index, float val ) {
+    assert( index == 0 );
+    ref = val;
+}
+
+void type_set( double & ref, uint32_t index, double val ) {
+    assert( index == 0 );
+    ref = val;
+}
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
 /** unary brute force math test
  */
-template <typename T>
-class TEST_NAME : public sycl_cts::util::test_base
+template <typename type_t, typename base_t, int ulp_test_func>
+class test_class
 {
 protected:
 #if WIMPY_MODE
-    /* wimpy mode constants */
-    static const uint32_t nStep = 0x08000000;
+    /* wimpy mode constant */
     static const uint32_t nScale = 0x100;
 #else
-    /* full (brutal) mode constants */
-    static const uint32_t nStep = 0x00080000;
+    /* full (brutal) mode constant */
     static const uint32_t nScale = 0x1;
 #endif
 
-    /* size of the data buffer to process */
-    static const uint32_t nBufferSize = nStep / nScale;
+    /* size of the host side buffer */
+    static const uint32_t nBufferSize = 0x1000;
 
-    /** number of chunks the main buffer should be split into
-     *  so that one chunk is processed at a time */
-    static const uint32_t nSubBuffers = 16;
+    /* size of the device side buffer */
+    static const uint32_t nSubBufferSize = 0x100;
 
-    /* data buffer */
-    util::UNIQUE_PTR<T[]> m_input;
-    util::UNIQUE_PTR<T[]> m_output;
+    uint64_t m_index;
+
+    /* parameter buffer */
+    util::UNIQUE_PTR<type_t[]> m_param_1;
+#if 0
+    util::UNIQUE_PTR<type_t[]> m_param_2;
+#endif
+
+    /* results buffer */
+    util::UNIQUE_PTR<type_t[]> m_output;
 
     /* record the max ULP error */
     float m_max_ulp;
 
-public:
-    TEST_NAME()
-        : m_input( nullptr )
-        , m_output( nullptr )
-        , m_max_ulp( 0.f )
+    /** 
+     */
+    base_t generate_scalar( uint32_t x )
     {
+        return base_t( math::int_to_float( x ) );
     }
 
     /** fill the buffer with new values
      */
-    void generate( util::logger &log, const uint32_t j )
+    uint32_t generate( util::logger &log )
     {
-        assert( m_input.get() != nullptr );
-        assert( m_output.get() != nullptr );
+        assert( m_param_1.get() != nullptr );
+#if 0
+        assert( m_param_2.get() != nullptr );
+#endif
+        assert( m_output .get() != nullptr );
 
-        /* compute new base */
-        uint32_t l_base = nStep * j;
+        const uint32_t nElms = type_length( type_t( ) );
 
         /* fill data buffer */
         for ( uint32_t i = 0; i < nBufferSize; i++ )
         {
-            /* compute new value */
-            uint32_t x = l_base + i * nScale;
+            /* access buffers */
+            type_t & e_param1 = m_param_1[ i ];
+#if 0
+            type_t & e_param2 = m_param_2[ i ];
+#endif
+            type_t & e_output = m_output [ i ];
 
-            /* interpret as float */
-            float l_val = math::int_to_float( x );
+            /* for each element */
+            for ( uint32_t j = 0; j < nElms; j++ )
+            {
+                /* truncate the index value to type range */
+                uint32_t ix = uint32_t( m_index & ~type_mask() );
 
-            /* expand to kernel data type */
-            math::fill( m_input.get()[i], l_val );
+                /* generate new parameter value */
+                type_set( e_param1, j, generate_scalar( ix ) );
+#if 0
+                type_set( e_param2, j, generate_scalar( ix ) );
+#endif
+                m_index += nScale;
 
-            /* clear output buffer */
-            math::fill( m_output.get()[i], math::int_to_float( 0xF8888888 ) );
+                /* clear the output buffer */
+                type_set( e_output, j, base_t( 1.f ) );
+
+                /* if we have exceeded 32 bit range */
+                if ( ( m_index & type_mask() ) != 0 )
+                    /* the buffer may be only partially filled */
+                    return i;
+            }
         }
+
+        /* we filled the entire buffer */
+        return nBufferSize;
     }
 
     /** pass the buffer through the kernel
      */
-    bool executeChunk( util::logger &log, queue &a_queue, const uint32_t chunkStart, const uint32_t chunkSize )
+    bool execute_chunk( util::logger &log, queue &a_queue, const uint32_t chunkStart, const uint32_t chunkSize )
     {
-        /* check we are always in the buffer */
-        assert( ( chunkStart + chunkSize ) <= nBufferSize );
-
         try
         {
-            buffer<T, 1> l_bufin( m_input.get() + chunkStart, chunkSize );
-            buffer<T, 1> l_bufout( m_output.get() + chunkStart, chunkSize );
+            buffer<type_t, 1> l_buf_param1( m_param_1.get() + chunkStart, range<1> ( chunkSize ) );
+            buffer<type_t, 1> l_buf_param2( m_param_2.get() + chunkStart, range<1> ( chunkSize ) );
+            buffer<type_t, 1> l_buf_output( m_output .get() + chunkStart, range<1> ( chunkSize ) );
 
             /* add command to queue */
-            command_group( a_queue, [&]()
-                           {
-                auto ptrIn = l_bufin.template get_access<access::read>();
-                auto ptrOut = l_bufout.template get_access<access::write>();
+            a_queue.submit( [&]( handler& cgh )
+            {
+                auto acc_param1 = l_buf_param1.template get_access<cl::sycl::access::mode::read> ( cgh );
+                auto acc_param2 = l_buf_param2.template get_access<cl::sycl::access::mode::read> ( cgh );
+                auto acc_output = l_buf_output.template get_access<cl::sycl::access::mode::write>( cgh );
 
                 /* instantiate the kernel */
-                auto kern = KERNEL_NAME<T>( ptrIn, ptrOut );
+                auto kern = test_kernel<type_t>( acc_output, acc_param1 );
 
                 /* execute the kernel */
-                parallel_for( nd_range<1>( range<1>( chunkSize ), range<1>( chunkSize / 8 ) ), kern );
-
+                cgh.parallel_for( range<1>( chunkSize ), kern );
             } );
+
+            a_queue.wait_and_throw();
+
         }
         catch ( cl::sycl::exception e )
         {
@@ -158,47 +239,25 @@ public:
 
     /** process an entire buffer
      */
-    bool execute( util::logger &log, queue &a_queue, const uint32_t j )
+    bool execute( util::logger &log, queue &a_queue, uint32_t nItems )
     {
-        /* number of chunks in this buffer */
-        const uint32_t nChunkSize = nBufferSize / nSubBuffers;
+        const uint32_t nChunkSize = 64;
+
+        const uint32_t nItts = (nItems / nChunkSize);
 
         /* step through chunks */
-        for ( uint32_t i = 0; i < nBufferSize; i += nChunkSize )
+        for ( uint32_t pos = 0; pos < nItts; pos += nChunkSize )
         {
+            /* find a fitting chunk */
+            int32_t size = nItems - pos;
+            size = (size < nChunkSize) ? size : nChunkSize;
+
+            if ( size <= 0 )
+                break;
+
             /* process this chunk */
-            if ( !executeChunk( log, a_queue, i, nChunkSize ) )
+            if ( !execute_chunk( log, a_queue, pos, size ) )
                 return false;
-        }
-
-        return true;
-    }
-
-    /** verify the buffer is valid
-     */
-    bool verify( util::logger &log, const uint32_t j )
-    {
-        /* ULP threshold value */
-        const float nULPS = MAX_ULPS;
-
-        /* compute new base */
-        unsigned int l_base = nStep * j;
-
-        /* iterate over results buffer */
-        for ( unsigned int i = 0; i < nBufferSize; i++ )
-        {
-            const auto xv = m_input.get()[i];
-            const auto ov = m_output.get()[i];
-
-            /* iterate over vector type */
-            for ( int j = 0; j < math::numElements( xv ); j++ )
-            {
-                float x   = math::getElement( xv, j );
-                float res = math::getElement( ov, j );
-
-                if ( !verify( log, res, x ) )
-                    return false;
-            }
         }
 
         return true;
@@ -206,115 +265,153 @@ public:
 
     /**
      */
-    bool verify( util::logger &log, const float res, const float x )
+    bool verify_scalar( util::logger &log, base_t vut, base_t param )
     {
-        /* ULP threshold value */
-        const float nULPS = MAX_ULPS;
+        double ref = REF_FUNC( (double)param );
 
-        /* find the reference value */
-        const double ref = REF_FUNC( (double)x );
+        static_assert( ulp_test_func == e_ulp_func_half   ||
+                       ulp_test_func == e_ulp_func_float  ||
+                       ulp_test_func == e_ulp_func_double
+                       , "unknown ulp reference function" );
 
-        /* check for correct rounding */
-        if ( (float)ref == res )
-            return true;
+        float ulp = 100.f;
 
-        /* get abs ULP error */
-        const float l_ulp_error = fabs( Ulp_Error( res, ref ) );
+        if ( ulp_test_func == e_ulp_func_half )
+            assert( ! "half reference not yet implemented" );
+            
+        if ( ulp_test_func == e_ulp_func_float )
+            ulp = Ulp_Error( vut, ref );
 
-        /* record the abs max ulps */
-        m_max_ulp = fmax( m_max_ulp, l_ulp_error );
+        if ( ulp_test_func == e_ulp_func_double )
+            ulp = Ulp_Error_Double( vut, ref );
 
-        /* check if abs(ULP) exceeds tolerance */
-        if ( !( l_ulp_error <= nULPS ) )
-        {
-            log.note( "ULP fail @ %f", res );
+        m_max_ulp = fmaxf( fabsf( ulp ), m_max_ulp );
+
+        if ( m_max_ulp > MAX_ULPS )
             return false;
+
+        return true;
+    }
+
+    /**
+     */
+    bool verify( util::logger & log ) {
+
+        uint32_t num_elms = type_length( m_param_1[0] );
+
+        for ( uint32_t i = 0; i < nBufferSize; i++ ) {
+            for ( uint32_t j = 0; j < num_elms; j++ ) {
+
+                base_t param_1 = type_get( m_param_1[i], j );
+#if 0
+                base_t param_2 = type_get( m_param_2[i], j );
+#endif
+
+                base_t res     = type_get( m_output [i], j );
+
+                if ( !verify_scalar( log, res, param_1 ) )
+                    return false;
+            }
         }
 
         return true;
     }
 
-    /** return information about this test
-     *  @param info, test_base::info structure as output
-     */
-    virtual void get_info( test_base::info &out ) const
+public:
+
+    test_class( )
+        : m_param_1( nullptr )
+        , m_output ( nullptr )
+        , m_max_ulp( 0.f     )
+        , m_index  ( 0       )
     {
-        const char *l_name = "";
-#define MAKENAME( X )                          \
-    if ( typeid( T ) == typeid( X ) )          \
-    {                                          \
-        l_name = TOSTRING( TEST_NAME ) "_" #X; \
-    }
-        MAKENAME( float );
-        MAKENAME( float2 );
-        MAKENAME( float3 );
-        MAKENAME( float4 );
-        MAKENAME( float8 );
-        MAKENAME( float16 );
-#undef MAKENAME
-        set_test_info( out, l_name, TEST_FILE );
     }
 
     /** clear values required during testing
-     *  @return, success
      */
-    virtual bool setup( util::logger &log )
+    bool setup( util::logger &log )
     {
         m_max_ulp = 0.f;
 
-        m_input.reset( new T[nBufferSize] );
-        assert( m_input.get() != nullptr );
+        m_param_1.reset( new type_t[nBufferSize] );
+        assert( m_param_1.get() != nullptr );
+        memset( m_param_1.get( ), 0, nBufferSize * sizeof( type_t ) );
 
-        m_output.reset( new T[nBufferSize] );
+#if 0
+        m_param_2.reset( new type_t[nBufferSize] );
+        assert( m_param_2.get() != nullptr );
+        memset( m_param_2.get( ), 0, nBufferSize * sizeof( type_t ) );
+#endif
+
+        m_output.reset( new type_t[nBufferSize] );
         assert( m_output.get() != nullptr );
+        memset( m_output.get( ), 0, nBufferSize * sizeof( type_t ) );
 
         return true;
     }
 
-    /** execute this test
-     *  @param log, test transcript logging class
+    /** return a mask with bits being set 
      */
-    virtual void run( util::logger &log )
+    uint64_t type_mask( ) {
+
+        if ( typeid( base_t ) == typeid( float ) )
+            return ~( ( 1ull << 32 ) - 1 );
+
+#if SYCL_CTS_TEST_DOUBLE
+        if ( typeid( base_t ) == typeid( double ) )
+            return ~( ( 1ull << 32 ) - 1 );
+#endif
+
+#if SYCL_CTS_TEST_HALF
+        if ( typeid( base_t ) == typeid( half ) )
+            return ~( ( 1ull << 16 ) - 1 );
+#endif
+
+        assert( !"Should not reach here" );
+        return 0;
+    }
+
+    /** execute this test
+     */
+    void run( util::logger &log )
     {
         try
         {
             /* create device selector */
-            intel_selector l_selector;
+            cts_selector l_selector;
 
             /* create command queue */
             queue l_queue( l_selector );
 
-            /* find the number of iterations to perform so that we
-             * cover the space we want with the step size we are given.
-             */
-            uint64_t nItts = ( 1ull << 32 ) / nStep;
+            const uint64_t mask = type_mask( );
 
             /*  */
-            for ( int j = 0; j < nItts; j++ )
+            do
             {
                 /* send progress report */
-                log.progress( j, int( nItts ) );
+                log.progress( int32_t(m_index>>8), int32_t( mask>>8 ) );
 
                 /* generate a buffer of x values */
-                generate( log, j );
+                uint32_t nItems = generate( log );
 
                 /* convert x values to y values */
-                if ( !execute( log, l_queue, j ) )
+                if ( !execute( log, l_queue, nItems ) )
                 {
                     FAIL( log, "kernel failed execution" );
                     break;
                 }
 
                 /* compare y values to reference y values */
-                if ( !verify( log, j ) )
+                if ( !verify( log ) )
                 {
                     FAIL( log, "ULP exceeds tolerance" );
                     break;
                 }
             }
+            while ( ( m_index & type_mask() ) != 0 );
 
             /* send 100% progress report */
-            log.progress( int( nItts ), int( nItts ) );
+            log.progress( int( 1 ), int( 1 ) );
 
             /* record the max ulps */
             log.note( "max_ulp = %8.2f", m_max_ulp );
@@ -326,21 +423,70 @@ public:
     }
 
     /** release all test resources
-     *
      */
-    virtual void cleanup( )
+    void cleanup( )
     {
-        m_input.reset( nullptr );
-        m_output.reset( nullptr );
+        m_param_1.reset( nullptr );
+        m_output .reset( nullptr );
     }
 };
 
-/* register this test with the test_collection */
-util::test_proxy<TEST_NAME<float  >> proxy1;
-util::test_proxy<TEST_NAME<float2 >> proxy2;
-util::test_proxy<TEST_NAME<float3 >> proxy3;
-util::test_proxy<TEST_NAME<float4 >> proxy4;
-util::test_proxy<TEST_NAME<float8 >> proxy5;
-util::test_proxy<TEST_NAME<float16>> proxy6;
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
-} /* namespace NAMESPACE */
+class TEST_NAME : public sycl_cts::util::test_base
+{
+public:
+
+    template <typename type_t>
+    bool execute( util::logger & log )
+    {
+        type_t test;
+        if ( !test.setup( log ) ) return false;
+        test.run( log );
+        test.cleanup( );
+        return ! log.has_failed();
+    }
+
+    /** return information about this test
+     */
+    virtual void get_info( test_base::info &out ) const override
+    {
+        using sycl_cts::util::STRING;
+        STRING name = STRING( TOSTRING( TEST_NAME ) );
+        set_test_info( out, name.c_str( ), TEST_FILE );
+    }
+
+    /** execute this test
+     */
+    virtual void run( util::logger &log ) override
+    {
+#if SYCL_CTS_TEST_HALF
+        if ( !execute<test_class<half    , half  , e_ulp_func_half >>( log ) ) return;
+        if ( !execute<test_class<half2   , half  , e_ulp_func_half >>( log ) ) return;
+        if ( !execute<test_class<half3   , half  , e_ulp_func_half >>( log ) ) return;
+        if ( !execute<test_class<half4   , half  , e_ulp_func_half >>( log ) ) return;
+        if ( !execute<test_class<half8   , half  , e_ulp_func_half >>( log ) ) return;
+        if ( !execute<test_class<half16  , half  , e_ulp_func_half >>( log ) ) return;
+#endif
+    
+        if ( !execute<test_class<float   , float , e_ulp_func_float >>( log ) ) return;
+        if ( !execute<test_class<float2  , float , e_ulp_func_float >>( log ) ) return;
+        if ( !execute<test_class<float3  , float , e_ulp_func_float >>( log ) ) return;
+        if ( !execute<test_class<float4  , float , e_ulp_func_float >>( log ) ) return;
+        if ( !execute<test_class<float8  , float , e_ulp_func_float >>( log ) ) return;
+        if ( !execute<test_class<float16 , float , e_ulp_func_float >>( log ) ) return;
+
+#if SYCL_CTS_TEST_DOUBLE
+        if ( !execute<test_class<double  , double, e_ulp_func_double>>( log ) ) return;
+        if ( !execute<test_class<double2 , double, e_ulp_func_double>>( log ) ) return;
+        if ( !execute<test_class<double3 , double, e_ulp_func_double>>( log ) ) return;
+        if ( !execute<test_class<double4 , double, e_ulp_func_double>>( log ) ) return;
+        if ( !execute<test_class<double8 , double, e_ulp_func_double>>( log ) ) return;
+        if ( !execute<test_class<double16, double, e_ulp_func_double>>( log ) ) return;
+#endif
+    }
+};
+
+util::test_proxy<TEST_NAME> proxy;
+
+} /* namespace math_unary_cos__ */

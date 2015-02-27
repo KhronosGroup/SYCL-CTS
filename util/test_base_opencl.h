@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -108,6 +108,7 @@ protected:
     cl_device_id     m_cl_device;
     cl_context       m_cl_context;
     cl_command_queue m_cl_command_queue;
+    cl_sampler       m_cl_sampler;
 
     /*  */
     VECTOR<cl_kernel>  m_openKernels;

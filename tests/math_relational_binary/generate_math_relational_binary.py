@@ -15,7 +15,8 @@ import sys
 # global variables
 #
 g_relational_binary_map = \
-               [{"$TEST_FUNC$" : "isequal"       },
+               [{"$TEST_FUNC$" : "isequal"       }]
+"""
                 {"$TEST_FUNC$" : "isnotequal"    },
                 {"$TEST_FUNC$" : "isless"        },
                 {"$TEST_FUNC$" : "isgreater"     },
@@ -23,7 +24,8 @@ g_relational_binary_map = \
                 {"$TEST_FUNC$" : "isgreaterequal"},
                 {"$TEST_FUNC$" : "islessgreater" },
                 {"$TEST_FUNC$" : "isordered"     },
-                {"$TEST_FUNC$" : "isunordered"   }]
+                {"$TEST_FUNC$" : "isunordered"   },
+"""
 
 g_generated_header = \
 """
@@ -33,18 +35,6 @@ g_generated_header = \
 //
 **************************************************************************/
 """
-
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# auto mangle a SPIR function name
-#
-# _Z[l][name][args]
-#   l       : length of name
-#   name    : function name
-#   args    : 'f' (float), 'ff' (float, float), 'd' (double), ...
-#
-def mangle( func_name, func_args ):
-    return "_Z" + str( len( func_name ) ) + func_name + func_args
-
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # generate .cpp files based on template and map list

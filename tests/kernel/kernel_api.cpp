@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,7 +14,7 @@ namespace kernel_api__
 {
 using namespace sycl_cts;
 
-/** simple test kernel
+/** simple OpenCL test kernel
  */
 util::STRING kernel_source = R"(
 __kernel void sample(__global float * input)
@@ -28,19 +28,16 @@ __kernel void sample(__global float * input)
 class TEST_NAME : public sycl_cts::util::test_base_opencl
 {
 public:
-
     /** return information about this test
-     *  @param out, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
@@ -93,7 +90,7 @@ public:
                       "cl::sycl::kernel::get_kernel_attributes() "
                       "returned 0 but should return 1");
             }
-            STRING functionName = k.get_function_name();
+            cl::sycl::string_class functionName = k.get_function_name();
         }
         catch ( cl::sycl::exception e )
         {

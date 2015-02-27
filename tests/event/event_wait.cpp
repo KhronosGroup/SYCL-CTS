@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -22,59 +22,52 @@ class TEST_NAME : public sycl_cts::util::test_base
 public:
 
     /** return information about this test
-    *  @param info, test_base::info structure as output
-    */
-    virtual void get_info( test_base::info &out ) const
+     */
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
-    event add_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
+    handler_event add_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
     {
-
         /* add command to queue */
-        command_group myCmdGroup(queue, [&]()
+        return queue.submit( [&]( handler& cgh )
         {
-            auto a_data = d_data.get_access<access::read_write>();
+            auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-            single_task<class add_val>([=]() {
+            cgh.single_task<class add_val>( [=]()
+            {
                 a_data[0] += operand;
-            });
-        });
-
-        return myCmdGroup.complete_event();
+            } );
+        } );
     }
 
-
-    event mul_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
+    handler_event mul_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
     {
-        /* add command to queue */
-        command_group myCmdGroup(queue, [&]()
+        return queue.submit( [&]( handler& cgh )
         {
-            auto a_data = d_data.get_access<access::read_write>();
+            auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-            single_task<class mul_val>([=]() {
+            cgh.single_task<class mul_val>( [=]()
+            {
                 a_data[0] *= operand;
-            });
-        });
-
-           return myCmdGroup.complete_event();
+            } );
+        } );
     }
 
     /** Execute kernels, waiting in-between
-    */
+     */
     bool wait_and_exec(sycl_cts::util::logger &log, queue &queueA, queue &queueB)
     {
-
         for (int i = 0; i < 4; ++i)
         {
             float h_data = 0.0;
             {   // Create a new scope so we can check the result of the buffer when it's written back to host
 
-                buffer<float, 1> d_data(&h_data, 1);
+                buffer<float, 1> d_data(&h_data, range<1>( 1 ));
 
-                add_operation(log, queueA, d_data, 1.0);
                 event complete = mul_operation(log, queueA, d_data, 2.0);
+
                 switch (i)
                 {
                     case 0:  // Test cl::sycl::event::wait()
@@ -92,28 +85,25 @@ public:
                         event::wait_and_throw(evt_list);
                         break;
                 }
-
                 add_operation(log, queueB, d_data, -3.0);
             }
             if (h_data != -1.0)
             {
                 return false;
             }
-
         }
 
         return true;
      }
 
     /** execute the test
-    *  @param log, test transcript logging class
-    */
-    virtual void run( sycl_cts::util::logger &log )
+     */
+    virtual void run( sycl_cts::util::logger &log ) override
     {
         try
         {
             /* create device selector */
-           intel_selector l_selector;
+           cts_selector l_selector;
 
            /* create command queue */
            queue queueA( l_selector);
@@ -123,6 +113,9 @@ public:
            {
               FAIL(log, "cl::sycl::event::wait() tests failed");
            }
+
+           queueA.wait_and_throw();
+           queueB.wait_and_throw();
 
         }
         catch ( exception e )
@@ -136,4 +129,4 @@ public:
 // construction of this proxy will register the above test
 sycl_cts::util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace event_wait */
+} /* namespace event_wait__ */

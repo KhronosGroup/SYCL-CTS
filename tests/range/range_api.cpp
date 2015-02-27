@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,6 +14,62 @@ namespace range_api__
 {
 using namespace sycl_cts;
 
+static const size_t expected[]       = { 42, 128, 256 };
+static const size_t expected_two[]   = { 2,  16,  128 };
+
+template <int dims>
+void test_gets( util::logger &log, cl::sycl::range<dims> r )
+{
+    int i;
+    for( i = 0; i < dims; i++ )
+    {
+        CHECK_TYPE( log, r.get( i ), expected[i] );
+        CHECK_VALUE( log, r.get( i ), expected[i], i );
+        CHECK_TYPE( log, r[i], expected[i] );
+        CHECK_VALUE( log, r[i], expected[i], i );
+    }
+}
+
+template<int dims>
+void test_operators( util::logger &log,
+                     cl::sycl::range<dims> r_one,
+                     cl::sycl::range<dims> r_two )
+{
+    //operators performed
+    cl::sycl::range<dims> add = r_one + r_two;
+    cl::sycl::range<dims> subtrack = r_one - r_two;
+    cl::sycl::range<dims> divide = r_one / r_two;
+    cl::sycl::range<dims> multiply = r_one * r_two;
+
+    int i;
+    for( i = 0; i < dims; i++ )
+    {
+        //operator +
+        CHECK_TYPE( log, add.get( i ), expected[i] + expected_two[i] );
+        CHECK_VALUE( log, add.get( i ), expected[i] + expected_two[i], i );
+        CHECK_TYPE( log, add[i], expected[i] + expected_two[i] );
+        CHECK_VALUE( log, add[i], expected[i] + expected_two[i], i );
+
+        //operator -
+        CHECK_TYPE( log, subtrack.get( i ), expected[i] - expected_two[i] );
+        CHECK_VALUE( log, subtrack.get( i ), expected[i] - expected_two[i], i );
+        CHECK_TYPE( log, subtrack[i], expected[i] - expected_two[i] );
+        CHECK_VALUE( log, subtrack[i], expected[i] - expected_two[i], i );
+
+        //operator /
+        CHECK_TYPE( log, divide.get( i ), expected[i] / expected_two[i] );
+        CHECK_VALUE( log, divide.get( i ), expected[i] / expected_two[i], i );
+        CHECK_TYPE( log, divide[i], expected[i] / expected_two[i] );
+        CHECK_VALUE( log, divide[i], expected[i] / expected_two[i], i );
+
+        //operator *
+        CHECK_TYPE( log, multiply.get( i ), expected[i] * expected_two[i] );
+        CHECK_VALUE( log, multiply.get( i ), expected[i] * expected_two[i], i );
+        CHECK_TYPE( log, multiply[i], expected[i] * expected_two[i] );
+        CHECK_VALUE( log, multiply[i], expected[i] * expected_two[i], i );
+    }
+}
+
 /** test cl::sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base
@@ -22,7 +78,7 @@ public:
     /** return information about this test
      *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -30,168 +86,31 @@ public:
     /** execute the test
      *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
+            /** create ranges
+             */
+            cl::sycl::range<1> range_1d( expected[0] );
+            cl::sycl::range<2> range_2d( expected[0], expected[1] );
+            cl::sycl::range<3> range_3d( expected[0], expected[1], expected[2] );
+
+            cl::sycl::range<1> range_1d_two( expected_two[0] );
+            cl::sycl::range<2> range_2d_two( expected_two[0], expected_two[1] );
+            cl::sycl::range<3> range_3d_two( expected_two[0], expected_two[1], expected_two[2] );
+
             /** testing gets
              */
-            //range 1
-            {
-                size_t expected = 42;
-                cl::sycl::range<1> range( expected );
-                CHECK_VALUE( log, range.get( 0 ), expected, 0 );
-                CHECK_VALUE( log, range[0], expected, 0 );
-            }
-
-            //range 2
-            {
-                size_t expected[] = { 42, 99 };
-                cl::sycl::range<2> range( expected[0], expected[1] );
-
-                for(int i = 0; i < 2; i++)
-                {
-                    CHECK_VALUE( log, range.get( i ), expected[i], i );
-                    CHECK_VALUE( log, range[i], expected[i], i );
-                }
-            }
-
-            //range 3
-            {
-                size_t expected[] = { 42, 99, 129 };
-                cl::sycl::range<3> range( expected[0], expected[1], expected[2] );
-
-                for(int i = 0; i < 3; i++)
-                {
-                    CHECK_VALUE( log, range.get( i ), expected[i], i );
-                    CHECK_VALUE( log, range[i], expected[i], i );
-                }
-            }
+            test_gets( log, range_1d );
+            test_gets( log, range_2d );
+            test_gets( log, range_3d );
 
             /** testing operators
              */
-            //range 1
-            {
-                size_t expectedOne = 42;
-                size_t expectedTwo = 2;
-                cl::sycl::range<1> rangeOne( expectedOne );
-                cl::sycl::range<1> rangeTwo( expectedTwo );
-                //operator +
-                {
-                    cl::sycl::range<1> range = rangeOne + rangeTwo;
-                    CHECK_VALUE( log, range.get( 0 ), expectedOne + expectedTwo, 0 );
-                    CHECK_VALUE( log, range[0], expectedOne + expectedTwo, 0 );
-                }
-                //operator -
-                {
-                    cl::sycl::range<1> range = rangeOne - rangeTwo;
-                    CHECK_VALUE( log, range.get( 0 ), expectedOne - expectedTwo, 0 );
-                    CHECK_VALUE( log, range[0], expectedOne - expectedTwo, 0 );
-                }
-                //operator /
-                {
-                    cl::sycl::range<1> range = rangeOne / rangeTwo;
-                    CHECK_VALUE( log, range.get( 0 ), expectedOne / expectedTwo, 0 );
-                    CHECK_VALUE( log, range[0], expectedOne / expectedTwo, 0 );
-                }
-                //operator *
-                {
-                    cl::sycl::range<1> range = rangeTwo * rangeOne;
-                    CHECK_VALUE( log, range.get( 0 ), expectedOne * expectedTwo, 0 );
-                    CHECK_VALUE( log, range[0], expectedOne * expectedTwo , 0 );
-                }
-            } //range 1
-
-            //range 2
-            {
-                const int elements = 2;
-                size_t expectedOne[] = {42, 128 };
-                size_t expectedTwo[] = { 2, 16 };
-                cl::sycl::range<elements> rangeOne( expectedOne[0], expectedOne[1] );
-                cl::sycl::range<elements> rangeTwo( expectedTwo[0], expectedTwo[1] );
-                //operator +
-                {
-                    cl::sycl::range<elements> range = rangeOne + rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE( log, range.get( i ), expectedOne[i] + expectedTwo[i], i );
-                        CHECK_VALUE( log, range[i], expectedOne[i] + expectedTwo[i], i );
-                    }
-                }
-                //operator -
-                {
-                    cl::sycl::range<elements> range = rangeOne - rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE( log, range.get( i ), expectedOne[i] - expectedTwo[i], i );
-                        CHECK_VALUE( log, range[i], expectedOne[i] - expectedTwo[i], i );
-                    }
-                }
-                //operator /
-                {
-                    cl::sycl::range<elements> range = rangeOne / rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE( log, range.get( i ), expectedOne[i] / expectedTwo[i], i );
-                        CHECK_VALUE( log, range[i], expectedOne[i] / expectedTwo[i], i );
-                    }
-                }
-                //operator *
-                {
-                    cl::sycl::range<elements> range = rangeOne * rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE( log, range.get( i ), expectedOne[i] * expectedTwo[i], i );
-                        CHECK_VALUE( log, range[i], expectedOne[i] * expectedTwo[i], i );
-                    }
-                }
-            } //range 2
-
-            //range 3
-            {
-                const int elements = 3;
-                size_t expectedOne[] = {42, 128, 256 };
-                size_t expectedTwo[] = { 2, 16, 128 };
-                cl::sycl::range<elements> rangeOne( expectedOne[0], expectedOne[1], expectedOne[2] );
-                cl::sycl::range<elements> rangeTwo( expectedTwo[0], expectedTwo[1], expectedTwo[2] );
-                //operator +
-                {
-                    cl::sycl::range<elements> range = rangeOne + rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE(log, range.get( i ), expectedOne[i] + expectedTwo[i], i );
-                        CHECK_VALUE(log, range[i], expectedOne[i] + expectedTwo[i], i );
-                    }
-                }
-                //operator -
-                {
-                    cl::sycl::range<elements> range = rangeOne - rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE(log, range.get( i ), expectedOne[i] - expectedTwo[i], i );
-                        CHECK_VALUE(log, range[i], expectedOne[i] - expectedTwo[i], i );
-                    }
-                }
-                //operator /
-                {
-                    cl::sycl::range<elements> range = rangeOne / rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE(log, range.get( i ), expectedOne[i] / expectedTwo[i], i );
-                        CHECK_VALUE(log, range[i], expectedOne[i] / expectedTwo[i], i );
-                    }
-                }
-                //operator *
-                {
-                    cl::sycl::range<elements> range = rangeOne * rangeTwo;
-                    for(int i = 0; i < elements; i++)
-                    {
-                        CHECK_VALUE(log, range.get( i ), expectedOne[i] * expectedTwo[i], i );
-                        CHECK_VALUE(log, range[i], expectedOne[i] * expectedTwo[i], i );
-                    }
-                }
-            } //range 3
-
+            test_operators( log, range_1d, range_1d_two);
+            test_operators( log, range_2d, range_2d_two);
+            test_operators( log, range_3d, range_3d_two);
         }
         catch ( cl::sycl::exception e )
         {

@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -10,6 +10,7 @@
 
 #include "sycl.h"
 #include "../../util/opencl_helper.h"
+#include "../../util/type_names.h"
 
 #define TEST_FILE __FILE__
 #define TEST_BUILD_DATE __DATE__
@@ -20,13 +21,32 @@
 #define TOSTRING( X ) STRINGIFY( X )
 #define STRINGIFY( X ) #X
 
+/*
+ * Macros for the creation of the TEST_NAMESPACE macro, which will
+ * always be TEST_NAME__. For example, given the test for context
+ * creation, with
+ * #define TEST_NAME context_constructors
+ * these macros will do the equivalent of
+ * #define TEST_NAMESPACE context_constructors__
+ * This is nice because it's automatic and stops copy-paste errors.
+ *
+ * It works because NS_CAT hides the concatenation operation behind
+ * a macro which allows expansion to take place. The NS_NAMESPACE()
+ * macro is function-like and therefore expands its parameters before
+ * substituting them into the macro body. The result is that the
+ * expanded TEST_NAME is concatenated with two underscores.
+ */
+#define NS_CAT(a, b) a ## b
+#define NS_NAMESPACE(X) NS_CAT(X, __)
+#define TEST_NAMESPACE NS_NAMESPACE(TEST_NAME)
+
 namespace
 {
 
 /** helper function used to construct a typical test info
  *  structure
  */
-void set_test_info( sycl_cts::util::test_base::info &out, const char *name, const char *file )
+void set_test_info( sycl_cts::util::test_base::info &out, const sycl_cts::util::STRING & name, const char *file )
 {
     out.m_name = name;
     out.m_file = file;
@@ -41,26 +61,13 @@ void log_exception( sycl_cts::util::logger &log, cl::sycl::exception &e )
 {
     // notify that an exception was thrown
     log.note( "sycl exception caught" );
-
-#if 1
+    
     // log exception error string
     const char *what = e.what();
     if ( what != nullptr )
         log.note( "what - " + sycl_cts::util::STRING( what ) );
-
-#else
-    // log an opencl error message
-    const char *cl_error_msg = e.get_cl_error_message();
-    if ( cl_error_msg != nullptr )
-        log.note( "cl_error - " + sycl_cts::util::STRING( cl_error_msg ) );
-
-    // log a sycl error message
-    const char *sycl_error_msg = e.get_sycl_error_message();
-    if ( sycl_error_msg != nullptr )
-        log.note( "sycl_error - " + sycl_cts::util::STRING( sycl_error_msg ) );
-		
-#endif
 }
+
 
 /* helper function for test failure cases */
 bool fail_proxy( sycl_cts::util::logger &log, const char *msg, int line )
@@ -69,15 +76,14 @@ bool fail_proxy( sycl_cts::util::logger &log, const char *msg, int line )
     return false;
 }
 
-/* helper function for test failure cases */
 bool fail_proxy( sycl_cts::util::logger &log, const sycl_cts::util::STRING & msg, int line )
 {
     log.fail( msg, line );
     return false;
 }
 
-/* macro to record line numbers for failures */
 #define FAIL( LOG, MSG ) ( fail_proxy( LOG, MSG, __LINE__ ) )
+
 
 /* proxy to the check_cl_success function */
 bool check_cl_success_proxy( sycl_cts::util::logger &log, int error, int line )
@@ -86,20 +92,20 @@ bool check_cl_success_proxy( sycl_cts::util::logger &log, int error, int line )
     using sycl_cts::util::opencl_helper;
     return get<opencl_helper>().check_cl_success( log, error, line );
 }
-
-/*  */
 #define CHECK_CL_SUCCESS( LOG, ERROR ) check_cl_success_proxy( LOG, ERROR, __LINE__ )
 
+
 /* macro to check if provided value is equal to expected value */
-template<typename T>
-bool check_value_proxy( sycl_cts::util::logger &log, T got, T expected, int element, int line )
+template<typename T1, typename T2>
+bool check_value_proxy( sycl_cts::util::logger &log, const T1 & got, const T2 & expected, int element, int line )
 {
+    using sycl_cts::util::STRING;
+
     if ( got != expected )
     {
-        sycl_cts::util::STRING msg = 
-            "Expected "    + std::to_string( expected ) + 
-            " but got "    + std::to_string( got ) + 
-            " at element " + std::to_string( element  );
+        STRING msg = "Expected "    + std::to_string( expected ) + 
+                     " but got "    + std::to_string( got      ) + 
+                     " at element " + std::to_string( element  );
         fail_proxy( log, msg.c_str(), line );
         /* values are different */
         return false;
@@ -107,10 +113,23 @@ bool check_value_proxy( sycl_cts::util::logger &log, T got, T expected, int elem
     /* values are equal */
     return true;
 }
-
 #define CHECK_VALUE( LOG, GOT, EXPECTED, INDEX ) check_value_proxy( LOG, GOT, EXPECTED, INDEX, __LINE__ )
 
-/* macro to silence unused variables warnings */
-#define UNUSED(expr) do { (void)(expr); } while (0)
+
+/* verify that val_a and val_b are of the same type */
+template<typename T1, typename T2>
+bool check_type_proxy( sycl_cts::util::logger &log, const T1 & val_a, const T2 & val_b, int line )
+{
+    using sycl_cts::util::STRING;
+
+    if ( typeid( val_a ) != typeid( val_b ) )
+    {
+        STRING msg = STRING( "Type mismatch between " ) + type_name<T1>() + STRING( " and " ) + type_name<T2>();
+        fail_proxy( log, msg.c_str(), line );
+        return false;
+    }
+    return true;
+}
+#define CHECK_TYPE( LOG, TYPE_A, TYPE_B ) check_type_proxy( LOG, TYPE_A, TYPE_B, __LINE__ )
 
 } /* namespace {} */

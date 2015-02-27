@@ -15,11 +15,13 @@ import sys
 # global variables
 #
 g_relational_unary_map = \
-               [{"$TEST_FUNC$" : "isfinite"     },
+               [{"$TEST_FUNC$" : "isfinite"     }]
+"""
                 {"$TEST_FUNC$" : "isinf"        },
                 {"$TEST_FUNC$" : "isnan"        },
                 {"$TEST_FUNC$" : "isnormal"     },
-                {"$TEST_FUNC$" : "signbit"      }]
+                {"$TEST_FUNC$" : "signbit"      },
+"""
 
 g_generated_header = \
 """

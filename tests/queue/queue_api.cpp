@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,82 +14,88 @@ namespace queue_api__
 {
 using namespace sycl_cts;
 
-/**
+/** tests the api for cl::sycl::queue
  */
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            // construct the cts default selector
             cts_selector selector;
-            // Error code variable
-            cl_int error = CL_SUCCESS;
+            cl::sycl::queue queue( selector );
 
-            // construct command queue
-            cl::sycl::queue myQueue( selector );
-
-            /* check is_host() */
-            auto host = myQueue.is_host();
-            if ( typeid( host ) != typeid(bool))
+            /** check is_host() method
+            */
+            auto isHost = queue.is_host();
+            if ( typeid( isHost ) != typeid(bool))
             {
-                FAIL( log, "cl::sycl::queue::is_host() does not return bool" );
+                FAIL( log, "is_host() does not return bool" );
             }
 
-            if ( !host )
+            /** check get_context() method
+            */
+            auto context = queue.get_context();
+            if ( typeid( context ) != typeid( cl::sycl::context ))
             {
-                /* check opencl interop */
-                auto cmdq = myQueue.get();
-                if ( typeid( cmdq ) != typeid( cl_command_queue ) )
-                {
-                    FAIL( log,
-                          "cl::sycl::queue::get() does not return "
-                          "cl_command_queue" );
-                }
-                error = clReleaseCommandQueue( cmdq );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                    return;
+                FAIL( log, "is_context() does not return context" );
             }
 
-            /* test get_context() */
-            auto ctxt = myQueue.get_context();
-            if ( typeid( ctxt ) != typeid( cl::sycl::context ) )
+            /** check get_device() method
+            */
+            auto device = queue.get_device();
+            if ( typeid( device ) != typeid( cl::sycl::device ))
             {
-                FAIL( log,
-                      "cl::sycl::queue::get_context() does not return "
-                      "cl::sycl::context" );
+                FAIL( log, "get_device() does not return context" );
             }
 
-            /* test get_device() */
-            auto dev = myQueue.get_device();
-            if ( typeid( dev ) != typeid( cl::sycl::device ) )
+            /** check submit(command_group_scope) method
+            */
+            auto handlerEvent = queue.submit( [&]( cl::sycl::handler &handler )
             {
-                FAIL( log,
-                      "cl::sycl::queue::get_device() does not return "
-                      "cl::sycl::device" );
+            } );
+            if ( typeid( handlerEvent ) != typeid( cl::sycl::handler_event ) )
+            {
+                FAIL( log, "submit(command_group_scope) does not return handler_event" );
             }
 
-            myQueue.wait();
-            myQueue.wait_and_throw();
-            myQueue.throw_asynchronous();
+            /** check submit(command_group_scope, queue) method
+            */
+            cl::sycl::queue secondaryQueue( selector );
+            auto handlerEvent = queue.submit( [&]( cl::sycl::handler &handler )
+            {
+            }, secondaryQueue );
+            if ( typeid( handlerEvent ) != typeid( cl::sycl::handler_event ) )
+            {
+                FAIL( log, "submit(command_group_scope, queue) does not return handler_event" );
+            }
+
+            /** check wait() method
+            */
+            queue.wait();
+
+            /** check wait_and_throw() method
+            */
+            queue.wait_and_throw();
+
+            /** check throw_asynchronous() method
+            */
+            queue.throw_asynchronous();
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };
@@ -97,4 +103,4 @@ public:
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace kernel_as_functor */
+} /* namespace queue_api__ */

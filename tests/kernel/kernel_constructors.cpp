@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,15 +14,6 @@ namespace kernel_constructors__
 {
 using namespace sycl_cts;
 
-/** simple test kernel
-    */
-util::STRING kernel_source = R"(
-__kernel void sample(__global float * input)
-{
-    input[get_global_id(0)] = get_global_id(0);
-}
-)";
-
 /** test cl::sycl::kernel
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl
@@ -30,30 +21,19 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl
 public:
 
     /** return information about this test
-     *  @param out, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            cl_program cl_program = nullptr;
-            if ( !create_program( kernel_source, cl_program, log ) )
-                return;
-
-            cl_kernel cl_kernel = nullptr;
-            if ( !create_kernel( cl_program, "sample", cl_kernel, log ) )
-                return;
-
-            cl::sycl::kernel k( cl_kernel );
-            cl::sycl::kernel k_copy( k );
+            cl::sycl::kernel sycl_kernel_copy( sycl_kernel );
         }
         catch ( cl::sycl::exception e )
         {

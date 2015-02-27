@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -13,90 +13,167 @@
 namespace opencl_interop_constructors__
 {
 using namespace sycl_cts;
-template <typename T> using function_class = std::function<T>;
 
-/** check that we can instantiate a sycl platform class
+/** tests all of the constructors for OpenCL inter-op
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            cl_int error = CL_SUCCESS;
-
-            cl::sycl::platform platform( m_cl_platform_id );
-            cl::sycl::device device( m_cl_device );
-            cl::sycl::context context( m_cl_context );
-            cl::sycl::queue queue( m_cl_command_queue );
-
-            /* create a cl_context_properties array */
-            cl_context_properties ctext_properties[] =
+            cl::sycl::string_class kernelSource = R"(
+            __kernel void sample(__global float *input)
             {
-                CL_CONTEXT_PLATFORM,
-                (cl_context_properties)m_cl_platform_id,
-                0
-            };
+              input[get_global_id(0)] = get_global_id(0);
+            }
+            )";
 
-            /* construct the cts default selector */
-            cts_selector selector;
-
-            /* create a vector of devices */
-            VECTOR_CLASS<cl::sycl::device> devices;
-            devices.push_back( device );
-
-            cl::sycl::context ctxt_ds  ( selector, ctext_properties );
-            cl::sycl::context ctxt_dev ( device,   ctext_properties );
-            cl::sycl::context ctxt_plat( platform, ctext_properties );
-            cl::sycl::context ctxt_list( devices,  ctext_properties );
-
-            // Bitfield specifying out-of-order execution and profiling
-            cl_command_queue_properties queue_properties =
-                CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE &
-                CL_QUEUE_PROFILING_ENABLE;
-
-            function_class<void(cl::sycl::exception_list)> fn =
-            [&] (cl::sycl::exception_list l)
+            /** check platform (platform_id) constructor
+            */
             {
-                if (l.size() > 1)
-                    FAIL(log, "Exception thrown during execution of kernel");
-            };
+                cl::sycl::platform platform( m_cl_platform_id );
 
-            cl::sycl::queue q_props( context, device, queue_properties );
-            cl::sycl::queue q_handler( context, device, queue_properties, fn );
-            cl::sycl::queue q_copy( m_cl_command_queue, fn );
+                cl::sycl::info::platform_id platformID = platform.get()
+                if ( platformID != m_cl_platform_id )
+                {
+                    FAIL( log, "platform was not constructed correctly" );
+                }
+            }
 
-            cl_bool normalise = 0;
+            /** check device (device_id) constructor
+            */
+            {
+                cl::sycl::device device( m_cl_device_id );
 
-            cl_sampler cl_s = clCreateSampler(
-                m_cl_context,
-                normalise,
-                CL_ADDRESS_REPEAT,
-                CL_FILTER_LINEAR,
-                &error);
-            CHECK_CL_SUCCESS( log, error );
+                cl::sycl::info::device_id deviceID = device.get()
+                if ( deviceID != m_cl_device_id )
+                {
+                    FAIL( log, "device was not constructed correctly" );
+                }
+                if ( !CHECK_CL_SUCCESS( log, clReleaseDevice( deviceID ) ) )
+                {
+                    FAIL( log, "failed to release OpenCL device" );
+                }
+            }
 
-            cl::sycl::sampler s(cl_s);
+            /** check context (context_id) constructor
+            */
+            {
+                cl::sycl::context context( m_cl_context );
 
-            error = clReleaseSampler(cl_s);
-            CHECK_CL_SUCCESS( log, error );
+                cl::sycl::info::context_id contextID = context.get()
+                if ( contextID != m_cl_context )
+                {
+                    FAIL( log, "context was not constructed correctly" );
+                }
+                if ( !CHECK_CL_SUCCESS( log, clReleaseContext( contextID ) ) )
+                {
+                    FAIL( log, "failed to release OpenCL context" );
+                }
+            }
+
+            /** check queue (queue_id) constructor
+            */
+            {
+                cl::sycl::queue queue( m_cl_command_queue );
+
+                cl::sycl::info::queue_id queueID = queue.get()
+                if ( queueID != m_cl_command_queue )
+                {
+                    FAIL( log, "queue was not constructed correctly" );
+                }
+                if ( !CHECK_CL_SUCCESS( log, clReleaseCommandQueue( queueID ) ) )
+                {
+                    FAIL( log, "failed to release OpenCL command queue" );
+                }
+            }
+
+            /** check program (context, program_id) constructor
+            */
+            {
+                cl::sycl::info::program_id clProgram = nullptr;
+                if ( !create_program( kernelSource, clProgram, log ) )
+                {
+                    FAIL( log, "create_program failed" );
+                }
+
+                cts_selector selector;
+                cl::sycl::context context( selector );
+                cl::sycl::program program(context, clProgram);
+
+                cl::sycl::info::program_id programID = program.get()
+                if ( programID != clProgram )
+                {
+                    FAIL( log, "program was not constructed correctly" );
+                }
+                if ( !CHECK_CL_SUCCESS( log, clReleaseProgram( programID ) ) )
+                {
+                    FAIL( log, "failed to release OpenCL program" );
+                }
+            }
+
+            /** check kernel (kernel_id) constructor
+            */
+            {
+                cl::sycl::info::program_id clProgram = nullptr;
+                if ( !create_program( kernelSource, clProgram, log ) )
+                {
+                    FAIL( log, "create_program failed" );
+                }
+
+                cl::sycl::info::kernel_id clKernel = nullptr;
+                if ( !create_kernel( clProgram, "sample", clKernel, log ) )
+                {
+                    FAIL( log, "create_kernel failed" );
+                }
+
+                cl::sycl::kernel kernel( clKernel );
+
+                cl::sycl::info::kernel_id kernelID = kernel.get()
+                if ( kernelID != clProgram )
+                {
+                    FAIL( log, "kernel was not constructed correctly" );
+                }
+                if ( !CHECK_CL_SUCCESS( log, clReleaseKernel( kernelID ) ) )
+                {
+                    FAIL( log, "failed to release OpenCL kernel" );
+                }
+            }
+
+            
+
+            
+
+            /** check sampler (sampler_id) constructor
+            */
+            {
+              cl::sycl::sampler sampler( m_cl_sampler );
+              cl::sycl::info::sampler_id clSampler = sampler.get()
+              if ( clSampler != m_cl_sampler )
+              {
+                  FAIL( log, "sampler was not constructed correctly" );
+              }
+              if ( !CHECK_CL_SUCCESS( log, clReleaseSampler( clSampler ) ) )
+              {
+                  FAIL( log, "failed to release OpenCL sampler" );
+              }
+            }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };
@@ -104,4 +181,4 @@ public:
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace kernel_as_functor */
+} /* namespace opencl_interop_constructors__ */

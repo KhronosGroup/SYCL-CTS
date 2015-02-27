@@ -93,21 +93,20 @@ function(BUILD_SYCL_IMPLEMENTATION exe_name test_main test_cases_list destinatio
     set_property(GLOBAL PROPERTY stl ${spir_targets_list})
 
     # force stub-header inclusion so that host version
-    if(WIN32)
-        set(compile_flags "/FI\"${output_stubs_list}\"")
-    else()
-        set(output_stubs_include_string "")
-        foreach(output_stub ${output_stubs_list})
+
+    set(output_stubs_include_string "")
+    foreach(output_stub ${output_stubs_list})
+        if(WIN32)
+            set(output_stubs_include_string "${output_stubs_include_string} /FI${output_stub}")
+        else()
             set(output_stubs_include_string "${output_stubs_include_string} -include ${output_stub}")
-        endforeach()
-        set(compile_flags "${output_stubs_include_string} ${HOST_COMPILER_FLAGS}")
-    endif()
+	    endif()
+    endforeach()
+    set(compile_flags "${output_stubs_include_string} ${HOST_COMPILER_FLAGS}")
     set_target_properties(${exe_name} PROPERTIES COMPILE_FLAGS "${compile_flags}")  
 
     # runtime dependencies
     target_link_libraries(${exe_name} ${SYCL_LIB_NAME})
-    target_link_libraries(${exe_name} ${IMAGE_KERNEL_LIB_NAME})
-    target_link_libraries(${exe_name} ${IMAGE_HOST_LIB_NAME})
 
     if(NOT APPLE)
         target_link_libraries(${exe_name} ${OPENCL_LIB_NAME} )

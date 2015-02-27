@@ -22,15 +22,6 @@
 #include "rounding_mode.h"
 #include "fpcontrol.h"
 
-#if defined( UNUSED )
-    #undef UNUSED
-#endif
-#if defined( __GNUC__ )
-    #define UNUSED  __attribute__ ((unused))
-#else   
-    #define UNUSED
-#endif
-
 #if 0
 #define VECTOR_SIZE_COUNT   6
 extern const char *sizeNames[VECTOR_SIZE_COUNT];

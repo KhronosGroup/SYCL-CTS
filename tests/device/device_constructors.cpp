@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -14,43 +14,92 @@ namespace device_constructors__
 {
 using namespace sycl_cts;
 
-/** test cl::sycl::device initialization
+/** tests the constructors for cl::sycl::device
  */
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
-    /** execute the test
-     *  @param log, test transcript logging class
+    /** execute this test
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         try
         {
-            cl::sycl::device device;
+            /** check default constructor and destructor
+            */
+            {
+                cl::sycl::device device;
 
-            cl::sycl::host_selector hs;
+                if ( !device.is_host() )
+                {
+                    FAIL( log, "device was not constructed correctly" );
+                }
 
-            cl::sycl::device host_dev( hs );
+                if ( device.get() != 0 )
+                {
+                    FAIL( log, "device was not constructed correctly" );
+                }
+            }
 
-            cl::sycl::device device_c( device );
+            /** check (device_selector) constructor
+            */
+            {
+                cts_selector selector;
+                cl::sycl::device device( selector );
+
+                if ( device.is_host() )
+                {
+                    FAIL( log, "device was not constructed correctly" );
+                }
+
+                if ( device.get() == 0 )
+                {
+                    FAIL( log, "device was not constructed correctly" );
+                }
+            }
+
+            /** check copy constructor
+            */
+            {
+                cts_selector selector;
+                cl::sycl::device deviceA( selector );
+                cl::sycl::device deviceB( deviceA );
+
+                if ( deviceA.get() != deviceB.get() )
+                {
+                    FAIL( log, "device was not copied correctly" );
+                }
+            }
+
+            /** check assignment operator
+            */
+            {
+                cts_selector selector;
+                cl::sycl::device deviceA( selector );
+                cl::sycl::device deviceB = deviceA;
+
+                if ( deviceA.get() != deviceB.get() )
+                {
+                    FAIL( log, "device was not assigned correctly" );
+                }
+            }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };
 
-// construction of this proxy will register the above test
+// register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
 } /* namespace device_constructors__ */

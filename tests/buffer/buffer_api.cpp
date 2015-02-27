@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -12,78 +12,110 @@
 
 namespace buffer_api__
 {
+using namespace cl::sycl;
+using namespace cl::sycl::access;
 using namespace sycl_cts;
 
 /**
  * Generic buffer API test function
- **/
+ */
 template <typename T, int size, int dims>
-bool test_buffer( util::logger &log, cl::sycl::range<dims> & r )
+void test_buffer( util::logger &log, cl::sycl::range<dims> & r )
 {
     try
     {
-        /* stack overflows when T is large */
         util::UNIQUE_PTR<T> data( new T[size] );
         memset( data.get(), 0, sizeof( T ) * size );
 
         /* create a sycl buffer from the host buffer */
         cl::sycl::buffer<T, dims> buf( data.get(), r );
 
-        /* check the buffer returns the correct range */
+        /* check the buffer returns a range */
         auto ret_range = buf.get_range();
         if ( typeid( ret_range ) != typeid(cl::sycl::range<dims>))
         {
             FAIL( log, "cl::sycl::buffer::get_range does not return "
                        "cl::sycl::range!" );
-            return false;
+        }
+
+        /* Check that ret_range is the correct size */
+        for ( int i = 0; i < dims; ++i )
+        {
+            if ( ret_range[i] != r[i] )
+            {
+                FAIL( log, "cl::sycl::buffer::get_range does not return "
+                           "the correct range size!" );
+            }
         }
 
         /* check the buffer returns the correct element count */
-        auto syclCount = buf.get_count();
-        if ( typeid( syclCount ) != typeid( size_t ) )
+        auto count = buf.get_count();
+        if ( typeid( count ) != typeid( size_t ) )
         {
-            FAIL( log, "buffer.get_count() does not return size_t" );
-            return false;
+            FAIL( log, "cl::sycl::buffer::get_count() does not return "
+                       "size_t" );
         }
 
-        if ( syclCount != size )
+        if ( count != size )
         {
-            FAIL( log,
-                  "cl::sycl::buffer::get_count does not return the correct "
-                  "number of elements" );
-            return false;
+            FAIL( log, "cl::sycl::buffer::get_count() does not return "
+                       "the correct number of elements" );
         }
 
         /* check the buffer returns the correct byte size */
-        auto syclSize = buf.get_size();
-        if ( typeid( syclSize ) != typeid( size_t ) )
+        auto ret_size = buf.get_size();
+        if ( typeid( ret_size ) != typeid( size_t ) )
         {
-            FAIL( log, "buffer.get_size() does not return size_t" );
-            return false;
+            FAIL( log, "cl::sycl::buffer::get_size() does not return "
+                       "size_t" );
         }
-        if ( syclSize != size * sizeof( T ) )
+        if ( ret_size != size * sizeof( T ) )
         {
-            FAIL( log,
-                  "cl::sycl::buffer::get_size does not return the correct size"
-                  " of the buffer" );
-            return false;
+            FAIL( log, "cl::sycl::buffer::get_size() does not return "
+                       "the correct size of the buffer" );
         }
 
         cl::sycl::queue q;
-        cl::sycl::command_group( q, [&]()
+        q.submit( [&]( handler& cgh )
         {
-            auto syclAccess =
-                buf.template get_access<cl::sycl::access::read_write>();
+            auto acc = buf.template get_access<cl::sycl::access::mode::read_write>( cgh );
+            if ( typeid( acc ) !=
+                 typeid( accessor<T, dims, read_write, global_buffer> ) )
+            {
+                FAIL( log, "cl::sycl::buffer::get_access() does not return "
+                           "the correct type of accessor!" );
+            }
         } );
+
+        q.submit( [&]( handler& cgh )
+        {
+            auto acc = buf.template get_access<read_write, constant_buffer>( cgh );
+            if ( typeid( acc ) !=
+                 typeid( accessor<T, dims, read_write, constant_buffer> ) )
+            {
+                FAIL( log, "cl::sycl::buffer::get_access() does not return "
+                      "the correct type of accessor!" );
+            }
+        } );
+
+        {
+            auto acc = buf.template get_access<read_write, host_buffer>();
+            if ( typeid( acc ) !=
+                 typeid( accessor<T, dims, read_write, host_buffer> ) )
+            {
+                FAIL( log, "cl::sycl::buffer::get_access() does not return "
+                      "the correct type of accessor!" );
+            }
+        }
+
+        q.wait_and_throw();
+
     }
     catch ( cl::sycl::exception e )
     {
         log_exception( log, e );
         FAIL( log, "sycl exception caught" );
-        return false;
     }
-
-    return true;
 }
 
 /** test cl::sycl::buffer api
@@ -92,9 +124,8 @@ class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-    *  @param info, test_base::info structure as output
-    */
-    virtual void get_info( test_base::info &out ) const
+     */
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
@@ -107,17 +138,15 @@ public:
         cl::sycl::range<2> range2d(size, size      );
         cl::sycl::range<3> range3d(size, size, size);
 
-        test_buffer<T, size, 1>( log, range1d );
-        test_buffer<T, size, 2>( log, range2d );
-        test_buffer<T, size, 3>( log, range3d );
+        test_buffer<T, size              , 1>( log, range1d );
+        test_buffer<T, size * size       , 2>( log, range2d );
+        test_buffer<T, size * size * size, 3>( log, range3d );
     }
 
     /** execute the test
-    *  @param log, test transcript logging class
-    */
-    virtual void run( util::logger &log )
+     */
+    virtual void run( util::logger &log ) override
     {
-
         /* test signed types */
         test_type<int8_t >( log );
         test_type<int16_t>( log );

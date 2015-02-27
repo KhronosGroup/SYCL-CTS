@@ -24,8 +24,8 @@ template <typename T>
 class KERNEL_NAME
 {
 protected:
-    typedef accessor<T, 1, access::read, access::global_buffer> t_readAccess;
-    typedef accessor<T, 1, access::write, access::global_buffer> t_writeAccess;
+    typedef accessor<T, 1, cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer> t_readAccess;
+    typedef accessor<T, 1, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> t_writeAccess;
 
     t_writeAccess m_o; /* output     */
     t_readAccess m_i;  /* input */
@@ -88,31 +88,32 @@ public:
 
             /* create command queue */
             queue l_queue(selector);
-
-            buffer<T, 1> ibuf(&idata, math::numElements(idata));
-            buffer<T, 1> obuf(&odata, math::numElements(odata));
-
-            int a = math::numElements(idata);
-
-            /* add command to queue */
-            command_group(l_queue, [&]()
             {
-                auto iptr = ibuf.template get_access<access::read>();
-                auto optr = obuf.template get_access<access::write>();
+              buffer<T, 1> ibuf(&idata, range<1> (math::numElements(idata)));
+              buffer<T, 1> obuf(&odata, range<1> (math::numElements(odata)));
+
+              int a = math::numElements(idata);
+
+              /* add command to queue */
+              l_queue.submit( [&]( handler& cgh )
+              {
+                auto iptr = ibuf.template get_access<cl::sycl::access::mode::read>( cgh );
+                auto optr = obuf.template get_access<cl::sycl::access::mode::write>( cgh );
 
                 /* instantiate the kernel */
-                auto kern = KERNEL_NAME<T>(optr, iptr);
+                auto kern = KERNEL_NAME<T>( optr, iptr );
 
                 /* execute the kernel */
-                parallel_for(nd_range<1>(range<1>(1), range<1>(1)), kern);
-
-            });
-
-            /* verify */
-            if (odata != idata)
-            {
-                FAIL(log, "results don't match");
+                cgh.parallel_for( nd_range<1>( range<1>( 1 ), range<1>( 1 )), kern );
+              } );
             }
+
+            if ( all(odata != idata) )
+            {
+                FAIL( log, "results don't match" );
+            }
+
+            l_queue.wait_and_throw();
 
         }
         catch (cl::sycl::exception e)

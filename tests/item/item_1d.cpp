@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -18,14 +18,13 @@ using namespace cl::sycl;
 class kernel_item_1d
 {
 protected:
-    typedef accessor<int, 1, access::read,  access::global_buffer> t_readAccess;
-    typedef accessor<int, 1, access::write, access::global_buffer> t_writeAccess;
+    typedef accessor<int, 1, cl::sycl::access::mode::read,  cl::sycl::access::target::global_buffer> t_readAccess;
+    typedef accessor<int, 1, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> t_writeAccess;
     
     t_readAccess  m_x;
     t_writeAccess m_o;
 
 public:
-
     kernel_item_1d( t_readAccess in_, t_writeAccess out_ )
         : m_x( in_  )
         , m_o( out_ )
@@ -35,23 +34,20 @@ public:
     void operator()( item<1> item )
     {
         id<1> gid = item.get_global( );
-        
+
         size_t dim_a = item.get( 0 );
         size_t dim_b = item[0];
 
         range<1> globalRange = item.get_global_range( );
         range<1> localRange  = item.get_local_range( );
-        UNUSED(localRange);
 
         size_t group = item.get_group( 0 );
-        UNUSED(group);
-        
+
         int numGroups = item.get_num_groups( 0 );
         id<1> offset = item.get_offset( );
-                
+
         /* get work item range */
         const size_t nWidth  = globalRange.get( )[0];
-        UNUSED(nWidth);
 
         /* find the array id for this work item */
         size_t index = gid.get( )[0]; /* x */
@@ -100,17 +96,20 @@ bool test_item_1d( util::logger & log )
         buffer<int, 1> bufIn ( dataIn .get(), dataRange );
         buffer<int, 1> bufOut( dataOut.get(), dataRange );
 
-        intel_selector selector;
+        cts_selector selector;
         queue cmdQueue( selector );
 
-        command_group( cmdQueue, [&]()
+        cmdQueue.submit( [&]( handler& cgh )
         {
-            auto accIn  = bufIn  .template get_access<access::read >( );
-            auto accOut = bufOut .template get_access<access::write>( );
+            auto accIn  = bufIn  .template get_access<cl::sycl::access::mode::read >( cgh );
+            auto accOut = bufOut .template get_access<cl::sycl::access::mode::write>( cgh );
 
             kernel_item_1d kern = kernel_item_1d( accIn, accOut );
-            parallel_for( nd_range<1>( dataRange, range<1>( nWidth / 8 ) ), kern );
+            cgh.parallel_for( nd_range<1>( dataRange, range<1>( nWidth / 8 ) ), kern );
         });
+
+        cmdQueue.wait_and_throw();
+
     }
     catch ( cl::sycl::exception e )
     {
@@ -136,17 +135,15 @@ class TEST_NAME : public util::test_base
 public:
 
     /** return information about this test
-     *  @param info, test_base::info structure as output
      */
-    virtual void get_info( test_base::info &out ) const
+    virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute the test
-     *  @param log, test transcript logging class
      */
-    virtual void run( util::logger &log )
+    virtual void run( util::logger &log ) override
     {
         test_item_1d( log );
     }
