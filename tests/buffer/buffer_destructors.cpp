@@ -28,7 +28,7 @@ public:
 
         {
             cl::sycl::buffer<T, dims> buf( data.get(), r );
-            cl::sycl::accessor<T, dims, read_write, host_buffer> acc( buf );
+            cl::sycl::accessor<T, dims, mode::read_write, target::host_buffer> acc( buf );
             for ( int i = 0; i < size; ++i )
                 acc[i] = static_cast<T>( i );
         }

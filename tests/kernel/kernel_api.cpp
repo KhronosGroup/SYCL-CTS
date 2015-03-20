@@ -90,7 +90,6 @@ public:
                       "cl::sycl::kernel::get_kernel_attributes() "
                       "returned 0 but should return 1");
             }
-            cl::sycl::string_class functionName = k.get_function_name();
         }
         catch ( cl::sycl::exception e )
         {

@@ -27,7 +27,7 @@ public:
     }
 
     /** execute this test
-     */
+    */
     virtual void run( util::logger &log ) override
     {
         try
@@ -40,10 +40,10 @@ public:
             auto devices = platform.get_devices();
             if ( typeid( devices ) != typeid(cl::sycl::vector_class<cl::sycl::device>))
             {
-                FAIL( log, "get_devices() does not return cl::sycl::vector_class<cl::sycl::device>" );
+                FAIL( log, "get_devices() does not return vector_class<device>" );
             }
 
-            /** check get_devices(cl::sycl::info::device_type) method
+            /** check get_devices(device_type) method
             */
             devices = platform.get_devices( cl::sycl::info::device_type::gpu );
             if ( typeid( devices ) != typeid(cl::sycl::vector_class<cl::sycl::device>))
@@ -59,7 +59,7 @@ public:
 
             /** check get_info() method
             */
-            auto platformName = platform.has_extension( cl::sycl::info::platform::name );
+            auto platformName = platform.get_info<cl::sycl::info::platform::name>();
             if ( typeid( platformName ) != typeid( cl::sycl::string_class ) )
             {
                 FAIL( log, "has_extension() does not string_class" );

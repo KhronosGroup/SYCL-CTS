@@ -12,7 +12,6 @@
 
 namespace stream_api__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /**
  * Function that streams a type using the cl::sycl::stream object.
@@ -38,9 +37,8 @@ class TEST_NAME : public util::test_base {
     try {
       cts_selector testSelector;
 
-      queue testQueue(testSelector);
-
-      testQueue.submit([&](handler& cgh) {
+      cl::sycl::queue testQueue(testSelector);
+      testQueue.submit([&](cl::sycl::handler& cgh) {
 
         cl::sycl::stream os(2048, 80);
 
@@ -61,7 +59,7 @@ class TEST_NAME : public util::test_base {
         }
       });
 
-      testQueue.submit([&](handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler& cgh) {
 
         cl::sycl::stream os;
 
@@ -105,7 +103,7 @@ class TEST_NAME : public util::test_base {
         });
       });
 
-      testQueue.submit([&](handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler& cgh) {
         
         cgh.parallel_for<class TEST_NAME>(nd_range<3>(range<3>(16, 8, 4), range<3>(8, 4, 2), [=](nd_item ndItem) {
           /** check stream operator for nd_item
@@ -114,7 +112,7 @@ class TEST_NAME : public util::test_base {
         });
       });
 
-      testQueue.submit([&](handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler& cgh) {
 
         cgh.parallel_for<class TEST_NAME>(range<3>(16, 8, 4), [=](item it) {
           /** check stream operator for item
@@ -123,7 +121,7 @@ class TEST_NAME : public util::test_base {
         });
       });
 
-      testQueue.submit([&](handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler& cgh) {
 
         cgh.parallel_for_work_group<class TEST_NAME>(range<3>(16, 8, 4),
                                                      [=](group gp) {

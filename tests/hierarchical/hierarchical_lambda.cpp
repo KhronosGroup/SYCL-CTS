@@ -47,9 +47,9 @@ public:
                           buf, cgh
                           );
 
-              cgh.parallel_for_workgroup<class kernel0>(
+              cgh.parallel_for_work_group<class kernel0>(
                   my_range, ([=]( group<2> group_id) {
-                             parallel_for_workitem( group_id,
+                             parallel_for_work_item( group_id,
                              [=](item<2> item_id) { ptr[0] *= 2; } );
                             }));
             });

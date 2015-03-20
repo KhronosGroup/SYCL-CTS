@@ -33,6 +33,7 @@ public:
     {
         try
         {
+            cl::sycl::kernel sycl_kernel(0);
             cl::sycl::kernel sycl_kernel_copy( sycl_kernel );
         }
         catch ( cl::sycl::exception e )

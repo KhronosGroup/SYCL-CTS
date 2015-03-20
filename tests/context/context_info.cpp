@@ -37,7 +37,6 @@ public:
 
             /** check types
             */
-            using contextID = cl::sycl::info::context_id;
             using contextInfo = cl::sycl::info::context;
 
             /** initialize return values

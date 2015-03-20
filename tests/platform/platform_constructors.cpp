@@ -15,19 +15,19 @@ namespace platform_constructors__
 using namespace sycl_cts;
 
 /** tests the constructors for cl::sycl::platform
- */
+*/
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     */
+    */
     virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
-     */
+    */
     virtual void run( util::logger &log ) override
     {
         try

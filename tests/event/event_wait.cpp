@@ -28,31 +28,33 @@ public:
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
-    handler_event add_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
+    /* enqueue an add command and return the complete event */
+    event add_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
     {
-        /* add command to queue */
         return queue.submit( [&]( handler& cgh )
         {
             auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-            cgh.single_task<class add_val>( [=]()
+            cgh.single_task<class add_kernel>( [=]()
             {
                 a_data[0] += operand;
             } );
-        } );
+        } ).get_complete();
     }
 
-    handler_event mul_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
+    /* enqueue a mul command and return the complete event */
+    event mul_operation(sycl_cts::util::logger &log, queue &queue, buffer<float, 1> &d_data, const float operand)
     {
         return queue.submit( [&]( handler& cgh )
         {
             auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-            cgh.single_task<class mul_val>( [=]()
+            cgh.single_task<class mul_kernel>( [=]()
             {
                 a_data[0] *= operand;
             } );
-        } );
+
+        } ).get_complete();
     }
 
     /** Execute kernels, waiting in-between
@@ -70,20 +72,28 @@ public:
 
                 switch (i)
                 {
-                    case 0:  // Test cl::sycl::event::wait()
+                    case 0: 
+                      {  // Test cl::sycl::event::wait()
                         complete.wait();
                         break;
-                    case 1:  // Test cl::sycl::event::wait_and_throw()
+                      }
+                    case 1: 
+                      { // Test cl::sycl::event::wait_and_throw()
                         complete.wait_and_throw();
                         break;
-                    case 2:  // Test cl::sycl::event::wait(vector_class<event>)
-                        VECTOR_CLASS<event> evt_list = complete.get_wait_list();
+                      }
+                    case 2:
+                      {  // Test cl::sycl::event::wait(vector_class<event>)
+                        vector_class<event> evt_list = complete.get_wait_list();
                         event::wait(evt_list);
                         break;
-                    case 3:  // Test cl::sycl::event::wait_and_throw(vector_class<event>)
-                        VECTOR_CLASS<event> evt_list = complete.get_wait_list();
+                      }
+                    case 3:
+                      {  // Test cl::sycl::event::wait_and_throw(vector_class<event>)
+                        vector_class<event> evt_list = complete.get_wait_list();
                         event::wait_and_throw(evt_list);
                         break;
+                      }
                 }
                 add_operation(log, queueB, d_data, -3.0);
             }
@@ -102,12 +112,14 @@ public:
     {
         try
         {
-            /* create device selector */
-           cts_selector l_selector;
+           cts_selector selector;
 
-           /* create command queue */
-           queue queueA( l_selector);
-           queue queueB( l_selector);
+           queue queueA( selector );
+           queue queueB( selector );
+
+
+
+
 
            if (!wait_and_exec(log, queueA, queueB))
            {

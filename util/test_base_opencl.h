@@ -66,7 +66,7 @@ protected:
      */
     cl_device_id get_cl_device_id()
     {
-        return m_cl_device;
+        return m_cl_device_id;
     }
 
     /** return a valid opencl cl_context object
@@ -105,7 +105,7 @@ protected:
 
     /* instances of open cl objects */
     cl_platform_id   m_cl_platform_id;
-    cl_device_id     m_cl_device;
+    cl_device_id     m_cl_device_id;
     cl_context       m_cl_context;
     cl_command_queue m_cl_command_queue;
     cl_sampler       m_cl_sampler;

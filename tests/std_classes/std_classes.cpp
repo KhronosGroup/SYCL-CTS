@@ -14,69 +14,60 @@ namespace std_classes__
 {
 using namespace sycl_cts;
 
-bool test_vector_class( util::logger & log )
-{
-    cl::sycl::vector_class<int> sycl_vec;
+/** check vector_class
+*/
+template <typename T, class Alloc>
+using vectorClass = cl::sycl::vector_class<T, Alloc>;
 
-    const int num_its = 10;
+/** check string_class
+*/
+using stringClass = cl::sycl::string_class;
 
-    for ( int i = 0; i < num_its; i++ ) {
-        sycl_vec.push_back( 0 );
-    }
+/** check unique_ptr
+*/
+template <typename T>
+using uniquePtr = cl::sycl::unique_ptr<T>;
 
-    if ( sycl_vec.size( ) != num_its( ) )
-        FAIL( log, "vector size incorrect" );
+/** check shared_ptr
+*/
+template <typename T>
+using sharedPtr = cl::sycl::shared_ptr<T>;
 
-    for ( int i = 0; i < num_its; i++ ) {
-        if ( sycl_vec[i] != i ) {
-            FAIL( log, "element index incorrect" );
-        }
-    }
-    return log.has_failed( );
-}
+/** check weak_ptr
+*/
+template <typename T>
+using weakPtr = cl::sycl::weak_ptr<T>;
 
-bool test_string_class( util::logger & log )
-{
-    cl::sycl::string_class sycl_string;
+/** check mutex_class
+*/
+using mutexClass = cl::sycl::mutex_class;
 
-    return log.has_failed( );
-}
+/** check function_class
+*/
+template <typename R, typename... Args>
+using functionClass = cl::sycl::function_class<R(Args...)>;
 
-bool test_function_class( util::logger & log )
-{
-    cl::sycl::function_class sycl_function;
 
-    return log.has_failed( );
-}
-
-/** 
- */
+/** tests the availability of std classes
+*/
 class TEST_NAME : public util::test_base
 {
 public:
     /** return information about this test
-     */
+    */
     virtual void get_info( test_base::info &out ) const override
     {
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
     /** execute this test
-     */
+    */
     virtual void run( util::logger &log ) override
     {
-        using namespace cl::sycl;
-
-        if ( !test_vector_class( log ) )
-            return;
-        if ( !test_string_class( log ) )
-            return;
-        if ( !test_function_class( log ) )
-            return;
     }
 };
 
-// construction of this proxy will register the above test
+// register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
 } /* namespace std_classes__ */

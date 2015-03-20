@@ -10,6 +10,7 @@
 
 #include "./../../util/stl.h"
 #include "./../../util/math_helper.h"
+#include "./../../util/math_vector.h"
 #include "./../../util/type_names.h"
 
 #include "./../../oclmath/reference_math.h"
@@ -65,7 +66,7 @@ public:
 
 template <class T, int length>
 uint32_t type_length( const vec<T,length> & ref ) {
-    return ref.count();
+    return ref.get_count();
 }
 
 uint32_t type_length( const float & ref ) {
@@ -79,7 +80,7 @@ uint32_t type_length( const double & ref ) {
 template <class type_t, int length>
 type_t type_get( vec<type_t, length> & ref, const uint32_t index ) {
     assert( index < length );
-    return ref[index];
+    return getElement(ref, index);
 }
 
 float & type_get( float & ref, uint32_t index ) {
@@ -95,7 +96,7 @@ double & type_get( double & ref, uint32_t index ) {
 template <class type_t, int length>
 void type_set( vec<type_t, length> & ref, const uint32_t index, type_t val ) {
     assert( index < length );
-    ref[index] = val;
+    setElement(ref, static_cast<int>(index), val);
 }
 
 void type_set( float & ref, uint32_t index, float val ) {
@@ -134,9 +135,6 @@ protected:
 
     /* parameter buffer */
     util::UNIQUE_PTR<type_t[]> m_param_1;
-#if 0
-    util::UNIQUE_PTR<type_t[]> m_param_2;
-#endif
 
     /* results buffer */
     util::UNIQUE_PTR<type_t[]> m_output;
@@ -156,9 +154,7 @@ protected:
     uint32_t generate( util::logger &log )
     {
         assert( m_param_1.get() != nullptr );
-#if 0
-        assert( m_param_2.get() != nullptr );
-#endif
+
         assert( m_output .get() != nullptr );
 
         const uint32_t nElms = type_length( type_t( ) );
@@ -168,9 +164,7 @@ protected:
         {
             /* access buffers */
             type_t & e_param1 = m_param_1[ i ];
-#if 0
-            type_t & e_param2 = m_param_2[ i ];
-#endif
+
             type_t & e_output = m_output [ i ];
 
             /* for each element */
@@ -181,9 +175,7 @@ protected:
 
                 /* generate new parameter value */
                 type_set( e_param1, j, generate_scalar( ix ) );
-#if 0
-                type_set( e_param2, j, generate_scalar( ix ) );
-#endif
+
                 m_index += nScale;
 
                 /* clear the output buffer */
@@ -207,14 +199,12 @@ protected:
         try
         {
             buffer<type_t, 1> l_buf_param1( m_param_1.get() + chunkStart, range<1> ( chunkSize ) );
-            buffer<type_t, 1> l_buf_param2( m_param_2.get() + chunkStart, range<1> ( chunkSize ) );
             buffer<type_t, 1> l_buf_output( m_output .get() + chunkStart, range<1> ( chunkSize ) );
 
             /* add command to queue */
             a_queue.submit( [&]( handler& cgh )
             {
                 auto acc_param1 = l_buf_param1.template get_access<cl::sycl::access::mode::read> ( cgh );
-                auto acc_param2 = l_buf_param2.template get_access<cl::sycl::access::mode::read> ( cgh );
                 auto acc_output = l_buf_output.template get_access<cl::sycl::access::mode::write>( cgh );
 
                 /* instantiate the kernel */
@@ -303,9 +293,6 @@ protected:
             for ( uint32_t j = 0; j < num_elms; j++ ) {
 
                 base_t param_1 = type_get( m_param_1[i], j );
-#if 0
-                base_t param_2 = type_get( m_param_2[i], j );
-#endif
 
                 base_t res     = type_get( m_output [i], j );
 
@@ -336,12 +323,6 @@ public:
         m_param_1.reset( new type_t[nBufferSize] );
         assert( m_param_1.get() != nullptr );
         memset( m_param_1.get( ), 0, nBufferSize * sizeof( type_t ) );
-
-#if 0
-        m_param_2.reset( new type_t[nBufferSize] );
-        assert( m_param_2.get() != nullptr );
-        memset( m_param_2.get( ), 0, nBufferSize * sizeof( type_t ) );
-#endif
 
         m_output.reset( new type_t[nBufferSize] );
         assert( m_output.get() != nullptr );

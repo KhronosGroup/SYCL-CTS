@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME device_selector_constructors
+#define TEST_NAME device_selector_api
 
 namespace device_selector_api__
 {

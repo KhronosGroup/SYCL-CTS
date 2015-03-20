@@ -35,7 +35,9 @@ class TEST_NAME : public util::test_base
             /** check copy constructor
             */
             {
-                cl::sycl::event eventA;
+                cts_selector selector;
+                cl::sycl::queue queue (selector );
+                cl::sycl::event eventA = queue.submit([&](cl::sycl::handler &handler){}).get_complete();
                 cl::sycl::event eventB( eventA );
 
                 if ( eventA.get() != eventB.get() )
@@ -47,7 +49,9 @@ class TEST_NAME : public util::test_base
             /** check assignment operator
             */
             {
-                cl::sycl::event eventA;
+                cts_selector selector;
+                cl::sycl::queue queue (selector );
+                cl::sycl::event eventA = queue.submit([&](cl::sycl::handler &handler){}).get_complete();
                 cl::sycl::event eventB = eventB;
 
                 if ( eventA.get() != eventB.get() )

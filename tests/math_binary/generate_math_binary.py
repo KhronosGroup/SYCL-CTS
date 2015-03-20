@@ -28,6 +28,7 @@ g_binary_map = [{"$TEST_FUNC$" : "pow",       "$MAX_ULPS$" : "16.0f"},
                 {"$TEST_FUNC$" : "atan2",     "$MAX_ULPS$" : "6.0f" },
                 {"$TEST_FUNC$" : "powr",      "$MAX_ULPS$" : "16.0f"},
                 {"$TEST_FUNC$" : "remainder", "$MAX_ULPS$" : "0.0f" }]
+#"""
 
 g_generated_header = \
 """
@@ -57,25 +58,25 @@ def generate( template_name, template_map ):
     if template_content is None:
         print "unable to load template file"
         return
-        
+
     if template_map is None:
         print "substitution map is invalid"
         return
-        
+
     for item in template_map:
         generated_content = template_content
-        
+
         # replace strings
         generated_content = generated_content.replace("$TEST_FUNC$", item['$TEST_FUNC$'])
         generated_content = generated_content.replace("$MAX_ULPS$",  item['$MAX_ULPS$'])
 
-        # write generated file        
+        # write generated file
         generated_file_name = template_name + "_" + item['$TEST_FUNC$'] + ".cpp"
         generated_file = os.path.join(pathname, generated_file_name)
         with open(generated_file, "w") as f:
             f.write(g_generated_header)
             f.write(generated_content)
-    
+
     return
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----

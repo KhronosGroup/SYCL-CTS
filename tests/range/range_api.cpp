@@ -14,7 +14,7 @@ namespace range_api__
 {
 using namespace sycl_cts;
 
-static const size_t expected[]       = { 42, 128, 256 };
+static const size_t expected[]       = { 16, 128, 256 };
 static const size_t expected_two[]   = { 2,  16,  128 };
 
 template <int dims>

@@ -57,12 +57,13 @@ public:
             //build program without compile_options
             {
                 class build_without_options;
-                program prog(context);
+                queue myQueue;
+                program prog(myQueue.get_context());
 
                 int in = 1;
                 int out = 0;
 
-                prog.build_kernel_from_name<build_without_options>();
+                prog.build_from_kernel_name<build_without_options>();
 
                 //check for get_binaries()
                 if(prog.get_binaries().size() < 1)
@@ -70,16 +71,19 @@ public:
                     FAIL( log, "Wrong value for program.get_binaries()" );
                 }
 
-                for(int i = 0; i < 42; i++)
+                buffer<int, 1> bIn(&in, range<1>(1));
+                buffer<int, 1> bOut(&out, range<1>(1));
+
+                for(int i = 0; i < 10; i++)
                 {
                     {
-                        queue.submit( [&]( handler& cgh )
+                        myQueue.submit( [&]( handler& cgh )
                         {
-                            auto in_dev = in.get_access<cl::sycl::access::mode::read>( cgh );
-                            auto out_dev = out.get_access<cl::sycl::access::mode::write>( cgh );
+                            auto in_dev = bIn.get_access<cl::sycl::access::mode::read>( cgh );
+                            auto out_dev = bOut.get_access<cl::sycl::access::mode::write>( cgh );
 
                             cgh.parallel_for<class build_without_options>(
-                                nd_range<1>(1), prog, [=]()
+                              prog.get_kernel<build_without_options>(), nd_range<1>(range<1>(1)), [=](cl::sycl::item<1> i)
                             {
                                 out_dev[0] = out_dev[0] + in_dev[0];
                             } );
@@ -91,12 +95,13 @@ public:
             //build program with compile_options
             {
                 class build_with_options;
-                program prog(context);
+                queue myQueue;
+                program prog(myQueue.get_context());
 
                 int in = 1;
                 int out = 0;
 
-                prog.build_kernel_from_name<build_with_options>("-cl-opt-disable");
+                prog.build_from_kernel_name<build_with_options>("-cl-opt-disable");
 
                 //check for get_binaries()
                 if(prog.get_binaries().size() < 1)
@@ -110,16 +115,19 @@ public:
                     FAIL( log, "program.get_build_options() shouldn't be empty" );
                 }
 
-                for(int i =0; i < 42; i++)
+                buffer<int, 1> bIn(&in, range<1>(1));
+                buffer<int, 1> bOut(&out, range<1>(1));
+
+                for(int i =0; i < 10; i++)
                 {
                     {
-                        queue.submit( [&]( handler& cgh )
+                        myQueue.submit( [&]( handler& cgh )
                         {
-                            auto in_dev = in.get_access<cl::sycl::access::mode::read>( cgh );
-                            auto out_dev = out.get_access<cl::sycl::access::mode::write>( cgh );
+                            auto in_dev = bIn.get_access<cl::sycl::access::mode::read>( cgh );
+                            auto out_dev = bOut.get_access<cl::sycl::access::mode::write>( cgh );
 
                             cgh.parallel_for<class build_with_options>(
-                                nd_range<1>( 1 ), prog, [=]()
+                               prog.get_kernel<build_with_options>(), nd_range<1>(range<1>(1)), [=](cl::sycl::item<1> i)
                             {
                                 out_dev[0] = out_dev[0] + in_dev[0];
                             } );
@@ -130,7 +138,7 @@ public:
                 
                 /// taken from page 98 section 3.7.2.3
                 {
-                    class compile_without_options; //Forward declaration of the name of the lambda functor
+                    class compile_with_options; //Forward declaration of the name of the lambda functor
                     cl::sycl::queue myQueue;
                     // obtain an existing OpenCL C program object
 
@@ -143,16 +151,17 @@ public:
 
                     // Add in the SYCL program object for our kernel
                     cl::sycl::program mySyclProgram (myQueue.get_context ());
-                    mySyclProgram.compile_from_kernel_name<compile_without_options>("-cl-opt-disable");
+                    mySyclProgram.compile_from_kernel_name<compile_with_options>("-cl-opt-disable");
 
                     // Link myClProgram with the SYCL program object
                     cl::sycl::program myLinkedProgram ({myExternProgram,
                     mySyclProgram}, "-cl-fast-relaxed-mat");
 
-                    cl::sycl::command_group(myQueue, [&] () {
-                        cl::sycl::parallel_for<class compile_without_options>(cl::sycl::nd_range<2>(4,4),
-                            myLinkedProgram, // execute the kernel as compiled in MyProgram
-                            ([=] (cl::sycl::item index) {
+                    myQueue.submit( [&] (cl::sycl::handler& handler) {
+                        cl::sycl::parallel_for<class compile_with_options>(
+                          myLinkedProgram.get_kernel<compile_with_options>(),
+                          cl::sycl::nd_range<2>(range<2>(4,4)), // execute the kernel as compiled in MyProgram
+                            ([=] (cl::sycl::item<2> index) {
                                 //[kernel code]
                             }));
                     });
@@ -183,10 +192,11 @@ public:
                     cl::sycl::program myLinkedProgram ({myExternProgram,
                     mySyclProgram});
 
-                    cl::sycl::command_group(myQueue, [&] () {
-                        cl::sycl::parallel_for<class compile_without_options>(cl::sycl::nd_range<2>(4,4),
-                            myLinkedProgram, // execute the kernel as compiled in MyProgram
-                            ([=] (cl::sycl::item index) {
+                    myQueue.submit( [&] (cl::sycl::handler& handler) {
+                        cl::sycl::parallel_for<class compile_without_options>(
+                          myLinkedProgram.get_kernel<compile_without_options>(),
+                          cl::sycl::nd_range<2>(range<2>(4,4)), // execute the kernel as compiled in MyProgram
+                            ([=] (cl::sycl::item<2> index) {
                                 //[kernel code]
                             }));
                     });

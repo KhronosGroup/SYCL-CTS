@@ -48,6 +48,11 @@ public:
       try
         {
             int item_ids[gr_range_total];
+
+            cl::sycl::default_selector sel;
+            cl::sycl::queue testQueue(sel);
+
+
              for ( int i = 0; i < gr_range_total; i++ )
              {
                item_ids[i] = 0;
@@ -62,10 +67,8 @@ public:
                buffer<int, 1> item_ids_buffer(item_ids, range<1> ( gr_range_total ) );
                buffer<int, 1> output_buffer(output_data, range<1> ( g_items_total ) ) ;
 
-               default_selector sel;
-               queue queue(sel);
-
-               queue.submit([&]( handler & cgh )
+               
+               testQueue.submit([&]( handler & cgh )
                {
 
                    auto my_range = nd_range<3> (
@@ -76,14 +79,14 @@ public:
                  auto item_ids_ptr = item_ids_buffer.get_access<cl::sycl::access::mode::read_write>( cgh );
                  auto output_ptr = output_buffer.get_access<cl::sycl::access::mode::write>( cgh );
 
-                 cgh.parallel_for_workgroup<class hierarchical_implicit_conditional>(
+                 cgh.parallel_for_work_group<class hierarchical_implicit_conditional>(
                              my_range, [=](group<3> group )
                  {
 
                    // Create a local variable to store the work item id.
                    int work_item_id;
 
-                   parallel_for_workitem( group, [&](item<3> item ) {
+                   parallel_for_work_item( group, [&](item<3> item ) {
                      // Assign the work item id to a local variable.
                      int global_id = item.get_global_linear( );
                      work_item_id = global_id;
@@ -111,7 +114,7 @@ public:
                 FAIL(log, "Result not as expected.");
              }
 
-             queue.wait_and_throw();
+             testQueue.wait_and_throw();
 
         }
         catch ( cl::sycl::exception e )

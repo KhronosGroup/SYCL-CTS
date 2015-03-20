@@ -10,7 +10,7 @@
 
 #define TEST_NAME handler_event_constructors
 
-namespace handler_event_constructors__
+namespace handler_event_api__
 {
 using namespace sycl_cts;
 
@@ -75,4 +75,4 @@ public:
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace handler_event_constructors__ */
+} /* namespace handler_event_event__ */

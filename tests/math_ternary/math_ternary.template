@@ -10,6 +10,7 @@
 
 #include "./../../util/stl.h"
 #include "./../../util/math_helper.h"
+#include "./../../util/math_vector.h"
 #include "./../../util/type_names.h"
 #include "./../../util/math_reference.h"
 
@@ -110,7 +111,7 @@ uint32_t type_length( const double & ref ) {
 template <class type_t, int length>
 type_t type_get( vec<type_t, length> & ref, const uint32_t index ) {
     assert( index < length );
-    return ref[index];
+    return getElement(ref, index);
 }
 
 float & type_get( float & ref, uint32_t index ) {
@@ -126,7 +127,7 @@ double & type_get( double & ref, uint32_t index ) {
 template <class type_t, int length>
 void type_set( vec<type_t, length> & ref, const uint32_t index, type_t val ) {
     assert( index < length );
-    ref[index] = val;
+    setElement(ref, static_cast<int>(index), val);
 }
 
 void type_set( float & ref, uint32_t index, float val ) {

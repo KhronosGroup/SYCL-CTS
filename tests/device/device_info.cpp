@@ -37,7 +37,6 @@ public:
 
             /** check types
             */
-            using deviceID = cl::sycl::info::device_id;
             using deviceFPConfig = cl::sycl::info::device_fp_config;
             using deviceExecCapabilities = cl::sycl::info::device_exec_capabilities;
             using deviceExecCapabilities = cl::sycl::info::device_exec_capabilities;
@@ -56,7 +55,6 @@ public:
             cl_ulong info_long;
             size_t info_size_t;
             cl::sycl::info::device_id info_dvid;
-            cl::sycl::info::platform_id info_plid;
             cl::sycl::info::device_fp_config fpconfig;
             cl::sycl::info::device_exec_capabilities exec_caps;
             cl::sycl::info::device_mem_cache_type memctype;

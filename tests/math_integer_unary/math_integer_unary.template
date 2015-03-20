@@ -53,7 +53,7 @@ public:
         auto &o = m_o[ix];
         auto  x = m_x[ix];
 
-        o = cl::sycl::TEST_TYPE( x, y );
+        o = cl::sycl::TEST_TYPE( x );
     }
 };
 

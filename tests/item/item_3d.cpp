@@ -43,7 +43,6 @@ public:
 
         size_t group = item.get_group( 0 );
 
-        int numGroups = item.get_num_groups( 0 );
         id<1> offset = item.get_offset( );
 
         /* get work item range */

@@ -35,7 +35,7 @@ channel_type_size g_channel_size[] = { { CL_SNORM_INT8, 1 },
                                        { CL_UNSIGNED_INT16, 2 },
                                        { CL_UNSIGNED_INT32, 4 },
                                        { CL_FLOAT, sizeof( float ) },
-                                       { CL_HALF_FLOAT, sizeof( half ) },
+                                       { CL_HALF_FLOAT, sizeof( cl::sycl::half ) },
                                        { 0, 0 } };
 
 unsigned int get_channel_type_size( unsigned int idx )
@@ -176,7 +176,7 @@ public:
                 queue queue;
                 queue.submit( [&]( handler& cgh )
                               {
-                                  auto img_acc = img.template get_access<float4, cl::sycl::access::mode::read_write>( cgh );
+                                  auto img_acc = img.template get_access<float4, cl::sycl::access::mode::write>( cgh );
                                   auto myRange = nd_range<1>( range<1>( 4 * size ), range<1>( 4 * size ) );
                                   auto myKernel = ( [=]( item<1> item )
                                                     {
@@ -208,7 +208,7 @@ public:
                             FAIL( log, "Ranges are not the same." );
                         }
 
-                        if ( p != img.get_pitch() )
+                        if ( *p != img.get_pitch() )
                         {
                             FAIL( log, "Pitchs are not the same." );
                         }
@@ -219,7 +219,6 @@ public:
                         }
                     }
                 }
-            }
 
             // white image
             for ( int i = 0; i < size; i++ )
@@ -227,6 +226,8 @@ public:
                 CHECK_VALUE( log, image_host.get()[i], 0.2f, i );
             }
             std::cout << std::endl;
+
+            }
         }
     }
 };

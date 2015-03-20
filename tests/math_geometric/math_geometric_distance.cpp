@@ -8,6 +8,7 @@
 
 #include "../common/common.h"
 #include "../../oclmath/mt19937.h"
+#include "./../../util/math_vector.h"
 
 #define TEST_NAME math_geometric_distance
 
@@ -20,8 +21,8 @@ T distance( cl::sycl::vec<T, n> v1, cl::sycl::vec<T, n> v2 )
 {
     T total = 0;
     for ( int i = 0; i < n; ++i )
-        total += (v2[i] - v1[i]) * (v2[i] - v1[i]);
-    return sqrt( total )
+        total += (::getElement(v2,i) - ::getElement(v1,i) * (::getElement(v2,i) - ::getElement(v1,i)));
+    return sqrt( total );
 }
 
 /**
@@ -44,30 +45,27 @@ struct test_buffer
 };
 
 template <typename type_t>
-type_t next_param(  )
+type_t next_param( /* TODO: pass in RNG */ )
 {
-    
+
     return type_t( 0 );
 }
 
 bool verify_scalar( float rs, float px, float py )
 {
-    
+
     return true;
 }
 
+// NOTE: Have two verifiers, one for double, one for float, this one is for float
 template <typename type_t>
 bool verify_vector( type_t & input, type_t & param_x, type_t & param_y )
 {
     uint32_t num_elms = sizeof( type_t ) / sizeof( float );
 
-    float * rs = reinterpret_cast<float*>( &input );
-    float * px = reinterpret_cast<float*>( &param_x );
-    float * py = reinterpret_cast<float*>( &param_y );
-
     for ( uint32_t i = 0; i < num_elms; i++ )
     {
-        if ( !verify_scalar( rs[i], px[i], py[i] ) )
+        if ( !verify_scalar( ::getElement(input,i), ::getElement(param_x,i), ::getElement(param_y,i) ) )
             return false;
     }
 
@@ -81,7 +79,7 @@ struct test_class
 {
     static const uint32_t num_params_k  = 2;
     static const uint32_t buffer_size_k = 1024;
-    
+
     test_buffer<type_t, buffer_size_k> m_params[ num_params_k ];
     test_buffer<type_t, buffer_size_k> m_output;
 
@@ -94,7 +92,7 @@ struct test_class
     {
         for ( uint32_t i = 0; i < buffer_size_k; i++ )
             for ( int j = 0; j < num_params_k; j++ )
-                (m_params[j])[i] = next_param<type_t>(  );
+                (m_params[j])[i] = next_param<type_t>( /* TODO: pass in RNG */ );
     }
 
     void execute( util::logger & log, cl::sycl::queue & sycl_queue )
@@ -105,9 +103,9 @@ struct test_class
 
         sycl_queue.submit( [&]( cl::sycl::handler & cgh )
         {
-            auto acc_output  = buf_output .template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
-            auto acc_param_1 = buf_param_1.template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
-            auto acc_param_2 = buf_param_2.template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_output  = buf_output .template get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_param_1 = buf_param_1.template get_access<cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_param_2 = buf_param_2.template get_access<cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer>( cgh );
 
             cgh.parallel_for<test_class>( cl::sycl::range<1>( buffer_size_k ), [=]( cl::sycl::id<1> id )
             {
@@ -158,7 +156,7 @@ struct test_class
     }
 };
 
-/** 
+/**
  */
 class TEST_NAME : public util::test_base
 {
@@ -193,6 +191,22 @@ public:
                 testf4.run( log );
             }
 
+#ifdef SYCL_CTS_TEST_DOUBLE
+
+            {
+                test_class<cl::sycl::double2> testf2;
+                testf2.run( log );
+            }
+            {
+                test_class<cl::sycl::double3> testf3;
+                testf3.run( log );
+            {
+            }
+                test_class<cl::sycl::double4> testf4;
+                testf4.run( log );
+            }
+
+#endif
             sycl_queue.wait_and_throw();
 
         }

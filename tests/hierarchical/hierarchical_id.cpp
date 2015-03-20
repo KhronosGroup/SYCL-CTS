@@ -47,6 +47,9 @@ public:
     {
       try
         {
+            cl::sycl::default_selector sel;
+            cl::sycl::queue testQueue(sel);
+
             int4 gl_id_data[g_items_total];
             int4 gl_size_data[g_items_total];
             for ( int i = 0; i < g_items_total; i++ )
@@ -72,16 +75,15 @@ public:
             }
 
             {
-                buffer<int4, 1> gl_id_buffer( gl_id_data,  range<1>( g_items_total ) );
-                buffer<int4, 1> gl_size_buffer( gl_size_data, range<1> ( g_items_total ) );
-                buffer<int4, 1> l_id_buffer( l_id_data, range<1> ( g_items_total ) );
-                buffer<int4, 1> l_size_buffer( l_size_data, range<1> ( g_items_total ) );
-                buffer<int4, 1> gr_id_buffer( gr_id_data, range<1> ( l_items_total ) );
-                buffer<int4, 1> gr_range_buffer( gr_range_data, range<1> ( l_items_total ) );
+              cl::sycl::buffer<int4, 1> gl_id_buffer( gl_id_data,  range<1>( g_items_total ) );
+              cl::sycl::buffer<int4, 1> gl_size_buffer( gl_size_data, range<1> ( g_items_total ) );
+              cl::sycl::buffer<int4, 1> l_id_buffer( l_id_data, range<1> ( g_items_total ) );
+              cl::sycl::buffer<int4, 1> l_size_buffer( l_size_data, range<1> ( g_items_total ) );
+              cl::sycl::buffer<int4, 1> gr_id_buffer( gr_id_data, range<1> ( l_items_total ) );
+              cl::sycl::buffer<int4, 1> gr_range_buffer( gr_range_data, range<1> ( l_items_total ) );
 
-                default_selector sel;
-                queue queue(sel);
-                queue.submit([&]( handler & cgh )
+            
+                testQueue.submit([&]( handler & cgh )
                 {
 
                 auto my_range = nd_range<3>(
@@ -96,13 +98,13 @@ public:
                 auto gr_id_ptr = gr_id_buffer.get_access<cl::sycl::access::mode::read_write>( cgh );
                 auto gr_range_ptr = gr_range_buffer.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-                cgh.parallel_for_workgroup<class hierarchical_id>( my_range, [=]( group<3> group ) {
+                cgh.parallel_for_work_group<class hierarchical_id>( my_range, [=]( group<3> group ) {
 
                     int gr_id_0 = group.get( 0 );
                     int gr_id_1 = group.get( 1 );
                     int gr_id_2 = group.get( 2 );
 
-                    int gr_id_L = group.get_linear_group_id();
+                    int gr_id_L = group.get_group_linear_id();
 
                     int gr_range_0 = group.get_num_groups( 0 );
                     int gr_range_1 = group.get_num_groups( 1 );
@@ -112,7 +114,7 @@ public:
                     gl_id_ptr[gr_id_L] = int4( gr_id_0, gr_id_1, gr_id_2, gr_id_L );
                     gr_range_ptr[gr_id_L] = int4( gr_range_0, gr_range_1, gr_range_2, gr_range_L );
 
-                    parallel_for_workitem( group, [&]( item<3> item_id ) {
+                    parallel_for_work_item( group, [&]( item<3> item_id ) {
                         int gl_id_0 = item_id.get_global( 0 );
                         int gl_id_1 = item_id.get_global( 1 );
                         int gl_id_2 = item_id.get_global( 2 );
@@ -122,7 +124,7 @@ public:
                         int gl_size_0 = item_id.get_global_range(0);
                         int gl_size_1 = item_id.get_global_range(1);
                         int gl_size_2 = item_id.get_global_range(2);
-                        int gl_size_L = item_id.get_global_size();
+                        int gl_size_L = gl_size_0 * gl_size_1 * gl_size_2;
 
                         int l_id_0 = item_id.get_local( 0 );
                         int l_id_1 = item_id.get_local( 1 );
@@ -242,7 +244,7 @@ public:
                 FAIL( log, " One of fail statements has been triggered. " );
             }
 
-            queue.wait_and_throw();
+            testQueue.wait_and_throw();
 
         }
         catch ( cl::sycl::exception e )

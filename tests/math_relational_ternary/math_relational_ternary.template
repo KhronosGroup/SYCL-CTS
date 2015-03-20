@@ -41,17 +41,16 @@ struct test_buffer
 
 /* generate a new parameter */
 template <typename type_t>
-type_t next_param( /* TODO(Aidan): pass in RNG */ )
+typename type_t::elem_t next_param()
 {
-    
-    return type_t( 0 );
+    return static_cast<typename type_t::elem_t>(rand());
 }
 
 /* verify result for given parameters */
 template <typename scl_t, typename vec_t>
 bool verify_func( scl_t result, vec_t p1, vec_t p2, vec_t p3 )
 {
-    return true;
+    return result == -reference::TEST_FUNC( p1, p2, p3 );
 }
 
 /**
@@ -61,7 +60,7 @@ struct test_class
 {
     static const uint32_t num_params_k  = 3;
     static const uint32_t buffer_size_k = 1024;
-    
+
     test_buffer<type_t, buffer_size_k> m_params[ num_params_k ];
     test_buffer<type_t, buffer_size_k> m_output;
 
@@ -74,7 +73,7 @@ struct test_class
     {
         for ( uint32_t i = 0; i < buffer_size_k; i++ )
             for ( int j = 0; j < num_params_k; j++ )
-                (m_params[j])[i] = next_param<type_t>( /* TODO(Aidan): pass in RNG */ );
+                (m_params[j])[i] = next_param<type_t>();
     }
 
     void execute( util::logger & log, cl::sycl::queue & sycl_queue )
@@ -86,10 +85,10 @@ struct test_class
 
         sycl_queue.submit( [&]( cl::sycl::handler & cgh )
         {
-            auto acc_output  = buf_output .template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
-            auto acc_param_1 = buf_param_1.template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
-            auto acc_param_2 = buf_param_2.template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
-            auto acc_param_3 = buf_param_3.template get_access<cl::sycl::cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_output  = buf_output .template get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_param_1 = buf_param_1.template get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_param_2 = buf_param_2.template get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( cgh );
+            auto acc_param_3 = buf_param_3.template get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( cgh );
 
             cgh.parallel_for<test_class>( cl::sycl::range<1>( buffer_size_k ), [=]( cl::sycl::id<1> id )
             {
@@ -131,7 +130,7 @@ struct test_class
                 break;
         }
     }
-    
+
     bool setup( )
     {
         return true;
@@ -142,7 +141,7 @@ struct test_class
     }
 };
 
-/** 
+/**
  */
 class TEST_NAME : public util::test_base
 {

@@ -46,7 +46,7 @@ public:
             {
                 auto my_range = cl::sycl::nd_range<dims>( global, local );
 
-                auto error_ptr = error_buffer.get_access<cl::sycl::cl::sycl::access::mode::read_write>(cgh);
+                auto error_ptr = error_buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
                 auto my_kernel = ( [=](cl::sycl::item<dims> item)
                 {

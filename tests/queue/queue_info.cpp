@@ -37,7 +37,6 @@ public:
 
             /** check types
             */
-            using queueID = cl::sycl::info::queue_id;
             using queueInfo = cl::sycl::info::queue;
 
             /** initialize return values

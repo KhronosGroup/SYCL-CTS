@@ -80,7 +80,7 @@ void test_buffer( util::logger &log, cl::sycl::range<dims> & r )
         {
             auto acc = buf.template get_access<cl::sycl::access::mode::read_write>( cgh );
             if ( typeid( acc ) !=
-                 typeid( accessor<T, dims, read_write, global_buffer> ) )
+                 typeid( accessor<T, dims, mode::read_write, target::global_buffer> ) )
             {
                 FAIL( log, "cl::sycl::buffer::get_access() does not return "
                            "the correct type of accessor!" );
@@ -89,9 +89,9 @@ void test_buffer( util::logger &log, cl::sycl::range<dims> & r )
 
         q.submit( [&]( handler& cgh )
         {
-            auto acc = buf.template get_access<read_write, constant_buffer>( cgh );
+            auto acc = buf.template get_access<mode::read_write, target::constant_buffer>( cgh );
             if ( typeid( acc ) !=
-                 typeid( accessor<T, dims, read_write, constant_buffer> ) )
+                 typeid( accessor<T, dims, mode::read_write, target::constant_buffer> ) )
             {
                 FAIL( log, "cl::sycl::buffer::get_access() does not return "
                       "the correct type of accessor!" );
@@ -99,9 +99,9 @@ void test_buffer( util::logger &log, cl::sycl::range<dims> & r )
         } );
 
         {
-            auto acc = buf.template get_access<read_write, host_buffer>();
+            auto acc = buf.template get_access<mode::read_write, target::host_buffer>();
             if ( typeid( acc ) !=
-                 typeid( accessor<T, dims, read_write, host_buffer> ) )
+                 typeid( accessor<T, dims, mode::read_write, target::host_buffer> ) )
             {
                 FAIL( log, "cl::sycl::buffer::get_access() does not return "
                       "the correct type of accessor!" );

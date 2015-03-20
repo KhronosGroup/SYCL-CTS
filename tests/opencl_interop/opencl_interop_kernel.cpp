@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2014 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
@@ -10,18 +10,33 @@
 
 #define TEST_NAME opencl_interop_kernel
 
-namespace TEST_NAMESPACE
+namespace opencl_interop_kernel__
 {
 using namespace sycl_cts;
 
-static const util::STRING kern =
-R"(__kernel void test_kern(__global int * arg_one, __private int arg_two)
-{
-    ;
-})";
-
-/** Test for the SYCL buffer OpenCL interoperation
+/** check inter-op types
 */
+template <typename T>
+using globalPtrType = cl::sycl::global_ptr<T>::pointer_t;
+template <typename T>
+using constantPtrType = cl::sycl::constant_ptr<T>::pointer_t;
+template <typename T>
+using localPtrType = cl::sycl::local_ptr<T>::pointer_t;
+template <typename T>
+using privatePtrType = cl::sycl::private_ptr<T>::pointer_t;
+template <typename T>
+using globalMultiPtrType = cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>::pointer_t;
+template <typename T>
+using constantMultiPtrType = cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>::pointer_t;
+template <typename T>
+using localMultiPtrType = cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>::pointer_t;
+template <typename T>
+using privateMultiPtrType = cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>::pointer_t;
+template <typename T, int dims>
+using vectorType = cl::sycl::vector<T, dims>::vector_t;
+
+/** tests the kernel execution for OpenCL inter-op
+ */
 class TEST_NAME : public sycl_cts::util::test_base_opencl
 {
 public:
@@ -36,73 +51,61 @@ public:
     */
     virtual void run( util::logger &log ) override
     {
-        /* get the OpenCLHelper object */
-        using sycl_cts::util::opencl_helper;
-        using sycl_cts::util::get;
-        opencl_helper &openclHelper = get<opencl_helper>();
-
         try
         {
-            const size_t size = 32;
-            int data[size] = { 0 };
-
-            cl_int error = CL_SUCCESS;
-
-            cl::sycl::queue q( m_cl_command_queue );
-
-            cl_mem opencl_buffer =
-                clCreateBuffer( m_cl_context,
-                CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                size * sizeof( int ),
-                data,
-                &error );
-
-            if ( !CHECK_CL_SUCCESS( log, error ) )
-                return;
-
-            cl_program prog = nullptr;
-            cl_kernel cl_kern = nullptr;
-
-            if ( !create_program( kern, prog, log ) )
+            static const util::STRING kernelSource =
+            R"(__kernel void test_kernel(__global int *argOne, read_only image2d_t arg2, sampler_t arg3, float arg4)
             {
-                log.note( "Unable to create test OpenCL program" );
+                ;
+            })";
+
+            const size_t bufferSize = 32;
+            int bufferData[bufferSize] = { 0 };
+
+            const size_t imageSize = 1024;
+            float imageData[imageSize] = { 0.0f };
+
+            cl::sycl::queue queue;
+
+            cl::sycl::buffer<int, bufferSize> buffer( bufferData, cl::sycl::range<1>(bufferSize) );
+
+            cl::sycl::image<imageSize> image( imageData, cl::sycl::image_format::channel_order::RGBA, cl::sycl::image_format::channel_type::FLOAT, cl::sycl::range<2>(32, 32) );
+
+            cl_program clProgram = nullptr;
+            if ( !create_program( kernelSource, clProgram, log ) )
+            {
+                FAIL( log, "create_program failed" );
             }
 
-            if ( !create_kernel( prog, "test_kern", cl_kern, log ) )
+            cl_kernel clKernel = nullptr;
+            if ( !create_kernel( clProgram, "test_kernel", clKernel, log ) )
             {
-                log.note( "Unable to create test OpenCL kernel" );
+                FAIL( log, "create_kernel failed" );
             }
 
-            cl::sycl::kernel k( cl_kern );
+            cl::sycl::kernel kernel( clKernel );
 
-            cl::sycl::buffer<int, size> buffer( opencl_buffer, m_cl_command_queue, nullptr );
-
-            q.submit( [&]( cl::sycl::handler & cgh )
+            queue.submit( [&](cl::sycl::handler &handler)
             {
-                auto acc = buffer.get_access<mode::read_write, target::cl_buffer>( cgh );
+                auto bufferAccessor = buffer.get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( handler );
+                auto imageAccessor = image.get_access<cl::sycl::float4, cl::sycl::access::mode::read> ( handler );
 
-                handler.set_arg( 0, acc );
-                handler.set_arg( 1, size );
+                cl::sycl::sampler sampler(false, cl::sycl::sampler_addressing_mode::none, cl::sycl::sampler_filter_mode::nearest);
+            
+                /** check the set_arg() methods
+                */
+                handler.set_arg(0, bufferAccessor);
+                handler.set_arg(1, imageAccessor);
+                handler.set_arg(2, sampler);
+                handler.set_arg(3, 15.0f);
 
-                cgh.single_task( k )
+                handler.single_task( kernel );
             } );
-
-            error = clReleaseMemObject( opencl_buffer );
-            if ( !CHECK_CL_SUCCESS( log, error ) )
-                return;
-
-            error = clReleaseKernel( cl_kern );
-            if ( !CHECK_CL_SUCCESS( log, error ) )
-                return;
-
-            error = clReleaseProgram( prog );
-            if ( !CHECK_CL_SUCCESS( log, error ) )
-                return;
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };
@@ -110,4 +113,4 @@ public:
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace opencl_interop_buffer__ */
+} /* namespace opencl_interop_kernel__ */

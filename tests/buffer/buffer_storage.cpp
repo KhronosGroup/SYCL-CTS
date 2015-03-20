@@ -57,12 +57,12 @@ public:
         memset( data_shrd.get(), 0, sizeof( T ) * size );
 
         {
-            cl::sycl::buffer<T, dims, custom_alloc<T>> buf( data.get(), r );
-            cl::sycl::buffer<T, dims, custom_alloc<T>> buf_uniq( data_uniq, r );
-            cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd( data_shrd, r );
+            cl::sycl::buffer<T, dims, custom_alloc<T> > buf( data.get(), r );
+            cl::sycl::buffer<T, dims, custom_alloc<T> > buf_uniq( std::move(data_uniq), r );
+            cl::sycl::buffer<T, dims, custom_alloc<T> > buf_shrd( data_shrd, r );
         }
         {
-            cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd( data_shrd, r, m );
+            cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd( data_shrd, r, &m );
             m.lock();
             memset( data_shrd.get(), 0xFF, size );
             m.unlock();

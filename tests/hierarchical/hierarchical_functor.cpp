@@ -23,7 +23,7 @@ class kernel0 {
       : ptr(p) {}
 
   void operator( )( group<2> grou_pid ) const {
-    parallel_for_workitem( grou_pid, [=]( item<2> itemID ) { ptr[0] *= 2; } );
+    parallel_for_work_item( grou_pid, [=]( item<2> itemID ) { ptr[0] *= 2; } );
   }
 };
 
@@ -58,7 +58,7 @@ public:
                 accessor<int, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer> ptr(
                             buf, cgh
                             );
-                cgh.parallel_for_workgroup( my_range, kernel0( ptr ) );
+                cgh.parallel_for_work_group( my_range, kernel0( ptr ) );
             });
 
             accessor<int, 1, cl::sycl::access::mode::read, cl::sycl::access::target::host_buffer> host_ptr( buf );

@@ -921,7 +921,8 @@ cl::sycl::vec<T,length> mul24_tmp( cl::sycl::vec<T,length> x, cl::sycl::vec<T,le
 {
     cl::sycl::vec<T, length> t;
     for ( int i = 0; i < length; i++ )
-        t[i] = T( int64_t( x[i] ) * int64_t( y[i] ) );
+        // t[i] = T( int64_t( x[i] ) * int64_t( y[i] ) );
+        setElement(t, i, T( int64_t( x[i] ) * int64_t( y[i] ) ));
     return t;
 }
 

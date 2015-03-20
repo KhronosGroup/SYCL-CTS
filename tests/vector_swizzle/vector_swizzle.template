@@ -93,7 +93,7 @@ public:
             {
                 for (int j = 0; j < VECTOR_SIZE; j++)
                 {
-                    idata[i][j] = vector_input_data[j];
+                    math::setElement(idata[i], j, vector_input_data[j]);
                 }
             }
 
@@ -109,7 +109,7 @@ public:
             /* add command to queue */
             l_queue.submit( [&]( handler& cgh )
             {
-                auto iptr = ibuf.template get_access<access::read>( cgh );
+                auto iptr = ibuf.template get_access<cl::sycl::access::mode::read>( cgh );
                 auto optr = obuf.template get_access<cl::sycl::access::mode::write>( cgh );
 
                 /* instantiate the kernel */
@@ -139,12 +139,12 @@ public:
 };
 
 // construction of this proxy will register the above test
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(char,  $VECTOR_SIZE$),int8_t>>  proxy2;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uchar, $VECTOR_SIZE$),uint8_t>>  proxy3;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(short, $VECTOR_SIZE$),int16_t>>  proxy4;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(ushort,$VECTOR_SIZE$),uint16_t>>  proxy5;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(int,   $VECTOR_SIZE$),int32_t>>  proxy6;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uint,  $VECTOR_SIZE$),uint32_t>>  proxy7;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(char,  $VECTOR_SIZE$),char>>  proxy2;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uchar, $VECTOR_SIZE$),uchar>>  proxy3;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(short, $VECTOR_SIZE$),short>>  proxy4;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(ushort,$VECTOR_SIZE$),ushort>>  proxy5;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(int,   $VECTOR_SIZE$),int>>  proxy6;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uint,  $VECTOR_SIZE$),uint>>  proxy7;
 util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(float, $VECTOR_SIZE$),float>>  proxy8;
 util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(double,$VECTOR_SIZE$),double>>  proxy9;
 

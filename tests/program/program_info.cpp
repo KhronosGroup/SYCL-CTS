@@ -38,7 +38,6 @@ public:
 
             /** check types
             */
-            using programID = cl::sycl::info::program_id;
             using programInfo = cl::sycl::info::program;
 
             /** initialize return values

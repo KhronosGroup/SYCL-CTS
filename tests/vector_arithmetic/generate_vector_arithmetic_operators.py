@@ -25,7 +25,6 @@ g_binary_map = [{"$ARITHMETIC_OPERATION$" : "plus",       		"$ARITHMETIC_OPERATO
                 {"$ARITHMETIC_OPERATION$" : "divideequal",     	"$ARITHMETIC_OPERATOR$" : "/=", 	"$COMPOUND_OPERATION$" : "1"},
                 {"$ARITHMETIC_OPERATION$" : "bitwiseor",      	"$ARITHMETIC_OPERATOR$" : "|",  	"$COMPOUND_OPERATION$" : "0"},
                 {"$ARITHMETIC_OPERATION$" : "bitwiseand",      	"$ARITHMETIC_OPERATOR$" : "&",  	"$COMPOUND_OPERATION$" : "0"},
-                {"$ARITHMETIC_OPERATION$" : "bitwisenot",	    "$ARITHMETIC_OPERATOR$" : "~",  	"$COMPOUND_OPERATION$" : "0"},
                 {"$ARITHMETIC_OPERATION$" : "bitwisexor",	    "$ARITHMETIC_OPERATOR$" : "^",  	"$COMPOUND_OPERATION$" : "0"},
                 {"$ARITHMETIC_OPERATION$" : "bitwiseorequal",  	"$ARITHMETIC_OPERATOR$" : "|=",  	"$COMPOUND_OPERATION$" : "1"},
                 {"$ARITHMETIC_OPERATION$" : "bitwiseandequal", 	"$ARITHMETIC_OPERATOR$" : "&=",  	"$COMPOUND_OPERATION$" : "1"},

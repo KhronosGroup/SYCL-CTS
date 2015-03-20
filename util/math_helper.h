@@ -10,6 +10,7 @@
 
 #include "../tests/common/sycl.h"
 #include "./../oclmath/mt19937.h"
+#include "./math_vector.h"
 
 namespace sycl_cts
 {
@@ -47,19 +48,22 @@ int numElements( const int16 & );
 
 /* extract an individual elements */
 float getElement( const float &f, int ix );
-float getElement( const float2 &f, int ix );
-float getElement( const float3 &f, int ix );
-float getElement( const float4 &f, int ix );
-float getElement( const float8 &f, int ix );
-float getElement( const float16 &f, int ix );
 
 /* extract individual elements of an integer type */
 int getElement( const int &f, int ix );
-int getElement( const int2 &f, int ix );
-int getElement( const int3 &f, int ix );
-int getElement( const int4 &f, int ix );
-int getElement( const int8 &f, int ix );
-int getElement( const int16 &f, int ix );
+
+template<typename T, int dim>
+T getElement( cl::sycl::vec<T, dim> &f, int ix )
+{
+  return getComponent<T, dim>()(f, ix);
+}
+
+template<typename T, int dim>
+void setElement( cl::sycl::vec<T, dim> &f, int ix,  T value )
+{
+  setComponent<T, dim>()(f, ix, value);
+}
+
 
 /* create random floats with an integer range [-0x7fffffff to 0x7fffffff]
  */

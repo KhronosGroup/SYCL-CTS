@@ -48,6 +48,11 @@ public:
       try
         {
             int input_data[g_items_total];
+
+            cl::sycl::default_selector sel;
+            cl::sycl::queue testQueue ( sel );
+
+
             for( size_t i = 0; i < g_items_total; i++ )
             {
                 input_data[i] = i;
@@ -55,10 +60,8 @@ public:
             {
                 buffer<int, 1> input_buffer( input_data, range<1> ( g_items_total ) );
 
-                default_selector sel;
-                queue queue ( sel );
 
-                queue.submit([&]( handler & cgh )
+                testQueue.submit([&]( handler & cgh )
                 {
                     auto my_range = nd_range<3> (
                                 range<3>( g_items_1d, g_items_2d, g_items_3d ),
@@ -69,10 +72,10 @@ public:
 
                     accessor<int, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local> local_ptr (
                                 range<1>( l_items_total ), cgh );
-                    cgh.parallel_for_workgroup<class hierarchical_implicit_barriers>(
+                    cgh.parallel_for_work_group<class hierarchical_implicit_barriers>(
                                 my_range, [=]( group<3> group )
                     {
-                        parallel_for_workitem( group, [&]( item<3> item )
+                        parallel_for_work_item( group, [&]( item<3> item )
                         {
                             int global_id = item.get_global_linear( );
                             int global_size = item.get_global_linear_range();
@@ -83,7 +86,7 @@ public:
                            local_ptr[local_id] = inverted_val;
                         });
 
-                        parallel_for_workitem( group, [&]( item<3> item )
+                        parallel_for_work_item( group, [&]( item<3> item )
                         {
                             int global_id = item.get_global_linear( );
                             int local_id = item.get_local_linear( );
@@ -103,7 +106,7 @@ public:
                 }
             }
 
-            queue.wait_and_throw();
+            testQueue.wait_and_throw();
 
         }
         catch ( cl::sycl::exception e )

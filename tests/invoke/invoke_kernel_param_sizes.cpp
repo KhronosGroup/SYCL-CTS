@@ -8,9 +8,9 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME kernel_type_size_check
+#define TEST_NAME invoke_kernel_param_sizes
 
-namespace kernel_type_sizes__
+namespace invoke_kernel_param_sizes__
 {
 using namespace sycl_cts;
 using namespace cl::sycl;
@@ -45,7 +45,7 @@ bool test_kernel_type_size( util::logger &log, queue & sycl_queue, const sycl_ct
         cl::sycl::buffer<int32_t,1> buffer_output( &kernel_type_size, cl::sycl::range<1>(1));
         sycl_queue.submit( [&]( handler& cgh )
         {
-            auto access_output = buffer_output.template get_access<cl::sycl::cl::sycl::access::mode::write>( cgh );
+            auto access_output = buffer_output.template get_access<cl::sycl::access::mode::write>( cgh );
             type_size_kernel<T> kernel( access_output );
             cgh.single_task( kernel );
         } );
@@ -183,4 +183,4 @@ public:
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace kernel_type_sizes__ */
+} /* namespace invoke_kernel_param_sizes__ */

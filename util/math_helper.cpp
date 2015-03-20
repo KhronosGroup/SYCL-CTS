@@ -32,35 +32,32 @@ void fill( float &e, float v )
 
 void fill( float2 &e, float v )
 {
-    e[0] = v;
-    e[1] = v;
+    e.x() = v;
+    e.y() = v;
 }
 
 void fill( float3 &e, float v )
 {
-    e[0] = v;
-    e[1] = v;
-    e[2] = v;
+  e.x() = e.y() = e.z() = v;
 }
 
 void fill( float4 &e, float v )
 {
-    e[0] = v;
-    e[1] = v;
-    e[2] = v;
-    e[3] = v;
+  e.x() = e.y() = e.z() = e.w() = v;
 }
 
 void fill( float8 &e, float v )
 {
-    for ( int i = 0; i < 8; i++ )
-        e[i] = v;
+  e.s0() = e.s1() = e.s2() = e.s3() = v;
+  e.s4() = e.s5() = e.s6() = e.s7() = v;
 }
 
 void fill( float16 &e, float v )
 {
-    for ( int i = 0; i < 16; i++ )
-        e[i] = v;
+  e.s0() = e.s1() = e.s2() = e.s3() = v;
+  e.s4() = e.s5() = e.s6() = e.s7() = v;
+  e.s8() = e.s9() = e.sA() = e.sB() = v;
+  e.sC() = e.sD() = e.sE() = e.sF() = v;
 }
 
 /* return number of elements in a type */
@@ -120,52 +117,13 @@ float getElement( const float &f, int ix )
 {
     return f;
 }
-float getElement( const float2 &f, int ix )
-{
-    return f[ix];
-}
-float getElement( const float3 &f, int ix )
-{
-    return f[ix];
-}
-float getElement( const float4 &f, int ix )
-{
-    return f[ix];
-}
-float getElement( const float8 &f, int ix )
-{
-    return f[ix];
-}
-float getElement( const float16 &f, int ix )
-{
-    return f[ix];
-}
 
-/* extract individual elements of an integer type */
+/* extract an individual elements of an int type */
 int getElement( const int &f, int ix )
 {
     return f;
 }
-int getElement( const int2 &f, int ix )
-{
-    return f[ix];
-}
-int getElement( const int3 &f, int ix )
-{
-    return f[ix];
-}
-int getElement( const int4 &f, int ix )
-{
-    return f[ix];
-}
-int getElement( const int8 &f, int ix )
-{
-    return f[ix];
-}
-int getElement( const int16 &f, int ix )
-{
-    return f[ix];
-}
+
 
 /* create random floats with full integer range */
 void rand( MTdata &rng, float *buf, int num )

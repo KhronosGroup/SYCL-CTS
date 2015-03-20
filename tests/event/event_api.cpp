@@ -26,34 +26,34 @@ public:
         set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
     }
 
-    /** execute the test
+    /** execute this test
      */
     virtual void run( util::logger &log ) override
     {
         try
         {
-            cl::sycl::event myEvent;
+            cts_selector selector;
+            cl::sycl::queue queue( selector );
+            cl::sycl::event event = queue.submit( [&]( cl::sycl::handler &handler )
+                                                  {
+                                                  } ).get_complete();
 
-            auto evt = myEvent.get();
+            auto evt = event.get();
             if ( typeid( evt ) != typeid( cl_event ) )
             {
-                FAIL( log,
-                    "cl::sycl::event::get() does not "
-                    "return cl_event" );
+                FAIL( log, "get() does not return cl_event" );
             }
 
-            auto events = myEvent.get_wait_list();
-            if (typeid(events) != typeid(VECTOR_CLASS<cl::sycl::event>))
+            auto events = event.get_wait_list();
+            if ( typeid( events ) != typeid(cl::sycl::vector_class<cl::sycl::event>))
             {
-                FAIL(log,
-                    "cl::sycl::event::get_wait_list() does not "
-                    "return VECTOR_CLASS<cl::sycl::event>");
+                FAIL( log, "get_wait_list() does not return vector_class<event>" );
             }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };

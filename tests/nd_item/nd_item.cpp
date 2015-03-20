@@ -89,13 +89,13 @@ public:
 
         for ( int i = 0; i < dimensions; ++i )
         {
-            if ( m_localID[(int)localIndex] != localIndex )
+            if ( m_localID[local_id] != localIndex )
                 failed = true;
         }
 
         for ( int i = 0; i < dimensions; ++i )
         {
-            if ( group_id.get()[i] != ( global_id.get()[i] / local_range.get()[i] ) )
+            if ( group_id.get()[i] != ( global_id.get()[i] / localRange.get()[i] ) )
                 failed = true;
         }
 

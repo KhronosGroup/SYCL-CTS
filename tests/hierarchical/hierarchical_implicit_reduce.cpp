@@ -50,7 +50,7 @@ T reduce( T input[input_size], device_selector* selector )
         accessor<T, 1, cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer> input_ptr( input_buf, cgh );
         accessor<T, 1, cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer> group_sums_ptr( group_sums_buf, cgh );
         accessor<T, 1, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> total_ptr( total_buf, cgh );
-        cgh.parallel_for_workgroup<class sth<T>>(
+        cgh.parallel_for_work_group<class sth<T>>(
                     nd_range<3>( range<3>( g_items_1d, g_items_1d, g_items_1d ),
                                  range<3>( l_items_1d, l_items_1d, l_items_1d )),
                     [=]( group<3> group )
@@ -58,7 +58,7 @@ T reduce( T input[input_size], device_selector* selector )
             T local_sums[l_items_total];
 
             // process items in each work item
-            parallel_for_workitem( group, [=, &local_sums]( item<3> item )
+            parallel_for_work_item( group, [=, &local_sums]( item<3> item )
                                    {
                 int local_id = item.get_global_linear();
                 /* Split the array into work-group-size different arrays */
@@ -84,7 +84,7 @@ T reduce( T input[input_size], device_selector* selector )
 
     my_queue.submit( [&]( handler& cgh )
                      {
-                         accessor<T, 1, access::read, cl::sycl::access::target::global_buffer> group_sums_ptr( group_sums_buf, cgh );
+                         accessor<T, 1, cl::sycl::access::mode::read, cl::sycl::access::target::global_buffer> group_sums_ptr( group_sums_buf, cgh );
                          accessor<T, 1, cl::sycl::access::mode::write, cl::sycl::access::target::global_buffer> total_ptr( total_buf, cgh );
 
         cgh.single_task<class sth_else<T>>([=]()

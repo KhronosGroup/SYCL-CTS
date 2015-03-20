@@ -49,7 +49,7 @@ public:
             */
             {
                 cts_selector selectorA;
-                cts_selector selectorB = selectorA );
+                cts_selector selectorB = selectorA;
             }
         }
         catch ( cl::sycl::exception e )

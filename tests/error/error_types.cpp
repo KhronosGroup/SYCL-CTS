@@ -32,10 +32,32 @@ public:
     {
         using namespace cl::sycl;
 
-        exception         sycl_exception;
-        cl_exception      sycl_cl_exception;
-        async_exception   async_exception;
-        exception_list    sycl_exception_list;
+#define CHECK_EXISTS(EXCEPTION_NAME)\
+        if (!std::is_class<EXCEPTION_NAME>::value) {\
+          FAIL(log, "EXCEPTION_NAME is not defined as a class");\
+        }
+
+        CHECK_EXISTS(exception);
+        CHECK_EXISTS(cl_exception);
+        CHECK_EXISTS(async_exception);
+        CHECK_EXISTS(runtime_error);
+        CHECK_EXISTS(kernel_error);
+        CHECK_EXISTS(nd_range_error);
+        CHECK_EXISTS(event_error);
+        CHECK_EXISTS(invalid_parameter_error);
+        CHECK_EXISTS(device_error);
+        CHECK_EXISTS(compile_program_error);
+        CHECK_EXISTS(link_program_error);
+        CHECK_EXISTS(invalid_object_error);
+        CHECK_EXISTS(memory_allocation_error);
+        CHECK_EXISTS(platform_error);
+        CHECK_EXISTS(profiling_error);
+#undef CHECK_EXISTS
+
+        /* Check that exception_list exists */
+        if (!std::is_class<exception_list>::value) {
+            FAIL(log, "Exception list is not defined as a class");
+        }
     }
 };
 

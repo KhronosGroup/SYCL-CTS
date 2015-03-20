@@ -37,11 +37,11 @@ public:
             auto devices = cl::sycl::device::get_devices();
             for ( auto device : devices )
             {
-                if ( device.get_info<cl::sycl::info::device::device_type>() == cl::sycl::info::device_type::cpu )
+                if ( device.is_cpu() )
                 {
                     gpuAvailable = true;
                 }
-                if ( device.get_info<cl::sycl::info::device::device_type>() == cl::sycl::info::device_type::gpu )
+                if ( device.is_gpu() )
                 {
                     cpuAvailable = true;
                 }
@@ -67,8 +67,8 @@ public:
             if ( cpuAvailable )
             {
                 cl::sycl::cpu_selector cpuSelector;
-                cl::sycl::device dev_cpu( cpuSelector );
-                if ( !( dev_cpu.get_info<cl::sycl::info::device::device_type>() == cl::sycl::info::device_type::cpu ) )
+                cl::sycl::device cpuDevice( cpuSelector );
+                if ( !( cpuDevice.is_cpu() ) )
                 {
                     FAIL( log, "cpu_selector failed to select an appropriate device" );
                 }
@@ -79,8 +79,8 @@ public:
             if ( gpuAvailable )
             {
                 cl::sycl::gpu_selector gpuSelector;
-                cl::sycl::device dev_gpu( gpuSelector );
-                if ( !( dev_gpu.get_info<cl::sycl::info::device::device_type>() == cl::sycl::info::device_type::gpu ) )
+                cl::sycl::device gpuDevice( gpuSelector );
+                if ( !( gpuDevice.is_gpu() ) )
                 {
                     FAIL( log, "gpu_selector failed to select an appropriate device" );
                 }

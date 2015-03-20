@@ -14,7 +14,7 @@ namespace opencl_interop_get__
 {
 using namespace sycl_cts;
 
-/** tests all of the get() methods for OpenCL inter-op
+/** tests the get() methods for OpenCL inter-op
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl
 {
@@ -32,181 +32,111 @@ public:
     {
         try
         {
-            cts_selector selector;
+            cts_selector ctsSelector;
 
             /** check platform get() method
             */
-            cl::sycl::platform platform( selector );
-            auto platformID = platform.get();
-            if ( typeid( platformID ) != typeid( cl::sycl::info::platform_id ) )
+            cl::sycl::platform platform( ctsSelector );
+            auto interopPlatformID = platform.get();
+            if ( typeid( interopPlatformID ) != typeid( cl_platform_id ) )
             {
-                FAIL( log, "get() does not return cl::sycl::info::platform_id." );
+                FAIL( log, "get() does not return cl_platform_id." );
             }
             if ( platform.is_host() )
             {
-                if ( platformID != 0 )
+                if ( interopPlatformID != 0 )
                 {
                     FAIL( log, "platform is in host mode but get() did not return a nullptr" );
                 }
             }
             else
             {
-                if ( platformID == 0 )
+                if ( interopPlatformID == 0 )
                 {
-                    FAIL( log, "get() did not return a valid platform_id" );
+                    FAIL( log, "get() did not return a valid cl_platform_id" );
                 }
             }
 
             /** check device get() method
             */
-            cl::sycl::device device( selector );
-            auto deviceID = device.get();
-            if ( typeid( deviceID ) != typeid( cl::sycl::info::device_id ) )
+            cl::sycl::device device( ctsSelector );
+            auto interopDeviceID = device.get();
+            if ( typeid( interopDeviceID ) != typeid( cl_device_id ) )
             {
-                FAIL( log, "get() does not return device_id" );
+                FAIL( log, "get() does not return cl_device_id" );
             }
             if ( device.is_host() )
             {
-                if ( deviceID != 0 )
+                if ( interopDeviceID != 0 )
                 {
                     FAIL( log, "device is in host mode but get() did not return a nullptr" );
                 }
             }
             else
             {
-                if ( deviceID == 0 )
+                if ( interopDeviceID == 0 )
                 {
-                    FAIL( log, "get() did not return a valid device_id" );
+                    FAIL( log, "get() did not return a valid cl_device_id" );
                 }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseDevice( deviceID ) ) )
+                if ( !CHECK_CL_SUCCESS( log, clReleaseDevice( interopDeviceID ) ) )
                 {
-                    FAIL( log, "failed to release the device_id" );
+                    FAIL( log, "failed to release the OpenCL device ID" );
                 }
             }
 
             /** check context get() method
             */
-            cl::sycl::context context( selector );
-            auto contextID = context.get();
-            if ( typeid( contextID ) != typeid( cl::sycl::info::context_id ) )
+            cl::sycl::context context( ctsSelector );
+            auto interopContext = context.get();
+            if ( typeid( interopContext ) != typeid( cl_context ) )
             {
-                FAIL( log, "get() does not return context_id" );
+                FAIL( log, "get() does not return cl_context" );
             }
             if ( context.is_host() )
             {
-                if ( contextID != nullptr )
+                if ( interopContext != nullptr )
                 {
                     FAIL( log, "context is in host mode but get() did not return a nullptr" );
                 }
             }
             else
             {
-                if ( contextID == nullptr )
+                if ( interopContext == nullptr )
                 {
-                    FAIL( log, "get() did not return a valid context_id" );
+                    FAIL( log, "get() did not return a valid cl_context" );
                 }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseContext( contextID ) ) )
+                if ( !CHECK_CL_SUCCESS( log, clReleaseContext( interopContext ) ) )
                 {
-                    FAIL( log, "failed to release the context_id" );
+                    FAIL( log, "failed to release the cl_context" );
                 }
             }
 
             /** check queue get() method
             */
-            cl::sycl::queue( selector );
-            auto queueID = queue.get();
-            if ( typeid( queueID ) != typeid( cl::sycl::info::context_id ) )
+            cl::sycl::queue queue( ctsSelector );
+            auto interopQueue = queue.get();
+            if ( typeid( interopQueue ) != typeid( cl_command_queue ) )
             {
-                FAIL( log, "get() does not return queue_id" );
+                FAIL( log, "get() does not return cl_command_queue" );
             }
             if ( queue.is_host() )
             {
-                if ( queueID != nullptr )
+                if ( interopQueue != nullptr )
                 {
                     FAIL( log, "queue is in host mode but get() did not return a nullptr" );
                 }
             }
             else
             {
-                if ( queueID == nullptr )
+                if ( interopQueue == nullptr )
                 {
-                    FAIL( log, "get() did not return a valid queue_id" );
+                    FAIL( log, "get() did not return a valid cl_command_queue" );
                 }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseCommandQueue( queueID ) ) )
+                if ( !CHECK_CL_SUCCESS( log, clReleaseCommandQueue( interopQueue ) ) )
                 {
-                    FAIL( log, "failed to release the queue_id" );
+                    FAIL( log, "failed to release the cl_command_queue" );
                 }
             }
-
-            /** check buffer accessor get() method
-            */
-            cl::sycl::buffer<int, 1> buffer( cl::sycl::range<1>( 1 ) );
-            queue.submit(
-            [&]( cl::sycl::handler &handler )
-            {
-                cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer> accessor(
-                    buffer, handler );
-
-                auto bufferID = accessor.get();
-                if ( typeid( bufferID ) != typeid( cl::sycl::info::buffer_id ) )
-                {
-                    FAIL( log, "get() does not return buffer_id" );
-                }
-                if ( bufferID == nullptr )
-                {
-                    FAIL( log, "get() returned an invalid buffer_id" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseMemObject( bufferID ) ) )
-                {
-                    FAIL( log, "failed to release the buffer_id" );
-                }
-            } );
-
-            /** check image accessor get() method
-            */
-            char data[256];
-            cl::sycl::image<2> image( data, cl::sycl::image_format::channel_order::rgba,
-                                      cl::sycl::image_format::channel_type::unsigned_int_8, cl::sycl::range<2>( 8, 8 ) );
-            queue.submit( [&]( cl::sycl::handler &handler )
-            {
-                cl::sycl::accessor<float4, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::image> accessor(
-                    image, handler );
-
-                auto imageID = accessor.get();
-                if ( typeid( imageID ) != typeid( cl::sycl::info::image_id ) )
-                {
-                    FAIL( log, "get() does not return image_id" );
-                }
-                if ( imageID == nullptr )
-                {
-                    FAIL( log, "get() returned an invalid image_id" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseMemObject( imageID ) ) )
-                {
-                    FAIL( log, "failed to release the image_id" );
-                }
-            } );
-
-            /** check sampler get() method
-            */
-            queue.submit( [&]( cl::sycl::handler &handler )
-            {
-                cl::sycl::sampler sampler(false, cl::sycl::sampler_addressing_mode::clamp_to_edge, cl::sycl::sampler_filter_mode::nearest)
-
-                auto samplerID = sampler.get();
-                if ( typeid( samplerID ) != typeid( cl::sycl::info::sampler_id ) )
-                {
-                    FAIL( log, "get() does not return sampler_id" );
-                }
-                if ( samplerID == nullptr )
-                {
-                    FAIL( log, "get() returned an invalid sampler_id" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseSampler( samplerID ) ) )
-                {
-                    FAIL( log, "failed to release teh sampler_id" );
-                }
-            } );
         }
         catch ( cl::sycl::exception e )
         {

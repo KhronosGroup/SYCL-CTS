@@ -36,7 +36,6 @@ public:
 
             /** check types
             */
-            using platformID = cl::sycl::info::platform_id;
             using platformInfo = cl::sycl::info::platform;
 
             /** initialize return values

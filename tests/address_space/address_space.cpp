@@ -296,7 +296,7 @@ public:
             cl::sycl::queue q( sel );
             q.submit( [&]( cl::sycl::handler & cgh )
             {
-                auto acc = buf.get_access<cl::sycl::cl::sycl::access::mode::read_write>( cgh );
+                auto acc = buf.get_access<cl::sycl::access::mode::read_write>( cgh );
 
                 cgh.single_task<TEST_NAME>( [=]()
                 {

@@ -82,6 +82,8 @@ bool fail_proxy( sycl_cts::util::logger &log, const sycl_cts::util::STRING & msg
     return false;
 }
 
+//Note: fail_proxy has a return type and can be used as expression in code base.
+//             conversion to braces turns into statement and breaks these areas of code.
 #define FAIL( LOG, MSG ) ( fail_proxy( LOG, MSG, __LINE__ ) )
 
 

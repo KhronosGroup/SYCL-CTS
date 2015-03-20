@@ -10,6 +10,7 @@
 
 #include "./stl.h"
 #include "../tests/common/sycl.h"
+#include "./math_vector.h"
 
 namespace reference
 {

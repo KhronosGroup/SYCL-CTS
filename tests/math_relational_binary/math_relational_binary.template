@@ -56,7 +56,7 @@ public:
         auto  x = m_x[item.get_global()];
         auto  y = m_y[item.get_global()];
 
-        o = cl::sycl::TEST_FUNC( x, y )
+        o = cl::sycl::TEST_FUNC( x, y );
     }
 };
 

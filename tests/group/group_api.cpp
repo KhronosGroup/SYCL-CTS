@@ -41,9 +41,9 @@ public:
                 ePASS
             };
 
-            const uint32_t num_items = 8;
+            const uint32_t num_items = 5;
 
-            int f[ num_items ];
+            int result[ num_items ];
             for ( uint32_t i=0; i<num_items; i++ )
                 result[i] = ePASS;
 
@@ -53,70 +53,54 @@ public:
                 {
                     auto a_dev = buf.get_access<cl::sycl::access::mode::read_write>( cgh );
 
-                    cgh.parallel_for_workgroup<class TEST_NAME>(
-                        nd_range<3>( range<3>( 1, 1, 1 ), range<3>( 1, 1, 1 ) ),
+                    cgh.parallel_for_work_group<class TEST_NAME>(
+                        range<3>( 1, 1, 1 ),
                         [=] (group<3> my_group)
                     {
                         //get_group()
-                        id<3> m_get_group = my_group.get_group();
+                        id<3> m_get_group = my_group.get();
                         if ( m_get_group.get(0) > EXPECTED ||
                              m_get_group.get(1) > EXPECTED ||
                              m_get_group.get(2) > EXPECTED )
                             a_dev[0] = eFAIL;
-
-                        //get_group_no()
-                        if(my_group.get_group_no() > EXPECTED)
-                            a_dev[1] = eFAIL;
 
                         //get_local_range()
                         range<3> m_get_local_range = my_group.get_local_range();
                         if ( m_get_local_range.get(0) > EXPECTED ||
                              m_get_local_range.get(1) > EXPECTED ||
                              m_get_local_range.get(2) > EXPECTED )
-                            a_dev[2] = eFAIL;
+                            a_dev[1] = eFAIL;
 
                         //get_global_range()
                         range<3> m_get_global_range = my_group.get_global_range();
                         if ( m_get_global_range.get(0) > EXPECTED ||
                              m_get_global_range.get(1) > EXPECTED ||
                              m_get_global_range.get(2) > EXPECTED )
-                            a_dev[3] = eFAIL;
-
-                        //get_offset()
-                        id<3> m_get_offset = my_group.get_offset();
-                        if ( m_get_offset.get(0) != 0 ||
-                             m_get_offset.get(1) != 0 ||
-                             m_get_offset.get(2) != 0 )
-                            a_dev[4] = eFAIL;
-
-                        //get_nd_range()
-                        auto m_get_nd_range = my_group.get_nd_range();
-                        if ( typeid( m_get_nd_range ) != typeid(nd_range<3>))
-                            a_dev[5] = eFAIL;
+                            a_dev[2] = eFAIL;
 
                         //get(int dimention)
                         size_t m_get_x = my_group.get(0);
                         size_t m_get_y = my_group.get(1);
                         size_t m_get_z = my_group.get(2);
-                        if( m_get_x.get(0) > EXPECTED ||
-                            m_get_y.get(1) > EXPECTED ||
-                            m_get_z.get(2) > EXPECTED )
-                            a_dev[6] = eFAIL;
+                        if( m_get_x > EXPECTED ||
+                            m_get_y > EXPECTED ||
+                            m_get_z > EXPECTED )
+                            a_dev[3] = eFAIL;
 
                         //[]
                         size_t m_get_x_op = my_group[0];
                         size_t m_get_y_op = my_group[1];
                         size_t m_get_z_op = my_group[2];
-                        if ( m_get_x_op.get(0) > EXPECTED ||
-                             m_get_y_op.get(1) > EXPECTED ||
-                             m_get_z_op.get(2) > EXPECTED )
-                            a_dev[7] = eFAIL;
+                        if ( m_get_x_op > EXPECTED ||
+                             m_get_y_op > EXPECTED ||
+                             m_get_z_op > EXPECTED )
+                            a_dev[4] = eFAIL;
                     });
                 });
             }
 
             for ( uint32_t i = 0; i < num_items; i++ )
-                if (! CHECK_VALUE( log, f[i], ePASS, i ) )
+                if (! CHECK_VALUE( log, result[i], ePASS, i ) )
                     return;
 
             queue.wait_and_throw();

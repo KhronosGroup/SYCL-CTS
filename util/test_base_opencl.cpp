@@ -21,7 +21,7 @@ namespace util
  */
 test_base_opencl::test_base_opencl()
     : m_cl_platform_id( nullptr )
-    , m_cl_device( nullptr )
+    , m_cl_device_id( nullptr )
     , m_cl_context( nullptr )
     , m_cl_command_queue( nullptr )
     , m_openKernels( )
@@ -104,7 +104,7 @@ bool test_base_opencl::setup( logger &log )
         return false;
 
     m_cl_platform_id = platforms.get()[0];
-    m_cl_device = devices.get()[0];
+    m_cl_device_id = devices.get()[0];
 
     return true;
 }
@@ -131,7 +131,7 @@ bool test_base_opencl::create_program
         ( m_cl_context, 1, &source_c, &sourceSize, &error );
     if ( !CHECK_CL_SUCCESS( log, error ) )
         return false;
-    error = clBuildProgram(out_program, 1, &m_cl_device, nullptr, nullptr, nullptr );
+    error = clBuildProgram(out_program, 1, &m_cl_device_id, nullptr, nullptr, nullptr );
     if ( !CHECK_CL_SUCCESS( log, error ) )
         return false;
     

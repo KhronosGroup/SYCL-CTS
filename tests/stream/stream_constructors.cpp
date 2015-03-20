@@ -13,7 +13,6 @@
 namespace stream_constructors__
 {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** tests the constructors for cl::sycl::stream
 */
@@ -33,13 +32,13 @@ public:
     {
         try {
 
-          /** check default constructor and destructor.
+          /** check default constructor and destructor
           */
           {
             cl::sycl::stream os;
           }
 
-          /** check (size_t, size_t) constructor and destructor.
+          /** check (size_t, size_t) constructor
           */
           {
             size_t bufferSize = 2048;
@@ -53,7 +52,7 @@ public:
                    "cl::sycl::context::get_size() returned an incorrect value.");
             }
 
-            auto maxStatementSize = os.get_max_statement_size();
+            maxStatementSize = os.get_max_statement_size();
 
             if (maxStatementSize != 80) {
               FAIL(log,
@@ -62,24 +61,24 @@ public:
             }
           }
 
-          /** check copy constructor and destructor.
+          /** check copy constructor
           */
           {
             cl::sycl::stream osA;
-            cl::sycl::stream osB(osB);
+            cl::sycl::stream osB(osA);
           }
 
-          /** check copy assignment operator and destructor.
+          /** check assignment operator
           */
           {
             cl::sycl::stream osA;
-            cl::sycl::stream osB = osB;
+            cl::sycl::stream osB = osA;
           }
         }
         catch ( cl::sycl::exception e )
         {
             log_exception( log, e );
-            FAIL( log, "sycl exception caught" );
+            FAIL( log, "a sycl exception was caught" );
         }
     }
 };

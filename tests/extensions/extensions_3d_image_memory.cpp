@@ -64,7 +64,7 @@ public:
                     queue queue(sel);
                     queue.submit( [&]( handler& cgh )
                     {
-                        auto img_acc = img.template get_access<float4, cl::sycl::access::mode::read_write>( cgh );
+                        auto img_acc = img.template get_access<float4, cl::sycl::access::mode::write>( cgh );
                         auto my_range = nd_range<3>( range<1>(4*size), range<1>( 4*size ) );
                         auto my_kernel = ( [=](item<3> item ) {
                             img_acc[item.get_global(0)][item.get_global(1)][item.get_global(2)] = val;

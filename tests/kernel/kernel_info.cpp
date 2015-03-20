@@ -39,7 +39,7 @@ public:
             cl::sycl::program program( queue.get_context() );
             program.build_from_kernel_name<kernel0>();
             cl::sycl::kernel kernel = program.get_kernel<kernel0>();
-            queue.submit( [&]( handler &cgh )
+            queue.submit( [&]( cl::sycl::handler &cgh )
             {
                 cgh.single_task<kernel0>( [=]()
                 {
@@ -48,7 +48,6 @@ public:
 
             /** check types
             */
-            using kernelID = cl::sycl::info::kernel_id;
             using kernelInfo = cl::sycl::info::kernel;
 
             /** initialize return values
