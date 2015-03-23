@@ -37,10 +37,8 @@
 // memcpy
 #include <cstring>
 
-namespace sycl_cts
-{
-namespace util
-{
+namespace sycl_cts {
+namespace util {
 
 /** alias to STRING
  */

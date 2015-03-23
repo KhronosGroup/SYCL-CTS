@@ -16,7 +16,7 @@ foreach(dir ${subdirectories})
     if(IS_DIRECTORY ${TESTS_DIR}/${dir})
         # check whether to include opengl-interop based on whether the test is enabled
         if(${dir} MATCHES "opengl*")
-            if(SYCL-CTS_ENABLE_OPENGL_INTEROP_TESTS)
+            if(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS)
                 get_property(glut_flags GLOBAL PROPERTY glut_bld_flags)
                 get_property(glew_flags GLOBAL PROPERTY glew_bld_flags)
                 get_property(glut_inc GLOBAL PROPERTY glut_inc_dir)
@@ -29,7 +29,7 @@ foreach(dir ${subdirectories})
             endif()
         # do not include common directory into the test list
         elseif(NOT ${dir} STREQUAL "common")
-            if(SYCL-CTS_ENABLE_DOUBLE_TESTS)
+            if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
                 add_definitions(-DSYCL_CTS_TEST_DOUBLE)
             endif()
             if(SYCL-CTS_ENABLE_HALF_TESTS)
@@ -63,23 +63,23 @@ message("\nGENERATING TESTS DONE.\n\n")
 
 set(all_test_cases_list "")
 # create test executable targets for each test project using the build_sycl function
-foreach(test_project_dir ${test_projects_dir_list}) 
+foreach(test_project_dir ${test_projects_dir_list})
     file(GLOB test_cases_list ${TESTS_DIR}/${test_project_dir}/*.cpp)
     list(APPEND all_test_cases_list ${test_cases_list})
-    
-    set(test_main ${TESTS_DIR}/common/main.cpp) 
+
+    set(test_main ${TESTS_DIR}/common/main.cpp)
     set(test_exe_name test_${test_project_dir})
-    
+
     # invoke build_sycl()
     build_sycl("${test_exe_name}" "${test_main}" "${test_cases_list}" "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/bin/intermediate")
-    
+
     # link the test executable with the test framework util library
     target_link_libraries(${test_exe_name} util)
     target_link_libraries(${test_exe_name} oclmath)
-    
+
     # special flags and includes for opengl interop tests
     if(${test_project_dir} MATCHES "opengl*")
-        if(SYCL-CTS_ENABLE_OPENGL_INTEROP_TESTS)
+        if(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS)
             # get global properties for gl interop tests
             get_property(glut_lib GLOBAL PROPERTY glut_lib_name)
             get_property(glew_lib GLOBAL PROPERTY glew_lib_name)
@@ -121,14 +121,14 @@ endforeach()
 
 
 # create a target to group all tests together into one test executable
-set(test_main ${TESTS_DIR}/common/main.cpp) 
-set(test_exe_name test_all) 
+set(test_main ${TESTS_DIR}/common/main.cpp)
+set(test_exe_name test_all)
 # invoke build_sycl()
 build_sycl("${test_exe_name}" "${test_main}" "${all_test_cases_list}" "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/bin/intermediate")
 target_link_libraries(${test_exe_name} util)
 target_link_libraries(${test_exe_name} oclmath)
 # special flags and includes for opengl interop tests
-if(SYCL-CTS_ENABLE_OPENGL_INTEROP_TESTS)
+if(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS)
     # get global properties for gl interop tests
     get_property(glut_lib GLOBAL PROPERTY glut_lib_name)
     get_property(glew_lib GLOBAL PROPERTY glew_lib_name)
@@ -143,4 +143,3 @@ if(SYCL-CTS_ENABLE_OPENGL_INTEROP_TESTS)
     target_link_libraries(${test_exe_name} gl_util)
     target_link_libraries(${test_exe_name} ${OPENGL_LIBRARIES})
 endif()
-

@@ -9,60 +9,53 @@
 #pragma once
 
 // conformance test suite namespace
-namespace sycl_cts
-{
-namespace util
-{
+namespace sycl_cts {
+namespace util {
 
 /** Base class for all SYCL tests
  */
-class test_base
-{
-public:
-    /** encapsulate information about a test
-     */
-    struct info
-    {
-        STRING m_name;
-        STRING m_file;
-        STRING m_buildDate;
-        STRING m_buildTime;
-    };
+class test_base {
+ public:
+  /** encapsulate information about a test
+   */
+  struct info {
+    STRING m_name;
+    STRING m_file;
+    STRING m_buildDate;
+    STRING m_buildTime;
+  };
 
-    /** virtual destructor
-     */
-    virtual ~test_base()
-    {
-        /* call cleanup to ensure internals are released */
-        cleanup();
-    }
+  /** virtual destructor
+   */
+  virtual ~test_base() {
+    /* call cleanup to ensure internals are released */
+    cleanup();
+  }
 
-    /** return information about this test
-     *  @param info, test_base::info structure as output
-     */
-    virtual void get_info( info &out ) const = 0;
+  /** return information about this test
+   *  @param info, test_base::info structure as output
+   */
+  virtual void get_info(info &out) const = 0;
 
-    /** called before this test is executed
-     *  @param log for emitting test notes and results
-     */
-    virtual bool setup( class logger & )
-    {
-        // stub
-        return true;
-    }
+  /** called before this test is executed
+   *  @param log for emitting test notes and results
+   */
+  virtual bool setup(class logger &) {
+    // stub
+    return true;
+  }
 
-    /** execute this test
-     *  @param log for emitting test notes and results
-     */
-    virtual void run( class logger &log ) = 0;
+  /** execute this test
+   *  @param log for emitting test notes and results
+   */
+  virtual void run(class logger &log) = 0;
 
-    /** called after this test has executed
-     *  @param log for emitting test notes and results
-     */
-    virtual void cleanup()
-    {
-        // empty
-    }
+  /** called after this test has executed
+   *  @param log for emitting test notes and results
+   */
+  virtual void cleanup() {
+    // empty
+  }
 
 };  // class test_base
 

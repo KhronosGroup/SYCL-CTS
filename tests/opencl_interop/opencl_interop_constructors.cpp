@@ -10,333 +10,314 @@
 
 #define TEST_NAME opencl_interop_constructors
 
-namespace opencl_interop_constructors__
-{
+namespace opencl_interop_constructors__ {
 using namespace sycl_cts;
 
 /** tests the constructors for OpenCL inter-op
  */
-class TEST_NAME : public sycl_cts::util::test_base_opencl
-{
-public:
-    /** return information about this test
-     */
-    virtual void get_info( test_base::info &out ) const override
-    {
-        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
-    }
+class TEST_NAME : public sycl_cts::util::test_base_opencl {
+ public:
+  /** return information about this test
+   */
+  virtual void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
 
-    /** execute this test
-     */
-    virtual void run( util::logger &log ) override
-    {
-        try
-        {
-            cl::sycl::string_class kernelSource = R"(
+  /** execute this test
+   */
+  virtual void run(util::logger &log) override {
+    try {
+      cl::sycl::string_class kernelSource = R"(
             __kernel void test_kernel(__global float *input)
             {
               input[get_global_id(0)] = get_global_id(0);
             }
             )";
 
-            /** check platform (cl_platform_id) constructor
-            */
-            {
-                cl::sycl::platform platform( m_cl_platform_id );
+      /** check platform (cl_platform_id) constructor
+      */
+      {
+        cl::sycl::platform platform(m_cl_platform_id);
 
-                cl_platform_id interopPlatformID = platform.get();
-                if ( interopPlatformID != m_cl_platform_id )
-                {
-                    FAIL( log, "platform was not constructed correctly" );
-                }
-            }
-
-            /** check device (cl_device_id) constructor
-            */
-            {
-                cl::sycl::device device( m_cl_device_id );
-
-                cl_device_id interopDeviceID = device.get();
-                if ( interopDeviceID != m_cl_device_id )
-                {
-                    FAIL( log, "device was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseDevice( interopDeviceID ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL device" );
-                }
-            }
-
-            /** check context (cl_context) constructor
-            */
-            {
-                cl::sycl::context context( m_cl_context );
-
-                cl_context interopContext = context.get();
-                if ( interopContext != m_cl_context )
-                {
-                    FAIL( log, "context was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseContext( interopContext ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL context" );
-                }
-            }
-
-            /** check queue (cl_command_queue) constructor
-            */
-            {
-                cl::sycl::queue queue( m_cl_command_queue );
-
-                cl_command_queue interopQueue = queue.get();
-                if ( interopQueue != m_cl_command_queue )
-                {
-                    FAIL( log, "queue was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseCommandQueue( interopQueue ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL command queue" );
-                }
-            }
-
-            /** check program (context, cl_program) constructor
-            */
-            {
-                cl_program clProgram = nullptr;
-                if ( !create_program( kernelSource, clProgram, log ) )
-                {
-                    FAIL( log, "create_program failed" );
-                }
-
-                cts_selector ctsSelector;
-                cl::sycl::context context( ctsSelector );
-                cl::sycl::program program(context, clProgram);
-
-                cl_program interopProgram = program.get();
-                if ( interopProgram != clProgram )
-                {
-                    FAIL( log, "program was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseProgram( interopProgram ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL program" );
-                }
-            }
-
-            /** check kernel (cl_kernel) constructor
-            */
-            {
-                cl_program clProgram = nullptr;
-                if ( !create_program( kernelSource, clProgram, log ) )
-                {
-                    FAIL( log, "create_program failed" );
-                }
-
-                cl_kernel clKernel = nullptr;
-                if ( !create_kernel( clProgram, "test_kernel", clKernel, log ) )
-                {
-                    FAIL( log, "create_kernel failed" );
-                }
-
-                cl::sycl::kernel kernel( clKernel );
-
-                cl_kernel interopKernel = kernel.get();
-                if ( interopKernel != clKernel )
-                {
-                    FAIL( log, "kernel was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseKernel( interopKernel ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL kernel" );
-                }
-            }
-
-            /** check buffer (cl_mem, context) constructor
-            */
-            {
-                const size_t size = 32;
-                int data[size] = { 0 };
-                cl_int error = CL_SUCCESS;
-
-                cl::sycl::queue queue;
-
-                cl_mem clBuffer = clCreateBuffer( queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof( int ), data, &error );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "create buffer failed" );
-                }
-
-                cl::sycl::buffer<int, size> buffer( clBuffer, queue.get_context());
-
-                queue.submit( [&](cl::sycl::handler &handler)
-                {
-                    auto accessor = buffer.get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( handler );
-
-                    cl_mem interopBuffer = accessor.get();
-                    if ( interopBuffer != clBuffer )
-                    {
-                        FAIL( log, "buffer was not constructed correctly" );
-                    }
-                    if ( !CHECK_CL_SUCCESS( log, clReleaseMemObject( interopBuffer ) ) )
-                    {
-                        FAIL( log, "failed to release OpenCL buffer" );
-                    }
-                } );
-
-                error = clReleaseMemObject( clBuffer );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "failed to release OpenCL buffer" );
-                }
-            }
-
-            /** check buffer (cl_mem, context, event) constructor
-            */
-            {
-                const size_t size = 32;
-                int data[size] = { 0 };
-                cl_int error = CL_SUCCESS;
-
-                cl::sycl::queue queue;
-                cl::sycl::event event;
-
-                cl_mem clBuffer = clCreateBuffer( queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof( int ), data, &error );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "create buffer failed" );
-                }
-
-                cl::sycl::buffer<int, size> buffer( clBuffer, queue.get_context(), event );
-
-                queue.submit( [&](cl::sycl::handler &handler)
-                {
-                    auto accessor = buffer.get_access<cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>( handler );
-                } );
-
-                error = clReleaseMemObject( clBuffer );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "failed to release OpenCL buffer" );
-                }
-            }
-
-            /** check buffer (cl_mem, context) constructor
-            */
-            {
-                const size_t size = 1024;
-                float data[size] = { 0.0f };
-                cl_int error = CL_SUCCESS;
-
-                cl::sycl::queue queue;
-
-                cl_image_format clImageFormat;
-                clImageFormat.image_channel_data_type = CL_FLOAT;
-                clImageFormat.image_channel_order = CL_RGBA;
-
-                cl_image_desc clImageDesc;
-                clImageDesc.image_width = 32;
-                clImageDesc.image_height = 32;
-                clImageDesc.image_depth = 1;
-                clImageDesc.image_array_size = 1;
-                clImageDesc.image_row_pitch = 0;
-                clImageDesc.image_slice_pitch = 0;
-                clImageDesc.num_mip_levels = 0;
-                clImageDesc.num_samples = 0;
-                clImageDesc.buffer = 0;
-
-                cl_mem clImage = clCreateImage( queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &clImageFormat, &clImageDesc, data, &error );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "create buffer failed" );
-                }
-
-                cl::sycl::image<2> image( clImage, queue.get_context() );
-
-                queue.submit( [&](cl::sycl::handler &handler)
-                {
-                    auto accessor = image.get_access<access::mode::read, access::target::image>( handler );
-                } );
-
-                error = clReleaseMemObject( clImage );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "failed to release OpenCL image" );
-                }
-            }
-
-            /** check buffer (cl_mem, context) constructor
-            */
-            {
-                const size_t size = 256;
-                float data[size] = { 0.0f };
-                cl_int error = CL_SUCCESS;
-
-                cl::sycl::queue queue;
-                cl::sycl::event event;
-
-                cl_image_format clImageFormat;
-                clImageFormat.image_channel_data_type = CL_FLOAT;
-                clImageFormat.image_channel_order = CL_RGBA;
-
-                cl_image_desc clImageDesc;
-                clImageDesc.image_width = 32;
-                clImageDesc.image_height = 32;
-                clImageDesc.image_depth = 1;
-                clImageDesc.image_array_size = 1;
-                clImageDesc.image_row_pitch = 0;
-                clImageDesc.image_slice_pitch = 0;
-                clImageDesc.num_mip_levels = 0;
-                clImageDesc.num_samples = 0;
-                clImageDesc.buffer = 0;
-
-                cl_mem clImage = clCreateImage( queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &clImageFormat, &clImageDesc, data, &error );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "create buffer failed" );
-                }
-
-                cl::sycl::image<2> image( clImage, queue.get_context(), event );
-
-                queue.submit( [&](cl::sycl::handler &handler)
-                {
-                    auto accessor = image.get_access<access::mode::read, access::target::image>( handler );
-                } );
-
-                error = clReleaseMemObject( clImage );
-                if ( !CHECK_CL_SUCCESS( log, error ) )
-                {
-                    FAIL( log, "failed to release OpenCL image" );
-                }
-            }
-
-            /** check sampler (cl_sampler, handler) constructor
-            */
-            {
-              cl::sycl::queue queue;
-
-              queue.submit( [&](cl::sycl::handler &handler)
-              {
-
-                cl::sycl::sampler sampler( m_cl_sampler, handler );
-                cl_sampler interopSampler = sampler.get()
-                if ( interopSampler != m_cl_sampler )
-                {
-                    FAIL( log, "sampler was not constructed correctly" );
-                }
-                if ( !CHECK_CL_SUCCESS( log, clReleaseSampler( interopSampler ) ) )
-                {
-                    FAIL( log, "failed to release OpenCL sampler" );
-                }
-
-              } );
-            }
+        cl_platform_id interopPlatformID = platform.get();
+        if (interopPlatformID != m_cl_platform_id) {
+          FAIL(log, "platform was not constructed correctly");
         }
-        catch ( cl::sycl::exception e )
-        {
-            log_exception( log, e );
-            FAIL( log, "a sycl exception was caught" );
+      }
+
+      /** check device (cl_device_id) constructor
+      */
+      {
+        cl::sycl::device device(m_cl_device_id);
+
+        cl_device_id interopDeviceID = device.get();
+        if (interopDeviceID != m_cl_device_id) {
+          FAIL(log, "device was not constructed correctly");
         }
+        if (!CHECK_CL_SUCCESS(log, clReleaseDevice(interopDeviceID))) {
+          FAIL(log, "failed to release OpenCL device");
+        }
+      }
+
+      /** check context (cl_context) constructor
+      */
+      {
+        cl::sycl::context context(m_cl_context);
+
+        cl_context interopContext = context.get();
+        if (interopContext != m_cl_context) {
+          FAIL(log, "context was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
+          FAIL(log, "failed to release OpenCL context");
+        }
+      }
+
+      /** check queue (cl_command_queue) constructor
+      */
+      {
+        cl::sycl::queue queue(m_cl_command_queue);
+
+        cl_command_queue interopQueue = queue.get();
+        if (interopQueue != m_cl_command_queue) {
+          FAIL(log, "queue was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
+          FAIL(log, "failed to release OpenCL command queue");
+        }
+      }
+
+      /** check program (context, cl_program) constructor
+      */
+      {
+        cl_program clProgram = nullptr;
+        if (!create_program(kernelSource, clProgram, log)) {
+          FAIL(log, "create_program failed");
+        }
+
+        cts_selector ctsSelector;
+        cl::sycl::context context(ctsSelector);
+        cl::sycl::program program(context, clProgram);
+
+        cl_program interopProgram = program.get();
+        if (interopProgram != clProgram) {
+          FAIL(log, "program was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgram))) {
+          FAIL(log, "failed to release OpenCL program");
+        }
+      }
+
+      /** check kernel (cl_kernel) constructor
+      */
+      {
+        cl_program clProgram = nullptr;
+        if (!create_program(kernelSource, clProgram, log)) {
+          FAIL(log, "create_program failed");
+        }
+
+        cl_kernel clKernel = nullptr;
+        if (!create_kernel(clProgram, "test_kernel", clKernel, log)) {
+          FAIL(log, "create_kernel failed");
+        }
+
+        cl::sycl::kernel kernel(clKernel);
+
+        cl_kernel interopKernel = kernel.get();
+        if (interopKernel != clKernel) {
+          FAIL(log, "kernel was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseKernel(interopKernel))) {
+          FAIL(log, "failed to release OpenCL kernel");
+        }
+      }
+
+      /** check buffer (cl_mem, context) constructor
+      */
+      {
+        const size_t size = 32;
+        int data[size] = {0};
+        cl_int error = CL_SUCCESS;
+
+        cl::sycl::queue queue;
+
+        cl_mem clBuffer = clCreateBuffer(
+            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+            size * sizeof(int), data, &error);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "create buffer failed");
+        }
+
+        cl::sycl::buffer<int, size> buffer(clBuffer, queue.get_context());
+
+        queue.submit([&](cl::sycl::handler &handler) {
+          auto accessor =
+              buffer.get_access<cl::sycl::access::mode::read_write,
+                                cl::sycl::access::target::global_buffer>(
+                  handler);
+
+          cl_mem interopBuffer = accessor.get();
+          if (interopBuffer != clBuffer) {
+            FAIL(log, "buffer was not constructed correctly");
+          }
+          if (!CHECK_CL_SUCCESS(log, clReleaseMemObject(interopBuffer))) {
+            FAIL(log, "failed to release OpenCL buffer");
+          }
+        });
+
+        error = clReleaseMemObject(clBuffer);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "failed to release OpenCL buffer");
+        }
+      }
+
+      /** check buffer (cl_mem, context, event) constructor
+      */
+      {
+        const size_t size = 32;
+        int data[size] = {0};
+        cl_int error = CL_SUCCESS;
+
+        cl::sycl::queue queue;
+        cl::sycl::event event;
+
+        cl_mem clBuffer = clCreateBuffer(
+            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+            size * sizeof(int), data, &error);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "create buffer failed");
+        }
+
+        cl::sycl::buffer<int, size> buffer(clBuffer, queue.get_context(),
+                                           event);
+
+        queue.submit([&](cl::sycl::handler &handler) {
+          auto accessor =
+              buffer.get_access<cl::sycl::access::mode::read_write,
+                                cl::sycl::access::target::global_buffer>(
+                  handler);
+        });
+
+        error = clReleaseMemObject(clBuffer);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "failed to release OpenCL buffer");
+        }
+      }
+
+      /** check buffer (cl_mem, context) constructor
+      */
+      {
+        const size_t size = 1024;
+        float data[size] = {0.0f};
+        cl_int error = CL_SUCCESS;
+
+        cl::sycl::queue queue;
+
+        cl_image_format clImageFormat;
+        clImageFormat.image_channel_data_type = CL_FLOAT;
+        clImageFormat.image_channel_order = CL_RGBA;
+
+        cl_image_desc clImageDesc;
+        clImageDesc.image_width = 32;
+        clImageDesc.image_height = 32;
+        clImageDesc.image_depth = 1;
+        clImageDesc.image_array_size = 1;
+        clImageDesc.image_row_pitch = 0;
+        clImageDesc.image_slice_pitch = 0;
+        clImageDesc.num_mip_levels = 0;
+        clImageDesc.num_samples = 0;
+        clImageDesc.buffer = 0;
+
+        cl_mem clImage = clCreateImage(
+            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+            &clImageFormat, &clImageDesc, data, &error);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "create buffer failed");
+        }
+
+        cl::sycl::image<2> image(clImage, queue.get_context());
+
+        queue.submit([&](cl::sycl::handler &handler) {
+          auto accessor =
+              image.get_access<access::mode::read, access::target::image>(
+                  handler);
+        });
+
+        error = clReleaseMemObject(clImage);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "failed to release OpenCL image");
+        }
+      }
+
+      /** check buffer (cl_mem, context) constructor
+      */
+      {
+        const size_t size = 256;
+        float data[size] = {0.0f};
+        cl_int error = CL_SUCCESS;
+
+        cl::sycl::queue queue;
+        cl::sycl::event event;
+
+        cl_image_format clImageFormat;
+        clImageFormat.image_channel_data_type = CL_FLOAT;
+        clImageFormat.image_channel_order = CL_RGBA;
+
+        cl_image_desc clImageDesc;
+        clImageDesc.image_width = 32;
+        clImageDesc.image_height = 32;
+        clImageDesc.image_depth = 1;
+        clImageDesc.image_array_size = 1;
+        clImageDesc.image_row_pitch = 0;
+        clImageDesc.image_slice_pitch = 0;
+        clImageDesc.num_mip_levels = 0;
+        clImageDesc.num_samples = 0;
+        clImageDesc.buffer = 0;
+
+        cl_mem clImage = clCreateImage(
+            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+            &clImageFormat, &clImageDesc, data, &error);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "create buffer failed");
+        }
+
+        cl::sycl::image<2> image(clImage, queue.get_context(), event);
+
+        queue.submit([&](cl::sycl::handler &handler) {
+          auto accessor =
+              image.get_access<access::mode::read, access::target::image>(
+                  handler);
+        });
+
+        error = clReleaseMemObject(clImage);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "failed to release OpenCL image");
+        }
+      }
+
+      /** check sampler (cl_sampler, handler) constructor
+      */
+      {
+        cl::sycl::queue queue;
+
+        queue.submit([&](cl::sycl::handler &handler) {
+
+          cl::sycl::sampler sampler(m_cl_sampler, handler);
+          cl_sampler interopSampler =
+              sampler.get() if (interopSampler != m_cl_sampler) {
+            FAIL(log, "sampler was not constructed correctly");
+          }
+          if (!CHECK_CL_SUCCESS(log, clReleaseSampler(interopSampler))) {
+            FAIL(log, "failed to release OpenCL sampler");
+          }
+
+        });
+      }
+    } catch (cl::sycl::exception e) {
+      log_exception(log, e);
+      FAIL(log, "a sycl exception was caught");
     }
+  }
 };
 
 // register this test with the test_collection

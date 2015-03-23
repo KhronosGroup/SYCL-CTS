@@ -10,8 +10,7 @@
 
 #define TEST_NAME std_classes
 
-namespace std_classes__
-{
+namespace std_classes__ {
 using namespace sycl_cts;
 
 /** check vector_class
@@ -47,24 +46,19 @@ using mutexClass = cl::sycl::mutex_class;
 template <typename R, typename... Args>
 using functionClass = cl::sycl::function_class<R(Args...)>;
 
-
 /** tests the availability of std classes
 */
-class TEST_NAME : public util::test_base
-{
-public:
-    /** return information about this test
-    */
-    virtual void get_info( test_base::info &out ) const override
-    {
-        set_test_info( out, TOSTRING( TEST_NAME ), TEST_FILE );
-    }
+class TEST_NAME : public util::test_base {
+ public:
+  /** return information about this test
+  */
+  virtual void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
 
-    /** execute this test
-    */
-    virtual void run( util::logger &log ) override
-    {
-    }
+  /** execute this test
+  */
+  virtual void run(util::logger &log) override {}
 };
 
 // register this test with the test_collection
