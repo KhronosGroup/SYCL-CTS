@@ -1,16 +1,16 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME hierarchical_functor
 
-namespace hierarchical_functor__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
@@ -25,8 +25,8 @@ class kernel0 {
               p)
       : ptr(p) {}
 
-  void operator()(group<2> grou_pid) const {
-    parallel_for_work_item(grou_pid, [=](item<2> itemID) { ptr[0] *= 2; });
+  void operator()(group<2> group_pid) const {
+    parallel_for_work_item(group_pid, [=](item<2> itemID) { ptr[0] *= 2; });
   }
 };
 
@@ -44,22 +44,24 @@ class TEST_NAME : public util::test_base {
    */
   virtual void run(util::logger &log) override {
     try {
-      default_selector sel;
       int data = 1;
       int expected = 4096;
 
-      queue my_queue(sel);
+      auto myQueue = util::get_cts_object::queue();
 
       buffer<int, 1> buf(&data, range<1>(1));
 
-      my_queue.submit([&](handler &cgh) {
-        auto my_range = nd_range<2>(range<2>(6, 2), range<2>(2, 2));
+      myQueue.submit([&](handler &cgh) {
+        auto globalRange = range<2>(6, 2);
+        auto localRange = range<2>(2, 2);
+        auto groupRange = globalRange / localRange;
+
         accessor<int, 1, cl::sycl::access::mode::read_write,
                  cl::sycl::access::target::global_buffer>
             ptr(buf, cgh);
-        cgh.parallel_for_work_group(my_range, kernel0(ptr));
+        cgh.parallel_for_work_group(groupRange, localRange, kernel0(ptr));
       });
-
+      myQueue.wait_and_throw();
       accessor<int, 1, cl::sycl::access::mode::read,
                cl::sycl::access::target::host_buffer>
           host_ptr(buf);
@@ -67,11 +69,11 @@ class TEST_NAME : public util::test_base {
         FAIL(log, "Value not as expected.");
       }
 
-      my_queue.wait_and_throw();
-
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

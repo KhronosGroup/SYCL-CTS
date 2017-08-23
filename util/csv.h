@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -27,7 +27,7 @@ class csv {
 
   /** load a CSV file from disk
    */
-  bool load_file(const STRING &path);
+  bool load_file(const std::string &path);
 
   /** release all stored csv information
    */
@@ -39,21 +39,21 @@ class csv {
 
   /** return the last error message set
    */
-  bool get_last_error(STRING &out);
+  bool get_last_error(std::string &out);
 
   /** extract a csv value
    */
-  bool get_item(int32_t row, int32_t column, STRING &out);
+  bool get_item(int32_t row, int32_t column, std::string &out);
 
  protected:
   // the last error message set
-  STRING m_error;
+  std::string m_error;
 
   // raw items from the csv file
-  VECTOR<STRING> m_items;
+  std::vector<std::string> m_items;
 
   // indices for the start of a row
-  VECTOR<int> m_rowIndex;
+  std::vector<int> m_rowIndex;
 };
 
 }  // namespace util

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
@@ -24,19 +24,19 @@ namespace util {
 /** standard output channel
  */
 class stdout_channel : public printer::channel {
-  MUTEX m_outputMutex;
+  std::mutex m_outputMutex;
 
  public:
-  virtual void write(const STRING &msg) {
+  virtual void write(const std::string &msg) {
     if (!msg.empty()) {
-      LOCK_GUARD<MUTEX> lock(m_outputMutex);
+      std::lock_guard<std::mutex> lock(m_outputMutex);
       std::cout << msg;
     }
   }
 
-  virtual void writeln(const STRING &msg) {
+  virtual void writeln(const std::string &msg) {
     if (!msg.empty()) {
-      LOCK_GUARD<MUTEX> lock(m_outputMutex);
+      std::lock_guard<std::mutex> lock(m_outputMutex);
       std::cout << msg << std::endl;
     }
   }
@@ -47,7 +47,7 @@ class stdout_channel : public printer::channel {
 /** file output channel
  */
 class file_channel : public printer::channel {
-  MUTEX m_outputMutex;
+  std::mutex m_outputMutex;
   FILE *m_file;
 
  public:
@@ -56,7 +56,7 @@ class file_channel : public printer::channel {
   ~file_channel() { close(); }
 
   bool open(const char *path) {
-    LOCK_GUARD<MUTEX> lock(m_outputMutex);
+    std::lock_guard<std::mutex> lock(m_outputMutex);
     if (m_file != nullptr) fclose(m_file);
     m_file = nullptr;
     m_file = fopen(path, "wb");
@@ -65,15 +65,15 @@ class file_channel : public printer::channel {
 
   void close() {
     if (m_file != nullptr) {
-      LOCK_GUARD<MUTEX> lock(m_outputMutex);
+      std::lock_guard<std::mutex> lock(m_outputMutex);
       fflush(m_file);
       fclose(m_file);
       m_file = nullptr;
     }
   }
 
-  STRING sanitize(const STRING &in) {
-    STRING t = STRING(in);
+  std::string sanitize(const std::string &in) {
+    std::string t = std::string(in);
     for (uint32_t i = 0; i < t.length(); i++) {
       char &ch = t[i];
       if (ch < 0x20 || ch >= 0x7f) ch = '.';
@@ -81,23 +81,23 @@ class file_channel : public printer::channel {
     return t;
   }
 
-  virtual void write(const STRING &msg) {
-    STRING t = sanitize(msg);
+  virtual void write(const std::string &msg) {
+    std::string t = sanitize(msg);
     if (t.empty() || m_file == nullptr)
       return;
     else {
-      LOCK_GUARD<MUTEX> lock(m_outputMutex);
+      std::lock_guard<std::mutex> lock(m_outputMutex);
       fputs(t.c_str(), m_file);
       fflush(m_file);
     }
   }
 
-  virtual void writeln(const STRING &msg) {
-    STRING t = sanitize(msg);
+  virtual void writeln(const std::string &msg) {
+    std::string t = sanitize(msg);
     if (t.empty() || m_file == nullptr)
       return;
     else {
-      LOCK_GUARD<MUTEX> lock(m_outputMutex);
+      std::lock_guard<std::mutex> lock(m_outputMutex);
       fputs(t.c_str(), m_file);
       fputs("\n", m_file);
       fflush(m_file);
@@ -114,18 +114,18 @@ class file_channel : public printer::channel {
 class json_formatter : public printer::formatter {
  public:
   virtual void write(printer::channel &out, int32_t id, printer::epacket packet,
-                     const STRING &data) {
-    STRING strId = std::to_string(id);
-    STRING strPacket = std::to_string(packet);
+                     const std::string &data) {
+    std::string strId = std::to_string(id);
+    std::string strPacket = std::to_string(packet);
     out.writeln("{\"id\":" + strId + ",\"type\":" + strPacket + ",\"data\":\"" +
                 data + "\"}");
   }
 
   virtual void write(printer::channel &out, int32_t id, printer::epacket packet,
                      int data) {
-    STRING strId = std::to_string(id);
-    STRING strPacket = std::to_string(packet);
-    STRING strData = std::to_string(data);
+    std::string strId = std::to_string(id);
+    std::string strPacket = std::to_string(packet);
+    std::string strData = std::to_string(data);
     out.writeln("{\"id\":" + strId + ",\"type\":" + strPacket + ",\"data\":\"" +
                 strData + "\"}");
   }
@@ -136,7 +136,7 @@ class json_formatter : public printer::formatter {
 class text_formatter : public printer::formatter {
  public:
   virtual void write(printer::channel &out, int32_t, printer::epacket packet,
-                     const STRING &data) {
+                     const std::string &data) {
     switch (packet) {
       default:
         // ignore packets we dont know
@@ -239,7 +239,7 @@ bool printer::set_file_channel(const char *path) {
 
 /** write a packet using the set formatter and channel
  */
-void printer::write(int32_t id, epacket packet, STRING data) {
+void printer::write(int32_t id, epacket packet, std::string data) {
   if (m_formatter) m_formatter->write(*m_channel, id, packet, data);
 }
 
@@ -266,12 +266,12 @@ void printer::print(const char *fmt, ...) {
   buffer[sizeof(buffer) - 1] = '\0';
 
   // output string via channel
-  if (m_channel) m_channel->write(STRING(buffer));
+  if (m_channel) m_channel->write(std::string(buffer));
 }
 
 /** global print
  */
-void printer::print(const STRING &str) {
+void printer::print(const std::string &str) {
   if (m_channel) m_channel->write(str);
 }
 

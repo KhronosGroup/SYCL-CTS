@@ -134,15 +134,6 @@
     #define log2(X)  (log(X)/log(2))
 #endif
 
-//
-// stdio.h
-//
-
-#if defined( _MSC_VER )
-    #define snprintf   sprintf_s
-#endif
-
-
 
 //
 // unistd.h
@@ -220,9 +211,9 @@
 */
 #if defined ( _MSC_VER ) && ! defined( __INTEL_COMPILER )
 
-    #define MAKE_HEX_FLOAT(x,y,z)  ((float)ldexp( (float)(y), z))
-    #define MAKE_HEX_DOUBLE(x,y,z) ldexp( (double)(y), z)
-    #define MAKE_HEX_LONG(x,y,z)   ((long double) ldexp( (long double)(y), z))
+    #define MAKE_HEX_FLOAT(x,y,z)  ((float)::ldexp( (float)(y), z))
+    #define MAKE_HEX_DOUBLE(x,y,z) ::ldexp( (double)(y), z)
+    #define MAKE_HEX_LONG(x,y,z)   ((long double) ::ldexp( (long double)(y), z))
 
 #else
 

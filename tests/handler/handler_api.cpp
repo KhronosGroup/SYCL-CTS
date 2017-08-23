@@ -1,17 +1,22 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME handler_api
 
-namespace handler_api__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
+
+struct simple_struct {
+  int a;
+  float b;
+};
 
 /** tests the api for cl::sycl::handler
  */
@@ -27,101 +32,66 @@ class TEST_NAME : public util::test_base {
    */
   virtual void run(util::logger &log) override {
     try {
-      cl::sycl::queue queue;
-
-      int results[5];
+      auto queue = util::get_cts_object::queue();
+      const auto range = cl::sycl::range<1>(1);
+      const auto offset = cl::sycl::id<1>(0);
 
       {
-        cl::sycl::range<1> range(1);
-        cl::sycl::buffer<int, 1> buffer(results, cl::sycl::range<1>(5));
+        auto buffer = cl::sycl::buffer<int, 1>(range);
 
-        /** check set_arg() methods
-        */
+        log.note("Check set_arg() methods");
         queue.submit([&](cl::sycl::handler &cgh) {
           auto accessor =
               buffer.get_access<cl::sycl::access::mode::read_write,
                                 cl::sycl::access::target::global_buffer>(cgh);
+          // Check set_arg(int, accessor)
           cgh.set_arg(0, accessor);
 
+          // Check set_arg(int, int)
+          {
+            int scalar = 5;
+            cgh.set_arg(1, scalar);
+          }
+
+          // Check set_arg(int, sampler)
+          {
+            cl::sycl::sampler sampler(true, cl::sycl::addressing_mode::clamp,
+                                      cl::sycl::filtering_mode::nearest);
+            cgh.set_arg(2, sampler);
+          }
+
+          // Check set_arg(int, trivially-copyable standard layout custom type)
+          {
+            simple_struct custom{3, .14f};
+            cgh.set_arg(3, custom);
+          }
+
+          cgh.single_task<class test_set_arg>([=]() {});
+        });
+
+        log.note("Check set_args() method");
+        queue.submit([&](cl::sycl::handler &cgh) {
+          auto accessor =
+              buffer.get_access<cl::sycl::access::mode::read_write,
+                                cl::sycl::access::target::global_buffer>(cgh);
           int scalar = 5;
-          cgh.set_arg(1, scalar);
+          cl::sycl::sampler sampler(true, cl::sycl::addressing_mode::clamp,
+                                    cl::sycl::filtering_mode::nearest);
+          simple_struct custom{3, .14f};
 
-          cl::sycl::sampler sampler(true,
-                                    cl::sycl::info::addressing_mode::clamp,
-                                    cl::sycl::info::filter_mode::nearest);
-          cgh.set_arg(2, sampler);
+          // Check set_args(Ts...)
+          cgh.set_args(accessor, scalar, sampler, custom);
+
+          cgh.single_task<class test_set_args>([=]() {});
         });
-
-        /** check single_task() method
-        */
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-
-          cgh.single_task<class a_single_task>([=] { accessor[0] = 1; });
-        });
-
-        /** check parallel_for() method
-        */
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-
-          cgh.parallel_for<class a_parallel_for>(
-              range<1>(1), [=](id<1> in_id) { accessor[1] = 1; });
-
-        });
-
-        /** check parallel_for() method
-        */
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-
-          cgh.parallel_for<class a_parallel_for>(
-              range<1>(1), [=](item<1> in_id) { accessor[2] = 1; });
-
-        });
-
-        /** check parallel_for() method
-        */
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-
-          cgh.parallel_for<class a_parallel_for>(
-              range<1>(1), [=](item<1> in_id) { accessor[3] = 1; });
-
-        });
-
-        /** check parallel_for_work_group() method
-        */
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-
-          cl::sycl::nd_range<1> wg_range =
-              nd_range<1>(range<1>(1), range<1>(1));
-          cgh.parallel_for_work_group<class a_parallel_for_worgroup>(
-              wg_range, [=](cl::sycl::group<1> in_group) { accessor[4] = 1; });
-
-        });
-      }
-
-      if ((results[0] & results[1] & results[2] & results[3] & results[4]) ==
-          0) {
-        FAIL(log, "handler did not execute all kernels");
       }
 
       queue.wait_and_throw();
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

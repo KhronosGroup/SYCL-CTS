@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -60,7 +60,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         call_selector selector;
-        cl::sycl::device device(selector);
+        auto device = util::get_cts_object::device(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -72,7 +72,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         call_selector selector;
-        cl::sycl::platform platform(selector);
+        auto platform = util::get_cts_object::platform(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -84,7 +84,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         call_selector selector;
-        cl::sycl::context context(selector);
+        auto context = util::get_cts_object::context(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -96,7 +96,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         call_selector selector;
-        cl::sycl::queue queue(selector);
+        auto queue = util::get_cts_object::queue(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -108,7 +108,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         negative_selector selector;
-        cl::sycl::device device(selector);
+        auto device = util::get_cts_object::device(selector);
 
         /* check our device selector was used */
         if (!device.is_host()) {
@@ -117,7 +117,9 @@ class TEST_NAME : public util::test_base {
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -6,6 +6,7 @@
 #  Copyright: (c) 2017 by Codeplay Software LTD. All Rights Reserved.
 #
 
+
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # run clang format over all files
 #

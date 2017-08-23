@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 #include "../../gl_util/gl_util.h"
@@ -46,7 +46,7 @@ GLenum targets_2d[] = {GL_TEXTURE_2D,
 
 GLenum targets_3d[] = {GL_TEXTURE_3D, 0};
 
-void perform(util::logger& log, context& sycl_ctx) {
+void perform(util::logger &log, context &sycl_ctx) {
   // buffer
   {
     GLuint vbo_vertices;
@@ -58,8 +58,8 @@ void perform(util::logger& log, context& sycl_ctx) {
     {
       image<1> img(sycl_ctx, vbo_vertices);
 
-      queue queue;
-      queue.submit([&](handler& cgh) {
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](handler &cgh) {
         auto img_acc =
             img.template get_access<float, cl::sycl::access::mode::read_write>(
                 cgh);
@@ -78,8 +78,8 @@ void perform(util::logger& log, context& sycl_ctx) {
         }
       }
 
-      void* gl_ptr = glMapNamedBuffer(vbo_vertices, GL_READ_ONLY);
-      float* gl_ptr_float = static_cast<float>(gl_ptr);
+      void *gl_ptr = glMapNamedBuffer(vbo_vertices, GL_READ_ONLY);
+      float *gl_ptr_float = static_cast<float>(gl_ptr);
       for (int i = 0; i < 24, i++) {
         if (gl_ptr_float[i] != golden) {
           FAIL(log, "GL buffer is not as expected.");
@@ -100,8 +100,8 @@ void perform(util::logger& log, context& sycl_ctx) {
     {
       image<2> img(sycl_ctx, render_buffer);
 
-      queue queue;
-      queue.submit([&](handler& cgh) {
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](handler &cgh) {
         auto img_acc =
             img.template get_access<float, cl::sycl::access::mode::read_write>(
                 cgh);
@@ -120,8 +120,8 @@ void perform(util::logger& log, context& sycl_ctx) {
         }
       }
 
-      void* gl_ptr = glMapNamedBuffer(vbo_vertices, GL_READ_ONLY);
-      float* gl_ptr_float = static_cast<float>(gl_ptr);
+      void *gl_ptr = glMapNamedBuffer(vbo_vertices, GL_READ_ONLY);
+      float *gl_ptr_float = static_cast<float>(gl_ptr);
       for (int i = 0; i < 24, i++) {
         if (gl_ptr_float[i] != golden) {
           FAIL(log, "GL buffer is not as expected.");
@@ -142,8 +142,8 @@ void perform(util::logger& log, context& sycl_ctx) {
     {
       image<1> img(sycl_ctx, targets_1d[i], tex, 0);
 
-      queue queue;
-      queue.submit([&](handler& cgh) {
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](handler &cgh) {
         auto img_acc =
             img.template get_access<float, cl::sycl::access::mode::read_write>(
                 cgh);
@@ -162,8 +162,8 @@ void perform(util::logger& log, context& sycl_ctx) {
         }
       }
 
-      void* gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
-      float* gl_ptr_float = static_cast<float>(gl_ptr);
+      void *gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
+      float *gl_ptr_float = static_cast<float>(gl_ptr);
       for (int i = 0; i < 12, i++) {
         if (gl_ptr_float[i] != golden) {
           FAIL(log, "GL buffer is not as expected.");
@@ -183,8 +183,8 @@ void perform(util::logger& log, context& sycl_ctx) {
     glTexImage2D(targets_2d[i], 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
 
     {
-      queue queue;
-      queue.submit([&](handler& cgh) {
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](handler &cgh) {
         auto img_acc =
             img.template get_access<float, cl::sycl::access::mode::read_write>(
                 cgh);
@@ -203,8 +203,8 @@ void perform(util::logger& log, context& sycl_ctx) {
         }
       }
 
-      void* gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
-      float* gl_ptr_float = static_cast<float>(gl_ptr);
+      void *gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
+      float *gl_ptr_float = static_cast<float>(gl_ptr);
       for (int i = 0; i < 12, i++) {
         if (gl_ptr_float[i] != golden) {
           FAIL(log, "GL buffer is not as expected.");
@@ -224,8 +224,8 @@ void perform(util::logger& log, context& sycl_ctx) {
                  pixels);
 
     {
-      queue queue;
-      queue.submit([&](handler& cgh) {
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](handler &cgh) {
         auto img_acc =
             img.template get_access<float, cl::sycl::access::mode::read_write>(
                 cgh);
@@ -244,8 +244,8 @@ void perform(util::logger& log, context& sycl_ctx) {
         }
       }
 
-      void* gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
-      float* gl_ptr_float = static_cast<float>(gl_ptr);
+      void *gl_ptr = glMapNamedBuffer(tex, GL_READ_ONLY);
+      float *gl_ptr_float = static_cast<float>(gl_ptr);
       for (int i = 0; i < 12, i++) {
         if (gl_ptr_float[i] != golden) {
           FAIL(log, "GL buffer is not as expected.");
@@ -265,13 +265,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
    */
-  virtual void run(util::logger& log) override {
+  virtual void run(util::logger &log) override {
     try {
       gl_util::cl_gl_context cl_gl_ctx;
       // set up gl_framework
@@ -327,7 +327,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           perform(log, sycl_ctx);
         }
 
-        function_class<void(cl::sycl::exception_list)> fn =
+        function_class<void(cl::sycl::exception_list)> asyncHandler =
             [&](exception_list l) {
               if (l.size() > 1)
                 FAIL(log, "Exception thrown during execution of kernel");
@@ -336,14 +336,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // device_selector, cl_context_properties & async_handler
         {
           cts_selector sel;
-          context sycl_ctx(sel, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(sel, cl_gl_ctx.get_properties(), asyncHandler);
           perform(log, sycl_ctx);
         }
 
         // create sycl context of device, cl_context_properties & async_handler
         {
           device dev;
-          context sycl_ctx(dev, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(dev, cl_gl_ctx.get_properties(), asyncHandler);
           perform(log, sycl_ctx);
         }
 
@@ -351,7 +351,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // async_handler
         {
           platform plat;
-          context sycl_ctx(plat, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(plat, cl_gl_ctx.get_properties(), asyncHandler);
           perform(log, sycl_ctx);
         }
 
@@ -363,7 +363,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           dev_vec.push_back(a);
           dev_vec.push_back(b);
 
-          context sycl_ctx(dev_vec, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(dev_vec, cl_gl_ctx.get_properties(), asyncHandler);
           perform(log, sycl_ctx);
         }
       } else {
@@ -371,7 +371,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -27,8 +27,7 @@ class TEST_NAME : public util::test_base {
   */
   virtual void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
+      auto queue = util::get_cts_object::queue();
 
       /** check types
       */
@@ -37,13 +36,25 @@ class TEST_NAME : public util::test_base {
       /** initialize return values
       */
       cl_uint refCount;
+      cl::sycl::context contextInfo;
+      cl::sycl::device deviceInfo;
 
       /** check device info parameters
       */
       refCount = queue.get_info<cl::sycl::info::queue::reference_count>();
+      contextInfo = queue.get_info<cl::sycl::info::queue::context>();
+      deviceInfo = queue.get_info<cl::sycl::info::queue::device>();
+      auto test = queue.get_info<cl::sycl::info::queue::queue_profiling>();
+
+      TEST_TYPE_TRAIT(queue, reference_count, queue);
+      TEST_TYPE_TRAIT(queue, context, queue);
+      TEST_TYPE_TRAIT(queue, device, queue);
+      TEST_TYPE_TRAIT(queue, queue_profiling, queue);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -1,0 +1,265 @@
+/*************************************************************************
+//
+//  SYCL Conformance Test Suite
+//
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//
+**************************************************************************/
+
+#include "../common/common.h"
+#include "../common/common_vec.h"
+
+#define TEST_NAME vector_constructors
+
+namespace vector_constructors__ {
+using namespace sycl_cts;
+
+/** Test a cross section of vector constructors
+ *  This doesn't test every possible combination and type of size of
+ *  vector constructor.
+ */
+class TEST_NAME : public util::test_base {
+ public:
+  /** return information about this test
+   */
+  virtual void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  /** execute the test
+   */
+  virtual void run(util::logger &log) override {
+    using namespace cl::sycl;
+
+    try {
+      /** Test
+       *  vec()
+       */
+      $DEFAULT_TESTS
+
+      /** Test
+       *  explicit vec(const T &arg)
+       */
+      $EXPLICIT_TESTS
+
+      /** Test
+       *  template <typename... argTN>
+       *  vec(const argTN&... args)
+       */
+      {
+        auto test = vec<char, 1>(1);
+        char vals[] = {1};
+        check_equal_type<vec<char, 1>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<char, 1>(log, test);
+        check_vector_values<char, 1>(log, test, vals);
+      }
+      {
+        auto test = vec<unsigned char, 2>(1, 2);
+        unsigned char vals[] = {1, 2};
+        check_equal_type<vec<unsigned char, 2>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned char, 2>(log, test);
+        check_vector_values<unsigned char, 2>(log, test, vals);
+      }
+      {
+        auto test = vec<short, 3>(1, 2, 3);
+        short vals[] = {1, 2, 3};
+        check_equal_type<vec<short, 3>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<short, 3>(log, test);
+        check_vector_values<short, 3>(log, test, vals);
+      }
+      {
+        auto test = vec<unsigned short, 4>(1, 2, 3, 4);
+        unsigned short vals[] = {1, 2, 3, 4};
+        check_equal_type<vec<unsigned short, 4>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned short, 4>(log, test);
+        check_vector_values<unsigned short, 4>(log, test, vals);
+      }
+      {
+        auto test = vec<int, 8>(1, 2, 3, 4, 5, 6, 7, 8);
+        int vals[] = {1, 2, 3, 4, 5, 6, 7, 8};
+        check_equal_type<vec<int, 8>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<int, 8>(log, test);
+        check_vector_values<int, 8>(log, test, vals);
+      }
+      {
+        auto test = vec<unsigned int, 16>(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                                          13, 14, 15, 16);
+        unsigned int vals[] = {1, 2,  3,  4,  5,  6,  7,  8,
+                               9, 10, 11, 12, 13, 14, 15, 16};
+        check_equal_type<vec<unsigned int, 16>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned int, 16>(log, test);
+        check_vector_values<unsigned int, 16>(log, test, vals);
+      }
+      {
+        auto test = vec<long, 1>(1);
+        long vals[] = {1};
+        check_equal_type<vec<long, 1>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<long, 1>(log, test);
+        check_vector_values<long, 1>(log, test, vals);
+      }
+      {
+        auto test = vec<unsigned long, 2>(1, 2);
+        unsigned long vals[] = {1, 2};
+        check_equal_type<vec<unsigned long, 2>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned long, 2>(log, test);
+        check_vector_values<unsigned long, 2>(log, test, vals);
+      }
+      {
+        auto test = vec<long long, 3>(1, 2, 3);
+        long long vals[] = {1, 2, 3};
+        check_equal_type<vec<long long, 3>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<long long, 3>(log, test);
+        check_vector_values<long long, 3>(log, test, vals);
+      }
+      {
+        auto test = vec<unsigned long long, 4>(1, 2, 3, 4);
+        unsigned long long vals[] = {1, 2, 3, 4};
+        check_equal_type<vec<unsigned long long, 4>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned long long, 4>(log, test);
+        check_vector_values<unsigned long long, 4>(log, test, vals);
+      }
+      {
+        auto test =
+            vec<float, 8>(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+        float vals[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+        check_equal_type<vec<float, 8>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<float, 8>(log, test);
+        check_vector_values<float, 8>(log, test, vals);
+      }
+      {
+        auto test = vec<double, 16>(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,
+                                    10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
+        double vals[] = {1.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,
+                         9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0};
+        check_equal_type<vec<double, 16>>(
+            log, test, "Testing constructor vec(const argTN&... args)");
+        check_vector_size<double, 16>(log, test);
+        check_vector_values<double, 16>(log, test, vals);
+      }
+      {
+        auto anotherVec = vec<unsigned char, 1>(1);
+        auto test = vec<unsigned char, 2>(anotherVec, 2);
+        unsigned char vals[] = {1, 2};
+        check_equal_type<vec<unsigned char, 2>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned char, 2>(log, test);
+        check_vector_values<unsigned char, 2>(log, test, vals);
+      }
+      {
+        auto anotherVec = vec<short, 1>(2);
+        auto test = vec<short, 3>(1, anotherVec, 3);
+        short vals[] = {1, 2, 3};
+        check_equal_type<vec<short, 3>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<short, 3>(log, test);
+        check_vector_values<short, 3>(log, test, vals);
+      }
+      {
+        auto anotherVec = vec<unsigned short, 1>(4) auto test =
+            vec<unsigned short, 4>(1, 2, 3, anotherVec);
+        unsigned short vals[] = {1, 2, 3, 4};
+        check_equal_type<vec<unsigned short, 4>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned short, 4>(log, test);
+        check_vector_values<unsigned short, 4>(log, test, vals);
+      }
+      {
+        auto anotherVec1 = vec<int, 2>(1, 2);
+        auto anotherVec2 = vec<int, 1>(4, 5);
+        auto anotherVec3 = vec<int, 2>(7, 8);
+        auto test = vec<int, 8>(anotherVec1, 3, anotherVec2, 6, anotherVec3);
+        int vals[] = {1, 2, 3, 4, 5, 6, 7, 8};
+        check_equal_type<vec<int, 8>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<int, 8>(log, test);
+        check_vector_values<int, 8>(log, test, vals);
+      }
+      {
+        auto anotherVec1 = vec<unsigned int, 8>(1, 2, 3, 4, 5, 6, 7, 8);
+        auto anotherVec2 = vec<unsigned int, 8>(9, 10, 11, 12, 13, 14, 15, 16);
+        auto test = vec<unsigned int, 16>(anotherVec1, anotherVec2);
+        unsigned int vals[] = {1, 2,  3,  4,  5,  6,  7,  8,
+                               9, 10, 11, 12, 13, 14, 15, 16};
+        check_equal_type<vec<unsigned int, 16>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned int, 16>(log, test);
+        check_vector_values<unsigned int, 16>(log, test, vals);
+      }
+      {
+        auto anotherVec = vec<unsigned long, 1>(2);
+        auto test = vec<unsigned long, 2>(1, anotherVec);
+        unsigned long vals[] = {1, 2};
+        check_equal_type<vec<unsigned long, 2>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned long, 2>(log, test);
+        check_vector_values<unsigned long, 2>(log, test, vals);
+      }
+      {
+        auto anotherVec = vec<long long, 1>(3);
+        auto test = vec<long long, 3>(1, 2, anotherVec);
+        long long vals[] = {1, 2, 3};
+        check_equal_type<vec<long long, 3>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<long long, 3>(log, test);
+        check_vector_values<long long, 3>(log, test, vals);
+      }
+      {
+        auto anotherVec1 = vec<unsigned long long, 1>(1);
+        auto anotherVec2 = vec<unsigned long long, 1>(2);
+        auto anotherVec3 = vec<unsigned long long, 1>(3);
+        auto anotherVec4 = vec<unsigned long long, 1>(4);
+        auto test = vec<unsigned long long, 4>(anotherVec1, anotherVec2,
+                                               anotherVec3, anotherVec4);
+        unsigned long long vals[] = {1, 2, 3, 4};
+        check_equal_type<vec<unsigned long long, 4>>(
+            log, test, "Testing constructor vec(const argTN&... args");
+        check_vector_size<unsigned long long, 4>(log, test);
+        check_vector_values<unsigned long long, 4>(log, test, vals);
+      }
+
+      /** Test
+       *  vec<T, dims>(const &vec<T, dims>)
+       */
+      $VEC_TESTS
+
+      /** Test things inside kernel
+       */
+      auto my_queue = util::get_cts_object::queue();
+      {
+        my_queue.submit([&](cl::sycl::handler &cgh) {
+
+          cgh.single_task<TEST_NAME>([=]() {
+
+            /** Test
+             *  vec(vector_t openclVector)
+             */
+            $OPENCL_TESTS
+
+          });
+        });
+      }
+
+      my_queue.wait_and_throw();
+    } catch (cl::sycl::exception e) {
+      log_exception(log, e);
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
+    }
+  }
+};
+
+util::test_proxy<TEST_NAME> proxy;
+
+} /* namespace vector_constructors__ */

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -48,10 +48,10 @@ class printer : public singleton<printer> {
     virtual ~channel() {}
 
     /* output string over channel */
-    virtual void write(const STRING &msg) = 0;
+    virtual void write(const std::string &msg) = 0;
 
     /* output string with newline */
-    virtual void writeln(const STRING &msg) = 0;
+    virtual void writeln(const std::string &msg) = 0;
 
     /* flush the output channel */
     virtual void flush() = 0;
@@ -65,7 +65,7 @@ class printer : public singleton<printer> {
 
     /* print a packet */
     virtual void write(channel &out, int32_t id, epacket packet,
-                       const STRING &data) = 0;
+                       const std::string &data) = 0;
 
     /* print a packet */
     virtual void write(channel &out, int32_t id, epacket packet, int data) = 0;
@@ -94,7 +94,7 @@ class printer : public singleton<printer> {
 
   /** write a packet to the printer
    */
-  void write(int32_t id, epacket packet, STRING data);
+  void write(int32_t id, epacket packet, std::string data);
 
   /** write a packet to the printer
    */
@@ -108,11 +108,11 @@ class printer : public singleton<printer> {
   /** global stdout printing functions
    */
   void print(const char *fstr, ...);
-  void print(const STRING &str);
+  void print(const std::string &str);
 
  protected:
   // next log id to be issued from new_log_id()
-  ATOMIC_INT m_nextLogId;
+  std::atomic_int m_nextLogId;
 
   // the packet formatter to use
   formatter *m_formatter;

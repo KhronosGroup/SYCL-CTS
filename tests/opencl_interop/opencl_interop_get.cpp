@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -31,11 +31,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       /** check platform get() method
       */
-      cl::sycl::platform platform(ctsSelector);
+      auto platform = util::get_cts_object::platform(ctsSelector);
       auto interopPlatformID = platform.get();
-      if (typeid(interopPlatformID) != typeid(cl_platform_id)) {
-        FAIL(log, "get() does not return cl_platform_id.");
-      }
+      check_return_type<cl_platform_id>(log, interopPlatformID,
+                                        "cl::sycl::platform::get()");
       if (platform.is_host()) {
         if (interopPlatformID != 0) {
           FAIL(log,
@@ -49,11 +48,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       /** check device get() method
       */
-      cl::sycl::device device(ctsSelector);
+      auto device = util::get_cts_object::device(ctsSelector);
       auto interopDeviceID = device.get();
-      if (typeid(interopDeviceID) != typeid(cl_device_id)) {
-        FAIL(log, "get() does not return cl_device_id");
-      }
+      check_return_type<cl_device_id>(log, interopDeviceID,
+                                      "cl::sycl::device::get()");
       if (device.is_host()) {
         if (interopDeviceID != 0) {
           FAIL(log,
@@ -70,11 +68,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       /** check context get() method
       */
-      cl::sycl::context context(ctsSelector);
+      auto context = util::get_cts_object::context(ctsSelector);
       auto interopContext = context.get();
-      if (typeid(interopContext) != typeid(cl_context)) {
-        FAIL(log, "get() does not return cl_context");
-      }
+      check_return_type<cl_context>(log, interopContext,
+                                    "cl::sycl::context::get()");
       if (context.is_host()) {
         if (interopContext != nullptr) {
           FAIL(log,
@@ -91,11 +88,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       /** check queue get() method
       */
-      cl::sycl::queue queue(ctsSelector);
+      auto queue = util::get_cts_object::queue(ctsSelector);
       auto interopQueue = queue.get();
-      if (typeid(interopQueue) != typeid(cl_command_queue)) {
-        FAIL(log, "get() does not return cl_command_queue");
-      }
+      check_return_type<cl_command_queue>(log, interopQueue,
+                                          "cl::sycl::queue::get()");
       if (queue.is_host()) {
         if (interopQueue != nullptr) {
           FAIL(log, "queue is in host mode but get() did not return a nullptr");
@@ -110,7 +106,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

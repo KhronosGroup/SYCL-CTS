@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -23,15 +23,15 @@ class pointer_apis {
     cl::sycl::buffer<T, 1> buffer(data.get(), range);
 
     queue.submit([&](cl::sycl::handler &handler) {
-      cl::sycl::accessor<cl::sycl::access::mode::read_write,
+      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
                          cl::sycl::access::target::global_buffer>
           globalAccessor(buffer, handler);
-      cl::sycl::accessor<cl::sycl::access::mode::read,
+      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
                          cl::sycl::access::target::constant_buffer>
           constantAccessor(buffer, handler);
-      cl::sycl::accessor<cl::sycl::access::mode::read_write,
+      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
                          cl::sycl::access::target::local>
-          constantAccessor(size, handler);
+          localAccessor(size, handler);
 
       handler.single_task([=]() {
         T privateData[1];
@@ -43,6 +43,7 @@ class pointer_apis {
           cl::sycl::constant_ptr<T> constantPtr(&constantAccessor[0]);
           cl::sycl::local_ptr<T> localPtr(&localAccessor[0]);
           cl::sycl::private_ptr<T> provatePtr(privateData);
+
           cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
               globalMultiPtr(&globalAccessor[0]);
           cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
@@ -51,7 +52,6 @@ class pointer_apis {
               localMultiPtr(&localAccessor[0]);
           cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
               privateMultiPtr(privateData);
-
           globalPtr[0] = static_cast<T>(0);
           localPtr[0] = static_cast<T>(0);
           privatePtr[0] = static_cast<T>(0);
@@ -59,14 +59,14 @@ class pointer_apis {
           localMultiPtr[0] = static_cast<T>(0);
           privateMultiPtr[0] = static_cast<T>(0);
 
-          T &globalElem = globalPtr[0];
-          T &constantElem = constantPtr[0];
-          T &localElem = localPtr[0];
-          T &privateElem = privatePtr[0];
-          T &globalElem = globalMultiPtr[0];
-          T &constantElem = constantMultiPtr[0];
-          T &localElem = localMultiPtr[0];
-          T &privateElem = privateMultiPtr[0];
+          auto &&globalElem = globalPtr[0];
+          auto &&constantElem = constantPtr[0];
+          auto &&localElem = localPtr[0];
+          auto &&privateElem = privatePtr[0];
+          auto &&globalElem = globalMultiPtr[0];
+          auto &&constantElem = constantMultiPtr[0];
+          auto &&localElem = localMultiPtr[0];
+          auto &&privateElem = privateMultiPtr[0];
         }
 
         /** check operator*() methods
@@ -90,13 +90,13 @@ class pointer_apis {
           (*localMultiPtr) = static_cast<T>(0);
           (*privateMultiPtr) = static_cast<T>(0);
 
-          T &globalMultiPtr = (*globalPtr);
-          T &constantMultiPtr = (*constantPtr);
-          T &localMultiPtr = (*localPtr);
-          T &privateMultiPtr = (*privatePtr);
+          auto &&globalMultiPtr = (*globalPtr);
+          auto &&constantMultiPtr = (*constantPtr);
+          auto &&localMultiPtr = (*localPtr);
+          auto &&privateMultiPtr = (*privatePtr);
         }
 
-        /** check pointer() methods
+        /** check get_pointer() methods
         */
         {
           cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
@@ -108,10 +108,11 @@ class pointer_apis {
           cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
               privateMultiPtr(privateData);
 
-          cl::sycl::global_ptr<T> globalPtr = globalMultiPtr.pointer();
-          cl::sycl::constant_ptr<T> constantPtr = constantMultiPtr.pointer();
-          cl::sycl::local_ptr<T> constantPtr = localMultiPtr.pointer();
-          cl::sycl::private_ptr<T> privatePtr = privateMultiPtr.pointer();
+          cl::sycl::global_ptr<T> globalPtr = globalMultiPtr.get_pointer();
+          cl::sycl::constant_ptr<T> constantPtr =
+              constantMultiPtr.get_pointer();
+          cl::sycl::local_ptr<T> constantPtr = localMultiPtr.get_pointer();
+          cl::sycl::private_ptr<T> privatePtr = privateMultiPtr.get_pointer();
         }
 
         /** check make_ptr() function
@@ -159,9 +160,7 @@ class TEST_NAME : public util::test_base {
   */
   virtual void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
-
+      auto queue = util::get_cts_object::queue();
       pointer_apis<int> intTests;
       intTests(log, queue);
 
@@ -180,7 +179,9 @@ class TEST_NAME : public util::test_base {
       queue.wait_and_throw();
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

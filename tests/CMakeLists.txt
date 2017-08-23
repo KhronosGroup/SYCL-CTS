@@ -9,6 +9,10 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin/intermediate")
 
+set(SYCL_CTS_TEST_FILTER "SYCL_CTS_TEST_FILTER-NOTFOUND" CACHE FILEPATH "Path to the SYCL CTS test filter for building.")
+
+
+if(${SYCL_CTS_TEST_FILTER} STREQUAL "SYCL_CTS_TEST_FILTER-NOTFOUND")
 # create separate targets for each test project
 file(GLOB subdirectories RELATIVE ${TESTS_DIR} ${TESTS_DIR}/*)
 set(test_projects_dir_list "")
@@ -32,16 +36,46 @@ foreach(dir ${subdirectories})
             if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
                 add_definitions(-DSYCL_CTS_TEST_DOUBLE)
             endif()
-            if(SYCL-CTS_ENABLE_HALF_TESTS)
+            if(SYCL_CTS_ENABLE_HALF_TESTS)
                 add_definitions(-DSYCL_CTS_TEST_HALF)
             endif()
-            list(APPEND test_projects_dir_list ${dir})
+         list(APPEND test_projects_dir_list ${dir})
         endif()
     endif()
 endforeach()
+else(${SYCL_CTS_TEST_FILTER} STREQUAL "SYCL_CTS_TEST_FILTER-NOTFOUND")
+  MESSAGE(warning "A filter file has been given to cts, only tests matching the ones on the file will be build.")
+  message(STATUS "SYCL_CTS_TEST_FILTER='${SYCL_CTS_TEST_FILTER}'")
+  file(STRINGS "${SYCL_CTS_TEST_FILTER}" test_projects_dir_list)
+  message(status " ${test_projects_dir_list}")
+  foreach(dir ${test_projects_dir_list})
+  if(${dir} MATCHES "opengl*")
+      if(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS)
+          get_property(glut_flags GLOBAL PROPERTY glut_bld_flags)
+          get_property(glew_flags GLOBAL PROPERTY glew_bld_flags)
+          get_property(glut_inc GLOBAL PROPERTY glut_inc_dir)
+          get_property(glew_inc GLOBAL PROPERTY glew_inc_dir)
+          include_directories(${glut_inc})
+          include_directories(${glew_inc})
+          add_definitions(${glut_flags})
+          add_definitions(${glew_flags})
+      endif()
+  # do not include common directory into the test list
+  elseif(NOT ${dir} STREQUAL "common")
+      if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
+          add_definitions(-DSYCL_CTS_TEST_DOUBLE)
+      endif()
+      if(SYCL_CTS_ENABLE_HALF_TESTS)
+          add_definitions(-DSYCL_CTS_TEST_HALF)
+      endif()
+  endif()
+  endforeach()
+endif(${SYCL_CTS_TEST_FILTER} STREQUAL "SYCL_CTS_TEST_FILTER-NOTFOUND")
+
 
 # generate tests if any for the test projects
 message("\n\nGENERATING TESTS...")
+message(status " ${test_projects_dir_list}")
 foreach(test_project_dir ${test_projects_dir_list})
     # find test generation scripts
     file(GLOB test_generate_script_list ${TESTS_DIR}/${test_project_dir}/*.py)
@@ -72,10 +106,12 @@ foreach(test_project_dir ${test_projects_dir_list})
 
     # invoke build_sycl()
     build_sycl("${test_exe_name}" "${test_main}" "${test_cases_list}" "${CMAKE_BINARY_DIR}/bin" "${CMAKE_BINARY_DIR}/bin/intermediate")
+    add_test(NAME ${test_exe_name} COMMAND ${test_exe_name})
 
     # link the test executable with the test framework util library
     target_link_libraries(${test_exe_name} util)
     target_link_libraries(${test_exe_name} oclmath)
+    target_link_libraries(${test_exe_name} ${OPENCL_LIB_NAME})
 
     # special flags and includes for opengl interop tests
     if(${test_project_dir} MATCHES "opengl*")

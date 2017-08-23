@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -17,7 +17,7 @@ using namespace sycl_cts;
  * Function that streams a type using the cl::sycl::stream object.
  */
 template <typename T>
-void stream_type(cl::sycl::stream& os, T var) {
+void stream_type(cl::sycl::stream &os, T var) {
   os << var;
 }
 
@@ -27,54 +27,46 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger& log) override {
+  virtual void run(util::logger &log) override {
     try {
-      cts_selector testSelector;
+      auto testQueue = util::get_cts_object::queue();
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
-      cl::sycl::queue testQueue(testSelector);
-      testQueue.submit([&](cl::sycl::handler& cgh) {
-
-        cl::sycl::stream os(2048, 80);
+        cl::sycl::stream os(2048, 80, cgh);
 
         auto size = os.get_size();
 
-        if (typeid(size) != typeid(size_t)) {
-          FAIL(log,
-               "cl::sycl::context::get_size() does not "
-               "return size_t");
-        }
+        check_return_type<size_t>(log, size, "cl::sycl::context::get_size()");
 
         auto maxStatementSize = os.get_max_statement_size();
 
-        if (typeid(maxStatementSize) != typeid(size_t)) {
-          FAIL(log,
-               "cl::sycl::context::get_max_statement_size() does not "
-               "return size_t");
-        }
+        check_return_type<size_t>(
+            log, maxStatementSize,
+            "cl::sycl::context::get_max_statement_size()");
       });
 
-      testQueue.submit([&](cl::sycl::handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
         cl::sycl::stream os;
 
-        cgh.single_task<class TEST_NAME>([=]() {
+        cgh.single_task<class test_kernel_1>([=]() {
           /** check stream operator for basic types
           */
-          os << cl::sycl::string_class("hello world!"));
+          os << cl::sycl::string_class("hello world!");
           os << char('c');
-          os << unsigned char('c');
+          os << static_cast<unsigned char>('c');
           os << int(5);
-          os << unsigned int(5);
+          os << static_cast<unsigned int>(5);
           os << short(5);
-          os << unsigned short(5);
+          os << static_cast<unsigned short>(5);
           os << long(5);
-          os << unsigned long(5);
+          os << static_cast<unsigned long>(5);
           os << float(5.5f);
           os << double(5.5);
           os << size_t(5);
@@ -82,8 +74,8 @@ class TEST_NAME : public util::test_base {
 
           /** check stream operator for sycl types
           */
-          os << id<3>(1, 2, 3);
-          os << range<3>(1, 2, 3);
+          os << cl::sycl::id<3>(1, 2, 3);
+          os << cl::sycl::range<3>(1, 2, 3);
 
           /** check stream operator for sycl vec types
           */
@@ -103,37 +95,46 @@ class TEST_NAME : public util::test_base {
         });
       });
 
-      testQueue.submit([&](cl::sycl::handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
-        cgh.parallel_for<class TEST_NAME>(nd_range<3>(range<3>(16, 8, 4), range<3>(8, 4, 2), [=](nd_item ndItem) {
-          /** check stream operator for nd_item
-          */
-          os << ndItem;
-        });
+        cgh.parallel_for<class test_kernel_2>(
+            cl::sycl::nd_range<3>(cl::sycl::range<3>(16, 8, 4),
+                                  cl::sycl::range<3>(8, 4, 2)),
+            [=](cl::sycl::nd_item<3> ndItem) {
+              /** check stream operator for nd_item
+              */
+              cl::sycl::stream os(2048, 80, cgh);
+              os << ndItem;
+            });
       });
 
-      testQueue.submit([&](cl::sycl::handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
-        cgh.parallel_for<class TEST_NAME>(range<3>(16, 8, 4), [=](item it) {
-          /** check stream operator for item
-          */
-          os << it;
-        });
+        cgh.parallel_for<class test_kernel_3>(
+            cl::sycl::range<3>(16, 8, 4), [=](cl::sycl::item<3> it) {
+              /** check stream operator for item
+              */
+              cl::sycl::stream os(2048, 80, cgh);
+              os << it;
+            });
       });
 
-      testQueue.submit([&](cl::sycl::handler& cgh) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
-        cgh.parallel_for_work_group<class TEST_NAME>(range<3>(16, 8, 4),
-                                                     [=](group gp) {
-                                                       /** check stream operator
-                                                        * for group
-                                                       */
-                                                       os << gp;
-                                                     });
+        cgh.parallel_for_work_group<class test_kernel_4>(
+            cl::sycl::range<3>(16, 8, 4), cl::sycl::range<3>(1, 1, 1),
+            [=](cl::sycl::group<3> gp) {
+              /** check stream operator for group
+              */
+              cl::sycl::stream os(2048, 80, cgh);
+              os << gp;
+            });
       });
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

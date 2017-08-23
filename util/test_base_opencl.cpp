@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "test_base_opencl.h"
 #include "../tests/common/macros.h"
@@ -14,7 +14,7 @@
 namespace sycl_cts {
 namespace util {
 
-/** constructor which explicitly sets the opencl objects
+/** constructor which explicitly sets the OpenCL objects
  *  to nullptrs
  */
 test_base_opencl::test_base_opencl()
@@ -23,8 +23,7 @@ test_base_opencl::test_base_opencl()
       m_cl_context(nullptr),
       m_cl_command_queue(nullptr),
       m_openKernels(),
-      m_openPrograms(),
-      m_cl_sampler(nullptr) {}
+      m_openPrograms() {}
 
 /** called before this test is executed
  *  @param log for emitting test notes and results
@@ -35,8 +34,8 @@ bool test_base_opencl::setup(logger &log) {
   using sycl_cts::util::get;
   opencl_helper &openclHelper = get<opencl_helper>();
 
-  UNIQUE_PTR<cl_platform_id> platforms;
-  UNIQUE_PTR<cl_device_id> devices;
+  cl::sycl::unique_ptr_class<cl_platform_id> platforms;
+  cl::sycl::unique_ptr_class<cl_device_id> devices;
 
   cl_uint N = 0;
   cl_int error = CL_SUCCESS;
@@ -89,21 +88,36 @@ bool test_base_opencl::setup(logger &log) {
       clCreateCommandQueue(m_cl_context, devices.get()[0], 0, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
 
-  cl_sampler m_cl_sampler = clCreateSampler(m_cl_context, 0, CL_ADDRESS_REPEAT,
-                                            CL_FILTER_LINEAR, &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
-
   m_cl_platform_id = platforms.get()[0];
   m_cl_device_id = devices.get()[0];
 
   return true;
 }
 
-/**
- *
- */
-bool test_base_opencl::create_program(const STRING &source,
-                                      cl_program &out_program, logger &log) {
+bool test_base_opencl::create_compiled_program(const std::string &source,
+                                               cl_program &out_program,
+                                               logger &log) {
+  assert(!source.empty());
+
+  const char *source_c = source.c_str();
+  const size_t sourceSize = source.length();
+  assert(source_c != nullptr);
+
+  cl_int error = CL_SUCCESS;
+  out_program = clCreateProgramWithSource(m_cl_context, 1, &source_c,
+                                          &sourceSize, &error);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  error = clCompileProgram(out_program, 1, &m_cl_device_id, nullptr, 0, nullptr,
+                           nullptr, nullptr, nullptr);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+
+  m_openPrograms.push_back(out_program);
+  return true;
+}
+
+bool test_base_opencl::create_built_program(const std::string &source,
+                                            cl_program &out_program,
+                                            logger &log) {
   assert(!source.empty());
 
   const char *source_c = source.c_str();
@@ -125,8 +139,8 @@ bool test_base_opencl::create_program(const STRING &source,
 /**
  */
 bool test_base_opencl::create_kernel(const cl_program &clProgram,
-                                     const STRING &name, cl_kernel &out_kernel,
-                                     logger &log) {
+                                     const std::string &name,
+                                     cl_kernel &out_kernel, logger &log) {
   assert(clProgram != nullptr);
   assert(!name.empty());
 
@@ -138,6 +152,13 @@ bool test_base_opencl::create_kernel(const cl_program &clProgram,
 
   m_openKernels.push_back(out_kernel);
   return true;
+}
+
+bool test_base_opencl::create_sampler(cl_sampler &outSampler, logger &log) {
+  cl_int error = CL_SUCCESS;
+  cl_sampler m_cl_sampler = clCreateSampler(m_cl_context, 0, CL_ADDRESS_REPEAT,
+                                            CL_FILTER_LINEAR, &error);
+  return CHECK_CL_SUCCESS(log, error);
 }
 
 /** called after this test has executed

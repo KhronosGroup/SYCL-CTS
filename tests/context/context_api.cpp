@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -27,25 +27,35 @@ class TEST_NAME : public util::test_base {
    */
   virtual void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::context context(selector);
+      auto context = util::get_cts_object::context();
 
       /** check is_host() method
-      */
-      auto isHost = context.is_host();
-      if (typeid(isHost) != typeid(bool)) {
-        FAIL(log, "is_host() does not return bool");
+       */
+      {
+        auto isHost = context.is_host();
+        check_return_type<bool>(log, isHost, "is_host()");
       }
 
       /** check get_devices() method
-      */
-      auto deviceList = context.get_devices();
-      if (typeid(isHost) != typeid(cl::sycl::vector_class<cl::sycl::device>)) {
-        FAIL(log, "get_devices() does not return vector_class<device>");
+       */
+      {
+        auto deviceList = context.get_devices();
+        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+            log, deviceList, "get_devices()");
       }
+
+      /** check get_platform() method
+       */
+      {
+        auto platform = context.get_platform();
+        check_return_type<cl::sycl::platform>(log, platform, "get_platform()");
+      }
+
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

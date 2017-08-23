@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "collection.h"
 #include "printer.h"
@@ -116,7 +116,7 @@ collection::test_info &collection::get_test(int32_t index) {
  *  return true if entire string 'b' can be found at the beginning of
  *  string 'a'.
  */
-static inline bool partial_strcmp(const STRING &a, const STRING &b) {
+static inline bool partial_strcmp(const std::string &a, const std::string &b) {
   const char *_a = a.c_str();
   const char *_b = b.c_str();
 
@@ -135,7 +135,7 @@ static inline bool partial_strcmp(const STRING &a, const STRING &b) {
 
 /** set the skip status of a test by name
  */
-void collection::set_test_skip(const STRING &testName, bool) {
+void collection::set_test_skip(const std::string &testName, bool) {
   //       yet the linear search here is likely not a hot spot
   for (int32_t i = 0; i < int32_t(m_tests.size()); i++) {
     test_info &info = m_tests.at(size_t(i));
@@ -153,7 +153,7 @@ void collection::set_test_skip(const STRING &testName, bool) {
 /** load a test filter (csv file)
  *  @param csvPath, the csv file filtering the tests
  */
-bool collection::filter_tests_csv(const STRING &csvPath) {
+bool collection::filter_tests_csv(const std::string &csvPath) {
   // try to load the csv file
   csv csvFile;
   if (!csvFile.load_file(csvPath)) {
@@ -170,7 +170,7 @@ bool collection::filter_tests_csv(const STRING &csvPath) {
   // loop over all rows in the CSV file
   for (int32_t r = 0; r < csvFile.size(); r++) {
     // first column is test name
-    STRING csvName;
+    std::string csvName;
     if (!csvFile.get_item(r, 0, csvName)) continue;
 
     // check for empty string
@@ -185,9 +185,7 @@ bool collection::filter_tests_csv(const STRING &csvPath) {
 
 /**
  */
-bool collection::filter_tests_name(const STRING &name) {
-  // todo: extend to take a comma separated list of names
-
+bool collection::filter_tests_name(const std::string &name) {
   // pre-pass sets all tests to be skipped
   for (int32_t i = 0; i < int32_t(m_tests.size()); i++) {
     test_info &info = m_tests.at(size_t(i));
@@ -218,7 +216,7 @@ static bool test_order_func(const collection::test_info &a,
   test_base::info bInfo;
   b.m_test->get_info(bInfo);
 
-  // use STRING compare operator
+  // use std::string compare operator
   return aInfo.m_name < bInfo.m_name;
 }
 

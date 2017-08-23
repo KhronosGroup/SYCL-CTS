@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -20,8 +20,8 @@ template <typename T, int size, int dims>
 class buffer_dtors {
  public:
   void operator()(util::logger &log, range<dims> r) {
-    util::UNIQUE_PTR<T[]> data(new T[size]);
-    memset(data.get(), 0, sizeof(T) * size);
+    unique_ptr_class<T[]> data(new T[size]);
+    std::fill(data.get(), (data.get() + size), 0);
 
     {
       cl::sycl::buffer<T, dims> buf(data.get(), r);
@@ -68,7 +68,9 @@ class TEST_NAME : public util::test_base {
       test_buffers<double>(log);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

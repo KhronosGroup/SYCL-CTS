@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -34,10 +34,9 @@ class TEST_NAME : public util::test_base {
   }
 
     CHECK_EXISTS(exception);
-    CHECK_EXISTS(cl_exception);
-    CHECK_EXISTS(async_exception);
     CHECK_EXISTS(runtime_error);
     CHECK_EXISTS(kernel_error);
+    CHECK_EXISTS(accessor_error);
     CHECK_EXISTS(nd_range_error);
     CHECK_EXISTS(event_error);
     CHECK_EXISTS(invalid_parameter_error);
@@ -48,6 +47,7 @@ class TEST_NAME : public util::test_base {
     CHECK_EXISTS(memory_allocation_error);
     CHECK_EXISTS(platform_error);
     CHECK_EXISTS(profiling_error);
+    CHECK_EXISTS(feature_not_supported);
 #undef CHECK_EXISTS
 
     /* Check that exception_list exists */

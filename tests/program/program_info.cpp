@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -27,25 +27,37 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   virtual void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::context context;
-      cl::sycl::program program(context);
+      auto context = util::get_cts_object::context();
+      auto program =
+          util::get_cts_object::program::built<class TEST_NAME>(context);
 
       /** check types
       */
       using programInfo = cl::sycl::info::program;
+      using vectorDevicesInfo = cl::sycl::vector_class<cl::sycl::device>;
 
       /** initialize return values
       */
       cl_uint referenceCount;
+      cl::sycl::context programContext;
+      vectorDevicesInfo vectorDevices;
 
       /** check program info parameters
       */
       referenceCount =
           program.get_info<cl::sycl::info::program::reference_count>();
+
+      programContext = program.get_info<cl::sycl::info::program::context>();
+      vectorDevices = program.get_info<cl::sycl::info::program::devices>();
+
+      TEST_TYPE_TRAIT(program, reference_count, program);
+      TEST_TYPE_TRAIT(program, context, program);
+      TEST_TYPE_TRAIT(program, devices, program);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

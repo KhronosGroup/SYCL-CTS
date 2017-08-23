@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 #ifdef _WIN32
@@ -59,8 +59,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       image<2> img_2d(ctx, m_gl_buffer_obj);
 
       // test for access::target
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
+      auto queue = util::get_cts_object::queue();
 
       queue.submit([&](cl::sycl::handler &cgh) {
         auto acc_img = img_1d.get_access<float4, access::cl_gl_image>(cgh);
@@ -113,7 +112,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       queue.wait_and_throw();
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

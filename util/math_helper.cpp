@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "math_helper.h"
 
@@ -17,9 +17,7 @@ using namespace cl::sycl;
 /* cast an integer to a float */
 float int_to_float(uint32_t x) {
   static_assert(sizeof(x) == sizeof(float), "incompatible type sizes");
-  float f;
-  memcpy(&f, &x, sizeof(x));
-  return f;
+  return *reinterpret_cast<float *>(&x);
 }
 
 void fill(float &e, float v) { e = v; }

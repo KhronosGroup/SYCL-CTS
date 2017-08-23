@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -27,244 +27,242 @@ class TEST_NAME : public util::test_base {
    */
   virtual void run(util::logger &log) override {
     try {
-      cl::sycl::function_class<void(cl::sycl::exception_list)> asyncHandler =
-          [&](cl::sycl::exception_list l) {};
-
       /** check default constructor and destructor
       */
       {
         cl::sycl::queue queue;
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
-        }
+        // the resulting platform is implementation defined and cannot be tested
       }
 
       /** check (functor_class) constructor
       */
       {
+        cts_async_handler asyncHandler;
         cl::sycl::queue queue(asyncHandler);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
-        }
+        // the resulting platform is implementation defined and cannot be tested
       }
 
-      /** check (host_selector) constructor
+      /** check (host_selector, functor_class = {}) constructor
       */
       {
         cl::sycl::host_selector selector;
         cl::sycl::queue queue(selector);
 
         if (!queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() != nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+          FAIL(log,
+               "queue with host_selector was not constructed correctly "
+               "(is_host)");
         }
       }
 
-      /** check (device_selector, bool = false) constructor
+      /** check (device_selector, functor_class = {}) constructor
       */
       {
         cts_selector selector;
         cl::sycl::queue queue(selector);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with device_selector was not constructed correctly "
+               "(is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with device_selector was not constructed correctly "
+                 "(get)");
+          }
         }
       }
 
-      /** check (device_selector, bool) constructor
+      /** check (device_selector, functor_class) constructor
       */
       {
         cts_selector selector;
-        cl::sycl::queue queue(selector, true);
+        cts_async_handler asyncHandler;
+        cl::sycl::queue queue(selector, asyncHandler);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with device_selector was not constructed correctly "
+               "(is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with device_selector was not constructed correctly "
+                 "(get)");
+          }
         }
       }
 
-      /** check (context, device_selector, bool = false) constructor
+      /** check (device, functor_class = {}) constructor
       */
       {
-        cts_selector selector;
-        cl::sycl::context context(selector);
-        cl::sycl::queue queue(context, selector);
+        cl::sycl::device device = util::get_cts_object::device();
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(device);
+
+        if (queue.is_host() != device.is_host()) {
+          FAIL(log,
+               "queue with device was not constructed correctly (is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!device.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log, "queue with device was not constructed correctly (get)");
+          }
         }
       }
 
-      /** check (context, device_selector, bool) constructor
+      /** check (device, functor_class) constructor
       */
       {
-        cts_selector selector;
-        cl::sycl::context context(selector);
-        cl::sycl::queue queue(context, selector, true);
+        cl::sycl::device device = util::get_cts_object::device();
+        cts_async_handler asyncHandler;
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(device, asyncHandler);
+
+        if (queue.is_host() != device.is_host()) {
+          FAIL(log,
+               "queue with device was not constructed correctly (is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!device.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log, "queue with device was not constructed correctly (get)");
+          }
         }
       }
 
-      /** check (context, device_selector, functor_class, bool = false)
+      /** check (context, device_selector)
        * constructor
       */
       {
         cts_selector selector;
-        cl::sycl::context context(selector);
-        cl::sycl::queue queue(context, selector, asyncHandler);
+        auto context = util::get_cts_object::context(selector);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(context, selector);
+
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with context and selector was not constructed correctly "
+               "(is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-      }
-
-      /** check (context, device_selector, functor_class, bool) constructor
-      */
-      {
-        cts_selector selector;
-        cl::sycl::context context(selector);
-        cl::sycl::queue queue(context, selector, asyncHandler, true);
-
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with context and selector was not constructed "
+                 "correctly (get)");
+          }
         }
       }
 
-      /** check (device, bool = false) constructor
+      /** check (context, host_selector)
+      * constructor
       */
       {
-        cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::queue queue(device);
+        cl::sycl::host_selector selector;
+        auto context = util::get_cts_object::context(selector);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(context, selector);
+
+        if (!queue.is_host()) {
+          FAIL(log,
+               "queue with context and selector was not constructed correctly "
+               "(is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!context.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with context and selector was not constructed "
+                 "correctly (get)");
+          }
         }
       }
 
-      /** check (device_selector, bool) constructor
+      /** check (context, device) constructor
       */
       {
         cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::queue queue(device, true);
+        cts_async_handler asyncHandler;
+        auto device = util::get_cts_object::device(selector);
+        cl::sycl::context context(device, false, asyncHandler);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-      }
-
-      /** check (context, device, bool = false) constructor
-      */
-      {
-        cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::context context(device);
         cl::sycl::queue queue(context, device);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with context and device was not constructed correctly "
+               "(is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-      }
-
-      /** check (context, device, bool) constructor
-      */
-      {
-        cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::context context(device);
-        cl::sycl::queue queue(context, device, bool);
-
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
-        }
-
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with context and device was not constructed correctly "
+                 "(get)");
+          }
         }
       }
 
-      /** check (context, device, functor_class, bool = false) constructor
+      /** check (context, device, info::queue_profiling = false) constructor
       */
       {
         cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::context context(device);
-        cl::sycl::queue queue(context, device, asyncHandler);
+        cts_async_handler asyncHandler;
+        auto device = util::get_cts_object::device(selector);
+        cl::sycl::context context(device, false, asyncHandler);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(
+            context, device,
+            static_cast<cl::sycl::info::queue_profiling>(false));
+
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with context, device, info::queue_profiling was not "
+               "constructed correctly (is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with context, device, info::queue_profiling was not "
+                 "constructed correctly (get)");
+          }
         }
       }
 
-      /** check (context, device_selector, functor_class, bool) constructor
+      /** check (context, device, info::queue_profiling = true) constructor
       */
       {
         cts_selector selector;
-        cl::sycl::device device(selector);
-        cl::sycl::context context(device);
-        cl::sycl::queue queue(context, device, asyncHandler, true);
+        cts_async_handler asyncHandler;
+        auto device = util::get_cts_object::device(selector);
+        cl::sycl::context context(device, false, asyncHandler);
 
-        if (queue.is_host()) {
-          FAIL(log, "queue was not constructed correctly");
+        cl::sycl::queue queue(
+            context, device,
+            static_cast<cl::sycl::info::queue_profiling>(true));
+
+        if (queue.is_host() != selector.is_host()) {
+          FAIL(log,
+               "queue with context, device, info::queue_profiling was not "
+               "constructed correctly (is_host)");
         }
 
-        if (queue.get() == nullptr) {
-          FAIL(log, "queue was not constructed correctly");
+        if (!selector.is_host()) {
+          if (queue.get() == nullptr) {
+            FAIL(log,
+                 "queue with context, device, info::queue_profiling was not "
+                 "constructed correctly (get)");
+          }
         }
       }
 
@@ -272,11 +270,32 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::queue queueA(selector);
+        auto queueA = util::get_cts_object::queue(selector);
         cl::sycl::queue queueB(queueA);
 
-        if (queueA.get() != queueB.get()) {
-          FAIL(log, "queue was not copied correctly");
+        if (queueA.is_host() != selector.is_host()) {
+          FAIL(log, "queue source after copy construction failed (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (queueA.get() == nullptr) {
+            FAIL(log, "queue source after copy construction failed (get)");
+          }
+        }
+
+        if (!selector.is_host()) {
+          if (queueB.get() == nullptr) {
+            FAIL(log,
+                 "queue destination was not copy constructed correctly "
+                 "(is_host)");
+          }
+        }
+
+        if (!selector.is_host()) {
+          if (queueA.get() != queueB.get()) {
+            FAIL(log,
+                 "queue destination was not copy constructed correctly (get)");
+          }
         }
       }
 
@@ -284,16 +303,109 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::queue queueA(selector);
-        cl::sycl::queue queueB = queueA;
+        auto queueA = util::get_cts_object::queue(selector);
+        cl::sycl::queue queueB;
+        queueB = queueA;
 
-        if (queueA.get() != queueB.get()) {
-          FAIL(log, "queue was not assigned correctly");
+        if (queueA.is_host() != selector.is_host()) {
+          FAIL(log, "queue source after copy assignment (=) failed (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (queueA.get() == nullptr) {
+            FAIL(log, "queue source after copy assignment (=) failed (get)");
+          }
+        }
+
+        if (queueA.is_host() != queueB.is_host()) {
+          FAIL(log,
+               "queue destination was not copy assigned (=) correctly "
+               "(is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (queueA.get() != queueB.get()) {
+            FAIL(log,
+                 "queue destination was not copy assigned (=) correctly "
+                 "(get)");
+          }
+        }
+      }
+
+      /** check move constructor
+      */
+      {
+        cts_selector selector;
+        auto queueA = util::get_cts_object::queue(selector);
+        cl::sycl::queue queueB(std::move(queueA));
+
+        if (queueB.is_host() != selector.is_host()) {
+          FAIL(log, "queue was not move constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (queueB.get() == nullptr) {
+            FAIL(log, "queue was not move constructed correctly (get)");
+          }
+        }
+      }
+
+      /** check move assignment operator
+      */
+      {
+        cts_selector selector;
+        auto queueA = util::get_cts_object::queue(selector);
+
+        cl::sycl::queue queueB;
+        queueB = std::move(queueA);
+
+        if (queueB.is_host() != selector.is_host()) {
+          FAIL(log, "queue was not move assigned (=) correctly (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (queueB.get() == nullptr) {
+            FAIL(log, "queue was not move assigned (=) correctly. (get)");
+          }
+        }
+      }
+
+      /* check equality operator
+      */
+      {
+        cts_selector selector;
+        auto queueA = util::get_cts_object::queue(selector);
+        cl::sycl::queue queueB(queueA);
+        cl::sycl::queue queueC = queueA;
+
+        if (!(queueA == queueB)) {
+          FAIL(log,
+               "device equality does not work correctly (copy constructed)");
+        }
+        if (!(queueA == queueC)) {
+          FAIL(log, "device equality does not work correctly (copy assigned)");
+        }
+      }
+
+      /** Test Hash
+      */
+      {
+        cts_selector selector;
+        auto queueA = util::get_cts_object::queue(selector);
+        cl::sycl::queue queueB(queueA);
+        cl::sycl::hash_class<cl::sycl::queue> hasher;
+
+        if (hasher(queueA) != hasher(queueB)) {
+          FAIL(log,
+               "device hasher does not work correctly (hashing of equal "
+               "failed)");
         }
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

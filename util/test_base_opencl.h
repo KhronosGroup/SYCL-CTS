@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -49,42 +49,50 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   virtual void cleanup();
 
-  /** return a valid opencl platform object
+  /** return a valid OpenCL platform object
    */
   cl_platform_id get_cl_platform_id() { return m_cl_platform_id; }
 
-  /** return a valid opencl cl_device_id object
+  /** return a valid OpenCL cl_device_id object
    */
   cl_device_id get_cl_device_id() { return m_cl_device_id; }
 
-  /** return a valid opencl cl_context object
+  /** return a valid OpenCL cl_context object
    */
   cl_context get_cl_context() { return m_cl_context; }
 
-  /** return a valid opencl cl_command_queue object
+  /** return a valid OpenCL cl_command_queue object
    */
   cl_command_queue get_cl_command_queue() { return m_cl_command_queue; }
 
-  /** create an opencl program
+  /** create and compile an OpenCL program
    */
-  bool create_program(const STRING &source, cl_program &outProgram,
-                      logger &log);
+  bool create_compiled_program(const std::string &source,
+                               cl_program &outProgram, logger &log);
 
-  /** create and opencl kernel
+  /** create and build an OpenCL program
+  */
+  bool create_built_program(const std::string &source, cl_program &outProgram,
+                            logger &log);
+
+  /** create an OpenCL kernel
    */
-  bool create_kernel(const cl_program &clProgram, const STRING &name,
+  bool create_kernel(const cl_program &clProgram, const std::string &name,
                      cl_kernel &outKernel, logger &log);
 
-  /* instances of open cl objects */
+  /** create an OpenCL sampler
+  */
+  bool create_sampler(cl_sampler &outSampler, logger &log);
+
+  /* instances of OpenCL objects */
   cl_platform_id m_cl_platform_id;
   cl_device_id m_cl_device_id;
   cl_context m_cl_context;
   cl_command_queue m_cl_command_queue;
-  cl_sampler m_cl_sampler;
 
   /*  */
-  VECTOR<cl_kernel> m_openKernels;
-  VECTOR<cl_program> m_openPrograms;
+  std::vector<cl_kernel> m_openKernels;
+  std::vector<cl_program> m_openPrograms;
 
 };  // class test_base
 

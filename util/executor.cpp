@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "executor.h"
 #include "singleton.h"
@@ -17,9 +17,10 @@ namespace util {
 
 /** execute all tests in the collection
  */
-void executor::run_all() {
+bool executor::run_all() {
   // find the number of tests in the collection
   const int32_t nTests = get<collection>().get_test_count();
+  int32_t numPassed = 0;
 
   // iterate over all tests
   for (int32_t i = 0; i < nTests; i++) {
@@ -28,7 +29,9 @@ void executor::run_all() {
     test_base *test = info.m_test;
 
     // do not execute any test marked to be skipped
-    if (info.m_skip) continue;
+    if (info.m_skip) {
+      continue;
+    }
 
     // scope for the logger
     {
@@ -54,6 +57,11 @@ void executor::run_all() {
         // enforce that each test must give a result
         assert(logger.get_result() != logger::epending);
 
+        if ((logger.get_result() == logger::epass) ||
+            (logger.get_result() == logger::eskip)) {
+          ++numPassed;
+        }
+
         // ask the test to clean up after itself
         test->cleanup();
       } catch (...) {
@@ -63,9 +71,21 @@ void executor::run_all() {
       logger.test_end();
 
       // if we received a fatal error then we must exit
-      if (logger.get_result() == logger::efatal) break;
+      if (logger.get_result() == logger::efatal) {
+        break;
+      }
     }
   }
+  {
+    logger log;
+    auto successRate =
+        100 * static_cast<float>(numPassed) / static_cast<float>(nTests);
+    if ((successRate > 99.f) && (numPassed < nTests)) {
+      successRate = 99.f;
+    }
+    log.note("Passed %d/%d tests (%.0f%%)", numPassed, nTests, successRate);
+  }
+  return (numPassed == nTests);
 }
 
 }  // namespace util

@@ -1,14 +1,35 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME program_constructors
+
+// Forward declaration of the kernel
+template <int N>
+struct program_ctrs_kernel {
+  void operator()() const {}
+};
+
+class test_functor_1 {
+  cl::sycl::accessor<float, 1, cl::sycl::access::mode::read_write,
+                     cl::sycl::access::target::global_buffer>
+      m_acc;
+
+ public:
+  test_functor_1(
+      cl::sycl::accessor<float, 1, cl::sycl::access::mode::read_write,
+                         cl::sycl::access::target::global_buffer>
+          acc)
+      : m_acc(acc) {}
+
+  void operator()() { m_acc[0] *= 2.0f; };
+};
 
 namespace program_constructors__ {
 using namespace sycl_cts;
@@ -27,94 +48,171 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   virtual void run(util::logger &log) override {
     try {
-      /** check (context) constructor
-      */
+      log.note("check (context) constructor");
       {
-        cts_selector selector;
-        cl::sycl::context context;
+        auto context = util::get_cts_object::context();
         cl::sycl::program program(context);
 
-        if (program.get() != 0) {
+        if (!context.is_host() && (program.get() != nullptr)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
 
-      /** check (context, vector_class<device>) constructor
-      */
+      log.note("check (context, vector_class<device>) constructor");
       {
-        cts_selector selector;
-        cl::sycl::context context;
+        auto context = util::get_cts_object::context();
         cl::sycl::vector_class<cl::sycl::device> deviceList =
             context.get_devices();
         cl::sycl::program program(context, deviceList);
 
-        if (program.get() != 0) {
+        if (!context.is_host() && (program.get() != nullptr)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
 
-      /** check (vector_class<program>, string_class = "") constructor
-      */
+      log.note(
+          "check (vector_class<program>, string_class = \"\") constructor");
       {
-        cts_selector selector;
-        cl::sycl::context context;
-        cl::sycl::program programA(context);
-        cl::sycl::program programB(context);
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<0>>(context);
+        auto programB = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<1>>(context);
+
         cl::sycl::vector_class<cl::sycl::program> programList;
         programList.push_back(programA);
         programList.push_back(programB);
         cl::sycl::program programC(programList);
 
-        if (programC.get() != 0) {
+        if (!context.is_host() && (programC.get() == nullptr)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
 
-      /** check (vector_class<program>, string_class) constructor
-      */
+      log.note("check (vector_class<program>, string_class) constructor");
       {
-        cts_selector selector;
-        cl::sycl::context context;
-        cl::sycl::program programA(context);
-        cl::sycl::program programB(context);
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<2>>(context);
+        auto programB = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<3>>(context);
+
         cl::sycl::vector_class<cl::sycl::program> programList;
         programList.push_back(programA);
         programList.push_back(programB);
-        cl::sycl::program programC(programList, "-cl-fast-relaxed-mat");
+        cl::sycl::program programC(programList, "-cl-fast-relaxed-math");
 
-        if (programC.get() != 0) {
+        if (!context.is_host() && (programC.get() == nullptr)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
 
-      /** check copy constructor
-      */
+      log.note("check copy constructor");
       {
-        cts_selector selector;
-        cl::sycl::context context;
-        cl::sycl::program programA(context);
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<4>>(context);
+
         cl::sycl::program programB(programA);
 
-        if (programA.get() != programB.get()) {
-          FAIL(log, "program was not copied correctly.");
+        if (!context.is_host() && (programB.get() == nullptr)) {
+          FAIL(log, "program was not copy constructed correctly. (get)");
+        }
+        if (programA.is_linked() != programB.is_linked()) {
+          FAIL(log, "program was not copy constructed correctly. (is_linked)");
         }
       }
 
-      /** check assignment operator
-      */
+      log.note("check assignment operator");
       {
-        cts_selector selector;
-        cl::sycl::context context;
-        cl::sycl::program programA(context);
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<5>>(context);
+
         cl::sycl::program programB = programA;
 
-        if (programA.get() != programB.get()) {
-          FAIL(log, "program was not copied correctly.");
+        if (!context.is_host() && (programB.get() == nullptr)) {
+          FAIL(log, "program was not copy assigned correctly. (get)");
+        }
+        if (programA.is_linked() != programB.is_linked()) {
+          FAIL(log, "program was not copy assigned correctly. (is_linked)");
+        }
+      }
+
+      log.note("check move constructor");
+      {
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<6>>(context);
+
+        cl::sycl::program programB(std::move(programA));
+
+        if (!context.is_host() && (programB.get() == nullptr)) {
+          FAIL(log, "program was not move constructed correctly. (get)");
+        }
+        if (programB.is_linked()) {
+          FAIL(log, "program was not move constructed correctly. (is_linked)");
+        }
+      }
+
+      log.note("check move assignment operator");
+      {
+        auto context = util::get_cts_object::context();
+        auto programA = util::get_cts_object::program::compiled<
+            struct program_ctrs_kernel<7>>(context);
+
+        cl::sycl::program programB = std::move(programA);
+
+        if (!context.is_host() && (programB.get() == nullptr)) {
+          FAIL(log, "program was not move assigned correctly. (get)");
+        }
+        if (programB.is_linked()) {
+          FAIL(log, "program was not move assigned correctly. (is_linked)");
+        }
+      }
+
+      log.note("check equality operator");
+      {
+        cts_selector selector;
+        auto context = util::get_cts_object::context(selector);
+
+        cl::sycl::program programA(context);
+        cl::sycl::program programB(programA);
+        cl::sycl::program programC = programA;
+
+        if (!(programA == programB) &&
+            (context.is_host() && (programA.get() != programB.get()))) {
+          FAIL(log,
+               "program equality does not work correctly. (copy constructed)");
+        }
+        if (!(programA == programC) &&
+            (context.is_host() && (programA.get() == programC.get()))) {
+          FAIL(log,
+               "program equality does not work correctly. (copy assigned)");
+        }
+      }
+
+      log.note("check hashing");
+      {
+        cts_selector selector;
+        auto context = util::get_cts_object::context(selector);
+
+        cl::sycl::program programA(context);
+        cl::sycl::program programB(programA);
+
+        cl::sycl::hash_class<cl::sycl::program> hasher;
+
+        if (hasher(programA) != hasher(programB)) {
+          FAIL(log,
+               "program hashing does not work correctly (hashing of equal "
+               "failed)");
         }
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -1,24 +1,24 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME hierarchical_reduce
 
-namespace hierarchical_reduce__ {
+namespace TEST_NAMESPACE {
 
-static const int g_items_1d = 2;
-static const int l_items_1d = 2;
-static const int g_items_total = g_items_1d * g_items_1d * g_items_1d;
-static const int l_items_total = l_items_1d * l_items_1d * l_items_1d;
-static const int num_groups = g_items_total / l_items_total;
+static const int groupItems1d = 2;
+static const int localItems1d = 2;
+static const int groupItemsTotal = groupItems1d * groupItems1d * groupItems1d;
+static const int localItemsTotal = localItems1d * localItems1d * localItems1d;
+static const int numGroups = groupItemsTotal / localItemsTotal;
 
-static const int input_size = 32;
+static const int inputSize = 32;
 
 using namespace sycl_cts;
 using namespace cl::sycl;
@@ -30,75 +30,75 @@ template <typename T>
 class sth_else {};
 
 template <typename T>
-T reduce(T input[input_size], device_selector* selector) {
-  T m_total;
-  T m_group_sums[num_groups];
+T reduce(T input[inputSize], device_selector *selector) {
+  T mTotal;
+  T mGroupSums[numGroups];
 
-  queue my_queue(*selector);
-  buffer<T, 1> input_buf(input, range<1>(input_size));
-  buffer<T, 1> group_sums_buf(m_group_sums, range<1>(num_groups));
-  buffer<T, 1> total_buf(&m_total, range<1>(1));
+  auto myQueue = util::get_cts_object::queue(*selector);
+  buffer<T, 1> input_buf(input, range<1>(inputSize));
+  buffer<T, 1> group_sums_buf(mGroupSums, range<1>(numGroups));
+  buffer<T, 1> total_buf(&mTotal, range<1>(1));
 
-  my_queue.submit([&](handler& cgh) {
+  myQueue.submit([&](handler &cgh) {
     accessor<T, 1, cl::sycl::access::mode::read,
              cl::sycl::access::target::global_buffer>
         input_ptr(input_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::read,
              cl::sycl::access::target::global_buffer>
-        group_sums_ptr(group_sums_buf, cgh);
+        groupSumsPtr(group_sums_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::write,
              cl::sycl::access::target::global_buffer>
-        total_ptr(total_buf, cgh);
+        totalPtr(total_buf, cgh);
         cgh.parallel_for_work_group<class sth<T>>(
-                    nd_range<3>( range<3>( g_items_1d, g_items_1d, g_items_1d ),
-                                 range<3>( l_items_1d, l_items_1d, l_items_1d )),
+                    range<3>( groupItems1d, groupItems1d, groupItems1d ),
+                    range<3>( localItems1d, localItems1d, localItems1d ),
                     [=]( group<3> group )
         {
-          T local_sums[l_items_total];
+          T localSums[localItemsTotal];
 
           // process items in each work item
-          parallel_for_work_item(group, [=, &local_sums](item<3> item) {
-            int local_id = item.get_global_linear();
+          parallel_for_work_item(group, [=, &localSums](item<3> item) {
+            int localId = item.get_linear_id();
             /* Split the array into work-group-size different arrays */
-            int values_per_item = (input_size / num_groups) / l_items_total;
-            int id_start = values_per_item * local_id;
-            int id_end = values_per_item * (local_id + 1);
+            int valuesPerItem = (inputSize / numGroups) / localItemsTotal;
+            int idStart = 0;
+            int idEnd = valuesPerItem * localId;
 
             /* Handle the case where the number of input values is not divisible
             * by
             * the number of items. */
-            if (id_end > input_size - 1) id_end = input_size - 1;
+            if (idEnd > inputSize - 1) idEnd = inputSize - 1;
 
-            for (int i = id_start; i < id_end; i++)
-              local_sums[i].increment(input_ptr[i]);
+            for (int i = idStart; i < idEnd; i++)
+              localSums[i].increment(input_ptr[i]);
           });
 
           /* Sum items in each work group */
-          for (int i = 0; i < l_items_total; i++)
-            group_sums_ptr[group.get(0)].increment(local_sums[i]);
+          for (int i = 0; i < localItemsTotal; i++)
+            groupSumsPtr[group.get(0)].increment(localSums[i]);
         });
   });
 
-  my_queue.submit([&](handler& cgh) {
+  myQueue.submit([&](handler &cgh) {
     accessor<T, 1, cl::sycl::access::mode::read,
              cl::sycl::access::target::global_buffer>
-        group_sums_ptr(group_sums_buf, cgh);
+        groupSumsPtr(group_sums_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::write,
              cl::sycl::access::target::global_buffer>
-        total_ptr(total_buf, cgh);
+        totalPtr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T>>([=]()
         {
           /* Sum items in all work groups */
-          for (int i = 0; i < num_groups; i++) {
-            total_ptr[0].value = total_ptr[i].value + group_sums_ptr[i].value;
+          for (int i = 0; i < numGroups; i++) {
+            totalPtr[0].value = totalPtr[i].value + groupSumsPtr[i].value;
           }
         });
   });
 
-  my_queue.wait_and_throw();
+  myQueue.wait_and_throw();
 
-  return m_total;
+  return mTotal;
 }
 
 class Adder {
@@ -137,44 +137,47 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger& log) override {
+  virtual void run(util::logger &log) override {
+    return;
     try {
-      default_selector sel;
+      cts_selector sel;
       {
-        Adder data[input_size];
-        for (int i = 0; i < input_size; i++) data[i] = Adder(2);
+        Adder data[inputSize];
+        for (int i = 0; i < inputSize; i++) data[i] = Adder(2);
 
         Adder result = reduce<Adder>(data, &sel);
 
-        int expected_result = input_size * 2;
+        int expectedResult = inputSize * 2;
 
-        if (result.value != expected_result) {
+        if (result.value != expectedResult) {
           FAIL(log, "Incorrect result in Adder");
         }
       }
 
       {
-        Multiplier data[input_size];
-        for (int i = 0; i < input_size; i++) data[i] = Multiplier(2);
+        Multiplier data[inputSize];
+        for (int i = 0; i < inputSize; i++) data[i] = Multiplier(2);
 
         Multiplier result = reduce<Multiplier>(data, &sel);
 
-        int expected_result = 1;
-        for (int i = 0; i < input_size; ++i) expected_result *= 2;
+        int expectedResult = 1;
+        for (int i = 0; i < inputSize; ++i) expectedResult *= 2;
 
-        if (result.value != expected_result) {
+        if (result.value != expectedResult) {
           FAIL(log, "Incorrect result in Multiplier");
         }
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };
@@ -182,4 +185,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace id_api__ */
+} /* namespace hierarchical_reduce__ */

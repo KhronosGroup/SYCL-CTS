@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -62,7 +62,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check context (cl_context) constructor
       */
       {
-        cl::sycl::context context(m_cl_context);
+        cts_async_handler asyncHandler;
+        cl::sycl::context context(m_cl_context, asyncHandler);
 
         cl_context interopContext = context.get();
         if (interopContext != m_cl_context) {
@@ -76,7 +77,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check queue (cl_command_queue) constructor
       */
       {
-        cl::sycl::queue queue(m_cl_command_queue);
+        cts_async_handler asyncHandler;
+        cl::sycl::queue queue(m_cl_command_queue, nullptr, asyncHandler);
 
         cl_command_queue interopQueue = queue.get();
         if (interopQueue != m_cl_command_queue) {
@@ -91,12 +93,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       */
       {
         cl_program clProgram = nullptr;
-        if (!create_program(kernelSource, clProgram, log)) {
-          FAIL(log, "create_program failed");
+        if (!create_built_program(kernelSource, clProgram, log)) {
+          FAIL(log, "create_built_program failed");
         }
 
-        cts_selector ctsSelector;
-        cl::sycl::context context(ctsSelector);
+        auto context = util::get_cts_object::context();
+
         cl::sycl::program program(context, clProgram);
 
         cl_program interopProgram = program.get();
@@ -112,8 +114,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       */
       {
         cl_program clProgram = nullptr;
-        if (!create_program(kernelSource, clProgram, log)) {
-          FAIL(log, "create_program failed");
+        if (!create_built_program(kernelSource, clProgram, log)) {
+          FAIL(log, "create_built_program failed");
         }
 
         cl_kernel clKernel = nullptr;
@@ -139,7 +141,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         int data[size] = {0};
         cl_int error = CL_SUCCESS;
 
-        cl::sycl::queue queue;
+        auto queue = util::get_cts_object::queue();
 
         cl_mem clBuffer = clCreateBuffer(
             queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
@@ -178,7 +180,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         int data[size] = {0};
         cl_int error = CL_SUCCESS;
 
-        cl::sycl::queue queue;
+        auto queue = util::get_cts_object::queue();
         cl::sycl::event event;
 
         cl_mem clBuffer = clCreateBuffer(
@@ -211,7 +213,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         float data[size] = {0.0f};
         cl_int error = CL_SUCCESS;
 
-        cl::sycl::queue queue;
+        auto queue = util::get_cts_object::queue();
 
         cl_image_format clImageFormat;
         clImageFormat.image_channel_data_type = CL_FLOAT;
@@ -256,7 +258,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         float data[size] = {0.0f};
         cl_int error = CL_SUCCESS;
 
-        cl::sycl::queue queue;
+        auto queue = util::get_cts_object::queue();
         cl::sycl::event event;
 
         cl_image_format clImageFormat;
@@ -298,13 +300,15 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check sampler (cl_sampler, handler) constructor
       */
       {
-        cl::sycl::queue queue;
+        auto queue = util::get_cts_object::queue();
+        cl_sampler clSampler;
+        create_sampler(sampler, log);
 
         queue.submit([&](cl::sycl::handler &handler) {
 
-          cl::sycl::sampler sampler(m_cl_sampler, handler);
-          cl_sampler interopSampler =
-              sampler.get() if (interopSampler != m_cl_sampler) {
+          cl::sycl::sampler sampler(clSampler, handler);
+          cl_sampler interopSampler = sampler.get();
+          if (interopSampler != clSampler) {
             FAIL(log, "sampler was not constructed correctly");
           }
           if (!CHECK_CL_SUCCESS(log, clReleaseSampler(interopSampler))) {
@@ -313,9 +317,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         });
       }
+
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

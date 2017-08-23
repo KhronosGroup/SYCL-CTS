@@ -1,11 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
-
+*******************************************************************************/
 #include "../common/common.h"
 
 #define TEST_NAME item_3d
@@ -30,27 +29,27 @@ class kernel_item_3d {
   kernel_item_3d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
   void operator()(item<3> item) {
-    id<3> gid = item.get_global();
+    id<3> gid = item.get();
 
-    size_t dim_a = item.get(0);
-    size_t dim_b = item[0];
+    size_t dim_a = item.get(0) + item.get(1) + item.get(2);
+    size_t dim_b = item[0] + item[1] + item[2];
 
-    range<3> globalRange = item.get_global_range();
-    range<3> localRange = item.get_local_range();
+    range<3> localRange = item.get_range();
 
-    size_t group = item.get_group(0);
-
-    id<1> offset = item.get_offset();
+    id<3> offset = item.get_offset();
 
     /* get work item range */
-    const size_t nWidth = globalRange.get()[0];
-    const size_t nHeight = globalRange.get()[1];
-    const size_t nDepth = globalRange.get()[2];
+    const size_t nWidth = localRange.get(0);
+    const size_t nHeight = localRange.get(1);
+    const size_t nDepth = localRange.get(2);
 
-    /* find the array id for this work item */
-    size_t index = gid.get()[0] +                     /* x */
-                   (gid.get()[1] * nWidth) +          /* y */
-                   (gid.get()[2] * nWidth * nHeight); /* z */
+    /* find the row major array id for this work item */
+    size_t index = gid.get(2) +                     /* z */
+                   (gid.get(1) * nWidth) +          /* y */
+                   (gid.get(0) * nWidth * nHeight); /* x */
+
+    /* get the global linear id */
+    size_t linear_index = item.get_linear_id();
 
     /* compare against the precomputed index */
     m_o[item] = (m_x[item] == static_cast<int>(index));
@@ -90,8 +89,8 @@ bool test_item_3d(util::logger &log) {
   std::unique_ptr<int> dataOut(new int[nSize]);
 
   /* clear host buffers */
-  memset(dataIn.get(), 0, nSize * sizeof(int));
-  memset(dataOut.get(), 0, nSize * sizeof(int));
+  ::memset(dataIn.get(), 0, nSize * sizeof(int));
+  ::memset(dataOut.get(), 0, nSize * sizeof(int));
 
   buffer_fill(dataIn.get(), nWidth, nHeight, nDepth);
 
@@ -101,8 +100,7 @@ bool test_item_3d(util::logger &log) {
     buffer<int, 3> bufIn(dataIn.get(), dataRange);
     buffer<int, 3> bufOut(dataOut.get(), dataRange);
 
-    cts_selector selector;
-    queue cmdQueue(selector);
+    auto cmdQueue = util::get_cts_object::queue();
 
     cmdQueue.submit([&](handler &cgh) {
       auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -111,15 +109,16 @@ bool test_item_3d(util::logger &log) {
 
       kernel_item_3d kern = kernel_item_3d(accIn, accOut);
 
-      auto r = nd_range<3>(dataRange, range<3>(1, 1, 1));
+      auto r = range<3>(dataRange);
       cgh.parallel_for(r, kern);
     });
 
     cmdQueue.wait_and_throw();
-
   } catch (cl::sycl::exception e) {
     log_exception(log, e);
-    FAIL(log, "sycl exception caught");
+    cl::sycl::string_class errorMsg =
+        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    FAIL(log, errorMsg.c_str());
     return false;
   }
 

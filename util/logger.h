@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -44,19 +44,19 @@ class logger {
 
   /** notify a test has failed
    */
-  void fail(const STRING &reason, const int line);
+  void fail(const std::string &reason, const int line);
 
   /** notify a test has been skipped
    */
-  void skip(const STRING &reason = STRING());
+  void skip(const std::string &reason = std::string());
 
   /** report fatal error and abort program
    */
-  void fatal(const STRING &reason = STRING());
+  void fatal(const std::string &reason = std::string());
 
   /** output verbose information
    */
-  void note(const STRING &str);
+  void note(const std::string &str);
 
   /** output verbose information
    */

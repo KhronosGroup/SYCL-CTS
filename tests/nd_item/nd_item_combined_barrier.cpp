@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -35,7 +35,7 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
   range<1> localRange(localSize);
   nd_range<1> NDRange(globalRange, localRange);
 
-  /* run kernel to swap adjancent work item's global & local ids*/
+  /* run kernel to swap adjacent work item's global & local ids*/
   {
     buffer<int, 1> globalBuf(globalID.get(), globalRange);
     buffer<int, 1> scratchBuf(globScratch.get(), globalRange);
@@ -100,16 +100,16 @@ class TEST_NAME : public util::test_base {
   */
   virtual void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      queue cmdQueue(selector);
+      auto cmdQueue = util::get_cts_object::queue();
 
       test_barrier(log, cmdQueue);
 
       cmdQueue.wait_and_throw();
-
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

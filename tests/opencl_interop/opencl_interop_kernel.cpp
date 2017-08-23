@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -16,27 +16,28 @@ using namespace sycl_cts;
 /** check inter-op types
 */
 template <typename T>
-using globalPtrType = cl::sycl::global_ptr<T>::pointer_t;
+using globalPtrType = typename cl::sycl::global_ptr<T>::pointer;
 template <typename T>
-using constantPtrType = cl::sycl::constant_ptr<T>::pointer_t;
+using constantPtrType = typename cl::sycl::constant_ptr<T>::pointer;
 template <typename T>
-using localPtrType = cl::sycl::local_ptr<T>::pointer_t;
+using localPtrType = typename cl::sycl::local_ptr<T>::pointer;
 template <typename T>
-using privatePtrType = cl::sycl::private_ptr<T>::pointer_t;
+using privatePtrType = typename cl::sycl::private_ptr<T>::pointer;
 template <typename T>
-using globalMultiPtrType =
-    cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>::pointer_t;
+using globalMultiPtrType = typename cl::sycl::multi_ptr<
+    T, cl::sycl::address_space::global_space>::pointer;
 template <typename T>
-using constantMultiPtrType =
-    cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>::pointer_t;
+using constantMultiPtrType = typename cl::sycl::multi_ptr<
+    T, cl::sycl::address_space::constant_space>::pointer;
 template <typename T>
 using localMultiPtrType =
-    cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>::pointer_t;
+    typename cl::sycl::multi_ptr<T,
+                                 cl::sycl::address_space::local_space>::pointer;
 template <typename T>
-using privateMultiPtrType =
-    cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>::pointer_t;
+using privateMultiPtrType = typename cl::sycl::multi_ptr<
+    T, cl::sycl::address_space::private_space>::pointer;
 template <typename T, int dims>
-using vectorType = cl::sycl::vector<T, dims>::vector_t;
+using vectorType = typename cl::sycl::vec<T, dims>::vector_t;
 
 /** tests the kernel execution for OpenCL inter-op
  */
@@ -52,8 +53,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
   */
   virtual void run(util::logger &log) override {
     try {
-      static const util::STRING kernelSource =
-          R"(__kernel void test_kernel(__global int *argOne, read_only image2d_t arg2, sampler_t arg3, float arg4)
+      static const cl::sycl::string_class kernelSource =
+          R"(
+            __kernel void test_kernel(__global int *argOne,
+                                      read_only image2d_t arg2,
+                                      sampler_t arg3, float arg4)
             {
                 ;
             })";
@@ -64,19 +68,18 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       const size_t imageSize = 1024;
       float imageData[imageSize] = {0.0f};
 
-      cl::sycl::queue queue;
+      auto queue = util::get_cts_object::queue();
 
       cl::sycl::buffer<int, bufferSize> buffer(bufferData,
                                                cl::sycl::range<1>(bufferSize));
 
       cl::sycl::image<imageSize> image(
-          imageData, cl::sycl::image_format::channel_order::RGBA,
-          cl::sycl::image_format::channel_type::FLOAT,
-          cl::sycl::range<2>(32, 32));
+          imageData, cl::sycl::image_channel_order::rgba,
+          cl::sycl::image_channel_type::fp32, cl::sycl::range<2>(32, 32));
 
       cl_program clProgram = nullptr;
-      if (!create_program(kernelSource, clProgram, log)) {
-        FAIL(log, "create_program failed");
+      if (!create_built_program(kernelSource, clProgram, log)) {
+        FAIL(log, "create_built_program failed");
       }
 
       cl_kernel clKernel = nullptr;
@@ -94,9 +97,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             image.get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
                 handler);
 
-        cl::sycl::sampler sampler(false,
-                                  cl::sycl::sampler_addressing_mode::none,
-                                  cl::sycl::sampler_filter_mode::nearest);
+        cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
+                                  cl::sycl::filtering_mode::nearest);
 
         /** check the set_arg() methods
         */
@@ -109,7 +111,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       });
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

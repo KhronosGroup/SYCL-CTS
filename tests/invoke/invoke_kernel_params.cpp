@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -57,7 +57,9 @@ struct test_kernel {
     pass &= (var_b.b == ref_b_b);
     pass &= (var_b.c == ref_b_c);
 
-    for (int i = 0; i < 8; i++) pass &= (inner.int_array[i] == i);
+    for (int i = 0; i < 8; i++) {
+      pass &= (inner.int_array[i] == i);
+    }
 
     out[0] = pass;
   }
@@ -73,25 +75,24 @@ class TEST_NAME : public util::test_base {
 
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger& log) override {
+  virtual void run(util::logger &log) override {
     using namespace cl::sycl;
 
     {
       uint32_t result = 0;
 
       try {
-        default_selector my_selector;
-        queue my_queue(my_selector);
+        auto my_queue = util::get_cts_object::queue();
 
         buffer<uint32_t> buf_result(&result, range<1>(1));
 
-        my_queue.submit([&](cl::sycl::handler& cgh) {
+        my_queue.submit([&](cl::sycl::handler &cgh) {
           // access the output
           auto acc_pass =
               buf_result.template get_access<cl::sycl::access::mode::write>(
@@ -101,7 +102,9 @@ class TEST_NAME : public util::test_base {
           const basic_type_t var_b = {ref_b_a, ref_b_b, ref_b_c};
 
           array_type_t my_array;
-          for (uint32_t i = 0; i < 8; i++) my_array.int_array[i] = i;
+          for (uint32_t i = 0; i < 8; i++) {
+            my_array.int_array[i] = i;
+          }
 
           cgh.single_task<class test_kernel_name>([=]() {
             uint32_t pass = 1;
@@ -110,8 +113,9 @@ class TEST_NAME : public util::test_base {
             pass &= (var_b.b == ref_b_b);
             pass &= (var_b.c == ref_b_c);
 
-            for (int32_t i = 0; i < 8; i++)
+            for (int32_t i = 0; i < 8; i++) {
               pass &= (my_array.int_array[i] == i);
+            }
 
             acc_pass[0] = pass;
           });
@@ -120,22 +124,25 @@ class TEST_NAME : public util::test_base {
         my_queue.wait_and_throw();
       } catch (cl::sycl::exception e) {
         log_exception(log, e);
-        FAIL(log, "sycl exception caught");
+        cl::sycl::string_class errorMsg =
+            "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+        FAIL(log, errorMsg.c_str());
       }
 
-      if (result != 1) FAIL(log, "incorrect values passed to lambda kernel");
+      if (!CHECK_VALUE_SCALAR(log, result, 1)) {
+        FAIL(log, "incorrect values passed to lambda kernel");
+      }
     }
 
     {
       uint32_t result = 0;
 
       try {
-        default_selector my_selector;
-        queue my_queue(my_selector);
+        auto my_queue = util::get_cts_object::queue();
 
         buffer<uint32_t> buf_result(&result, range<1>(1));
 
-        my_queue.submit([&](cl::sycl::handler& cgh) {
+        my_queue.submit([&](cl::sycl::handler &cgh) {
           // construct a basic type
           basic_type_t my_type = {ref_b_a, ref_b_b, ref_b_c};
 
@@ -149,19 +156,25 @@ class TEST_NAME : public util::test_base {
           // instantiate the kernel
           test_kernel my_kernel(ref_a, my_type, acc_pass);
 
-          for (int i = 0; i < 8; i++) my_kernel.set(i, i);
+          for (int i = 0; i < 8; i++) {
+            my_kernel.set(i, i);
+          }
 
           // execute the kernel
           cgh.single_task(my_kernel);
         });
 
         my_queue.wait_and_throw();
-      } catch (cl::sycl::exception e) {
+      } catch (cl::sycl::exception &e) {
         log_exception(log, e);
-        FAIL(log, "sycl exception caught");
+        cl::sycl::string_class errorMsg =
+            "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+        FAIL(log, errorMsg.c_str());
       }
 
-      if (result != 1) FAIL(log, "incorrect values passed to functor kernel");
+      if (!CHECK_VALUE_SCALAR(log, result, 1)) {
+        FAIL(log, "incorrect values passed to functor kernel");
+      }
     }
   }
 };

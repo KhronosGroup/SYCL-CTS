@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -30,26 +30,23 @@ class kernel_item_1d {
   kernel_item_1d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
   void operator()(item<1> item) {
-    id<1> gid = item.get_global();
+    id<1> gid = item.get();
 
     size_t dim_a = item.get(0);
     size_t dim_b = item[0];
 
-    range<1> globalRange = item.get_global_range();
-    range<1> localRange = item.get_local_range();
-
-    size_t group = item.get_group(0);
+    range<1> localRange = item.get_range();
 
     id<1> offset = item.get_offset();
 
     /* get work item range */
-    const size_t nWidth = globalRange.get()[0];
+    const size_t nWidth = localRange.get(0);
 
     /* find the array id for this work item */
-    size_t index = gid.get()[0]; /* x */
+    size_t index = gid.get(0); /* x */
 
-    /* get the global linear id */
-    const size_t glid = item.get_global_linear();
+    /* get the linear id */
+    const size_t glid = item.get_linear_id();
 
     /* compare against the precomputed index */
     m_o[int(glid)] = (m_x[int(glid)] == static_cast<int>(index));
@@ -74,8 +71,8 @@ bool test_item_1d(util::logger &log) {
   std::unique_ptr<int> dataOut(new int[nWidth]);
 
   /* clear host buffers */
-  memset(dataIn.get(), 0, nWidth * sizeof(int));
-  memset(dataOut.get(), 0, nWidth * sizeof(int));
+  ::memset(dataIn.get(), 0, nWidth * sizeof(int));
+  ::memset(dataOut.get(), 0, nWidth * sizeof(int));
 
   /*  */
   buffer_fill(dataIn.get(), nWidth);
@@ -86,8 +83,7 @@ bool test_item_1d(util::logger &log) {
     buffer<int, 1> bufIn(dataIn.get(), dataRange);
     buffer<int, 1> bufOut(dataOut.get(), dataRange);
 
-    cts_selector selector;
-    queue cmdQueue(selector);
+    auto cmdQueue = util::get_cts_object::queue();
 
     cmdQueue.submit([&](handler &cgh) {
       auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -95,14 +91,15 @@ bool test_item_1d(util::logger &log) {
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
       kernel_item_1d kern = kernel_item_1d(accIn, accOut);
-      cgh.parallel_for(nd_range<1>(dataRange, range<1>(nWidth / 8)), kern);
+      cgh.parallel_for(range<1>(dataRange), kern);
     });
 
     cmdQueue.wait_and_throw();
-
   } catch (cl::sycl::exception e) {
     log_exception(log, e);
-    FAIL(log, "sycl exception caught");
+    cl::sycl::string_class errorMsg =
+        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    FAIL(log, errorMsg.c_str());
     return false;
   }
 

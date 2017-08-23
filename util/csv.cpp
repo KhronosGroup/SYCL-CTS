@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "csv.h"
 
@@ -21,9 +21,9 @@ csv::~csv() { release(); }
 
 /** load a CSV file from disk
  */
-bool csv::load_file(const STRING &path) {
+bool csv::load_file(const std::string &path) {
   // load the raw file
-  IFSTREAM stream(path, std::ios::in | std::ios::binary);
+  std::ifstream stream(path, std::ios::in | std::ios::binary);
   if (!stream.is_open()) {
     m_error = "unable to open file";
     return false;
@@ -54,7 +54,7 @@ bool csv::load_file(const STRING &path) {
         // null terminate the buffer string
         buffer[index] = '\0';
         // add string to items list
-        m_items.push_back(STRING(buffer));
+        m_items.push_back(std::string(buffer));
         index = 0;
 
         // index of next item marks start of new row
@@ -67,7 +67,7 @@ bool csv::load_file(const STRING &path) {
         // null terminate the buffer string
         buffer[index] = '\0';
         // add string to items list
-        m_items.push_back(STRING(buffer));
+        m_items.push_back(std::string(buffer));
         index = 0;
       } break;
 
@@ -88,7 +88,7 @@ bool csv::load_file(const STRING &path) {
     // null terminate the buffer string
     buffer[index] = '\0';
     // add string to items list
-    m_items.push_back(STRING(buffer));
+    m_items.push_back(std::string(buffer));
   }
 
   return true;
@@ -103,8 +103,8 @@ void csv::release() {
 
 /**
  */
-bool csv::get_item(int32_t row, int32_t column, STRING &out) {
-  out = STRING("");
+bool csv::get_item(int32_t row, int32_t column, std::string &out) {
+  out = std::string("");
   const int32_t nRowIndices = int32_t(m_rowIndex.size());
   const int32_t nItems = int32_t(m_items.size());
 
@@ -141,7 +141,7 @@ int32_t csv::size() { return int32_t(m_rowIndex.size()); }
 
 /** return the last error message set by a csv object
  */
-bool csv::get_last_error(STRING &out) {
+bool csv::get_last_error(std::string &out) {
   out = m_error;
   return !m_error.empty();
 }
