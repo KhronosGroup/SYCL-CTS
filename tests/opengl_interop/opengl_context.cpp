@@ -94,9 +94,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         function_class<void(cl::sycl::exception_list)> fn =
             [&](exception_list l) {
-          if (l.size() > 1)
-            FAIL(log, "Exception thrown during execution of kernel");
-        };
+              if (l.size() > 1)
+                FAIL(log, "Exception thrown during execution of kernel");
+            };
 
         // device_selector, cl_context_properties & async_handler
         {

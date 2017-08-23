@@ -40,9 +40,11 @@ template <typename T_in, typename T_out>
 class KERNEL_NAME {
  protected:
   typedef accessor<T_in, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_readAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_readAccess;
   typedef accessor<T_out, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_writeAccess m_o; /* output     */
   t_readAccess m_x;  /* argument X */

@@ -39,17 +39,19 @@ class TEST_NAME : public util::test_base {
         auto my_range = nd_range<2>(range<2>(6, 2), range<2>(2, 2));
 
         accessor<int, 1, cl::sycl::access::mode::read_write,
-                 cl::sycl::access::target::global_buffer> ptr(buf, cgh);
+                 cl::sycl::access::target::global_buffer>
+            ptr(buf, cgh);
 
         cgh.parallel_for_work_group<class kernel0>(
             my_range, ([=](group<2> group_id) {
-                        parallel_for_work_item(
-                            group_id, [=](item<2> item_id) { ptr[0] *= 2; });
-                      }));
+              parallel_for_work_item(group_id,
+                                     [=](item<2> item_id) { ptr[0] *= 2; });
+            }));
       });
 
       accessor<int, 1, cl::sycl::access::mode::read,
-               cl::sycl::access::target::host_buffer> host_ptr(buf);
+               cl::sycl::access::target::host_buffer>
+          host_ptr(buf);
       if (host_ptr[0] != expected) {
         FAIL(log, "Value not as expected.");
       }

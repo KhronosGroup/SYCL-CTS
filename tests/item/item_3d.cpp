@@ -17,9 +17,11 @@ using namespace cl::sycl;
 class kernel_item_3d {
  protected:
   typedef accessor<int, 3, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_readAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_readAccess;
   typedef accessor<int, 3, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_readAccess m_x;
   t_writeAccess m_o;

@@ -83,7 +83,8 @@ template <typename T>
 class KERNEL_NAME {
  protected:
   typedef accessor<T, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_writeAccess m_o; /* output     */
 
@@ -96,15 +97,14 @@ class KERNEL_NAME {
     char3 v3(V3S0, V3S1, V3S2);
     char4 v4(V4S0, V4S1, V4S2, V4S3);
     char8 v8(V8S0, V8S1, V8S2, V8S3, V8S4, V8S5, V8S6, V8S7);
-    char16 v16(V16S0, V16S1, V16S2, V16S3, V16S4, V16S5, V16S6, V16S7,
-                        V16S8, V16S9, V16S10, V16S11, V16S12, V16S13, V16S14,
-                        V16S15);
+    char16 v16(V16S0, V16S1, V16S2, V16S3, V16S4, V16S5, V16S6, V16S7, V16S8,
+               V16S9, V16S10, V16S11, V16S12, V16S13, V16S14, V16S15);
 
     /* MACROS GENERATED FROM PYTHON SCRIPT*/
-    
-        CONSTRUCTOR_TEST( 0, v2 )
-        CONSTRUCTOR_TEST( 1, v1, v1 )
-        
+
+    CONSTRUCTOR_TEST(0, v2)
+    CONSTRUCTOR_TEST(1, v1, v1)
+
     /* MACROS GENERATED FROM PYTHON SCRIPT*/
   }
 };
@@ -160,10 +160,10 @@ class TEST_NAME : public util::test_base {
       });
 
       /* MACROS GENERATED FROM PYTHON SCRIPT*/
-      
-            VERIFY_EQUALS( 0, V2 )
-            VERIFY_EQUALS( 1, V1, V1 )
-            
+
+      VERIFY_EQUALS(0, V2)
+      VERIFY_EQUALS(1, V1, V1)
+
       /* MACROS GENERATED FROM PYTHON SCRIPT*/
 
       l_queue.wait_and_throw();

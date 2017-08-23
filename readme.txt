@@ -140,3 +140,15 @@
            + platform_api
          - skipped: 2
          = 81% pass rate
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Formatting the source code
+#
+
+  Running the clangformat.py script will format the source code of the CTS
+  included in tests and util directories for any .cpp , .h and .template files.
+
+  The clang-format requires at least clang-format 3.9
+  The name of the binary for clang-format can be customized inside the 
+  aforementioned script.
+

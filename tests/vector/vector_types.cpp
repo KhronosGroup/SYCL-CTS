@@ -33,7 +33,8 @@ class same_type<X, X> {
   }
 
 typedef accessor<int32_t, 1, cl::sycl::access::mode::read_write,
-                 cl::sycl::access::target::global_buffer> pass_t;
+                 cl::sycl::access::target::global_buffer>
+    pass_t;
 
 template <typename TYPE, typename VEC>
 class type_check_kernel_v2 {

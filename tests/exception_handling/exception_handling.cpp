@@ -31,8 +31,8 @@ class TEST_NAME : public util::test_base {
 
     cl::sycl::function_class<void(cl::sycl::exception_list)> fn =
         [&](cl::sycl::exception_list l) {
-      for (auto e : l) excps.push_back(e);
-    };
+          for (auto e : l) excps.push_back(e);
+        };
 
     try {
       cl::sycl::queue q(fn);

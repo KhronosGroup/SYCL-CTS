@@ -51,20 +51,11 @@ struct channels {
   unsigned int size;
 };
 
-channels g_channels[] = {{CL_R, 1},
-                         {CL_A, 1},
-                         {CL_RG, 2},
-                         {CL_RA, 2},
-                         {CL_RGB, 3},
-                         {CL_RGBA, 4},
-                         {CL_BGRA, 4},
-                         {CL_ARGB, 4},
-                         {CL_INTENSITY, 1},
-                         {CL_LUMINANCE, 1},
-                         {CL_Rx, 4},
-                         {CL_RGx, 4},
-                         {CL_RGBx, 4},
-                         {0, 0}};
+channels g_channels[] = {{CL_R, 1},         {CL_A, 1},    {CL_RG, 2},
+                         {CL_RA, 2},        {CL_RGB, 3},  {CL_RGBA, 4},
+                         {CL_BGRA, 4},      {CL_ARGB, 4}, {CL_INTENSITY, 1},
+                         {CL_LUMINANCE, 1}, {CL_Rx, 4},   {CL_RGx, 4},
+                         {CL_RGBx, 4},      {0, 0}};
 
 unsigned int get_channel_count(unsigned int idx) {
   unsigned int itter;

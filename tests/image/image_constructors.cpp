@@ -18,11 +18,22 @@ cl_channel_order g_order[] = {
     CL_R,    CL_A,         CL_RG,        CL_RA, CL_RGB, CL_RGBA, CL_BGRA,
     CL_ARGB, CL_INTENSITY, CL_LUMINANCE, CL_Rx, CL_RGx, CL_RGBx, 0};
 
-cl_channel_type g_type[] = {
-    CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-    CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010, CL_SIGNED_INT8,
-    CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8, CL_UNSIGNED_INT16,
-    CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0};
+cl_channel_type g_type[] = {CL_SNORM_INT8,
+                            CL_SNORM_INT16,
+                            CL_UNORM_INT8,
+                            CL_UNORM_INT16,
+                            CL_UNORM_SHORT_565,
+                            CL_UNORM_SHORT_555,
+                            CL_UNORM_INT_101010,
+                            CL_SIGNED_INT8,
+                            CL_SIGNED_INT16,
+                            CL_SIGNED_INT32,
+                            CL_UNSIGNED_INT8,
+                            CL_UNSIGNED_INT16,
+                            CL_UNSIGNED_INT32,
+                            CL_HALF_FLOAT,
+                            CL_FLOAT,
+                            0};
 
 template <int dims, int size>
 class image_ctors {

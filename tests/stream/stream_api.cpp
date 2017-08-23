@@ -104,7 +104,7 @@ class TEST_NAME : public util::test_base {
       });
 
       testQueue.submit([&](cl::sycl::handler& cgh) {
-        
+
         cgh.parallel_for<class TEST_NAME>(nd_range<3>(range<3>(16, 8, 4), range<3>(8, 4, 2), [=](nd_item ndItem) {
           /** check stream operator for nd_item
           */
@@ -125,10 +125,11 @@ class TEST_NAME : public util::test_base {
 
         cgh.parallel_for_work_group<class TEST_NAME>(range<3>(16, 8, 4),
                                                      [=](group gp) {
-          /** check stream operator for group
-          */
-          os << gp;
-        });
+                                                       /** check stream operator
+                                                        * for group
+                                                       */
+                                                       os << gp;
+                                                     });
       });
     } catch (cl::sycl::exception e) {
       log_exception(log, e);

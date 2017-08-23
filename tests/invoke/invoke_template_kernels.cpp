@@ -17,9 +17,11 @@ using namespace cl::sycl;
 template <typename T>
 class templated_functor {
   typedef accessor<T, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> read_t;
+                   cl::sycl::access::target::global_buffer>
+      read_t;
   typedef accessor<T, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> write_t;
+                   cl::sycl::access::target::global_buffer>
+      write_t;
 
   read_t m_in;
   write_t m_out;

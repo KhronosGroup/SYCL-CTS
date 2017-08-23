@@ -1022,13 +1022,15 @@ class buffer_accessor_subscripts<T, dims, size,
     /** check buffer accessor subscript operators for read
     */
     buffer_accessor_reads<T, dims, size, cl::sycl::access::mode::read_write,
-                          target> readTests;
+                          target>
+        readTests;
     readTests(log, queue, range);
 
     /** check buffer accessor subscript operators for write
     */
     buffer_accessor_writes<T, dims, size, cl::sycl::access::mode::read_write,
-                           target> writeTests;
+                           target>
+        writeTests;
     writeTests(log, queue, range);
   }
 };
@@ -1042,7 +1044,8 @@ class buffer_accessor_subscripts<
     /** check buffer accessor subscript operators for write
     */
     buffer_accessor_writes<T, dims, size, cl::sycl::access::mode::discard_write,
-                           target> writeTests;
+                           target>
+        writeTests;
     writeTests(log, queue, range);
   }
 };
@@ -1056,15 +1059,15 @@ class buffer_accessor_subscripts<
     /** check buffer accessor subscript operators for read
     */
     buffer_accessor_reads<T, dims, size,
-                          cl::sycl::access::mode::discard_read_write,
-                          target> readTests;
+                          cl::sycl::access::mode::discard_read_write, target>
+        readTests;
     readTests(log, queue, range);
 
     /** check buffer accessor subscript operators for write
     */
     buffer_accessor_writes<T, dims, size,
-                           cl::sycl::access::mode::discard_read_write,
-                           target> writeTests;
+                           cl::sycl::access::mode::discard_read_write, target>
+        writeTests;
     writeTests(log, queue, range);
   }
 };
@@ -1105,7 +1108,8 @@ class image_accessor_apis<T, dims, size, cl::sycl::access::mode::read, target> {
     /** check buffer accessor other apis
     */
     image_accessor_other_apis<T, dims, size, cl::sycl::access::mode::read,
-                              target> otherAPITests;
+                              target>
+        otherAPITests;
     otherAPITests(log, queue, range);
   }
 };
@@ -1125,7 +1129,8 @@ class image_accessor_apis<T, dims, size, cl::sycl::access::mode::write,
     /** check buffer accessor other apis
     */
     image_accessor_other_apis<T, dims, size, cl::sycl::access::mode::write,
-                              target> otherAPITests;
+                              target>
+        otherAPITests;
     otherAPITests(log, queue, range);
   }
 };
@@ -1150,20 +1155,22 @@ class buffer_accessor_modes {
     /** check buffer accessor api for read_write
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::read_write,
-                         target> readWriteTests;
+                         target>
+        readWriteTests;
     readWriteTests(log, queue, range);
 
     /** check buffer accessor api for disccard_write
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::discard_write,
-                         target> discardWriteTests;
+                         target>
+        discardWriteTests;
     discardWriteTests(log, queue, range);
 
     /** check buffer accessor api for discard_read_write
     */
     buffer_accessor_apis<T, dims, size,
-                         cl::sycl::access::mode::discard_read_write,
-                         target> discardReadWriteTests;
+                         cl::sycl::access::mode::discard_read_write, target>
+        discardReadWriteTests;
     discardReadWriteTests(log, queue, range);
   }
 };
@@ -1177,19 +1184,22 @@ class buffer_accessor_modes<T, dims, size,
     /** check buffer accessor api for read
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::read,
-                         cl::sycl::access::target::host_buffer> readTests;
+                         cl::sycl::access::target::host_buffer>
+        readTests;
     readTests(log, queue, range);
 
     /** check buffer accessor api for write
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::write,
-                         cl::sycl::access::target::host_buffer> writeTests;
+                         cl::sycl::access::target::host_buffer>
+        writeTests;
     writeTests(log, queue, range);
 
     /** check buffer accessor api for read_write
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::host_buffer> readWriteTests;
+                         cl::sycl::access::target::host_buffer>
+        readWriteTests;
     readWriteTests(log, queue, range);
   }
 };
@@ -1203,7 +1213,8 @@ class buffer_accessor_modes<T, dims, size,
     /** check buffer accessor api for read
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::read,
-                         cl::sycl::access::target::constant_buffer> readTests;
+                         cl::sycl::access::target::constant_buffer>
+        readTests;
     readTests(log, queue, range);
   }
 };
@@ -1216,7 +1227,8 @@ class buffer_accessor_modes<T, dims, size, cl::sycl::access::target::local> {
     /** check buffer accessor api for read_write
     */
     buffer_accessor_apis<T, dims, size, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local> readTests;
+                         cl::sycl::access::target::local>
+        readTests;
     readTests(log, queue, range);
   }
 };
@@ -1254,8 +1266,9 @@ class buffer_accessor_targets {
 
     /** check buffer accessor api for constant_buffer
     */
-    buffer_accessor_modes<
-        T, dims, size, cl::sycl::access::target::constant_buffer> constantTests;
+    buffer_accessor_modes<T, dims, size,
+                          cl::sycl::access::target::constant_buffer>
+        constantTests;
     constantTests(log, queue, range);
 
     /** check buffer accessor api for host_buffer

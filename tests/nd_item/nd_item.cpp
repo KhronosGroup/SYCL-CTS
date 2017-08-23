@@ -18,9 +18,11 @@ template <int dimensions>
 class kernel_nd_item {
  protected:
   typedef accessor<int, dimensions, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_readAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_readAccess;
   typedef accessor<int, dimensions, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_readAccess m_globalID;
   t_readAccess m_localID;

@@ -41,12 +41,14 @@ T reduce(T input[input_size], device_selector* selector) {
 
   my_queue.submit([&](handler& cgh) {
     accessor<T, 1, cl::sycl::access::mode::read,
-             cl::sycl::access::target::global_buffer> input_ptr(input_buf, cgh);
+             cl::sycl::access::target::global_buffer>
+        input_ptr(input_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::read,
              cl::sycl::access::target::global_buffer>
         group_sums_ptr(group_sums_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::write,
-             cl::sycl::access::target::global_buffer> total_ptr(total_buf, cgh);
+             cl::sycl::access::target::global_buffer>
+        total_ptr(total_buf, cgh);
         cgh.parallel_for_work_group<class sth<T>>(
                     nd_range<3>( range<3>( g_items_1d, g_items_1d, g_items_1d ),
                                  range<3>( l_items_1d, l_items_1d, l_items_1d )),
@@ -82,7 +84,8 @@ T reduce(T input[input_size], device_selector* selector) {
              cl::sycl::access::target::global_buffer>
         group_sums_ptr(group_sums_buf, cgh);
     accessor<T, 1, cl::sycl::access::mode::write,
-             cl::sycl::access::target::global_buffer> total_ptr(total_buf, cgh);
+             cl::sycl::access::target::global_buffer>
+        total_ptr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T>>([=]()
         {

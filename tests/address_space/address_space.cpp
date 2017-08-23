@@ -225,7 +225,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
         cgh.single_task<TEST_NAME>([=]() {
           bool b = acc[0];
-#if defined(__CL_SYCL_DEVICE__) || __SYCL_DEVICE_ONLY__ || __SYCL_SINGLE_SOURCE__
+#if defined(__CL_SYCL_DEVICE__) || __SYCL_DEVICE_ONLY__ || \
+    __SYCL_SINGLE_SOURCE__
           test(b);
 #endif
           acc[0] = b;

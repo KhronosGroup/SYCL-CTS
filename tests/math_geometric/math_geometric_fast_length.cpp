@@ -107,7 +107,8 @@ bool verify_func(double &input, type_t &param_x) {
 
 /**
  */
-template<typename type_t> struct test_class {
+template <typename type_t>
+struct test_class {
 #if WIMPY_MODE
   /* wimpy mode constant */
   static const uint32_t nScale = 0x100;
@@ -223,11 +224,11 @@ template<typename type_t> struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        double &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
+                                     double &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
 
-        out = cl::sycl::fast_length(pr1);
-      });
+                                     out = cl::sycl::fast_length(pr1);
+                                   });
     });
   }
 
@@ -312,70 +313,66 @@ class TEST_NAME : public util::test_base {
       /* create command queue */
       cl::sycl::queue sycl_queue(l_selector);
 
-        test_class<cl::sycl::float2> testf2;
-        if (!testf2.setup(log)) return;
-        testf2.run(log);
-        testf2.cleanup();
+      test_class<cl::sycl::float2> testf2;
+      if (!testf2.setup(log)) return;
+      testf2.run(log);
+      testf2.cleanup();
 
-        test_class<cl::sycl::float3> testf3;
-        if (!testf3.setup(log)) return;
-        testf3.run(log);
-        testf3.cleanup();
+      test_class<cl::sycl::float3> testf3;
+      if (!testf3.setup(log)) return;
+      testf3.run(log);
+      testf3.cleanup();
 
-
-        test_class<cl::sycl::float4> testf4;
-        if (!testf4.setup(log)) return;
-        testf4.run(log);
-        testf4.cleanup();
-
+      test_class<cl::sycl::float4> testf4;
+      if (!testf4.setup(log)) return;
+      testf4.run(log);
+      testf4.cleanup();
 
 #ifdef SYCL_CTS_TEST_DOUBLE
 
-        test_class<cl::sycl::double2> testd2;
-        if (!testd2.setup(log)) return;
-        testd2.run(log);
-        testd2.cleanup();
+      test_class<cl::sycl::double2> testd2;
+      if (!testd2.setup(log)) return;
+      testd2.run(log);
+      testd2.cleanup();
 
-        test_class<cl::sycl::double3> testd3;
-        if (!testd3.setup(log)) return;
-        testd3.run(log);
-        testd3.cleanup();
+      test_class<cl::sycl::double3> testd3;
+      if (!testd3.setup(log)) return;
+      testd3.run(log);
+      testd3.cleanup();
 
-        test_class<cl::sycl::double4> testd4;
-        if (!testd4.setup(log)) return;
-        testd4.run(log);
-        testd4.cleanup();
-
-      }
+      test_class<cl::sycl::double4> testd4;
+      if (!testd4.setup(log)) return;
+      testd4.run(log);
+      testd4.cleanup();
+    }
 
 #endif
 
 #ifdef SYCL_CTS_TEST_HALF
 
-        test_class<cl::sycl::half2> testh2;
-        if (!testh2.setup(log)) return;
-        testh2.run(log);
-        testh2.cleanup();
+    test_class<cl::sycl::half2> testh2;
+    if (!testh2.setup(log)) return;
+    testh2.run(log);
+    testh2.cleanup();
 
-        test_class<cl::sycl::double3> testd3;
-        if (!testd3.setup(log)) return;
-        testd3.run(log);
-        testd3.cleanup();
+    test_class<cl::sycl::double3> testd3;
+    if (!testd3.setup(log)) return;
+    testd3.run(log);
+    testd3.cleanup();
 
-        test_class<cl::sycl::half4> testh4;
-        if (!testh4.setup(log)) return;
-        testh4.run(log);
-        testh4.cleanup();
+    test_class<cl::sycl::half4> testh4;
+    if (!testh4.setup(log)) return;
+    testh4.run(log);
+    testh4.cleanup();
 #endif
 
-
-      sycl_queue.wait_and_throw();
-
-    } catch (cl::sycl::exception e) {
-      log_exception(log, e);
-      FAIL(log, "sycl exception caught");
-    }
+    sycl_queue.wait_and_throw();
   }
+  catch (cl::sycl::exception e) {
+    log_exception(log, e);
+    FAIL(log, "sycl exception caught");
+  }
+}
 };
 
 util::test_proxy<TEST_NAME> proxy;

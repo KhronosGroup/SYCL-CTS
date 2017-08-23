@@ -106,7 +106,6 @@ bool verify_func(double &input, type_t &param_x, type_t &param_y) {
   return true;
 }
 
-
 /**
  */
 template <typename type_t>
@@ -239,12 +238,12 @@ struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        double &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
-        type_t &pr2 = acc_param_2[id];
+                                     double &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
+                                     type_t &pr2 = acc_param_2[id];
 
-        out = cl::sycl::fast_distance(pr1, pr2);
-      });
+                                     out = cl::sycl::fast_distance(pr1, pr2);
+                                   });
     });
   }
 

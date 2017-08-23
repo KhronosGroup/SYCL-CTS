@@ -51,9 +51,11 @@ template <typename T>
 class KERNEL_NAME {
  protected:
   typedef accessor<T, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_readAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_readAccess;
   typedef accessor<T, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_writeAccess m_o; /* output     */
   t_readAccess m_i;  /* input */
@@ -63,22 +65,19 @@ class KERNEL_NAME {
 
   void operator()(item<1> item) {
     /* MACROS GENERATED FROM PYTHON SCRIPT*/
-    
-        RHS_SIMPLE_SWIZZLE( 0, xy )
-        RHS_SIMPLE_SWIZZLE( 1, yx )
-        
-    
-        LHS_SIMPLE_SWIZZLE( 2, xy )
-        LHS_SIMPLE_SWIZZLE( 3, yx )
-        
-    
-        RHS_TEMPLATE_SWIZZLE( 4, X, Y )
-        RHS_TEMPLATE_SWIZZLE( 5, Y, X )
-        
-    
-        LHS_TEMPLATE_SWIZZLE( 6, X, Y )
-        LHS_TEMPLATE_SWIZZLE( 7, Y, X )
-        
+
+    RHS_SIMPLE_SWIZZLE(0, xy)
+    RHS_SIMPLE_SWIZZLE(1, yx)
+
+    LHS_SIMPLE_SWIZZLE(2, xy)
+    LHS_SIMPLE_SWIZZLE(3, yx)
+
+    RHS_TEMPLATE_SWIZZLE(4, X, Y)
+    RHS_TEMPLATE_SWIZZLE(5, Y, X)
+
+    LHS_TEMPLATE_SWIZZLE(6, X, Y)
+    LHS_TEMPLATE_SWIZZLE(7, Y, X)
+
     /* MACROS GENERATED FROM PYTHON SCRIPT*/
   }
 };
@@ -133,22 +132,19 @@ class TEST_NAME : public util::test_base {
       });
 
       /* MACROS GENERATED FROM PYTHON SCRIPT*/
-      
-            SWIZZLE_VERIFY_EQUALS( 0, X, Y )
-            SWIZZLE_VERIFY_EQUALS( 1, Y, X )
-            
-      
-            SWIZZLE_VERIFY_EQUALS( 2, X, Y )
-            SWIZZLE_VERIFY_EQUALS( 3, Y, X )
-            
-      
-            SWIZZLE_VERIFY_EQUALS( 4, X, Y )
-            SWIZZLE_VERIFY_EQUALS( 5, Y, X )
-            
-      
-            SWIZZLE_VERIFY_EQUALS( 6, X, Y )
-            SWIZZLE_VERIFY_EQUALS( 7, Y, X )
-            
+
+      SWIZZLE_VERIFY_EQUALS(0, X, Y)
+      SWIZZLE_VERIFY_EQUALS(1, Y, X)
+
+      SWIZZLE_VERIFY_EQUALS(2, X, Y)
+      SWIZZLE_VERIFY_EQUALS(3, Y, X)
+
+      SWIZZLE_VERIFY_EQUALS(4, X, Y)
+      SWIZZLE_VERIFY_EQUALS(5, Y, X)
+
+      SWIZZLE_VERIFY_EQUALS(6, X, Y)
+      SWIZZLE_VERIFY_EQUALS(7, Y, X)
+
       /* MACROS GENERATED FROM PYTHON SCRIPT*/
 
       l_queue.wait_and_throw();
@@ -161,20 +157,13 @@ class TEST_NAME : public util::test_base {
 };
 
 // construction of this proxy will register the above test
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(char, 2), char>>
-    proxy2;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uchar, 2), uchar>>
-    proxy3;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(short, 2), short>>
-    proxy4;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(ushort, 2), ushort>>
-    proxy5;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(char, 2), char>> proxy2;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uchar, 2), uchar>> proxy3;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(short, 2), short>> proxy4;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(ushort, 2), ushort>> proxy5;
 util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(int, 2), int>> proxy6;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uint, 2), uint>>
-    proxy7;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(float, 2), float>>
-    proxy8;
-util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(double, 2), double>>
-    proxy9;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(uint, 2), uint>> proxy7;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(float, 2), float>> proxy8;
+util::test_proxy<TEST_NAME<CREATE_VECTOR_TYPE(double, 2), double>> proxy9;
 
 }; /* vector_initalization__ */

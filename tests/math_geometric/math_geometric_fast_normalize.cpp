@@ -265,11 +265,11 @@ struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        type_t &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
+                                     type_t &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
 
-        out = cl::sycl::fast_normalize(pr1);
-      });
+                                     out = cl::sycl::fast_normalize(pr1);
+                                   });
     });
   }
 
@@ -363,7 +363,6 @@ class TEST_NAME : public util::test_base {
       if (!testf4.setup(log)) return;
       testf4.run(log);
       testf4.cleanup();
-
 
 #ifdef SYCL_CTS_TEST_DOUBLE
 

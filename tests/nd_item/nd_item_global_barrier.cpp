@@ -43,18 +43,18 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
       auto globalScratch =
           scratchBuf.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-      cgh.parallel_for<class global_barrier_kernel>(NDRange,
-                                                    [=](nd_item<1> item) {
-        int idx = (int)item.get_global(0);
-        int pos = idx & 1;
-        int opp = pos ^ 1;
+      cgh.parallel_for<class global_barrier_kernel>(
+          NDRange, [=](nd_item<1> item) {
+            int idx = (int)item.get_global(0);
+            int pos = idx & 1;
+            int opp = pos ^ 1;
 
-        globalScratch[pos] = accGlobal[idx];
+            globalScratch[pos] = accGlobal[idx];
 
-        item.barrier(access::fence_space::global);
+            item.barrier(access::fence_space::global);
 
-        accGlobal[idx] = globalScratch[opp];
-      });
+            accGlobal[idx] = globalScratch[opp];
+          });
     });
   }
 

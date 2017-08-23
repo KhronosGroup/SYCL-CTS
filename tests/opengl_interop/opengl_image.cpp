@@ -33,11 +33,16 @@ float pixels[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 GLenum targets_1d[] = {GL_TEXTURE_1D, GL_TEXTURE_1D_ARRAY, GL_TEXTURE_BUFFER,
                        0};
 
-GLenum targets_2d[] = {
-    GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-    GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-    GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_TEXTURE_RECTANGLE, 0};
+GLenum targets_2d[] = {GL_TEXTURE_2D,
+                       GL_TEXTURE_2D_ARRAY,
+                       GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                       GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                       GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+                       GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+                       GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                       GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                       GL_TEXTURE_RECTANGLE,
+                       0};
 
 GLenum targets_3d[] = {GL_TEXTURE_3D, 0};
 
@@ -324,9 +329,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         function_class<void(cl::sycl::exception_list)> fn =
             [&](exception_list l) {
-          if (l.size() > 1)
-            FAIL(log, "Exception thrown during execution of kernel");
-        };
+              if (l.size() > 1)
+                FAIL(log, "Exception thrown during execution of kernel");
+            };
 
         // device_selector, cl_context_properties & async_handler
         {

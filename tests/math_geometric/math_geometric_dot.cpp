@@ -121,7 +121,6 @@ void type_set(double &ref, uint32_t index, double val) {
   ref = val;
 }
 
-
 /**
  */
 template <typename vec_type_t, uint32_t size>
@@ -146,7 +145,7 @@ bool verify_func(float &input, vec_type_t &param_x, vec_type_t &param_y) {
   for (uint32_t i = 0; i < num_elms; i++)
     ref += ::getElement(param_x, i) * ::getElement(param_y, i);
 
-  if (fabs(ref -input)>ulpTolerance) return false;
+  if (fabs(ref - input) > ulpTolerance) return false;
 
   return true;
 }
@@ -161,14 +160,15 @@ bool verify_func(double &input, vec_type_t &param_x, vec_type_t &param_y) {
   for (uint32_t i = 0; i < num_elms; i++)
     ref += ::getElement(param_x, i) * ::getElement(param_y, i);
 
-  if (fabs(ref-input) > ulpTolerance) return false;
+  if (fabs(ref - input) > ulpTolerance) return false;
 
   return true;
 }
 /*
 // verify double type vectors
 template <typename vec_type_t>
-bool verify_func(cl::sycl::half &input, vec_type_t &param_x, vec_type_t &param_y) {
+bool verify_func(cl::sycl::half &input, vec_type_t &param_x, vec_type_t
+&param_y) {
   uint32_t num_elms = sizeof(vec_type_t) / sizeof(double);
 
   double ref = 0.f;
@@ -314,12 +314,12 @@ struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        double &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
-        type_t &pr2 = acc_param_2[id];
+                                     double &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
+                                     type_t &pr2 = acc_param_2[id];
 
-        out = cl::sycl::dot(pr1, pr2);
-      });
+                                     out = cl::sycl::dot(pr1, pr2);
+                                   });
     });
   }
 
@@ -428,12 +428,10 @@ class TEST_NAME : public util::test_base {
       testd2.run(log);
       testd2.cleanup();
 
-
       test_class<cl::sycl::double3> testd3;
       if (!testd3.setup(log)) return;
       testd3.run(log);
       testd3.cleanup();
-
 
       test_class<cl::sycl::double4> testd4;
       if (!testd4.setup(log)) return;
@@ -447,12 +445,10 @@ class TEST_NAME : public util::test_base {
       testh2.run(log);
       testh2.cleanup();
 
-
       test_class<cl::sycl::half3> testh3;
       if (!testh3.setup(log)) return;
       testh3.run(log);
       testh3.cleanup();
-
 
       test_class<cl::sycl::half4> testh4;
       if (!testh4.setup(log)) return;

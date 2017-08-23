@@ -49,24 +49,24 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
       auto accLocal =
           localBuf.get_access<cl::sycl::access::mode::read_write>(cgh);
       accessor<int, 1, cl::sycl::access::mode::read_write,
-               cl::sycl::access::target::local> accScratchLocal(localRange,
-                                                                cgh);
+               cl::sycl::access::target::local>
+          accScratchLocal(localRange, cgh);
 
-      cgh.parallel_for<class combined_barrier_kernel>(NDRange,
-                                                      [=](nd_item<1> item) {
-        int idx = (int)item.get_global(0);
-        int pos = idx & 1;
-        int opp = pos ^ 1;
+      cgh.parallel_for<class combined_barrier_kernel>(
+          NDRange, [=](nd_item<1> item) {
+            int idx = (int)item.get_global(0);
+            int pos = idx & 1;
+            int opp = pos ^ 1;
 
-        accScratchGlobal[pos] = accGlobal[idx];
-        accScratchLocal[pos] = accLocal[idx];
+            accScratchGlobal[pos] = accGlobal[idx];
+            accScratchLocal[pos] = accLocal[idx];
 
-        item.barrier(access::fence_space::global_and_local);
+            item.barrier(access::fence_space::global_and_local);
 
-        accLocal[idx] = accScratchLocal[opp];
-        accGlobal[idx] = accScratchGlobal[opp];
+            accLocal[idx] = accScratchLocal[opp];
+            accGlobal[idx] = accScratchGlobal[opp];
 
-      });
+          });
     });
   }
 

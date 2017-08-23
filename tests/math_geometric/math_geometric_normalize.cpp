@@ -86,7 +86,7 @@ cl::sycl::vec<T, n> normalize(cl::sycl::vec<T, n> v) {
   cl::sycl::vec<T, n> ret;
   T len = length(v);
   for (int i = 0; i < n; ++i) {
-    ::setElement(ret, i, ( ::getElement(v, i) / len));
+    ::setElement(ret, i, (::getElement(v, i) / len));
   }
   return ret;
 }
@@ -106,7 +106,7 @@ struct test_buffer {
 };
 
 template <typename T>
-bool verify_func(cl::sycl::vec<T,2> &input, cl::sycl::vec<T,2> &param) {
+bool verify_func(cl::sycl::vec<T, 2> &input, cl::sycl::vec<T, 2> &param) {
   float ulpTolerance = 3.f;
 
   cl::sycl::float2 res = TEST_NAMESPACE::normalize(param);
@@ -126,7 +126,7 @@ bool verify_func(cl::sycl::vec<T,2> &input, cl::sycl::vec<T,2> &param) {
 }
 
 template <typename T>
-bool verify_func(cl::sycl::vec<T,4> &input, cl::sycl::vec<T,4> &param) {
+bool verify_func(cl::sycl::vec<T, 4> &input, cl::sycl::vec<T, 4> &param) {
   float ulpTolerance = 3.f;
 
   cl::sycl::float4 res = TEST_NAMESPACE::normalize(param);
@@ -144,7 +144,6 @@ bool verify_func(cl::sycl::vec<T,4> &input, cl::sycl::vec<T,4> &param) {
 
   return true;
 }
-
 
 /**
  */
@@ -242,7 +241,6 @@ struct test_class {
 
         /* clear the output buffer */
         type_set(e_output, j, static_cast<typename type_t::element_type>(1.f));
-
       }
     }
   }
@@ -267,11 +265,11 @@ struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        type_t &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
+                                     type_t &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
 
-        out = cl::sycl::normalize(pr1);
-      });
+                                     out = cl::sycl::normalize(pr1);
+                                   });
     });
   }
 
@@ -365,7 +363,6 @@ class TEST_NAME : public util::test_base {
       if (!testf4.setup(log)) return;
       testf4.run(log);
       testf4.cleanup();
-
 
 #ifdef SYCL_CTS_TEST_DOUBLE
 

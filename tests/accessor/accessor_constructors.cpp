@@ -124,34 +124,36 @@ class buffer_accessor_modes {
     /** check buffe accessor constructors for read
     */
     buffer_accessor_constructors<T, dims, size, cl::sycl::access::mode::read,
-                                 target> readTests;
+                                 target>
+        readTests;
     readTests(log, queue, range);
 
     /** check buffe accessor constructors for write
     */
     buffer_accessor_constructors<T, dims, size, cl::sycl::access::mode::write,
-                                 target> writeTests;
+                                 target>
+        writeTests;
     writeTests(log, queue, range);
 
     /** check buffe accessor constructors for read_write
     */
     buffer_accessor_constructors<T, dims, size,
-                                 cl::sycl::access::mode::read_write,
-                                 target> readWriteTests;
+                                 cl::sycl::access::mode::read_write, target>
+        readWriteTests;
     readWriteTests(log, queue, range);
 
     /** check buffe accessor constructors for disccard_write
     */
     buffer_accessor_constructors<T, dims, size,
-                                 cl::sycl::access::mode::discard_write,
-                                 target> discardWriteTests;
+                                 cl::sycl::access::mode::discard_write, target>
+        discardWriteTests;
     discardWriteTests(log, queue, range);
 
     /** check buffe accessor constructors for discard_read_write
     */
-    buffer_accessor_constructors<T, dims, size,
-                                 cl::sycl::access::mode::discard_read_write,
-                                 target> discardReadWriteTests;
+    buffer_accessor_constructors<
+        T, dims, size, cl::sycl::access::mode::discard_read_write, target>
+        discardReadWriteTests;
     discardReadWriteTests(log, queue, range);
   }
 };
@@ -164,13 +166,15 @@ class image_accessor_modes {
     /** check image accessor constructors for read
     */
     image_accessor_constructors<T, dims, size, cl::sycl::access::mode::read,
-                                target> readTests;
+                                target>
+        readTests;
     readTests(log, queue, range);
 
     /** check image accessor constructors for write
     */
     image_accessor_constructors<T, dims, size, cl::sycl::access::mode::write,
-                                target> writeTests;
+                                target>
+        writeTests;
     writeTests(log, queue, range);
   }
 };
@@ -189,8 +193,9 @@ class buffer_accessor_targets {
 
     /** check buffer accessor constructors for constant_buffer
     */
-    buffer_accessor_modes<
-        T, dims, size, cl::sycl::access::target::constant_buffer> constantTests;
+    buffer_accessor_modes<T, dims, size,
+                          cl::sycl::access::target::constant_buffer>
+        constantTests;
     constantTests(log, queue, range);
 
     /** check buffer accessor constructors for host_buffer

@@ -1,7 +1,8 @@
 
 /*************************************************************************
 //
-//  This file was AUTOMATICALLY GENERATED via generate_math_relational_ternary.py
+//  This file was AUTOMATICALLY GENERATED via
+generate_math_relational_ternary.py
 //
 **************************************************************************/
 /*************************************************************************
@@ -103,14 +104,14 @@ struct test_class {
 
       cgh.parallel_for<test_class>(cl::sycl::range<1>(buffer_size_k),
                                    [=](cl::sycl::id<1> id) {
-        type_t &out = acc_output[id];
-        type_t &pr1 = acc_param_1[id];
-        type_t &pr2 = acc_param_2[id];
-        type_t &pr3 = acc_param_3[id];
+                                     type_t &out = acc_output[id];
+                                     type_t &pr1 = acc_param_1[id];
+                                     type_t &pr2 = acc_param_2[id];
+                                     type_t &pr3 = acc_param_3[id];
 
-        out = cl::sycl::bitselect(pr1, pr2, pr3);
-        out = cl::sycl::select(pr1, pr2, pr3);
-      });
+                                     out = cl::sycl::bitselect(pr1, pr2, pr3);
+                                     out = cl::sycl::select(pr1, pr2, pr3);
+                                   });
     });
   }
 

@@ -49,8 +49,8 @@ class image_ctors {
                     cgh);
             auto my_range = nd_range<3>(range<1>(4 * size), range<1>(4 * size));
             auto my_kernel = ([=](item<3> item) {
-              img_acc[item.get_global(0)][item.get_global(1)][item.get_global(
-                  2)] = val;
+              img_acc[item.get_global(0)][item.get_global(1)]
+                     [item.get_global(2)] = val;
             });
 
             /* execute the kernel */

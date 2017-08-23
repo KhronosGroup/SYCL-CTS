@@ -16,55 +16,64 @@ using namespace sycl_cts;
 struct single_task_functor {
   single_task_functor(
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer> acc)
+                         cl::sycl::access::target::global_buffer>
+          acc)
       : accessor(acc) {}
 
   void operator()() { accessor[0] = 10; }
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer> accessor;
+                     cl::sycl::access::target::global_buffer>
+      accessor;
 };
 
 struct parallel_for_nd_range_functor {
   parallel_for_nd_range_functor(
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer> acc)
+                         cl::sycl::access::target::global_buffer>
+          acc)
       : accessor(acc) {}
 
   void operator()(cl::sycl::nd_item<1> ndItem) { accessor[0] = 10; }
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer> accessor;
+                     cl::sycl::access::target::global_buffer>
+      accessor;
 };
 
 struct parallel_for_range_item_functor {
   parallel_for_range_item_functor(
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer> acc)
+                         cl::sycl::access::target::global_buffer>
+          acc)
       : accessor(acc) {}
 
   void operator()(cl::sycl::item<1> item) { accessor[0] = 10; }
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer> accessor;
+                     cl::sycl::access::target::global_buffer>
+      accessor;
 };
 
 struct parallel_for_range_id_functor {
   parallel_for_range_id_functor(
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer> acc)
+                         cl::sycl::access::target::global_buffer>
+          acc)
       : accessor(acc) {}
 
   void operator()(cl::sycl::id<1> id) { accessor[0] = 10; }
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer> accessor;
+                     cl::sycl::access::target::global_buffer>
+      accessor;
 };
 
 struct parallel_for_work_group_1range_functor {
   parallel_for_work_group_1range_functor(
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer> acc)
+                         cl::sycl::access::target::global_buffer>
+          acc)
       : accessor(acc) {}
 
   void operator()(cl::sycl::group<1> group) {
@@ -78,7 +87,8 @@ struct parallel_for_work_group_1range_functor {
   }
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer> accessor;
+                     cl::sycl::access::target::global_buffer>
+      accessor;
 };
 
 class single_task_lambda_prebuilt;

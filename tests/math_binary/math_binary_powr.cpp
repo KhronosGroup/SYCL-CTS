@@ -79,9 +79,11 @@ template <typename T>
 class test_kernel {
  public:
   typedef accessor<T, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_read;
+                   cl::sycl::access::target::global_buffer>
+      t_read;
   typedef accessor<T, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_write;
+                   cl::sycl::access::target::global_buffer>
+      t_write;
 
   t_write m_out;
   t_read m_p1, m_p2;
@@ -361,7 +363,7 @@ class test_class {
     assert(m_output.get() != nullptr);
     memset(m_output.get(), 0, nBufferSize * sizeof(type_t));
 
-    m_randData = init_genrand( 0 );
+    m_randData = init_genrand(0);
 
     return true;
   }
@@ -463,7 +465,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute this test
    */
   virtual void run(util::logger &log) override {
-
 #ifdef SYCL_CTS_TEST_HALF
     if (!execute<test_class<half, half, e_ulp_func_half>>(log)) return;
     if (!execute<test_class<half2, half, e_ulp_func_half>>(log)) return;

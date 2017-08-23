@@ -14,8 +14,9 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
-template <typename T, int size, int dims> class buffer_allocs {
-public:
+template <typename T, int size, int dims>
+class buffer_allocs {
+ public:
   void operator()(util::logger &log, range<dims> r) {
     util::UNIQUE_PTR<T[]> data(new T[size]);
     memset(data.get(), 0xFF, sizeof(T) * size);
@@ -47,14 +48,15 @@ public:
 * test cl::sycl::buffer initialization
 */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
   */
   virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T> void test_buffers(util::logger &log) {
+  template <typename T>
+  void test_buffers(util::logger &log) {
     const int size = 32;
     range<1> range1d(size);
     range<2> range2d(size, size);
