@@ -45,13 +45,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       static const cl::sycl::string_class kernelSource =
           R"(
@@ -89,6 +89,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       cl::sycl::kernel kernel(clKernel);
 
+      /** test single_task(kernel)
+      */
       queue.submit([&](cl::sycl::handler &handler) {
         auto bufferAccessor =
             buffer.get_access<cl::sycl::access::mode::read_write,
@@ -109,7 +111,31 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         handler.single_task(kernel);
       });
-    } catch (cl::sycl::exception e) {
+
+      /** test parallel_for(const nd range<dimensions>&, kernel)
+      */
+      queue.submit([&](cl::sycl::handler &handler) {
+        auto bufferAccessor =
+            buffer.get_access<cl::sycl::access::mode::read_write,
+                              cl::sycl::access::target::global_buffer>(handler);
+        auto imageAccessor =
+            image.get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
+                handler);
+
+        cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
+                                  cl::sycl::filtering_mode::nearest);
+
+        /** check the set_arg() methods
+        */
+        handler.set_arg(0, bufferAccessor);
+        handler.set_arg(1, imageAccessor);
+        handler.set_arg(2, sampler);
+        handler.set_arg(3, 15.0f);
+
+        cl::sycl::range<1> myRange(1024);
+        handler.parallel_for(myRange, kernel);
+      });
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

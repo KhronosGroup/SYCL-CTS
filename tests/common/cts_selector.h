@@ -18,7 +18,7 @@ class cts_selector : public cl::sycl::device_selector {
  public:
   /** Returns true if the default platform of the selector is host.
    * @return boolean specifying whether the default platform is host. */
-  bool is_host() {
+  bool is_host() const {
     using namespace cl::sycl;
     using namespace sycl_cts::util;
 
@@ -107,6 +107,11 @@ class cts_selector : public cl::sycl::device_selector {
     switch (ctsPlatform) {
       case selector::ctsplat::amd:
         if (vendor.find("AMD") != std::string::npos) {
+          result = score(type, ctsDevType);
+        }
+        break;
+      case selector::ctsplat::arm:
+        if (vendor.find("ARM") != std::string::npos) {
           result = score(type, ctsDevType);
         }
         break;

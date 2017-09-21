@@ -36,13 +36,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       int inputData[groupItemsTotal];
 
@@ -69,7 +69,7 @@ class TEST_NAME : public util::test_base {
               globalRange, localRange, [=](group<3> group) {
                 parallel_for_work_item(group, [&](item<3> item) {
                   range<3> global_range = group.get_global_range();
-                  id<3> gID = group.get() * item.get_range() + item.get();
+                  id<3> gID = group.get() * item.get_range() + item.get_id();
                   int globalId = (gID[2] * global_range[0] * global_range[1]) +
                                  gID[1] * global_range[0] + gID[0];
                   int globalSize = group.get_global_range().size();
@@ -82,7 +82,7 @@ class TEST_NAME : public util::test_base {
 
                 parallel_for_work_item(group, [&](item<3> item) {
                   range<3> global_range = group.get_global_range();
-                  id<3> gID = group.get() * item.get_range() + item.get();
+                  id<3> gID = group.get() * item.get_range() + item.get_id();
                   int globalId = (gID[2] * global_range[0] * global_range[1]) +
                                  gID[1] * global_range[0] + gID[0];
                   int localId = item.get_linear_id();
@@ -103,7 +103,7 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

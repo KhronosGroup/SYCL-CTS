@@ -28,13 +28,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       cl_program clProgram = nullptr;
       if (!create_built_program(kernel_source, clProgram, log)) {
@@ -61,6 +61,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         FAIL(log, "ref_cnt is incorrect. Problem with obtained cl_kernel.");
       }
 
+      // Check is_host()
+      bool isHost = k.is_host();
+
       // just to make sure if returned context is correct type
       auto cxt = k.get_context();
       check_return_type<cl::sycl::context>(log, cxt,
@@ -69,7 +72,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       auto prgrm = k.get_program();
       check_return_type<cl::sycl::program>(log, prgrm,
                                            "cl::sycl::kernel::get_program()");
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

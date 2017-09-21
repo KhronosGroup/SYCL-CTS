@@ -8,8 +8,6 @@
 
 #pragma once
 
-#define SYCL_CTS_GL_CONTEX_INTEROP false
-
 // include our proxy to the real sycl header
 #include "sycl.h"
 
@@ -31,19 +29,6 @@ namespace util {
   async handler
 */
 struct get_cts_object {
-  /**
-    @brief Creates a SYCL context using the CTS handler
-    @param selector Device selector to use to create the context. Uses the CTS
-    selector by default.
-    @return Default SYCL context
-  */
-  static cl::sycl::context context(
-      const cl::sycl::device_selector &selector = cts_selector()) {
-    cts_async_handler asyncHandler;
-    return cl::sycl::context(selector, SYCL_CTS_GL_CONTEX_INTEROP,
-                             asyncHandler);
-  }
-
   /**
     @brief Creates a SYCL device
     @param selector Device selector to use to create the device. Uses the CTS

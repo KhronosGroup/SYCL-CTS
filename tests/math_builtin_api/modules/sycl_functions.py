@@ -74,38 +74,32 @@ def create_integer_signatures():
     f_sub_sat = funsig("cl::sycl", "geninteger", "sub_sat", ["geninteger", "geninteger"])
     sig_list.append(f_sub_sat)
 
-    f_upsample = funsig("cl::sycl", "ugenshort", "upsample", ["ugenchar", "ugenchar"])
+    f_upsample = funsig("cl::sycl", "ugeninteger16bit", "upsample", ["ugeninteger8bit", "ugeninteger8bit"])
     sig_list.append(f_upsample)
 
-    f_upsample_2 = funsig("cl::sycl", "genshort", "upsample", ["igenchar", "ugenchar"])
+    f_upsample_2 = funsig("cl::sycl", "igeninteger16bit", "upsample", ["igeninteger8bit", "ugeninteger8bit"])
     sig_list.append(f_upsample_2)
 
-    f_upsample_3 = funsig("cl::sycl", "ugenint", "upsample", ["ugenshort", "ugenshort"])
+    f_upsample_3 = funsig("cl::sycl", "ugeninteger32bit", "upsample", ["ugeninteger16bit", "ugeninteger16bit"])
     sig_list.append(f_upsample_3)
 
-    f_upsample_4 = funsig("cl::sycl", "genint", "upsample", ["genshort", "ugenshort"])
+    f_upsample_4 = funsig("cl::sycl", "igeninteger32bit", "upsample", ["igeninteger16bit", "ugeninteger16bit"])
     sig_list.append(f_upsample_4)
     
-    f_upsample_5 = funsig("cl::sycl", "ugenlonglong", "upsample", ["ugenint", "ugenint"])
+    f_upsample_5 = funsig("cl::sycl", "ugeninteger64bit", "upsample", ["ugeninteger32bit", "ugeninteger32bit"])
     sig_list.append(f_upsample_5)
 
-    f_upsample_6 = funsig("cl::sycl", "genlonglong", "upsample", ["genint", "ugenint"])
+    f_upsample_6 = funsig("cl::sycl", "igeninteger64bit", "upsample", ["igeninteger32bit", "ugeninteger32bit"])
     sig_list.append(f_upsample_6)
 
     f_popcount = funsig("cl::sycl", "geninteger", "popcount", ["geninteger"])
     sig_list.append(f_popcount)
     
-    f_mad24 = funsig("cl::sycl", "genint", "mad24", ["genint","genint","genint"])
+    f_mad24 = funsig("cl::sycl", "geninteger32bit", "mad24", ["geninteger32bit","geninteger32bit","geninteger32bit"])
     sig_list.append(f_mad24)
     
-    f_mad24_2 = funsig("cl::sycl", "ugenint", "mad24", ["ugenint","ugenint","ugenint"])
-    sig_list.append(f_mad24_2)
-    
-    f_mul24 = funsig("cl::sycl", "genint", "mul24", ["genint","genint"])
+    f_mul24 = funsig("cl::sycl", "geninteger32bit", "mul24", ["geninteger32bit","geninteger32bit"])
     sig_list.append(f_mul24)
-    
-    f_mul24_2 = funsig("cl::sycl", "ugenint", "mul24", ["ugenint","ugenint"])
-    sig_list.append(f_mul24_2)
     
     return sig_list
 
@@ -230,134 +224,89 @@ def create_geometric_signatures():
 def create_relational_signatures():
     sig_list = []
 
-    f_isequal = funsig("cl::sycl", "genint", "isequal", ["genfloatf", "genfloatf"])
+    f_isequal = funsig("cl::sycl", "igeninteger32bit", "isequal", ["genfloatf", "genfloatf"])
     sig_list.append(f_isequal)
 
-    f_isequal_2 = funsig("cl::sycl", "int", "isequal", ["double", "double"])
+    f_isequal_2 = funsig("cl::sycl", "igeninteger64bit", "isequal", ["genfloatd", "genfloatd"])
     sig_list.append(f_isequal_2)
 
-    f_isequal_3 = funsig("cl::sycl", "longlongn", "isequal", ["doublen", "doublen"])
-    sig_list.append(f_isequal_3)
-
-    f_isnotequal = funsig("cl::sycl", "genint", "isnotequal", ["genfloatf", "genfloatf"])
+    f_isnotequal = funsig("cl::sycl", "igeninteger32bit", "isnotequal", ["genfloatf", "genfloatf"])
     sig_list.append(f_isnotequal)
 
-    f_isnotequal_2 = funsig("cl::sycl", "int", "isnotequal", ["double", "double"])
+    f_isnotequal_2 = funsig("cl::sycl", "igeninteger64bit", "isnotequal", ["genfloatd", "genfloatd"])
     sig_list.append(f_isnotequal_2)
 
-    f_isnotequal_3 = funsig("cl::sycl", "longlongn", "isnotequal", ["doublen", "doublen"])
-    sig_list.append(f_isnotequal_3)
-
-    f_isgreater = funsig("cl::sycl", "genint", "isgreater", ["genfloatf", "genfloatf"])
+    f_isgreater = funsig("cl::sycl", "igeninteger32bit", "isgreater", ["genfloatf", "genfloatf"])
     sig_list.append(f_isgreater)
 
-    f_isgreater_2 = funsig("cl::sycl", "int", "isgreater", ["double", "double"])
+    f_isgreater_2 = funsig("cl::sycl", "igeninteger64bit", "isgreater", ["genfloatd", "genfloatd"])
     sig_list.append(f_isgreater_2)
 
-    f_isgreater_3 = funsig("cl::sycl", "longlongn", "isgreater", ["doublen", "doublen"])
-    sig_list.append(f_isgreater_3)
-
-    f_isgreaterequal = funsig("cl::sycl", "genint", "isgreaterequal", ["genfloatf", "genfloatf"])
+    f_isgreaterequal = funsig("cl::sycl", "igeninteger32bit", "isgreaterequal", ["genfloatf", "genfloatf"])
     sig_list.append(f_isgreaterequal)
 
-    f_isgreaterequal_2 = funsig("cl::sycl", "int", "isgreaterequal", ["double", "double"])
+    f_isgreaterequal_2 = funsig("cl::sycl", "igeninteger64bit", "isgreaterequal", ["genfloatd", "genfloatd"])
     sig_list.append(f_isgreaterequal_2)
 
-    f_isgreaterequal_3 = funsig("cl::sycl", "longlongn", "isgreaterequal", ["doublen", "doublen"])
-    sig_list.append(f_isgreaterequal_3)
-
-    f_isless = funsig("cl::sycl", "genint", "isless", ["genfloatf", "genfloatf"])
+    f_isless = funsig("cl::sycl", "igeninteger32bit", "isless", ["genfloatf", "genfloatf"])
     sig_list.append(f_isless)
 
-    f_isless_2 = funsig("cl::sycl", "int", "isless", ["double", "double"])
+    f_isless_2 = funsig("cl::sycl", "igeninteger64bit", "isless", ["genfloatd", "genfloatd"])
     sig_list.append(f_isless_2)
 
-    f_isless_3 = funsig("cl::sycl", "longlongn", "isless", ["doublen", "doublen"])
-    sig_list.append(f_isless_3)
-
-    f_islessequal = funsig("cl::sycl", "genint", "islessequal", ["genfloatf", "genfloatf"])
+    f_islessequal = funsig("cl::sycl", "igeninteger32bit", "islessequal", ["genfloatf", "genfloatf"])
     sig_list.append(f_islessequal)
 
-    f_islessequal_2 = funsig("cl::sycl", "int", "islessequal", ["double", "double"])
+    f_islessequal_2 = funsig("cl::sycl", "igeninteger64bit", "islessequal", ["genfloatd", "genfloatd"])
     sig_list.append(f_islessequal_2)
 
-    f_islessequal_3 = funsig("cl::sycl", "longlongn", "islessequal", ["doublen", "doublen"])
-    sig_list.append(f_islessequal_3)
-
-    f_islessgreater = funsig("cl::sycl", "int", "islessgreater", ["float", "float"])
+    f_islessgreater = funsig("cl::sycl", "igeninteger32bit", "islessgreater", ["genfloatf", "genfloatf"])
     sig_list.append(f_islessgreater)
 
-    f_islessgreater_2 = funsig("cl::sycl", "intn", "islessgreater", ["floatn", "floatn"])
+    f_islessgreater_2 = funsig("cl::sycl", "igeninteger64bit", "islessgreater", ["genfloatd", "genfloatd"])
     sig_list.append(f_islessgreater_2)
 
-    f_islessgreater_3 = funsig("cl::sycl", "long long int", "islessgreater", ["double", "double"])
-    sig_list.append(f_islessgreater_3)
-
-    f_islessgreater_4 = funsig("cl::sycl", "longlongn", "islessgreater", ["doublen", "doublen"])
-    sig_list.append(f_islessgreater_4)
-
-    f_isfinite = funsig("cl::sycl", "genint", "isfinite", ["genfloatf"])
+    f_isfinite = funsig("cl::sycl", "igeninteger32bit", "isfinite", ["genfloatf"])
     sig_list.append(f_isfinite)
 
-    f_isfinite_2 = funsig("cl::sycl", "int", "isfinite", ["double"])
+    f_isfinite_2 = funsig("cl::sycl", "igeninteger64bit", "isfinite", ["genfloatd"])
     sig_list.append(f_isfinite_2)
 
-    f_isfinite_3 = funsig("cl::sycl", "longlongn", "isfinite", ["doublen"])
-    sig_list.append(f_isfinite_3)
-
-    f_isinf = funsig("cl::sycl", "genint", "isinf", ["genfloatf"])
+    f_isinf = funsig("cl::sycl", "igeninteger32bit", "isinf", ["genfloatf"])
     sig_list.append(f_isinf)
 
-    f_isinf_2 = funsig("cl::sycl", "int", "isinf", ["double"])
+    f_isinf_2 = funsig("cl::sycl", "igeninteger64bit", "isinf", ["genfloatd"])
     sig_list.append(f_isinf_2)
 
-    f_isinf_3 = funsig("cl::sycl", "longlongn", "isinf", ["doublen"])
-    sig_list.append(f_isinf_3)
-
-    f_isnan = funsig("cl::sycl", "genint", "isnan", ["genfloatf"])
+    f_isnan = funsig("cl::sycl", "igeninteger32bit", "isnan", ["genfloatf"])
     sig_list.append(f_isnan)
 
-    f_isnan_2 = funsig("cl::sycl", "int", "isnan", ["double"])
+    f_isnan_2 = funsig("cl::sycl", "igeninteger64bit", "isnan", ["genfloatd"])
     sig_list.append(f_isnan_2)
 
-    f_isnan_3 = funsig("cl::sycl", "longlongn", "isnan", ["doublen"])
-    sig_list.append(f_isnan_3)
-
-    f_isnormal = funsig("cl::sycl", "genint", "isnormal", ["genfloatf"])
+    f_isnormal = funsig("cl::sycl", "igeninteger32bit", "isnormal", ["genfloatf"])
     sig_list.append(f_isnormal)
 
-    f_isnormal_2 = funsig("cl::sycl", "int", "isnormal", ["double"])
+    f_isnormal_2 = funsig("cl::sycl", "igeninteger64bit", "isnormal", ["genfloatd"])
     sig_list.append(f_isnormal_2)
 
-    f_isnormal_3 = funsig("cl::sycl", "longlongn", "isnormal", ["doublen"])
-    sig_list.append(f_isnormal_3)
-
-    f_isordered = funsig("cl::sycl", "genint", "isordered", ["genfloatf", "genfloatf"])
+    f_isordered = funsig("cl::sycl", "igeninteger32bit", "isordered", ["genfloatf", "genfloatf"])
     sig_list.append(f_isordered)
 
-    f_isordered_2 = funsig("cl::sycl", "int", "isordered", ["double", "double"])
+    f_isordered_2 = funsig("cl::sycl", "igeninteger64bit", "isordered", ["genfloatd", "genfloatd"])
     sig_list.append(f_isordered_2)
 
-    f_isordered_3 = funsig("cl::sycl", "longlongn", "isordered", ["doublen", "doublen"])
-    sig_list.append(f_isordered_3)
-
-    f_isunordered = funsig("cl::sycl", "genint", "isunordered", ["genfloatf", "genfloatf"])
+    f_isunordered = funsig("cl::sycl", "igeninteger32bit", "isunordered", ["genfloatf", "genfloatf"])
     sig_list.append(f_isunordered)
 
-    f_isunordered_2 = funsig("cl::sycl", "int", "isunordered", ["double", "double"])
+    f_isunordered_2 = funsig("cl::sycl", "igeninteger64bit", "isunordered", ["genfloatd", "genfloatd"])
     sig_list.append(f_isunordered_2)
 
-    f_isunordered_3 = funsig("cl::sycl", "longlongn", "isunordered", ["doublen", "doublen"])
-    sig_list.append(f_isunordered_3)
-
-    f_signbit = funsig("cl::sycl", "genint", "signbit", ["genfloatf"])
+    f_signbit = funsig("cl::sycl", "igeninteger32bit", "signbit", ["genfloatf"])
     sig_list.append(f_signbit)
 
-    f_signbit_2 = funsig("cl::sycl", "int", "signbit", ["double"])
+    f_signbit_2 = funsig("cl::sycl", "igeninteger64bit", "signbit", ["genfloatd"])
     sig_list.append(f_signbit_2)
-
-    f_signbit_3 = funsig("cl::sycl", "longlongn", "signbit", ["doublen"])
-    sig_list.append(f_signbit_3)
 
     f_any = funsig("cl::sycl", "int", "any", ["igeninteger"])
     sig_list.append(f_any)
@@ -380,10 +329,10 @@ def create_relational_signatures():
     f_select_4 = funsig("cl::sycl", "genfloatf", "select", ["genfloatf", "genfloatf","ugenint"])
     sig_list.append(f_select_4)
 
-    f_select_5 = funsig("cl::sycl", "genfloatd", "select", ["genfloatd", "genfloatd","genlonglong"])
+    f_select_5 = funsig("cl::sycl", "genfloatd", "select", ["genfloatd", "genfloatd","igeninteger64bit"])
     sig_list.append(f_select_5)
 
-    f_select_6 = funsig("cl::sycl", "genfloatd", "select", ["genfloatd", "genfloatd","ugenlonglong"])
+    f_select_6 = funsig("cl::sycl", "genfloatd", "select", ["genfloatd", "genfloatd","ugeninteger64bit"])
     sig_list.append(f_select_6)
 
     return sig_list

@@ -21,7 +21,7 @@ class selector : public singleton<selector> {
  public:
   /** SYCL platforms
    */
-  enum class ctsplat { unknown = 0, host, amd, intel, nvidia };
+  enum class ctsplat { unknown = 0, host, amd, arm, intel, nvidia };
 
   /** SYCL device types
    */
@@ -42,6 +42,7 @@ class selector : public singleton<selector> {
    * @param name, the name of the platform to select.
    * valid values are:
    *    'amd'
+   *    'arm'
    *    'host'
    *    'intel'
    *    'nvidia'
@@ -68,12 +69,12 @@ class selector : public singleton<selector> {
   /** return a enum of cts_device type specifying the
    *  requested default device type for this run of the cts
    */
-  ctsdevice get_default_device();
+  ctsdevice get_default_device() const;
 
   /** return a enum of ctsplat type specifying the
    *  requested default platform type for this run of the cts
    */
-  ctsplat get_default_platform();
+  ctsplat get_default_platform() const;
 
  protected:
   // default platform to select

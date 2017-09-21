@@ -10,115 +10,6 @@
 
 #define TEST_NAME id_api
 
-/** \brief tests the result of using operator op with operands lhs lhs and lhs
- * rhs, while storing the results in res.
- */
-#define ID_KERNEL_TEST(op, lhs, rhs, res)               \
-  {                                                     \
-    res = lhs op rhs;                                   \
-    for (int k = 0; k < dims; k++) {                    \
-      if ((res.get(k) != (lhs.get(k) op rhs.get(k))) || \
-          (res[k] != (lhs[k] op rhs[k]))) {             \
-        error_ptr[m_iteration] = __LINE__;              \
-        m_iteration++;                                  \
-      }                                                 \
-    }                                                   \
-  }
-
-/** \brief tests the result of equality/inequality operator op between id
- * operands lhs and rhs
- */
-#define ID_EQ_KERNEL_TEST(op, lhs, rhs)             \
-  {                                                 \
-    if ((lhs op lhs) != (rhs op rhs)) {             \
-      error_ptr[m_iteration] = __LINE__;            \
-      m_iteration++;                                \
-    }                                               \
-    bool result = lhs op rhs;                       \
-    for (int k = 0; k < dims; k++) {                \
-      if ((result != (lhs.get(k) op rhs.get(k))) || \
-          (result != (lhs[k] op rhs[k]))) {         \
-        error_ptr[m_iteration] = __LINE__;          \
-        m_iteration++;                              \
-      }                                             \
-    }                                               \
-  }
-
-/** \brief tests the result of comparisson operator op between id operands lhs
- * and rhs
- */
-#define ID_CMP_KERNEL_TEST(op, lhs, rhs)                                       \
-  {                                                                            \
-    if ((lhs op lhs) == (rhs op rhs)) {                                        \
-      error_ptr[m_iteration] = __LINE__;                                       \
-      m_iteration++;                                                           \
-    }                                                                          \
-    bool result = lhs op rhs;                                                  \
-    bool check_fail = false;                                                   \
-    for (int k = 0; k < dims; k++) {                                           \
-      if (((lhs.get(k) != rhs.get(k)) || (lhs[k] != rhs[k])) && !check_fail) { \
-        check_fail = true;                                                     \
-      }                                                                        \
-      if (((lhs.get(k) op rhs.get(k)) || (lhs[k] op rhs[k])) && check_fail) {  \
-        error_ptr[m_iteration] = __LINE__;                                     \
-        m_iteration++;                                                         \
-      }                                                                        \
-    }                                                                          \
-  }
-
-/** \brief tests the result of operator op between scalar operand lhs and id
- * operand rhs
- */
-#define ID_SIZE_T_KERNEL_TEST(op, id, integer, result) \
-  {                                                    \
-    result = id op integer;                            \
-    for (int k = 0; k < dims; k++) {                   \
-      if ((result.get(k) != (id.get(k) op integer)) || \
-          (result[k] != (id[k] op integer))) {         \
-        error_ptr[m_iteration] = __LINE__;             \
-        m_iteration++;                                 \
-      }                                                \
-    }                                                  \
-  }
-
-/** \brief tests the result of operator op between scalar operand lhs and id
- * operand rhs
-*/
-#define SIZE_T_ID_KERNEL_TEST(op, integer, id, result) \
-  {                                                    \
-    result = integer op id;                            \
-    for (int k = 0; k < dims; k++) {                   \
-      if ((result.get(k) != (integer op id.get(k))) || \
-          (result[k] != (integer op id[k]))) {         \
-        error_ptr[m_iteration] = __LINE__;             \
-        m_iteration++;                                 \
-      }                                                \
-    }                                                  \
-  }
-
-/** \brief tests the result of operator op between scalar operand and an id
- * operand in any possible configuration
-*/
-#define DUAL_SIZE_ID_KERNEL_TEST(op, id, integer, result) \
-  ID_SIZE_T_KERNEL_TEST(op, id, integer, result);         \
-  SIZE_T_ID_KERNEL_TEST(op, integer, id, result)
-
-/** \brief tests the result of assignment operator op between assigning a to c
- * then use the assignment operator assignment_op with lhs operand c and lhs
- * operand b. Then tests the result using operator op with operands a and b.
-*/
-#define id_assignment_tests(assignment_op, op, a, b, c)                       \
-  {                                                                           \
-    c = a;                                                                    \
-    c assignment_op b;                                                        \
-    for (int k = 0; k < dims; k++) {                                          \
-      if ((c.get(k) != (a.get(k) op b.get(k))) || (c[k] != (a[k] op b[k]))) { \
-        error_ptr[m_iteration] = __LINE__;                                    \
-        m_iteration++;                                                        \
-      }                                                                       \
-    }                                                                         \
-  }
-
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
@@ -136,120 +27,179 @@ void test_id_kernels(
   cl::sycl::id<dims> id_three(id);
   size_t integer = 16;
   for (int j = 0; j < dims; j++) {
-    if (id_two.get(j) == 0) id_two[j] = 1;
+    if (id_two.get(j) == 0) {
+      id_two[j] = 1;
+    }
   }
+  const cl::sycl::id<dims> id_two_const(id_two);
+  const cl::sycl::id<dims> id_const(id);
 
   // operators
   // +=
-  id_assignment_tests(+=, +, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(+=, +, id, id_two, id_three);
 
   // -=
-  id_assignment_tests(-=, -, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(-=, -, id, id_two, id_three);
 
   // *=
-  id_assignment_tests(*=, *, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(*=, *, id, id_two, id_three);
 
   // /=
-  id_assignment_tests(/=, /, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(/=, /, id, id_two, id_three);
 
   // %=
-  id_assignment_tests(%=, %, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(%=, %, id, id_two, id_three);
 
   // >>=
-  id_assignment_tests(>>=, >>, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(>>=, >>, id, id_two, id_three);
 
   // <<=
-  id_assignment_tests(<<=, <<, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(<<=, <<, id, id_two, id_three);
 
   // &=
-  id_assignment_tests(&=, &, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(&=, &, id, id_two, id_three);
 
   // |=
-  id_assignment_tests(|=, |, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(|=, |, id, id_two, id_three);
 
   // ^=
-  id_assignment_tests(^=, ^, id, id_two, id_three);
+  INDEX_ASSIGNMENT_TESTS(^=, ^, id, id_two, id_three);
+
+  // check id<dimensions> operatorOP(const id<dimensions> &rhs)
 
   // *
-  ID_KERNEL_TEST(*, id, id_two, id_three);
+  INDEX_KERNEL_TEST(*, id, id_two_const, id_three);
 
   // /
-  ID_KERNEL_TEST(/, id, id_two, id_three);
+  INDEX_KERNEL_TEST(/, id, id_two_const, id_three);
 
   //+
-  ID_KERNEL_TEST(+, id, id_two, id_three);
+  INDEX_KERNEL_TEST(+, id, id_two_const, id_three);
 
   //-
-  ID_KERNEL_TEST(-, id, id_two, id_three);
+  INDEX_KERNEL_TEST(-, id, id_two_const, id_three);
 
   //%
-  ID_KERNEL_TEST(%, id, id_two, id_three);
+  INDEX_KERNEL_TEST(%, id, id_two_const, id_three);
 
   //<<
-  ID_KERNEL_TEST(<<, id, id_two, id_three);
+  INDEX_KERNEL_TEST(<<, id, id_two_const, id_three);
 
   //>>
-  ID_KERNEL_TEST(>>, id, id_two, id_three);
+  INDEX_KERNEL_TEST(>>, id, id_two_const, id_three);
 
   //&
-  ID_KERNEL_TEST(&, id, id_two, id_three);
+  INDEX_KERNEL_TEST(&, id, id_two_const, id_three);
 
   //|
-  ID_KERNEL_TEST(|, id, id_two, id_three);
+  INDEX_KERNEL_TEST(|, id, id_two_const, id_three);
 
   //^
-  ID_KERNEL_TEST (^, id, id_two, id_three);
+  INDEX_KERNEL_TEST (^, id, id_two_const, id_three);
 
-  // ==
-  ID_EQ_KERNEL_TEST(==, id, id_two);
+  // &&
+  INDEX_KERNEL_TEST(&&, id, id_two_const, id_three);
 
-  // !=
-  ID_EQ_KERNEL_TEST(!=, id, id_two);
-
-  // *
-  DUAL_SIZE_ID_KERNEL_TEST(*, id, integer, id_three);
-
-  // +
-  DUAL_SIZE_ID_KERNEL_TEST(+, id, integer, id_three);
-
-  // -
-  DUAL_SIZE_ID_KERNEL_TEST(-, id, integer, id_three);
-
-  // /
-  DUAL_SIZE_ID_KERNEL_TEST(/, id, integer, id_three);
-
-  // %
-  DUAL_SIZE_ID_KERNEL_TEST(%, id, integer, id_three);
-
-  // <<
-  DUAL_SIZE_ID_KERNEL_TEST(<<, id, integer, id_three);
-
-  // >>
-  DUAL_SIZE_ID_KERNEL_TEST(>>, id, integer, id_three);
+  // ||
+  INDEX_KERNEL_TEST(||, id, id_two_const, id_three);
 
   // >
-  if (!(id_two > id)) {
-    error_ptr[m_iteration] = __LINE__;
-    m_iteration++;
-  }
+  INDEX_KERNEL_TEST(>, id, id_two_const, id_three);
 
   // <
-  if (!(id < id_two)) {
-    error_ptr[m_iteration] = __LINE__;
-    m_iteration++;
-  }
+  INDEX_KERNEL_TEST(<, id, id_two_const, id_three);
 
   // >=
-  if (!(id_two > id)) {
-    error_ptr[m_iteration] = __LINE__;
-    m_iteration++;
-  }
+  INDEX_KERNEL_TEST(>=, id, id_two_const, id_three);
 
   // <=
-  if (!(id <= id_two)) {
-    error_ptr[m_iteration] = __LINE__;
-    m_iteration++;
-  }
+  INDEX_KERNEL_TEST(<=, id, id_two_const, id_three);
+
+  // check == and !=
+  // ==
+  INDEX_EQ_KERNEL_TEST(==, id, id_two);
+
+  // !=
+  INDEX_EQ_KERNEL_TEST(!=, id, id_two);
+
+  // check id<dimensions> operatorOP(const size_t &rhs)
+
+  // *
+  DUAL_SIZE_INDEX_KERNEL_TEST(*, id, integer, id_three);
+
+  // +
+  DUAL_SIZE_INDEX_KERNEL_TEST(+, id, integer, id_three);
+
+  // -
+  DUAL_SIZE_INDEX_KERNEL_TEST(-, id, integer, id_three);
+
+  // /
+  DUAL_SIZE_INDEX_KERNEL_TEST(/, id, integer, id_three);
+
+  // %
+  DUAL_SIZE_INDEX_KERNEL_TEST(%, id, integer, id_three);
+
+  // <<
+  DUAL_SIZE_INDEX_KERNEL_TEST(<<, id, integer, id_three);
+
+  // >>
+  DUAL_SIZE_INDEX_KERNEL_TEST(>>, id, integer, id_three);
+
+  // |
+  DUAL_SIZE_INDEX_KERNEL_TEST(|, id, integer, id_three);
+
+  // ^
+  DUAL_SIZE_INDEX_KERNEL_TEST (^, id, integer, id_three);
+
+  // && id can only be lhs
+  INDEX_SIZE_T_KERNEL_TEST(&&, id, integer, id_three);
+
+  // || id can only be lhs
+  INDEX_SIZE_T_KERNEL_TEST(||, id, integer, id_three);
+
+  // <
+  DUAL_SIZE_INDEX_KERNEL_TEST(<, id, integer, id_three);
+
+  // >
+  DUAL_SIZE_INDEX_KERNEL_TEST(>, id, integer, id_three);
+
+  // <=
+  DUAL_SIZE_INDEX_KERNEL_TEST(<=, id, integer, id_three);
+
+  // >=
+  DUAL_SIZE_INDEX_KERNEL_TEST(>=, id, integer, id_three);
+
+  // check id<dimensions> &operatorOP(const size_t &rhs)
+
+  // +=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, id, integer, id_three);
+
+  // -=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, id, integer, id_three);
+
+  // *=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, id, integer, id_three);
+
+  // /=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, id, integer, id_three);
+
+  // %=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, id, integer, id_three);
+
+  // >>=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, id, integer, id_three);
+
+  // <<=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, id, integer, id_three);
+
+  // &=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, id, integer, id_three);
+
+  // |=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, id, integer, id_three);
+
+  // ^=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, id, integer, id_three);
 }
 
 template <int dims>
@@ -285,8 +235,9 @@ class test_id {
           int m_iteration = 0;
 
           // create check table
-          cl::sycl::id<dims> id(item);
-          int check[] = {m_x, m_y, m_z};
+          cl::sycl::id<dims> id = item.get_nd_range().get_global();
+
+          size_t check[] = {m_x, m_y, m_z};
 
           for (int i = 0; i < dims; i++) {
             if (id.get(i) > check[i] || id[i] > check[i]) {
@@ -316,13 +267,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       // use across all the dimensions
       auto my_queue = util::get_cts_object::queue();
@@ -338,6 +289,28 @@ class TEST_NAME : public util::test_base {
         cl::sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
                                       test_id<3>::m_local);
 
+        size_t test_sizes[] = {15, 3, 23};
+        {
+          cl::sycl::range<1> r1(test_sizes[0]);
+          if (r1.size() != test_sizes[0]) {
+            FAIL(log, "range<1> size returns incorrect size");
+          }
+        }
+
+        {
+          cl::sycl::range<2> r1(test_sizes[0], test_sizes[1]);
+          if (r1.size() != test_sizes[0] * test_sizes[1]) {
+            FAIL(log, "range<2> size returns incorrect size");
+          }
+        }
+
+        {
+          cl::sycl::range<3> r1(test_sizes[0], test_sizes[1], test_sizes[2]);
+          if (r1.size() != test_sizes[0] * test_sizes[1] * test_sizes[2]) {
+            FAIL(log, "range<3> size returns incorrect size");
+          }
+        }
+
         test_id<1> test1d;
         test1d(log, range_1d_g, range_1d_l, my_queue);
         test_id<2> test2d;
@@ -345,7 +318,7 @@ class TEST_NAME : public util::test_base {
         test_id<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

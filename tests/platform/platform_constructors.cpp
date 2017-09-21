@@ -19,13 +19,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       /** check default constructor and destructor
       */
@@ -37,10 +37,10 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check (device_selector) constructor
+      /** check (const device_selector) constructor
       */
       {
-        cts_selector selector;
+        const cts_selector selector;
         cl::sycl::platform platform(selector);
 
         if (platform.is_host() != selector.is_host()) {
@@ -155,7 +155,7 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

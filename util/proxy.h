@@ -20,9 +20,8 @@ extern void register_test(test_base *test);
 /** test proxy class
  *  this class is used to register tests with the test harness at compile time.
  */
-template <typename T>
-class test_proxy {
- public:
+template <typename T> class test_proxy {
+public:
   /** test_proxy constructor
    */
   test_proxy() {
@@ -31,5 +30,5 @@ class test_proxy {
   }
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

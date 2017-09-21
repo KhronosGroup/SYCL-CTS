@@ -30,6 +30,18 @@ struct getComponent {
 };
 
 template <typename T>
+struct getComponent<T, 1> {
+  static const unsigned dim = 1;
+  T operator()(cl::sycl::vec<T, dim> &f, int number) {
+    switch (number) {
+      CASE_GET_ELEMENT(0, 0);
+      default:
+        return T(0);
+    }
+  }
+};
+
+template <typename T>
 struct getComponent<T, 2> {
   static const unsigned dim = 2;
   T operator()(cl::sycl::vec<T, dim> &f, int number) {

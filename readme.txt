@@ -23,7 +23,6 @@
 #
     - An implementation of SYCL
     - A conformant implementation of OpenCL
-    - OpenGL (optional for OpenGL interop tests)
     - Python 2.7
     - GCC 4.8.2 or Visual C++ 2015 Update 3
     - CMake 3.2
@@ -79,8 +78,6 @@
                                               host compiler
     - DEVICE_COMPILER_FLAGS                 Flags that will be passed to the
                                               device compiler
-    - SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS  Enable OpenGL tests (disabled by
-                                              default)
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -166,15 +163,3 @@
            + platform_api
          - skipped: 2
          = 81% pass rate
-
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Formatting the source code
-#
-
-  Running the clangformat.py script will format the source code of the CTS
-  included in tests and util directories for any .cpp , .h and .template files.
-
-  The clang-format requires at least clang-format 3.9
-  The name of the binary for clang-format can be customized inside the 
-  aforementioned script.
-

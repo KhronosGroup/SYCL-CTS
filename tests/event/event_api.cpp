@@ -10,96 +10,99 @@
 
 #define TEST_NAME event_api
 
-namespace event_api__ {
+namespace TEST_NAMESPACE {
+
 using namespace sycl_cts;
 
-/**
- * @brief Helper function to check an event profiling info parameter.
- */
-template <typename returnT, cl::sycl::info::event kValue>
-void check_event_get_profiling_info_param(sycl_cts::util::logger &log,
-                                          const cl::sycl::event &object) {
-  /** check param_traits return type
-  */
-  using paramTraitsType =
-      typename cl::sycl::info::param_traits<cl::sycl::info::event_profiling,
-                                            kValue>::return_type;
-  check_return_type<returnT>(log, paramTraitsType,
-                             "cl::sycl::info::param_traits<cl::sycl::info::"
-                             "event_profiling, kValue>::return_type");
-
-  /** check get_profiling_info return type
-  */
-  auto returnValue = object.template get_profiling_info<kValue>();
-  check_return_type<returnT>(log, returnValue, "event::get_profiling_info()");
-}
-
-/**
- */
+/** test the api for cl::sycl::event
+*/
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      auto queue = util::get_cts_object::queue();
 
-      cl::sycl::event event = queue.submit([&](cl::sycl::handler &handler) {
-        handler.single_task<class kernel0>([=]() {});
-      });
+      /** check get()
+      */
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_0>(queue);
 
-      cl::sycl::vector_class<cl::sycl::event> eventList;
-      eventList.push_back(event);
+        if (!queue.is_host()) {
+          auto evt = event.get();
+          check_return_type<cl_event>(log, evt, "cl::sycl::event::get()");
+        }
+      }
 
-      if (!queue.is_host()) {
-        auto evt = event.get();
-        check_return_type<cl_event>(log, evt, "get()");
+      /** check is_host()
+      */
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_1>(queue);
+
+        auto isHost = event.is_host();
+        check_return_type<bool>(log, isHost, "cl::sycl::event::is_host()");
       }
 
       /** check get_wait_list()
       */
-      auto events = event.get_wait_list();
-      check_return_type<cl::sycl::vector_class<cl::sycl::event>>(
-          log, events, "get_wait_list()");
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_2>(queue);
+
+        auto events = event.get_wait_list();
+        check_return_type<cl::sycl::vector_class<cl::sycl::event>>(
+            log, events, "cl::sycl::event::get_wait_list()");
+      }
 
       /** check wait()
       */
-      event.wait();
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_3>(queue);
+
+        event.wait();
+      }
 
       /** check wait_and_throw()
       */
-      event.wait_and_throw();
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_4>(queue);
+
+        event.wait_and_throw();
+      }
 
       /** check static wait()
       */
-      cl::sycl::event::wait(eventList);
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_5>(queue);
+        cl::sycl::vector_class<cl::sycl::event> eventList;
+        eventList.push_back(event);
+
+        cl::sycl::event::wait(eventList);
+      }
 
       /** check static wait_and_throw()
       */
-      cl::sycl::event::wait_and_throw(eventList);
+      {
+        auto queue = util::get_cts_object::queue();
+        auto event = get_queue_event<class event_api_kernel_6>(queue);
+        cl::sycl::vector_class<cl::sycl::event> eventList;
+        eventList.push_back(event);
 
-      check_get_info_param<cl::sycl::info::event,
-                           cl::sycl::info::event_command_status,
-                           cl::sycl::info::event::command_execution_status>(
-          log, event);
-      check_get_info_param<cl::sycl::info::event, cl::sycl::cl_uint,
-                           cl::sycl::info::event::reference_count>(log, event);
+        cl::sycl::event::wait_and_throw(eventList);
+      }
 
-      check_event_get_profiling_info_param<
-          ::cl_ulong, cl::sycl::info::event_profiling::command_submit>(log,
-                                                                       event);
-      check_event_get_profiling_info_param<
-          ::cl_ulong, cl::sycl::info::event_profiling::command_start>(log,
-                                                                      event);
-      check_event_get_profiling_info_param<
-          ::cl_ulong, cl::sycl::info::event_profiling::command_end>(log, event);
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -111,4 +114,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace event_api__ */
+} /* namespace TEST_NAMESPACE */

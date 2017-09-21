@@ -30,7 +30,8 @@ bool cmdarg::parse(const int argc, const char **args) {
   // thus here we treat args as base 1.
 
   // early exit if no argument are present
-  if (argc <= 1) return true;
+  if (argc <= 1)
+    return true;
 
   // check the pointer is valid
   assert(args != nullptr);
@@ -98,7 +99,8 @@ bool cmdarg::find_key(const std::string &key) const {
     const pair &kvp = m_pairs.at(size_t(i));
 
     // check if we can match the key
-    if (kvp.key == key) return true;
+    if (kvp.key == key)
+      return true;
   }
 
   // key could not be matched
@@ -129,5 +131,5 @@ bool cmdarg::get_value(const std::string &key, std::string &value) const {
   return false;
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

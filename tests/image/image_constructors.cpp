@@ -38,44 +38,70 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
                                 unsigned int elementSize,
                                 image_channel_order channelOrder,
                                 image_channel_type channelType,
-                                bool &combinationSuccess) {
+                                bool &combinationSuccess,
+                                const property_list &propList) {
   /* Constructor (void *, image_channel_order,
-   *              image_channel_type, const range<dims>&)
+   *              image_channel_type, const range<dims>&, const property_list&)
    */
   {
-    image<dims> img = image<dims>(imageHostPtr, channelOrder, channelType, r);
-    check_constructed_correctly(log, img, numElems, elementSize,
-                                combinationSuccess);
-  }
-
-  /* Constructor (shared_ptr_class<void>&, image_channel_order,
-   *              image_channel_type, const range<dims>&)
-   */
-  {
-    auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
-    image<dims> img = image<dims>(hostPointer, channelOrder, channelType, r);
-    check_constructed_correctly(log, img, numElems, elementSize,
-                                combinationSuccess);
-  }
-
-  /* Constructor (shared_ptr_class<void>&, image_channel_order,
-   *              image_channel_type, const range<dims>&,
-   *              mutex_class&)
-   */
-  {
-    auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
-    mutex_class mutex;
     image<dims> img =
-        image<dims>(hostPointer, channelOrder, channelType, r, mutex);
+        image<dims>(imageHostPtr, channelOrder, channelType, r, propList);
+    check_constructed_correctly(log, img, numElems, elementSize,
+                                combinationSuccess);
+  }
+
+  /* Constructor (void *, image_channel_order,
+   *              image_channel_type, const range<dims>&, allocator, const
+   * property_list&)
+   */
+  {
+    cl::sycl::image_allocator imgAlloc;
+    image<dims> img = image<dims>(imageHostPtr, channelOrder, channelType, r,
+                                  imgAlloc, propList);
+    check_constructed_correctly(log, img, numElems, elementSize,
+                                combinationSuccess);
+  }
+
+  /* Constructor (shared_ptr_class<void>&, image_channel_order,
+   *              image_channel_type, const range<dims>&, const property_list&)
+   */
+  {
+    auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
+    image<dims> img =
+        image<dims>(hostPointer, channelOrder, channelType, r, propList);
+    check_constructed_correctly(log, img, numElems, elementSize,
+                                combinationSuccess);
+  }
+
+  /* Constructor (shared_ptr_class<void>&, image_channel_order,
+   *              image_channel_type, const range<dims>&, allocator, const
+   * property_list&)
+   */
+  {
+    cl::sycl::image_allocator imgAlloc;
+    auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
+    image<dims> img = image<dims>(hostPointer, channelOrder, channelType, r,
+                                  imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
 
   /* Constructor (image_channel_order, image_channel_type,
-   *              const range<dims>&)
+   *              const range<dims>&, const property_list&)
    */
   {
-    image<dims> img = image<dims>(channelOrder, channelType, r);
+    image<dims> img = image<dims>(channelOrder, channelType, r, propList);
+    check_constructed_correctly(log, img, numElems, elementSize,
+                                combinationSuccess);
+  }
+
+  /* Constructor (image_channel_order, image_channel_type,
+   *              const range<dims>&, allocator, const property_list&)
+   */
+  {
+    cl::sycl::image_allocator imgAlloc;
+    image<dims> img =
+        image<dims>(channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -88,49 +114,75 @@ struct test_constructors_with_pitch {
                                unsigned int elementSize,
                                image_channel_order channelOrder,
                                image_channel_type channelType,
-                               range<dims - 1> *pitch,
-                               bool &combinationSuccess) {
+                               range<dims - 1> *pitch, bool &combinationSuccess,
+                               const property_list &propList) {
     /* Constructor (void *, image_channel_order,
      *              image_channel_type, const range<dims>&,
-     *              const range<dims - 1>&)
+     *              const range<dims - 1>&, const property_list&)
      */
     {
-      image<dims> img =
-          image<dims>(imageHostPtr, channelOrder, channelType, r, *pitch);
+      image<dims> img = image<dims>(imageHostPtr, channelOrder, channelType, r,
+                                    *pitch, propList);
+      check_constructed_correctly(log, img, numElems, elementSize,
+                                  combinationSuccess);
+    }
+
+    /* Constructor (void *, image_channel_order,
+     *              image_channel_type, const range<dims>&,
+     *              const range<dims - 1>&, allocator, const property_list&)
+     */
+    {
+      cl::sycl::image_allocator imgAlloc;
+      image<dims> img = image<dims>(imageHostPtr, channelOrder, channelType, r,
+                                    *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
 
     /* Constructor (shared_ptr_class<void>&, image_channel_order,
      *              image_channel_type, const range<dims>&,
-     *              const range<dims - 1>&)
+     *              const range<dims - 1>&, const property_list&)
      */
     {
       auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
-      image<dims> img =
-          image<dims>(hostPointer, channelOrder, channelType, r, *pitch);
+      image<dims> img = image<dims>(hostPointer, channelOrder, channelType, r,
+                                    *pitch, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
 
     /* Constructor (shared_ptr_class<void>&, image_channel_order,
      *              image_channel_type, const range<dims>&,
-     *              const range<dims - 1>&, mutex_class&)
+     *              const range<dims - 1>&, allocator, const property_list&)
      */
     {
+      cl::sycl::image_allocator imgAlloc;
       auto hostPointer = shared_ptr_class<void>(imageHostPtr, &no_delete);
-      mutex_class mutex;
-      image<dims> img =
-          image<dims>(hostPointer, channelOrder, channelType, r, *pitch, mutex);
+      image<dims> img = image<dims>(hostPointer, channelOrder, channelType, r,
+                                    *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
 
     /* Constructor (image_channel_order, image_channel_type,
-     *              const range<dims>&, const range<dims - 1>&)
+     *              const range<dims>&, const range<dims - 1>&, const
+     * property_list&)
      */
     {
-      image<dims> img = image<dims>(channelOrder, channelType, r, *pitch);
+      image<dims> img =
+          image<dims>(channelOrder, channelType, r, *pitch, propList);
+      check_constructed_correctly(log, img, numElems, elementSize,
+                                  combinationSuccess);
+    }
+
+    /* Constructor (image_channel_order, image_channel_type,
+     *              const range<dims>&, const range<dims - 1>&, allocator, const
+     * property_list&)
+     */
+    {
+      cl::sycl::image_allocator imgAlloc;
+      image<dims> img =
+          image<dims>(channelOrder, channelType, r, *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
@@ -144,7 +196,8 @@ struct test_constructors_with_pitch<1> {
                                unsigned int elementSize,
                                image_channel_order channelOrder,
                                image_channel_type channelType, void *pitch,
-                               bool &combinationSuccess) {
+                               bool &combinationSuccess,
+                               const property_list &propList) {
     // 1D images don't take pitch, ignore test
   }
 };
@@ -153,6 +206,7 @@ template <int dims>
 class image_ctors {
  public:
   void operator()(util::logger &log, range<dims> &r,
+                  const property_list &propList,
                   range<dims - 1> *pitch = nullptr) {
     log.note("Testing image combination: dims[%d], range[%d, %d, %d]", dims,
              r[0], r[1], r[2]);
@@ -186,18 +240,19 @@ class image_ctors {
         // Test all constructors that don't take a pitch
         test_constructors_no_pitch(log, imageHostPtr, r, numElems, elementSize,
                                    channelOrder, channelType,
-                                   combinationSuccess);
+                                   combinationSuccess, propList);
 
         // Test all constructors that take a pitch
         if (pitch != nullptr) {
           test_constructors_with_pitch<dims>(
               log, imageHostPtr, r, numElems, elementSize, channelOrder,
-              channelType, pitch, combinationSuccess);
+              channelType, pitch, combinationSuccess, propList);
         }
 
         // Check copy constructor
         {
-          image<dims> imgA(imageHostPtr, channelOrder, channelType, r);
+          image<dims> imgA(imageHostPtr, channelOrder, channelType, r,
+                           propList);
           image<dims> imgB(imgA);
 
           if (imgA.get_range() != imgB.get_range()) {
@@ -220,7 +275,8 @@ class image_ctors {
 
         /* Check copy assignment */
         {
-          image<dims> imgA(imageHostPtr, channelOrder, channelType, r);
+          image<dims> imgA(imageHostPtr, channelOrder, channelType, r,
+                           propList);
           image<dims> imgB = imgA;
 
           if (imgA.get_range() != imgB.get_range()) {
@@ -243,14 +299,40 @@ class image_ctors {
 
         /* check move constructor */
         {
-          image<dims> imgA(imageHostPtr, channelOrder, channelType, r);
+          const property_list propertyList{property::image::use_host_ptr()};
+
+          image<dims> imgA(imageHostPtr, channelOrder, channelType, r,
+                           propertyList);
           image<dims> imgB(std::move(imgA));
+
+          bool hasHostPtrProperty = imgB.template has_property<
+              cl::sycl::property::image::use_host_ptr>();
+
+          if (!hasHostPtrProperty) {
+            FAIL(log,
+                 "image was not copy assigned properly. "
+                 "(has_property<use_host_ptr>)");
+          }
         }
 
         /* check move assignment */
         {
-          image<dims> imgA(imageHostPtr, channelOrder, channelType, r);
-          image<dims> imgB = std::move(imgA);
+          const property_list propertyList{property::image::use_host_ptr()};
+
+          image<dims> imgA(imageHostPtr, channelOrder, channelType, r,
+                           propertyList);
+          image<dims> imgB(imageHostPtr, channelOrder, channelType, r);
+
+          imgB = std::move(imgA);
+
+          bool hasHostPtrProperty = imgB.template has_property<
+              cl::sycl::property::image::use_host_ptr>();
+
+          if (!hasHostPtrProperty) {
+            FAIL(log,
+                 "image was not move assigned properly. "
+                 "(has_property<use_host_ptr>)");
+          }
         }
 
         /* check equality operator */
@@ -302,13 +384,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       // Ensure the image always has 64 elements
       const int elemsPerDim1 = 64;
@@ -326,10 +408,26 @@ class TEST_NAME : public util::test_base {
       image_ctors<2> img_2d;
       image_ctors<3> img_3d;
 
-      img_1d(log, range_1d);
-      img_2d(log, range_2d, &pitch_1d);
-      img_3d(log, range_3d, &pitch_2d);
-    } catch (cl::sycl::exception e) {
+      image_ctors<1> img_1d_with_properties;
+      image_ctors<2> img_2d_with_properties;
+      image_ctors<3> img_3d_with_properties;
+
+      /* create property lists */
+      const property_list emptyPropList{};
+      mutex_class mutex;
+      auto context = util::get_cts_object::context();
+      const property_list propList{property::image::use_host_ptr(),
+                                   property::image::use_mutex(mutex),
+                                   property::image::context_bound(context)};
+
+      img_1d(log, range_1d, emptyPropList);
+      img_2d(log, range_2d, emptyPropList, &pitch_1d);
+      img_3d(log, range_3d, emptyPropList, &pitch_2d);
+
+      img_1d_with_properties(log, range_1d, propList);
+      img_2d_with_properties(log, range_2d, propList, &pitch_1d);
+      img_3d_with_properties(log, range_3d, propList, &pitch_2d);
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

@@ -61,7 +61,8 @@ bool test_manager::parse(const int argc, const char **args) {
   if (!cmdarg.parse(argc, args)) {
     // print an error message
     std::string error;
-    if (cmdarg.get_last_error(error)) std::cout << error;
+    if (cmdarg.get_last_error(error))
+      std::cout << error;
     return false;
   }
 
@@ -157,6 +158,7 @@ Usage:
     --platform -p [name]  Set a platform to target:
                   'host'
                   'amd'
+                  'arm'
                   'intel'
                   'nvidia'
     --device   -d [name]  Select a device to target:
@@ -179,5 +181,5 @@ bool test_manager::will_execute() const { return m_willExecute; }
  */
 bool test_manager::wimpy_mode_enabled() const { return m_wimpyMode; }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

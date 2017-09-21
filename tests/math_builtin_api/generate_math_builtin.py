@@ -14,7 +14,7 @@ from modules import test_generator
 
 class runner:
     def __init__(self):
-        self.base_types = ["float", "double", "cl::sycl::half", "char", "short", "int", "long int", "long long int"]
+        self.base_types = ["float", "double", "cl::sycl::half", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t"]
         self.var_types = ["scalar","vector"]
         self.dimensions = [1,2,3,4,8,16]
         self.unsigned = [True, False]

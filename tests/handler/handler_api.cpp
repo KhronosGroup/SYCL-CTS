@@ -18,19 +18,19 @@ struct simple_struct {
   float b;
 };
 
-/** tests the api for cl::sycl::handler
+/** tests the API for cl::sycl::handler
  */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
       const auto range = cl::sycl::range<1>(1);
@@ -87,7 +87,7 @@ class TEST_NAME : public util::test_base {
       }
 
       queue.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -99,4 +99,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace handler_api__ */
+} /* namespace TEST_NAMESPACE */

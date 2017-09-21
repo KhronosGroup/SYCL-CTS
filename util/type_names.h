@@ -11,23 +11,25 @@
 #include "../tests/common/sycl.h"
 #include "stl.h"
 
-template <typename T>
-cl::sycl::string_class type_name() {
+template <typename T> cl::sycl::string_class type_name() {
   using cl::sycl::string_class;
 
-#define MAKENAME(X)                                                \
-  {                                                                \
-    if (typeid(T) == typeid(X)) return cl::sycl::string_class(#X); \
+#define MAKENAME(X)                                                            \
+  {                                                                            \
+    if (typeid(T) == typeid(X))                                                \
+      return cl::sycl::string_class(#X);                                       \
   }
 
-#define MAKESYCLNAME(X)                                                      \
-  {                                                                          \
-    if (typeid(T) == typeid(cl::sycl::X)) return cl::sycl::string_class(#X); \
+#define MAKESYCLNAME(X)                                                        \
+  {                                                                            \
+    if (typeid(T) == typeid(cl::sycl::X))                                      \
+      return cl::sycl::string_class(#X);                                       \
   }
 
-#define MAKESTDNAME(X)                                               \
-  {                                                                  \
-    if (typeid(T) == typeid(::X)) return cl::sycl::string_class(#X); \
+#define MAKESTDNAME(X)                                                         \
+  {                                                                            \
+    if (typeid(T) == typeid(::X))                                              \
+      return cl::sycl::string_class(#X);                                       \
   }
 
   /* float types */

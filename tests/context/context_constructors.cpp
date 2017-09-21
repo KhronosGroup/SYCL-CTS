@@ -18,13 +18,13 @@ using namespace sycl_cts;
 class TEST_NAME : public util::test_base {
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     cts_async_handler asyncHandler;
 
     try {
@@ -32,21 +32,6 @@ class TEST_NAME : public util::test_base {
       */
       {
         cl::sycl::context context;
-
-        if (!context.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-        if (!context.is_host()) {
-          if (context.get() != nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (info::gl_context_interop) constructor
-       */
-      {
-        cl::sycl::context context(cl::sycl::info::gl_context_interop::disabled);
 
         if (!context.is_host()) {
           FAIL(log, "context was not constructed correctly (is_host)");
@@ -74,67 +59,12 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check (info::gl_context_interop, async_handler) constructor
-       */
-      {
-        cl::sycl::context context(cl::sycl::info::gl_context_interop::disabled,
-                                  asyncHandler);
-
-        if (!context.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!context.is_host()) {
-          if (context.get() != nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
       /** check (device) constructor
       */
       {
         cts_selector selector;
         auto device = util::get_cts_object::device(selector);
         cl::sycl::context context(device);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (device, info::gl_context_interop) constructor
-      */
-      {
-        cts_selector selector;
-        auto device = util::get_cts_object::device(selector);
-        cl::sycl::context context(device,
-                                  cl::sycl::info::gl_context_interop::disabled);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (device, info::gl_context_interop, async_handler) constructor
-      */
-      {
-        cts_selector selector;
-        auto device = util::get_cts_object::device(selector);
-        cl::sycl::context context(
-            device, cl::sycl::info::gl_context_interop::disabled, asyncHandler);
 
         if (context.is_host() != selector.is_host()) {
           FAIL(log, "context was not constructed correctly (is_host)");
@@ -166,93 +96,12 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check (vector_class<device>, info::gl_context_interop) constructor
-      */
-      {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
-        auto deviceList = platform.get_devices();
-        cl::sycl::context context(deviceList,
-                                  cl::sycl::info::gl_context_interop::disabled);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (vector_class<device>, info::gl_context_interop, async_handler)
-       * constructor
-      */
-      {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
-        auto deviceList = platform.get_devices();
-        cl::sycl::context context(deviceList,
-                                  cl::sycl::info::gl_context_interop::disabled,
-                                  asyncHandler);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
       /** check (platform) constructor
       */
       {
         cts_selector selector;
         auto platform = util::get_cts_object::platform(selector);
         cl::sycl::context context(platform);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (platform, info::gl_context_interop) constructor
-      */
-      {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
-        cl::sycl::context context(platform,
-                                  cl::sycl::info::gl_context_interop::disabled);
-
-        if (context.is_host() != selector.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-
-        if (!selector.is_host()) {
-          if (context.get() == nullptr) {
-            FAIL(log, "context was not constructed correctly (get)");
-          }
-        }
-      }
-
-      /** check (platform, info::gl_context_interop, async_handler) constructor
-      */
-      {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
-        cl::sycl::context context(platform,
-                                  cl::sycl::info::gl_context_interop::disabled,
-                                  asyncHandler);
 
         if (context.is_host() != selector.is_host()) {
           FAIL(log, "context was not constructed correctly (is_host)");
@@ -367,7 +216,7 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

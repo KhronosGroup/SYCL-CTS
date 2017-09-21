@@ -30,7 +30,7 @@ class kernel_item_2d {
   kernel_item_2d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
   void operator()(item<2> item) {
-    id<2> gid = item.get();
+    id<2> gid = item.get_id();
 
     size_t dim_a = item.get(0) + item.get(1);
     size_t dim_b = item[0] + item[1];
@@ -110,7 +110,7 @@ bool test_item_2d(util::logger &log) {
     });
 
     cmdQueue.wait_and_throw();
-  } catch (cl::sycl::exception e) {
+  } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     cl::sycl::string_class errorMsg =
         "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -132,13 +132,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override { test_item_2d(log); }
+  void run(util::logger &log) override { test_item_2d(log); }
 };
 
 // construction of this proxy will register the above test

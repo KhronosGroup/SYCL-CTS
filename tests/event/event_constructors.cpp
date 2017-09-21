@@ -10,35 +10,44 @@
 
 #define TEST_NAME event_constructors
 
-namespace event_constructors__ {
+namespace TEST_NAMESPACE {
+
 using namespace sycl_cts;
 
-inline cl::sycl::event get_queue_event(cl::sycl::queue &queue) {
-  return queue.submit([&](cl::sycl::handler &handler) {
-    handler.single_task<class TEST_NAME>([=]() {});
-  });
-}
-
-/** tests the constructors for cl::sycl::event
+/** test the constructors for cl::sycl::event
  */
 class TEST_NAME : public util::test_base {
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      auto queue = util::get_cts_object::queue(selector);
+
+      /** check default constructor and destructor
+      */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        cl::sycl::event event();
+
+        if (!event.is_host()) {
+          FAIL(log, "event was not constructed correctly (is_host).");
+        }
+      }
 
       /** check copy constructor
       */
       {
-        auto eventA = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_0>(queue);
         cl::sycl::event eventB(eventA);
 
         if (!selector.is_host() && (eventA.get() != eventB.get())) {
@@ -49,8 +58,11 @@ class TEST_NAME : public util::test_base {
       /** check assignment operator
       */
       {
-        auto eventA = get_queue_event(queue);
-        auto eventB = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_1>(queue);
+        auto eventB = get_queue_event<class event_constructors_2>(queue);
         eventB = eventA;
 
         if (!selector.is_host() && (eventA.get() != eventB.get())) {
@@ -61,7 +73,10 @@ class TEST_NAME : public util::test_base {
       /** check move constructor
       */
       {
-        auto eventA = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_3>(queue);
         cl::sycl::event eventB(std::move(eventA));
 
         if (!selector.is_host() && (eventB.get() == nullptr)) {
@@ -72,8 +87,11 @@ class TEST_NAME : public util::test_base {
       /** check move assignment operator
       */
       {
-        auto eventA = get_queue_event(queue);
-        auto eventB = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_4>(queue);
+        auto eventB = get_queue_event<class event_constructors_5>(queue);
         eventB = std::move(eventA);
 
         if (!selector.is_host() && (eventB.get() == nullptr)) {
@@ -84,9 +102,12 @@ class TEST_NAME : public util::test_base {
       /** check equality operator
       */
       {
-        auto eventA = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_6>(queue);
         cl::sycl::event eventB(eventA);
-        auto eventC = get_queue_event(queue);
+        auto eventC = get_queue_event<class event_constructors_7>(queue);
         eventC = eventA;
 
         if (!(eventA == eventB)) {
@@ -101,7 +122,10 @@ class TEST_NAME : public util::test_base {
       /** check hashing
       */
       {
-        auto eventA = get_queue_event(queue);
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto eventA = get_queue_event<class event_constructors_8>(queue);
         cl::sycl::event eventB = eventA;
         cl::sycl::hash_class<cl::sycl::event> hasher;
 
@@ -111,7 +135,7 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -123,4 +147,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace event_constructors__ */
+} /* namespace TEST_NAMESPACE */

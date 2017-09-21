@@ -53,17 +53,13 @@ class buffer_storage_test {
       cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(data_shrd, r);
     }
     {
-      try {
-        cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(data_shrd, r, &m);
-        m.lock();
-        std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
-        m.unlock();
-        std::weak_ptr<T> data_final;
-        buf_shrd.set_final_data(data_final);
-      } catch (cl::sycl::exception e) {
-        FAIL(log,
-             "Mutex buffers are not implemented according to specification.");
-      }
+      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
+          data_shrd, r, property_list{property::buffer::use_mutex(m)});
+      m.lock();
+      std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
+      m.unlock();
+      std::weak_ptr<T> data_final;
+      buf_shrd.set_final_data(data_final);
     }
   }
 };
@@ -75,7 +71,7 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
@@ -97,7 +93,7 @@ class TEST_NAME : public util::test_base {
 
   /** execute the test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       test_buffers<custom_alloc<int>, int>(log);
       test_buffers<custom_alloc<float>, float>(log);

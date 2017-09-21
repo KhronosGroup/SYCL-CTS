@@ -41,7 +41,7 @@ class TEST_NAME : public util::test_base {
     for (auto &e : excps) {
       try {
         throw e;
-      } catch (exception &e) {
+      } catch (const exception &e) {
         // Check methods
         cl::sycl::string_class sc = e.what();
         if (e.has_context()) {
@@ -57,13 +57,13 @@ class TEST_NAME : public util::test_base {
 
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     /*test lambda async handler*/
     {
       vector_class<exception_ptr_class> excps;

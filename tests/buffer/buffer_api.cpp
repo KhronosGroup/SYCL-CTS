@@ -28,7 +28,8 @@ class empty_kernel {
  * Generic buffer API test function
  */
 template <typename T, int size, int dims>
-void test_buffer(util::logger &log, cl::sycl::range<dims> &r) {
+void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
+                 cl::sycl::id<dims> &i) {
   try {
     unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
@@ -103,7 +104,7 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r) {
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](handler &cgh) {
-      auto acc = buf.template get_access<mode::read_write>(cgh, 0, r);
+      auto acc = buf.template get_access<mode::read_write>(cgh, offset, r);
       check_return_type<
           accessor<T, dims, mode::read_write, target::global_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
@@ -112,7 +113,7 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r) {
 
     /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<mode::read_write>(0, r);
+      auto acc = buf.template get_access<mode::read_write>(offset, r);
       check_return_type<
           accessor<T, dims, mode::read_write, target::host_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
@@ -136,8 +137,62 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r) {
       allocator.deallocate(ptr, 1);
     }
 
+    /* check is_sub_buffer() */
+    {
+      cl::sycl::buffer<T, dims> buf(r);
+      cl::sycl::buffer<T, dims> buf_sub(buf, i, r);
+      auto isSubBuffer = buf_sub.is_sub_buffer();
+      check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
+    }
+
+    /* check buffer properties */
+    {
+      cl::sycl::mutex_class mutex;
+      auto context = util::get_cts_object::context();
+      const property_list pl{
+          cl::sycl::property::buffer::use_host_ptr(),
+          cl::sycl::property::buffer::use_mutex(mutex),
+          cl::sycl::property::buffer::context_bound(context)};
+
+      cl::sycl::buffer<T, dims> buf(r, pl);
+
+      /* check has_property() */
+
+      auto hasHostPtrProperty =
+          buf.template has_property<cl::sycl::property::buffer::use_host_ptr>();
+      check_return_type<bool>(log, hasHostPtrProperty,
+                              "has_property<use_host_ptr>()");
+
+      auto hasUseMutexProperty =
+          buf.template has_property<cl::sycl::property::buffer::use_mutex>();
+      check_return_type<bool>(log, hasUseMutexProperty,
+                              "has_property<use_mutex>()");
+
+      auto hasContentBoundProperty = buf.template has_property<
+          cl::sycl::property::buffer::context_bound>();
+      check_return_type<bool>(log, hasContentBoundProperty,
+                              "has_property<context_bound>()");
+
+      /* check get_property() */
+
+      auto hostPtrProperty =
+          buf.template get_property<cl::sycl::property::buffer::use_host_ptr>();
+      check_return_type<cl::sycl::property::buffer::use_host_ptr>(
+          log, hostPtrProperty, "get_property<use_host_ptr>()");
+
+      auto useMutexProperty =
+          buf.template get_property<cl::sycl::property::buffer::use_mutex>();
+      check_return_type<cl::sycl::property::buffer::use_mutex>(
+          log, useMutexProperty, "get_property<use_mutex>()");
+
+      auto contentBoundProperty = buf.template get_property<
+          cl::sycl::property::buffer::context_bound>();
+      check_return_type<cl::sycl::property::buffer::context_bound>(
+          log, contentBoundProperty, "get_property<context_bound>()");
+    }
+
     q.wait_and_throw();
-  } catch (cl::sycl::exception e) {
+  } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     cl::sycl::string_class errorMsg =
         "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -151,7 +206,7 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
@@ -162,14 +217,18 @@ class TEST_NAME : public util::test_base {
     cl::sycl::range<2> range2d(size, size);
     cl::sycl::range<3> range3d(size, size, size);
 
-    test_buffer<T, size, 1>(log, range1d);
-    test_buffer<T, size * size, 2>(log, range2d);
-    test_buffer<T, size * size * size, 3>(log, range3d);
+    id<1> id1d(2);
+    id<2> id2d(2, 2);
+    id<3> id3d(2, 2, 2);
+
+    test_buffer<T, size, 1>(log, range1d, id1d);
+    test_buffer<T, size * size, 2>(log, range2d, id2d);
+    test_buffer<T, size * size * size, 3>(log, range3d, id3d);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     /* test signed types */
     test_type<int8_t>(log);
     test_type<int16_t>(log);

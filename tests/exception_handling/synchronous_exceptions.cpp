@@ -20,20 +20,20 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     cts_selector selector;
     cl::sycl::queue q(selector);
 
     try {
       q.submit(
           [&](handler &cgh) { cgh.single_task<class TEST_NAME>([=]() {}); });
-    } catch (exception &e) {
+    } catch (const exception &e) {
       // Check methods
       cl::sycl::string_class sc = e.what();
       if (e.has_context()) {

@@ -51,8 +51,7 @@ float getElement(const float &f, int ix);
 /* extract individual elements of an integer type */
 int getElement(const int &f, int ix);
 
-template <typename T, int dim>
-T getElement(cl::sycl::vec<T, dim> &f, int ix) {
+template <typename T, int dim> T getElement(cl::sycl::vec<T, dim> &f, int ix) {
   return getComponent<T, dim>()(f, ix);
 }
 

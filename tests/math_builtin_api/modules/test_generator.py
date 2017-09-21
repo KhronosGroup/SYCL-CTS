@@ -14,25 +14,25 @@ def generate_value(base_type, dim, unsigned):
             # 10 digits of precision for floats, doubles and half.
             val += str(round(random.uniform(0.1, 0.9), 10)) + ","
         # random 8 bit integer
-        if base_type == "char":
+        if base_type == "char" or base_type == "int8_t":
             if unsigned:
                 val += str(random.randint(0, 255)) + ","
             else:
                 val += str(random.randint(-128, 127)) + ","
         # random 16 bit integer
-        if base_type == "int" or base_type == "short":
+        if base_type == "int" or base_type == "short" or base_type == "int16_t":
             if unsigned:
                 val += str(random.randint(0, 65535)) + ","
             else:
                 val += str(random.randint(-32768, 32767)) + ","
         # random 32 bit integer
-        if base_type == "long int":
+        if base_type == "long int" or base_type == "int32_t":
             if unsigned:
                 val += str(random.randint(0, 4294967295)) + ","
             else:
                 val += str(random.randint(-2147483648, 2147483647)) + ","
         # random 64 bit integer
-        if base_type == "long long int":
+        if base_type == "long long int" or base_type == "int64_t":
             if unsigned:
                 val += str(random.randint(0, 18446744073709551615)) + ","
             else:

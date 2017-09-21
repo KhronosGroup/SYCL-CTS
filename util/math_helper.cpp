@@ -67,7 +67,8 @@ int getElement(const int &f, int ix) { return f; }
 
 /* create random floats with full integer range */
 void rand(MTdata &rng, float *buf, int num) {
-  for (int i = 0; i < num; i++) buf[i] = (float)int32_t(genrand_int32(rng));
+  for (int i = 0; i < num; i++)
+    buf[i] = (float)int32_t(genrand_int32(rng));
 }
 
 void rand(MTdata &rng, float2 *buf, int num) {
@@ -99,7 +100,8 @@ void rand(MTdata &rng, float16 *buf, int num) {
 void rand(MTdata &rng, uint8_t *buf, int size) {
   uint32_t r = 0;
   for (int i = 0; i < size; i++) {
-    if ((i % 4) == 0) r = genrand_int32(rng);
+    if ((i % 4) == 0)
+      r = genrand_int32(rng);
     buf[i] = r & 0xff;
     r >>= 8;
   }

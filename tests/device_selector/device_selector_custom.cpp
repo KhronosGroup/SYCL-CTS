@@ -48,13 +48,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       /** check a custom selector for a device
       */
@@ -77,18 +77,6 @@ class TEST_NAME : public util::test_base {
         /* check our device selector was used */
         if (!selector.called) {
           FAIL(log, "custom selector was never used for creating a platform");
-        }
-      }
-
-      /** check a custom selector for a context
-      */
-      {
-        call_selector selector;
-        auto context = util::get_cts_object::context(selector);
-
-        /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a context");
         }
       }
 
@@ -115,7 +103,7 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "custom selector selected a device with a negative score");
         }
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

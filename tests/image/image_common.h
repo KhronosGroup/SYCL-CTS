@@ -419,10 +419,10 @@ collection get_test_set_minimum(image_channel_order order) {
 }
 
 template <int numElems>
-unique_ptr_class<char[]> get_image_host(unsigned int channelCount,
-                                        unsigned int channelTypeSize) {
-  unique_ptr_class<char[]> imageHost(
-      new char[numElems * channelTypeSize * channelCount]);
+unique_ptr_class<cl::sycl::byte[]> get_image_host(
+    unsigned int channelCount, unsigned int channelTypeSize) {
+  unique_ptr_class<cl::sycl::byte[]> imageHost(
+      new cl::sycl::byte[numElems * channelTypeSize * channelCount]);
   for (unsigned int ii = 0; ii < numElems * channelCount; ii++) {
     for (unsigned int ij = 0; ij < channelTypeSize; ij++) {
       imageHost[ii * channelTypeSize + ij] = ij + 1;

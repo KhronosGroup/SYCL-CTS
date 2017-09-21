@@ -6,8 +6,6 @@
 //
 *******************************************************************************/
 
-// NOTE: THIS TEST WILL BE REFACTORED
-
 #include "../common/common.h"
 
 #include <cassert>
@@ -16,326 +14,165 @@
 #define EXPECT_EQUALS(lhs, rhs) \
   if ((lhs) != (rhs)) return false;
 
-#define EXPECT_ADDRSPACE_EQUALS(expr, as) EXPECT_EQUALS((expr).get_value(), as)
+#define EXPECT_ADDRSPACE_EQUALS(expr, as) \
+  EXPECT_EQUALS(expr, (AddrSpace<as>()).get_value())
 
 #define TEST_NAME address_space
 
-namespace address_space__ {
+namespace TEST_NAME {
 using namespace sycl_cts;
-using namespace cl::sycl::access;
-
-#if defined(__SYCL_DEVICE_ONLY__)
 
 template <cl::sycl::access::address_space kAs>
 struct AddrSpace {
-  constexpr cl::sycl::access::address_space get_value() const { return kAs; }
+  constexpr int get_value() const { return static_cast<int>(kAs); }
 };
-
-// global functions
-AddrSpace<cl::sycl::access::address_space::global_space>
-f(cl::sycl::multi_ptr<int,
-                      cl::sycl::access::address_space::global_space>::pointer) {
-  return {};
-}
-AddrSpace<cl::sycl::access::address_space::local_space>
-f(cl::sycl::multi_ptr<int,
-                      cl::sycl::access::address_space::local_space>::pointer) {
-  return {};
-}
-AddrSpace<cl::sycl::access::address_space::constant_space> f(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::constant_space>::pointer) {
-  return {};
-}
-AddrSpace<cl::sycl::access::address_space::private_space> f(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::private_space>::pointer) {
-  return {};
-}
-
-struct C {
-  /*implicit*/
-  C() = default;
-
-  // constructors
-  cl::sycl::access::address_space m_addrspace;
-
-  explicit C(cl::sycl::multi_ptr<
-             int, cl::sycl::access::address_space::global_space>::pointer)
-      : m_addrspace(cl::sycl::access::address_space::global_space) {}
-  explicit C(cl::sycl::multi_ptr<
-             int, cl::sycl::access::address_space::local_space>::pointer)
-      : m_addrspace(cl::sycl::access::address_space::local_space) {}
-  explicit C(cl::sycl::multi_ptr<
-             int, cl::sycl::access::address_space::constant_space>::pointer)
-      : m_addrspace(cl::sycl::access::address_space::constant_space) {}
-  explicit C(cl::sycl::multi_ptr<
-             int, cl::sycl::access::address_space::private_space>::pointer)
-      : m_addrspace(cl::sycl::access::address_space::private_space) {}
-
-  // methods
-  AddrSpace<cl::sycl::access::address_space::global_space> g(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::global_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::local_space> g(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::local_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::constant_space> g(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::constant_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::private_space> g(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::private_space>::pointer) {
-    return {};
-  }
-
-  // operators
-  AddrSpace<cl::sycl::access::address_space::global_space> operator+(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::global_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::local_space> operator+(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::local_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::constant_space> operator+(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::constant_space>::pointer) {
-    return {};
-  }
-
-  AddrSpace<cl::sycl::access::address_space::private_space> operator+(
-      cl::sycl::multi_ptr<
-          int, cl::sycl::access::address_space::private_space>::pointer) {
-    return {};
-  }
-};
-
-bool test_overload_resolution(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::global_space>::pointer globalPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::local_space>::pointer localPtr,
-    cl::sycl::multi_ptr<int, cl::sycl::access::address_space::constant_space>::
-        pointer constantPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::private_space>::pointer privPtr) {
-  // functions
-  EXPECT_ADDRSPACE_EQUALS(f(globalPtr),
-                          cl::sycl::access::address_space::global_space);
-  EXPECT_ADDRSPACE_EQUALS(f(localPtr),
-                          cl::sycl::access::address_space::local_space);
-  EXPECT_ADDRSPACE_EQUALS(f(constantPtr),
-                          cl::sycl::access::address_space::constant_space);
-  EXPECT_ADDRSPACE_EQUALS(f(privPtr),
-                          cl::sycl::access::address_space::private_space);
-
-  // methods
-  C c;
-  EXPECT_ADDRSPACE_EQUALS(c.g(globalPtr),
-                          cl::sycl::access::address_space::global_space);
-  EXPECT_ADDRSPACE_EQUALS(c.g(localPtr),
-                          cl::sycl::access::address_space::local_space);
-  EXPECT_ADDRSPACE_EQUALS(c.g(constantPtr),
-                          cl::sycl::access::address_space::constant_space);
-  EXPECT_ADDRSPACE_EQUALS(c.g(privPtr),
-                          cl::sycl::access::address_space::private_space);
-
-  // constructors
-  EXPECT_EQUALS(C{globalPtr}.m_addrspace,
-                cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(C{localPtr}.m_addrspace,
-                cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(C{constantPtr}.m_addrspace,
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(C{privPtr}.m_addrspace,
-                cl::sycl::access::address_space::private_space);
-
-  // operators
-  EXPECT_ADDRSPACE_EQUALS(c + globalPtr,
-                          cl::sycl::access::address_space::global_space);
-  EXPECT_ADDRSPACE_EQUALS(c + localPtr,
-                          cl::sycl::access::address_space::local_space);
-  EXPECT_ADDRSPACE_EQUALS(c + constantPtr,
-                          cl::sycl::access::address_space::constant_space);
-  EXPECT_ADDRSPACE_EQUALS(c + privPtr,
-                          cl::sycl::access::address_space::private_space);
-
-  return true;
-}
 
 // the parameter has no address space specification, so it'll
-// get duplication based on the argument's address space
+// get duplicated based on the argument's address space
 // it should call the appropiate overload of f(), and that will
 // tell us the address space the parameter was in
-template <typename T,
-          typename std::enable_if<std::is_pointer<T>::value, void> * = nullptr>
-cl::sycl::access::address_space getAddrSpace(T p) {
-  return f(p).get_value();
-}
 
-struct D {
-  template <typename T, typename std::enable_if<std::is_pointer<T>::value, void>
-                            * = nullptr>
-  cl::sycl::access::address_space getAddrSpace(T p) {
-    return address_space__::getAddrSpace(p);
-  }
+int readValue(int *p) { return *p; }
 
-  template <typename T, typename std::enable_if<std::is_pointer<T>::value, void>
-                            * = nullptr>
-  cl::sycl::access::address_space operator[](T p) {
-    return address_space__::getAddrSpace(p);
-  }
+int readValue(int &p) { return p; }
+
+struct SomeStruct {
+  int readValue(int *p) { return *p; }
+
+  int readValue(int &p) { return p; }
+
+  int operator[](int *p) { return *p; }
+
+  int operator[](int &p) { return p; }
 };
 
-bool test_duplication(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::global_space>::pointer globalPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::local_space>::pointer localPtr,
-    cl::sycl::multi_ptr<int, cl::sycl::access::address_space::constant_space>::
-        pointer constantPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::private_space>::pointer privPtr) {
-  EXPECT_EQUALS(getAddrSpace(globalPtr),
-                cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(getAddrSpace(localPtr),
-                cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(getAddrSpace(constantPtr),
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(getAddrSpace(privPtr),
-                cl::sycl::access::address_space::private_space);
+template <cl::sycl::access::address_space AspSpace>
+bool test_duplication(cl::sycl::multi_ptr<int, AspSpace> ptr) {
+  EXPECT_ADDRSPACE_EQUALS(readValue(ptr), AspSpace);
+  EXPECT_ADDRSPACE_EQUALS(readValue(*ptr), AspSpace);
 
-  D d;
-  EXPECT_EQUALS(d.getAddrSpace(globalPtr),
-                cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(d.getAddrSpace(localPtr),
-                cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(d.getAddrSpace(constantPtr),
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(d.getAddrSpace(privPtr),
-                cl::sycl::access::address_space::private_space);
-
-  EXPECT_EQUALS(d[globalPtr], cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(d[localPtr], cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(d[constantPtr],
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(d[privPtr], cl::sycl::access::address_space::private_space);
+  SomeStruct d;
+  EXPECT_ADDRSPACE_EQUALS(d.readValue(ptr), AspSpace);
+  EXPECT_ADDRSPACE_EQUALS(d.readValue(*ptr), AspSpace);
+  EXPECT_ADDRSPACE_EQUALS(d[ptr], AspSpace);
+  EXPECT_ADDRSPACE_EQUALS(d[*ptr], AspSpace);
 
   return true;
 }
 
-template <typename T,
-          typename std::enable_if<std::is_pointer<T>::value, void> * = nullptr>
-T id(T p) {
+bool test_duplication(cl::sycl::global_ptr<int> globalPtr,
+                      cl::sycl::local_ptr<int> localPtr,
+                      cl::sycl::constant_ptr<int> constantPtr,
+                      cl::sycl::private_ptr<int> privPtr) {
+  test_duplication(globalPtr);
+  test_duplication(localPtr);
+  test_duplication(constantPtr);
+  test_duplication(privPtr);
+
+  return true;
+}
+
+template <cl::sycl::access::address_space AspSpace>
+int *id(cl::sycl::multi_ptr<int, AspSpace> p) {
   return p;
 }
 
-bool test_return_type_deduction(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::global_space>::pointer globalPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::local_space>::pointer localPtr,
-    cl::sycl::multi_ptr<int, cl::sycl::access::address_space::constant_space>::
-        pointer constantPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::private_space>::pointer privPtr) {
+bool test_return_type_deduction(cl::sycl::global_ptr<int> globalPtr,
+                                cl::sycl::local_ptr<int> localPtr,
+                                cl::sycl::constant_ptr<int> constantPtr,
+                                cl::sycl::private_ptr<int> privPtr) {
   // return type deduction
-  EXPECT_EQUALS(getAddrSpace(id(globalPtr)),
-                cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(getAddrSpace(id(localPtr)),
-                cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(getAddrSpace(id(constantPtr)),
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(getAddrSpace(id(privPtr)),
-                cl::sycl::access::address_space::private_space);
+  EXPECT_ADDRSPACE_EQUALS(*id(globalPtr),
+                          cl::sycl::access::address_space::global_space);
+  EXPECT_ADDRSPACE_EQUALS(*id(localPtr),
+                          cl::sycl::access::address_space::local_space);
+  EXPECT_ADDRSPACE_EQUALS(*id(constantPtr),
+                          cl::sycl::access::address_space::constant_space);
+  EXPECT_ADDRSPACE_EQUALS(*id(privPtr),
+                          cl::sycl::access::address_space::private_space);
 
   return true;
 }
 
-bool test_initialization(
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::global_space>::pointer globalPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::local_space>::pointer localPtr,
-    cl::sycl::multi_ptr<int, cl::sycl::access::address_space::constant_space>::
-        pointer constantPtr,
-    cl::sycl::multi_ptr<
-        int, cl::sycl::access::address_space::private_space>::pointer privPtr) {
-  auto p1 = globalPtr;
-  auto p2 = localPtr;
-  auto p3 = constantPtr;
-  auto p4 = privPtr;
+bool test_initialization(cl::sycl::global_ptr<int> globalPtr,
+                         cl::sycl::local_ptr<int> localPtr,
+                         cl::sycl::constant_ptr<int> constantPtr,
+                         cl::sycl::private_ptr<int> privPtr) {
+  int *p1 = globalPtr;
+  int *p2 = localPtr;
+  int *p3 = constantPtr;
+  int *p4 = privPtr;
 
-  EXPECT_EQUALS(getAddrSpace(p1),
-                cl::sycl::access::address_space::global_space);
-  EXPECT_EQUALS(getAddrSpace(p2), cl::sycl::access::address_space::local_space);
-  EXPECT_EQUALS(getAddrSpace(p3),
-                cl::sycl::access::address_space::constant_space);
-  EXPECT_EQUALS(getAddrSpace(p4),
-                cl::sycl::access::address_space::private_space);
+  EXPECT_ADDRSPACE_EQUALS(*p1, cl::sycl::access::address_space::global_space);
+  EXPECT_ADDRSPACE_EQUALS(*p2, cl::sycl::access::address_space::local_space);
+  EXPECT_ADDRSPACE_EQUALS(*p3, cl::sycl::access::address_space::constant_space);
+  EXPECT_ADDRSPACE_EQUALS(*p4, cl::sycl::access::address_space::private_space);
 
   return true;
 }
-
-void test(bool &pass) {
-  pass = test_overload_resolution(nullptr, nullptr, nullptr, nullptr);
-  if (!pass) return;
-  pass = test_duplication(nullptr, nullptr, nullptr, nullptr);
-  if (!pass) return;
-  pass = test_return_type_deduction(nullptr, nullptr, nullptr, nullptr);
-  if (!pass) return;
-  pass = test_initialization(nullptr, nullptr, nullptr, nullptr);
-  if (!pass) return;
-}
-
-#else
-
-void test(bool &pass) {
-  // this test is supposed to only work on the device compiler.
-  pass = true;
-}
-
-#endif
 
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     bool pass = false;
+    std::array<int, 4> ASPValues = {
+        AddrSpace<cl::sycl::access::address_space::global_space>().get_value(),
+        AddrSpace<cl::sycl::access::address_space::constant_space>()
+            .get_value(),
+        AddrSpace<cl::sycl::access::address_space::local_space>().get_value(),
+        AddrSpace<cl::sycl::access::address_space::private_space>()
+            .get_value()};
+
     cl::sycl::range<1> r(1);
+
     try {
-      cl::sycl::buffer<bool, 1> buf(&pass, r);
+      cl::sycl::buffer<bool, 1> resBuff(&pass, r);
+      cl::sycl::buffer<int, 1> initBuff(ASPValues.data(), ASPValues.size());
+      cl::sycl::buffer<int, 1> globalBuff(&ASPValues[0], r);
+      cl::sycl::buffer<int, 1> constantBuff(&ASPValues[1], r);
+
       auto q = util::get_cts_object::queue();
 
       q.submit([&](cl::sycl::handler &cgh) {
-        auto acc = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
+        auto resAcc =
+            resBuff.get_access<cl::sycl::access::mode::read_write>(cgh);
+        auto initAcc = initBuff.get_access<cl::sycl::access::mode::read>(cgh);
+        auto globalAcc =
+            globalBuff.get_access<cl::sycl::access::mode::read>(cgh);
+        cl::sycl::accessor<int, 1, cl::sycl::access::mode::read,
+                           cl::sycl::access::target::constant_buffer>
+            constAcc(constantBuff, cgh);
+        cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                           cl::sycl::access::target::local>
+            localAcc(r, cgh);
 
         cgh.single_task<TEST_NAME>([=]() {
-          bool b = acc[0];
-          test(b);
-          acc[0] = b;
+          bool pass = resAcc[0];
+          localAcc[0] = initAcc[2];
+          int priv = initAcc[3];
+
+          pass = test_duplication(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), cl::sycl::private_ptr<int>(&priv));
+          if (!pass) return;
+          pass = test_return_type_deduction(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), cl::sycl::private_ptr<int>(&priv));
+          if (!pass) return;
+          pass = test_initialization(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), cl::sycl::private_ptr<int>(&priv));
+          if (!pass) return;
+          resAcc[0] = pass;
         });
       });
 
       q.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -350,4 +187,4 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace address_space */
+} /* namespace TEST_NAME */

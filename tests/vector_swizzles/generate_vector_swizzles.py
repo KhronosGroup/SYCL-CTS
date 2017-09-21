@@ -8,314 +8,328 @@
 
 import sys
 sys.path.append('../common/')
-from common_python_vec import Data, replace_string_in_source_string
+from common_python_vec import Data, replace_string_in_source_string, swap_pairs, generate_value_list, append_fp_postfix, wrap_with_kernel
 from string import Template
+from itertools import product
 
-
-x = ['x']
-xy = ['x', 'y']
-xyz = ['x', 'y', 'z']
-xyzw = ['x', 'y', 'z', 'w']
-r = ['r']
-rg = ['r', 'g']
-rgb = ['r', 'g', 'b']
-rgba = ['r', 'g', 'b', 'a']
-swizzle_vals = {'x': '0', 'y': '1', 'z': '2', 'w': '3',
-                'r': '0', 'g': '1', 'b': '2', 'a': '3'}
-
-all_vector_checks_template = Template(
-    """  check_equal_type<vec<${type}, ${size}>>(log, swizzledVec,
-    "Testing swizzled constructor .${conname}()");
-  check_vector_size<${type}, ${size}>(log, swizzledVec);
-  check_vector_values<${type}, ${size}>(log, swizzledVec, vals);
-  check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
-    (log, swizzledVec, vals);\n""")
-
-lo_hi_odd_even_template = Template(
-    """  check_lo_hi_odd_even<${type}, ${size}>(log, swizzledVec, vals);\n""")
-
-vals_template = Template("""  ${type} vals[] = {${vals}};
-  ${type} in_order_vals[] = {${in_order_vals}};
-  ${type} reversed_vals[] = {${reversed_vals}};\n""")
-
-swizzle_function_template = Template("""  auto inOrderSwizzledVec = ${dims}DimTestVec.${in_order_positions}();
-  vec<${type}, ${size}> swizzleFunctionVec = swizzledVec.template swizzle<${swiz_vals}>();
-  check_vector_values<${type}, ${size}>(log, swizzleFunctionVec, reversed_vals);\n""")
 
 swizzle_template = Template(
-    """{ auto swizzledVec = ${dims}DimTestVec.${pos1}${pos2}${pos3}${pos4}();\n""")
+    """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+        auto swizzledVec = ${name}DimTestVec.${indexes}();
+        ${type} in_order_vals[] = {${in_order_vals}};
+        ${type} reversed_vals[] = {${reversed_vals}};
+        ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
+        ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(swizzledVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(swizzledVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+          (swizzledVec, in_order_vals)) {
+            resAcc[0] = false;
+        }
+""")
+
+lo_hi_odd_even_template = Template(
+    """        if (!check_lo_hi_odd_even<${type}, ${size}>(swizzledVec, in_order_vals)) {
+          resAcc[0] = false;
+        }
+""")
+
+swizzle_elem_template = Template(
+    """        cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec = swizzledVec.template swizzle<${in_order_swiz_indexes}>();
+        if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
+            resAcc[0] = false;
+        }
+        cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec = swizzledVec.template swizzle<${reverse_order_swiz_indexes}>();
+        if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
+            resAcc[0] = false;
+        }
+        cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec = swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>();
+        if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+        cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec = swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>();
+        if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+""")
+
+swizzle_full_test_template = Template(
+    """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+        ${type} in_order_vals[] = {${in_order_vals}};
+        cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec = ${name}DimTestVec.template swizzle<${in_order_swiz_indexes}>();
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderSwizzledFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+          (inOrderSwizzleFunctionVec, in_order_vals)) {
+            resAcc[0] = false;
+        }
+
+        ${type} reversed_vals[] = {${reversed_vals}};
+        cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec = ${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>();
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderSwizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+          (reverseOrderSwizzleFunctionVec, reversed_vals)) {
+            resAcc[0] = false;
+        }
+
+        ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
+        cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec = ${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>();
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderReversedPairswizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(inOrderReversedPairswizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(inOrderReversedPairswizzleFunctionVec, in_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+          (inOrderReversedPairswizzleFunctionVec, in_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+
+        ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
+        cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec = ${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>();
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+          (reverseOrderReversedPairSwizzleFunctionVec,
+           reverse_order_reversed_pair_vals)) {
+            resAcc[0] = false;
+        }
+""")
 
 
-def print_vec(
-        dims,
-        pos1,
-        pos2='',
-        pos3='',
-        pos4=''):
-    return swizzle_template.substitute(
-        dims=dims,
-        pos1=pos1,
-        pos2=pos2,
-        pos3=pos3,
-        pos4=pos4)
-
-
-def gen_one_dim_swizzles(type_str, convert_type_str, as_type_str, dims=1):
+def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
     string = ''
-    for pos1 in x:
-        string += print_vec('One', pos1)
-        string += vals_template.substitute(type=type_str,
-                                           vals=swizzle_vals[pos1],
-                                           in_order_vals=Data.vals_dict[dims],
-                                           reversed_vals=Data.reverse_vals_dict[dims])
-        string += swizzle_function_template.substitute(
-            dims='One',
-            in_order_positions='x',
-            type=type_str,
-            size=dims,
-            swiz_vals=Data.reverse_swizzle_index_dict[dims])
-        string += all_vector_checks_template.substitute(
-            type=type_str,
-            convert_type=convert_type_str,
-            as_type=as_type_str,
-            size=1,
-            conname=pos1)
-        string += '}\n'
-    for pos1 in r:
-        string += print_vec('One', pos1)
-        string += vals_template.substitute(type=type_str,
-                                           vals=swizzle_vals[pos1],
-                                           in_order_vals=Data.vals_dict[dims],
-                                           reversed_vals=Data.reverse_vals_dict[dims])
-        string += swizzle_function_template.substitute(
-            dims='One',
-            in_order_positions='r',
-            type=type_str,
-            size=dims,
-            swiz_vals=Data.reverse_swizzle_index_dict[dims])
-        string += all_vector_checks_template.substitute(
-            type=type_str,
-            convert_type=convert_type_str,
-            as_type=as_type_str,
-            size=1,
-            conname=pos1)
-        string += '}\n'
-    return string
-
-
-def gen_two_dim_swizzles(type_str, convert_type_str, as_type_str, dims=2):
-    string = ''
-    for pos1 in xy:
-        for pos2 in xy:
-            string += print_vec('Two', pos1, pos2)
-            string += vals_template.substitute(type=type_str,
-                                               vals=swizzle_vals[pos1] +
-                                               ', ' +
-                                               swizzle_vals[pos2],
-                                               in_order_vals=Data.vals_dict[dims],
-                                               reversed_vals=Data.reverse_vals_dict[dims])
-            string += swizzle_function_template.substitute(
-                dims='Two',
-                in_order_positions='xy',
-                type=type_str,
-                size=dims,
-                swiz_vals=Data.reverse_swizzle_index_dict[dims])
-            string += all_vector_checks_template.substitute(
-                type=type_str,
-                convert_type=convert_type_str,
-                as_type=as_type_str,
-                size=2,
-                conname=pos1 + pos2)
-            string += lo_hi_odd_even_template.substitute(
-                type=type_str,
-                size=2)
-            string += '}\n'
-    for pos1 in rg:
-        for pos2 in rg:
-            string += print_vec('Two', pos1, pos2)
-            string += vals_template.substitute(type=type_str,
-                                               vals=swizzle_vals[pos1] +
-                                               ', ' +
-                                               swizzle_vals[pos2],
-                                               in_order_vals=Data.vals_dict[dims],
-                                               reversed_vals=Data.reverse_vals_dict[dims])
-            string += swizzle_function_template.substitute(
-                dims='Two',
-                in_order_positions='rg',
-                type=type_str,
-                size=dims,
-                swiz_vals=Data.reverse_swizzle_index_dict[dims])
-            string += all_vector_checks_template.substitute(
-                type=type_str,
-                convert_type=convert_type_str,
-                as_type=as_type_str,
-                size=2,
-                conname=pos1 + pos2)
-            string += lo_hi_odd_even_template.substitute(
-                type=type_str,
-                size=2)
-            string += '}\n'
-    return string
-
-
-def gen_three_dim_swizzles(type_str, convert_type_str, as_type_str, dims=3):
-    string = ''
-    for pos1 in xyz:
-        for pos2 in xyz:
-            for pos3 in xyz:
-                string += print_vec('Three', pos1, pos2, pos3)
-                string += vals_template.substitute(type=type_str,
-                                                   vals=swizzle_vals[pos1] +
-                                                   ', ' +
-                                                   swizzle_vals[pos2] +
-                                                   ', ' +
-                                                   swizzle_vals[pos3],
-                                                   in_order_vals=Data.vals_dict[dims],
-                                                   reversed_vals=Data.reverse_vals_dict[dims])
-                string += swizzle_function_template.substitute(
-                    dims='Three',
-                    in_order_positions='xyz',
-                    type=type_str,
-                    size=dims,
-                    swiz_vals=Data.reverse_swizzle_index_dict[dims])
-                string += all_vector_checks_template.substitute(
-                    type=type_str,
-                    convert_type=convert_type_str,
-                    as_type=as_type_str,
-                    size=3,
-                    conname=pos1 + pos2 + pos3)
-                string += lo_hi_odd_even_template.substitute(
-                    type=type_str,
-                    size=3)
-                string += '}\n'
-    for pos1 in rgb:
-        for pos2 in rgb:
-            for pos3 in rgb:
-                string += print_vec('Three', pos1, pos2, pos3)
-                string += vals_template.substitute(type=type_str,
-                                                   vals=swizzle_vals[pos1] +
-                                                   ', ' +
-                                                   swizzle_vals[pos2] +
-                                                   ', ' +
-                                                   swizzle_vals[pos3],
-                                                   in_order_vals=Data.vals_dict[dims],
-                                                   reversed_vals=Data.reverse_vals_dict[dims])
-                string += swizzle_function_template.substitute(
-                    dims='Three',
-                    in_order_positions='rgb',
-                    type=type_str,
-                    size=dims,
-                    swiz_vals=Data.reverse_swizzle_index_dict[dims])
-                string += all_vector_checks_template.substitute(
-                    type=type_str,
-                    convert_type=convert_type_str,
-                    as_type=as_type_str,
-                    size=3,
-                    conname=pos1 + pos2 + pos3)
-                string += lo_hi_odd_even_template.substitute(
-                    type=type_str,
-                    size=3)
-                string += '}\n'
-    return string
-
-
-def gen_four_dim_swizzles(type_str, convert_type_str, as_type_str, dims=4):
-    string = ''
-    for pos1 in xyzw:
-        for pos2 in xyzw:
-            for pos3 in xyzw:
-                for pos4 in xyzw:
-                    string += print_vec('Four', pos1, pos2, pos3, pos4)
-                    string += vals_template.substitute(
-                        type=type_str,
-                        vals=swizzle_vals[pos1] +
+    if size <= 4:
+        for length in range(size, size + 1):
+            for index_subset, value_subset in zip(product(Data.swizzle_xyzw_list_dict[size][:size], repeat=length),
+                                                  product(Data.vals_list_dict[size][:size], repeat=length)):
+                index_list = []
+                val_list = []
+                for index, value in zip(index_subset, value_subset):
+                    index_list.append(index)
+                    val_list.append(value)
+                val_list = append_fp_postfix(type_str, val_list)
+                index_string = ''.join(index_list)
+                test_string = swizzle_template.substitute(name=Data.vec_name_dict[size],
+                                                          indexes=index_string,
+                                                          type=type_str,
+                                                          testVecValues=generate_value_list(type_str, size),
+                                                          in_order_vals=', '.join(
+                                                          val_list),
+                                                          reversed_vals=', '.join(
+                                                          val_list[::-1]),
+                                                          in_order_pair_vals=', '.join(
+                                                          swap_pairs(val_list)),
+                                                          reverse_order_pair_vals=', '.join(
+                                                          swap_pairs(val_list[::-1])),
+                                                          in_order_positions=''.join(
+                                                          Data.swizzle_xyzw_list_dict[size][:size]),
+                                                          size=size,
+                                                          swiz_vals=Data.swizzle_elem_list_dict[size][::-1],
+                                                          convert_type=convert_type_str,
+                                                          as_type=as_type_str)
+                if size > 1:
+                    test_string += lo_hi_odd_even_template.substitute(
+                        type=type_str, size=size)
+                test_string += swizzle_elem_template.substitute(type=type_str,
+                                                                size=size,
+                                                                in_order_swiz_indexes=', '.join(
+                                                                    Data.swizzle_elem_list_dict[size]),
+                                                                reverse_order_swiz_indexes=', '.join(
+                                                                    Data.swizzle_elem_list_dict[size][::-1]),
+                                                                in_order_reversed_pair_swiz_indexes=', '.join(
+                                                                    swap_pairs(Data.swizzle_elem_list_dict[size])),
+                                                                reverse_order_reversed_pair_swiz_indexes=', '.join(swap_pairs(Data.swizzle_elem_list_dict[size][::-1])))
+                string += wrap_with_kernel(
+                    type_str,
+                    'KERNEL_' +
+                    type_str.replace(
+                        'cl::sycl::',
+                        '').replace(
+                        ' ',
+                        '') +
+                    str(size) +
+                    index_string,
+                    'vec<' +
+                    type_str +
+                    ', ' +
+                    str(size) +
+                    '>.' +
+                    index_string,
+                    test_string)
+        if size == 4:
+            for length in range(size, size + 1):
+                for index_subset, value_subset in zip(product(Data.swizzle_rgba_list_dict[size][:size], repeat=length),
+                                                      product(Data.vals_list_dict[size][:size], repeat=length)):
+                    index_list = []
+                    val_list = []
+                    for index, value in zip(index_subset, value_subset):
+                        index_list.append(index)
+                        val_list.append(value)
+                    index_string = ''.join(index_list)
+                    test_string = swizzle_template.substitute(name=Data.vec_name_dict[size],
+                                                              indexes=index_string,
+                                                              type=type_str,
+                                                              testVecValues=generate_value_list(type_str, size),
+                                                              in_order_vals=', '.join(
+                                                              val_list),
+                                                              reversed_vals=', '.join(
+                                                              val_list[::-1]),
+                                                              in_order_pair_vals=', '.join(
+                                                              swap_pairs(val_list)),
+                                                              reverse_order_pair_vals=', '.join(
+                                                              swap_pairs(val_list[::-1])),
+                                                              in_order_positions=''.join(
+                                                              Data.swizzle_rgba_list_dict[size][:size]),
+                                                              size=size,
+                                                              swiz_vals=Data.swizzle_elem_list_dict[size][::-1],
+                                                              convert_type=convert_type_str,
+                                                              as_type=as_type_str)
+                    test_string += lo_hi_odd_even_template.substitute(
+                        type=type_str, size=size)
+                    test_string += swizzle_elem_template.substitute(type=type_str,
+                                                                    size=size,
+                                                                    in_order_swiz_indexes=', '.join(
+                                                                        Data.swizzle_elem_list_dict[size]),
+                                                                    reverse_order_swiz_indexes=', '.join(
+                                                                        Data.swizzle_elem_list_dict[size][::-1]),
+                                                                    in_order_reversed_pair_swiz_indexes=', '.join(
+                                                                        swap_pairs(Data.swizzle_elem_list_dict[size])),
+                                                                    reverse_order_reversed_pair_swiz_indexes=', '.join(swap_pairs(Data.swizzle_elem_list_dict[size][::-1])))
+                    string += wrap_with_kernel(
+                        type_str,
+                        'KERNEL_' +
+                        type_str.replace(
+                            'cl::sycl::',
+                            '').replace(
+                            ' ',
+                            '') +
+                        str(size) +
+                        index_string,
+                        'vec<' +
+                        type_str +
                         ', ' +
-                        swizzle_vals[pos2] +
-                        ', ' +
-                        swizzle_vals[pos3] +
-                        ', ' +
-                        swizzle_vals[pos4],
-                        in_order_vals=Data.vals_dict[dims],
-                        reversed_vals=Data.reverse_vals_dict[dims])
-                    string += swizzle_function_template.substitute(
-                        dims='Four',
-                        in_order_positions='xyzw',
-                        type=type_str,
-                        size=dims,
-                        swiz_vals=Data.reverse_swizzle_index_dict[dims])
-                    string += all_vector_checks_template.substitute(
-                        type=type_str,
-                        convert_type=convert_type_str,
-                        as_type=as_type_str,
-                        size=4,
-                        conname=pos1 + pos2 + pos3 + pos4)
-                    string += lo_hi_odd_even_template.substitute(
-                        type=type_str,
-                        size=4)
-                    string += '}\n'
-    for pos1 in rgba:
-        for pos2 in rgba:
-            for pos3 in rgba:
-                for pos4 in rgba:
-                    string += print_vec('Four', pos1, pos2, pos3, pos4)
-                    string += vals_template.substitute(
-                        type=type_str,
-                        vals=swizzle_vals[pos1] +
-                        ', ' +
-                        swizzle_vals[pos2] +
-                        ', ' +
-                        swizzle_vals[pos3] +
-                        ', ' +
-                        swizzle_vals[pos4],
-                        in_order_vals=Data.vals_dict[dims],
-                        reversed_vals=Data.reverse_vals_dict[dims])
-                    string += swizzle_function_template.substitute(
-                        dims='Four',
-                        in_order_positions='rgba',
-                        type=type_str,
-                        size=dims,
-                        swiz_vals=Data.reverse_swizzle_index_dict[dims])
-                    string += all_vector_checks_template.substitute(
-                        type=type_str,
-                        convert_type=convert_type_str,
-                        as_type=as_type_str,
-                        size=4,
-                        conname=pos1 + pos2 + pos3 + pos4)
-                    string += lo_hi_odd_even_template.substitute(
-                        type=type_str,
-                        size=4)
-                    string += '}\n'
+                        str(size) +
+                        '>.' +
+                        index_string,
+                        test_string)
+    else:
+        test_string = swizzle_full_test_template.substitute(name=Data.vec_name_dict[size],
+                                                            type=type_str,
+                                                            size=size,
+                                                            testVecValues=generate_value_list(type_str, size),
+                                                            convert_type=convert_type_str,
+                                                            as_type=as_type_str,
+                                                            in_order_swiz_indexes=', '.join(
+                                                            Data.swizzle_elem_list_dict[size]),
+                                                            reverse_order_swiz_indexes=', '.join(
+                                                            Data.swizzle_elem_list_dict[size][::-1]),
+                                                            in_order_reversed_pair_swiz_indexes=', '.join(
+                                                            swap_pairs(Data.swizzle_elem_list_dict[size])),
+                                                            reverse_order_reversed_pair_swiz_indexes=', '.join(swap_pairs(Data.swizzle_elem_list_dict[size][::-1])),
+                                                            in_order_vals=', '.join(
+                                                            Data.vals_list_dict[size]),
+                                                            reversed_vals=', '.join(
+                                                            Data.vals_list_dict[size][::-1]),
+                                                            in_order_pair_vals=', '.join(
+                                                            swap_pairs(Data.vals_list_dict[size])),
+                                                            reverse_order_pair_vals=', '.join(swap_pairs(Data.vals_list_dict[size][::-1])))
+        string += wrap_with_kernel(type_str, 'ELEM_KERNEL_' +
+                                   type_str.replace('cl::sycl::', '').replace(' ', '') +
+                                   str(size) +
+                                   ''.join(Data.swizzle_elem_list_dict[size][:size]).replace('cl::sycl::elem::', ''), 'vec<' +
+                                   type_str +
+                                   ', ' +
+                                   str(size) +
+                                   '> .swizzle<' +
+                                   ', '.join(Data.swizzle_elem_list_dict[size][:size]) +
+                                   '>', test_string)
     return string
 
 
 def make_tests(input_file, output_file):
-    one_dim_swizzles = ''
-    two_dim_swizzles = ''
-    three_dim_swizzles = ''
-    four_dim_swizzles = ''
+    # Test with type_str='char'
+    one_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 1)
+    two_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 2)
+    three_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 3)
+    four_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 4)
+    eight_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 8)
+    sixteen_dim_swizzles = gen_swizzle_test(
+        'char', 'char', 'char', 16)
+
     for base_type in Data.standard_types:
         for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double' or base_type == 'half') and sign is False:
+            if (base_type == 'float' or base_type ==
+                    'double' or base_type == 'cl::sycl::half') and sign is False:
                 continue
             type_str = Data.standard_type_dict[(sign, base_type)]
             convert_type_str = Data.standard_type_dict[(not sign, base_type)]
             as_type_str = Data.standard_type_dict[(not sign, base_type)]
-            one_dim_swizzles += gen_one_dim_swizzles(
-                type_str, convert_type_str, as_type_str)
-            two_dim_swizzles += gen_two_dim_swizzles(
-                type_str, convert_type_str, as_type_str)
-            three_dim_swizzles += gen_three_dim_swizzles(
-                type_str, convert_type_str, as_type_str)
-            four_dim_swizzles += gen_four_dim_swizzles(
-                type_str, convert_type_str, as_type_str)
+            one_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 1)
+            two_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 2)
+            three_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 3)
+            four_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 4)
+            eight_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 8)
+            sixteen_dim_swizzles += gen_swizzle_test(
+                type_str, convert_type_str, as_type_str, 16)
 
     with open(input_file, 'r') as source_file:
         source = source_file.read()
 
-    source = replace_string_in_source_string(source, one_dim_swizzles, '$1D_SWIZZLES')
-    source = replace_string_in_source_string(source, two_dim_swizzles, '$2D_SWIZZLES')
-    source = replace_string_in_source_string(source, three_dim_swizzles, '$3D_SWIZZLES')
-    source = replace_string_in_source_string(source, four_dim_swizzles, '$4D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, one_dim_swizzles, '$1D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, two_dim_swizzles, '$2D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, three_dim_swizzles, '$3D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, four_dim_swizzles, '$4D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, eight_dim_swizzles, '$8D_SWIZZLES')
+    source = replace_string_in_source_string(
+        source, sixteen_dim_swizzles, '$16D_SWIZZLES')
 
     with open(output_file, 'w+') as output:
         output.write(source)

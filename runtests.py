@@ -495,7 +495,7 @@ def parse_args( ):
     global g_device
 
     devices = ['host', 'opencl_cpu', 'opencl_gpu']
-    platforms = ['host', 'amd',  'intel', 'nvidia']
+    platforms = ['host', 'amd', 'arm', 'intel', 'nvidia']
 
     parser = argparse.ArgumentParser( description="Khronos SYCL CTS" )
 

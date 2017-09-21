@@ -19,13 +19,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       auto context = util::get_cts_object::context();
       auto program =
@@ -36,23 +36,23 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       using programInfo = cl::sycl::info::program;
       using vectorDevicesInfo = cl::sycl::vector_class<cl::sycl::device>;
 
-      /** initialize return values
-      */
-      cl_uint referenceCount;
-      cl::sycl::context programContext;
-      vectorDevicesInfo vectorDevices;
-
       /** check program info parameters
       */
-      referenceCount =
-          program.get_info<cl::sycl::info::program::reference_count>();
-
-      programContext = program.get_info<cl::sycl::info::program::context>();
-      vectorDevices = program.get_info<cl::sycl::info::program::devices>();
-
-      TEST_TYPE_TRAIT(program, reference_count, program);
-      TEST_TYPE_TRAIT(program, context, program);
-      TEST_TYPE_TRAIT(program, devices, program);
+      {
+        cl::sycl::context programContext =
+            program.get_info<cl::sycl::info::program::context>();
+        TEST_TYPE_TRAIT(program, context, program);
+      }
+      {
+        vectorDevicesInfo vectorDevices =
+            program.get_info<cl::sycl::info::program::devices>();
+        TEST_TYPE_TRAIT(program, devices, program);
+      }
+      {
+        cl_uint referenceCount =
+            program.get_info<cl::sycl::info::program::reference_count>();
+        TEST_TYPE_TRAIT(program, reference_count, program);
+      }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

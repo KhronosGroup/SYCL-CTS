@@ -27,13 +27,6 @@ include(cmake/build_sycl.cmake)
 
 # find the python interpreter
 find_package(PythonInterp REQUIRED)
-
-# OPENGL variables
-#set(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS ON CACHE BOOL "Enable OpenGL interop tests.")
-if(SYCL_CTS_ENABLE_OPENGL_INTEROP_TESTS)
-    find_package(OpenGL REQUIRED)
-    add_subdirectory (gl_util)
-endif()
 # ------------------
 
 # Double and Half variables

@@ -11,6 +11,7 @@
 #define TEST_NAME device_info
 
 namespace device_info__ {
+
 using namespace sycl_cts;
 
 /** tests the info for cl::sycl::device
@@ -19,13 +20,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       /** check info::device
        */
@@ -90,10 +91,11 @@ class TEST_NAME : public util::test_base {
       check_enum_class_value(
           cl::sycl::info::device::profiling_timer_resolution);
       check_enum_class_value(cl::sycl::info::device::is_endian_little);
+      check_enum_class_value(cl::sycl::info::device::is_available);
       check_enum_class_value(cl::sycl::info::device::is_compiler_available);
       check_enum_class_value(cl::sycl::info::device::is_linker_available);
       check_enum_class_value(cl::sycl::info::device::execution_capabilities);
-      check_enum_class_value(cl::sycl::info::device::queue_profiling_enabled);
+      check_enum_class_value(cl::sycl::info::device::queue_profiling);
       check_enum_class_value(cl::sycl::info::device::built_in_kernels);
       check_enum_class_value(cl::sycl::info::device::platform);
       check_enum_class_value(cl::sycl::info::device::name);
@@ -256,7 +258,7 @@ class TEST_NAME : public util::test_base {
         check_get_info_param<cl::sycl::info::device, cl::sycl::cl_ulong,
                              cl::sycl::info::device::max_mem_alloc_size>(log,
                                                                          dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::image_support>(log, dev);
         check_get_info_param<cl::sycl::info::device, cl::sycl::cl_uint,
                              cl::sycl::info::device::max_read_image_args>(log,
@@ -327,30 +329,32 @@ class TEST_NAME : public util::test_base {
                              cl::sycl::info::device::local_mem_type>(log, dev);
         check_get_info_param<cl::sycl::info::device, cl::sycl::cl_ulong,
                              cl::sycl::info::device::local_mem_size>(log, dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::error_correction_support>(
             log, dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::host_unified_memory>(log,
                                                                           dev);
         check_get_info_param<
             cl::sycl::info::device, size_t,
             cl::sycl::info::device::profiling_timer_resolution>(log, dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::is_endian_little>(log,
                                                                        dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
+                             cl::sycl::info::device::is_available>(log, dev);
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::is_compiler_available>(
             log, dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
+        check_get_info_param<cl::sycl::info::device, bool,
                              cl::sycl::info::device::is_linker_available>(log,
                                                                           dev);
         check_get_info_param<
             cl::sycl::info::device,
             cl::sycl::vector_class<cl::sycl::info::execution_capability>,
             cl::sycl::info::device::execution_capabilities>(log, dev);
-        check_get_info_param<cl::sycl::info::device, cl::sycl::cl_bool,
-                             cl::sycl::info::device::queue_profiling_enabled>(
+        check_get_info_param<cl::sycl::info::device, cl::sycl::bool,
+                             cl::sycl::info::device::queue_profiling>(
             log, dev);
         check_get_info_param<cl::sycl::info::device,
                              cl::sycl::vector_class<cl::sycl::string_class>,
@@ -378,7 +382,7 @@ class TEST_NAME : public util::test_base {
                              cl::sycl::info::device::printf_buffer_size>(log,
                                                                          dev);
         check_get_info_param<
-            cl::sycl::info::device, cl::sycl::cl_bool,
+            cl::sycl::info::device, bool,
             cl::sycl::info::device::preferred_interop_user_sync>(log, dev);
         check_get_info_param<cl::sycl::info::device, cl::sycl::device,
                              cl::sycl::info::device::parent_device>(log, dev);
@@ -404,7 +408,7 @@ class TEST_NAME : public util::test_base {
                              cl::sycl::info::device::reference_count>(log, dev);
       }
 
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

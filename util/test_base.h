@@ -15,7 +15,7 @@ namespace util {
 /** Base class for all SYCL tests
  */
 class test_base {
- public:
+public:
   /** encapsulate information about a test
    */
   struct info {
@@ -57,7 +57,7 @@ class test_base {
     // empty
   }
 
-};  // class test_base
+}; // class test_base
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

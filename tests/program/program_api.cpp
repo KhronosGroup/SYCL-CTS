@@ -40,13 +40,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       using namespace cl::sycl;
 
@@ -64,6 +64,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (prog.get_devices().size() < 1) {
           FAIL(log, "Wrong value for program.get_devices()");
         }
+
+        // Check is_host()
+        bool isHost = prog.is_host();
 
         // Check get_binaries()
         vector_class<vector_class<char>> binaries = prog.get_binaries();
@@ -265,7 +268,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         myQueue.submit(
             [&](handler &cgh) { cgh.single_task(program_kernel<4>()); });
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

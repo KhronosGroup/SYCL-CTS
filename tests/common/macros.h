@@ -45,8 +45,9 @@ namespace {
 /** helper function used to construct a typical test info
  *  structure
  */
-void set_test_info(sycl_cts::util::test_base::info &out,
-                   const cl::sycl::string_class &name, const char *file) {
+inline void set_test_info(sycl_cts::util::test_base::info &out,
+                          const cl::sycl::string_class &name,
+                          const char *file) {
   out.m_name = name;
   out.m_file = file;
   out.m_buildDate = TEST_BUILD_DATE;
@@ -56,7 +57,8 @@ void set_test_info(sycl_cts::util::test_base::info &out,
 /**
  *
  */
-void log_exception(sycl_cts::util::logger &log, cl::sycl::exception &e) {
+inline void log_exception(sycl_cts::util::logger &log,
+                          const cl::sycl::exception &e) {
   // notify that an exception was thrown
   log.note("sycl exception caught");
 
@@ -68,13 +70,13 @@ void log_exception(sycl_cts::util::logger &log, cl::sycl::exception &e) {
 }
 
 /* helper function for test failure cases */
-bool fail_proxy(sycl_cts::util::logger &log, const char *msg, int line) {
+inline bool fail_proxy(sycl_cts::util::logger &log, const char *msg, int line) {
   log.fail(msg, line);
   return false;
 }
 
-bool fail_proxy(sycl_cts::util::logger &log, const cl::sycl::string_class &msg,
-                int line) {
+inline bool fail_proxy(sycl_cts::util::logger &log,
+                       const cl::sycl::string_class &msg, int line) {
   log.fail(msg, line);
   return false;
 }
@@ -86,7 +88,8 @@ bool fail_proxy(sycl_cts::util::logger &log, const cl::sycl::string_class &msg,
 #define FAIL(LOG, MSG) (fail_proxy(LOG, MSG, __LINE__))
 
 /* proxy to the check_cl_success function */
-bool check_cl_success_proxy(sycl_cts::util::logger &log, int error, int line) {
+inline bool check_cl_success_proxy(sycl_cts::util::logger &log, int error,
+                                   int line) {
   using sycl_cts::util::get;
   using sycl_cts::util::opencl_helper;
   return get<opencl_helper>().check_cl_success(log, error, line);
@@ -139,5 +142,8 @@ bool check_type_proxy(sycl_cts::util::logger &log, const T1 &val_a,
 }
 #define CHECK_TYPE(LOG, TYPE_A, TYPE_B) \
   check_type_proxy(LOG, TYPE_A, TYPE_B, __LINE__)
+
+#define ASSERT_RETURN_TYPE(expectedT, returnVal, MSG) \
+  { static_assert(std::is_same<decltype(returnVal), expectedT>::value, MSG); }
 
 } /* namespace {} */

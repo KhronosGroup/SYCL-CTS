@@ -17,66 +17,47 @@ using namespace sycl_cts;
 void test_barrier(util::logger &log, cl::sycl::queue &queue) {
   /* set workspace size */
   const int globalSize = 64;
-  const int localSize = 2;
 
   /* allocate and assign host data */
-  std::unique_ptr<int> globalID(new int[globalSize]);
-  std::unique_ptr<int> localID(new int[globalSize]);
-  std::unique_ptr<int> globScratch(new int[globalSize]);
+  std::unique_ptr<int[]> data(new int[globalSize]);
 
   for (int i = 0; i < globalSize; ++i) {
-    globalID.get()[i] = i;
-    localID.get()[i] = i % localSize;
-    globScratch.get()[i] = 0;
+    data.get()[i] = i;
   }
-
-  /* init ranges*/
-  range<1> globalRange(globalSize);
-  range<1> localRange(localSize);
-  nd_range<1> NDRange(globalRange, localRange);
 
   /* run kernel to swap adjacent work item's global & local ids*/
   {
-    buffer<int, 1> globalBuf(globalID.get(), globalRange);
-    buffer<int, 1> scratchBuf(globScratch.get(), globalRange);
-    buffer<int, 1> localBuf(localID.get(), globalRange);
+    buffer<int, 1> buffer(data.get(), range<1>(globalSize));
 
     queue.submit([&](handler &cgh) {
-      auto accGlobal =
-          globalBuf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      auto accScratchGlobal =
-          scratchBuf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      auto accLocal =
-          localBuf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      accessor<int, 1, cl::sycl::access::mode::read_write,
-               cl::sycl::access::target::local>
-          accScratchLocal(localRange, cgh);
+      auto ptr = buffer.get_access<access::mode::read_write>(cgh);
+
+      accessor<int, 1, access::mode::read_write, access::target::local> tile(
+          range<1>(2), cgh);
 
       cgh.parallel_for<class combined_barrier_kernel>(
-          NDRange, [=](nd_item<1> item) {
-            int idx = (int)item.get_global(0);
-            int pos = idx & 1;
-            int opp = pos ^ 1;
+          nd_range<1>(range<1>(64), range<1>(2)), [=](nd_item<1> item) {
+            size_t idx = item.get_global_linear_id();
+            size_t pos = idx & 1;
+            size_t opp = pos ^ 1;
 
-            accScratchGlobal[pos] = accGlobal[idx];
-            accScratchLocal[pos] = accLocal[idx];
+            tile[pos] = ptr[idx];
 
             item.barrier(access::fence_space::global_and_local);
 
-            accLocal[idx] = accScratchLocal[opp];
-            accGlobal[idx] = accScratchGlobal[opp];
-
+            ptr[idx] = tile[opp];
           });
     });
   }
 
   /* check correct results returned*/
   bool passed = true;
-  for (int i = 0; i < globalSize; ++i) {
-    if (i % 2 == 0)
-      passed &= globalID.get()[i] == (i + 1) && localID.get()[i] == 1;
-    else
-      passed &= globalID.get()[i] == (i - 1) && localID.get()[i] == 0;
+  for (int i = 0; i < globalSize; i += 2) {
+    int current = i;
+    int next = i + 1;
+    if ((data[current] != next) || (data[next] != current)) {
+      passed = false;
+    }
   }
 
   if (!passed) {
@@ -91,21 +72,21 @@ class TEST_NAME : public util::test_base {
   /** return information about this test
   *  @param info, test_base::info structure as output
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
   *  @param log, test transcript logging class
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       auto cmdQueue = util::get_cts_object::queue();
 
       test_barrier(log, cmdQueue);
 
       cmdQueue.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

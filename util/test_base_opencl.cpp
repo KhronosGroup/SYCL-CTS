@@ -18,12 +18,8 @@ namespace util {
  *  to nullptrs
  */
 test_base_opencl::test_base_opencl()
-    : m_cl_platform_id(nullptr),
-      m_cl_device_id(nullptr),
-      m_cl_context(nullptr),
-      m_cl_command_queue(nullptr),
-      m_openKernels(),
-      m_openPrograms() {}
+    : m_cl_platform_id(nullptr), m_cl_device_id(nullptr), m_cl_context(nullptr),
+      m_cl_command_queue(nullptr), m_openKernels(), m_openPrograms() {}
 
 /** called before this test is executed
  *  @param log for emitting test notes and results
@@ -41,7 +37,8 @@ bool test_base_opencl::setup(logger &log) {
   cl_int error = CL_SUCCESS;
 
   error = clGetPlatformIDs(0, nullptr, &N);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   if (N < 1) {
     FAIL(log, "Unable to retrieve list of platforms via clGetPlatformIDs()");
@@ -55,11 +52,13 @@ bool test_base_opencl::setup(logger &log) {
   }
 
   error = clGetPlatformIDs(N, platforms.get(), nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   error =
       clGetDeviceIDs(platforms.get()[0], CL_DEVICE_TYPE_ALL, 0, nullptr, &N);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   if (N < 1) {
     FAIL(log, "Unable to retrieve list of devices via clGetDeviceIDs()");
@@ -74,19 +73,22 @@ bool test_base_opencl::setup(logger &log) {
 
   error = clGetDeviceIDs(platforms.get()[0], CL_DEVICE_TYPE_ALL, N,
                          devices.get(), nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   cl_context_properties properties[3] = {
       CL_CONTEXT_PLATFORM, (cl_context_properties)platforms.get()[0], 0};
 
   m_cl_context =
       clCreateContext(properties, N, devices.get(), nullptr, nullptr, &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   // No special queue properties wanted
   m_cl_command_queue =
       clCreateCommandQueue(m_cl_context, devices.get()[0], 0, &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   m_cl_platform_id = platforms.get()[0];
   m_cl_device_id = devices.get()[0];
@@ -106,10 +108,12 @@ bool test_base_opencl::create_compiled_program(const std::string &source,
   cl_int error = CL_SUCCESS;
   out_program = clCreateProgramWithSource(m_cl_context, 1, &source_c,
                                           &sourceSize, &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
   error = clCompileProgram(out_program, 1, &m_cl_device_id, nullptr, 0, nullptr,
                            nullptr, nullptr, nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   m_openPrograms.push_back(out_program);
   return true;
@@ -127,10 +131,12 @@ bool test_base_opencl::create_built_program(const std::string &source,
   cl_int error = CL_SUCCESS;
   out_program = clCreateProgramWithSource(m_cl_context, 1, &source_c,
                                           &sourceSize, &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
   error = clBuildProgram(out_program, 1, &m_cl_device_id, nullptr, nullptr,
                          nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   m_openPrograms.push_back(out_program);
   return true;
@@ -146,7 +152,8 @@ bool test_base_opencl::create_kernel(const cl_program &clProgram,
 
   cl_int error = CL_SUCCESS;
   out_kernel = clCreateKernel(clProgram, name.c_str(), &error);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (!CHECK_CL_SUCCESS(log, error))
+    return false;
 
   assert(out_kernel);
 
@@ -156,7 +163,7 @@ bool test_base_opencl::create_kernel(const cl_program &clProgram,
 
 bool test_base_opencl::create_sampler(cl_sampler &outSampler, logger &log) {
   cl_int error = CL_SUCCESS;
-  cl_sampler m_cl_sampler = clCreateSampler(m_cl_context, 0, CL_ADDRESS_REPEAT,
+  outSampler = clCreateSampler(m_cl_context, 0, CL_ADDRESS_REPEAT,
                                             CL_FILTER_LINEAR, &error);
   return CHECK_CL_SUCCESS(log, error);
 }
@@ -168,7 +175,8 @@ void test_base_opencl::cleanup() {
   clReleaseContext(m_cl_context);
 
   size_t i = 0;
-  for (i = 0; i < m_openKernels.size(); i++) clReleaseKernel(m_openKernels[i]);
+  for (i = 0; i < m_openKernels.size(); i++)
+    clReleaseKernel(m_openKernels[i]);
   m_openKernels.clear();
 
   for (i = 0; i < m_openPrograms.size(); i++)
@@ -176,5 +184,5 @@ void test_base_opencl::cleanup() {
   m_openPrograms.clear();
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

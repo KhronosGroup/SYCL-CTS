@@ -8,11 +8,19 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
+#include "accessor_utility.h"
 
 #define TEST_NAME accessor_api
 
-namespace accessor_api__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
+
+/** unique dummy_functor per file
+ *  this is a hack until the CMake script is fixed; kill both the alias and the
+ *  dummy class once it is fixed
+ */
+class dummy_accessor_api {};
+using dummy_functor = ::dummy_functor<dummy_accessor_api>;
 
 /** user defined struct that is used in accessor tests
 */
@@ -42,7 +50,9 @@ template <>
 cl::sycl::vector_class<cl::sycl::id<1>> create_id_list<1>(
     cl::sycl::range<1> &r) {
   cl::sycl::vector_class<cl::sycl::id<1>> ret;
-  for (size_t i = 0; i < r[0]; ++i) ret.push_back(cl::sycl::id<1>(i));
+  for (size_t i = 0; i < r[0]; ++i) {
+    ret.emplace_back(i);
+  }
   return ret;
 }
 
@@ -52,8 +62,11 @@ template <>
 cl::sycl::vector_class<cl::sycl::id<2>> create_id_list<2>(
     cl::sycl::range<2> &r) {
   cl::sycl::vector_class<cl::sycl::id<2>> ret;
-  for (size_t i = 0; i < r[0]; ++i)
-    for (size_t j = 0; j < r[1]; ++j) ret.push_back(cl::sycl::id<2>(i, j));
+  for (size_t i = 0; i < r[0]; ++i) {
+    for (size_t j = 0; j < r[1]; ++j) {
+      ret.emplace_back(i, j);
+    }
+  }
   return ret;
 }
 
@@ -63,9 +76,13 @@ template <>
 cl::sycl::vector_class<cl::sycl::id<3>> create_id_list<3>(
     cl::sycl::range<3> &r) {
   cl::sycl::vector_class<cl::sycl::id<3>> ret;
-  for (size_t i = 0; i < r[0]; ++i)
-    for (size_t j = 0; j < r[1]; ++j)
-      for (size_t k = 0; k < r[2]; ++k) ret.push_back(cl::sycl::id<3>(i, j, k));
+  for (size_t i = 0; i < r[0]; ++i) {
+    for (size_t j = 0; j < r[1]; ++j) {
+      for (size_t k = 0; k < r[2]; ++k) {
+        ret.emplace_back(i, j, k);
+      }
+    }
+  }
   return ret;
 }
 
@@ -95,6 +112,18 @@ struct explicit_pointer<T, cl::sycl::access::target::local> {
   using type = cl::sycl::local_ptr<T>;
 };
 
+/** explicit pointer type (specialisation for host_buffer)
+*/
+template <typename T>
+struct explicit_pointer<T, cl::sycl::access::target::host_buffer> {
+  using type = T *;
+};
+
+/** explicit pointer alias
+ */
+template <typename T, cl::sycl::access::target target>
+using explicit_pointer_t = typename explicit_pointer<T, target>::type;
+
 /** image format channel order and type
 */
 template <typename T>
@@ -104,9 +133,9 @@ struct image_format_channel;
 */
 template <>
 struct image_format_channel<cl::sycl::int4> {
-  static const cl::sycl::image_channel_type type =
+  static constexpr cl::sycl::image_channel_type type =
       cl::sycl::image_channel_type::signed_int8;
-  static const cl::sycl::image_channel_order order =
+  static constexpr cl::sycl::image_channel_order order =
       cl::sycl::image_channel_order::rgba;
 };
 
@@ -114,9 +143,9 @@ struct image_format_channel<cl::sycl::int4> {
 */
 template <>
 struct image_format_channel<cl::sycl::uint4> {
-  static const cl::sycl::image_channel_type type =
+  static constexpr cl::sycl::image_channel_type type =
       cl::sycl::image_channel_type::unsigned_int8;
-  static const cl::sycl::image_channel_order order =
+  static constexpr cl::sycl::image_channel_order order =
       cl::sycl::image_channel_order::rgba;
 };
 
@@ -124,9 +153,9 @@ struct image_format_channel<cl::sycl::uint4> {
 */
 template <>
 struct image_format_channel<cl::sycl::float4> {
-  static const cl::sycl::image_channel_type type =
+  static constexpr cl::sycl::image_channel_type type =
       cl::sycl::image_channel_type::unorm_int8;
-  static const cl::sycl::image_channel_order order =
+  static constexpr cl::sycl::image_channel_order order =
       cl::sycl::image_channel_order::rgba;
 };
 
@@ -135,7 +164,7 @@ struct image_format_channel<cl::sycl::float4> {
 */
 template <typename elementT>
 struct use_normalization_coefficient {
-  static const bool value = false;
+  static constexpr bool value = false;
 };
 
 /** specialized struct for defining the normalization coefficient for an image
@@ -143,41 +172,7 @@ struct use_normalization_coefficient {
 */
 template <>
 struct use_normalization_coefficient<cl::sycl::float4> {
-  static const bool value = true;
-};
-
-/** creates an accessor
-*/
-template <typename T, int dims, int size, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
-struct make_accessor {
-  make_accessor() = default;
-
-  cl::sycl::accessor<T, dims, mode, target> operator()(
-      cl::sycl::buffer<T, dims> buf, cl::sycl::handler &hand,
-      cl::sycl::range<dims> range) {
-    return buf.template get_access<mode, target>(hand);
-  }
-
-  cl::sycl::accessor<T, dims, mode, target> operator()(
-      cl::sycl::image<dims> img, cl::sycl::handler &hand,
-      cl::sycl::range<dims> range) {
-    return img.template get_access<mode, target>(hand);
-  }
-};
-
-/** creates an accessor (specialization for local)
-*/
-template <typename T, int dims, int size, cl::sycl::access::mode mode>
-struct make_accessor<T, dims, size, mode, cl::sycl::access::target::local> {
-  make_accessor() = default;
-
-  cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::local> operator()(
-      cl::sycl::buffer<T, dims> b, cl::sycl::handler &handler,
-      cl::sycl::range<dims> range) {
-    return cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::local>(
-        range, handler);
-  }
+  static constexpr bool value = true;
 };
 
 /** checker for the cl::sycl::vec type
@@ -190,12 +185,11 @@ struct is_sycl_vec<cl::sycl::vec<T, dim>> : std::integral_constant<bool, true> {
 
 /** tests that two values are equal
 */
-template <typename T1, typename T2,
-          typename std::enable_if<std::is_scalar<T1>::value>::type * = nullptr>
+template <typename T1, typename T2, REQUIRES(std::is_scalar<T1>::value)>
 bool check_element_valid(const T1 &elem, const T2 &correct,
                          bool imageTest = false) {
   return elem == (static_cast<T1>(correct));
-};
+}
 
 /** tests that two values are equal (overload for float4 type)
 */
@@ -215,8 +209,7 @@ bool check_element_valid(const cl::sycl::float4 &elem, const size_t &correct,
 
 /** tests that two values are equal (overload for vec type)
 */
-template <typename T1,
-          typename std::enable_if<(is_sycl_vec<T1>::value)>::type * = nullptr>
+template <typename T1, REQUIRES(is_sycl_vec<T1>::value)>
 bool check_element_valid(const T1 &elem, const size_t &correct,
                          bool imageTest = false) {
   if (imageTest) {
@@ -232,7 +225,7 @@ bool check_element_valid(const T1 &elem, const size_t &correct,
     return (getElement(elem, 0) ==
             (static_cast<typename T1::element_type>(correct)));
   }
-};
+}
 
 /** tests that two values are equal (overload for user_struct)
 */
@@ -240,7 +233,7 @@ template <typename T2>
 bool check_element_valid(const user_struct &elem, const T2 &correct,
                          bool imageTest = false) {
   return elem[0] == (static_cast<int>(correct));
-};
+}
 
 /** tests that an array of linear ids is correct
 */
@@ -274,116 +267,218 @@ size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
 }
 
 /** tests accessor multi dim read syntax for 1 dimension
-*/
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_read(accessorT &acc,
-                                                       cl::sycl::id<1> idx) {
+  * specialised for buffer accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+T multidim_subscript_read(
+    cl::sycl::accessor<T, 1, mode, target, placeholder> &acc,
+    cl::sycl::id<1> idx) {
   return acc[idx[0]];
 }
 
-/** tests accessor multi dim read syntax for 2 dimension
-*/
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_read(accessorT &acc,
-                                                       cl::sycl::id<2> idx) {
+/** tests accessor multi dim read syntax for 1 dimension
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_read(cl::sycl::accessor<T, 1, mode, target> &acc,
+                          cl::sycl::id<1> idx) {
+  return acc.read(idx[0]);
+}
+
+/** tests accessor multi dim read syntax for 2 dimensions
+  * specialised for buffer accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+T multidim_subscript_read(
+    cl::sycl::accessor<T, 2, mode, target, placeholder> &acc,
+    cl::sycl::id<2> idx) {
   return acc[idx[0]][idx[1]];
 }
 
-/** tests accessor multi dim read syntax for 3 dimension
-*/
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_read(accessorT &acc,
-                                                       cl::sycl::id<3> idx) {
+/** tests accessor multi dim read syntax for 2 dimensions
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_read(cl::sycl::accessor<T, 2, mode, target> &acc,
+                          cl::sycl::id<2> idx) {
+  return acc.read(cl::sycl::int2(idx[0], idx[1]));
+}
+
+/** tests accessor multi dim read syntax for 3 dimensions
+  * specialised for buffer accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+T multidim_subscript_read(
+    cl::sycl::accessor<T, 3, mode, target, placeholder> &acc,
+    cl::sycl::id<3> idx) {
   return acc[idx[0]][idx[1]][idx[2]];
+}
+
+/** tests accessor multi dim read syntax for 3 dimensions
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_read(cl::sycl::accessor<T, 3, mode, target> &acc,
+                          cl::sycl::id<3> idx) {
+  return acc.read(cl::sycl::int3(idx[0], idx[1], idx[2]));
 }
 
 /** tests accessor multi dim sampled read syntax for 1 dimension
 */
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_sampled_read(
-    accessorT &acc, cl::sycl::sampler smpl, cl::sycl::id<1> idx) {
-  return acc(smpl)[idx[0]];
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_sampled_read(cl::sycl::accessor<T, 1, mode, target> &acc,
+                                  cl::sycl::sampler smpl, cl::sycl::id<1> idx) {
+  return acc.read(idx[0], smpl);
 }
 
 /** tests accessor multi dim sampled read syntax for 2 dimension
 */
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_sampled_read(
-    accessorT &acc, cl::sycl::sampler smpl, cl::sycl::id<2> idx) {
-  return acc(smpl)[idx[0]][idx[1]];
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_sampled_read(cl::sycl::accessor<T, 2, mode, target> &acc,
+                                  cl::sycl::sampler smpl, cl::sycl::id<2> idx) {
+  return acc.read(cl::sycl::int2(idx[0], idx[1]), smpl);
 }
 
 /** tests accessor multi dim sampled read syntax for 3 dimension
 */
-template <typename accessorT>
-typename accessorT::value_type multidim_subscript_sampled_read(
-    accessorT &acc, cl::sycl::sampler smpl, cl::sycl::id<3> idx) {
-  return acc(smpl)[idx[0]][idx[1]][idx[2]];
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+T multidim_subscript_sampled_read(cl::sycl::accessor<T, 3, mode, target> &acc,
+                                  cl::sycl::sampler smpl, cl::sycl::id<3> idx) {
+  return acc.read(cl::sycl::int3(idx[0], idx[1], idx[2]), smpl);
 }
 
 /** tests accessor multi dim write syntax for 1 dimension
+  * specialised for buffer accessors
 */
-template <typename accessorT, typename valueT>
-void multidim_subscript_write(accessorT &acc, cl::sycl::id<1> idx,
-                              valueT value) {
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+void multidim_subscript_write(
+    cl::sycl::accessor<T, 1, mode, target, placeholder> &acc,
+    cl::sycl::id<1> idx, T value) {
   acc[idx[0]] = value;
 }
 
+/** tests accessor multi dim write syntax for 1 dimension
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+void multidim_subscript_write(cl::sycl::accessor<T, 1, mode, target> &acc,
+                              cl::sycl::id<1> idx, T value) {
+  acc.write(idx[0], value);
+}
+
 /** tests accessor multi dim write syntax for 2 dimension
-*/
-template <typename accessorT, typename valueT>
-void multidim_subscript_write(accessorT &acc, cl::sycl::id<2> idx,
-                              valueT value) {
+  * specialised for buffer accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+void multidim_subscript_write(
+    cl::sycl::accessor<T, 2, mode, target, placeholder> &acc,
+    cl::sycl::id<2> idx, T value) {
   acc[idx[0]][idx[1]] = value;
 }
 
+/** tests accessor multi dim write syntax for 2 dimension
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+void multidim_subscript_write(cl::sycl::accessor<T, 2, mode, target> &acc,
+                              cl::sycl::id<2> idx, T value) {
+  acc.write(cl::sycl::int2(idx[0], idx[1]), value);
+}
+
 /** tests accessor multi dim write syntax for 3 dimension
-*/
-template <typename accessorT, typename valueT>
-void multidim_subscript_write(accessorT &acc, cl::sycl::id<3> idx,
-                              valueT value) {
+  * specialised for buffer accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t,
+          REQUIRES(is_buffer<target>::value)>
+void multidim_subscript_write(
+    cl::sycl::accessor<T, 3, mode, target, placeholder> &acc,
+    cl::sycl::id<3> idx, T value) {
   acc[idx[0]][idx[1]][idx[2]] = value;
+}
+
+/** tests accessor multi dim write syntax for 3 dimension
+  * specialised for image accessors
+  */
+template <typename T, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
+void multidim_subscript_write(cl::sycl::accessor<T, 3, mode, target> &acc,
+                              cl::sycl::id<3>, T) {
+  // CTS not required to test -- this is an extension
 }
 
 /** tests buffer accessors reads
 */
 template <typename T, int dim, int size, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget>
+          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class buffer_accessor_api_r {
-  cl::sycl::accessor<T, dim, mode, target> accessorA_;
-  cl::sycl::accessor<T, dim, mode, target> accessorB_;
-  cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
-      errorAccessor_;
-  cl::sycl::range<dim> range_;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorA;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorB;
+  cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget,
+                     placeholder>
+      m_errorAccessor;
+  cl::sycl::range<dim> m_range;
 
  public:
   buffer_accessor_api_r(
-      cl::sycl::accessor<T, dim, mode, target> accessorA,
-      cl::sycl::accessor<T, dim, mode, target> accessorB,
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorA,
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorB,
+      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget,
+                         placeholder>
           errorAccessor,
       cl::sycl::range<dim> rng)
-      : accessorA_(accessorA),
-        accessorB_(accessorB),
-        errorAccessor_(errorAccessor),
-        range_(rng) {}
+      : m_accessorA(accessorA),
+        m_accessorB(accessorB),
+        m_errorAccessor(errorAccessor),
+        m_range(rng) {}
 
   void operator()(cl::sycl::id<dim> idx) {
-    size_t linearID = compute_linear_id(idx, range_);
-    T elem;
+    size_t linearID = compute_linear_id(idx, m_range);
 
     /** check id read syntax
     */
-    elem = accessorA_[idx];
+    T elem = m_accessorA[idx];
     if (!check_element_valid(elem, linearID, false)) {
-      errorAccessor_[0] = 1;
+      m_errorAccessor[0] = 1;
     }
 
     /** check size_t read syntax
     */
-    elem = multidim_subscript_read(accessorB_, idx);
+    elem = multidim_subscript_read(m_accessorB, idx);
     if (!check_element_valid(elem, linearID, false)) {
-      errorAccessor_[1] = 1;
+      m_errorAccessor[1] = 1;
     }
   };
 };
@@ -391,92 +486,99 @@ class buffer_accessor_api_r {
 /** tests buffer accessors writes
 */
 template <typename T, int dim, int size, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class buffer_accessor_api_w {
-  cl::sycl::accessor<T, dim, mode, target> accessorA_;
-  cl::sycl::accessor<T, dim, mode, target> accessorB_;
-  cl::sycl::range<dim> range_;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorA;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorB;
+  cl::sycl::range<dim> m_range;
 
  public:
-  buffer_accessor_api_w(cl::sycl::accessor<T, dim, mode, target> accessorA,
-                        cl::sycl::accessor<T, dim, mode, target> accessorB,
-                        cl::sycl::range<dim> r)
-      : accessorA_(accessorA), accessorB_(accessorB), range_(r) {}
+  buffer_accessor_api_w(
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorA,
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorB,
+      cl::sycl::range<dim> r)
+      : m_accessorA(accessorA), m_accessorB(accessorB), m_range(r) {}
 
   void operator()(cl::sycl::id<dim> idx) {
-    size_t linearID = compute_linear_id(idx, range_);
+    size_t linearID = compute_linear_id(idx, m_range);
 
     /** check id write syntax
     */
-    accessorA_[idx] = linearID;
+    m_accessorA[idx] = linearID;
 
     /** check size_t write syntax
     */
-    multidim_subscript_write(accessorB_, idx, linearID);
+    multidim_subscript_write<T>(m_accessorB, idx, static_cast<T>(linearID));
   };
 };
 
 /** tests buffer accessors reads and writes
 */
 template <typename T, int dim, int size, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget>
+          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class buffer_accessor_api_rw {
-  cl::sycl::accessor<T, dim, mode, target> accessorA_;
-  cl::sycl::accessor<T, dim, mode, target> accessorB_;
-  cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
-      errorAccessor_;
-  cl::sycl::range<dim> range_;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorA;
+  cl::sycl::accessor<T, dim, mode, target, placeholder> m_accessorB;
+  cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget,
+                     placeholder>
+      m_errorAccessor;
+  cl::sycl::range<dim> m_range;
 
  public:
   buffer_accessor_api_rw(
-      cl::sycl::accessor<T, dim, mode, target> accessorA,
-      cl::sycl::accessor<T, dim, mode, target> accessorB,
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorA,
+      cl::sycl::accessor<T, dim, mode, target, placeholder> accessorB,
+      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget,
+                         placeholder>
           errorAccessor,
       cl::sycl::range<dim> rng)
-      : accessorA_(accessorA),
-        accessorB_(accessorB),
-        errorAccessor_(errorAccessor),
-        range_(rng) {}
+      : m_accessorA(accessorA),
+        m_accessorB(accessorB),
+        m_errorAccessor(errorAccessor),
+        m_range(rng) {}
 
   void operator()(cl::sycl::id<dim> idx) {
-    size_t linearID = compute_linear_id(idx, range_);
+    size_t linearID = compute_linear_id(idx, m_range);
     T elem;
 
     /** check id read syntax
     */
-    elem = accessorA_[idx];
+    elem = m_accessorA[idx];
     if (!check_element_valid(elem, linearID)) {
-      errorAccessor_[0] = 1;
+      m_errorAccessor[0] = 1;
     }
 
     /** check size_t read syntax
     */
-    elem = multidim_subscript_read(accessorB_, idx);
+    elem = multidim_subscript_read(m_accessorB, idx);
     if (!check_element_valid(elem, linearID)) {
-      errorAccessor_[1] = 1;
+      m_errorAccessor[1] = 1;
     }
 
     /** check id write syntax
     */
-    accessorA_[idx] = (linearID * 2);
+    m_accessorA[idx] = (linearID * 2);
 
     /** check size_t write syntax
     */
-    multidim_subscript_write(accessorB_, idx, (linearID * 2));
+    multidim_subscript_write<T>(m_accessorB, idx, static_cast<T>(linearID * 2));
 
     /** validate id write syntax
     */
-    elem = accessorA_[idx];
+    elem = m_accessorA[idx];
     if (!check_element_valid(elem, (linearID * 2))) {
-      errorAccessor_[2] = 1;
+      m_errorAccessor[2] = 1;
     }
 
     /** validate size_t write syntax
     */
-    elem = multidim_subscript_read(accessorB_, idx);
+    elem = multidim_subscript_read(m_accessorB, idx);
     if (!check_element_valid(elem, (linearID * 2))) {
-      errorAccessor_[3] = 1;
+      m_errorAccessor[3] = 1;
     }
   };
 };
@@ -486,15 +588,15 @@ class buffer_accessor_api_rw {
 template <typename T, int dim, int size, cl::sycl::access::mode mode,
           cl::sycl::access::target target, cl::sycl::access::target errorTarget>
 class image_accessor_api_r {
-  cl::sycl::accessor<T, dim, mode, target> accessorA_;
-  cl::sycl::accessor<T, dim, mode, target> accessorB_;
+  cl::sycl::accessor<T, dim, mode, target> m_accessorA;
+  cl::sycl::accessor<T, dim, mode, target> m_accessorB;
   cl::sycl::accessor<T, dim, mode, target> accessorC_;
   cl::sycl::accessor<T, dim, mode, target> accessorD_;
   cl::sycl::sampler sampler_;
 
   cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
-      errorAccessor_;
-  cl::sycl::range<dim> range_;
+      m_errorAccessor;
+  cl::sycl::range<dim> m_range;
 
  public:
   image_accessor_api_r(
@@ -506,36 +608,35 @@ class image_accessor_api_r {
       cl::sycl::accessor<int, 1, cl::sycl::access::mode::write, errorTarget>
           errorAccessor,
       cl::sycl::range<dim> rng)
-      : accessorA_(accessorA),
-        accessorB_(accessorB),
+      : m_accessorA(accessorA),
+        m_accessorB(accessorB),
         accessorC_(accessorC),
         accessorD_(accessorD),
         sampler_(smpl),
-        errorAccessor_(errorAccessor),
-        range_(rng) {}
+        m_errorAccessor(errorAccessor),
+        m_range(rng) {}
 
   void operator()(cl::sycl::id<dim> idx) {
-    size_t linearID = compute_linear_id(idx, range_);
-    T elem;
+    size_t linearID = compute_linear_id(idx, m_range);
 
     /** check id read syntax
     */
-    elem = accessorA_[idx];
+    T elem = m_accessorA.read(idx);
     if (use_normalization_coefficient<T>::value) {
       elem *= 255.f;
     }
     if (!check_element_valid(elem, linearID, true)) {
-      errorAccessor_[0] = 1;
+      m_errorAccessor[0] = 1;
     }
 
     /** check sampled id read syntax
     */
-    elem = accessorB_(sampler_)[idx];
+    elem = m_accessorB.read(idx, sampler_);
     if (use_normalization_coefficient<T>::value) {
       elem *= 255.f;
     }
     if (!check_element_valid(elem, linearID, true)) {
-      errorAccessor_[1] = 1;
+      m_errorAccessor[1] = 1;
     }
 
     /** check size_t read syntax
@@ -545,7 +646,7 @@ class image_accessor_api_r {
       elem *= 255.f;
     }
     if (!check_element_valid(elem, linearID, true)) {
-      errorAccessor_[2] = 1;
+      m_errorAccessor[2] = 1;
     }
 
     /** check sampled size_t read syntax
@@ -555,7 +656,7 @@ class image_accessor_api_r {
       elem *= 255.f;
     }
     if (!check_element_valid(elem, linearID, true)) {
-      errorAccessor_[3] = 1;
+      m_errorAccessor[3] = 1;
     }
   }
 };
@@ -565,18 +666,18 @@ class image_accessor_api_r {
 template <typename T, int dim, int size, cl::sycl::access::mode mode,
           cl::sycl::access::target target>
 class image_accessor_api_w {
-  cl::sycl::accessor<T, dim, mode, target> accessorA_;
-  cl::sycl::accessor<T, dim, mode, target> accessorB_;
-  cl::sycl::range<dim> range_;
+  cl::sycl::accessor<T, dim, mode, target> m_accessorA;
+  cl::sycl::accessor<T, dim, mode, target> m_accessorB;
+  cl::sycl::range<dim> m_range;
 
  public:
   image_accessor_api_w(cl::sycl::accessor<T, dim, mode, target> accessorA,
                        cl::sycl::accessor<T, dim, mode, target> accessorB,
                        cl::sycl::range<dim> rng)
-      : accessorA_(accessorA), accessorB_(accessorB), range_(rng) {}
+      : m_accessorA(accessorA), m_accessorB(accessorB), m_range(rng) {}
 
   void operator()(cl::sycl::id<dim> idx) {
-    size_t linearID = compute_linear_id(idx, range_);
+    size_t linearID = compute_linear_id(idx, m_range);
     size_t multiplyer = linearID * 4;
 
     typename T::element_type elem0 =
@@ -597,130 +698,153 @@ class image_accessor_api_w {
 
     /** check id write syntax
     */
-    accessorA_[idx] = T(elem0, elem1, elem2, elem3);
+    m_accessorA.write(idx, T(elem0, elem1, elem2, elem3));
 
     /** check size_t write syntax
     */
-    multidim_subscript_write(accessorB_, idx, T(elem0, elem1, elem2, elem3));
+    multidim_subscript_write(m_accessorB, idx, T(elem0, elem1, elem2, elem3));
   }
 };
 
 /** tests buffer accessors methods
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class check_buffer_accessor_api_methods {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    T data[count];
-    ::memset(data, 0xFF, sizeof(data));
+    auto data = [] {
+      auto data = std::array<T, count>{};
+      std::fill(data.begin(), data.end(), T{});
+      return data;
+    }();
     cl::sycl::buffer<T, dims> buffer(data, range);
 
-    queue.submit([&](cl::sycl::handler &handler) {
-      auto accessor =
-          make_accessor<T, dims, size, mode, target>()(buffer, handler, range);
+    auto check = [&log, &range](
+        const cl::sycl::accessor<T, dims, mode, target, placeholder>
+            &accessor) {
 
-      /** check get_count() method
-      */
-      auto accessorCount = accessor.get_count();
-      if (typeid(accessorCount) != typeid(size_t)) {
-        FAIL(log, "get_count() does not return size_t");
-      }
-      if (accessorCount != count) {
-        FAIL(log, "accessor does not return the correct count");
-      }
-
-      /** check get_size() method
-      */
-      auto accessorSize = accessor.get_size();
-      if (typeid(accessorSize) != typeid(size_t)) {
-        FAIL(log, "get_size() does not return size_t");
-      }
-      if (accessorSize != size) {
-        FAIL(log, "accessor does not return the correct size");
+      {
+        /** check get_count() method
+        */
+        auto accessorCount = accessor.get_count();
+        check_return_type<std::size_t>(log, accessor.get_count(),
+                                       "get_count()");
+        if (accessorCount != count) {
+          FAIL(log, "accessor does not return the correct count");
+        }
       }
 
-      /** check get_size() method
-      */
-      auto accessorRange = accessor.get_range();
-      if (typeid(accessorRange) != typeid(range<dims>)) {
-        FAIL(log, "get_range() does not return size_t");
+      {
+        /** check get_size() method
+        */
+        auto accessorSize = accessor.get_size();
+        check_return_type<std::size_t>(log, accessor.get_size(), "get_size()");
+        if (accessorSize != size) {
+          FAIL(log, "accessor does not return the correct size");
+        }
       }
-      if (accessorRange != range) {
-        FAIL(log, "accessor does not return the correct range (get_range)");
-      }
-
-      /** check get_pointer() method
-      */
-      auto accessorPointer = accessor.get_pointer();
-      if (!std::is_same<decltype(accessorPointer),
-                        typename explicit_pointer<T, target>::type>::value) {
-        FAIL(log, "get_pointer() does not return the explicit pointer type");
+      {
+        /** check get_pointer() method
+        */
+        check_return_type<explicit_pointer_t<T, target>>(
+            log, accessor.get_pointer(), "get_pointer()");
       }
 
-      /** dummy kernel as no kernel is required for these checks
-      */
-      handler.single_task(dummy_functor());
-    });
-  }
-};
+      {
+        /** check get_range() method
+        */
+        auto accessorRange = accessor.get_range();
+        check_return_type<cl::sycl::range<dims>>(log, accessor.get_range(),
+                                                 "get_range()");
+        if (accessorRange != range) {
+          FAIL(log, "accessor does not return the correct range");
+        }
+      }
 
-/** tests buffer accessors methods (specialization for host_buffer)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_buffer_accessor_api_methods<T, dims, count, size, mode,
-                                        cl::sycl::access::target::host_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    T data[count];
-    ::memset(data, 0xFF, sizeof(data));
-    cl::sycl::buffer<T, dims> buffer(data, range);
+      {
+        /** check get_offset() method
+        */
+        auto accessorOffset = accessor.get_offset();
+        check_return_type<cl::sycl::id<dims>>(log, accessor.get_offset(),
+                                              "get_offset()");
+        if (accessorOffset != cl::sycl::id<dims>(range)) {
+          FAIL(log, "accessor does not return the correct offset");
+        }
+      }
+    };
 
-    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-        accessor(buffer);
+    if_constexpr<(target == cl::sycl::access::target::host_buffer)>(
+        [&buffer, &check] {
+          auto a = make_accessor<T, dims, mode, target, placeholder>(buffer);
+          check(a);
+        },
+        [&queue, &buffer, &range, &check] {
+          queue.submit([&](cl::sycl::handler &handler) {
+            auto a = make_accessor<T, dims, mode, target, placeholder>(
+                buffer, handler, range);
+            check(a);
 
-    /** check get_count() method
-    */
-    auto accessorCount = accessor.get_count();
-    if (typeid(accessorCount) != typeid(size_t)) {
-      FAIL(log, "get_count() does not return size_t");
-    }
-    if (accessorCount != count) {
-      FAIL(log, "accessor does not return the correct count");
-    }
-
-    /** check get_size() method
-    */
-    auto accessorSize = accessor.get_size();
-    if (typeid(accessorSize) != typeid(size_t)) {
-      FAIL(log, "get_size() does not return size_t");
-    }
-    if (accessorSize != size) {
-      FAIL(log, "accessor does not return the correct size");
-    }
-
-    /** check get_event() method
-    */
-    auto accessorEvent = accessor.get_event();
-    if (typeid(accessorEvent) != typeid(cl::sycl::event)) {
-      FAIL(log, "get_event() does not return event");
-    }
-
-    /** check get_pointer() method
-    */
-    auto accessorPointer = accessor.get_pointer();
-    if (typeid(accessorPointer) != typeid(T *)) {
-      FAIL(log, "get_pointer() does not return T*");
-    }
+            /** dummy kernel as no kernel is required for these checks
+            */
+            handler.single_task(dummy_functor());
+          });
+        });
   }
 };
 
 template <typename T, int dims, int count, int size,
           cl::sycl::access::mode mode, cl::sycl::access::target target>
 class kernel_name;
+
+/** tests local accessor methods
+*/
+template <typename T, int dims, int count, int size,
+          cl::sycl::access::mode mode>
+class check_local_accessor_api_methods {
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &queue,
+                  cl::sycl::range<dims> range) {
+    queue.submit([&](cl::sycl::handler &h) {
+      auto a =
+          make_accessor<T, dims, mode, cl::sycl::access::placeholder::local>(
+              range, h);
+      {
+        /** check get_count() method
+        */
+        auto accessorCount = accessor.get_count();
+        check_return_type<std::size_t>(log, accessor.get_count(),
+                                       "get_count()");
+        if (accessorCount != count) {
+          FAIL(log, "accessor does not return the correct count");
+        }
+      }
+
+      {
+        /** check get_size() method
+        */
+        auto accessorSize = accessor.get_size();
+        check_return_type<std::size_t>(log, accessor.get_size(), "get_size()");
+        if (accessorSize != size) {
+          FAIL(log, "accessor does not return the correct size");
+        }
+      }
+
+      {
+        /** check get_pointer() method
+        */
+        check_return_type<explicit_pointer_t<T, target>>(
+            log, accessor.get_pointer(), "get_pointer()");
+      }
+      /** dummy kernel, as no kernel is required for these checks
+      */
+      h.single_task(dummy_functor());
+    });
+  }
+};
 
 /** tests image accessors methods
 */
@@ -730,20 +854,22 @@ class check_image_accessor_api_methods {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    char data[size];
-    ::memset(data, 0, sizeof(data));
-    cl::sycl::image<dims> image(image_format_channel<T>::order,
-                                image_format_channel<T>::type, range);
+    auto data = [] {
+      auto data = std::array<char, size>{};
+      std::fill(data.begin(), data.end(), static_cast<char>(0));
+      return data;
+    }();
+    auto image = cl::sycl::image<(
+        (target == cl::sycl::access::target::image_array) ? (dims + 1) : dims)>(
+        data, image_format_channel<T>::order, image_format_channel<T>::type,
+        range);
 
-    queue.submit([&](cl::sycl::handler &handler) {
-      cl::sycl::accessor<T, dims, mode, target> accessor(image, handler);
-
+    const auto check = [&log](
+        const cl::sycl::accessor<T, dims, mode, target> &accessor) {
       /** check get_count() method
       */
       auto accessorCount = accessor.get_count();
-      if (typeid(accessorCount) != typeid(size_t)) {
-        FAIL(log, "get_count() does not return size_t");
-      }
+      check_return_type<std::size_t>(log, accessor.get_count(), "get_count");
       if (accessorCount != count) {
         FAIL(log, "accessor does not return the correct count");
       }
@@ -751,77 +877,33 @@ class check_image_accessor_api_methods {
       /** check get_size() method
       */
       auto accessorSize = accessor.get_size();
-      if (typeid(accessorSize) != typeid(size_t)) {
-        FAIL(log, "get_size() does not return size_t");
-      }
+      check_return_type<std::size_t>(log, accessor.get_size(), "get_size");
       if (accessorSize != size) {
         FAIL(log, "accessor is not the correct size");
       }
+    };
 
-      /** check get_event() method
-      */
-      auto accessorEvent = accessor.get_event();
-      if (typeid(accessorEvent) != typeid(cl::sycl::event)) {
-        FAIL(log, "get_event() does not return event");
-      }
-
-      /** dummy kernel as no kernel is required for these checks
-      */
-      handler.single_task(dummy_functor());
-    });
-  }
-};
-
-/** tests image accessors methods (specialization for host_image)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_image_accessor_api_methods<T, dims, count, size, mode,
-                                       cl::sycl::access::target::host_image> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    char data[size];
-    ::memset(data, 0, sizeof(data));
-    cl::sycl::image<dims> image(data, image_format_channel<T>::order,
-                                image_format_channel<T>::type, range);
-
-    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-        accessor(image);
-
-    /** check get_count() method
-    */
-    auto accessorCount = accessor.get_count();
-    if (typeid(accessorCount) != typeid(size_t)) {
-      FAIL(log, "get_count() does not return size_t");
-    }
-    if (accessorCount != count) {
-      FAIL(log, "accessor does not return the correct count");
-    }
-
-    /** check get_size() method
-    */
-    auto accessorSize = accessor.get_size();
-    if (typeid(accessorSize) != typeid(size_t)) {
-      FAIL(log, "get_size() does not return size_t");
-    }
-    if (accessorSize != size) {
-      FAIL(log, "accessor is not the correct size");
-    }
-
-    /** check get_event() method
-    */
-    auto accessorEvent = accessor.get_event();
-    if (typeid(accessorEvent) != typeid(cl::sycl::event)) {
-      FAIL(log, "get_event() does not return event");
-    }
+    if_constexpr<(target == cl::sycl::access::target::host_image)>(
+        [&image, &check] {
+          check(make_accessor<T, dims, mode, target>(image));
+        },
+        [&queue, &image, &check] {
+          queue.submit([&](cl::sycl::handler &handler) {
+            check(make_accessor<T, dims, mode, target>(image, handler));
+            /** dummy kernel as no kernel is required for these checks
+            */
+            handler.single_task(dummy_functor());
+          });
+        });
   }
 };
 
 /** tests buffer accessors reads
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class check_buffer_accessor_api_reads {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
@@ -839,22 +921,49 @@ class check_buffer_accessor_api_reads {
       cl::sycl::buffer<T, dims> bufferB(dataB, range);
       cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(2));
 
-      queue.submit([&](cl::sycl::handler &handler) {
-        auto accessorA = make_accessor<T, dims, size, mode, target>()(
-            bufferA, handler, range);
-        auto accessorB = make_accessor<T, dims, size, mode, target>()(
-            bufferB, handler, range);
-        cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                           cl::sycl::access::target::global_buffer>
-            errorAccessor(errorBuffer, handler);
+      if_constexpr<(target == cl::sycl::access::target::host_buffer)>(
+          [&range, &bufferA, &bufferB, &errorBuffer] {
+            auto accessorA = make_accessor<T, dims, mode, target>(bufferA);
+            auto accessorB = make_accessor<T, dims, mode, target>(bufferB);
+            auto errorAccessor =
+                make_accessor<int, 1, cl::sycl::access::mode::write,
+                              cl::sycl::access::target::host_buffer>(
+                    errorBuffer);
 
-        /** check buffer accessor subscript operators for reads
-        */
-        handler.parallel_for(
-            range,
-            buffer_accessor_api_r<T, dims, size, mode, target,
-                                  cl::sycl::access::target::global_buffer>(
-                accessorA, accessorB, errorAccessor, range));
+            /** check buffer accessor subscript operators for reads
+            */
+            auto idList = create_id_list<dims>(range);
+            for (cl::sycl::id<dims> id : idList) {
+              buffer_accessor_api_r<T, dims, size, mode, target,
+                                    cl::sycl::access::target::host_buffer>(
+                  accessorA, accessorB, errorAccessor, range)(id);
+            }
+          },
+          [&log, &queue, &range, &bufferA, &bufferB, &errorBuffer] {
+            queue.submit([&](cl::sycl::handler &handler) {
+              auto accessorA =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferA, handler, range);
+              auto accessorB =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferB, handler, range);
+              auto errorAccessor =
+                  make_accessor<int, 1, cl::sycl::access::mode::write,
+                                cl::sycl::access::target::global_buffer,
+                                placeholder>(errorBuffer, handler);
+
+              handler.parallel_for(
+                  range,
+                  buffer_accessor_api_r<T, dims, size, mode, target,
+                                        cl::sycl::access::target::global_buffer,
+                                        placeholder>(accessorA, accessorB,
+                                                     errorAccessor, range));
+            });
+          });
+
+      if_constexpr<(placeholder == cl::sycl::access::placeholder::true_t)>([&] {
+        check_placeholder_command_group<placeholder>(
+            log, queue, bufferA, bufferB, errorBuffer, range);
       });
     }
 
@@ -867,89 +976,99 @@ class check_buffer_accessor_api_reads {
            "index");
     }
   }
-};
 
-/** tests buffer accessors reads (specialized for host_buffer)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_buffer_accessor_api_reads<T, dims, count, size, mode,
-                                      cl::sycl::access::target::host_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    T dataA[count];
-    T dataB[count];
-    for (int i = 0; i < count; i++) {
-      dataA[i] = T(i);
-      dataB[i] = T(i);
-    }
-    int errors[2] = {0};
+ private:
+  template <cl::sycl::access::placeholder p,
+            REQUIRES(p == cl::sycl::access::placeholder::true_t)>
+  void check_placeholder_command_group(util::logger &log,
+                                       cl::sycl::queue &queue,
+                                       const cl::sycl::buffer<T, dims> &b1,
+                                       const cl::sycl::buffer<T, dims> &b2,
+                                       cl::sycl::range<dims> range) {
+    auto a1 =
+        b1.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
+    auto a2 =
+        b2.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
+    auto errorAccessor = make_accessor<int, 1, cl::sycl::access::mode::write,
+                                       cl::sycl::access::target::host_buffer>(
+        errorBuffer, handler);
 
-    {
-      cl::sycl::buffer<T, dims> bufferA(dataA, range);
-      cl::sycl::buffer<T, dims> bufferB(dataB, range);
-      cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(2));
-
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorA(bufferA);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorB(bufferB);
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                         cl::sycl::access::target::host_buffer>
-          errorAccessor(errorBuffer);
-
-      /** check buffer accessor subscript operators for reads
-      */
-      auto idList = create_id_list<dims>(range);
-      for (cl::sycl::id<dims> id : idList) {
-        buffer_accessor_api_r<T, dims, size, mode,
-                              cl::sycl::access::target::host_buffer,
-                              cl::sycl::access::target::host_buffer>(
-            accessorA, accessorB, errorAccessor, range)(id);
-      }
+    if (!a1.is_placeholder()) {
+      FAIL(log, "expected is_placeholder() == true, got false");
     }
 
-    if (errors[0] != 0) {
-      FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-    if (errors[1] != 0) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
+    auto reader = buffer_accessor_api_r<T, dims, size, mode, target,
+                                        cl::sycl::access::target::global_buffer,
+                                        placeholder>{accessorA, accessorB,
+                                                     errorAccessor, range};
+    queue.submit([&](cl::sycl::handler &h) {
+      h.require(a1);
+      h.require(a2);
+      h.single_task<class Read_placeholder_accessor>([=] {
+        auto idList = create_id_list<dims>(range);
+        for (cl::sycl::id<dims> id : idList) {
+          reader(id);
+        }
+      });
+    });
   }
 };
 
 /** tests buffer accessors writes
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class check_buffer_accessor_api_writes {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    T dataA[count];
-    T dataB[count];
-    ::memset(dataA, 0xFF, sizeof(dataA));
-    ::memset(dataB, 0xFF, sizeof(dataB));
+    auto dataA = [] {
+      auto data = std::array<T, count>{};
+      std::fill(data.begin(), data.end(), T{});
+      return data;
+    }();
+    auto dataB = dataA;
 
     {
       cl::sycl::buffer<T, dims> bufferA(dataA, range);
       cl::sycl::buffer<T, dims> bufferB(dataB, range);
+      if_constexpr<(target == cl::sycl::access::target::host_buffer)>(
+          [&range, &bufferA, &bufferB] {
+            auto accessorA = make_accessor<T, dims, mode, target>(bufferA);
+            auto accessorB = make_accessor<T, dims, mode, target>(bufferB);
 
-      queue.submit([&](cl::sycl::handler &handler) {
-        auto accessorA = make_accessor<T, dims, size, mode, target>()(
-            bufferA, handler, range);
-        auto accessorB = make_accessor<T, dims, size, mode, target>()(
-            bufferB, handler, range);
+            /** check buffer accessor subscript operators for writes
+            */
+            auto idList = create_id_list<dims>(range);
+            for (cl::sycl::id<dims> id : idList) {
+              buffer_accessor_api_w<T, dims, size, mode, target>(
+                  accessorA, accessorB, range)(id);
+            }
+          },
+          [&queue, &range, &bufferA, &bufferB] {
+            queue.submit([&](cl::sycl::handler &handler) {
+              auto accessorA =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferA, handler, range);
+              auto accessorB =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferB, handler, range);
 
-        /** check buffer accessor subscript operators for writes
-        */
-        handler.parallel_for(range,
-                             buffer_accessor_api_w<T, dims, size, mode, target>(
-                                 accessorA, accessorB, range));
-      });
+              /** check buffer accessor subscript operators for writes
+              */
+              handler.parallel_for(
+                  range, buffer_accessor_api_w<T, dims, size, mode, target,
+                                               placeholder>(accessorA,
+                                                            accessorB, range));
+            });
+          });
+
+      if_constexpr<(placeholder == cl::sycl::access::placeholder::true_t)>(
+          [&log, &queue, &bufferA] {
+            check_placeholder_command_group<placeholder>(log, queue, bufferA);
+          });
     }
 
     if (!check_linear_index(dataA, count)) {
@@ -962,114 +1081,241 @@ class check_buffer_accessor_api_writes {
            "index");
     }
   }
-};
 
-/** tests buffer accessors writes (specialized for host_buffer)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_buffer_accessor_api_writes<T, dims, count, size, mode,
-                                       cl::sycl::access::target::host_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    T dataA[count];
-    T dataB[count];
-    ::memset(dataA, 0xFF, sizeof(dataA));
-    ::memset(dataB, 0xFF, sizeof(dataB));
+ private:
+  template <cl::sycl::access::placeholder p,
+            REQUIRES(p == cl::sycl::access::placeholder::true_t)>
+  void check_placeholder_command_group(util::logger &log,
+                                       cl::sycl::queue &queue,
+                                       const cl::sycl::buffer<T, dims> &b1,
+                                       const cl::sycl::buffer<T, dims> &b2,
+                                       cl::sycl::range<dims> range) {
+    auto idList = create_id_list<dims>(range);
+    auto a1 =
+        b1.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
+    auto a2 =
+        b2.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
 
-    {
-      cl::sycl::buffer<T, dims> bufferA(dataA, range);
-      cl::sycl::buffer<T, dims> bufferB(dataB, range);
+    if (!a1.is_placeholder()) {
+      FAIL(log, "expected is_placeholder() == true, got false");
+    }
 
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorA(bufferA);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorB(bufferB);
-
-      /** check buffer accessor subscript operators for writes
-      */
-      auto idList = create_id_list<dims>(range);
-      for (cl::sycl::id<dims> id : idList) {
-        buffer_accessor_api_w<T, dims, size, mode,
-                              cl::sycl::access::target::host_buffer>(
-            accessorA, accessorB, range)(id);
+    auto writer = buffer_accessor_api_w<T, dims, size, mode, target>{
+        accessorA, accessorB, range};
+    queue.submit([&](cl::sycl::handler &h) {
+      h.require(a1);
+      h.require(a2);
+      h.single_task<class Write_placeholder_accessor>([=] {
+        auto idList = create_id_list<dims>(range);
+        for (cl::sycl::id<dims> id : idList) {
+          writer(id);
+        }
       }
-    }
-
-    if (!check_linear_index(dataA, count)) {
-      FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-
-    if (!check_linear_index(dataB, count)) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
-  }
+    });
+  });
+}
 };
 
 /** tests buffer accessors reads and writes
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
 class check_buffer_accessor_api_reads_and_writes {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    T dataA[count];
-    T dataB[count];
-    for (int i = 0; i < count; i++) {
-      dataA[i] = T(i);
-      dataB[i] = T(i);
-    }
-    int errors[4] = {0};
+    auto dataA = [] {
+      auto a = std::array<T, count>{};
+      std::transform(a.begin(), a.end(), a.begin(), [](const T &) {
+        static int i = 0;
+        return T(i);
+      });
+      return a;
+    }();
+    auto dataB = dataA;
+
+    constexpr bool isHostBuffer =
+        (target == cl::sycl::access::target::host_buffer);
+    auto errors = [] {
+      auto a = std::array<int, (isHostBuffer ? 2 : 4)>{};
+      std::fill(a.begin(), a.end(), 0);
+      return a;
+    }();
 
     {
-      cl::sycl::buffer<T, dims> bufferA(dataA, range);
-      cl::sycl::buffer<T, dims> bufferB(dataB, range);
-      cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(4));
+      cl::sycl::buffer<T, dims> bufferA(dataA.data(), range);
+      cl::sycl::buffer<T, dims> bufferB(dataB.data(), range);
+      cl::sycl::buffer<int, 1> errorBuffer(errors.data(),
+                                           cl::sycl::range<1>(errors.size()));
+      if_constexpr<isHostBuffer>(
+          [&range, &bufferA, &bufferB, &errorBuffer] {
+            auto accessorA = make_accessor<T, dims, mode, target>(bufferA);
+            auto accessorB = make_accessor<T, dims, mode, target>(bufferB);
+            auto errorAccessor =
+                make_accessor<int, 1, cl::sycl::access::mode::write,
+                              cl::sycl::access::target::host_buffer>(
+                    errorBuffer);
 
-      queue.submit([&](cl::sycl::handler &handler) {
-        auto accessorA = make_accessor<T, dims, size, mode, target>()(
-            bufferA, handler, range);
-        auto accessorB = make_accessor<T, dims, size, mode, target>()(
-            bufferB, handler, range);
-        cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                           cl::sycl::access::target::global_buffer>
-            errorAccessor(errorBuffer, handler);
+            /** check buffer accessor subscript operators for reads and writes
+            */
+            auto idList = create_id_list<dims>(range);
+            for (cl::sycl::id<dims> id : idList) {
+              buffer_accessor_api_rw<T, dims, size, mode, target,
+                                     cl::sycl::access::target::host_buffer>(
+                  accessorA, accessorB, errorAccessor, range)(id);
+            }
+          },
+          [&queue, &range, &bufferA, &bufferB, &errorBuffer] {
+            queue.submit([&](cl::sycl::handler &handler) {
+              auto accessorA =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferA, handler, range);
+              auto accessorB =
+                  make_accessor<T, dims, mode, target, placeholder>(
+                      bufferB, handler, range);
+              auto errorAccessor =
+                  make_accessor<int, 1, cl::sycl::access::mode::write,
+                                cl::sycl::access::target::global_buffer>(
+                      errorBuffer, handler);
 
-        /** check buffer accessor subscript operators for reads and writes
-        */
-        handler.parallel_for(
-            range,
-            buffer_accessor_api_rw<T, dims, size, mode, target,
-                                   cl::sycl::access::target::global_buffer>(
-                accessorA, accessorB, errorAccessor, range));
+              /** check buffer accessor subscript operators for reads and writes
+              */
+              handler.parallel_for(
+                  range, buffer_accessor_api_rw<
+                             T, dims, size, mode, target,
+                             cl::sycl::access::target::global_buffer>(
+                             accessorA, accessorB, errorAccessor, range));
+            });
+          });
+
+      if_constexpr<(placeholder == cl::sycl::access::placeholder::true_t)>([&] {
+        check_placeholder_command_group<placeholder>(
+            log, queue, bufferA, bufferB, errorBuffer, range);
       });
     }
 
-    /** the initial and final values of the accessors are not tested for local
-     * acccessors
-    */
-    if (target != cl::sycl::access::target::local) {
-      if (errors[0] != 0) {
-        FAIL(log, "operator[id<N>] did not read from the correct index");
-      }
-      if (errors[1] != 0) {
-        FAIL(log,
-             "operator[size_t][size_t][size_t] did not read from the correct "
-             "index");
-      }
-      if (!check_linear_index(dataA, count, 2)) {
-        FAIL(log, "operator[id<N>] did not assign to the correct index");
-      }
+    if (errors[0] != 0) {
+      FAIL(log, "operator[id<N>] did not read from the correct index");
+    }
+    if (errors[1] != 0) {
+      FAIL(log,
+           "operator[size_t][size_t][size_t] did not read from the "
+           "correct index");
+    }
+    if (!check_linear_index(dataA, count, 2)) {
+      FAIL(log, "operator[id<N>] did not assign to the correct index");
+    }
 
-      if (!check_linear_index(dataB, count, 2)) {
+    if (!check_linear_index(dataB, count, 2)) {
+      FAIL(log,
+           "operator[size_t][size_t][size_t] did not assign to the "
+           "correct index");
+    }
+
+    if_constexpr<!isHostBuffer>([&log, &errors] {
+      if (errors[2] != 0) {
+        FAIL(log, "operator[id<N>] did not write to the correct index");
+      }
+      if (errors[3] != 0) {
         FAIL(log,
-             "operator[size_t][size_t][size_t] did not assign to the correct "
+             "operator[size_t][size_t][size_t] did not write to the correct "
              "index");
       }
+    });
+  }
+
+ private:
+  template <cl::sycl::access::placeholder p,
+            REQUIRES(p == cl::sycl::access::placeholder::true_t)>
+  void check_placeholder_command_group(util::logger &log,
+                                       cl::sycl::queue &queue,
+                                       const cl::sycl::buffer<T, dims> &b1,
+                                       const cl::sycl::buffer<T, dims> &b2,
+                                       cl::sycl::range<dims> range) {
+    auto a1 =
+        b1.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
+    auto a2 =
+        b2.get_access<mode, target, cl::sycl::access::placeholder::true_t>();
+    auto errorAccessor = make_accessor<int, 1, cl::sycl::access::mode::write,
+                                       cl::sycl::access::target::host_buffer>(
+        errorBuffer, handler);
+
+    if (!a1.is_placeholder()) {
+      FAIL(log, "expected is_placeholder() == true, got false");
+    }
+
+    auto reader_writer =
+        buffer_accessor_api_rw<T, dims, size, mode, target,
+                               cl::sycl::access::target::global_buffer,
+                               placeholder>{accessorA, accessorB, errorAccessor,
+                                            range};
+    queue.submit([&](cl::sycl::handler &h) {
+      h.require(a1);
+      h.require(a2);
+      h.single_task<class Read_write_placeholder_accessor>([=] {
+        auto idList = create_id_list<dims>(range);
+        for (cl::sycl::id<dims> id : idList) {
+          reader_writer(id);
+        }
+      });
+    });
+  }
+};
+
+/** tests local accessor reads and writes
+*/
+template <typename T, int dims, int count, int size,
+          cl::sycl::access::mode mode>
+class check_local_accessor_api_reads_and_writes {
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &queue,
+                  cl::sycl::range<dims> range) {
+    auto errors = [] {
+      auto a = std::array<int, 4>{};
+      std::fill(a.begin(), a.end(), 0);
+      return a;
+    }();
+
+    cl::sycl::buffer<int, 1> errorBuffer(errors.data(),
+                                         cl::sycl::range<1>(errors.size()));
+    queue.submit([&](cl::sycl::handler &handler) {
+      auto accessorA =
+          make_accessor<T, dims, count, size, mode,
+                        cl::sycl::access::target::local>(range, handler);
+      auto accessorB =
+          make_accessor<T, dims, count, size, mode,
+                        cl::sycl::access::target::local>(range, handler);
+      auto errorAccessor =
+          make_accessor<int, 1, cl::sycl::access::mode::write,
+                        cl::sycl::access::target::global_buffer>(errorBuffer,
+                                                                 handler);
+      /** check buffer accessor subscript operators for reads and writes
+      */
+      handler.parallel_for(
+          range,
+          buffer_accessor_api_rw<T, dims, size, mode, target,
+                                 cl::sycl::access::target::global_buffer>(
+              accessorA, accessorB, errorAccessor, range));
+    });
+
+    if (errors[0] != 0) {
+      FAIL(log, "operator[id<N>] did not read from the correct index");
+    }
+    if (errors[1] != 0) {
+      FAIL(log,
+           "operator[size_t][size_t][size_t] did not read from the "
+           "correct index");
+    }
+    if (!check_linear_index(dataA, count, 2)) {
+      FAIL(log, "operator[id<N>] did not assign to the correct index");
+    }
+
+    if (!check_linear_index(dataB, count, 2)) {
+      FAIL(log,
+           "operator[size_t][size_t][size_t] did not assign to the "
+           "correct index");
     }
 
     if (errors[2] != 0) {
@@ -1082,69 +1328,6 @@ class check_buffer_accessor_api_reads_and_writes {
     }
   }
 };
-
-/** tests buffer accessors reads and writes (specialized for host_buffer)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_buffer_accessor_api_reads_and_writes<
-    T, dims, count, size, mode, cl::sycl::access::target::host_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    T dataA[count];
-    T dataB[count];
-    for (int i = 0; i < count; i++) {
-      dataA[i] = T(i);
-      dataB[i] = T(i);
-    }
-    int errors[2] = {0};
-
-    {
-      cl::sycl::buffer<T, dims> bufferA(dataA, range);
-      cl::sycl::buffer<T, dims> bufferB(dataB, range);
-      cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(2));
-
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorA(bufferA);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_buffer>
-          accessorB(bufferB);
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                         cl::sycl::access::target::host_buffer>
-          errorAccessor(errorBuffer);
-
-      /** check buffer accessor subscript operators for reads and writes
-      */
-      auto idList = create_id_list<dims>(range);
-      for (cl::sycl::id<dims> id : idList) {
-        buffer_accessor_api_rw<T, dims, size, mode,
-                               cl::sycl::access::target::host_buffer,
-                               cl::sycl::access::target::host_buffer>(
-            accessorA, accessorB, errorAccessor, range)(id);
-      }
-    }
-
-    if (errors[0] != 0) {
-      FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-    if (errors[1] != 0) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
-
-    if (!check_linear_index(dataA, count, 2)) {
-      FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-
-    if (!check_linear_index(dataB, count, 2)) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
-  }
-};
-
 /** tests image accessors reads
 */
 template <typename T, int dims, int count, int size,
@@ -1153,51 +1336,85 @@ class check_image_accessor_api_reads {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    char dataA[size] = {0};
-    char dataB[size] = {0};
-    char dataC[size] = {0};
-    char dataD[size] = {0};
-
-    for (size_t i = 0; i < size; i++) {
-      dataA[i] = static_cast<char>(i);
-      dataB[i] = static_cast<char>(i);
-      dataC[i] = static_cast<char>(i);
-      dataD[i] = static_cast<char>(i);
-    }
-
-    int errors[4] = {0};
+    auto dataA = [] {
+      auto data = std::array<char, size>{};
+      std::iota(data.begin(), data.end(), static_cast<char>(0));
+      return data;
+    }();
+    auto dataB = dataA;
+    auto dataC = dataA;
+    auto dataD = dataA;
+    auto errors = std::array<int, 4>{};
 
     {
-      cl::sycl::image<dims> imageA(dataA, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageB(dataB, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageC(dataC, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageD(dataD, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(4));
+      constexpr auto isImageArray =
+          target == cl::sycl::access::target::image_array;
+      cl::sycl::image<(isImageArray ? (dims + 1) : dims)> imageA(
+          dataA, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
+      cl::sycl::image<(isImageArray ? (dims + 1) : dims)> imageB(
+          dataB, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
+      cl::sycl::image<(isImageArray ? (dims + 1) : dims)> imageC(
+          dataC, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
+      cl::sycl::image<(isImageArray ? (dims + 1) : dims)> imageD(
+          dataD, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
+      cl::sycl::buffer<int, 1> errorBuffer(errors.data(),
+                                           cl::sycl::range<1>(4));
 
-      queue.submit([&](cl::sycl::handler &handler) {
-        cl::sycl::accessor<T, dims, mode, target> accessorA(imageA, handler);
-        cl::sycl::accessor<T, dims, mode, target> accessorB(imageB, handler);
-        cl::sycl::accessor<T, dims, mode, target> accessorC(imageC, handler);
-        cl::sycl::accessor<T, dims, mode, target> accessorD(imageD, handler);
-        cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                           cl::sycl::access::target::global_buffer>
-            errorAccessor(errorBuffer, handler);
-        cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
+      if_constexpr<(target == cl::sycl::access::target::host_image)>(
+          [&range, &imageA, &imageB, &imageC, &imageD, &errorBuffer] {
+            auto accessorA = make_accessor<T, dims, mode, target>(imageA);
+            auto accessorB = make_accessor<T, dims, mode, target>(imageB);
+            auto accessorC = make_accessor<T, dims, mode, target>(imageC);
+            auto accessorD = make_accessor<T, dims, mode, target>(imageD);
+            auto errorAccessor =
+                make_accessor<int, 1, cl::sycl::access::mode::write,
+                              cl::sycl::access::target::host_buffer>(
+                    errorBuffer);
+            auto sampler =
+                cl::sycl::sampler(false, cl::sycl::addressing_mode::none,
                                   cl::sycl::filtering_mode::nearest);
+            /** check image accessor subscript operators for reads
+            */
+            auto idList = create_id_list<dims>(range);
+            for (cl::sycl::id<dims> id : idList) {
+              image_accessor_api_r<T, dims, size, mode, target,
+                                   cl::sycl::access::target::host_buffer>(
+                  accessorA, accessorB, accessorC, accessorD, sampler,
+                  errorAccessor, range)(id);
+            }
+          },
+          [&queue, &range, &imageA, &imageB, &imageC, &imageD, &errorBuffer] {
+            queue.submit([&](cl::sycl::handler &handler) {
+              auto accessorA =
+                  make_accessor<T, dims, mode, target>(imageA, handler);
+              auto accessorB =
+                  make_accessor<T, dims, mode, target>(imageB, handler);
+              auto accessorC =
+                  make_accessor<T, dims, mode, target>(imageC, handler);
+              auto accessorD =
+                  make_accessor<T, dims, mode, target>(imageD, handler);
+              auto errorAccessor =
+                  make_accessor<int, 1, cl::sycl::access::mode::write,
+                                cl::sycl::access::target::global_buffer>(
+                      errorBuffer, handler);
+              auto sampler =
+                  cl::sycl::sampler(false, cl::sycl::addressing_mode::none,
+                                    cl::sycl::filtering_mode::nearest);
 
-        /** check image accessor subscript operators for reads
-        */
-        handler.parallel_for(
-            range,
-            image_accessor_api_r<T, dims, size, mode, target,
-                                 cl::sycl::access::target::global_buffer>(
-                accessorA, accessorB, accessorC, accessorD, sampler,
-                errorAccessor, range));
-      });
+              /** check image accessor subscript operators for reads
+              */
+              handler.parallel_for(
+                  range,
+                  image_accessor_api_r<T, dims, size, mode, target,
+                                       cl::sycl::access::target::global_buffer>(
+                      accessorA, accessorB, accessorC, accessorD, sampler,
+                      errorAccessor, range));
+            });
+          });
     }
 
     if (errors[0] != 0) {
@@ -1214,89 +1431,7 @@ class check_image_accessor_api_reads {
     if (errors[3] != 0) {
       FAIL(log,
            "operator[size_t][size_t][size_t](sampler) did not assign to the "
-           "correct "
-           "index");
-    }
-  }
-};
-
-/** tests image accessors reads (specialized for host_image)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_image_accessor_api_reads<T, dims, count, size, mode,
-                                     cl::sycl::access::target::host_image> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    char dataA[size];
-    char dataB[size];
-    char dataC[size];
-    char dataD[size];
-
-    for (size_t i = 0; i < size; i++) {
-      dataA[i] = static_cast<char>(i);
-      dataB[i] = static_cast<char>(i);
-      dataC[i] = static_cast<char>(i);
-      dataD[i] = static_cast<char>(i);
-    }
-
-    int errors[4] = {0};
-
-    {
-      cl::sycl::image<dims> imageA(dataA, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageB(dataB, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageC(dataC, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageD(dataD, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::buffer<int, 1> errorBuffer(errors, cl::sycl::range<1>(4));
-
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorA(imageA);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorB(imageB);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorC(imageC);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorD(imageD);
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                         cl::sycl::access::target::host_buffer>
-          errorAccessor(errorBuffer);
-
-      cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
-                                cl::sycl::filtering_mode::nearest);
-
-      /** check image accessor subscript operators for reads
-      */
-      auto idList = create_id_list<dims>(range);
-      for (cl::sycl::id<dims> id : idList) {
-        image_accessor_api_r<T, dims, size, mode,
-                             cl::sycl::access::target::host_image,
-                             cl::sycl::access::target::host_buffer>(
-            accessorA, accessorB, accessorC, accessorD, sampler, errorAccessor,
-            range)(id);
-      }
-    }
-
-    if (errors[0] != 0) {
-      FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-    if (errors[1] != 0) {
-      FAIL(log, "operator[id<N>](sampler) did not assign to the correct index");
-    }
-    if (errors[2] != 0) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
-    if (errors[3] != 0) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t](sampler) did not assign to the "
-           "correct "
-           "index");
+           "correct index");
     }
   }
 };
@@ -1304,83 +1439,59 @@ class check_image_accessor_api_reads<T, dims, count, size, mode,
 /** tests image accessors writes
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          bool hostImage = (target == cl::sycl::access::target::host_image)>
 class check_image_accessor_api_writes {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   cl::sycl::range<dims> range) {
-    char dataA[size];
-    char dataB[size];
-    ::memset(dataA, 0, sizeof(dataA));
-    ::memset(dataB, 0, sizeof(dataB));
+    auto dataA = [] {
+      auto data = std::array<char, size>{};
+      std::fill(data.begin(), data.end(), 0);
+    }();
+    auto dataB = dataA;
 
     {
-      cl::sycl::image<dims> imageA(dataA, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageB(dataB, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
+      constexpr auto isImageArray =
+          target == cl::sycl::access::target::image_array;
+      auto imageA = cl::sycl::image<(isImageArray ? (dims + 1) : dims)>(
+          dataA, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
+      auto imageB = cl::sycl::image<(isImageArray ? (dims + 1) : dims)>(
+          dataB, image_format_channel<T>::order, image_format_channel<T>::type,
+          range);
 
-      queue.submit([&](cl::sycl::handler &handler) {
-        cl::sycl::accessor<T, dims, mode, target> accessorA(imageA, handler);
-        cl::sycl::accessor<T, dims, mode, target> accessorB(imageB, handler);
+      if_constexpr<(target == cl::sycl::access::target::host_image)>(
+          [&range, &imageA, &imageB] {
+            auto accessorA = make_accessor<T, dims, mode, target>(imageA);
+            auto accessorB = make_accessor<T, dims, mode, target>(imageB);
 
-        /** check image accessor subscript operators for writes
-        */
-        handler.parallel_for(range,
-                             image_accessor_api_w<T, dims, size, mode, target>(
-                                 accessorA, accessorB, range));
-      });
+            /** check image accessor subscript operators for writes
+            */
+            auto idList = create_id_list<dims>(range);
+            for (cl::sycl::id<dims> id : idList) {
+              image_accessor_api_w<T, dims, size, mode, target>(
+                  accessorA, accessorB, range)(id);
+            }
+          },
+          [&queue, &range, &imageA, &imageB] {
+            queue.submit([&](cl::sycl::handler &handler) {
+              auto accessorA =
+                  make_accessor<T, dims, mode, target>(imageA, handler);
+              auto accessorB =
+                  make_accessor<T, dims, mode, target>(imageB, handler);
+
+              /** check image accessor subscript operators for writes
+              */
+              handler.parallel_for(
+                  range, image_accessor_api_w<T, dims, size, mode, target>(
+                             accessorA, accessorB, range));
+            });
+          });
     }
 
     if (!check_linear_index(dataA, count)) {
       FAIL(log, "operator[id<N>] did not assign to the correct index");
-    }
-
-    if (!check_linear_index(dataB, count)) {
-      FAIL(log,
-           "operator[size_t][size_t][size_t] did not assign to the correct "
-           "index");
-    }
-  }
-};
-
-/** tests image accessors writes (specialized for host_image)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode>
-class check_image_accessor_api_writes<T, dims, count, size, mode,
-                                      cl::sycl::access::target::host_image> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    char dataA[size];
-    char dataB[size];
-    ::memset(dataA, 0, sizeof(dataA));
-    ::memset(dataB, 0, sizeof(dataB));
-
-    {
-      cl::sycl::image<dims> imageA(dataA, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-      cl::sycl::image<dims> imageB(dataB, image_format_channel<T>::order,
-                                   image_format_channel<T>::type, range);
-
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorA(imageA);
-      cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::host_image>
-          accessorB(imageB);
-
-      /** check image accessor subscript operators for writes
-      */
-      auto idList = create_id_list<dims>(range);
-      for (cl::sycl::id<dims> id : idList) {
-        image_accessor_api_w<T, dims, size, mode,
-                             cl::sycl::access::target::host_image>(
-            accessorA, accessorB, range)(id);
-      }
-    }
-
-    if (!check_linear_index(dataA, count)) {
-      FAIL(log, "operator[id] did not assign to the correct index");
     }
 
     if (!check_linear_index(dataB, count)) {
@@ -1394,420 +1505,327 @@ class check_image_accessor_api_writes<T, dims, count, size, mode,
 /** tests buffer accessors subscript operators
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts;
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
+void check_buffer_accessor_api_subscripts(util::logger &log,
+                                          cl::sycl::queue &queue,
+                                          cl::sycl::range<dims> range) {
+  /** think of the following as a compile-time conditional operator.
+    * the alternative is to have five explicit class specialisations that
+    * add duplicate code and decrease readability
+    *
+    * lambdas serve as compound statements, and return their values so that
+    * the compiler can deduce the type of `test`.
+    */
+  auto test = if_constexpr<(mode == cl::sycl::access::mode::read)>(
+      [] {
+        check_buffer_accessor_api_reads<T, dims, count, size, mode, target,
+                                        placeholder>{};
+      },
+      [] {
+        return if_constexpr<(mode == cl::sycl::access::mode::write ||
+                             mode == cl::sycl::access::mode::discard_write)>(
+            [] {
+              return check_buffer_accessor_api_writes<
+                  T, dims, count, size, mode, target, placeholder>{};
+            },
+            [] {
+              return check_buffer_accessor_api_reads_and_writes<
+                  T, dims, count, size, mode, target, placeholder>{};
+            });
+      });
 
-/** tests buffer accessors subscript operators (specialization for read)
+  test(log, queue, range);
+}
+
+/** tests local accessor subscript operators
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts<
-    T, dims, count, size, cl::sycl::access::mode::read, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators for read
-    */
-    check_buffer_accessor_api_reads<T, dims, count, size,
-                                    cl::sycl::access::mode::read, target>
-        readTests;
-    readTests(log, queue, range);
-  }
-};
-
-/** tests buffer accessors subscript operators (specialization for write)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts<
-    T, dims, count, size, cl::sycl::access::mode::write, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators for write
-    */
-    check_buffer_accessor_api_writes<T, dims, count, size,
-                                     cl::sycl::access::mode::write, target>
-        writeTests;
-    writeTests(log, queue, range);
-  }
-};
-
-/** tests buffer accessors subscript operators (specialization for read_write)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts<
-    T, dims, count, size, cl::sycl::access::mode::read_write, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators for read and write
-    */
-    check_buffer_accessor_api_reads_and_writes<
-        T, dims, count, size, cl::sycl::access::mode::read_write, target>
-        readWriteTests;
-    readWriteTests(log, queue, range);
-  }
-};
-
-/** tests buffer accessors subscript operators (specialization for
- * discard_write)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts<
-    T, dims, count, size, cl::sycl::access::mode::discard_write, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators for write
-    */
-    check_buffer_accessor_api_writes<
-        T, dims, count, size, cl::sycl::access::mode::discard_write, target>
-        writeTests;
-    writeTests(log, queue, range);
-  }
-};
-
-/** tests buffer accessors subscript operators (specialization for
- * discard_read_write)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_subscripts<
-    T, dims, count, size, cl::sycl::access::mode::discard_read_write, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators for read and write
-    */
-    check_buffer_accessor_api_reads_and_writes<
-        T, dims, count, size, cl::sycl::access::mode::discard_read_write,
-        target>
-        readWriteTests;
-    readWriteTests(log, queue, range);
-  }
-};
+          cl::sycl::access::mode mode>
+void check_local_accessor_api_subscripts(util::logger &log,
+                                         cl::sycl::queue &queue,
+                                         cl::sycl::range<dims> range) {
+  check_local_accessor_api_read_and_write<T, dims, count, size, mode>(
+      log, queue, range);
+}
 
 /** tests buffer accessors with different modes
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::mode mode, cl::sycl::access::target target>
-class check_buffer_accessor_api_mode {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor subscript operators
-    */
-    check_buffer_accessor_api_subscripts<T, dims, count, size, mode, target>
-        subscriptTests;
-    subscriptTests(log, queue, range);
+          cl::sycl::access::mode mode, cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
+void check_buffer_accessor_api_mode(util::logger &log, cl::sycl::queue &queue,
+                                    cl::sycl::range<dims> range) {
+  /** check buffer accessor subscript operators
+  */
+  check_buffer_accessor_api_subscripts<T, dims, count, size, mode, target,
+                                       placeholder>(log, queue, range);
 
-    /** check buffer accessor other apis
+  /** check buffer accessor other apis
+  */
+  check_buffer_accessor_api_methods<T, dims, count, size, mode, target,
+                                    placeholder>()(log, queue, range);
+}
+
+/** tests local accessors with different modes
+*/
+template <typename T, int dims, int count, int size,
+          cl::sycl::access::mode mode>
+void check_local_accessor_api_mode(util::logger &log, cl::sycl::queue &queue,
+                                   cl::sycl::range<dims> range) {
+  /** check buffer accessor subscript operators
     */
-    check_buffer_accessor_api_methods<T, dims, count, size, mode, target>
-        otherAPITests;
-    otherAPITests(log, queue, range);
-  }
-};
+  check_local_accessor_api_subscripts<T, dims, count, size, mode>(log, queue,
+                                                                  range);
+
+  /** check buffer accessor other apis
+  */
+  check_local_accessor_api_methods<T, dims, count, size, mode>()(log, queue,
+                                                                 range);
+}
 
 /** tests image accessors with different modes
 */
 template <typename T, int dims, int count, int size,
           cl::sycl::access::mode mode, cl::sycl::access::target target>
-class check_image_accessor_api_mode;
+void check_image_accessor_api_mode(util::logger &log, cl::sycl::queue &queue,
+                                   cl::sycl::range<dims> range) {
+  auto test = if_constexpr<(mode == cl::sycl::access::mode::read)>(
+      [] {
+        return check_image_accessor_api_reads<T, dims, count, size, mode,
+                                              target>{};
+      },
+      [] {
+        return check_image_accessor_api_writes<T, dims, count, size, mode,
+                                               target>{};
+      });
 
-/** tests image accessors with different modes (specialization for read)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_image_accessor_api_mode<T, dims, count, size,
-                                    cl::sycl::access::mode::read, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check image accessor subscript operators for read
-    */
-    check_image_accessor_api_reads<T, dims, count, size,
-                                   cl::sycl::access::mode::read, target>
-        readTests;
-    readTests(log, queue, range);
+  test(log, queue, range);
 
-    /** check buffer accessor other apis
-    */
-    check_image_accessor_api_methods<T, dims, count, size,
-                                     cl::sycl::access::mode::read, target>
-        otherAPITests;
-    otherAPITests(log, queue, range);
-  }
-};
-
-/** tests image accessors with different modes (specialization for write)
-*/
-template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_image_accessor_api_mode<T, dims, count, size,
-                                    cl::sycl::access::mode::write, target> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check image accessor subscript operators for write
-    */
-    check_image_accessor_api_writes<T, dims, count, size,
-                                    cl::sycl::access::mode::write, target>
-        writeTests;
-    writeTests(log, queue, range);
-
-    /** check buffer accessor other apis
-    */
-    check_image_accessor_api_methods<T, dims, count, size,
-                                     cl::sycl::access::mode::write, target>
-        otherAPITests;
-    otherAPITests(log, queue, range);
-  }
-};
+  /** check buffer accessor other apis
+  */
+  check_image_accessor_api_methods<T, dims, count, size, mode, target>
+      otherAPITests;
+  otherAPITests(log, queue, range);
+}
 
 /** tests buffer accessors with different targets
 */
 template <typename T, int dims, int count, int size,
-          cl::sycl::access::target target>
-class check_buffer_accessor_api_target {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor api for read
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder =
+              cl::sycl::access::placeholder::false_t>
+void check_buffer_accessor_api_target(util::logger &log, cl::sycl::queue &queue,
+                                      cl::sycl::range<dims> range) {
+  using cl::sycl::access::mode;
+
+  /** check buffer accessor api for read
+  */
+  check_buffer_accessor_api_mode<T, dims, count, size, mode::read, target,
+                                 placeholder>(log, queue, range);
+
+  if_constexpr<target != cl::sycl::access::target::constant_buffer>([&] {
+    /** check buffer accessor api for read_write
     */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read, target>
-        readTests;
-    readTests(log, queue, range);
+    check_buffer_accessor_api_mode<T, dims, count, size, mode::read_write,
+                                   target, placeholder>(log, queue, range);
 
     /** check buffer accessor api for write
     */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::write, target>
-        writeTests;
-    writeTests(log, queue, range);
+    check_buffer_accessor_api_mode<T, dims, count, size, mode::write, target>(
+        log, queue, range);
+    if_constexpr<target != cl::sycl::access::target::host_buffer>([&] {
+      /** check buffer accessor api for discard_write
+      */
+      check_buffer_accessor_api_mode<T, dims, count, size, mode::discard_write,
+                                     target>(log, queue, range);
 
-    /** check buffer accessor api for read_write
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read_write, target>
-        readWriteTests;
-    readWriteTests(log, queue, range);
+      /** check buffer accessor api for discard_read_write
+      */
+      check_buffer_accessor_api_mode<T, dims, count, size,
+                                     mode::discard_read_write, target>(
+          log, queue, range);
+    });
+  });
+}
 
-    /** check buffer accessor api for disccard_write
-    */
-    check_buffer_accessor_api_mode<
-        T, dims, count, size, cl::sycl::access::mode::discard_write, target>
-        discardWriteTests;
-    discardWriteTests(log, queue, range);
-
-    /** check buffer accessor api for discard_read_write
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::discard_read_write,
-                                   target>
-        discardReadWriteTests;
-    discardReadWriteTests(log, queue, range);
-  }
-};
-
-/** tests buffer accessors with different targets (specialization for
- * host_buffer)
+/** tests local accessors with different targets
 */
 template <typename T, int dims, int count, int size>
-class check_buffer_accessor_api_target<T, dims, count, size,
-                                       cl::sycl::access::target::host_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor api for read
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read,
-                                   cl::sycl::access::target::host_buffer>()(
-        log, queue, range);
-
-    /** check buffer accessor api for write
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::write,
-                                   cl::sycl::access::target::host_buffer>()(
-        log, queue, range);
-
-    /** check buffer accessor api for read_write
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read_write,
-                                   cl::sycl::access::target::host_buffer>()(
-        log, queue, range);
-  }
-};
-
-/** tests buffer accessors with different targets (specialization for
- * constant_buffer)
-*/
-template <typename T, int dims, int count, int size>
-class check_buffer_accessor_api_target<
-    T, dims, count, size, cl::sycl::access::target::constant_buffer> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor api for read
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read,
-                                   cl::sycl::access::target::constant_buffer>()(
-        log, queue, range);
-  }
-};
-
-/** tests buffer accessors with different targets (specialization for local)
-*/
-template <typename T, int dims, int count, int size>
-class check_buffer_accessor_api_target<T, dims, count, size,
-                                       cl::sycl::access::target::local> {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor api for read_write
-    */
-    check_buffer_accessor_api_mode<T, dims, count, size,
-                                   cl::sycl::access::mode::read_write,
-                                   cl::sycl::access::target::local>()(
-        log, queue, range);
-  }
-};
+void check_local_accessor_api_target(util::logger &log, cl::sycl::queue &queue,
+                                     cl::sycl::range<dims> range) {
+  using cl::sycl::access::mode;
+  check_local_accessor_api_mode<T, dims, count, size, mode::read_write>(
+      log, queue, range);
+}
 
 /** tests image accessors with different targets
 */
 template <typename T, int dims, int count, int size,
           cl::sycl::access::target target>
-class check_image_accessor_api_target {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check image accessor api for read
-    */
-    check_image_accessor_api_mode<T, dims, count, size,
-                                  cl::sycl::access::mode::read, target>()(
-        log, queue, range);
+void check_image_accessor_api_target(util::logger &log, cl::sycl::queue &queue,
+                                     cl::sycl::range<dims> range) {
+  /** check image accessor api for read
+  */
+  check_image_accessor_api_mode<T, dims, count, size,
+                                cl::sycl::access::mode::read, target>(
+      log, queue, range);
 
-    /** check image accessor api for write
-    */
-    check_image_accessor_api_mode<T, dims, count, size,
-                                  cl::sycl::access::mode::write, target>()(
-        log, queue, range);
-  }
-};
+  /** check image accessor api for write
+  */
+  check_image_accessor_api_mode<T, dims, count, size,
+                                cl::sycl::access::mode::write, target>(
+      log, queue, range);
+}
+
+/** tests buffer accessors with different placeholder values
+*/
+template <typename T, int dims, int count, int size,
+          cl::sycl::access::target target>
+void check_buffer_accessor_api_placeholder(util::logger &log,
+                                           cl::sycl::queue &queue,
+                                           cl::sycl::range<dims> range) {
+  check_buffer_accessor_api_target<T, dims, count, size, target>(log, queue,
+                                                                 range);
+  check_buffer_accessor_api_target<T, dims, count, size, target,
+                                   cl::sycl::access::placeholder::true_t>(
+      log, queue, range);
+}
 
 /** tests buffer accessors with different dimensions
 */
 template <typename T, int dims, int count, int size>
-class check_buffer_accessor_api_dim {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check buffer accessor api for global_buffer
-    */
-    check_buffer_accessor_api_target<T, dims, count, size,
-                                     cl::sycl::access::target::global_buffer>()(
-        log, queue, range);
+void check_buffer_accessor_api_dim(util::logger &log, cl::sycl::queue &queue,
+                                   cl::sycl::range<dims> range) {
+  /** check buffer accessor api for global_buffer
+  */
+  check_buffer_accessor_api_placeholder<
+      T, dims, count, size, cl::sycl::access::target::global_buffer>(log, queue,
+                                                                     range);
 
-    /** check buffer accessor api for constant_buffer
-    */
-    check_buffer_accessor_api_target<
-        T, dims, count, size, cl::sycl::access::target::constant_buffer>()(
-        log, queue, range);
+  /** check buffer accessor api for constant_buffer
+  */
+  check_buffer_accessor_api_placeholder<
+      T, dims, count, size, cl::sycl::access::target::constant_buffer>(
+      log, queue, range);
 
-    /** check buffer accessor api for host_buffer
-    */
-    check_buffer_accessor_api_target<T, dims, count, size,
-                                     cl::sycl::access::target::host_buffer>()(
-        log, queue, range);
+  /** check buffer accessor api for host_buffer
+  */
+  check_buffer_accessor_api_target<T, dims, count, size,
+                                   cl::sycl::access::target::host_buffer>(
+      log, queue, range);
+}
 
-    /** check buffer accessor api for local
-    */
-    check_buffer_accessor_api_target<T, dims, count, size,
-                                     cl::sycl::access::target::local>()(
-        log, queue, range);
-  }
-};
+/** tests local accessors with different dimensions
+*/
+template <typename T, int dims, int count, int size>
+void check_local_accessor_api_dim(util::logger &log, cl::sycl::queue &queue,
+                                  cl::sycl::range<dims> range) {
+  check_local_accessor_api_target<T, dims, count, size>(log, queue, range);
+}
 
 /** tests image accessors with different dimensions
 */
 template <typename T, int dims, int count, int size>
-class check_image_accessor_api_dim {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
-                  cl::sycl::range<dims> range) {
-    /** check image accessor api for image
-    */
-    check_image_accessor_api_target<T, dims, count, size,
-                                    cl::sycl::access::target::image>()(
-        log, queue, range);
+void check_image_accessor_api_dim(util::logger &log, cl::sycl::queue &queue,
+                                  cl::sycl::range<dims> range) {
+  /** check image accessor api for image
+  */
+  check_image_accessor_api_target<T, dims, count, size,
+                                  cl::sycl::access::target::image>(log, queue,
+                                                                   range);
 
-    /** check image accessor api for host_image
-    */
-    check_image_accessor_api_target<T, dims, count, size,
-                                    cl::sycl::access::target::host_image>()(
-        log, queue, range);
-  }
-};
+  /** check image accessor api for host_image
+  */
+  check_image_accessor_api_target<T, dims, count, size,
+                                  cl::sycl::access::target::host_image>(
+      log, queue, range);
+}
 
 /** tests buffer accessors with different types
 */
 template <typename T>
 class check_buffer_accessor_api_type {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue) {
-    const int count = 32;
-    const int size = 32 * sizeof(T);
+  constexpr auto count = 8;
+  constexpr auto size = count * sizeof(T);
 
+ public:
+  void operator(util::logger &log, cl::sycl::queue &queue) {
     /** check buffer accessor api for 1 dimension
     */
-    cl::sycl::range<1> range1d(count);
-    check_buffer_accessor_api_dim<T, 1, count, size>()(log, queue, range1d);
+    check(log, queue, cl::sycl::range<1> range1d(count));
 
     /** check buffer accessor api for 2 dimension
     */
-    cl::sycl::range<2> range2d(count / 4, 4);
-    check_buffer_accessor_api_dim<T, 2, count, size>()(log, queue, range2d);
+    check(log, queue, cl::sycl::range<2> range2d(count / 4, 4));
 
     /** check buffer accessor api for 3 dimension
     */
-    cl::sycl::range<3> range3d(count / 8, 4, 2);
-    check_buffer_accessor_api_dim<T, 3, count, size>()(log, queue, range3d);
+    check(log, queue, cl::sycl::range<3> range3d(count / 8, 4, 2));
+  }
+
+ private:
+  template <int dims>
+  void check(util::logger &log, cl::sycl::queue &queue,
+             cl::sycl::range<dims> r) {
+    check_buffer_accessor_api_dim<T, dims, count, size>(log, queue, r);
+  }
+};
+
+/**
+*/
+template <typename T>
+class check_buffer_accessor_api_type {
+  constexpr auto count = 8;
+  constexpr auto size = count * sizeof(T);
+
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &queue) {
+    /** check local accessor api for 1 dimension
+    */
+    check<1>(log, queue);
+
+    /** check local accessor api for 2 dimensions
+    */
+    check<2>(log, queue);
+
+    /** check local accessor api for 3 dimensions
+    */
+    check<3>(log, queue);
+  }
+
+ private:
+  template <int dims>
+  void check(util::logger &log, cl::sycl::queue &queue,
+             cl::sycl::range<dims> r) {
+    check_local_accessor_api_dim<T, dims, count, size>(log, queue, r);
   }
 };
 
 /** tests image accessors with different types
 */
 template <typename T>
-class check_image_accessor_api_type {
- public:
-  void operator()(util::logger &log, cl::sycl::queue &queue) {
-    const int count = 32;
-    const int size = count * 4;
+void check_image_accessor_api_type(util::logger &log, cl::sycl::queue &queue) {
+  const int count = 8;
+  const int size = count * 4;
 
-    /** check image accessor api for 1 dimension
-    */
-    cl::sycl::range<1> range1d(count);
-    check_image_accessor_api_dim<T, 1, count, size>()(log, queue, range1d);
+  /** check image accessor api for 1 dimension
+  */
+  cl::sycl::range<1> range1d(count);
+  check_image_accessor_api_dim<T, 1, count, size>(log, queue, range1d);
 
-    /** check image accessor api for 2 dimension
-    */
-    cl::sycl::range<2> range2d(count / 4, 4);
-    check_image_accessor_api_dim<T, 2, count, size>()(log, queue, range2d);
+  /** check image accessor api for 2 dimension
+  */
+  cl::sycl::range<2> range2d(count / 4, 4);
+  check_image_accessor_api_dim<T, 2, count, size>(log, queue, range2d);
 
-    /** check image accessor api for 3 dimension
-    */
-    cl::sycl::range<3> range3d(count / 8, 4, 2);
-    check_image_accessor_api_dim<T, 3, count, size>()(log, queue, range3d);
-  }
-};
+  /** check image accessor api for 3 dimension
+  */
+  cl::sycl::range<3> range3d(count / 8, 4, 2);
+  check_image_accessor_api_dim<T, 3, count, size>(log, queue, range3d);
+}
 
 /** tests the api for cl::sycl::accessor
 */
@@ -1815,62 +1833,72 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check buffer accessor api for int
+      /** check buffer accessors
       */
-      check_buffer_accessor_api_type<int>()(log, queue);
+      accessor_check<check_buffer_accessor_api_type>(log, queue);
 
-      /** check buffer accessor api for float
+      /** check local accessors
       */
-
-      check_buffer_accessor_api_type<float>()(log, queue);
-
-/** check buffer accessor api for double
-*/
-#ifdef ENABLE_DOUBLE_SUPPORT
-      check_buffer_accessor_api_type<double>()(log, queue);
-#endif
-
-      /** check buffer accessor api for char
-      */
-      check_buffer_accessor_api_type<char>()(log, queue);
-
-      /** check buffer accessor api for vec
-      */
-      check_buffer_accessor_api_type<cl::sycl::int2>()(log, queue);
-
-      /** check buffer accessor api for user_struct
-      */
-      check_buffer_accessor_api_type<user_struct>()(log, queue);
+      accessor_check<check_local_accessor_api_type>(log, queue);
 
       /** check image accessor api for int4
       */
-      check_image_accessor_api_type<cl::sycl::int4>()(log, queue);
+      check_image_accessor_api_type<cl::sycl::int4>(log, queue);
 
       /** check image accessor api for uint4
       */
-      check_image_accessor_api_type<cl::sycl::uint4>()(log, queue);
+      check_image_accessor_api_type<cl::sycl::uint4>(log, queue);
 
       /** check image accessor api for float4
       */
-      check_image_accessor_api_type<cl::sycl::float4>()(log, queue);
+      check_image_accessor_api_type<cl::sycl::float4>(log, queue);
 
       queue.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
+  }
+
+ private:
+  template <template <typename> class A>
+  void accessor_check(util::logger &log, cl::sycl::queue &queue) {
+    /** check buffer accessor api for int
+          */
+    A<int>()(log, queue);
+
+    /** check buffer accessor api for float
+    */
+
+    A<float>()(log, queue);
+
+    /** check buffer accessor api for double
+    */
+    A<double>()(log, queue);
+
+    /** check buffer accessor api for char
+    */
+    A<char>()(log, queue);
+
+    /** check buffer accessor api for vec
+    */
+    A<cl::sycl::int2>()(log, queue);
+
+    /** check buffer accessor api for user_struct
+    */
+    A<user_struct>()(log, queue);
   }
 };
 

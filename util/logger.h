@@ -18,7 +18,7 @@ namespace util {
  *  and so forms a transcript of an executed test
  */
 class logger {
- public:
+public:
   /** test result values
    */
   enum result {
@@ -84,7 +84,7 @@ class logger {
    */
   result get_result() const;
 
- protected:
+protected:
   // unique log identifier
   int32_t m_logId;
 
@@ -94,7 +94,7 @@ class logger {
   // disable copy constructors
   logger(const logger &);
 
-};  // class logger
+}; // class logger
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

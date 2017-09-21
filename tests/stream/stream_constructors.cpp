@@ -10,7 +10,8 @@
 
 #define TEST_NAME stream_constructors
 
-namespace stream_constructors__ {
+namespace TEST_NAMESPACE {
+
 using namespace sycl_cts;
 
 /** tests the constructors for cl::sycl::stream
@@ -19,7 +20,7 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
@@ -36,7 +37,7 @@ class TEST_NAME : public util::test_base {
   }
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
       size_t bufferSize = 2048;
@@ -223,7 +224,7 @@ class TEST_NAME : public util::test_base {
           handler.single_task([=] {});
         });
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -235,4 +236,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection.
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace stream_constructors__ */
+} /* namespace TEST_NAMESPACE */

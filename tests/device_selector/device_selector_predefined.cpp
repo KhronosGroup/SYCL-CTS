@@ -19,13 +19,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       bool gpuAvailable = false;
       bool cpuAvailable = false;
@@ -51,7 +51,7 @@ class TEST_NAME : public util::test_base {
                 "select a device when no opencl devices available";
             FAIL(log, errorMsg.c_str());
           }
-        } catch (cl::sycl::exception e) {
+        } catch (const cl::sycl::exception &e) {
           log_exception(log, e);
           FAIL(log,
                "default_selector failed to select a host device when no opencl "
@@ -87,7 +87,7 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "gpu_selector failed to select an appropriate device");
         }
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

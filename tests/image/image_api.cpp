@@ -75,7 +75,7 @@ class image_ctors {
 
     // Check get_allocator()
     {
-      using AllocatorT = std::allocator<unsigned char>;
+      using AllocatorT = std::allocator<cl::sycl::byte>;
 
       /* create another image with a custom allocator */
       auto imgAlloc =
@@ -92,6 +92,51 @@ class image_ctors {
         FAIL(log, "get_allocator() returned an invalid allocator");
       }
       allocator.deallocate(ptr, 1);
+    }
+
+    /* Check image properties */
+    {
+      mutex_class mutex;
+      auto context = util::get_cts_object::context();
+      const property_list propList{property::image::use_host_ptr(),
+                                   property::image::use_mutex(mutex),
+                                   property::image::context_bound(context)};
+
+      image<dims> img = image<dims>(channelOrder, channelType, r, propList);
+
+      /* check has_property() */
+
+      auto hasHostPtrProperty =
+          img.template has_property<cl::sycl::property::image::use_host_ptr>();
+      check_return_type<bool>(log, hasHostPtrProperty,
+                              "has_property<use_host_ptr>()");
+
+      auto hasUseMutexProperty =
+          img.template has_property<cl::sycl::property::image::use_mutex>();
+      check_return_type<bool>(log, hasUseMutexProperty,
+                              "has_property<use_mutex>()");
+
+      auto hasContentBoundProperty =
+          img.template has_property<cl::sycl::property::image::context_bound>();
+      check_return_type<bool>(log, hasContentBoundProperty,
+                              "has_property<context_bound>()");
+
+      /* check get_property() */
+
+      auto hostPtrProperty =
+          img.template get_property<cl::sycl::property::image::use_host_ptr>();
+      check_return_type<cl::sycl::property::image::use_host_ptr>(
+          log, hostPtrProperty, "get_property<use_host_ptr>()");
+
+      auto useMutexProperty =
+          img.template get_property<cl::sycl::property::image::use_mutex>();
+      check_return_type<cl::sycl::property::image::use_mutex>(
+          log, useMutexProperty, "get_property<use_mutex>()");
+
+      auto contentBoundProperty =
+          img.template get_property<cl::sycl::property::image::context_bound>();
+      check_return_type<cl::sycl::property::image::context_bound>(
+          log, contentBoundProperty, "get_property<context_bound>()");
     }
 
     // Check set_write_back()
@@ -141,13 +186,13 @@ class TEST_NAME : public util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       // Ensure the image always has 64 elements
       const int elemsPerDim1 = 64;
@@ -178,7 +223,7 @@ class TEST_NAME : public util::test_base_opencl {
         img_2d(log, range_2d, &pitch_1d);
         img_3d(log, range_3d, &pitch_2d);
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

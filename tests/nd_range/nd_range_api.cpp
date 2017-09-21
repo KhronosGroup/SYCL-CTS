@@ -72,14 +72,14 @@ class TEST_NAME : public util::test_base {
   /** return information about this test
    *  @param info, test_base::info structure as output
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    *  @param log, test transcript logging class
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       // global size to be set to the size
       cl::sycl::range<1> gs_1d(sizes[0]);
@@ -106,7 +106,7 @@ class TEST_NAME : public util::test_base {
       cl::sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
       cl::sycl::id<3> offset_3d(range_3d);
       test_nd_range(log, gs_3d, ls_3d, offset_3d);
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());

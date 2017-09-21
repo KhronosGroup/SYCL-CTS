@@ -1,21 +1,10 @@
-#!/usr/bin/python
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-#
-#  SYCL Conformance Test Suite
-#
-#  Copyright: (c) 2017 by Codeplay Software LTD. All Rights Reserved.
-#
-
-
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # run clang format over all files
 #
 import os
 import subprocess
 
-__author__ = "Codeplay"
-
-gClangFormat = 'clang-format'
+gClangFormat = 'clang-format.exe'
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # run clang format for the given file

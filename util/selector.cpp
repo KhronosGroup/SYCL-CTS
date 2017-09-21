@@ -22,6 +22,8 @@ void selector::set_default_platform(const std::string &name) {
     m_platform = ctsplat::host;
   else if (name == "amd")
     m_platform = ctsplat::amd;
+  else if (name == "arm")
+    m_platform = ctsplat::arm;
   else if (name == "intel")
     m_platform = ctsplat::intel;
   else if (name == "nvidia")
@@ -36,11 +38,15 @@ void selector::set_default_platform(const std::string &name) {
  *      'opencl_gpu'
  */
 void selector::set_default_device(const std::string &name) {
-  if (name == "host") m_device = ctsdevice::host;
-
-  if (name == "opencl_cpu") m_device = ctsdevice::opencl_cpu;
-
-  if (name == "opencl_gpu") m_device = ctsdevice::opencl_gpu;
+  if (name == "host") {
+    m_device = ctsdevice::host;
+  }
+  if (name == "opencl_cpu") {
+    m_device = ctsdevice::opencl_cpu;
+  }
+  if (name == "opencl_gpu") {
+    m_device = ctsdevice::opencl_gpu;
+  }
 }
 
 /** set the default platform via enum
@@ -55,20 +61,14 @@ void selector::set_default_device(ctsdevice deviceType) {
 
 /** return the default platform of choice for this cts run
  */
-selector::ctsplat selector::get_default_platform() {
-  // default to host platform if a valid one was not specified
-  if (m_platform == ctsplat::unknown) m_platform = ctsplat::host;
-
+selector::ctsplat selector::get_default_platform() const {
   // return the cached device type
   return m_platform;
 }
 
 /** return the default device of choice for this cts run
  */
-selector::ctsdevice selector::get_default_device() {
-  // default to host device if a valid one was not specified
-  if (m_device == ctsdevice::unknown) m_device = ctsdevice::host;
-
+selector::ctsdevice selector::get_default_device() const {
   // return the cached device type
   return m_device;
 }
