@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -18,9 +18,11 @@ template <int dimensions>
 class kernel_nd_item {
  protected:
   typedef accessor<int, dimensions, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer> t_readAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_readAccess;
   typedef accessor<int, dimensions, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> t_writeAccess;
+                   cl::sycl::access::target::global_buffer>
+      t_writeAccess;
 
   t_readAccess m_globalID;
   t_readAccess m_localID;
@@ -39,7 +41,9 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       globals[i] = myitem.get_global(i);
-      if (globals[i] != global_id.get()[i]) failed = true;
+      if (globals[i] != global_id.get(i)) {
+        failed = true;
+      }
     }
 
     id<dimensions> local_id = myitem.get_local();
@@ -47,41 +51,49 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       locals[i] = myitem.get_local(i);
-      if (locals[i] != local_id.get()[i]) failed = true;
+      if (locals[i] != local_id.get(i)) {
+        failed = true;
+      }
     }
 
     /* test group ID*/
-    id<dimensions> group_id = myitem.get_group();
+    group<dimensions> group_id = myitem.get_group();
     size_t groups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
       groups[i] = myitem.get_group(i);
-      if (groups[i] != group_id.get()[i]) failed = true;
+      if (groups[i] != group_id.get(i)) {
+        failed = true;
+      }
     }
 
     /* test range*/
     range<dimensions> globalRange = myitem.get_global_range();
 
     size_t globalIndex =
-        global_id.get()[0] + (global_id.get()[1] * globalRange.get()[0]) +
-        (global_id.get()[2] * globalRange.get()[0] * globalRange.get()[1]);
+        global_id.get(2) + (global_id.get(1) * globalRange.get(2)) +
+        (global_id.get(0) * globalRange.get(2) * globalRange.get(1));
 
     for (int i = 0; i < dimensions; ++i) {
-      if (m_globalID[global_id] != globalIndex) failed = true;
+      if (m_globalID[global_id] != globalIndex) {
+        failed = true;
+      }
     }
 
     range<dimensions> localRange = myitem.get_local_range();
 
     size_t localIndex =
-        local_id.get()[0] + (local_id.get()[1] * localRange.get()[0]) +
-        (local_id.get()[2] * localRange.get()[0] * localRange.get()[1]);
+        local_id.get(2) + (local_id.get(1) * localRange.get(2)) +
+        (local_id.get(0) * localRange.get(2) * localRange.get(1));
 
     for (int i = 0; i < dimensions; ++i) {
-      if (m_localID[local_id] != localIndex) failed = true;
+      if (m_localID[local_id] != localIndex) {
+        failed = true;
+      }
     }
 
     for (int i = 0; i < dimensions; ++i) {
-      if (group_id.get()[i] != (global_id.get()[i] / localRange.get()[i]))
+      if (group_id.get(i) != (global_id.get(i) / localRange.get(i)))
         failed = true;
     }
 
@@ -91,12 +103,16 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       nGroups[i] = myitem.get_num_groups(i);
-      if (nGroups[i] != num_groups.get()[i]) failed = true;
+      if (nGroups[i] != num_groups.get(i)) {
+        failed = true;
+      }
     }
 
     for (int i = 0; i < dimensions; ++i) {
-      size_t ratio = globalRange.get()[i] / localRange.get()[i];
-      if (ratio != num_groups.get()[i]) failed = true;
+      size_t ratio = globalRange.get(i) / localRange.get(i);
+      if (ratio != num_groups.get(i)) {
+        failed = true;
+      }
     }
 
     /* test NDrange and offset*/
@@ -109,12 +125,17 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       bool are_same = true;
-      are_same &= globalRange.get()[i] == ndGlobal.get()[i];
-      are_same &= localRange.get()[i] == ndLocal.get()[i];
-      are_same &= offset.get()[i] == ndOffset.get()[i];
+      are_same &= globalRange.get(i) == ndGlobal.get(i);
+      are_same &= localRange.get(i) == ndLocal.get(i);
+      are_same &= offset.get(i) == ndOffset.get(i);
 
       failed = !are_same ? true : failed;
     }
+
+    /* test linear_id */
+    size_t glid = myitem.get_global_linear_id();
+    size_t llid = myitem.get_local_linear_id();
+    size_t grlid = myitem.get_group_linear_id();
 
     /* write back success or failure*/
     m_o[global_id] = failed ? 0 : 1;
@@ -122,7 +143,7 @@ class kernel_nd_item {
 };
 
 /* test that kernel returns expected data, i.e. all 1s*/
-int check_nd_item(int* buf, const int nWidth, const int nHeight,
+int check_nd_item(int *buf, const int nWidth, const int nHeight,
                   const int nDepth) {
   int nErrors = 0;
   for (int i = 0; i < nWidth * nHeight * nDepth; i++) {
@@ -132,8 +153,8 @@ int check_nd_item(int* buf, const int nWidth, const int nHeight,
 }
 
 /* Fill buffers with global and local work item ids*/
-void populate(int* globalBuf, int* localBuf, const int* localSize,
-              const int* globalSize) {
+void populate(int *globalBuf, int *localBuf, const int *localSize,
+              const int *globalSize) {
   for (int k = 0; k < globalSize[2]; k++) {
     for (int j = 0; j < globalSize[1]; j++) {
       for (int i = 0; i < globalSize[0]; i++) {
@@ -153,7 +174,7 @@ void populate(int* globalBuf, int* localBuf, const int* localSize,
   }
 }
 
-void test_item(util::logger& log, cl::sycl::queue& queue) {
+void test_item(util::logger &log, cl::sycl::queue &queue) {
   /* set sizes*/
   const int globalSize[3] = {16, 16, 16};
   const int localSize[3] = {4, 4, 4};
@@ -166,20 +187,25 @@ void test_item(util::logger& log, cl::sycl::queue& queue) {
 
   /* set host buffers */
   populate(globalIDs.get(), localIDs.get(), localSize, globalSize);
-  memset(dataOut.get(), 0, nSize * sizeof(int));
+  ::memset(dataOut.get(), 0, nSize * sizeof(int));
 
   /* create ranges*/
-  range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
-  range<3> localRange(localSize[0], localSize[1], localSize[2]);
-  nd_range<3> dataRange(globalRange, localRange);
+  range<1> globalRange(globalSize[0]);
+  range<1> localRange(localSize[0]);
+  nd_range<1> dataRange(globalRange, localRange);
 
   /* test 1 Dimension*/
   {
+    /* create ranges*/
+    range<1> globalRange(globalSize[0]);
+    range<1> localRange(localSize[0]);
+    nd_range<1> dataRange(globalRange, localRange);
+
     buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
     buffer<int, 1> bufLoc(localIDs.get(), globalRange);
     buffer<int, 1> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler& cgh) {
+    queue.submit([&](handler &cgh) {
       auto accG =
           bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -198,13 +224,18 @@ void test_item(util::logger& log, cl::sycl::queue& queue) {
   }
 
   /* test 2 Dimensions */
-  memset(dataOut.get(), 0, nSize * sizeof(int));
+  ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
+    /* create ranges*/
+    range<2> globalRange(globalSize[0], globalSize[1]);
+    range<2> localRange(localSize[0], localSize[1]);
+    nd_range<2> dataRange(globalRange, localRange);
+
     buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
     buffer<int, 2> bufLoc(localIDs.get(), globalRange);
     buffer<int, 2> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler& cgh) {
+    queue.submit([&](handler &cgh) {
       auto accG =
           bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -222,13 +253,18 @@ void test_item(util::logger& log, cl::sycl::queue& queue) {
   }
 
   /* test 3 Dimensions */
-  memset(dataOut.get(), 0, nSize * sizeof(int));
+  ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
+    /* create ranges*/
+    range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
+    range<3> localRange(localSize[0], localSize[1], localSize[2]);
+    nd_range<3> dataRange(globalRange, localRange);
+
     buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
     buffer<int, 3> bufLoc(localIDs.get(), globalRange);
     buffer<int, 3> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler& cgh) {
+    queue.submit([&](handler &cgh) {
       auto accG = bufGlob.get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.get_access<cl::sycl::access::mode::read>(cgh);
       auto accOut = bufOut.get_access<cl::sycl::access::mode::write>(cgh);
@@ -251,24 +287,25 @@ class TEST_NAME : public util::test_base {
   /** return information about this test
   *  @param info, test_base::info structure as output
   */
-  virtual void get_info(test_base::info& out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
   *  @param log, test transcript logging class
   */
-  virtual void run(util::logger& log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      queue cmd_queue(selector);
+      auto cmd_queue = util::get_cts_object::queue();
 
       test_item(log, cmd_queue);
 
       cmd_queue.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

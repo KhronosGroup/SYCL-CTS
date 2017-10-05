@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -19,36 +19,50 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::context context(selector);
+      auto context = util::get_cts_object::context();
 
-      /** check types
-      */
-      using contextInfo = cl::sycl::info::context;
+      /** check get_info for info::context::reference_count
+       */
+      {
+        auto ref_count =
+            context.get_info<cl::sycl::info::context::reference_count>();
+        check_return_type<cl_uint>(
+            log, ref_count,
+            "get_info<cl::sycl::info::context::reference_count>()");
+        TEST_TYPE_TRAIT(context, reference_count, context);
+      }
 
-      /** initialize return values
-      */
-      cl_uint info_uint;
-      cl_bool info_bool;
+      /** check get_info for info::context::platform
+       */
+      {
+        auto num_dev = context.get_info<cl::sycl::info::context::platform>();
+        check_return_type<cl_uint>(
+            log, ref_count, "get_info<cl::sycl::info::context::platform>()");
+        TEST_TYPE_TRAIT(context, platform, context);
+      }
 
-      /** check context info parameters
-      */
-      info_uint = context.get_info<cl::sycl::info::context::reference_count>();
-      info_bool = context.get_info<
-          cl::sycl::info::context::d3d10_prefer_shared_resources_khr>();
-      info_bool = context.get_info<
-          cl::sycl::info::context::d3d11_prefer_shared_resources_khr>();
-    } catch (cl::sycl::exception e) {
+      /** check get_info for info::context::devices
+       */
+      {
+        auto devs = context.get_info<cl::sycl::info::context::devices>();
+        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+            log, devs, "get_info<cl::sycl::info::context::devices>()");
+        TEST_TYPE_TRAIT(context, devices, context);
+      }
+
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
@@ -38,7 +38,7 @@ void logger::preamble(const test_base::info &info) {
  *  @param reason, optional descriptive string for fail
  *  @param line, test line number that threw the error
  */
-void logger::fail(const STRING &str, const int line) {
+void logger::fail(const std::string &str, const int line) {
   m_result = logger::efail;
   get<printer>().write(m_logId, printer::epacket::line, line);
   get<printer>().write(m_logId, printer::epacket::note, str);
@@ -47,7 +47,7 @@ void logger::fail(const STRING &str, const int line) {
 /** notify a test has been skipped
  *  @param reason, optional descriptive string for skip
  */
-void logger::skip(const STRING &str) {
+void logger::skip(const std::string &str) {
   m_result = logger::eskip;
   get<printer>().write(m_logId, printer::epacket::note, str);
 }
@@ -55,7 +55,7 @@ void logger::skip(const STRING &str) {
 /** report fatal error and abort program
  *  @param reason, optional descriptive string for fatal error
  */
-void logger::fatal(const STRING &str) {
+void logger::fatal(const std::string &str) {
   m_result = logger::efatal;
   get<printer>().write(m_logId, printer::epacket::note, str);
 }
@@ -63,7 +63,7 @@ void logger::fatal(const STRING &str) {
 /** output verbose information
  *  @param string
  */
-void logger::note(const STRING &str) {
+void logger::note(const std::string &str) {
   // output via the printer
   get<printer>().write(m_logId, printer::epacket::note, str);
 }
@@ -99,7 +99,7 @@ void logger::note(const char *fmt, ...) {
   buffer[sizeof(buffer) - 1] = '\0';
 
   // output via the printer
-  get<printer>().write(m_logId, printer::epacket::note, STRING(buffer));
+  get<printer>().write(m_logId, printer::epacket::note, std::string(buffer));
 }
 
 /** send a progress report
@@ -125,5 +125,5 @@ logger::~logger() {}
  */
 logger::result logger::get_result() const { return m_result; }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

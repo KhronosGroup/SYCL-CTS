@@ -1,13 +1,14 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
+#include "../util/stl.h"
 #include "../tests/common/sycl.h"
 #include "./../oclmath/mt19937.h"
 #include "./math_vector.h"
@@ -50,8 +51,7 @@ float getElement(const float &f, int ix);
 /* extract individual elements of an integer type */
 int getElement(const int &f, int ix);
 
-template <typename T, int dim>
-T getElement(cl::sycl::vec<T, dim> &f, int ix) {
+template <typename T, int dim> T getElement(cl::sycl::vec<T, dim> &f, int ix) {
   return getComponent<T, dim>()(f, ix);
 }
 

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -19,35 +19,45 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cl::sycl::platform platform;
+      /** check info::platform
+       */
+      check_enum_class_value(cl::sycl::info::platform::profile);
+      check_enum_class_value(cl::sycl::info::platform::version);
+      check_enum_class_value(cl::sycl::info::platform::name);
+      check_enum_class_value(cl::sycl::info::platform::vendor);
+      check_enum_class_value(cl::sycl::info::platform::extensions);
 
-      /** check types
-      */
-      using platformInfo = cl::sycl::info::platform;
+      /** check get_info parameters
+       */
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
+                             cl::sycl::info::platform::profile>(log, plt);
+        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
+                             cl::sycl::info::platform::version>(log, plt);
+        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
+                             cl::sycl::info::platform::name>(log, plt);
+        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
+                             cl::sycl::info::platform::vendor>(log, plt);
+        check_get_info_param<cl::sycl::info::platform,
+                             cl::sycl::vector_class<cl::sycl::string_class>,
+                             cl::sycl::info::platform::extensions>(log, plt);
+      }
 
-      /** initialize return values
-      */
-      cl::sycl::string_class stringClassRet;
-
-      /** check platform info parameters
-      */
-      stringClassRet = platform.get_info<cl::sycl::info::platform::vendor>();
-      stringClassRet = platform.get_info<cl::sycl::info::platform::name>();
-      stringClassRet = platform.get_info<cl::sycl::info::platform::version>();
-      stringClassRet = platform.get_info<cl::sycl::info::platform::profile>();
-      stringClassRet =
-          platform.get_info<cl::sycl::info::platform::extensions>();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

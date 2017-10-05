@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -29,13 +29,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     const size_t sizes[] = {16, 32, 64};
 
     try {
@@ -64,9 +64,11 @@ class TEST_NAME : public util::test_base {
       cl::sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
       cl::sycl::id<3> offset_3d(range_3d);
       test_nd_range_constructors(log, gs_3d, ls_3d, offset_3d);
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

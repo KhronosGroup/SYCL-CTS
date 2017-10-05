@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -17,7 +17,8 @@ using namespace cl::sycl;
 template <typename T>
 class type_size_kernel {
   typedef accessor<int32_t, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer> write_t;
+                   cl::sycl::access::target::global_buffer>
+      write_t;
 
   write_t m_out;
 
@@ -29,9 +30,7 @@ class type_size_kernel {
 
 template <typename T>
 bool test_kernel_type_size(util::logger &log, queue &sycl_queue,
-                           const sycl_cts::util::STRING &name) {
-  using namespace sycl_cts::util;
-
+                           const string_class &name) {
   int32_t host_type_size = sizeof(T);
   int32_t kernel_type_size = 0;
   {
@@ -46,9 +45,10 @@ bool test_kernel_type_size(util::logger &log, queue &sycl_queue,
   }
 
   if (host_type_size != kernel_type_size) {
-    STRING msg = STRING("type size mismatch for: ") + STRING(name);
-    msg += STRING("; device size = ") + std::to_string(kernel_type_size);
-    msg += STRING(", host size = ") + std::to_string(host_type_size);
+    string_class msg =
+        string_class("type size mismatch for: ") + string_class(name);
+    msg += string_class("; device size = ") + std::to_string(kernel_type_size);
+    msg += string_class(", host size = ") + std::to_string(host_type_size);
     return FAIL(log, msg);
   }
 
@@ -61,16 +61,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      queue sycl_queue(selector);
+      auto sycl_queue = util::get_cts_object::queue();
 
       bool pass = true;
 
@@ -156,10 +155,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
       if (!pass) FAIL(log, "one or more type size mismatches");
 
       sycl_queue.wait_and_throw();
-
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

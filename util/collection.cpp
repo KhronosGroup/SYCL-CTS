@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "collection.h"
 #include "printer.h"
@@ -35,9 +35,9 @@ void collection::add_test(test_base *testobj) {
 
   // encapsulate in testinfo structure
   test_info test = {
-      testobj,  // test
-      false,    // skip
-      -1        // timeout
+      testobj, // test
+      false,   // skip
+      -1       // timeout
   };
 
   // add this test to the collection
@@ -116,17 +116,19 @@ collection::test_info &collection::get_test(int32_t index) {
  *  return true if entire string 'b' can be found at the beginning of
  *  string 'a'.
  */
-static inline bool partial_strcmp(const STRING &a, const STRING &b) {
+static inline bool partial_strcmp(const std::string &a, const std::string &b) {
   const char *_a = a.c_str();
   const char *_b = b.c_str();
 
   // advance both string in lock step
   for (;; _a++, _b++) {
     // if 'b' is totally consumed then we pass
-    if (*_b == '\0') return true;
+    if (*_b == '\0')
+      return true;
 
     // if they are equal advance
-    if (*_a == *_b) continue;
+    if (*_a == *_b)
+      continue;
 
     // otherwise 'b' does not prefix 'a'
     return false;
@@ -135,7 +137,7 @@ static inline bool partial_strcmp(const STRING &a, const STRING &b) {
 
 /** set the skip status of a test by name
  */
-void collection::set_test_skip(const STRING &testName, bool) {
+void collection::set_test_skip(const std::string &testName, bool) {
   //       yet the linear search here is likely not a hot spot
   for (int32_t i = 0; i < int32_t(m_tests.size()); i++) {
     test_info &info = m_tests.at(size_t(i));
@@ -153,7 +155,7 @@ void collection::set_test_skip(const STRING &testName, bool) {
 /** load a test filter (csv file)
  *  @param csvPath, the csv file filtering the tests
  */
-bool collection::filter_tests_csv(const STRING &csvPath) {
+bool collection::filter_tests_csv(const std::string &csvPath) {
   // try to load the csv file
   csv csvFile;
   if (!csvFile.load_file(csvPath)) {
@@ -170,11 +172,13 @@ bool collection::filter_tests_csv(const STRING &csvPath) {
   // loop over all rows in the CSV file
   for (int32_t r = 0; r < csvFile.size(); r++) {
     // first column is test name
-    STRING csvName;
-    if (!csvFile.get_item(r, 0, csvName)) continue;
+    std::string csvName;
+    if (!csvFile.get_item(r, 0, csvName))
+      continue;
 
     // check for empty string
-    if (csvName.empty()) continue;
+    if (csvName.empty())
+      continue;
 
     // enable a test with this name
     set_test_skip(csvName, false);
@@ -185,7 +189,7 @@ bool collection::filter_tests_csv(const STRING &csvPath) {
 
 /**
  */
-bool collection::filter_tests_name(const STRING &name) {
+bool collection::filter_tests_name(const std::string &name) {
   // todo: extend to take a comma separated list of names
 
   // pre-pass sets all tests to be skipped
@@ -218,7 +222,7 @@ static bool test_order_func(const collection::test_info &a,
   test_base::info bInfo;
   b.m_test->get_info(bInfo);
 
-  // use STRING compare operator
+  // use std::string compare operator
   return aInfo.m_name < bInfo.m_name;
 }
 
@@ -230,5 +234,5 @@ void collection::prepare() {
   std::sort(m_tests.begin(), m_tests.end(), test_order_func);
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

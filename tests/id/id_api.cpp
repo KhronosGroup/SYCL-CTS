@@ -1,20 +1,206 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME id_api
 
-namespace id_api__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 template <int dims>
 class test_kernel {};
+
+template <int dims>
+void test_id_kernels(
+    cl::sycl::id<dims> id,
+    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                       cl::sycl::access::target::global_buffer>
+        error_ptr,
+    int m_iteration) {
+  cl::sycl::id<dims> id_two(id * 2);
+  cl::sycl::id<dims> id_three(id);
+  size_t integer = 16;
+  for (int j = 0; j < dims; j++) {
+    if (id_two.get(j) == 0) {
+      id_two[j] = 1;
+    }
+  }
+  const cl::sycl::id<dims> id_two_const(id_two);
+  const cl::sycl::id<dims> id_const(id);
+
+  // operators
+  // +=
+  INDEX_ASSIGNMENT_TESTS(+=, +, id, id_two, id_three);
+
+  // -=
+  INDEX_ASSIGNMENT_TESTS(-=, -, id, id_two, id_three);
+
+  // *=
+  INDEX_ASSIGNMENT_TESTS(*=, *, id, id_two, id_three);
+
+  // /=
+  INDEX_ASSIGNMENT_TESTS(/=, /, id, id_two, id_three);
+
+  // %=
+  INDEX_ASSIGNMENT_TESTS(%=, %, id, id_two, id_three);
+
+  // >>=
+  INDEX_ASSIGNMENT_TESTS(>>=, >>, id, id_two, id_three);
+
+  // <<=
+  INDEX_ASSIGNMENT_TESTS(<<=, <<, id, id_two, id_three);
+
+  // &=
+  INDEX_ASSIGNMENT_TESTS(&=, &, id, id_two, id_three);
+
+  // |=
+  INDEX_ASSIGNMENT_TESTS(|=, |, id, id_two, id_three);
+
+  // ^=
+  INDEX_ASSIGNMENT_TESTS(^=, ^, id, id_two, id_three);
+
+  // check id<dimensions> operatorOP(const id<dimensions> &rhs)
+
+  // *
+  INDEX_KERNEL_TEST(*, id, id_two_const, id_three);
+
+  // /
+  INDEX_KERNEL_TEST(/, id, id_two_const, id_three);
+
+  //+
+  INDEX_KERNEL_TEST(+, id, id_two_const, id_three);
+
+  //-
+  INDEX_KERNEL_TEST(-, id, id_two_const, id_three);
+
+  //%
+  INDEX_KERNEL_TEST(%, id, id_two_const, id_three);
+
+  //<<
+  INDEX_KERNEL_TEST(<<, id, id_two_const, id_three);
+
+  //>>
+  INDEX_KERNEL_TEST(>>, id, id_two_const, id_three);
+
+  //&
+  INDEX_KERNEL_TEST(&, id, id_two_const, id_three);
+
+  //|
+  INDEX_KERNEL_TEST(|, id, id_two_const, id_three);
+
+  //^
+  INDEX_KERNEL_TEST (^, id, id_two_const, id_three);
+
+  // &&
+  INDEX_KERNEL_TEST(&&, id, id_two_const, id_three);
+
+  // ||
+  INDEX_KERNEL_TEST(||, id, id_two_const, id_three);
+
+  // >
+  INDEX_KERNEL_TEST(>, id, id_two_const, id_three);
+
+  // <
+  INDEX_KERNEL_TEST(<, id, id_two_const, id_three);
+
+  // >=
+  INDEX_KERNEL_TEST(>=, id, id_two_const, id_three);
+
+  // <=
+  INDEX_KERNEL_TEST(<=, id, id_two_const, id_three);
+
+  // check == and !=
+  // ==
+  INDEX_EQ_KERNEL_TEST(==, id, id_two);
+
+  // !=
+  INDEX_EQ_KERNEL_TEST(!=, id, id_two);
+
+  // check id<dimensions> operatorOP(const size_t &rhs)
+
+  // *
+  DUAL_SIZE_INDEX_KERNEL_TEST(*, id, integer, id_three);
+
+  // +
+  DUAL_SIZE_INDEX_KERNEL_TEST(+, id, integer, id_three);
+
+  // -
+  DUAL_SIZE_INDEX_KERNEL_TEST(-, id, integer, id_three);
+
+  // /
+  DUAL_SIZE_INDEX_KERNEL_TEST(/, id, integer, id_three);
+
+  // %
+  DUAL_SIZE_INDEX_KERNEL_TEST(%, id, integer, id_three);
+
+  // <<
+  DUAL_SIZE_INDEX_KERNEL_TEST(<<, id, integer, id_three);
+
+  // >>
+  DUAL_SIZE_INDEX_KERNEL_TEST(>>, id, integer, id_three);
+
+  // |
+  DUAL_SIZE_INDEX_KERNEL_TEST(|, id, integer, id_three);
+
+  // ^
+  DUAL_SIZE_INDEX_KERNEL_TEST (^, id, integer, id_three);
+
+  // && id can only be lhs
+  INDEX_SIZE_T_KERNEL_TEST(&&, id, integer, id_three);
+
+  // || id can only be lhs
+  INDEX_SIZE_T_KERNEL_TEST(||, id, integer, id_three);
+
+  // <
+  DUAL_SIZE_INDEX_KERNEL_TEST(<, id, integer, id_three);
+
+  // >
+  DUAL_SIZE_INDEX_KERNEL_TEST(>, id, integer, id_three);
+
+  // <=
+  DUAL_SIZE_INDEX_KERNEL_TEST(<=, id, integer, id_three);
+
+  // >=
+  DUAL_SIZE_INDEX_KERNEL_TEST(>=, id, integer, id_three);
+
+  // check id<dimensions> &operatorOP(const size_t &rhs)
+
+  // +=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, id, integer, id_three);
+
+  // -=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, id, integer, id_three);
+
+  // *=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, id, integer, id_three);
+
+  // /=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, id, integer, id_three);
+
+  // %=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, id, integer, id_three);
+
+  // >>=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, id, integer, id_three);
+
+  // <<=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, id, integer, id_three);
+
+  // &=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, id, integer, id_three);
+
+  // |=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, id, integer, id_three);
+
+  // ^=
+  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, id, integer, id_three);
+}
 
 template <int dims>
 class test_id {
@@ -24,110 +210,52 @@ class test_id {
   static const int m_y = 32;
   static const int m_z = 64;
   static const int m_local = 2;
-  int m_error[20];
+  static const int error_size =
+      19 * 2;  // 19 test cases, with 2 variants each, worst case: all fail
+  int m_error[error_size];
 
-  void operator()(util::logger& log, cl::sycl::range<dims> global,
+  void operator()(util::logger &log, cl::sycl::range<dims> global,
                   cl::sycl::range<dims> local, cl::sycl::queue q) {
     // for testing get()
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < error_size; i++) {
       m_error[i] = 0;  // no error
     }
 
     {
-      cl::sycl::buffer<int, 1> error_buffer(m_error, cl::sycl::range<1>(20));
+      cl::sycl::buffer<int, 1> error_buffer(m_error,
+                                            cl::sycl::range<1>(error_size));
 
-      q.submit([&](cl::sycl::handler& cgh) {
+      q.submit([&](cl::sycl::handler &cgh) {
         auto my_range = cl::sycl::nd_range<dims>(global, local);
 
         auto error_ptr =
             error_buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-        auto my_kernel = ([=](cl::sycl::item<dims> item) {
-          int m_itteration = 0;
+        auto my_kernel = ([=](cl::sycl::nd_item<dims> item) {
+          int m_iteration = 0;
 
-          cl::sycl::id<dims> id(item);
           // create check table
-          int check[] = {m_x, m_y, m_z};
+          cl::sycl::id<dims> id = item.get_nd_range().get_global();
+
+          size_t check[] = {m_x, m_y, m_z};
 
           for (int i = 0; i < dims; i++) {
             if (id.get(i) > check[i] || id[i] > check[i]) {
               // report an error
-              error_ptr[m_itteration] = __LINE__;
-              m_itteration++;
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
             }
           }
 
-          {
-            cl::sycl::id<dims> id_two(id);
-
-            // operators
-            //*
-            id = id * id_two;
-            for (int k = 0; k < dims; k++) {
-              if (id.get(k) != id_two.get(k) * id_two.get(k)) {
-                error_ptr[m_itteration] = __LINE__;
-                m_itteration++;
-              }
-            }
-
-            // /
-            bool is_zero = false;
-            for (int j = 0; j < dims; j++) {
-              if (id_two.get(j) == 0) is_zero = true;
-            }
-
-            if (!is_zero) {
-              id = id / id_two;
-
-              for (int k = 0; k < dims; k++) {
-                if (id.get(k) != id_two.get(k)) {
-                  error_ptr[m_itteration] = __LINE__;
-                  m_itteration++;
-                }
-              }
-            } else {
-              id = id_two;
-            }
-
-            /// can someone check that?
-            // reset - otherwise dims 1 fails on ==
-            // possibly optimisation error or I am missing something.
-            id = id_two;
-
-            //+
-            id = id + id_two;
-            for (int k = 0; k < dims; k++) {
-              if (id.get(k) < id_two.get(k) + id_two.get(k)) {
-                error_ptr[m_itteration] = __LINE__;
-                m_itteration++;
-              }
-            }
-
-            //-
-            id = id - id_two;
-            for (int k = 0; k < dims; k++) {
-              if (id.get(k) != id_two.get(k)) {
-                error_ptr[m_itteration] = __LINE__;
-                m_itteration++;
-              }
-            }
-
-            // ==
-            if (id == id_two) {
-              error_ptr[m_itteration] = 0;
-              m_itteration++;
-            } else {
-              error_ptr[m_itteration] = __LINE__;
-              m_itteration++;
-            }
-          }
+          test_id_kernels<dims>(id, error_ptr,
+                                m_iteration);  // test all in the kernel
         });
-        cgh.parallel_for<class test_kernel<dims> >(my_range, my_kernel);
+        cgh.parallel_for<class test_kernel<dims>>(my_range, my_kernel);
       });
 
       q.wait_and_throw();
     }
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < error_size; i++) {
       CHECK_VALUE(log, m_error[i], 0, i);
     }
   }
@@ -139,17 +267,16 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger& log) override {
+  void run(util::logger &log) override {
     try {
-      // use accross all the dimentions
-      cl::sycl::default_selector selector;
-      cl::sycl::queue my_queue(selector);
+      // use across all the dimensions
+      auto my_queue = util::get_cts_object::queue();
       // templated approach
       {
         cl::sycl::range<1> range_1d_g(test_id<1>::m_x);
@@ -162,6 +289,28 @@ class TEST_NAME : public util::test_base {
         cl::sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
                                       test_id<3>::m_local);
 
+        size_t test_sizes[] = {15, 3, 23};
+        {
+          cl::sycl::range<1> r1(test_sizes[0]);
+          if (r1.size() != test_sizes[0]) {
+            FAIL(log, "range<1> size returns incorrect size");
+          }
+        }
+
+        {
+          cl::sycl::range<2> r1(test_sizes[0], test_sizes[1]);
+          if (r1.size() != test_sizes[0] * test_sizes[1]) {
+            FAIL(log, "range<2> size returns incorrect size");
+          }
+        }
+
+        {
+          cl::sycl::range<3> r1(test_sizes[0], test_sizes[1], test_sizes[2]);
+          if (r1.size() != test_sizes[0] * test_sizes[1] * test_sizes[2]) {
+            FAIL(log, "range<3> size returns incorrect size");
+          }
+        }
+
         test_id<1> test1d;
         test1d(log, range_1d_g, range_1d_l, my_queue);
         test_id<2> test2d;
@@ -169,9 +318,11 @@ class TEST_NAME : public util::test_base {
         test_id<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

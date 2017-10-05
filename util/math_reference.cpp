@@ -1,27 +1,24 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "math_reference.h"
 #include "stl.h"
 
 namespace {
 
-template <typename A, typename B>
-void type_punn(const A& from, B& to) {
+template <typename A, typename B> void type_punn(const A &from, B &to) {
   static_assert(sizeof(A) == sizeof(B),
                 "type punning of incompatible sized types");
-  memcpy((void*)&to, (void*)&from, sizeof(A));
+  std::memcpy(reinterpret_cast<void *>(&to),
+              reinterpret_cast<const void *>(&from), sizeof(A));
 }
 
-template <typename T>
-int32_t num_bits(T) {
-  return int32_t(sizeof(T) * 8u);
-}
+template <typename T> int32_t num_bits(T) { return int32_t(sizeof(T) * 8u); }
 
 const uint64_t max_uint64_t = (~0x0ull);
 const uint32_t max_uint32_t = 0xffffffff;
@@ -202,9 +199,11 @@ int16_t add_sat(const int16_t a, const int16_t b) {
 int32_t add_sat(const int32_t a, const int32_t b) {
   int32_t r = int32_t(uint32_t(a) + uint32_t(b));
   if (b > 0) {
-    if (r < a) return max_int32_t;
+    if (r < a)
+      return max_int32_t;
   } else {
-    if (r > a) return min_int32_t;
+    if (r > a)
+      return min_int32_t;
   }
   return r;
 }
@@ -212,9 +211,11 @@ int32_t add_sat(const int32_t a, const int32_t b) {
 int64_t add_sat(const int64_t a, const int64_t b) {
   int64_t r = int64_t(uint64_t(a) + uint64_t(b));
   if (b > 0) {
-    if (r < a) return max_int64_t;
+    if (r < a)
+      return max_int64_t;
   } else {
-    if (r > a) return min_int64_t;
+    if (r > a)
+      return min_int64_t;
   }
   return r;
 }
@@ -292,8 +293,7 @@ int64_t rhadd(const int64_t a, const int64_t b) {
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- CLAMP
  *
  */
-template <typename T>
-T clamp_t(T v, T minv, T maxv) {
+template <typename T> T clamp_t(T v, T minv, T maxv) {
   return (v < minv) ? minv : ((v > maxv) ? maxv : v);
 }
 
@@ -610,15 +610,15 @@ int8_t sub_sat(int8_t x, int8_t y) {
   if (x > 0) {
     if (y > 0) {
       return x - y;
-    } else  // x > 0, y <= 0
+    } else // x > 0, y <= 0
     {
       return (x - max_val) > y ? max_val : x - y;
     }
-  } else  // x <= 0
+  } else // x <= 0
   {
     if (y > 0) {
       return (x - min_val) < y ? min_val : x - y;
-    } else  // x <= 0, y <= 0
+    } else // x <= 0, y <= 0
     {
       return x - y;
     }
@@ -632,15 +632,15 @@ int16_t sub_sat(int16_t x, int16_t y) {
   if (x > 0) {
     if (y > 0) {
       return x - y;
-    } else  // x > 0, y <= 0
+    } else // x > 0, y <= 0
     {
       return (x - max_val) > y ? max_val : x - y;
     }
-  } else  // x <= 0
+  } else // x <= 0
   {
     if (y > 0) {
       return (x - min_val) < y ? min_val : x - y;
-    } else  // x <= 0, y <= 0
+    } else // x <= 0, y <= 0
     {
       return x - y;
     }
@@ -653,15 +653,15 @@ int32_t sub_sat(int32_t x, int32_t y) {
   if (x > 0) {
     if (y > 0) {
       return x - y;
-    } else  // x > 0, y <= 0
+    } else // x > 0, y <= 0
     {
       return (x - max_val) > y ? max_val : x - y;
     }
-  } else  // x <= 0
+  } else // x <= 0
   {
     if (y > 0) {
       return (x - min_val) < y ? min_val : x - y;
-    } else  // x <= 0, y <= 0
+    } else // x <= 0, y <= 0
     {
       return x - y;
     }
@@ -674,15 +674,15 @@ int64_t sub_sat(int64_t x, int64_t y) {
   if (x > 0) {
     if (y > 0) {
       return x - y;
-    } else  // x > 0, y <= 0
+    } else // x > 0, y <= 0
     {
       return (x - max_val) > y ? max_val : x - y;
     }
-  } else  // x <= 0
+  } else // x <= 0
   {
     if (y > 0) {
       return (x - min_val) < y ? min_val : x - y;
-    } else  // x <= 0, y <= 0
+    } else // x <= 0, y <= 0
     {
       return x - y;
     }
@@ -722,72 +722,144 @@ int64_t upsample(int32_t h, uint32_t l) {
 uint8_t popcount(const uint8_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 uint16_t popcount(const uint16_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 uint32_t popcount(const uint32_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 uint64_t popcount(const uint64_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1ull << i)) lz++;
+    if (x & (1ull << i))
+      lz++;
   return lz;
 }
 
 int8_t popcount(const int8_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 int16_t popcount(const int16_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 int32_t popcount(const int32_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1 << i)) lz++;
+    if (x & (1 << i))
+      lz++;
   return lz;
 }
 
 int64_t popcount(const int64_t x) {
   int lz = 0;
   for (int i = 0; i < num_bits(x); i++)
-    if (x & (1ull << i)) lz++;
+    if (x & (1ull << i))
+      lz++;
   return lz;
 }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MAD24
  *
  */
+template <class T, int length, int currentSegment> struct mad24_tmp_impl {};
+
 template <class T, int length>
 cl::sycl::vec<T, length> mad24_tmp(cl::sycl::vec<T, length> x,
                                    cl::sycl::vec<T, length> y,
                                    cl::sycl::vec<T, length> z) {
   cl::sycl::vec<T, length> t;
-  for (int i = 0; i < length; i++)
-    t.m_data[i] =
-        T(int64_t(x.m_data[i]) * int64_t(y.m_data[i]) + int64_t(z.m_data[i]));
-  return t;
+  return mad24_tmp_impl<T, length, length>::apply(t, x, y, z);
 }
+
+template <class T, int length> struct mad24_tmp_impl<T, length, 16> {
+  static cl::sycl::vec<T, length> apply(cl::sycl::vec<T, length> r,
+                                        cl::sycl::vec<T, length> x,
+                                        cl::sycl::vec<T, length> y,
+                                        cl::sycl::vec<T, length> z) {
+    r.s8() = T(int64_t(x.s8()) * int64_t(y.s8()) + int64_t(z.s8()));
+    r.s9() = T(int64_t(x.s9()) * int64_t(y.s9()) + int64_t(z.s9()));
+    r.sA() = T(int64_t(x.sA()) * int64_t(y.sA()) + int64_t(z.sA()));
+    r.sB() = T(int64_t(x.sB()) * int64_t(y.sB()) + int64_t(z.sB()));
+    r.sC() = T(int64_t(x.sC()) * int64_t(y.sC()) + int64_t(z.sC()));
+    r.sD() = T(int64_t(x.sD()) * int64_t(y.sD()) + int64_t(z.sD()));
+    r.sE() = T(int64_t(x.sE()) * int64_t(y.sE()) + int64_t(z.sE()));
+    r.sF() = T(int64_t(x.sF()) * int64_t(y.sF()) + int64_t(z.sF()));
+    return mad24_tmp_impl<T, length, 8>::apply(r, x, y, z);
+  }
+};
+
+template <class T, int length> struct mad24_tmp_impl<T, length, 8> {
+  static cl::sycl::vec<T, length> apply(cl::sycl::vec<T, length> r,
+                                        cl::sycl::vec<T, length> x,
+                                        cl::sycl::vec<T, length> y,
+                                        cl::sycl::vec<T, length> z) {
+    r.s0() = T(int64_t(x.s0()) * int64_t(y.s0()) + int64_t(z.s0()));
+    r.s1() = T(int64_t(x.s1()) * int64_t(y.s1()) + int64_t(z.s1()));
+    r.s2() = T(int64_t(x.s2()) * int64_t(y.s2()) + int64_t(z.s2()));
+    r.s3() = T(int64_t(x.s3()) * int64_t(y.s3()) + int64_t(z.s3()));
+    r.s4() = T(int64_t(x.s4()) * int64_t(y.s4()) + int64_t(z.s4()));
+    r.s5() = T(int64_t(x.s5()) * int64_t(y.s5()) + int64_t(z.s5()));
+    r.s6() = T(int64_t(x.s6()) * int64_t(y.s6()) + int64_t(z.s6()));
+    r.s7() = T(int64_t(x.s7()) * int64_t(y.s7()) + int64_t(z.s7()));
+    return r;
+  }
+};
+
+template <class T, int length> struct mad24_tmp_impl<T, length, 4> {
+  static cl::sycl::vec<T, length> apply(cl::sycl::vec<T, length> r,
+                                        cl::sycl::vec<T, length> x,
+                                        cl::sycl::vec<T, length> y,
+                                        cl::sycl::vec<T, length> z) {
+    r.w() = T(int64_t(x.w()) * int64_t(y.w()) + int64_t(z.w()));
+    return mad24_tmp_impl<T, length, 3>::apply(r, x, y, z);
+  }
+};
+
+template <class T, int length> struct mad24_tmp_impl<T, length, 3> {
+  static cl::sycl::vec<T, length> apply(cl::sycl::vec<T, length> r,
+                                        cl::sycl::vec<T, length> x,
+                                        cl::sycl::vec<T, length> y,
+                                        cl::sycl::vec<T, length> z) {
+    r.z() = T(int64_t(x.z()) * int64_t(y.z()) + int64_t(z.z()));
+    return mad24_tmp_impl<T, length, 2>::apply(r, x, y, z);
+  }
+};
+
+template <class T, int length> struct mad24_tmp_impl<T, length, 2> {
+  static cl::sycl::vec<T, length> apply(cl::sycl::vec<T, length> r,
+                                        cl::sycl::vec<T, length> x,
+                                        cl::sycl::vec<T, length> y,
+                                        cl::sycl::vec<T, length> z) {
+    r.x() = T(int64_t(x.x()) * int64_t(y.x()) + int64_t(z.x()));
+    r.y() = T(int64_t(x.y()) * int64_t(y.y()) + int64_t(z.y()));
+    return r;
+  }
+};
 
 int mad24(int x, int y, int z) {
   return int(int64_t(x) * int64_t(y) + int64_t(z));
@@ -837,7 +909,7 @@ cl::sycl::vec<T, length> mul24_tmp(cl::sycl::vec<T, length> x,
   cl::sycl::vec<T, length> t;
   for (int i = 0; i < length; i++)
     // t[i] = T( int64_t( x[i] ) * int64_t( y[i] ) );
-    setElement(t, i, T(int64_t(x[i]) * int64_t(y[i])));
+    setElement(t, i, T(int64_t(getElement(x, i)) * int64_t(getElement(y, i))));
   return t;
 }
 

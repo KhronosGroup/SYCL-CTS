@@ -27,7 +27,7 @@
 #include <limits.h>
 
 #if !defined(_WIN32)
-#include <string.h>
+#include <cstring>
 #endif
 
 #include "Utility.h"
@@ -215,7 +215,7 @@ static float fallback_frexpf( float x, int *iptr )
     cl_uint u, v;
     float fu, fv;
     
-    memcpy( &u, &x, sizeof(u));
+    std::memcpy( &u, &x, sizeof(u));
 
     cl_uint exponent = u &  0x7f800000U;
     cl_uint mantissa = u & ~0x7f800000U;
@@ -229,26 +229,26 @@ static float fallback_frexpf( float x, int *iptr )
         
         v = mantissa & 0xff800000U;
         u = mantissa;
-        memcpy( &fv, &v, sizeof(v));
-        memcpy( &fu, &u, sizeof(u));
+        std::memcpy( &fv, &v, sizeof(v));
+        std::memcpy( &fu, &u, sizeof(u));
         
         fu -= fv;
 
-        memcpy( &v, &fv, sizeof(v));
-        memcpy( &u, &fu, sizeof(u));
+        std::memcpy( &v, &fv, sizeof(v));
+        std::memcpy( &u, &fu, sizeof(u));
         
         exponent = u &  0x7f800000U;
         mantissa = u & ~0x7f800000U;
         
         *iptr = (exponent >> 23) + (-126 + 1 -126);
         u = mantissa | 0x3f000000U;
-        memcpy( &fu, &u, sizeof(u));
+        std::memcpy( &fu, &u, sizeof(u));
         return fu;
     }
     
     *iptr = (exponent >> 23) - 127;
     u = mantissa | 0x3f000000U;
-    memcpy( &fu, &u, sizeof(u));
+    std::memcpy( &fu, &u, sizeof(u));
     return fu;
 }
 
@@ -1727,6 +1727,17 @@ double reference_remainder( double x, double y )
     return reference_remquo( x, y, &i );
 }
 
+double float_fail()
+{
+#ifdef _WIN32
+    throw 0;
+#else
+    static const double zero = 0.00000000000000000000e+00;
+    static const double one = 1.00000000000000000000e+00;
+    return one / zero;
+#endif
+}
+
 double reference_lgamma( double x)
 {   
 /*
@@ -1819,23 +1830,20 @@ static const double //two52 = 4.50359962737049600000e+15, /* 0x43300000, 0x00000
 	lx = (cl_int) (u.u & 0xffffffffULL);
 
     /* purge off +-inf, NaN, +-0, and negative arguments */
-//	*signgamp = 1;
 	ix = hx&0x7fffffff;
 	if(ix>=0x7ff00000) return x*x;
-	if((ix|lx)==0) return one/zero;
+	if((ix|lx)==0) return float_fail();
 	if(ix<0x3b900000) {	/* |x|<2**-70, return -log(|x|) */
 	    if(hx<0) {
-//	        *signgamp = -1;
 	        return -reference_log(-x);
 	    } else return -reference_log(x);
 	}
 	if(hx<0) {
 	    if(ix>=0x43300000) 	/* |x|>=2**52, must be -integer */
-		return one/zero;
+			return float_fail();
 	    t = reference_sinpi(x);
-	    if(t==zero) return one/zero; /* -integer */
+	    if(t==zero) return float_fail(); /* -integer */
 	    nadj = reference_log(pi/reference_fabs(t*x));
-//	    if(t<zero) *signgamp = -1;
 	    x = -x;
 	}
 
@@ -2384,7 +2392,7 @@ static double fallback_frexp( double x, int *iptr )
     cl_ulong u, v;
     double fu, fv;
 
-    memcpy( &u, &x, sizeof(u));
+    std::memcpy( &u, &x, sizeof(u));
 
     cl_ulong exponent = u &  0x7ff0000000000000ULL;
     cl_ulong mantissa = u & ~0x7ff0000000000000ULL;
@@ -2398,26 +2406,26 @@ static double fallback_frexp( double x, int *iptr )
         
         v = mantissa & 0xfff0000000000000ULL;
         u = mantissa;
-        memcpy( &fv, &v, sizeof(v));
-        memcpy( &fu, &u, sizeof(u));
+        std::memcpy( &fv, &v, sizeof(v));
+        std::memcpy( &fu, &u, sizeof(u));
         
         fu -= fv;
 
-        memcpy( &v, &fv, sizeof(v));
-        memcpy( &u, &fu, sizeof(u));
+        std::memcpy( &v, &fv, sizeof(v));
+        std::memcpy( &u, &fu, sizeof(u));
         
         exponent = u &  0x7ff0000000000000ULL;
         mantissa = u & ~0x7ff0000000000000ULL;
         
         *iptr = (exponent >> 52) + (-1022 + 1 -1022);
         u = mantissa | 0x3fe0000000000000ULL;
-        memcpy( &fu, &u, sizeof(u));
+        std::memcpy( &fu, &u, sizeof(u));
         return fu;
     }
     
     *iptr = (exponent >> 52) - 1023;
     u = mantissa | 0x3fe0000000000000ULL;
-    memcpy( &fu, &u, sizeof(u));
+    std::memcpy( &fu, &u, sizeof(u));
     return fu;
 }
 

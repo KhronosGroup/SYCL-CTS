@@ -1,7 +1,7 @@
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 #  SYCL CONFORMANCE TEST SUITE
 #  Usage guide
-#  27/02/14
+#  22/08/17
 #
 
 
@@ -23,10 +23,9 @@
 #
     - An implementation of SYCL
     - A conformant implementation of OpenCL
-    - OpenGL (optional for opengl interop tests)
     - Python 2.7
-    - GCC 4.8.2 or Visual C++ 2013
-    - CMake 2.8.12
+    - GCC 4.8.2 or Visual C++ 2015 Update 3
+    - CMake 3.2
 
     The SYCL conformance test suite assumes that an underlying OpenCL
     implementation has passed the Khronos OpenCL CTS.
@@ -39,13 +38,13 @@
 
     - Run CMake
         - point the source directory to the root of the sycl-cts folder
-		- select makefiles project
+        - configure the generator to use makefiles
         - set the build directory to a 'build' folder inside the sycl-cts folder
-        - set the cmake parameters
+        - set the CMake parameters
 
     - Run make inside the build folder
 
-        After compilation, the test executables will be places in the
+        After compilation, the test executables will be placed in the
         sycl-cts 'build/bin' directory.  The 'test_all' executable
         contains all tests in the suite.
 
@@ -57,15 +56,28 @@
 
     - Run CMake
 		- point the source directory to the root of the sycl-cts folder
-		- select 64bit visual studio 2013 generator
+		- select "Visual Studio 14 2015 Win64" generator
 		- set the build directory to a 'build' folder inside the sycl-cts folder
 		- set the CMake parameters
 
-    - Open the generated solution in visual studio 2013 and rebuild all
+    - Open the generated solution in Visual Studio 2015 and rebuild all
 
-        After compilation, the test executables will be places in the
+        After compilation, the test executables will be placed in the
         sycl-cts 'build/bin' directory.  The 'test_all' executable
         contains all tests in the suite.
+
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# CMake flags
+#
+
+    When configuring CMake, it is possible to use these flags:
+    - COMPUTECPP_INSTALL_DIR                Required only for ComputeCpp
+    - SYCL_CTS_TEST_FILTER                  Specify which filter to use when
+                                              building tests
+    - HOST_COMPILER_FLAGS                   Flags that will be passed to the
+                                              host compiler
+    - DEVICE_COMPILER_FLAGS                 Flags that will be passed to the
+                                              device compiler
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -75,19 +87,24 @@
     The SYCL test suite can be launched via the following command:
 
         $ python runtests.py --help
-        usage: runtests.py [-h] [-b BINPATH] [-c CSVPATH]
+        usage: runtests.py [-h] [-b BINPATH] [--csvpath CSVPATH] [--list]
+                           [-j JUNIT] [-p {host,intel,amd}]
+                           [-d {host,opencl_cpu,opencl_gpu}]
 
         Khronos SYCL CTS
 
         optional arguments:
           -h, --help            show this help message and exit
           -b BINPATH, --binpath BINPATH
-                                path the cts executable file
-          -c CSVPATH, --csvpath CSVPATH
-                                path to csv file for filtering tests
+                                specify path to the cts executable file
+          --csvpath CSVPATH     specify path to csv file for filtering tests
           --list                list all tests in a test binary
-          -j JUNITPATH, --junit output path for generated junit file
-
+          -j JUNIT, --junit JUNIT
+                                specify output path for a junit xml file
+          -p {host,intel,amd}, --platform {host,intel,amd}
+                                The platform to run on
+          -d {host,opencl_cpu,opencl_gpu}, --device {host,opencl_cpu,opencl_gpu}
+                                The device to run on
  
     The '--binpath' argument is mandatory and must point to one of the CTS
     test executables built in the previous step.
@@ -114,6 +131,12 @@
     
     Passing the '--junit' option will output test results in junit format
     when the test suit has finished executing.
+
+    The '--platform' argument can be used to specify which platform to run the
+    tests on.
+
+    The '--device' argument can be used to specify which device to run the
+    tests on.
     
     The following command will start a typical test run:
 
@@ -128,7 +151,7 @@
          ?   note: what - Failed to get platform information.
          + result: fail
          !   file: ../../tests/platform/platform_api.cpp
-         !  built: Sep 30 2014, 14:06:45
+         !  built: Aug 22 2017, 18:06:45
          !   line: 96
 
     After the test suit is finished a summary is produced helping programmers

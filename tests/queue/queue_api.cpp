@@ -1,88 +1,148 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME queue_api
 
-namespace queue_api__ {
+namespace TEST_NAMESPACE {
+
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::queue
+/** test the api for cl::sycl::queue
  */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
 
-      /** check is_host() method
-      */
-      auto isHost = queue.is_host();
-      if (typeid(isHost) != typeid(bool)) {
-        FAIL(log, "is_host() does not return bool");
+      /** check is_host() member function
+       */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto isHost = queue.is_host();
+        check_return_type<bool>(log, isHost, "cl::sycl::queue::is_host()");
       }
 
-      /** check get_context() method
-      */
-      auto context = queue.get_context();
-      if (typeid(context) != typeid(cl::sycl::context)) {
-        FAIL(log, "is_context() does not return context");
+      /** check get_context() member function
+       */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto context = queue.get_context();
+        check_return_type<cl::sycl::context>(log, context,
+                                             "cl::sycl::queue::get_context()");
       }
 
-      /** check get_device() method
-      */
-      auto device = queue.get_device();
-      if (typeid(device) != typeid(cl::sycl::device)) {
-        FAIL(log, "get_device() does not return context");
+      /** check get_device() member function
+       */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto device = queue.get_device();
+        check_return_type<cl::sycl::device>(log, device,
+                                            "cl::sycl::queue::get_device()");
       }
 
-      /** check submit(command_group_scope) method
-      */
-      auto handlerEvent = queue.submit([&](cl::sycl::handler &handler) {});
-      if (typeid(handlerEvent) != typeid(cl::sycl::handler_event)) {
-        FAIL(log, "submit(command_group_scope) does not return handler_event");
+      /** check get() member function
+       */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+        if (!selector.is_host()) {
+          auto clQueueObject = queue.get();
+          check_return_type<cl_command_queue>(log, clQueueObject,
+                                              "cl::sycl::queue::get()");
+        }
       }
 
-      /** check submit(command_group_scope, queue) method
+      /** check submit(command_group_scope) member function
       */
-      cl::sycl::queue secondaryQueue(selector);
-      auto handlerEvent =
-          queue.submit([&](cl::sycl::handler &handler) {}, secondaryQueue);
-      if (typeid(handlerEvent) != typeid(cl::sycl::handler_event)) {
-        FAIL(
-            log,
-            "submit(command_group_scope, queue) does not return handler_event");
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto event = queue.submit([&](cl::sycl::handler &handler) {
+          handler.single_task<class queue_api_0>([=]() {});
+        });
+        check_return_type<cl::sycl::event>(
+            log, event, "cl::sycl::queue::submit(command_group_scope)");
+      }
+      /** check submit(command_group_scope, queue) member function
+      */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        auto secondaryQueue = util::get_cts_object::queue();
+        auto event = queue.submit(
+            [&](cl::sycl::handler &handler) {
+              handler.single_task<class queue_api_1>([=]() {});
+            },
+            secondaryQueue);
+        check_return_type<cl::sycl::event>(
+            log, event, "cl::sycl::queue::submit(command_group_scope, queue)");
       }
 
-      /** check wait() method
+      /** check wait() member function
       */
-      queue.wait();
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
 
-      /** check wait_and_throw() method
-      */
-      queue.wait_and_throw();
+        queue.wait();
+      }
 
-      /** check throw_asynchronous() method
+      /** check wait_and_throw() member function
       */
-      queue.throw_asynchronous();
-    } catch (cl::sycl::exception e) {
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        queue.wait_and_throw();
+      }
+
+      /** check throw_asynchronous() member function
+      */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        queue.throw_asynchronous();
+      }
+
+      /* kernel does nothing, but this checks the case where nothing
+       * waits on the queue finishing */
+      {
+        cts_selector selector;
+        auto queue = util::get_cts_object::queue(selector);
+
+        queue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task<class queueNoWait>([=] { int i = 0; });
+        });
+      }
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };
@@ -90,4 +150,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace queue_api__ */
+} /* namespace TEST_NAMESPACE */

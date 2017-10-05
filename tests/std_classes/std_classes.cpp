@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -15,36 +15,49 @@ using namespace sycl_cts;
 
 /** check vector_class
 */
-template <typename T, class Alloc>
+template <class T, class Alloc>
 using vectorClass = cl::sycl::vector_class<T, Alloc>;
 
 /** check string_class
 */
 using stringClass = cl::sycl::string_class;
 
-/** check unique_ptr
+/** check function_class
 */
-template <typename T>
-using uniquePtr = cl::sycl::unique_ptr<T>;
-
-/** check shared_ptr
-*/
-template <typename T>
-using sharedPtr = cl::sycl::shared_ptr<T>;
-
-/** check weak_ptr
-*/
-template <typename T>
-using weakPtr = cl::sycl::weak_ptr<T>;
+template <class R, class... Args>
+using functionClass = cl::sycl::function_class<R(Args...)>;
 
 /** check mutex_class
 */
 using mutexClass = cl::sycl::mutex_class;
 
-/** check function_class
+/** check unique_ptr_class
 */
-template <typename R, typename... Args>
-using functionClass = cl::sycl::function_class<R(Args...)>;
+template <class T, class D>
+using uniquePtrClass = cl::sycl::unique_ptr_class<T, D>;
+
+/** check shared_ptr_class
+*/
+template <class T>
+using sharedPtrClass = cl::sycl::shared_ptr_class<T>;
+
+/** check weak_ptr_class
+*/
+template <class T>
+using weakPtrClass = cl::sycl::weak_ptr_class<T>;
+
+/** check hash_class
+*/
+template <class T>
+using hashClass = cl::sycl::hash_class<T>;
+
+/** check exception_ptr_class
+*/
+using exceptionPtrClass = cl::sycl::exception_ptr_class;
+
+struct custom_deleter {
+  void operator()(int *p) const {};
+};
 
 /** tests the availability of std classes
 */
@@ -52,13 +65,52 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {}
+  void run(util::logger &log) override {
+    /* Try instantiating these classes */
+    {
+      /** check vector_class
+      */
+      cl::sycl::vector_class<int> vector;
+
+      /** check string_class
+      */
+      stringClass string;
+
+      /** check function_class
+      */
+      functionClass<void> function;
+
+      /** check mutex_class
+      */
+      mutexClass mutex;
+
+      /** check unique_ptr_class
+      */
+      uniquePtrClass<int, custom_deleter> uniquePtr;
+
+      /** check shared_ptr_class
+      */
+      sharedPtrClass<int> sharedPtr;
+
+      /** check weak_ptr_class
+      */
+      weakPtrClass<int> weakPtr;
+
+      /** check hash_class
+      */
+      hashClass<int> hash;
+
+      /** check exception_ptr_class
+      */
+      exceptionPtrClass exceptionPtr;
+    }
+  }
 };
 
 // register this test with the test_collection

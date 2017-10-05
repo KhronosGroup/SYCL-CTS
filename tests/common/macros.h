@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -45,8 +45,9 @@ namespace {
 /** helper function used to construct a typical test info
  *  structure
  */
-void set_test_info(sycl_cts::util::test_base::info &out,
-                   const sycl_cts::util::STRING &name, const char *file) {
+inline void set_test_info(sycl_cts::util::test_base::info &out,
+                          const cl::sycl::string_class &name,
+                          const char *file) {
   out.m_name = name;
   out.m_file = file;
   out.m_buildDate = TEST_BUILD_DATE;
@@ -56,23 +57,26 @@ void set_test_info(sycl_cts::util::test_base::info &out,
 /**
  *
  */
-void log_exception(sycl_cts::util::logger &log, cl::sycl::exception &e) {
+inline void log_exception(sycl_cts::util::logger &log,
+                          const cl::sycl::exception &e) {
   // notify that an exception was thrown
   log.note("sycl exception caught");
 
   // log exception error string
-  const char *what = e.what();
-  if (what != nullptr) log.note("what - " + sycl_cts::util::STRING(what));
+  cl::sycl::string_class what = e.what();
+  if (!what.empty()) {
+    log.note("what - " + what);
+  }
 }
 
 /* helper function for test failure cases */
-bool fail_proxy(sycl_cts::util::logger &log, const char *msg, int line) {
+inline bool fail_proxy(sycl_cts::util::logger &log, const char *msg, int line) {
   log.fail(msg, line);
   return false;
 }
 
-bool fail_proxy(sycl_cts::util::logger &log, const sycl_cts::util::STRING &msg,
-                int line) {
+inline bool fail_proxy(sycl_cts::util::logger &log,
+                       const cl::sycl::string_class &msg, int line) {
   log.fail(msg, line);
   return false;
 }
@@ -84,7 +88,8 @@ bool fail_proxy(sycl_cts::util::logger &log, const sycl_cts::util::STRING &msg,
 #define FAIL(LOG, MSG) (fail_proxy(LOG, MSG, __LINE__))
 
 /* proxy to the check_cl_success function */
-bool check_cl_success_proxy(sycl_cts::util::logger &log, int error, int line) {
+inline bool check_cl_success_proxy(sycl_cts::util::logger &log, int error,
+                                   int line) {
   using sycl_cts::util::get;
   using sycl_cts::util::opencl_helper;
   return get<opencl_helper>().check_cl_success(log, error, line);
@@ -95,12 +100,18 @@ bool check_cl_success_proxy(sycl_cts::util::logger &log, int error, int line) {
 /* macro to check if provided value is equal to expected value */
 template <typename T1, typename T2>
 bool check_value_proxy(sycl_cts::util::logger &log, const T1 &got,
-                       const T2 &expected, int element, int line) {
-  using sycl_cts::util::STRING;
+                       const T2 &expected, cl::sycl::string_class gotStr,
+                       cl::sycl::string_class expectedStr, int element,
+                       int line, const bool useElement = true) {
+  using cl::sycl::string_class;
 
   if (got != expected) {
-    STRING msg = "Expected " + std::to_string(expected) + " but got " +
-                 std::to_string(got) + " at element " + std::to_string(element);
+    string_class msg = "Expected " + std::to_string(expected) + " {" +
+                       expectedStr + "} but got " + std::to_string(got) + " {" +
+                       gotStr + "}";
+    if (useElement) {
+      msg += " at element " + std::to_string(element);
+    }
     fail_proxy(log, msg.c_str(), line);
     /* values are different */
     return false;
@@ -109,17 +120,21 @@ bool check_value_proxy(sycl_cts::util::logger &log, const T1 &got,
   return true;
 }
 #define CHECK_VALUE(LOG, GOT, EXPECTED, INDEX) \
-  check_value_proxy(LOG, GOT, EXPECTED, INDEX, __LINE__)
+  check_value_proxy(LOG, GOT, EXPECTED, #GOT, #EXPECTED, INDEX, __LINE__)
+
+#define CHECK_VALUE_SCALAR(LOG, GOT, EXPECTED) \
+  check_value_proxy(LOG, GOT, EXPECTED, #GOT, #EXPECTED, 0, __LINE__, false)
 
 /* verify that val_a and val_b are of the same type */
 template <typename T1, typename T2>
 bool check_type_proxy(sycl_cts::util::logger &log, const T1 &val_a,
                       const T2 &val_b, int line) {
-  using sycl_cts::util::STRING;
+  using cl::sycl::string_class;
 
   if (typeid(val_a) != typeid(val_b)) {
-    STRING msg = STRING("Type mismatch between ") + type_name<T1>() +
-                 STRING(" and ") + type_name<T2>();
+    string_class msg = string_class("Type mismatch between ") +
+                       type_name<T1>() + string_class(" and ") +
+                       type_name<T2>();
     fail_proxy(log, msg.c_str(), line);
     return false;
   }
@@ -127,5 +142,8 @@ bool check_type_proxy(sycl_cts::util::logger &log, const T1 &val_a,
 }
 #define CHECK_TYPE(LOG, TYPE_A, TYPE_B) \
   check_type_proxy(LOG, TYPE_A, TYPE_B, __LINE__)
+
+#define ASSERT_RETURN_TYPE(expectedT, returnVal, MSG) \
+  { static_assert(std::is_same<decltype(returnVal), expectedT>::value, MSG); }
 
 } /* namespace {} */

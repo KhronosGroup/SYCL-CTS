@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -21,16 +21,16 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
+      auto queue = util::get_cts_object::queue();
+
       cl::sycl::program program(queue.get_context());
       program.build_from_kernel_name<kernel0>();
       cl::sycl::kernel kernel = program.get_kernel<kernel0>();
@@ -44,14 +44,44 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** initialize return values
       */
       cl_uint clUintRet;
+      cl::sycl::string_class stringRet;
+      size_t sizeTRet;
+      cl::sycl::range<3> range3Ret;
+      cl_ulong clUlongRet;
 
       /** check program info parameters
       */
       clUintRet = kernel.get_info<cl::sycl::info::kernel::reference_count>();
+      stringRet = kernel.get_info<cl::sycl::info::kernel::function_name>();
       clUintRet = kernel.get_info<cl::sycl::info::kernel::num_args>();
-    } catch (cl::sycl::exception e) {
+      stringRet = kernel.get_info<cl::sycl::info::kernel::attributes>();
+      auto dev = util::get_cts_object::device();
+      if (dev.get_info<cl::sycl::info::device::device_type>() ==
+          cl::sycl::info::device_type::custom) {
+        range3Ret = kernel.get_work_group_info<
+            cl::sycl::info::kernel_work_group::global_work_size>(dev);
+      }
+      range3Ret = kernel.get_work_group_info<
+          cl::sycl::info::kernel_work_group::compile_work_group_size>(dev);
+      sizeTRet =
+          kernel.get_work_group_info<cl::sycl::info::kernel_work_group::
+                                         preferred_work_group_size_multiple>(
+              dev);
+      clUlongRet = kernel.get_work_group_info<
+          cl::sycl::info::kernel_work_group::private_mem_size>(dev);
+      sizeTRet = kernel.get_work_group_info<
+          cl::sycl::info::kernel_work_group::work_group_size>(dev);
+
+      TEST_TYPE_TRAIT(kernel, reference_count, kernel);
+      TEST_TYPE_TRAIT(kernel, function_name, kernel);
+      TEST_TYPE_TRAIT(kernel, num_args, kernel);
+      TEST_TYPE_TRAIT(kernel, attributes, kernel);
+
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

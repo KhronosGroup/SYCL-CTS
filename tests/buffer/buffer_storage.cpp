@@ -1,14 +1,14 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
-#define TEST_NAME buffer_destructors
+#define TEST_NAME buffer_storage
 
 namespace buffer_storage__ {
 using namespace sycl_cts;
@@ -37,31 +37,28 @@ class custom_alloc {
 };
 
 template <typename alloc, typename T, int size, int dims>
-class buffer_storage {
+class buffer_storage_test {
  public:
   void operator()(util::logger &log, range<dims> r) {
-    unique_ptr<T> data(new T[size]);
-    unique_ptr<T> data_uniq(new T[size]);
-    shared_ptr<T> data_shrd(new T[size]);
+    std::unique_ptr<T[]> data(new T[size]);
+    std::shared_ptr<T> data_shrd(new T[size], [](T *data) { delete[] data; });
 
-    util::MUTEX m;
+    cl::sycl::mutex_class m;
 
-    memset(data.get(), 0, sizeof(T) * size);
-    memset(data_uniq.get(), 0, sizeof(T) * size);
-    memset(data_shrd.get(), 0, sizeof(T) * size);
+    std::fill(data.get(), (data.get() + size), 0);
+    std::fill(data_shrd.get(), (data_shrd.get() + size), 0);
 
     {
       cl::sycl::buffer<T, dims, custom_alloc<T>> buf(data.get(), r);
-      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_uniq(std::move(data_uniq),
-                                                          r);
       cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(data_shrd, r);
     }
     {
-      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(data_shrd, r, &m);
+      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
+          data_shrd, r, property_list{property::buffer::use_mutex(m)});
       m.lock();
-      memset(data_shrd.get(), 0xFF, size);
+      std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
       m.unlock();
-      weak_ptr<T> data_final;
+      std::weak_ptr<T> data_final;
       buf_shrd.set_final_data(data_final);
     }
   }
@@ -74,7 +71,7 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
@@ -85,9 +82,9 @@ class TEST_NAME : public util::test_base {
     range<2> range2d(size, size);
     range<3> range3d(size, size, size);
 
-    buffer_storage<alloc, T, size, 1> buf1d;
-    buffer_storage<alloc, T, size * size, 2> buf2d;
-    buffer_storage<alloc, T, size * size * size, 3> buf3d;
+    buffer_storage_test<alloc, T, size, 1> buf1d;
+    buffer_storage_test<alloc, T, size * size, 2> buf2d;
+    buffer_storage_test<alloc, T, size * size * size, 3> buf3d;
 
     buf1d(log, range1d);
     buf2d(log, range2d);
@@ -96,14 +93,16 @@ class TEST_NAME : public util::test_base {
 
   /** execute the test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       test_buffers<custom_alloc<int>, int>(log);
       test_buffers<custom_alloc<float>, float>(log);
       test_buffers<custom_alloc<double>, double>(log);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

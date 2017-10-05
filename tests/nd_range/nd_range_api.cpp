@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -18,54 +18,50 @@ static const size_t sizes[] = {16, 32, 64};
 template <int dim>
 void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
                    cl::sycl::range<dim> ls, cl::sycl::id<dim> offset) {
-  cl::sycl::nd_range<dim> no_offset(gs, ls);
   for (int i = 0; i < dim; i++) {
-    CHECK_TYPE(log, no_offset.get_global_range()[i], sizes[i]);
-    CHECK_VALUE(log, no_offset.get_global_range()[i], sizes[i], i);
-    CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
-    CHECK_VALUE(log, no_offset.get_local_range()[i], sizes[i] / 4, i);
+    cl::sycl::nd_range<dim> no_offset(gs, ls);
+    CHECK_TYPE(log, no_offset.get_global()[i], sizes[i]);
+    CHECK_VALUE(log, no_offset.get_global()[i], sizes[i], i);
+    CHECK_TYPE(log, no_offset.get_local()[i], sizes[i] / 4);
+    CHECK_VALUE(log, no_offset.get_local()[i], sizes[i] / 4, i);
 
-    CHECK_TYPE(log, no_offset.get_offset()[i], sizes[i] / 8);
-    CHECK_VALUE(log, no_offset.get_offset()[i], sizes[i] / 8, i);
-    CHECK_TYPE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4),
-                i);
+    CHECK_TYPE(log, no_offset.get_offset()[i], (size_t)0);
+    CHECK_VALUE(log, no_offset.get_offset()[i], (size_t)0, i);
+    CHECK_TYPE(log, no_offset.get_group()[i], sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, no_offset.get_group()[i], sizes[i] / (sizes[i] / 4), i);
 
     cl::sycl::nd_range<dim> deep_copy(no_offset);
 
-    CHECK_TYPE(log, deep_copy.get_global_range()[i], sizes[i]);
-    CHECK_VALUE(log, deep_copy.get_global_range()[i], sizes[i], i);
-    CHECK_TYPE(log, deep_copy.get_local_range()[i], sizes[i] / 4);
-    CHECK_VALUE(log, deep_copy.get_local_range()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, deep_copy.get_global()[i], sizes[i]);
+    CHECK_VALUE(log, deep_copy.get_global()[i], sizes[i], i);
+    CHECK_TYPE(log, deep_copy.get_local()[i], sizes[i] / 4);
+    CHECK_VALUE(log, deep_copy.get_local()[i], sizes[i] / 4, i);
 
-    CHECK_TYPE(log, deep_copy.get_offset()[i], sizes[i] / 8);
-    CHECK_VALUE(log, deep_copy.get_offset()[i], sizes[i] / 8, i);
-    CHECK_TYPE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4),
-                i);
+    CHECK_TYPE(log, deep_copy.get_offset()[i], (size_t)0);
+    CHECK_VALUE(log, deep_copy.get_offset()[i], (size_t)0, i);
+    CHECK_TYPE(log, deep_copy.get_group()[i], sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, deep_copy.get_group()[i], sizes[i] / (sizes[i] / 4), i);
 
     cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
-    CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
-    CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);
-    CHECK_TYPE(log, with_offset.get_local_range()[i], sizes[i] / 4);
-    CHECK_VALUE(log, with_offset.get_local_range()[i], sizes[i] / 4, i);
-    CHECK_TYPE(log, with_offset.get_offset()[i], sizes[0] / 8);
-    CHECK_VALUE(log, with_offset.get_offset()[i], sizes[0] / 8, i);
-    CHECK_TYPE(log, with_offset.get_group_range()[i],
-               sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, with_offset.get_group_range()[i],
-                sizes[i] / (sizes[i] / 4), i);
+    CHECK_TYPE(log, with_offset.get_global()[i], sizes[i]);
+    CHECK_VALUE(log, with_offset.get_global()[i], sizes[i], i);
+    CHECK_TYPE(log, with_offset.get_local()[i], sizes[i] / 4);
+    CHECK_VALUE(log, with_offset.get_local()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, with_offset.get_offset()[i], sizes[i] / 8);
+    CHECK_VALUE(log, with_offset.get_offset()[i], sizes[i] / 8, i);
+    CHECK_TYPE(log, with_offset.get_group()[i], sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, with_offset.get_group()[i], sizes[i] / (sizes[i] / 4), i);
+
     cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
-    CHECK_TYPE(log, deep_copy_offset.get_global_range()[i], sizes[i]);
-    CHECK_VALUE(log, deep_copy_offset.get_global_range()[i], sizes[i], i);
-    CHECK_TYPE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4);
-    CHECK_VALUE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, deep_copy_offset.get_global()[i], sizes[i]);
+    CHECK_VALUE(log, deep_copy_offset.get_global()[i], sizes[i], i);
+    CHECK_TYPE(log, deep_copy_offset.get_local()[i], sizes[i] / 4);
+    CHECK_VALUE(log, deep_copy_offset.get_local()[i], sizes[i] / 4, i);
     CHECK_TYPE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8);
     CHECK_VALUE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8, i);
-    CHECK_TYPE(log, deep_copy_offset.get_group_range()[i],
-               sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, deep_copy_offset.get_group_range()[i],
-                sizes[i] / (sizes[i] / 4), i);
+    CHECK_TYPE(log, deep_copy_offset.get_group()[i], sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, deep_copy_offset.get_group()[i], sizes[i] / (sizes[i] / 4),
+                i);
   }
 }
 
@@ -76,14 +72,14 @@ class TEST_NAME : public util::test_base {
   /** return information about this test
    *  @param info, test_base::info structure as output
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    *  @param log, test transcript logging class
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       // global size to be set to the size
       cl::sycl::range<1> gs_1d(sizes[0]);
@@ -110,9 +106,11 @@ class TEST_NAME : public util::test_base {
       cl::sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
       cl::sycl::id<3> offset_3d(range_3d);
       test_nd_range(log, gs_3d, ls_3d, offset_3d);
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

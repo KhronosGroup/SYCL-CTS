@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -20,25 +20,15 @@ extern void register_test(test_base *test);
 /** test proxy class
  *  this class is used to register tests with the test harness at compile time.
  */
-template <typename T>
-class test_proxy {
- public:
+template <typename T> class test_proxy {
+public:
   /** test_proxy constructor
    */
   test_proxy() {
-#if 0
-        // instantiate the test
-        T * test = new T( );
-        // convert to the base class type
-        test_base *base = static_cast< test_base * >( test );
-        // register with the test harness
-        test_collection::instance( ).addttest( base );
-#else
-    // use a externed function to cut dependency on the collection
+    // use an externed function to cut dependency on the collection
     register_test(new T());
-#endif
   }
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

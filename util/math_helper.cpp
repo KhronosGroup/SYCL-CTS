@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "math_helper.h"
 
@@ -17,9 +17,7 @@ using namespace cl::sycl;
 /* cast an integer to a float */
 float int_to_float(uint32_t x) {
   static_assert(sizeof(x) == sizeof(float), "incompatible type sizes");
-  float f;
-  memcpy(&f, &x, sizeof(x));
-  return f;
+  return *reinterpret_cast<float *>(&x);
 }
 
 void fill(float &e, float v) { e = v; }
@@ -69,7 +67,8 @@ int getElement(const int &f, int ix) { return f; }
 
 /* create random floats with full integer range */
 void rand(MTdata &rng, float *buf, int num) {
-  for (int i = 0; i < num; i++) buf[i] = (float)int32_t(genrand_int32(rng));
+  for (int i = 0; i < num; i++)
+    buf[i] = (float)int32_t(genrand_int32(rng));
 }
 
 void rand(MTdata &rng, float2 *buf, int num) {
@@ -101,7 +100,8 @@ void rand(MTdata &rng, float16 *buf, int num) {
 void rand(MTdata &rng, uint8_t *buf, int size) {
   uint32_t r = 0;
   for (int i = 0; i < size; i++) {
-    if ((i % 4) == 0) r = genrand_int32(rng);
+    if ((i % 4) == 0)
+      r = genrand_int32(rng);
     buf[i] = r & 0xff;
     r >>= 8;
   }

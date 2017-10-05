@@ -1,25 +1,43 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME pointer_constructors
 
-namespace pointer_constructors__ {
+namespace TEST_NAME {
 using namespace sycl_cts;
 
-template <typename T>
-class pointer_apis {
+template <typename T, typename U>
+class kernel0;
+
+struct user_struct {
+  float a;
+  int b;
+  char c;
+};
+
+template <typename T, typename U = T>
+class pointer_ctors {
  public:
-  void operator()(util::logger &log, cl::sycl::queue &queue) {
+  using multiPtrGlobal =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
+  using multiPtrConstant =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
+  using multiPtrLocal =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
+  using multiPtrPrivate =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
+
+  void operator()(cl::sycl::queue &queue) {
     const int size = 64;
     cl::sycl::range<1> range(size);
-    cl::sycl::unique_ptr<T> data(new T[size]);
+    cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     cl::sycl::buffer<T, 1> buffer(data.get(), range);
 
     queue.submit([&](cl::sycl::handler &handler) {
@@ -33,122 +51,112 @@ class pointer_apis {
                          cl::sycl::access::target::local>
           localAccessor(size, handler);
 
-      handler.single_task([=]() {
+      handler.single_task< class kernel0<T, U> >([=]() {
         T privateData[1];
 
-        /** check (elementType *) constructors and destructors
+        /** check default constructors
         */
         {
-          cl::sycl::global_ptr<T> globalPtr(&globalAccessor[0]);
-          cl::sycl::constant_ptr<T> constantPtr(&constantAccessor[0]);
-          cl::sycl::local_ptr<T> localPtr(&localAccessor[0]);
-          cl::sycl::private_ptr<T> privatePtr(privateData);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtr(&globalAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtr(&constantAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtr(&localAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtr(privateData);
+          multiPtrGlobal globalMultiPtr;
+          multiPtrConstant constantMultiPtr;
+          multiPtrLocal localMultiPtr;
+          multiPtrPrivate privateMultiPtr;
+        }
+
+        /** check (elementType *) constructors
+        */
+        {
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(
+              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+
+          multiPtrGlobal globalMultiPtr(globalPtr);
+          multiPtrConstant constantMultiPtr(constantPtr);
+          multiPtrLocal localMultiPtr(localPtr);
+          multiPtrPrivate privateMultiPtr(privatePtr);
+        }
+
+        /** check (pointer) constructors
+        */
+        {
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(
+              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+
+          multiPtrGlobal globalMultiPtr(globalPtr.get());
+          multiPtrConstant constantMultiPtr(constantPtr.get());
+          multiPtrLocal localMultiPtr(localPtr.get());
+          multiPtrPrivate privateMultiPtr(privatePtr.get());
+        }
+
+        /** check (std::nullptr_t) constructors
+        */
+        {
+          multiPtrGlobal globalMultiPtr(nullptr);
+          multiPtrConstant constantMultiPtr(nullptr);
+          multiPtrLocal localMultiPtr(nullptr);
+          multiPtrPrivate privateMultiPtr(nullptr);
         }
 
         /** check (accessor) constructors
         */
         {
-          cl::sycl::global_ptr<T> globalPtr(globalAccessor);
-          cl::sycl::constant_ptr<T> constantPtr(constantAccessor);
-          cl::sycl::local_ptr<T> localPtr(localAccessor);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtr(globalAccessor);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtr(constantAccessor);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtr(privateData);
+          multiPtrGlobal globalMultiPtr(globalAccessor);
+          multiPtrConstant constantMultiPtr(constantAccessor);
+          multiPtrLocal localMultiPtr(localAccessor);
         }
 
         /** check copy constructors
         */
         {
-          cl::sycl::global_ptr<T> globalPtrA(&globalAccessor[0]);
-          cl::sycl::constant_ptr<T> constantPtrA(&constantAccessor[0]);
-          cl::sycl::local_ptr<T> localPtrA(&localAccessor[0]);
-          cl::sycl::private_ptr<T> privatePtrA(privateData);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtrA(&globalAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtrA(&constantAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtrA(&localAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtrA(privateData);
+          cl::sycl::global_ptr<U> globalPtrA(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtrA(
+              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
-          cl::sycl::global_ptr<T> globalPtrB(globalPtrA);
-          cl::sycl::constant_ptr<T> constantPtrB(constantPtrA);
-          cl::sycl::local_ptr<T> localPtrB(localPtrA);
-          cl::sycl::private_ptr<T> provatePtrB(provatePtrA);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtrB(globalMultiPtrA);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtrB(constantMultiPtrA);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtrB(localMultiPtrA);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtrB(privateMultiPtrA);
+          multiPtrGlobal globalMultiPtrA(globalPtrA);
+          multiPtrConstant constantMultiPtrA(constantPtrA);
+          multiPtrLocal localMultiPtrA(localPtrA);
+          multiPtrPrivate privateMultiPtrA(privatePtrA);
+
+          multiPtrGlobal globalMultiPtrB(globalMultiPtrA);
+          multiPtrConstant constantMultiPtrB(constantMultiPtrA);
+          multiPtrLocal localMultiPtrB(localMultiPtrA);
+          multiPtrPrivate privateMultiPtrB(privateMultiPtrA);
         }
 
-        /** check assignment operators
+        /** check move constructors
         */
         {
-          cl::sycl::global_ptr<T> globalPtrA(&globalAccessor[0]);
-          cl::sycl::constant_ptr<T> constantPtrA(&constantAccessor[0]);
-          cl::sycl::local_ptr<T> localPtrA(&localAccessor[0]);
-          cl::sycl::private_ptr<T> privatePtrA(privateData);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtrA(&globalAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtrA(&constantAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtrA(&localAccessor[0]);
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtrA(privateData);
+          cl::sycl::global_ptr<U> globalPtrA(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtrA(
+              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
-          cl::sycl::global_ptr<T> globalPtrB = globalPtrA;
-          cl::sycl::constant_ptr<T> constantPtrB = constantPtrA;
-          cl::sycl::local_ptr<T> localPtrB = localPtrA;
-          cl::sycl::private_ptr<T> privatePtrB = provatePtrA;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtrB = globalMultiPtrA;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtrB = constantMultiPtrA;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtrB = localMultiPtrA;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtrB = privateMultiPtrA;
+          multiPtrGlobal globalMultiPtrA(globalPtrA);
+          multiPtrConstant constantMultiPtrA(constantPtrA);
+          multiPtrLocal localMultiPtrA(localPtrA);
+          multiPtrPrivate privateMultiPtrA(privatePtrA);
 
-          cl::sycl::global_ptr<T> globalPtrC = &globalAccessor[0];
-          cl::sycl::constant_ptr<T> constantPtrC = &constantAccessor[0];
-          cl::sycl::local_ptr<T> localPtrC = &localAccessor[0];
-          cl::sycl::private_ptr<T> privatePtrC = privateData;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::global_space>
-              globalMultiPtrC = &globalAccessor[0];
-          ;
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::constant_space>
-              constantMultiPtrC = &constantAccessor[0];
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::local_space>
-              localMultiPtrC = &localAccessor[0];
-          cl::sycl::multi_ptr<T, cl::sycl::address_space::private_space>
-              privateMultiPtrC = privateData;
+          multiPtrGlobal globalMultiPtrB = std::move(globalMultiPtrA);
+          multiPtrConstant constantMultiPtrB = std::move(constantMultiPtrA);
+          multiPtrLocal localMultiPtrB = std::move(localMultiPtrA);
+          multiPtrPrivate privateMultiPtrB = std::move(privateMultiPtrA);
         }
+
       });
     });
   }
-};
-
-struct user_struct {
-  float a;
-  int b;
-  char c;
 };
 
 /** tests the constructors for explicit pointers
@@ -157,36 +165,49 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::queue queue(selector);
+      auto queue = util::get_cts_object::queue();
 
-      pointer_apis<int> intTests;
-      intTests(log, queue);
+      pointer_ctors<int, void> voidTests;
+      voidTests(queue);
 
-      pointer_apis<long long> longLongTests;
-      longLongTests(log, queue);
+      pointer_ctors<char> charTests;
+      charTests(queue);
 
-      pointer_apis<float> floatTests;
-      floatTests(log, queue);
+      pointer_ctors<short> shortTests;
+      shortTests(queue);
 
-      pointer_apis<double> doubleTests;
-      doubleTests(log, queue);
+      pointer_ctors<int> intTests;
+      intTests(queue);
 
-      pointer_apis<user_struct> userStructTests;
-      userStructTests(log, queue);
+      pointer_ctors<long> longTests;
+      longTests(queue);
+
+      pointer_ctors<long long> longLongTests;
+      longLongTests(queue);
+
+      pointer_ctors<float> floatTests;
+      floatTests(queue);
+
+      pointer_ctors<double> doubleTests;
+      doubleTests(queue);
+
+      pointer_ctors<user_struct> userStructTests;
+      userStructTests(queue);
 
       queue.wait_and_throw();
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };
@@ -194,4 +215,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace pointer_constructors__ */
+} /* namespace TEST_NAME */

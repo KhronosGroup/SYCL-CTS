@@ -1,10 +1,11 @@
 #!/usr/bin/python
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-#
-#  SYCL Conformance Test Suite
-#
-#  Copyright: (c) 2014 by Codeplay Software LTD. All Rights Reserved.
-#
+################################################################################
+##
+##  SYCL 1.2.1 Conformance Test Suite
+##
+##  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+##
+################################################################################
 
 import subprocess
 import json
@@ -23,6 +24,8 @@ g_csv_path      = None
 g_packets       = {}
 g_list_tests    = False
 g_junit_path    = None
+g_platform      = "intel"
+g_device        = "opencl_cpu"
 
 g_types = \
     [
@@ -214,7 +217,7 @@ def print_summary( ):
     l_failing_tests = []
 
     try:
-        # itterate over all the test ids
+        # iterate over all the test ids
         for id in g_packets:
 
             # get the test result for this id
@@ -230,7 +233,8 @@ def print_summary( ):
             if l_result == 'skip':
                 l_skipped += 1
 
-            l_total += 1
+            if not (l_result is None):
+                l_total += 1
 
         print " " + str( l_total ) + ' tests ran in total'
 
@@ -244,6 +248,7 @@ def print_summary( ):
         print '  = ' + str( l_percent ) + '% pass rate'
 
     except Exception as e:
+        print 'Exception thrown: ' + e.message
         pass
 
     return
@@ -387,6 +392,8 @@ def get_temp_filename( ):
 def launch_cts_binary( list ):
     global g_binary_path
     global g_csv_path
+    global g_platform
+    global g_device
 
     if not g_binary_path:
         error_exit( "path to cts binary unknown" )
@@ -395,6 +402,12 @@ def launch_cts_binary( list ):
     l_args = " --json"
     if g_csv_path:
         l_args = l_args + " --csv " + g_csv_path
+
+    if g_platform:
+        l_args += " --platform " + g_platform
+
+    if g_device:
+        l_args += " --device " + g_device
 
     # add list flag if listing
     if list:
@@ -478,6 +491,11 @@ def parse_args( ):
     global g_csv_path
     global g_junit_path
     global g_list_tests
+    global g_platform
+    global g_device
+
+    devices = ['host', 'opencl_cpu', 'opencl_gpu']
+    platforms = ['host', 'amd', 'arm', 'intel', 'nvidia']
 
     parser = argparse.ArgumentParser( description="Khronos SYCL CTS" )
 
@@ -486,6 +504,8 @@ def parse_args( ):
     parser.add_argument( "--csvpath", help="specify path to csv file for filtering tests" )
     parser.add_argument( "--list", help="list all tests in a test binary", action="store_true" )
     parser.add_argument( "-j", "--junit", help="specify output path for a junit xml file" )
+    parser.add_argument( "-p", "--platform", choices=platforms, help="The platform to run on " )
+    parser.add_argument( "-d", "--device", choices=devices, help="The device to run on " )
 
     args = parser.parse_args()
 
@@ -503,6 +523,12 @@ def parse_args( ):
 
     if 'junit' in args:
         g_junit_path = args.junit
+
+    if 'platform' in args:
+        g_platform = args.platform
+
+    if 'device' in args:
+        g_device = args.device
 
     return True
 

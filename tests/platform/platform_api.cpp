@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -19,63 +19,78 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      cl::sycl::platform platform(selector);
-
-      /** check get_devices(device_type = all) method
+      /** check get_devices() member function
       */
-      auto devices = platform.get_devices();
-      if (typeid(devices) != typeid(cl::sycl::vector_class<cl::sycl::device>)) {
-        FAIL(log, "get_devices() does not return vector_class<device>");
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto devs = plt.get_devices();
+        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+            log, devs, "platform::get_devices()");
       }
 
-      /** check get_devices(device_type) method
+      /** check get_devices(info::device_type::all) member function
       */
-      devices = platform.get_devices(cl::sycl::info::device_type::gpu);
-      if (typeid(devices) != typeid(cl::sycl::vector_class<cl::sycl::device>)) {
-        FAIL(log,
-             "get_devices(device_type) does not return vector_class<device>");
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto devs = plt.get_devices(cl::sycl::info::device_type::all);
+        if (devs.size() != 0) {
+          check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+              log, devs, "platform::get_devices(info::device_type::all)");
+        }
       }
 
-      /** check has_extensions() method
+      /** check has_extensions() member function
       */
-      auto extensionSupported =
-          platform.has_extension(cl::sycl::string_class("cl_khr_icd"));
-      if (typeid(extensionSupported) != typeid(bool))
-        FAIL(log, "has_extension() does not return bool");
-
-      /** check get_info() method
-      */
-      auto platformName = platform.get_info<cl::sycl::info::platform::name>();
-      if (typeid(platformName) != typeid(cl::sycl::string_class)) {
-        FAIL(log, "has_extension() does not string_class");
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto extensionSupported =
+            plt.has_extension(cl::sycl::string_class("cl_khr_icd"));
+        check_return_type<bool>(log, extensionSupported,
+                                "platform::has_extension(string_class)");
       }
 
-      /** check is_host() method
+      /** check get_info() member function
       */
-      auto isHost = platform.is_host();
-      if (typeid(isHost) != typeid(bool)) {
-        FAIL(log, "is_host() does not return bool");
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto platformName = plt.get_info<cl::sycl::info::platform::name>();
+        check_return_type<cl::sycl::string_class>(log, platformName,
+                                                  "platform::get_info()");
+      }
+
+      /** check is_host() member function
+      */
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto isHost = plt.is_host();
+        check_return_type<bool>(log, isHost, "platform::is_host()");
       }
 
       /** check get_platforms() static method
       */
-      auto platforms = cl::sycl::platform::get_platforms();
-      if (typeid(platforms) !=
-          typeid(cl::sycl::vector_class<cl::sycl::platform>)) {
-        FAIL(log, "get_platforms() does not return vector_class<platform>");
+      {
+        auto plt = cl::sycl::platform::get_platforms();
+        check_return_type<cl::sycl::vector_class<cl::sycl::platform>>(
+            log, plt, "platform::get_platform()");
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

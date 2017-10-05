@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -16,15 +16,14 @@ namespace util {
 /** implement a singleton interface to all derived class.
  *  template argument T must be the derived class.
  */
-template <class T>
-class singleton {
+template <class T> class singleton {
   // must be a friend of class T to access the constructor
   friend T;
 
   // singleton instance
-  static UNIQUE_PTR<T> m_instance;
+  static std::unique_ptr<T> m_instance;
 
- public:
+public:
   /** destructor
    *  ensure that we release the singleton instance
    */
@@ -50,15 +49,11 @@ class singleton {
 
 /** instance of the singleton
  */
-template <class T>
-std::unique_ptr<T> singleton<T>::m_instance;
+template <class T> std::unique_ptr<T> singleton<T>::m_instance;
 
 /** easy singleton accessors
  */
-template <class T>
-static inline T &get() {
-  return T::instance();
-}
+template <class T> static inline T &get() { return T::instance(); }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -18,7 +18,7 @@ namespace util {
 /** this class is a central repository of tests
  */
 class collection : public singleton<collection> {
- public:
+public:
   /** test structure
    */
   struct test_info {
@@ -51,11 +51,11 @@ class collection : public singleton<collection> {
   /** load a test filter (csv file)
    *  @param csvPath, the csv file path fir filtering the tests
    */
-  bool filter_tests_csv(const STRING &csvPath);
+  bool filter_tests_csv(const std::string &csvPath);
 
   /** filter tests by name
    */
-  bool filter_tests_name(const STRING &testName);
+  bool filter_tests_name(const std::string &testName);
 
   /** get the total number of tests in this collection
    */
@@ -69,14 +69,14 @@ class collection : public singleton<collection> {
    */
   void prepare();
 
- protected:
+protected:
   /** set the skip status of a test by name
    */
-  void set_test_skip(const STRING &testName, bool skip);
+  void set_test_skip(const std::string &testName, bool skip);
 
   // the test collection itself
-  VECTOR<test_info> m_tests;
+  std::vector<test_info> m_tests;
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

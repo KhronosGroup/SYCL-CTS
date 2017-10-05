@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -19,13 +19,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       /** check default constructor and destructor
       */
@@ -33,26 +33,22 @@ class TEST_NAME : public util::test_base {
         cl::sycl::platform platform;
 
         if (!platform.is_host()) {
-          FAIL(log, "platform was not constructed correctly.");
-        }
-
-        if (platform.get() != 0) {
-          FAIL(log, "platform was not constructed correctly");
+          FAIL(log, "platform was not constructed correctly (is_host)");
         }
       }
 
-      /** check (device_selector) constructor
+      /** check (const device_selector) constructor
       */
       {
-        cts_selector selector;
+        const cts_selector selector;
         cl::sycl::platform platform(selector);
 
-        if (platform.is_host()) {
-          FAIL(log, "platform was not constructed correctly.");
+        if (platform.is_host() != selector.is_host()) {
+          FAIL(log, "platform was not constructed correctly (is_host)");
         }
 
-        if (platform.get() == 0) {
-          FAIL(log, "platform was not constructed correctly.");
+        if (!selector.is_host() && platform.get() == nullptr) {
+          FAIL(log, "platform was not constructed correctly (get)");
         }
       }
 
@@ -63,8 +59,12 @@ class TEST_NAME : public util::test_base {
         cl::sycl::platform platformA(selector);
         cl::sycl::platform platformB(platformA);
 
-        if (platformA.get() != platformB.get()) {
-          FAIL(log, "platform was not copied correctly.");
+        if (platformA.is_host() != platformB.is_host()) {
+          FAIL(log, "platform was not copy constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host() && platformA.get() != platformB.get()) {
+          FAIL(log, "platform was not copy constructed correctly (get)");
         }
       }
 
@@ -75,13 +75,91 @@ class TEST_NAME : public util::test_base {
         cl::sycl::platform platformA(selector);
         cl::sycl::platform platformB = platformA;
 
-        if (platformA.get() != platformB.get()) {
-          FAIL(log, "platform was not assigned correctly.");
+        if (platformA.is_host() != platformB.is_host()) {
+          FAIL(log, "platform was not copy assigned correctly (is_host)");
+        }
+
+        if (!selector.is_host() && platformA.get() != platformB.get()) {
+          FAIL(log, "platform was not copy assigned correctly (get)");
         }
       }
-    } catch (cl::sycl::exception e) {
+
+      /** check move constructor
+       */
+      {
+        cts_selector selector;
+        cl::sycl::platform platformA(selector);
+        cl::sycl::platform platformB(std::move(platformA));
+
+        if (selector.is_host() != platformB.is_host()) {
+          FAIL(log, "platform was not move constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host() && platformB.get() == nullptr) {
+          FAIL(log, "platform was not move constructed correctly (get)");
+        }
+      }
+
+      /** check move assignment operator
+       */
+      {
+        cts_selector selector;
+        cl::sycl::platform platformA(selector);
+        cl::sycl::platform platformB = std::move(platformA);
+
+        if (selector.is_host() != platformB.is_host()) {
+          FAIL(log, "platform was not move assigned correctly (is_host)");
+        }
+
+        if (!selector.is_host() && platformB.get() == nullptr) {
+          FAIL(log, "platform was not move assigned correctly (get)");
+        }
+      }
+
+      /* check equality operator
+       */
+      {
+        cts_selector selector;
+        cl::sycl::platform platformA(selector);
+        cl::sycl::platform platformB = platformA;
+        cl::sycl::platform platformC(platformA);
+
+        if (!(platformA == platformB)) {
+          FAIL(log,
+               "platform equality does not work correctly (copy constructed)");
+        }
+        if (!(platformA == platformC)) {
+          FAIL(log,
+               "platform equality does not work correctly (copy assigned)");
+        }
+      }
+
+      /* check hash
+       */
+      {
+        cts_selector selector;
+        cl::sycl::platform platformA(selector);
+        cl::sycl::platform platformB = platformA;
+        cl::sycl::platform platformC(platformA);
+
+        cl::sycl::hash_class<cl::sycl::platform> hasher;
+
+        if (hasher(platformA) != hasher(platformB)) {
+          FAIL(
+              log,
+              "platform hash_class does not work correctly (copy constructed)");
+        }
+        if (hasher(platformA) != hasher(platformC)) {
+          FAIL(log,
+               "platform hash_class does not work correctly (copy assigned)");
+        }
+      }
+
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

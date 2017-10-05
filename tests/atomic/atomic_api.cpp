@@ -1,226 +1,292 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
+#include <sstream>
 
 #define TEST_NAME atomic_api
 
-namespace cl {
-namespace sycl {
-template <typename T>
-using atomic = std::atomic<T>;
-
-using namespace std;
-}
-}
-
 namespace TEST_NAMESPACE {
+
 using namespace sycl_cts;
-using namespace cl::sycl;
 
-template <typename T, int target>
-class functor_single;
-
-template <typename T, int target>
-class functor_parallel;
-
-/* Specialsation for float because most operations are int/uint only */
-template <int target>
-class functor_single<float, target> {
-  cl::sycl::accessor<float, 1, access::atomic, target> m_acc;
+/** Check base atomic operations
+*/
+template <typename T, cl::sycl::access::target target,
+          cl::sycl::access::address_space addressSpace>
+class check_base_atomics {
+  cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> m_acc;
 
  public:
-  functor_single(cl::sycl::accessor<float, 1, access::atomic, target> acc)
+  check_base_atomics(
+      cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() {
-    std::memory_order mor = std::memory_order_relaxed;
-    cl::sycl::atomic<float> a = m_acc[0];
-    float old = a.load(mor);
-    a.store(0.f, mor);
-    old = a.exchange(1.f, mor);
+    cl::sycl::memory_order order = cl::sycl::memory_order::relaxed;
+    cl::sycl::atomic<T, addressSpace> a = m_acc[0];
 
-    old = atomic_load_explicit(&a, mor);
-    atomic_store_explicit(&a, 0.f, mor);
-    old = atomic_exchange_explicit(&a, 1.f, mor);
+    /** Check atomic member functions
+    */
+    T old = a.load(order);
+    a.store(static_cast<T>(0), order);
+    old = a.exchange(static_cast<T>(1), order);
+    bool res = a.compare_exchange_strong(old, static_cast<T>(1), order, order);
+    old = a.fetch_add(static_cast<T>(1), order);
+    old = a.fetch_sub(static_cast<T>(1), order);
+
+    /** Check atomic global functions
+    */
+    old = atomic_load(&a, order);
+    atomic_store(&a, static_cast<T>(0), order);
+    old = atomic_exchange(&a, static_cast<T>(1), order);
+    old = atomic_compare_exchange_strong(&a, &old, static_cast<T>(1), order,
+                                         order);
+    old = atomic_fetch_add(&a, static_cast<T>(1), order);
+    old = atomic_fetch_sub(&a, static_cast<T>(1), order);
   }
 };
 
-template <int target>
-class functor_parallel<float, target> {
-  cl::sycl::accessor<float, 1, access::atomic, target> m_acc;
+/** Specialisation for float because most operations don't permit float type
+*/
+template <cl::sycl::access::target target,
+          cl::sycl::access::address_space addressSpace>
+class check_base_atomics<float, target, addressSpace> {
+  cl::sycl::accessor<float, 1, cl::sycl::access::mode::atomic, target> m_acc;
 
  public:
-  functor_parallel(cl::sycl::accessor<float, 1, access::atomic, target> acc)
-      : m_acc(acc) {}
-
-  void operator()(id<1> i) {
-    std::memory_order mor = std::memory_order_relaxed;
-    volatile cl::sycl::atomic<float> a = m_acc[0];
-    float old = a.load(mor);
-    a.store(0.f, mor);
-    old = a.exchange(1.f, mor);
-
-    old = atomic_load_explicit(&a, mor);
-    atomic_store_explicit(&a, 0.f, mor);
-    old = atomic_exchange_explicit(&a, 1.f, mor);
-  }
-};
-
-template <typename T, int target>
-class functor_single {
-  cl::sycl::accessor<T, 1, access::atomic, target> m_acc;
-
- public:
-  functor_single(cl::sycl::accessor<T, 1, access::atomic, target> acc)
+  check_base_atomics(
+      cl::sycl::accessor<float, 1, cl::sycl::access::mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() {
-    std::memory_order mor = std::memory_order_relaxed;
-    cl::sycl::atomic<T> a = m_acc[0];
-    T old = a.load(mor);
-    a.store(0, mor);
-    old = a.exchange(1, mor);
-    bool res = a.compare_exchange_strong(old, 1, mor, mor);
-    old = a.fetch_add(1, mor);
-    old = a.fetch_sub(1, mor);
-    old = a.fetch_and(0xFFFFFFFF, mor);
-    old = a.fetch_or(0x00000000, mor);
-    old = a.fetch_xor(0xFFFFFFFE, mor);
-    old = a.fetch_min(0xFFFFFFFF, mor);
-    old = a.fetch_max(0x00000000, mor);
+    cl::sycl::memory_order order = cl::sycl::memory_order::relaxed;
 
-    old = atomic_load_explicit(&a, mor);
-    atomic_store_explicit(&a, 0, mor);
-    old = atomic_exchange_explicit(&a, 1, mor);
-    old = atomic_compare_exchange_strong_explicit(&a, &old, 1, mor, mor);
-    old = atomic_fetch_add_explicit(&a, 1, mor);
-    old = atomic_fetch_sub_explicit(&a, 1, mor);
-    old = atomic_fetch_and_explicit(&a, 0xFFFFFFFF, mor);
-    old = atomic_fetch_or_explicit(&a, 0x00000000, mor);
-    old = atomic_fetch_xor_explicit(&a, 0xFFFFFFFE, mor);
-    old = atomic_fetch_min_explicit(&a, 0xFFFFFFFF, mor);
-    old = atomic_fetch_max_explicit(&a, 0x00000000, mor);
+    /** Check atomic member functions
+    */
+    cl::sycl::atomic<float, addressSpace> a = m_acc[0];
+    float old = a.load(order);
+    a.store(0.f, order);
+    old = a.exchange(1.f, order);
+
+    /** Check atomic global functions
+    */
+    old = atomic_load(&a, order);
+    atomic_store(&a, 0.f, order);
+    old = atomic_exchange(&a, 1.f, order);
   }
 };
 
-template <typename T, int target>
-class functor_parallel {
-  cl::sycl::accessor<T, 1, access::atomic, target> m_acc;
+/** Check extended atomic operations
+*/
+template <typename T, cl::sycl::access::target target,
+          cl::sycl::access::address_space addressSpace, addressSpace>
+class check_extended_atomics {
+  cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> m_acc;
 
  public:
-  functor_parallel(cl::sycl::accessor<T, 1, access::atomic, target> acc)
+  check_extended_atomics(
+      cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> acc)
       : m_acc(acc) {}
 
-  void operator()(id<1> i) {
-    std::memory_order mor = std::memory_order_relaxed;
-    volatile cl::sycl::atomic<T> a = m_acc[0];
-    bool res = false;
+  void operator()() {
+    cl::sycl::memory_order order = cl::sycl::memory_order::relaxed;
+    cl::sycl::atomic<T, addressSpace> a = m_acc[0];
 
-    T old = a.load(mor);
-    a.store(0, mor);
-    old = a.exchange(1, mor);
-    res = a.compare_exchange_strong(old, 1, mor, mor);
-    old = a.fetch_add(1, mor);
-    old = a.fetch_sub(1, mor);
-    old = a.fetch_and(0xFFFFFFFF, mor);
-    old = a.fetch_or(0x00000000, mor);
-    old = a.fetch_xor(0xFFFFFFFE, mor);
-    old = a.fetch_min(0xFFFFFFFF, mor);
-    old = a.fetch_max(0x00000000, mor);
+    /** Check atomic member functions
+    */
+    T old = a.load(order);
+    old = a.fetch_and(static_cast<T>(0xFFFFFFFF), order);
+    old = a.fetch_or(static_cast<T>(0), order);
+    old = a.fetch_xor(static_cast<T>(0xFFFFFFFE), order);
+    old = a.fetch_min(static_cast<T>(0xFFFFFFFF), order);
+    old = a.fetch_max(static_cast<T>(0), order);
 
-    old = atomic_load_explicit(&a, mor);
-    atomic_store_explicit(&a, 0, mor);
-    old = atomic_exchange_explicit(&a, 1, mor);
-    res = atomic_compare_exchange_strong_explicit(&a, &old, 1, mor, mor);
-    old = atomic_fetch_add_explicit(&a, 1, mor);
-    old = atomic_fetch_sub_explicit(&a, 1, mor);
-    old = atomic_fetch_and_explicit(&a, 0xFFFFFFFF, mor);
-    old = atomic_fetch_or_explicit(&a, 0x00000000, mor);
-    old = atomic_fetch_xor_explicit(&a, 0xFFFFFFFE, mor);
-    old = atomic_fetch_min_explicit(&a, 0xFFFFFFFF, mor);
-    old = atomic_fetch_max_explicit(&a, 0x00000000, mor);
+    /** Check atomic global functions
+    */
+    old = atomic_load(&a, order);
+    old = atomic_fetch_and(&a, static_cast<T>(0xFFFFFFFF), order);
+    old = atomic_fetch_or(&a, static_cast<T>(0), order);
+    old = atomic_fetch_xor(&a, static_cast<T>(0xFFFFFFFE), order);
+    old = atomic_fetch_min(&a, static_cast<T>(0xFFFFFFFF), order);
+    old = atomic_fetch_max(&a, static_cast<T>(0), order);
   }
 };
 
-template <typename T, int target>
-class atomics {
+/** Specialisation for float because most operations don't permit float type
+*/
+template <cl::sycl::access::target target,
+          cl::sycl::access::address_space addressSpace>
+class check_extended_atomics<float, target, addressSpace> {
+  cl::sycl::accessor<float, 1, cl::sycl::access::mode::atomic, target> m_acc;
+
  public:
-  void operator()(util::logger &log, queue &q) {
+  check_extended_atomics(
+      cl::sycl::accessor<float, 1, cl::sycl::access::mode::atomic, target> acc)
+      : m_acc(acc) {}
+
+  void operator()() {
+    /** extended atomics are not supported for float
+    */
+  }
+};
+
+/** Check atomic operations
+*/
+template <typename T, cl::sycl::access::target target>
+class check_atomics;
+
+/** Specialisation for cl::sycl::access::target::global_buffer
+*/
+template <typename T>
+class check_atomics<T, cl::sycl::access::target::global_buffer> {
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &testQueue) {
+    auto testDevice = testQueue.get_device();
+
     T data = 0;
-    memset(&data, 0xFF, sizeof(T));
+    std::memset(&data, 0xFF, sizeof(T));
 
-    // Single element to test concurrent access
-    range<1> r(1);
-    buffer<T, 1> buf(&data, r);
+    cl::sycl::buffer<T, 1> buf(&data, cl::sycl::range<1>(1));
 
-    q.submit([&](cl::sycl::handler &cgh) {
-      accessor<T, 1, access::atomic, target> acc(buf, cgh);
+    /** Check base atomics
+    */
+    if ((sizeof(T) <= 4) ||
+        testDevice.has_extension("cl_khr_int64_base_atomics")) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
+        cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic,
+                           cl::sycl::access::target::global_buffer>
+            acc(buf, cgh);
 
-      functor_parallel<T, target> f(acc);
+        check_base_atomics<T, cl::sycl::access::target::global_buffer,
+                           cl::sycl::access::address_space::global_space>
+            f(acc);
 
-      cgh.parallel_for(r, f);
-    });
+        cgh.single_task(f);
+      });
+    }
 
-    q.submit([&](cl::sycl::handler &cgh) {
-      accessor<T, 1, access::atomic, target> acc(buf, cgh);
+    /** Check extended atomics
+    */
+    if ((sizeof(T) <= 4) ||
+        testDevice.has_extension("cl_khr_int64_extended_atomics")) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
+        cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic,
+                           cl::sycl::access::target::global_buffer>
+            acc(buf, cgh);
 
-      functor_single<T, target> f(acc);
+        check_extended_atomics<T, cl::sycl::access::target::global_buffer,
+                               cl::sycl::access::address_space::global_space>
+            f(acc);
 
-      cgh.single_task(f);
-    });
-
-    accessor<T, 1, access::atomic, cl::sycl::access::target::host_buffer> h_acc(
-        buf);
-
-    auto a = h_acc[0];
-    if (typeid(a) != typeid(cl::sycl::atomic<T>))
-      FAIL(log,
-           "cl::sycl::accessor does not return atomic type "
-           "for access mode == atomic");
-  }
-};
-
-/**
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  virtual void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  template <typename T>
-  void test_type(util::logger &log, cl::sycl::queue q) {
-    atomics<T, cl::sycl::access::target::global_buffer> a_g;
-    a_g(log, q);
-  }
-
-  /** execute the test
-   */
-  virtual void run(util::logger &log) override {
-    try {
-      cl::sycl::queue q;
-      test_type<int>(log, q);
-      test_type<unsigned int>(log, q);
-      test_type<float>(log, q);
-
-      q.wait_and_throw();
-
-    } catch (cl::sycl::exception e) {
-      log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+        cgh.single_task(f);
+      });
     }
   }
 };
 
-// construction of this proxy will register the above test
+/** Specialisation for cl::sycl::access::target::local
+*/
+template <typename T>
+class check_atomics<T, cl::sycl::access::target::local> {
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &testQueue) {
+    auto testDevice = testQueue.get_device();
+
+    /** Check base atomics
+    */
+    if ((sizeof(T) <= 4) ||
+        testDevice.has_extension("cl_khr_int64_base_atomics")) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
+        cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic,
+                           cl::sycl::access::target::local>
+            acc(cl::sycl::range<1>(1), cgh);
+
+        check_base_atomics<T, cl::sycl::access::target::local,
+                           cl::sycl::access::address_space::local_space>
+            f(acc);
+
+        cgh.single_task(f);
+      });
+    }
+
+    /** Check extended atomics
+    */
+    if ((sizeof(T) <= 4) ||
+        testDevice.has_extension("cl_khr_int64_extended_atomics")) {
+      testQueue.submit([&](cl::sycl::handler &cgh) {
+        cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic,
+                           cl::sycl::access::target::local>
+            acc(cl::sycl::range<1>(1), cgh);
+
+        check_extended_atomics<T, cl::sycl::access::target::local,
+                               cl::sycl::access::address_space::local_space>
+            f(acc);
+
+        cgh.single_task(f);
+      });
+    }
+  }
+};
+
+/** Check the api for cl::sycl::atomic
+*/
+class TEST_NAME : public util::test_base {
+ public:
+  /** Return information about this test
+    */
+  void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  template <typename T>
+  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
+    /** Check atomics for cl::sycl::access::target::global_buffer
+    */
+    check_atomics<T, cl::sycl::access::target::global_buffer>{}(log, testQueue);
+
+    /** Check atomics for cl::sycl::access::target::local
+    */
+    check_atomics<T, cl::sycl::access::target::local>{}(log, testQueue);
+  }
+
+  /** Execute the test
+    */
+  void run(util::logger &log) override {
+    try {
+      auto testQueue = util::get_cts_object::queue();
+
+      /** Check cl::sycl::memory_order
+      */
+      check_enum_class_value(cl::sycl::memory_order::relaxed);
+
+      /** Check atomics for supported types
+      */
+      check_atomics_for_type<int>(log, testQueue);
+      check_atomics_for_type<unsigned int>(log, testQueue);
+      check_atomics_for_type<long>(log, testQueue);
+      check_atomics_for_type<unsigned long>(log, testQueue);
+      check_atomics_for_type<long long>(log, testQueue);
+      check_atomics_for_type<unsigned long long>(log, testQueue);
+      check_atomics_for_type<float>(log, testQueue);
+
+      testQueue.wait_and_throw();
+
+    } catch (const cl::sycl::exception &e) {
+      log_exception(log, e);
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
+    }
+  }
+};
+
+// Construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace atomic_api__ */
+} /* namespace TEST_NAMESPACE */

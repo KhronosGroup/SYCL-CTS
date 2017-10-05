@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "cmdarg.h"
 #include "singleton.h"
@@ -30,7 +30,8 @@ bool cmdarg::parse(const int argc, const char **args) {
   // thus here we treat args as base 1.
 
   // early exit if no argument are present
-  if (argc <= 1) return true;
+  if (argc <= 1)
+    return true;
 
   // check the pointer is valid
   assert(args != nullptr);
@@ -59,13 +60,13 @@ bool cmdarg::parse(const int argc, const char **args) {
     } else {
       // check if we have a key for this value
       if (kvp.key.empty()) {
-        m_error = (STRING("expecting key before '") + arg) + "'";
+        m_error = (std::string("expecting key before '") + arg) + "'";
         return false;
       }
 
       // check if we are overwriting a value
       if (!kvp.value.empty()) {
-        m_error = (STRING("duplicate argument to '") + kvp.key) + "'";
+        m_error = (std::string("duplicate argument to '") + kvp.key) + "'";
         return false;
       }
 
@@ -82,7 +83,7 @@ bool cmdarg::parse(const int argc, const char **args) {
 
 /** return the last error message set
  */
-bool cmdarg::get_last_error(STRING &out) const {
+bool cmdarg::get_last_error(std::string &out) const {
   out = m_error;
   return !m_error.empty();
 }
@@ -90,7 +91,7 @@ bool cmdarg::get_last_error(STRING &out) const {
 /** return the last error message given
  *  @param, string to receive the last error message
  */
-bool cmdarg::find_key(const STRING &key) const {
+bool cmdarg::find_key(const std::string &key) const {
   // number of pairs that have been parsed
   int32_t nPairs = int32_t(m_pairs.size());
 
@@ -98,7 +99,8 @@ bool cmdarg::find_key(const STRING &key) const {
     const pair &kvp = m_pairs.at(size_t(i));
 
     // check if we can match the key
-    if (kvp.key == key) return true;
+    if (kvp.key == key)
+      return true;
   }
 
   // key could not be matched
@@ -110,7 +112,7 @@ bool cmdarg::find_key(const STRING &key) const {
  *  @param, value, string to receive the value that was associated
  *                 with the given key
  */
-bool cmdarg::get_value(const STRING &key, STRING &value) const {
+bool cmdarg::get_value(const std::string &key, std::string &value) const {
   // number of pairs that have been parsed
   int32_t nPairs = int32_t(m_pairs.size());
 
@@ -129,5 +131,5 @@ bool cmdarg::get_value(const STRING &key, STRING &value) const {
   return false;
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

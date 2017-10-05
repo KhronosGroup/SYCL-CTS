@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -48,19 +48,19 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       /** check a custom selector for a device
       */
       {
         call_selector selector;
-        cl::sycl::device device(selector);
+        auto device = util::get_cts_object::device(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -72,7 +72,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         call_selector selector;
-        cl::sycl::platform platform(selector);
+        auto platform = util::get_cts_object::platform(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -80,23 +80,11 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check a custom selector for a context
-      */
-      {
-        call_selector selector;
-        cl::sycl::context context(selector);
-
-        /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a context");
-        }
-      }
-
       /** check a custom selector for a queue
       */
       {
         call_selector selector;
-        cl::sycl::queue queue(selector);
+        auto queue = util::get_cts_object::queue(selector);
 
         /* check our device selector was used */
         if (!selector.called) {
@@ -108,16 +96,18 @@ class TEST_NAME : public util::test_base {
       */
       {
         negative_selector selector;
-        cl::sycl::device device(selector);
+        auto device = util::get_cts_object::device(selector);
 
         /* check our device selector was used */
         if (!device.is_host()) {
           FAIL(log, "custom selector selected a device with a negative score");
         }
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

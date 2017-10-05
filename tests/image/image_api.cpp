@@ -1,278 +1,233 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
+#include "image_common.h"
 #include "../common/common.h"
 
 #define TEST_NAME image_api
+
+template <int dims>
+struct image_kernel_read;
+template <int dims>
+struct image_kernel_write;
 
 namespace image_api__ {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
-struct channel_type_size {
-  cl_channel_type idx;
-  unsigned int size;
-};
-
-channel_type_size g_channel_size[] = {{CL_SNORM_INT8, 1},
-                                      {CL_SNORM_INT16, 2},
-                                      {CL_UNORM_INT8, 1},
-                                      {CL_UNORM_INT16, 2},
-                                      {CL_UNORM_SHORT_565, 2},
-                                      {CL_UNORM_SHORT_555, 2},
-                                      {CL_UNORM_INT_101010, 4},
-                                      {CL_SIGNED_INT8, 1},
-                                      {CL_SIGNED_INT16, 2},
-                                      {CL_SIGNED_INT32, 4},
-                                      {CL_UNSIGNED_INT8, 1},
-                                      {CL_UNSIGNED_INT16, 2},
-                                      {CL_UNSIGNED_INT32, 4},
-                                      {CL_FLOAT, sizeof(float)},
-                                      {CL_HALF_FLOAT, sizeof(cl::sycl::half)},
-                                      {0, 0}};
-
-unsigned int get_channel_type_size(unsigned int idx) {
-  unsigned int itter;
-  for (itter = 0; g_channel_size[itter].idx != 0; itter++) {
-    if (g_channel_size[itter].idx == idx) return g_channel_size[itter].size;
-  }
-
-  // that should be never reached
-  return 0;
-}
-
-struct channels {
-  cl_channel_order idx;
-  unsigned int size;
-};
-
-channels g_channels[] = {{CL_R, 1},
-                         {CL_A, 1},
-                         {CL_RG, 2},
-                         {CL_RA, 2},
-                         {CL_RGB, 3},
-                         {CL_RGBA, 4},
-                         {CL_BGRA, 4},
-                         {CL_ARGB, 4},
-                         {CL_INTENSITY, 1},
-                         {CL_LUMINANCE, 1},
-                         {CL_Rx, 4},
-                         {CL_RGx, 4},
-                         {CL_RGBx, 4},
-                         {0, 0}};
-
-unsigned int get_channel_count(unsigned int idx) {
-  unsigned int itter;
-  for (itter = 0; g_channels[itter].idx != 0; itter++) {
-    if (g_channels[itter].idx == idx) return g_channels[itter].size;
-  }
-
-  // that should be never reached
-  return 0;
-}
-
-struct collection {
-  cl_channel_order m_order;
-  cl_channel_type m_type[17];
-};
-
-collection g_test_set[] = {
-    {CL_R,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_A,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_RG,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_RA,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_RGBA,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_Rx,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_RGx,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_ARGB,
-     {CL_UNORM_INT8, CL_SNORM_INT8, CL_SIGNED_INT8, CL_UNSIGNED_INT8, 0}},
-    {CL_BGRA,
-     {CL_UNORM_INT8, CL_SNORM_INT8, CL_SIGNED_INT8, CL_UNSIGNED_INT8, 0}},
-    {CL_INTENSITY,
-     {CL_UNORM_INT8, CL_UNORM_INT16, CL_SNORM_INT8, CL_SNORM_INT16,
-      CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_LUMINANCE,
-     {CL_UNORM_INT8, CL_UNORM_INT16, CL_SNORM_INT8, CL_SNORM_INT16,
-      CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {CL_RGB, {CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010, 0}},
-    {CL_RGBx, {CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010, 0}},
-    {CL_RG,
-     {CL_SNORM_INT8, CL_SNORM_INT16, CL_UNORM_INT8, CL_UNORM_INT16,
-      CL_UNORM_SHORT_565, CL_UNORM_SHORT_555, CL_UNORM_INT_101010,
-      CL_SIGNED_INT8, CL_SIGNED_INT16, CL_SIGNED_INT32, CL_UNSIGNED_INT8,
-      CL_UNSIGNED_INT16, CL_UNSIGNED_INT32, CL_HALF_FLOAT, CL_FLOAT, 0}},
-    {0, {0}}};
-
-template <int dims, int size>
+template <int dims>
 class image_ctors {
  public:
-  void operator()(util::logger& log, range<dims>& r,
-                  range<dims - 1>* p = nullptr) {
-    size_t l_order_itter, l_type_itter;
+  void operator()(util::logger &log, range<dims> &r,
+                  range<dims - 1> *p = nullptr) const {
+    log.note(
+        "Testing image combination: dims[%d], range[%d, %d, %d], pitch[%d]",
+        dims, r[0], r[1], r[2], (p != nullptr));
 
-    // for each chanell order
-    for (l_order_itter = 0; g_test_set[l_order_itter].m_order != 0;
-         l_order_itter++) {
-      // get number of the chanells
-      unsigned int l_channels_count =
-          get_channel_count(g_test_set[l_order_itter].m_order);
+    // This combination is required to be supported by the OpenCL spec
+    const auto channelOrder = image_channel_order::rgba;
+    const auto channelType = image_channel_type::fp32;
 
-      // for each chanell type
-      for (l_type_itter = 0; g_test_set[l_order_itter].m_type[l_type_itter];
-           l_type_itter++) {
-        unsigned int l_channels_type_size = get_channel_type_size(
-            g_test_set[l_order_itter].m_type[l_type_itter]);
+    // Prepare variables
+    const auto channelCount = get_channel_order_count(channelOrder);
+    const auto channelTypeSize = get_channel_type_size(channelType);
+    const auto elementSize = channelTypeSize * channelCount;
+    const auto numElems = static_cast<int>(r[0] * r[1] * r[2]);
 
-        util::UNIQUE_PTR<char[]> image_host(
-            new char[size * l_channels_type_size * l_channels_count]);
+    // Create image host data
+    auto imageHost = get_image_host<dims>(channelTypeSize, channelCount);
 
-        for (int ii = 0; ii < size * l_channels_count; ii++) {
-          for (int ij = 0; ij < l_channels_type_size; ij++) {
-            image_host[ii * l_channels_type_size + ij] = ij + 1;
-          }
-        }
+    // Creates an image, either with a pitch or without
+    // The pitch is not used for a 1D image or when null
+    image<dims> img = image_generic<dims>::create_with_pitch(
+        static_cast<void *>(imageHost.get()), channelOrder, channelType, r, p);
 
-        image<dims> img((void*)image_host.get(),
-                        g_test_set[l_order_itter].m_order,
-                        g_test_set[l_order_itter].m_type[l_type_itter], r);
+    // Check get_range()
+    if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0))) ||
+        (!CHECK_VALUE_SCALAR(log, img.get_range()[1], r.get(1))) ||
+        (!CHECK_VALUE_SCALAR(log, img.get_range()[2], r.get(2)))) {
+      FAIL(log, "Ranges are not the same.");
+    }
 
-        if (r.get(0) != img.get_range()[0] || r.get(1) != img.get_range()[1] ||
-            r.get(2) != img.get_range()[2]) {
-          FAIL(log, "Renges are not the same.");
-        }
+    // Check get_pitch()
+    if (!image_generic<dims>::compare_pitch(log, img, p)) {
+      FAIL(log, "Pitches are not the same.");
+    }
 
-        if (size != img.get_size()) {
-          FAIL(log, "Sizes are not the same.");
-        }
+    // Check get_size()
+    if (img.get_size() < (numElems * elementSize)) {
+      string_class message =
+          string_class("Sizes are not the same: expected at least ") +
+          std::to_string(numElems * elementSize) + ", got " +
+          std::to_string(img.get_size());
+      FAIL(log, message);
+    }
 
-        queue queue;
-        queue.submit([&](handler& cgh) {
-          auto img_acc =
-              img.template get_access<float4, cl::sycl::access::mode::write>(
-                  cgh);
-          auto myRange = nd_range<1>(range<1>(4 * size), range<1>(4 * size));
-          auto myKernel =
-              ([=](item<1> item) { img_acc[item.get_global(0)] = 0.2; });
-        });
+    // Check get_count()
+    if (!CHECK_VALUE_SCALAR(log, img.get_count(), numElems)) {
+      FAIL(log, "Counts are not the same.");
+    }
 
-        queue.wait_and_throw();
+    // Check get_allocator()
+    {
+      using AllocatorT = std::allocator<cl::sycl::byte>;
 
-        if (p) {
-          unsigned int l_channels_type_size = get_channel_type_size(
-              g_test_set[l_order_itter].m_type[l_type_itter]);
+      /* create another image with a custom allocator */
+      auto imgAlloc =
+          image_generic<dims>::template create_with_pitch_and_allocator<
+              AllocatorT>(static_cast<void *>(imageHost.get()), channelOrder,
+                          channelType, r, p);
 
-          util::UNIQUE_PTR<char[]> image_host(
-              new char[size * l_channels_type_size * l_channels_count]);
+      auto allocator = imgAlloc.get_allocator();
 
-          for (int ii = 0; ii < size * l_channels_count; ii++) {
-            for (int ij = 0; ij < l_channels_type_size; ij++) {
-              image_host[ii * l_channels_type_size + ij] = ij + 1;
-            }
-          }
+      check_return_type<AllocatorT>(log, allocator, "get_allocator()");
 
-          {
-            image<dims> img(
-                (void*)image_host.get(), g_test_set[l_order_itter].m_order,
-                g_test_set[l_order_itter].m_type[l_type_itter], r, *p);
-            if (r.get(0) != img.get_range()[0] ||
-                r.get(1) != img.get_range()[1] ||
-                r.get(2) != img.get_range()[2]) {
-              FAIL(log, "Ranges are not the same.");
-            }
+      auto ptr = allocator.allocate(1);
+      if (ptr == nullptr) {
+        FAIL(log, "get_allocator() returned an invalid allocator");
+      }
+      allocator.deallocate(ptr, 1);
+    }
 
-            if (*p != img.get_pitch()) {
-              FAIL(log, "Pitchs are not the same.");
-            }
+    /* Check image properties */
+    {
+      mutex_class mutex;
+      auto context = util::get_cts_object::context();
+      const property_list propList{property::image::use_host_ptr(),
+                                   property::image::use_mutex(mutex),
+                                   property::image::context_bound(context)};
 
-            if (size * 4 != img.get_size()) {
-              FAIL(log, "Sizes are not the same.");
-            }
-          }
-        }
+      image<dims> img = image<dims>(channelOrder, channelType, r, propList);
 
-        // white image
-        for (int i = 0; i < size; i++) {
-          CHECK_VALUE(log, image_host.get()[i], 0.2f, i);
-        }
-        std::cout << std::endl;
+      /* check has_property() */
+
+      auto hasHostPtrProperty =
+          img.template has_property<cl::sycl::property::image::use_host_ptr>();
+      check_return_type<bool>(log, hasHostPtrProperty,
+                              "has_property<use_host_ptr>()");
+
+      auto hasUseMutexProperty =
+          img.template has_property<cl::sycl::property::image::use_mutex>();
+      check_return_type<bool>(log, hasUseMutexProperty,
+                              "has_property<use_mutex>()");
+
+      auto hasContentBoundProperty =
+          img.template has_property<cl::sycl::property::image::context_bound>();
+      check_return_type<bool>(log, hasContentBoundProperty,
+                              "has_property<context_bound>()");
+
+      /* check get_property() */
+
+      auto hostPtrProperty =
+          img.template get_property<cl::sycl::property::image::use_host_ptr>();
+      check_return_type<cl::sycl::property::image::use_host_ptr>(
+          log, hostPtrProperty, "get_property<use_host_ptr>()");
+
+      auto useMutexProperty =
+          img.template get_property<cl::sycl::property::image::use_mutex>();
+      check_return_type<cl::sycl::property::image::use_mutex>(
+          log, useMutexProperty, "get_property<use_mutex>()");
+
+      auto contentBoundProperty =
+          img.template get_property<cl::sycl::property::image::context_bound>();
+      check_return_type<cl::sycl::property::image::context_bound>(
+          log, contentBoundProperty, "get_property<context_bound>()");
+    }
+
+    // Check set_write_back()
+    img.set_write_back(false);
+    img.set_write_back(true);
+
+    auto queue = util::get_cts_object::queue();
+
+    queue.submit([&](handler &cgh) {
+      auto img_acc =
+          img.template get_access<float4, cl::sycl::access::mode::read>(cgh);
+      auto myKernel = [=](item<1> item) {
+        // Read image data using integer coordinates
+        float4 dataFromInt = img_acc.read(image_access<dims>::get_int(item));
+        // Read image data using floating point coordinates
+        float4 dataFromFloat =
+            img_acc.read(image_access<dims>::get_float(item));
+      };
+      cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
+    });
+
+    queue.submit([&](handler &cgh) {
+      auto img_acc =
+          img.template get_access<float4, cl::sycl::access::mode::write>(cgh);
+      auto myKernel = [=](item<1> item) {
+        // Write image data
+        img_acc.write(image_access<dims>::get_int(item), float4(0.5f));
+      };
+      cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
+    });
+
+    queue.wait_and_throw();
+
+    // Check image values
+    for (int i = 0; i < numElems; i++) {
+      if (!CHECK_VALUE(log, imageHost.get()[i], 0.5f, i)) {
+        FAIL(log, "Image contains wrong values.");
       }
     }
   }
 };
 
 /**
- * test cl::sycl::buffer initialization
+ * test cl::sycl::image initialization
  */
 class TEST_NAME : public util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info& out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger& log) override {
+  void run(util::logger &log) override {
     try {
-      const int size = 1;
-      range<1> range_1d(size);
-      range<2> range_2d(size, size);
-      range<3> range_3d(size, size, size);
+      // Ensure the image always has 64 elements
+      const int elemsPerDim1 = 64;
+      const int elemsPerDim2 = 8;
+      const int elemsPerDim3 = 4;
 
+      range<1> range_1d(elemsPerDim1);
+      range<2> range_2d(elemsPerDim2, elemsPerDim2);
+      range<3> range_3d(elemsPerDim3, elemsPerDim3, elemsPerDim3);
+
+      // Test without pitch
       {
-        image_ctors<1, size> img_1d;
-        image_ctors<2, size * size> img_2d;
-        image_ctors<3, size * size * size> img_3d;
+        image_ctors<1> img_1d;
+        image_ctors<2> img_2d;
+        image_ctors<3> img_3d;
         img_1d(log, range_1d);
         img_2d(log, range_2d);
         img_3d(log, range_3d);
       }
-      {
-        range<1> pitch_1d(size);
-        range<2> pitch_2d(size, size);
 
-        image_ctors<2, size * size> img_2d;
-        image_ctors<3, size * size * size> img_3d;
+      // Test with pitch
+      {
+        range<1> pitch_1d(elemsPerDim2);
+        range<2> pitch_2d(elemsPerDim3, elemsPerDim3 * elemsPerDim3);
+
+        image_ctors<2> img_2d;
+        image_ctors<3> img_3d;
         img_2d(log, range_2d, &pitch_1d);
         img_3d(log, range_3d, &pitch_2d);
       }
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

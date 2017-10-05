@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -15,14 +15,14 @@ namespace util {
 /** Base class for all SYCL tests
  */
 class test_base {
- public:
+public:
   /** encapsulate information about a test
    */
   struct info {
-    STRING m_name;
-    STRING m_file;
-    STRING m_buildDate;
-    STRING m_buildTime;
+    std::string m_name;
+    std::string m_file;
+    std::string m_buildDate;
+    std::string m_buildTime;
   };
 
   /** virtual destructor
@@ -57,7 +57,7 @@ class test_base {
     // empty
   }
 
-};  // class test_base
+}; // class test_base
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts

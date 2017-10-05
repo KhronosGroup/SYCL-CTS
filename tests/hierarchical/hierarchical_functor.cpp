@@ -1,30 +1,38 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
 #define TEST_NAME hierarchical_functor
 
-namespace hierarchical_functor__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
 class kernel0 {
   accessor<int, 1, cl::sycl::access::mode::read_write,
-           cl::sycl::access::target::global_buffer> ptr;
+           cl::sycl::access::target::global_buffer>
+      ptr;
 
  public:
-  kernel0(accessor<int, 1, cl::sycl::access::mode::read_write,
-                   cl::sycl::access::target::global_buffer> p)
-      : ptr(p) {}
+  kernel0(buffer<int, 1> buf, handler &cgh)
+      : ptr(buf.get_access<access::mode::read_write,
+                           access::target::global_buffer>(cgh)) {}
 
-  void operator()(group<2> grou_pid) const {
-    parallel_for_work_item(grou_pid, [=](item<2> itemID) { ptr[0] *= 2; });
+  void operator()(group<2> group_pid) const {
+    parallel_for_work_item(group_pid, [=](item<2> itemID) {
+      auto localId = itemID.get_id();
+      auto localSize = itemID.get_range();
+      auto globalId = group_pid.get() * localSize + localId;
+      int globalIdL = ((globalId.get(0) * 2 * 1) + globalId.get(1));
+
+      ptr[globalIdL] = globalIdL;
+    });
   }
 };
 
@@ -34,40 +42,53 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      default_selector sel;
-      int data = 1;
-      int expected = 4096;
+      constexpr unsigned int globalRange1d = 6;
+      constexpr unsigned int globalRange2d = 2;
+      constexpr unsigned int local = globalRange2d;
+      std::vector<int> data(globalRange1d * globalRange2d, 0);
 
-      queue my_queue(sel);
+      auto myQueue = util::get_cts_object::queue();
+      // using this scope we ensure that the buffer will update the host values
+      // after the wait_and_throw
+      {
+        buffer<int, 1> buf(data.data(),
+                           range<1>(globalRange1d * globalRange2d));
 
-      buffer<int, 1> buf(&data, range<1>(1));
+        myQueue.submit([&](handler &cgh) {
+          auto globalRange = range<2>(globalRange1d, globalRange2d);
+          auto localRange = range<2>(local, local);
+          auto groupRange = globalRange / localRange;
 
-      my_queue.submit([&](handler &cgh) {
-        auto my_range = nd_range<2>(range<2>(6, 2), range<2>(2, 2));
-        accessor<int, 1, cl::sycl::access::mode::read_write,
-                 cl::sycl::access::target::global_buffer> ptr(buf, cgh);
-        cgh.parallel_for_work_group(my_range, kernel0(ptr));
-      });
-
-      accessor<int, 1, cl::sycl::access::mode::read,
-               cl::sycl::access::target::host_buffer> host_ptr(buf);
-      if (host_ptr[0] != expected) {
-        FAIL(log, "Value not as expected.");
+          cgh.parallel_for_work_group(groupRange, localRange,
+                                      kernel0(buf, cgh));
+        });
+        myQueue.wait_and_throw();
       }
 
-      my_queue.wait_and_throw();
+      for (size_t i = 0; i < globalRange1d * globalRange2d; i++) {
+        if (data[i] != i) {
+          cl::sycl::string_class errorMessage =
+              cl::sycl::string_class("Value for global id ") +
+              std::to_string(i) + cl::sycl::string_class(" was not correct (") +
+              std::to_string(data[i]) + cl::sycl::string_class(" instead of ") +
+              std::to_string(i);
+          FAIL(log, errorMessage);
+        }
+      }
 
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

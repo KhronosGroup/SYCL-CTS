@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -14,15 +14,14 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace cl::sycl;
 
-template <typename T, int size, int dims> class buffer_allocs {
-public:
+template <typename T, int size, int dims>
+class buffer_allocs {
+ public:
   void operator()(util::logger &log, range<dims> r) {
-    util::UNIQUE_PTR<T[]> data(new T[size]);
-    memset(data.get(), 0xFF, sizeof(T) * size);
+    unique_ptr_class<T[]> data(new T[size]);
+    std::fill(data.get(), (data.get() + size), 0);
 
-    cts_selector sel;
-
-    cl::sycl::queue q(sel);
+    auto q = util::get_cts_object::queue();
     cl::sycl::buffer<T, dims, map_allocator<T>> buf(data.get(), r);
 
     q.submit([&](cl::sycl::handler &cgh) {
@@ -47,14 +46,15 @@ public:
 * test cl::sycl::buffer initialization
 */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
   */
   virtual void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T> void test_buffers(util::logger &log) {
+  template <typename T>
+  void test_buffers(util::logger &log) {
     const int size = 32;
     range<1> range1d(size);
     range<2> range2d(size, size);
@@ -82,7 +82,9 @@ public:
       test_buffers<double>(log);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

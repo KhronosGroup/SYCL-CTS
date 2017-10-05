@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -13,104 +13,163 @@
 namespace opencl_interop_get__ {
 using namespace sycl_cts;
 
+class kernel_get_test;
+
 /** tests the get() methods for OpenCL inter-op
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
    */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
       cts_selector ctsSelector;
 
       /** check platform get() method
       */
-      cl::sycl::platform platform(ctsSelector);
-      auto interopPlatformID = platform.get();
-      if (typeid(interopPlatformID) != typeid(cl_platform_id)) {
-        FAIL(log, "get() does not return cl_platform_id.");
-      }
-      if (platform.is_host()) {
-        if (interopPlatformID != 0) {
-          FAIL(log,
-               "platform is in host mode but get() did not return a nullptr");
-        }
-      } else {
-        if (interopPlatformID == 0) {
-          FAIL(log, "get() did not return a valid cl_platform_id");
+      {
+        auto platform = util::get_cts_object::platform(ctsSelector);
+        if (!platform.is_host()) {
+          auto interopPlatformID = platform.get();
+          check_return_type<cl_platform_id>(log, interopPlatformID,
+                                            "cl::sycl::platform::get()");
+
+          if (interopPlatformID == 0) {
+            FAIL(log,
+                 "cl::sycl::platform::get() did not return a valid "
+                 "cl_platform_id");
+          }
         }
       }
 
       /** check device get() method
       */
-      cl::sycl::device device(ctsSelector);
-      auto interopDeviceID = device.get();
-      if (typeid(interopDeviceID) != typeid(cl_device_id)) {
-        FAIL(log, "get() does not return cl_device_id");
-      }
-      if (device.is_host()) {
-        if (interopDeviceID != 0) {
-          FAIL(log,
-               "device is in host mode but get() did not return a nullptr");
-        }
-      } else {
-        if (interopDeviceID == 0) {
-          FAIL(log, "get() did not return a valid cl_device_id");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseDevice(interopDeviceID))) {
-          FAIL(log, "failed to release the OpenCL device ID");
+      {
+        auto device = util::get_cts_object::device(ctsSelector);
+        if (!device.is_host()) {
+          auto interopDeviceID = device.get();
+          check_return_type<cl_device_id>(log, interopDeviceID,
+                                          "cl::sycl::device::get()");
+
+          if (interopDeviceID == 0) {
+            FAIL(log,
+                 "cl::sycl::device::get() did not return a valid cl_device_id");
+          }
         }
       }
 
       /** check context get() method
       */
-      cl::sycl::context context(ctsSelector);
-      auto interopContext = context.get();
-      if (typeid(interopContext) != typeid(cl_context)) {
-        FAIL(log, "get() does not return cl_context");
-      }
-      if (context.is_host()) {
-        if (interopContext != nullptr) {
-          FAIL(log,
-               "context is in host mode but get() did not return a nullptr");
-        }
-      } else {
-        if (interopContext == nullptr) {
-          FAIL(log, "get() did not return a valid cl_context");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
-          FAIL(log, "failed to release the cl_context");
+      {
+        auto context = util::get_cts_object::context(ctsSelector);
+        if (!context.is_host()) {
+          auto interopContext = context.get();
+          check_return_type<cl_context>(log, interopContext,
+                                        "cl::sycl::context::get()");
+
+          if (interopContext == nullptr) {
+            FAIL(log,
+                 "cl::sycl::context::get() did not return a valid cl_context");
+          }
         }
       }
 
       /** check queue get() method
       */
-      cl::sycl::queue queue(ctsSelector);
-      auto interopQueue = queue.get();
-      if (typeid(interopQueue) != typeid(cl_command_queue)) {
-        FAIL(log, "get() does not return cl_command_queue");
-      }
-      if (queue.is_host()) {
-        if (interopQueue != nullptr) {
-          FAIL(log, "queue is in host mode but get() did not return a nullptr");
-        }
-      } else {
-        if (interopQueue == nullptr) {
-          FAIL(log, "get() did not return a valid cl_command_queue");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
-          FAIL(log, "failed to release the cl_command_queue");
+      {
+        auto queue = util::get_cts_object::queue(ctsSelector);
+        if (!queue.is_host()) {
+          auto interopQueue = queue.get();
+          check_return_type<cl_command_queue>(log, interopQueue,
+                                              "cl::sycl::queue::get()");
+
+          if (interopQueue == nullptr) {
+            FAIL(log,
+                 "cl::sycl::queue::get() did not return a valid "
+                 "cl_command_queue");
+          }
         }
       }
-    } catch (cl::sycl::exception e) {
+
+      /** check program get() method
+      */
+      {
+        auto context = util::get_cts_object::context(ctsSelector);
+        auto program = cl::sycl::program(context);
+        if (!program.is_host()) {
+          auto interopProgram = program.get();
+          check_return_type<cl_program>(log, interopProgram,
+                                        "cl::sycl::program::get()");
+
+          if (interopProgram == nullptr) {
+            FAIL(log,
+                 "cl::sycl::program::get() did not return a valid cl_program");
+          }
+        }
+      }
+
+      /** check kernel get() method
+      */
+      {
+        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto kernel =
+            util::get_cts_object::kernel::prebuilt<kernel_get_test>(queue);
+        if (!kernel.is_host()) {
+          auto interopKernel = kernel.get();
+          check_return_type<cl_kernel>(log, interopKernel,
+                                       "cl::sycl::kernel::get()");
+
+          if (interopKernel == nullptr) {
+            FAIL(log,
+                 "cl::sycl::kernel::get() did not return a valid cl_kernel");
+          }
+        }
+      }
+
+      /** check event get() method
+      */
+      {
+        auto event = cl::sycl::event();
+        if (!event.is_host()) {
+          auto interopEvent = event.get();
+          check_return_type<cl_event>(log, interopEvent,
+                                      "cl::sycl::event::get()");
+
+          if (interopEvent == nullptr) {
+            FAIL(log, "cl::sycl::event::get() did not return a valid cl_event");
+          }
+        }
+      }
+
+      /** check sampler get() method
+      */
+      {
+        auto sampler = cl::sycl::sampler(
+            cl::sycl::coordinate_normalization_mode::normalized,
+            cl::sycl::addressing_mode::mirrored_repeat,
+            cl::sycl::filtering_mode::nearest);
+        if (!sampler.is_host()) {
+          auto interopSampler = sampler.get();
+          check_return_type<cl_sampler>(log, interopSampler,
+                                        "cl::sycl::sampler::get()");
+
+          if (interopSampler == nullptr) {
+            FAIL(log,
+                 "cl::sycl::sampler::get() did not return a valid cl_sampler");
+          }
+        }
+      }
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "a sycl exception was caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 
@@ -29,27 +29,28 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
   range<1> localRange(localSize);
   nd_range<1> NDRange(globalRange, localRange);
 
-  /* run kernel to swap adjancent work item's global id*/
+  /* run kernel to swap adjacent work item's global id*/
   {
     buffer<int, 1> buf(data.get(), globalRange);
 
     queue.submit([&](handler &cgh) {
       auto accGlobal = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
       accessor<int, 1, cl::sycl::access::mode::read_write,
-               cl::sycl::access::target::local> localScratch(localRange, cgh);
+               cl::sycl::access::target::local>
+          localScratch(localRange, cgh);
 
-      cgh.parallel_for<class local_barrier_kernel>(NDRange,
-                                                   [=](nd_item<1> item) {
-        int idx = (int)item.get_global(0);
-        int pos = idx & 1;
-        int opp = pos ^ 1;
+      cgh.parallel_for<class local_barrier_kernel>(
+          NDRange, [=](nd_item<1> item) {
+            int idx = (int)item.get_global(0);
+            int pos = idx & 1;
+            int opp = pos ^ 1;
 
-        localScratch[pos] = accGlobal[idx];
+            localScratch[pos] = accGlobal[idx];
 
-        item.barrier(access::fence_space::local);
+            item.barrier(access::fence_space::local_space);
 
-        accGlobal[idx] = localScratch[opp];
-      });
+            accGlobal[idx] = localScratch[opp];
+          });
     });
   }
 
@@ -74,25 +75,25 @@ class TEST_NAME : public util::test_base {
   /** return information about this test
   *  @param info, test_base::info structure as output
   */
-  virtual void get_info(test_base::info &out) const override {
+  void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
   *  @param log, test transcript logging class
   */
-  virtual void run(util::logger &log) override {
+  void run(util::logger &log) override {
     try {
-      cts_selector selector;
-      queue cmdQueue(selector);
+      auto cmdQueue = util::get_cts_object::queue();
 
       test_barrier(log, cmdQueue);
 
       cmdQueue.wait_and_throw();
-
-    } catch (cl::sycl::exception e) {
+    } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

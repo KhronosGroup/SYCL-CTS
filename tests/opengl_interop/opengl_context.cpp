@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #include "../common/common.h"
 #include "../../gl_util/gl_util.h"
@@ -92,16 +92,16 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           VECTOR_CLASS<device> devs = sycl_ctx.get_gl_context_devices();
         }
 
-        function_class<void(cl::sycl::exception_list)> fn =
+        function_class<void(cl::sycl::exception_list)> asyncHandler =
             [&](exception_list l) {
-          if (l.size() > 1)
-            FAIL(log, "Exception thrown during execution of kernel");
-        };
+              if (l.size() > 1)
+                FAIL(log, "Exception thrown during execution of kernel");
+            };
 
         // device_selector, cl_context_properties & async_handler
         {
           cts_selector sel;
-          context sycl_ctx(sel, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(sel, cl_gl_ctx.get_properties(), asyncHandler);
           device dev = sycl_ctx.get_gl_current_device();
           VECTOR_CLASS<device> devs = sycl_ctx.get_gl_context_devices();
         }
@@ -109,7 +109,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // create sycl context of device, cl_context_properties & async_handler
         {
           device dev;
-          context sycl_ctx(dev, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(dev, cl_gl_ctx.get_properties(), asyncHandler);
           device dev = sycl_ctx.get_gl_current_device();
           VECTOR_CLASS<device> devs = sycl_ctx.get_gl_context_devices();
         }
@@ -118,7 +118,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // async_handler
         {
           platform plat;
-          context sycl_ctx(plat, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(plat, cl_gl_ctx.get_properties(), asyncHandler);
           device dev = sycl_ctx.get_gl_current_device();
           VECTOR_CLASS<device> devs = sycl_ctx.get_gl_context_devices();
         }
@@ -131,7 +131,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           dev_vec.push_back(a);
           dev_vec.push_back(b);
 
-          context sycl_ctx(dev_vec, cl_gl_ctx.get_properties(), fn);
+          context sycl_ctx(dev_vec, cl_gl_ctx.get_properties(), asyncHandler);
           device dev = sycl_ctx.get_gl_current_device();
           VECTOR_CLASS<device> devs = sycl_ctx.get_gl_context_devices();
         }
@@ -140,7 +140,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
-      FAIL(log, "sycl exception caught");
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
     }
   }
 };

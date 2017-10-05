@@ -1,10 +1,10 @@
-/*************************************************************************
+/*******************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2015 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
-**************************************************************************/
+*******************************************************************************/
 
 #pragma once
 
@@ -17,7 +17,7 @@ namespace util {
  *
  */
 class test_manager : public singleton<test_manager> {
- public:
+public:
   /** constructor
    */
   test_manager();
@@ -47,10 +47,10 @@ class test_manager : public singleton<test_manager> {
   void on_start();
   void on_exit();
 
- protected:
+protected:
   bool m_willExecute;
   bool m_wimpyMode;
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+} // namespace util
+} // namespace sycl_cts
