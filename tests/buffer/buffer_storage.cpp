@@ -12,8 +12,6 @@
 
 namespace buffer_storage__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
-using namespace cl::sycl::access;
 
 template <typename T>
 class custom_alloc {
@@ -39,7 +37,7 @@ class custom_alloc {
 template <typename alloc, typename T, int size, int dims>
 class buffer_storage_test {
  public:
-  void operator()(util::logger &log, range<dims> r) {
+  void operator()(util::logger &log, cl::sycl::range<dims> r) {
     std::unique_ptr<T[]> data(new T[size]);
     std::shared_ptr<T> data_shrd(new T[size], [](T *data) { delete[] data; });
 
@@ -54,7 +52,8 @@ class buffer_storage_test {
     }
     {
       cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
-          data_shrd, r, property_list{property::buffer::use_mutex(m)});
+          data_shrd, r,
+          cl::sycl::property_list{cl::sycl::property::buffer::use_mutex(m)});
       m.lock();
       std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
       m.unlock();
@@ -78,9 +77,9 @@ class TEST_NAME : public util::test_base {
   template <typename alloc, typename T>
   void test_buffers(util::logger &log) {
     const int size = 32;
-    range<1> range1d(size);
-    range<2> range2d(size, size);
-    range<3> range3d(size, size, size);
+    cl::sycl::range<1> range1d(size);
+    cl::sycl::range<2> range2d(size, size);
+    cl::sycl::range<3> range3d(size, size, size);
 
     buffer_storage_test<alloc, T, size, 1> buf1d;
     buffer_storage_test<alloc, T, size * size, 2> buf2d;

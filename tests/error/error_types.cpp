@@ -26,32 +26,31 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    using namespace cl::sycl;
 
 #define CHECK_EXISTS(EXCEPTION_NAME)                       \
   if (!std::is_class<EXCEPTION_NAME>::value) {             \
     FAIL(log, "EXCEPTION_NAME is not defined as a class"); \
   }
 
-    CHECK_EXISTS(exception);
-    CHECK_EXISTS(runtime_error);
-    CHECK_EXISTS(kernel_error);
-    CHECK_EXISTS(accessor_error);
-    CHECK_EXISTS(nd_range_error);
-    CHECK_EXISTS(event_error);
-    CHECK_EXISTS(invalid_parameter_error);
-    CHECK_EXISTS(device_error);
-    CHECK_EXISTS(compile_program_error);
-    CHECK_EXISTS(link_program_error);
-    CHECK_EXISTS(invalid_object_error);
-    CHECK_EXISTS(memory_allocation_error);
-    CHECK_EXISTS(platform_error);
-    CHECK_EXISTS(profiling_error);
-    CHECK_EXISTS(feature_not_supported);
+    CHECK_EXISTS(cl::sycl::exception);
+    CHECK_EXISTS(cl::sycl::runtime_error);
+    CHECK_EXISTS(cl::sycl::kernel_error);
+    CHECK_EXISTS(cl::sycl::accessor_error);
+    CHECK_EXISTS(cl::sycl::nd_range_error);
+    CHECK_EXISTS(cl::sycl::event_error);
+    CHECK_EXISTS(cl::sycl::invalid_parameter_error);
+    CHECK_EXISTS(cl::sycl::device_error);
+    CHECK_EXISTS(cl::sycl::compile_program_error);
+    CHECK_EXISTS(cl::sycl::link_program_error);
+    CHECK_EXISTS(cl::sycl::invalid_object_error);
+    CHECK_EXISTS(cl::sycl::memory_allocation_error);
+    CHECK_EXISTS(cl::sycl::platform_error);
+    CHECK_EXISTS(cl::sycl::profiling_error);
+    CHECK_EXISTS(cl::sycl::feature_not_supported);
 #undef CHECK_EXISTS
 
     /* Check that exception_list exists */
-    if (!std::is_class<exception_list>::value) {
+    if (!std::is_class<cl::sycl::exception_list>::value) {
       FAIL(log, "Exception list is not defined as a class");
     }
   }

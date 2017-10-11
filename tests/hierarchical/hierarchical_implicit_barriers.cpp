@@ -28,7 +28,6 @@ static const unsigned int localItemsTotal =
 static const unsigned int groupRangeTotal = (groupItemsTotal / localItemsTotal);
 
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** test cl::sycl::range::get(int index) return size_t
  */
@@ -52,24 +51,28 @@ class TEST_NAME : public util::test_base {
         inputData[i] = i;
       }
       {
-        buffer<int, 1> input_buffer(inputData, range<1>(groupItemsTotal));
+        cl::sycl::buffer<int, 1> input_buffer(
+            inputData, cl::sycl::range<1>(groupItemsTotal));
 
-        testQueue.submit([&](handler &cgh) {
-          auto globalRange = range<3>(groupRange1d, groupRange2d, groupRange3d);
-          auto localRange = range<3>(localItems1d, localItems2d, localItems3d);
+        testQueue.submit([&](cl::sycl::handler &cgh) {
+          auto globalRange =
+              cl::sycl::range<3>(groupRange1d, groupRange2d, groupRange3d);
+          auto localRange =
+              cl::sycl::range<3>(localItems1d, localItems2d, localItems3d);
 
           auto inputPtr =
               input_buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-          accessor<int, 1, cl::sycl::access::mode::read_write,
-                   cl::sycl::access::target::local>
-              localPtr(range<1>(localItemsTotal), cgh);
+          cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::local>
+              localPtr(cl::sycl::range<1>(localItemsTotal), cgh);
 
           cgh.parallel_for_work_group<class hierarchical_implicit_barriers>(
-              globalRange, localRange, [=](group<3> group) {
-                parallel_for_work_item(group, [&](item<3> item) {
-                  range<3> global_range = group.get_global_range();
-                  id<3> gID = group.get() * item.get_range() + item.get_id();
+              globalRange, localRange, [=](cl::sycl::group<3> group) {
+                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
+                  cl::sycl::range<3> global_range = group.get_global_range();
+                  cl::sycl::id<3> gID =
+                      group.get() * item.get_range() + item.get_id();
                   int globalId = (gID[2] * global_range[0] * global_range[1]) +
                                  gID[1] * global_range[0] + gID[0];
                   int globalSize = group.get_global_range().size();
@@ -80,9 +83,10 @@ class TEST_NAME : public util::test_base {
                   localPtr[localId] = invertedVal;
                 });
 
-                parallel_for_work_item(group, [&](item<3> item) {
-                  range<3> global_range = group.get_global_range();
-                  id<3> gID = group.get() * item.get_range() + item.get_id();
+                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
+                  cl::sycl::range<3> global_range = group.get_global_range();
+                  cl::sycl::id<3> gID =
+                      group.get() * item.get_range() + item.get_id();
                   int globalId = (gID[2] * global_range[0] * global_range[1]) +
                                  gID[1] * global_range[0] + gID[0];
                   int localId = item.get_linear_id();

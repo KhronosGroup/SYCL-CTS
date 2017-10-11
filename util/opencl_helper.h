@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_OPENCL_HELPER_H
+#define __SYCLCTS_UTIL_OPENCL_HELPER_H
 
 #include <CL/cl.h>
 
@@ -26,3 +27,5 @@ public:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_OPENCL_HELPER_H

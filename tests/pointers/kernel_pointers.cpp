@@ -26,8 +26,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    using namespace cl::sycl;
-
     try {
       auto my_queue = util::get_cts_object::queue();
 
@@ -35,7 +33,8 @@ class TEST_NAME : public util::test_base {
 
       res_type result = 0;
       {
-        buffer<res_type, 1> buf_result(&result, range<1>(1));
+        cl::sycl::buffer<res_type, 1> buf_result(&result,
+                                                 cl::sycl::range<1>(1));
 
         uint32_t outer_index = 2;
 

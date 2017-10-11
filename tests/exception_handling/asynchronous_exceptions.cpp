@@ -12,14 +12,13 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /**
  */
 class TEST_NAME : public util::test_base {
  public:
   struct async_handler_functor {
-    vector_class<exception_ptr_class> excps;
+    cl::sycl::vector_class<cl::sycl::exception_ptr_class> excps;
     void operator()(cl::sycl::exception_list l) {
       for (auto &e : l) {
         excps.push_back(e);
@@ -36,16 +35,17 @@ class TEST_NAME : public util::test_base {
 
   /** log the exceptions.
    */
-  void check_exceptions(util::logger &log,
-                        vector_class<exception_ptr_class> &excps) const {
+  void check_exceptions(
+      util::logger &log,
+      cl::sycl::vector_class<cl::sycl::exception_ptr_class> &excps) const {
     for (auto &e : excps) {
       try {
         throw e;
-      } catch (const exception &e) {
+      } catch (const cl::sycl::exception &e) {
         // Check methods
         cl::sycl::string_class sc = e.what();
         if (e.has_context()) {
-          context c = e.get_context();
+          cl::sycl::context c = e.get_context();
         }
         cl::sycl::cl_int ci = e.get_cl_code();
 
@@ -66,7 +66,7 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     /*test lambda async handler*/
     {
-      vector_class<exception_ptr_class> excps;
+      cl::sycl::vector_class<cl::sycl::exception_ptr_class> excps;
       cl::sycl::function_class<void(cl::sycl::exception_list)>
           asyncHandlerLambda = [&excps](cl::sycl::exception_list l) {
             for (auto &e : l) {
@@ -77,8 +77,9 @@ class TEST_NAME : public util::test_base {
       cts_selector selector;
       cl::sycl::queue q(selector, asyncHandlerLambda);
 
-      q.submit(
-          [&](handler &cgh) { cgh.single_task<class TEST_NAME>([=]() {}); });
+      q.submit([&](cl::sycl::handler &cgh) {
+        cgh.single_task<class TEST_NAME>([=]() {});
+      });
 
       // Should not throw exceptions
       q.wait();
@@ -93,8 +94,9 @@ class TEST_NAME : public util::test_base {
       cts_selector selector;
       cl::sycl::queue q(selector, asyncHandlerFunctor);
 
-      q.submit(
-          [&](handler &cgh) { cgh.single_task<class TEST_NAME_2>([=]() {}); });
+      q.submit([&](cl::sycl::handler &cgh) {
+        cgh.single_task<class TEST_NAME_2>([=]() {});
+      });
 
       // Should not throw exceptions
       q.wait();
@@ -107,8 +109,9 @@ class TEST_NAME : public util::test_base {
       cts_selector selector;
       cl::sycl::queue q(selector, async_handler_function);
 
-      q.submit(
-          [&](handler &cgh) { cgh.single_task<class TEST_NAME_3>([=]() {}); });
+      q.submit([&](cl::sycl::handler &cgh) {
+        cgh.single_task<class TEST_NAME_3>([=]() {});
+      });
 
       // Should not throw exceptions
       q.wait();

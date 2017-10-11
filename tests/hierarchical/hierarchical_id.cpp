@@ -26,7 +26,6 @@ static const int l_items_total = (l_items_1d * l_items_2d * l_items_3d);
 static const int gr_range_total = (gl_items_total / l_items_total);
 
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** test cl::sycl::range::get(int index) return size_t
  */
@@ -42,50 +41,54 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
     try {
-      int4 localIdData[gl_items_total];
-      int4 localSizeData[gl_items_total];
+      cl::sycl::int4 localIdData[gl_items_total];
+      cl::sycl::int4 localSizeData[gl_items_total];
       for (int i = 0; i < gl_items_total; i++) {
-        localIdData[i] = int4(-1, -1, -1, -1);
-        localSizeData[i] = int4(-1, -1, -1, -1);
+        localIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
+        localSizeData[i] = cl::sycl::int4(-1, -1, -1, -1);
       }
 
-      int4 groupIdData[l_items_total];
-      int4 groupRangeData[l_items_total];
+      cl::sycl::int4 groupIdData[l_items_total];
+      cl::sycl::int4 groupRangeData[l_items_total];
       for (int i = 0; i < l_items_total; i++) {
-        groupIdData[i] = int4(-1, -1, -1, -1);
-        groupRangeData[i] = int4(-1, -1, -1, -1);
+        groupIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
+        groupRangeData[i] = cl::sycl::int4(-1, -1, -1, -1);
       }
 
       {
-        buffer<int4, 1> localIdBuffer(localIdData, range<1>(gl_items_total));
-        buffer<int4, 1> localSizeBuffer(localSizeData,
-                                        range<1>(gl_items_total));
-        buffer<int4, 1> groupIdBuffer(groupIdData, range<1>(l_items_total));
-        buffer<int4, 1> groupRangeBuffer(groupRangeData,
-                                         range<1>(l_items_total));
+        cl::sycl::buffer<cl::sycl::int4, 1> localIdBuffer(
+            localIdData, cl::sycl::range<1>(gl_items_total));
+        cl::sycl::buffer<cl::sycl::int4, 1> localSizeBuffer(
+            localSizeData, cl::sycl::range<1>(gl_items_total));
+        cl::sycl::buffer<cl::sycl::int4, 1> groupIdBuffer(
+            groupIdData, cl::sycl::range<1>(l_items_total));
+        cl::sycl::buffer<cl::sycl::int4, 1> groupRangeBuffer(
+            groupRangeData, cl::sycl::range<1>(l_items_total));
 
-        queue myQueue(util::get_cts_object::queue());
+        cl::sycl::queue myQueue(util::get_cts_object::queue());
 
-        myQueue.submit([&](handler &cgh) {
+        myQueue.submit([&](cl::sycl::handler &cgh) {
 
           auto localIdPtr =
-              localIdBuffer.get_access<access::mode::read_write>(cgh);
+              localIdBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
           auto localSizePtr =
-              localSizeBuffer.get_access<access::mode::read_write>(cgh);
+              localSizeBuffer.get_access<cl::sycl::access::mode::read_write>(
+                  cgh);
           auto groupIdPtr =
-              groupIdBuffer.get_access<access::mode::read_write>(cgh);
+              groupIdBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
           auto groupRangePtr =
-              groupRangeBuffer.get_access<access::mode::read_write>(cgh);
+              groupRangeBuffer.get_access<cl::sycl::access::mode::read_write>(
+                  cgh);
 
           cgh.parallel_for_work_group<class hierarchical_id>(
-              range<3>(gr_range_1d, gr_range_2d, gr_range_3d),
-              range<3>(l_items_1d, l_items_2d, l_items_3d),
-              [=](group<3> group) {
+              cl::sycl::range<3>(gr_range_1d, gr_range_2d, gr_range_3d),
+              cl::sycl::range<3>(l_items_1d, l_items_2d, l_items_3d),
+              [=](cl::sycl::group<3> group) {
 
-                int groupId0 = group.get(0);
-                int groupId1 = group.get(1);
-                int groupId2 = group.get(2);
-                int groupIdL = group.get_linear();
+                int groupId0 = group.get_id(0);
+                int groupId1 = group.get_id(1);
+                int groupId2 = group.get_id(2);
+                int groupIdL = group.get_linear_id();
 
                 int groupRange0 = group.get_group_range(0);
                 int groupRange1 = group.get_group_range(1);
@@ -93,15 +96,15 @@ class TEST_NAME : public util::test_base {
                 int groupRangeL = group.get_group_range().size();
 
                 groupIdPtr[groupIdL] =
-                    int4(groupId0, groupId1, groupId2, groupIdL);
-                groupRangePtr[groupIdL] =
-                    int4(groupRange0, groupRange1, groupRange2, groupRangeL);
+                    cl::sycl::int4(groupId0, groupId1, groupId2, groupIdL);
+                groupRangePtr[groupIdL] = cl::sycl::int4(
+                    groupRange0, groupRange1, groupRange2, groupRangeL);
 
-                parallel_for_work_item(group, [&](item<3> itemID) {
+                parallel_for_work_item(group, [&](cl::sycl::item<3> itemID) {
 
-                  int localId0 = itemID.get(0);
-                  int localId1 = itemID.get(1);
-                  int localId2 = itemID.get(2);
+                  int localId0 = itemID.get_id(0);
+                  int localId1 = itemID.get_id(1);
+                  int localId2 = itemID.get_id(2);
                   int localIdL = itemID.get_linear_id();
 
                   int localSize0 = itemID.get_range()[0];
@@ -111,16 +114,16 @@ class TEST_NAME : public util::test_base {
                                    itemID.get_range()[1] *
                                    itemID.get_range()[2];
 
-                  int globalId0 = group.get(0) * localSize0 + localId0;
-                  int globalId1 = group.get(1) * localSize1 + localId1;
-                  int globalId2 = group.get(2) * localSize2 + localId2;
+                  int globalId0 = group.get_id(0) * localSize0 + localId0;
+                  int globalId1 = group.get_id(1) * localSize1 + localId1;
+                  int globalId2 = group.get_id(2) * localSize2 + localId2;
                   int globalIdL = ((globalId0 * g_items_2d * g_items_3d) +
                                    (globalId1 * g_items_3d) + globalId2);
 
                   localIdPtr[globalIdL] =
-                      int4(localId0, localId1, localId2, localIdL);
-                  localSizePtr[globalIdL] =
-                      int4(localSize0, localSize1, localSize2, localSizeL);
+                      cl::sycl::int4(localId0, localId1, localId2, localIdL);
+                  localSizePtr[globalIdL] = cl::sycl::int4(
+                      localSize0, localSize1, localSize2, localSizeL);
                 });
               });
         });

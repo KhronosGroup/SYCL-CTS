@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_TYPE_NAMES_H
+#define __SYCLCTS_UTIL_TYPE_NAMES_H
 
 #include "../tests/common/sycl.h"
 #include "stl.h"
@@ -113,3 +114,5 @@ template <typename T> cl::sycl::string_class type_name() {
 #undef MAKESTDNAME
 #undef MAKESYCLNAME
 }
+
+#endif  // __SYCLCTS_UTIL_TYPE_NAMES_H

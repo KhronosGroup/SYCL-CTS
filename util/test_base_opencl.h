@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_TEST_BASE_OPENCL_H
+#define __SYCLCTS_UTIL_TEST_BASE_OPENCL_H
 
 #include <CL/cl.h>
 
@@ -98,3 +99,5 @@ protected:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_TEST_BASE_OPENCL_H

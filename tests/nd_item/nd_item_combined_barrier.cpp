@@ -11,7 +11,6 @@
 #define TEST_NAME nd_item_combined_barrier
 
 namespace nd_item_combined_barrier__ {
-using namespace cl::sycl;
 using namespace sycl_cts;
 
 void test_barrier(util::logger &log, cl::sycl::queue &queue) {
@@ -27,23 +26,25 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
 
   /* run kernel to swap adjacent work item's global & local ids*/
   {
-    buffer<int, 1> buffer(data.get(), range<1>(globalSize));
+    cl::sycl::buffer<int, 1> buffer(data.get(), cl::sycl::range<1>(globalSize));
 
-    queue.submit([&](handler &cgh) {
-      auto ptr = buffer.get_access<access::mode::read_write>(cgh);
+    queue.submit([&](cl::sycl::handler &cgh) {
+      auto ptr = buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-      accessor<int, 1, access::mode::read_write, access::target::local> tile(
-          range<1>(2), cgh);
+      cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                         cl::sycl::access::target::local>
+          tile(cl::sycl::range<1>(2), cgh);
 
       cgh.parallel_for<class combined_barrier_kernel>(
-          nd_range<1>(range<1>(64), range<1>(2)), [=](nd_item<1> item) {
+          cl::sycl::nd_range<1>(cl::sycl::range<1>(64), cl::sycl::range<1>(2)),
+          [=](cl::sycl::nd_item<1> item) {
             size_t idx = item.get_global_linear_id();
             size_t pos = idx & 1;
             size_t opp = pos ^ 1;
 
             tile[pos] = ptr[idx];
 
-            item.barrier(access::fence_space::global_and_local);
+            item.barrier(cl::sycl::access::fence_space::global_and_local);
 
             ptr[idx] = tile[opp];
           });

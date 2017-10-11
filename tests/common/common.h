@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_COMMON_H
+#define __SYCLCTS_TESTS_COMMON_COMMON_H
 
 // include our proxy to the real sycl header
 #include "sycl.h"
@@ -468,3 +469,5 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log,
       }                                                                  \
     }                                                                    \
   }
+
+#endif  // __SYCLCTS_TESTS_COMMON_COMMON_H

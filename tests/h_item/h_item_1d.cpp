@@ -11,8 +11,6 @@
 
 namespace TEST_NAME {
 using namespace sycl_cts;
-using namespace cl::sycl;
-
 
 /** test cl::sycl::device initialization
  */
@@ -26,7 +24,7 @@ class TEST_NAME : public util::test_base {
 
   /** execute the test
    */
-  void run(util::logger &log) override { }
+  void run(util::logger &log) override {}
 };
 
 // construction of this proxy will register the above test

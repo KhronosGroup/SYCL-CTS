@@ -11,7 +11,6 @@
 #define TEST_NAME nd_item_local_barrier
 
 namespace nd_item_local_barrier__ {
-using namespace cl::sycl;
 using namespace sycl_cts;
 
 void test_barrier(util::logger &log, cl::sycl::queue &queue) {
@@ -25,29 +24,29 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
   for (int i = 0; i < globalSize; ++i) data.get()[i] = i;
 
   /* init ranges*/
-  range<1> globalRange(globalSize);
-  range<1> localRange(localSize);
-  nd_range<1> NDRange(globalRange, localRange);
+  cl::sycl::range<1> globalRange(globalSize);
+  cl::sycl::range<1> localRange(localSize);
+  cl::sycl::nd_range<1> NDRange(globalRange, localRange);
 
   /* run kernel to swap adjacent work item's global id*/
   {
-    buffer<int, 1> buf(data.get(), globalRange);
+    cl::sycl::buffer<int, 1> buf(data.get(), globalRange);
 
-    queue.submit([&](handler &cgh) {
+    queue.submit([&](cl::sycl::handler &cgh) {
       auto accGlobal = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      accessor<int, 1, cl::sycl::access::mode::read_write,
-               cl::sycl::access::target::local>
+      cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                         cl::sycl::access::target::local>
           localScratch(localRange, cgh);
 
       cgh.parallel_for<class local_barrier_kernel>(
-          NDRange, [=](nd_item<1> item) {
+          NDRange, [=](cl::sycl::nd_item<1> item) {
             int idx = (int)item.get_global(0);
             int pos = idx & 1;
             int opp = pos ^ 1;
 
             localScratch[pos] = accGlobal[idx];
 
-            item.barrier(access::fence_space::local_space);
+            item.barrier(cl::sycl::access::fence_space::local_space);
 
             accGlobal[idx] = localScratch[opp];
           });

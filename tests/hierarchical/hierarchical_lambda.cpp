@@ -13,7 +13,6 @@
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** test cl::sycl::range::get(int index) return size_t
  */
@@ -38,26 +37,28 @@ class TEST_NAME : public util::test_base {
       // using this scope we ensure that the buffer will update the host values
       // after the wait_and_throw
       {
-        buffer<int, 1> buf(data.data(),
-                           range<1>(globalRange1d * globalRange2d));
+        cl::sycl::buffer<int, 1> buf(
+            data.data(), cl::sycl::range<1>(globalRange1d * globalRange2d));
 
-        myQueue.submit([&](handler &cgh) {
-          auto globalRange = range<2>(globalRange1d, globalRange2d);
-          auto localRange = range<2>(local, local);
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          auto globalRange = cl::sycl::range<2>(globalRange1d, globalRange2d);
+          auto localRange = cl::sycl::range<2>(local, local);
           auto groupRange = globalRange / localRange;
-          auto ptr = buf.get_access<access::mode::read_write,
-                                    access::target::global_buffer>(cgh);
+          auto ptr =
+              buf.get_access<cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::global_buffer>(cgh);
           cgh.parallel_for_work_group<class hierarchical_lambda>(
-              groupRange, localRange, [ptr](group<2> group_pid) {
+              groupRange, localRange, [ptr](cl::sycl::group<2> group_pid) {
 
-                parallel_for_work_item(group_pid, [group_pid,
-                                                   ptr](item<2> itemID) {
-                  auto localId = itemID.get_id();
-                  auto localSize = itemID.get_range();
-                  auto globalId = group_pid.get() * localSize + localId;
-                  int globalIdL = ((globalId.get(0) * 2 * 1) + globalId.get(1));
-                  ptr[globalIdL] = globalIdL;
-                });
+                parallel_for_work_item(
+                    group_pid, [group_pid, ptr](cl::sycl::item<2> itemID) {
+                      auto localId = itemID.get_id();
+                      auto localSize = itemID.get_range();
+                      auto globalId = group_pid.get() * localSize + localId;
+                      int globalIdL =
+                          ((globalId.get(0) * 2 * 1) + globalId.get(1));
+                      ptr[globalIdL] = globalIdL;
+                    });
               });
         });
         myQueue.wait_and_throw();

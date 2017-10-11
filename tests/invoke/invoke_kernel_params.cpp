@@ -82,15 +82,13 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    using namespace cl::sycl;
-
     {
       uint32_t result = 0;
 
       try {
         auto my_queue = util::get_cts_object::queue();
 
-        buffer<uint32_t> buf_result(&result, range<1>(1));
+        cl::sycl::buffer<uint32_t> buf_result(&result, cl::sycl::range<1>(1));
 
         my_queue.submit([&](cl::sycl::handler &cgh) {
           // access the output
@@ -140,7 +138,7 @@ class TEST_NAME : public util::test_base {
       try {
         auto my_queue = util::get_cts_object::queue();
 
-        buffer<uint32_t> buf_result(&result, range<1>(1));
+        cl::sycl::buffer<uint32_t> buf_result(&result, cl::sycl::range<1>(1));
 
         my_queue.submit([&](cl::sycl::handler &cgh) {
           // construct a basic type

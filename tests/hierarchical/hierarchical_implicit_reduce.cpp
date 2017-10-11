@@ -21,7 +21,6 @@ static const int numGroups = groupItemsTotal / localItemsTotal;
 static const int inputSize = 32;
 
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 template <typename T>
 class sth {};
@@ -30,34 +29,36 @@ template <typename T>
 class sth_else {};
 
 template <typename T>
-T reduce(T input[inputSize], device_selector *selector) {
+T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
   T mTotal;
   T mGroupSums[numGroups];
 
   auto myQueue = util::get_cts_object::queue(*selector);
-  buffer<T, 1> input_buf(input, range<1>(inputSize));
-  buffer<T, 1> group_sums_buf(mGroupSums, range<1>(numGroups));
-  buffer<T, 1> total_buf(&mTotal, range<1>(1));
+  cl::sycl::buffer<T, 1> input_buf(input, cl::sycl::range<1>(inputSize));
+  cl::sycl::buffer<T, 1> group_sums_buf(mGroupSums,
+                                        cl::sycl::range<1>(numGroups));
+  cl::sycl::buffer<T, 1> total_buf(&mTotal, cl::sycl::range<1>(1));
 
-  myQueue.submit([&](handler &cgh) {
-    accessor<T, 1, cl::sycl::access::mode::read,
-             cl::sycl::access::target::global_buffer>
+  myQueue.submit([&](cl::sycl::handler &cgh) {
+    cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
+                       cl::sycl::access::target::global_buffer>
         input_ptr(input_buf, cgh);
-    accessor<T, 1, cl::sycl::access::mode::read,
-             cl::sycl::access::target::global_buffer>
+    cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
+                       cl::sycl::access::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
-    accessor<T, 1, cl::sycl::access::mode::write,
-             cl::sycl::access::target::global_buffer>
+    cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
+                       cl::sycl::access::target::global_buffer>
         totalPtr(total_buf, cgh);
         cgh.parallel_for_work_group<class sth<T>>(
-                    range<3>( groupItems1d, groupItems1d, groupItems1d ),
-                    range<3>( localItems1d, localItems1d, localItems1d ),
-                    [=]( group<3> group )
+                    cl::sycl::range<3>( groupItems1d, groupItems1d, groupItems1d ),
+                    cl::sycl::range<3>( localItems1d, localItems1d, localItems1d ),
+                    [=]( cl::sycl::group<3> group )
         {
           T localSums[localItemsTotal];
 
           // process items in each work item
-          parallel_for_work_item(group, [=, &localSums](item<3> item) {
+          parallel_for_work_item(group, [=,
+                                         &localSums](cl::sycl::item<3> item) {
             int localId = item.get_linear_id();
             /* Split the array into work-group-size different arrays */
             int valuesPerItem = (inputSize / numGroups) / localItemsTotal;
@@ -79,12 +80,12 @@ T reduce(T input[inputSize], device_selector *selector) {
         });
   });
 
-  myQueue.submit([&](handler &cgh) {
-    accessor<T, 1, cl::sycl::access::mode::read,
-             cl::sycl::access::target::global_buffer>
+  myQueue.submit([&](cl::sycl::handler &cgh) {
+    cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
+                       cl::sycl::access::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
-    accessor<T, 1, cl::sycl::access::mode::write,
-             cl::sycl::access::target::global_buffer>
+    cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
+                       cl::sycl::access::target::global_buffer>
         totalPtr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T>>([=]()

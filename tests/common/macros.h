@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_MACROS_H
+#define __SYCLCTS_TESTS_COMMON_MACROS_H
 
 #include "sycl.h"
 #include "../../util/opencl_helper.h"
@@ -147,3 +148,5 @@ bool check_type_proxy(sycl_cts::util::logger &log, const T1 &val_a,
   { static_assert(std::is_same<decltype(returnVal), expectedT>::value, MSG); }
 
 } /* namespace {} */
+
+#endif  // __SYCLCTS_TESTS_COMMON_MACROS_H

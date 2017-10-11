@@ -11,15 +11,14 @@
 
 namespace test_item_3d__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 class kernel_item_3d {
  protected:
-  typedef accessor<int, 3, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, 3, cl::sycl::access::mode::read,
+                             cl::sycl::access::target::global_buffer>
       t_readAccess;
-  typedef accessor<int, 3, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, 3, cl::sycl::access::mode::write,
+                             cl::sycl::access::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_x;
@@ -28,15 +27,15 @@ class kernel_item_3d {
  public:
   kernel_item_3d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
-  void operator()(item<3> item) {
-    id<3> gid = item.get_id();
+  void operator()(cl::sycl::item<3> item) {
+    cl::sycl::id<3> gid = item.get_id();
 
-    size_t dim_a = item.get(0) + item.get(1) + item.get(2);
+    size_t dim_a = item.get_id(0) + item.get_id(1) + item.get_id(2);
     size_t dim_b = item[0] + item[1] + item[2];
 
-    range<3> localRange = item.get_range();
+    cl::sycl::range<3> localRange = item.get_range();
 
-    id<3> offset = item.get_offset();
+    cl::sycl::id<3> offset = item.get_offset();
 
     /* get work item range */
     const size_t nWidth = localRange.get(0);
@@ -95,21 +94,21 @@ bool test_item_3d(util::logger &log) {
   buffer_fill(dataIn.get(), nWidth, nHeight, nDepth);
 
   try {
-    range<3> dataRange(nWidth, nHeight, nDepth);
+    cl::sycl::range<3> dataRange(nWidth, nHeight, nDepth);
 
-    buffer<int, 3> bufIn(dataIn.get(), dataRange);
-    buffer<int, 3> bufOut(dataOut.get(), dataRange);
+    cl::sycl::buffer<int, 3> bufIn(dataIn.get(), dataRange);
+    cl::sycl::buffer<int, 3> bufOut(dataOut.get(), dataRange);
 
     auto cmdQueue = util::get_cts_object::queue();
 
-    cmdQueue.submit([&](handler &cgh) {
+    cmdQueue.submit([&](cl::sycl::handler &cgh) {
       auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accOut =
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
       kernel_item_3d kern = kernel_item_3d(accIn, accOut);
 
-      auto r = range<3>(dataRange);
+      auto r = cl::sycl::range<3>(dataRange);
       cgh.parallel_for(r, kern);
     });
 

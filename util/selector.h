@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_SELECTOR_H
+#define __SYCLCTS_UTIL_SELECTOR_H
 
 #include "stl.h"
 #include "singleton.h"
@@ -85,3 +86,5 @@ class selector : public singleton<selector> {
 
 }  // namespace util
 }  // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_SELECTOR_H

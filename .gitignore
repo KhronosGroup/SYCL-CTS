@@ -1,2 +1,7 @@
-
+build/
+tests/math_*/*.cpp
+tests/vector_*/*.cpp
+!test/vector_operators/vector_operators.cpp
+.idea
+log.txt
 *.pyc

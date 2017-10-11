@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_CSV_H
+#define __SYCLCTS_UTIL_CSV_H
 
 #include "stl.h"
 
@@ -58,3 +59,5 @@ protected:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_CSV_H

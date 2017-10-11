@@ -17,9 +17,7 @@
 
 namespace TEST_NAMESPACE {
 /**
- * @brief A way to describe logic errors that users of the CTS should not
- *        expect. If a user gets this message, it means that the CTS has a
- *        _huge_ bug.
+ * @brief Common error string.
  */
 constexpr const char* internal_cts_error =
     "Internal CTS error. Please report this to Khronos immediately, "

@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_CTS_ASYNC_HANDLER_H
+#define __SYCLCTS_TESTS_COMMON_CTS_ASYNC_HANDLER_H
 
 #include "sycl.h"
 
@@ -17,3 +18,5 @@ struct cts_async_handler {
     }
   }
 };
+
+#endif  // __SYCLCTS_TESTS_COMMON_CTS_ASYNC_HANDLER_H

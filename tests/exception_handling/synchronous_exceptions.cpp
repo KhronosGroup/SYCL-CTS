@@ -12,7 +12,6 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /**
  */
@@ -31,13 +30,14 @@ class TEST_NAME : public util::test_base {
     cl::sycl::queue q(selector);
 
     try {
-      q.submit(
-          [&](handler &cgh) { cgh.single_task<class TEST_NAME>([=]() {}); });
-    } catch (const exception &e) {
+      q.submit([&](cl::sycl::handler &cgh) {
+        cgh.single_task<class TEST_NAME>([=]() {});
+      });
+    } catch (const cl::sycl::exception &e) {
       // Check methods
       cl::sycl::string_class sc = e.what();
       if (e.has_context()) {
-        context c = e.get_context();
+        cl::sycl::context c = e.get_context();
       }
       cl::sycl::cl_int ci = e.get_cl_code();
 
