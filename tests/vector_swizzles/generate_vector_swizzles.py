@@ -29,8 +29,7 @@ swizzle_template = Template(
         if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
-          (swizzledVec, in_order_vals)) {
+        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>(swizzledVec, in_order_vals)) {
             resAcc[0] = false;
         }
 """)

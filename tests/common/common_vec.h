@@ -34,7 +34,7 @@ namespace {
  */
 template <typename vecType, int numOfElems>
 bool check_vector_size(cl::sycl::vec<vecType, numOfElems> vector) {
-  return ((sizeof(vecType) * vector.get_count()) != vector.get_size());
+  return ((sizeof(vecType) * vector.get_count()) == vector.get_size());
 }
 
 /**
@@ -52,7 +52,7 @@ bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
 }
 
 /**
- *  @brief Helper function to test a single vector operator
+ *  @brief Helper function to test a single vector operator.
  */
 template <int vecSize, typename vectorType, typename lambdaFunc>
 bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
