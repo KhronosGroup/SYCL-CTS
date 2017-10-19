@@ -13,20 +13,19 @@
 namespace buffer_destructors__ {
 using namespace sycl_cts;
 using namespace sycl_cts::util;
-using namespace cl::sycl;
-using namespace cl::sycl::access;
 
 template <typename T, int size, int dims>
 class buffer_dtors {
  public:
-  void operator()(util::logger &log, range<dims> r) {
-    unique_ptr_class<T[]> data(new T[size]);
+  void operator()(util::logger &log, cl::sycl::range<dims> r) {
+    cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
 
     {
       cl::sycl::buffer<T, dims> buf(data.get(), r);
-      cl::sycl::accessor<T, dims, mode::read_write, target::host_buffer> acc(
-          buf);
+      cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+                         cl::sycl::access::target::host_buffer>
+          acc(buf);
       for (int i = 0; i < size; ++i) acc[i] = static_cast<T>(i);
     }
 
@@ -54,7 +53,7 @@ class TEST_NAME : public util::test_base {
   template <typename T>
   void test_buffers(util::logger &log) {
     const int size = 32;
-    range<1> range1d(size);
+    cl::sycl::range<1> range1d(size);
     buffer_dtors<T, size, 1> buf1d;
     buf1d(log, range1d);
   }

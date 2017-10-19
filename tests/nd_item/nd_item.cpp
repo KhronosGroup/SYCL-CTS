@@ -12,16 +12,15 @@
 
 namespace test_nd_item__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  typedef accessor<int, dimensions, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, dimensions, cl::sycl::access::mode::read,
+                             cl::sycl::access::target::global_buffer>
       t_readAccess;
-  typedef accessor<int, dimensions, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, dimensions, cl::sycl::access::mode::write,
+                             cl::sycl::access::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_globalID;
@@ -36,7 +35,7 @@ class kernel_nd_item {
     bool failed = false;
 
     /* test global ID*/
-    id<dimensions> global_id = myitem.get_global();
+    cl::sycl::id<dimensions> global_id = myitem.get_global();
     size_t globals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -46,7 +45,7 @@ class kernel_nd_item {
       }
     }
 
-    id<dimensions> local_id = myitem.get_local();
+    cl::sycl::id<dimensions> local_id = myitem.get_local();
     size_t locals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -57,7 +56,7 @@ class kernel_nd_item {
     }
 
     /* test group ID*/
-    group<dimensions> group_id = myitem.get_group();
+    cl::sycl::group<dimensions> group_id = myitem.get_group();
     size_t groups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -68,7 +67,7 @@ class kernel_nd_item {
     }
 
     /* test range*/
-    range<dimensions> globalRange = myitem.get_global_range();
+    cl::sycl::range<dimensions> globalRange = myitem.get_global_range();
 
     size_t globalIndex =
         global_id.get(2) + (global_id.get(1) * globalRange.get(2)) +
@@ -80,7 +79,7 @@ class kernel_nd_item {
       }
     }
 
-    range<dimensions> localRange = myitem.get_local_range();
+    cl::sycl::range<dimensions> localRange = myitem.get_local_range();
 
     size_t localIndex =
         local_id.get(2) + (local_id.get(1) * localRange.get(2)) +
@@ -98,7 +97,7 @@ class kernel_nd_item {
     }
 
     /* test number of groups*/
-    id<dimensions> num_groups = myitem.get_num_groups();
+    cl::sycl::id<dimensions> num_groups = myitem.get_num_groups();
     size_t nGroups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -116,12 +115,12 @@ class kernel_nd_item {
     }
 
     /* test NDrange and offset*/
-    id<dimensions> offset = myitem.get_offset();
-    nd_range<dimensions> NDRange = myitem.get_nd_range();
+    cl::sycl::id<dimensions> offset = myitem.get_offset();
+    cl::sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
 
-    range<dimensions> ndGlobal = NDRange.get_global_range();
-    range<dimensions> ndLocal = NDRange.get_local_range();
-    id<dimensions> ndOffset = NDRange.get_offset();
+    cl::sycl::range<dimensions> ndGlobal = NDRange.get_global();
+    cl::sycl::range<dimensions> ndLocal = NDRange.get_local();
+    cl::sycl::id<dimensions> ndOffset = NDRange.get_offset();
 
     for (int i = 0; i < dimensions; ++i) {
       bool are_same = true;
@@ -190,22 +189,22 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
 
   /* create ranges*/
-  range<1> globalRange(globalSize[0]);
-  range<1> localRange(localSize[0]);
-  nd_range<1> dataRange(globalRange, localRange);
+  cl::sycl::range<1> globalRange(globalSize[0]);
+  cl::sycl::range<1> localRange(localSize[0]);
+  cl::sycl::nd_range<1> dataRange(globalRange, localRange);
 
   /* test 1 Dimension*/
   {
     /* create ranges*/
-    range<1> globalRange(globalSize[0]);
-    range<1> localRange(localSize[0]);
-    nd_range<1> dataRange(globalRange, localRange);
+    cl::sycl::range<1> globalRange(globalSize[0]);
+    cl::sycl::range<1> localRange(localSize[0]);
+    cl::sycl::nd_range<1> dataRange(globalRange, localRange);
 
-    buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
-    buffer<int, 1> bufLoc(localIDs.get(), globalRange);
-    buffer<int, 1> bufOut(dataOut.get(), globalRange);
+    cl::sycl::buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
+    cl::sycl::buffer<int, 1> bufLoc(localIDs.get(), globalRange);
+    cl::sycl::buffer<int, 1> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler &cgh) {
+    queue.submit([&](cl::sycl::handler &cgh) {
       auto accG =
           bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -227,15 +226,15 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
     /* create ranges*/
-    range<2> globalRange(globalSize[0], globalSize[1]);
-    range<2> localRange(localSize[0], localSize[1]);
-    nd_range<2> dataRange(globalRange, localRange);
+    cl::sycl::range<2> globalRange(globalSize[0], globalSize[1]);
+    cl::sycl::range<2> localRange(localSize[0], localSize[1]);
+    cl::sycl::nd_range<2> dataRange(globalRange, localRange);
 
-    buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
-    buffer<int, 2> bufLoc(localIDs.get(), globalRange);
-    buffer<int, 2> bufOut(dataOut.get(), globalRange);
+    cl::sycl::buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
+    cl::sycl::buffer<int, 2> bufLoc(localIDs.get(), globalRange);
+    cl::sycl::buffer<int, 2> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler &cgh) {
+    queue.submit([&](cl::sycl::handler &cgh) {
       auto accG =
           bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
@@ -256,15 +255,15 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
     /* create ranges*/
-    range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
-    range<3> localRange(localSize[0], localSize[1], localSize[2]);
-    nd_range<3> dataRange(globalRange, localRange);
+    cl::sycl::range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
+    cl::sycl::range<3> localRange(localSize[0], localSize[1], localSize[2]);
+    cl::sycl::nd_range<3> dataRange(globalRange, localRange);
 
-    buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
-    buffer<int, 3> bufLoc(localIDs.get(), globalRange);
-    buffer<int, 3> bufOut(dataOut.get(), globalRange);
+    cl::sycl::buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
+    cl::sycl::buffer<int, 3> bufLoc(localIDs.get(), globalRange);
+    cl::sycl::buffer<int, 3> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](handler &cgh) {
+    queue.submit([&](cl::sycl::handler &cgh) {
       auto accG = bufGlob.get_access<cl::sycl::access::mode::read>(cgh);
       auto accL = bufLoc.get_access<cl::sycl::access::mode::read>(cgh);
       auto accOut = bufOut.get_access<cl::sycl::access::mode::write>(cgh);

@@ -28,8 +28,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    using namespace cl::sycl;
-
     try {
       // dim 1
       {
@@ -38,9 +36,10 @@ class TEST_NAME : public util::test_base {
 
         q.submit([&](cl::sycl::handler &cgh) {
           cgh.parallel_for_work_group<class group_kernel_1>(
-              range<1>(GROUP_RANGE_1D), [=](group<1> my_group) {
+              cl::sycl::range<1>(GROUP_RANGE_1D),
+              [=](cl::sycl::group<1> my_group) {
                 // Check copy constructor
-                group<1> group_copy(my_group);
+                cl::sycl::group<1> group_copy(my_group);
 
                 // Check copy assignment operator
                 my_group = group_copy;
@@ -57,9 +56,10 @@ class TEST_NAME : public util::test_base {
 
         q.submit([&](cl::sycl::handler &cgh) {
           cgh.parallel_for_work_group<class group_kernel_2>(
-              range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D), [=](group<2> my_group) {
+              cl::sycl::range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D),
+              [=](cl::sycl::group<2> my_group) {
                 // Check copy constructor
-                group<2> group_copy(my_group);
+                cl::sycl::group<2> group_copy(my_group);
 
                 // Check copy assignment operator
                 my_group = group_copy;
@@ -77,10 +77,11 @@ class TEST_NAME : public util::test_base {
         q.submit([&](cl::sycl::handler &cgh) {
 
           cgh.parallel_for_work_group<class group_kernel_3>(
-              range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D, GROUP_RANGE_3D),
-              [=](group<3> my_group) {
+              cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D,
+                                 GROUP_RANGE_3D),
+              [=](cl::sycl::group<3> my_group) {
                 // Check copy constructor
-                group<3> group_copy(my_group);
+                cl::sycl::group<3> group_copy(my_group);
 
                 // Check copy assignment operator
                 my_group = group_copy;

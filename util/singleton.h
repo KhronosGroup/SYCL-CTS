@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_SINGLETON_H
+#define __SYCLCTS_UTIL_SINGLETON_H
 
 #include "stl.h"
 
@@ -57,3 +58,5 @@ template <class T> static inline T &get() { return T::instance(); }
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_SINGLETON_H

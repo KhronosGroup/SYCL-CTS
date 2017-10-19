@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_PROXY_H
+#define __SYCLCTS_UTIL_PROXY_H
 
 #include "test_base.h"
 
@@ -32,3 +33,5 @@ public:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_PROXY_H

@@ -12,14 +12,14 @@
 
 namespace buffer_constructors__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 template <typename T, int size, int dims>
 class buffer_ctors {
  public:
   using fail_proxy_alias = bool (*)(sycl_cts::util::logger &log,
                                     const char *msg, int line);
-  void operator()(range<dims> &r, id<dims> &i, const property_list &propList,
+  void operator()(cl::sycl::range<dims> &r, cl::sycl::id<dims> &i,
+                  const cl::sycl::property_list &propList,
                   fail_proxy_alias fail_proxy, util::logger &log) {
     /* Check range constructor */
     { cl::sycl::buffer<T, dims> buf(r, propList); }
@@ -178,7 +178,8 @@ class buffer_ctors {
 
     /* Check copy assignment */
     {
-      const property_list propertyList{property::buffer::use_host_ptr()};
+      const cl::sycl::property_list propertyList{
+          cl::sycl::property::buffer::use_host_ptr()};
 
       cl::sycl::buffer<T, dims> bufA(r, propertyList);
       cl::sycl::buffer<T, dims> bufB(r);
@@ -258,13 +259,13 @@ class TEST_NAME : public util::test_base {
   template <typename T>
   void test_buffers(util::logger &log) {
     const int size = 8;
-    range<1> range1d(size);
-    range<2> range2d(size, size);
-    range<3> range3d(size, size, size);
+    cl::sycl::range<1> range1d(size);
+    cl::sycl::range<2> range2d(size, size);
+    cl::sycl::range<3> range3d(size, size, size);
 
-    id<1> id1d(2);
-    id<2> id2d(2, 2);
-    id<3> id3d(2, 2, 2);
+    cl::sycl::id<1> id1d(2);
+    cl::sycl::id<2> id2d(2, 2);
+    cl::sycl::id<3> id3d(2, 2, 2);
 
     buffer_ctors<T, size, 1> buf1d;
     buffer_ctors<T, size * size, 2> buf2d;
@@ -276,12 +277,13 @@ class TEST_NAME : public util::test_base {
 
     /* create property lists */
 
-    const property_list empty_pl{};
-    mutex_class mutex;
+    const cl::sycl::property_list empty_pl{};
+    cl::sycl::mutex_class mutex;
     auto context = util::get_cts_object::context();
-    const property_list pl{property::buffer::use_host_ptr(),
-                           property::buffer::use_mutex(mutex),
-                           property::buffer::context_bound(context)};
+    const cl::sycl::property_list pl{
+        cl::sycl::property::buffer::use_host_ptr(),
+        cl::sycl::property::buffer::use_mutex(mutex),
+        cl::sycl::property::buffer::context_bound(context)};
 
     /* test buffer constructors with empty property list */
 
@@ -309,17 +311,17 @@ class TEST_NAME : public util::test_base {
       test_buffers<float>(log);
       test_buffers<double>(log);
 
-      test_buffers<float2>(log);
-      test_buffers<float3>(log);
-      test_buffers<float4>(log);
-      test_buffers<float8>(log);
-      test_buffers<float16>(log);
+      test_buffers<cl::sycl::float2>(log);
+      test_buffers<cl::sycl::float3>(log);
+      test_buffers<cl::sycl::float4>(log);
+      test_buffers<cl::sycl::float8>(log);
+      test_buffers<cl::sycl::float16>(log);
 
-      test_buffers<double2>(log);
-      test_buffers<double3>(log);
-      test_buffers<double4>(log);
-      test_buffers<double8>(log);
-      test_buffers<double16>(log);
+      test_buffers<cl::sycl::double2>(log);
+      test_buffers<cl::sycl::double3>(log);
+      test_buffers<cl::sycl::double4>(log);
+      test_buffers<cl::sycl::double8>(log);
+      test_buffers<cl::sycl::double16>(log);
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

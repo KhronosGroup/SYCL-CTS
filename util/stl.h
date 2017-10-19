@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_STL_H
+#define __SYCLCTS_UTIL_STL_H
 
 // std::vector
 #include <vector>
@@ -36,3 +37,5 @@
 
 // std::memcpy
 #include <cstring>
+
+#endif  // __SYCLCTS_UTIL_STL_H

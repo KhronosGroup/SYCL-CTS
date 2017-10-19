@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
+#define __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
 
 // include our proxy to the real sycl header
 #include "sycl.h"
@@ -52,7 +53,7 @@ struct get_cts_object {
   }
 
   /**
-    @brief Creates a SYCL queue using the CTS handler
+    @brief Creates a SYCL queue using the CTS async handler
     @param selector Device selector to use to create the queue. Uses the CTS
     selector by default.
     @return Default SYCL queue
@@ -61,6 +62,18 @@ struct get_cts_object {
       const cl::sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
     return cl::sycl::queue(selector, asyncHandler);
+  }
+
+  /**
+    @brief Creates a SYCL context using the CTS async handler
+    @param selector Device selector to use to create the context. Uses the CTS
+    selector by default.
+    @return Default SYCL context
+  */
+  static cl::sycl::context context(
+      const cl::sycl::device_selector &selector = cts_selector()) {
+    static cts_async_handler asyncHandler;
+    return cl::sycl::context(selector.select_device(), asyncHandler);
   }
 
   /**
@@ -142,3 +155,5 @@ struct get_cts_object {
 
 }  // namespace util
 }  // namespace sycl_cts
+
+#endif  // __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H

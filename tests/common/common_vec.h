@@ -6,7 +6,8 @@
 //
 **************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_COMMON_VEC_H
+#define __SYCLCTS_TESTS_COMMON_COMMON_VEC_H
 
 // include our proxy to the real sycl header
 #include "sycl.h"
@@ -163,3 +164,5 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, vecCount> inputVec,
   return true;
 }
 }
+
+#endif  // __SYCLCTS_TESTS_COMMON_COMMON_VEC_H

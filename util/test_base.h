@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_TEST_BASE_H
+#define __SYCLCTS_UTIL_TEST_BASE_H
 
 // conformance test suite namespace
 namespace sycl_cts {
@@ -61,3 +62,5 @@ public:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_TEST_BASE_H

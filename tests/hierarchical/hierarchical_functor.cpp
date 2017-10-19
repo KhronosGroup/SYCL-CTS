@@ -12,20 +12,19 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 class kernel0 {
-  accessor<int, 1, cl::sycl::access::mode::read_write,
-           cl::sycl::access::target::global_buffer>
+  cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                     cl::sycl::access::target::global_buffer>
       ptr;
 
  public:
-  kernel0(buffer<int, 1> buf, handler &cgh)
-      : ptr(buf.get_access<access::mode::read_write,
-                           access::target::global_buffer>(cgh)) {}
+  kernel0(cl::sycl::buffer<int, 1> buf, cl::sycl::handler &cgh)
+      : ptr(buf.get_access<cl::sycl::access::mode::read_write,
+                           cl::sycl::access::target::global_buffer>(cgh)) {}
 
-  void operator()(group<2> group_pid) const {
-    parallel_for_work_item(group_pid, [=](item<2> itemID) {
+  void operator()(cl::sycl::group<2> group_pid) const {
+    parallel_for_work_item(group_pid, [=](cl::sycl::item<2> itemID) {
       auto localId = itemID.get_id();
       auto localSize = itemID.get_range();
       auto globalId = group_pid.get() * localSize + localId;
@@ -59,12 +58,12 @@ class TEST_NAME : public util::test_base {
       // using this scope we ensure that the buffer will update the host values
       // after the wait_and_throw
       {
-        buffer<int, 1> buf(data.data(),
-                           range<1>(globalRange1d * globalRange2d));
+        cl::sycl::buffer<int, 1> buf(
+            data.data(), cl::sycl::range<1>(globalRange1d * globalRange2d));
 
-        myQueue.submit([&](handler &cgh) {
-          auto globalRange = range<2>(globalRange1d, globalRange2d);
-          auto localRange = range<2>(local, local);
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          auto globalRange = cl::sycl::range<2>(globalRange1d, globalRange2d);
+          auto localRange = cl::sycl::range<2>(local, local);
           auto groupRange = globalRange / localRange;
 
           cgh.parallel_for_work_group(groupRange, localRange,

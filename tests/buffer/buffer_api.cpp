@@ -11,8 +11,6 @@
 #define TEST_NAME buffer_api
 
 namespace TEST_NAMESPACE {
-using namespace cl::sycl;
-using namespace cl::sycl::access;
 using namespace sycl_cts;
 
 /** empty_kernel.
@@ -24,16 +22,89 @@ class empty_kernel {
   void operator()() const {}
 };
 
+/*!
+@brief used to calculate the ranges based on the dimensionality of the buffer
+*/
+template <size_t dims>
+void precalculate(cl::sycl::range<dims>& rangeIn,
+                  cl::sycl::range<dims>& rangeOut, size_t& elementsCount,
+                  unsigned elementsIn, unsigned elementsOut);
+
+template <>
+void precalculate<1>(cl::sycl::range<1>& rangeIn, cl::sycl::range<1>& rangeOut,
+                     size_t& elementsCount, unsigned elementsIn,
+                     unsigned elementsOut) {
+  rangeIn = cl::sycl::range<1>(elementsIn);
+  rangeOut = cl::sycl::range<1>(elementsOut);
+  elementsCount = elementsOut;
+}
+
+template <>
+void precalculate<2>(cl::sycl::range<2>& rangeIn, cl::sycl::range<2>& rangeOut,
+                     size_t& elementsCount, unsigned elementsIn,
+                     unsigned elementsOut) {
+  rangeIn = cl::sycl::range<2>(elementsIn, elementsIn);
+  rangeOut = cl::sycl::range<2>(elementsOut, elementsIn);
+  elementsCount = (elementsOut * elementsIn);
+}
+
+template <>
+void precalculate<3>(cl::sycl::range<3>& rangeIn, cl::sycl::range<3>& rangeOut,
+                     size_t& elementsCount, unsigned elementsIn,
+                     unsigned elementsOut) {
+  rangeIn = cl::sycl::range<3>(elementsIn, elementsIn, elementsIn);
+  rangeOut = cl::sycl::range<3>(elementsOut, elementsIn, elementsIn);
+  elementsCount = (elementsOut * elementsIn * elementsIn);
+}
+
+/*!
+@brief Used to produce and test the reinterpreted buffer denoted by the template
+arguments. It does so by using the provided data array as a multidimentional
+buffer
+@tparam TIn the type of the original buffer
+@tparam TOut the type of the reinterpreted buffer
+*/
+template <typename TIn, typename TOut>
+class test_buffer_reinterpret {
+ public:
+  unsigned elementsIn, elementsOut;
+  /*!
+  @brief constructor
+  @param elementsIn the dimension used to create the range for the original
+  buffer
+  @param elementsOut the dimension used to create the range for the
+  reinterpreted
+  buffer
+  */
+  test_buffer_reinterpret(unsigned ElementsIn, unsigned ElementsOut)
+      : elementsIn(ElementsIn), elementsOut(ElementsOut) {}
+
+  template <size_t dims>
+  void check(TIn* data, util::logger& log) {
+    cl::sycl::range<dims> rangeIn, rangeOut;
+    size_t elementsCount = 0;
+    precalculate<dims>(rangeIn, rangeOut, elementsCount, elementsIn,
+                       elementsOut);
+
+    cl::sycl::buffer<TIn, dims> a(data, rangeIn);
+    auto r = a.template reinterpret<TOut, dims>(rangeOut);
+
+    if (r.get_size() != (elementsCount * sizeof(TOut))) {
+      FAIL(log, "Reinterpretation failed! The buffers have different size");
+    }
+  }
+};
+
 /**
  * Generic buffer API test function
  */
 template <typename T, int size, int dims>
-void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
-                 cl::sycl::id<dims> &i) {
+void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
+                 cl::sycl::id<dims>& i) {
   try {
-    unique_ptr_class<T[]> data(new T[size]);
+    cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
-    const id<dims> offset;
+    const cl::sycl::id<dims> offset;
 
     /* create a sycl buffer from the host buffer */
     cl::sycl::buffer<T, dims> buf(data.get(), r);
@@ -75,20 +146,23 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
     auto q = util::get_cts_object::queue();
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](handler &cgh) {
+    q.submit([&](cl::sycl::handler& cgh) {
       auto acc =
           buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
       check_return_type<
-          accessor<T, dims, mode::read_write, target::global_buffer>>(
+          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::global_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
       cgh.single_task(empty_kernel());
     });
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](handler &cgh) {
-      auto acc =
-          buf.template get_access<mode::read, target::constant_buffer>(cgh);
-      check_return_type<accessor<T, dims, mode::read, target::constant_buffer>>(
+    q.submit([&](cl::sycl::handler& cgh) {
+      auto acc = buf.template get_access<cl::sycl::access::mode::read,
+                                         target::constant_buffer>(cgh);
+      check_return_type<
+          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
+                             cl::sycl::access::target::constant_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
       cgh.single_task(empty_kernel());
     });
@@ -96,26 +170,32 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
     /* check the buffer returns the correct type of accessor */
     {
       auto acc =
-          buf.template get_access<mode::read_write, target::host_buffer>();
+          buf.template get_access<cl::sycl::access::mode::read_write,
+                                  cl::sycl::access::target::host_buffer>();
       check_return_type<
-          accessor<T, dims, mode::read_write, target::host_buffer>>(
+          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::host_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
     }
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](handler &cgh) {
-      auto acc = buf.template get_access<mode::read_write>(cgh, offset, r);
+    q.submit([&](cl::sycl::handler& cgh) {
+      auto acc = buf.template get_access<cl::sycl::access::mode::read_write>(
+          cgh, offset, r);
       check_return_type<
-          accessor<T, dims, mode::read_write, target::global_buffer>>(
+          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::global_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
       cgh.single_task(empty_kernel());
     });
 
     /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<mode::read_write>(offset, r);
+      auto acc = buf.template get_access<cl::sycl::access::mode::read_write>(
+          offset, r);
       check_return_type<
-          accessor<T, dims, mode::read_write, target::host_buffer>>(
+          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+                             cl::sycl::access::target::host_buffer>>(
           log, acc, "cl::sycl::buffer::get_access()");
     }
 
@@ -149,7 +229,7 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
     {
       cl::sycl::mutex_class mutex;
       auto context = util::get_cts_object::context();
-      const property_list pl{
+      const cl::sycl::property_list pl{
           cl::sycl::property::buffer::use_host_ptr(),
           cl::sycl::property::buffer::use_mutex(mutex),
           cl::sycl::property::buffer::context_bound(context)};
@@ -192,7 +272,7 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
     }
 
     q.wait_and_throw();
-  } catch (const cl::sycl::exception &e) {
+  } catch (const cl::sycl::exception& e) {
     log_exception(log, e);
     cl::sycl::string_class errorMsg =
         "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
@@ -206,104 +286,182 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   template <typename T>
-  void test_type(util::logger &log) {
+  void test_type(util::logger& log) {
     const int size = 8;
     cl::sycl::range<1> range1d(size);
     cl::sycl::range<2> range2d(size, size);
     cl::sycl::range<3> range3d(size, size, size);
 
-    id<1> id1d(2);
-    id<2> id2d(2, 2);
-    id<3> id3d(2, 2, 2);
+    cl::sycl::id<1> id1d(2);
+    cl::sycl::id<2> id2d(2, 2);
+    cl::sycl::id<3> id3d(2, 2, 2);
 
     test_buffer<T, size, 1>(log, range1d, id1d);
     test_buffer<T, size * size, 2>(log, range2d, id2d);
     test_buffer<T, size * size * size, 3>(log, range3d, id3d);
+
+    /* check reinterpret() */
+
+    {
+      cl::sycl::vector_class<uint8_t> data(sizeof(T));
+      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
+          .template check<1>(data.data(), log);
+    }
+    {
+      cl::sycl::vector_class<uint8_t> data(sizeof(T));
+      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
+          .template check<2>(data.data(), log);
+    }
+    {
+      cl::sycl::vector_class<uint8_t> data(sizeof(T));
+      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
+          .template check<3>(data.data(), log);
+    }
   }
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     /* test signed types */
+    log.note("testing: int8_t");
     test_type<int8_t>(log);
+    log.note("testing: int16_t");
     test_type<int16_t>(log);
+    log.note("testing: int32_t");
     test_type<int32_t>(log);
+    log.note("testing: int64_t");
     test_type<int64_t>(log);
 
     /* test unsigned types */
+    log.note("testing: uint8_t");
     test_type<uint8_t>(log);
+    log.note("testing: uint16_t");
     test_type<uint16_t>(log);
+    log.note("testing: uint32_t");
     test_type<uint32_t>(log);
+    log.note("testing: uint64_t");
     test_type<uint64_t>(log);
 
     /* test float types */
+    log.note("testing: float");
     test_type<float>(log);
+    log.note("testing: double");
     test_type<double>(log);
 
     /* test vector types */
+    log.note("testing: float3");
     test_type<cl::sycl::float3>(log);
+    log.note("testing: float2");
     test_type<cl::sycl::float2>(log);
+    log.note("testing: float4");
     test_type<cl::sycl::float4>(log);
+    log.note("testing: float8");
     test_type<cl::sycl::float8>(log);
+    log.note("testing: float16");
     test_type<cl::sycl::float16>(log);
 
+    log.note("testing: double2");
     test_type<cl::sycl::double2>(log);
+    log.note("testing: double3");
     test_type<cl::sycl::double3>(log);
+    log.note("testing: double4");
     test_type<cl::sycl::double4>(log);
+    log.note("testing: double8");
     test_type<cl::sycl::double8>(log);
+    log.note("testing: double16");
     test_type<cl::sycl::double16>(log);
 
+    log.note("testing: char2");
     test_type<cl::sycl::char2>(log);
+    log.note("testing: char3");
     test_type<cl::sycl::char3>(log);
+    log.note("testing: char4");
     test_type<cl::sycl::char4>(log);
+    log.note("testing: char8");
     test_type<cl::sycl::char8>(log);
+    log.note("testing: char16");
     test_type<cl::sycl::char16>(log);
 
+    log.note("testing: int2");
     test_type<cl::sycl::int2>(log);
+    log.note("testing: int3");
     test_type<cl::sycl::int3>(log);
+    log.note("testing: int4");
     test_type<cl::sycl::int4>(log);
+    log.note("testing: int8");
     test_type<cl::sycl::int8>(log);
+    log.note("testing: int16");
     test_type<cl::sycl::int16>(log);
 
+    log.note("testing: short2");
     test_type<cl::sycl::short2>(log);
+    log.note("testing: short3");
     test_type<cl::sycl::short3>(log);
+    log.note("testing: short4");
     test_type<cl::sycl::short4>(log);
+    log.note("testing: short8");
     test_type<cl::sycl::short8>(log);
+    log.note("testing: short16");
     test_type<cl::sycl::short16>(log);
 
+    log.note("testing: long2");
     test_type<cl::sycl::long2>(log);
+    log.note("testing: long3");
     test_type<cl::sycl::long3>(log);
+    log.note("testing: long4");
     test_type<cl::sycl::long4>(log);
+    log.note("testing: long8");
     test_type<cl::sycl::long8>(log);
+    log.note("testing: long16");
     test_type<cl::sycl::long16>(log);
 
+    log.note("testing: uchar2");
     test_type<cl::sycl::uchar2>(log);
+    log.note("testing: uchar3");
     test_type<cl::sycl::uchar3>(log);
+    log.note("testing: uchar4");
     test_type<cl::sycl::uchar4>(log);
+    log.note("testing: uchar8");
     test_type<cl::sycl::uchar8>(log);
+    log.note("testing: uchar16");
     test_type<cl::sycl::uchar16>(log);
 
+    log.note("testing: uint2");
     test_type<cl::sycl::uint2>(log);
+    log.note("testing: uint3");
     test_type<cl::sycl::uint3>(log);
+    log.note("testing: uint4");
     test_type<cl::sycl::uint4>(log);
+    log.note("testing: uint8");
     test_type<cl::sycl::uint8>(log);
+    log.note("testing: uint16");
     test_type<cl::sycl::uint16>(log);
 
+    log.note("testing: ushort2");
     test_type<cl::sycl::ushort2>(log);
+    log.note("testing: ushort3");
     test_type<cl::sycl::ushort3>(log);
+    log.note("testing: ushort4");
     test_type<cl::sycl::ushort4>(log);
+    log.note("testing: ushort8");
     test_type<cl::sycl::ushort8>(log);
+    log.note("testing: ushort16");
     test_type<cl::sycl::ushort16>(log);
 
+    log.note("testing: ulong2");
     test_type<cl::sycl::ulong2>(log);
+    log.note("testing: ulong3");
     test_type<cl::sycl::ulong3>(log);
+    log.note("testing: ulong4");
     test_type<cl::sycl::ulong4>(log);
+    log.note("testing: ulong8");
     test_type<cl::sycl::ulong8>(log);
+    log.note("testing: ulong16");
     test_type<cl::sycl::ulong16>(log);
   }
 };
@@ -311,4 +469,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace buffer_api__ */
+}  // namespace TEST_NAMESPACE

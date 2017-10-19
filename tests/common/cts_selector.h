@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H
+#define __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H
 
 #include "sycl.h"
 
@@ -19,7 +20,6 @@ class cts_selector : public cl::sycl::device_selector {
   /** Returns true if the default platform of the selector is host.
    * @return boolean specifying whether the default platform is host. */
   bool is_host() const {
-    using namespace cl::sycl;
     using namespace sycl_cts::util;
 
     return (get<selector>().get_default_platform() == selector::ctsplat::host);
@@ -33,39 +33,38 @@ class cts_selector : public cl::sycl::device_selector {
    */
   int score(cl::sycl::info::device_type type,
             sycl_cts::util::selector::ctsdevice desired) const {
-    using namespace cl::sycl;
     using namespace sycl_cts::util;
 
     int result = -1;
 
     // type == all device matches all, return early
-    if (type == info::device_type::all) {
+    if (type == cl::sycl::info::device_type::all) {
       result = 1000;
     }
 
     switch (desired) {
       case selector::ctsdevice::host:
-        if (type == info::device_type::host) {
+        if (type == cl::sycl::info::device_type::host) {
           result = 1000;
         }
         break;
       case selector::ctsdevice::opencl_cpu:
-        if (type == info::device_type::cpu) {
+        if (type == cl::sycl::info::device_type::cpu) {
           result = 1000;
         }
         break;
       case selector::ctsdevice::opencl_gpu:
-        if (type == info::device_type::gpu) {
+        if (type == cl::sycl::info::device_type::gpu) {
           result = 1000;
         }
         break;
       case selector::ctsdevice::accelerator:
-        if (type == info::device_type::accelerator) {
+        if (type == cl::sycl::info::device_type::accelerator) {
           result = 1000;
         }
         break;
       case selector::ctsdevice::custom:
-        if (type == info::device_type::custom) {
+        if (type == cl::sycl::info::device_type::custom) {
           result = 1000;
         }
         break;
@@ -83,7 +82,6 @@ class cts_selector : public cl::sycl::device_selector {
    *  return >= 0  : positive device rating
    */
   virtual int operator()(const cl::sycl::device &dev) const {
-    using namespace cl::sycl;
     using namespace sycl_cts;
     using namespace sycl_cts::util;
 
@@ -99,8 +97,10 @@ class cts_selector : public cl::sycl::device_selector {
       }
     }
 
-    string_class vendor = dev.get_platform().get_info<info::platform::name>();
-    info::device_type type = dev.get_info<info::device::device_type>();
+    cl::sycl::string_class vendor =
+        dev.get_platform().get_info<cl::sycl::info::platform::name>();
+    cl::sycl::info::device_type type =
+        dev.get_info<cl::sycl::info::device::device_type>();
 
     int result = -1;
 
@@ -132,3 +132,5 @@ class cts_selector : public cl::sycl::device_selector {
     return result;
   }
 };
+
+#endif  // __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H

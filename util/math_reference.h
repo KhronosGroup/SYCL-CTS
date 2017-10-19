@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_MATH_REFERENCE_H
+#define __SYCLCTS_UTIL_MATH_REFERENCE_H
 
 #include "./stl.h"
 #include "../tests/common/sycl.h"
@@ -212,3 +213,5 @@ cl::sycl::uint4 mul24(cl::sycl::uint4 x, cl::sycl::uint4 y);
 cl::sycl::uint8 mul24(cl::sycl::uint8 x, cl::sycl::uint8 y);
 cl::sycl::uint16 mul24(cl::sycl::uint16 x, cl::sycl::uint16 y);
 }
+
+#endif  // __SYCLCTS_UTIL_MATH_REFERENCE_H

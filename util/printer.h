@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_PRINTER_H
+#define __SYCLCTS_UTIL_PRINTER_H
 
 #include "stl.h"
 #include "singleton.h"
@@ -123,3 +124,5 @@ protected:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_PRINTER_H

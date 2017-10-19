@@ -12,15 +12,14 @@
 
 namespace invoke_template_kernels__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 template <typename T>
 class templated_functor {
-  typedef accessor<T, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
+                             cl::sycl::access::target::global_buffer>
       read_t;
-  typedef accessor<T, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
+                             cl::sycl::access::target::global_buffer>
       write_t;
 
   read_t m_in;
@@ -33,12 +32,13 @@ class templated_functor {
 };
 
 template <typename T>
-bool test_kernel_functor(T in_value, util::logger &log, queue &sycl_queue) {
+bool test_kernel_functor(T in_value, util::logger &log,
+                         cl::sycl::queue &sycl_queue) {
   T input = in_value, output = 0;
   {
     cl::sycl::buffer<T, 1> buffer_input(&input, cl::sycl::range<1>(1));
     cl::sycl::buffer<T, 1> buffer_output(&output, cl::sycl::range<1>(1));
-    sycl_queue.submit([&](handler &cgh) {
+    sycl_queue.submit([&](cl::sycl::handler &cgh) {
       auto access_input =
           buffer_input.template get_access<cl::sycl::access::mode::read>(cgh);
       auto access_output =

@@ -6,7 +6,8 @@
 //
 *******************************************************************************/
 
-#pragma once
+#ifndef __SYCLCTS_UTIL_LOGGER_H
+#define __SYCLCTS_UTIL_LOGGER_H
 
 #include "stl.h"
 #include "test_base.h"
@@ -98,3 +99,5 @@ protected:
 
 } // namespace util
 } // namespace sycl_cts
+
+#endif  // __SYCLCTS_UTIL_LOGGER_H

@@ -18,20 +18,19 @@ struct image_kernel_write;
 
 namespace image_api__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 template <int dims>
 class image_ctors {
  public:
-  void operator()(util::logger &log, range<dims> &r,
-                  range<dims - 1> *p = nullptr) const {
+  void operator()(util::logger &log, cl::sycl::range<dims> &r,
+                  cl::sycl::range<dims - 1> *p = nullptr) const {
     log.note(
         "Testing image combination: dims[%d], range[%d, %d, %d], pitch[%d]",
         dims, r[0], r[1], r[2], (p != nullptr));
 
     // This combination is required to be supported by the OpenCL spec
-    const auto channelOrder = image_channel_order::rgba;
-    const auto channelType = image_channel_type::fp32;
+    const auto channelOrder = cl::sycl::image_channel_order::rgba;
+    const auto channelType = cl::sycl::image_channel_type::fp32;
 
     // Prepare variables
     const auto channelCount = get_channel_order_count(channelOrder);
@@ -44,7 +43,7 @@ class image_ctors {
 
     // Creates an image, either with a pitch or without
     // The pitch is not used for a 1D image or when null
-    image<dims> img = image_generic<dims>::create_with_pitch(
+    cl::sycl::image<dims> img = image_generic<dims>::create_with_pitch(
         static_cast<void *>(imageHost.get()), channelOrder, channelType, r, p);
 
     // Check get_range()
@@ -61,8 +60,8 @@ class image_ctors {
 
     // Check get_size()
     if (img.get_size() < (numElems * elementSize)) {
-      string_class message =
-          string_class("Sizes are not the same: expected at least ") +
+      cl::sycl::string_class message =
+          cl::sycl::string_class("Sizes are not the same: expected at least ") +
           std::to_string(numElems * elementSize) + ", got " +
           std::to_string(img.get_size());
       FAIL(log, message);
@@ -96,13 +95,15 @@ class image_ctors {
 
     /* Check image properties */
     {
-      mutex_class mutex;
+      cl::sycl::mutex_class mutex;
       auto context = util::get_cts_object::context();
-      const property_list propList{property::image::use_host_ptr(),
-                                   property::image::use_mutex(mutex),
-                                   property::image::context_bound(context)};
+      const cl::sycl::property_list propList{
+          cl::sycl::property::image::use_host_ptr(),
+          cl::sycl::property::image::use_mutex(mutex),
+          cl::sycl::property::image::context_bound(context)};
 
-      image<dims> img = image<dims>(channelOrder, channelType, r, propList);
+      cl::sycl::image<dims> img =
+          cl::sycl::image<dims>(channelOrder, channelType, r, propList);
 
       /* check has_property() */
 
@@ -145,25 +146,28 @@ class image_ctors {
 
     auto queue = util::get_cts_object::queue();
 
-    queue.submit([&](handler &cgh) {
-      auto img_acc =
-          img.template get_access<float4, cl::sycl::access::mode::read>(cgh);
-      auto myKernel = [=](item<1> item) {
+    queue.submit([&](cl::sycl::handler &cgh) {
+      auto img_acc = img.template get_access<cl::sycl::float4,
+                                             cl::sycl::access::mode::read>(cgh);
+      auto myKernel = [=](cl::sycl::item<1> item) {
         // Read image data using integer coordinates
-        float4 dataFromInt = img_acc.read(image_access<dims>::get_int(item));
+        cl::sycl::float4 dataFromInt =
+            img_acc.read(image_access<dims>::get_int(item));
         // Read image data using floating point coordinates
-        float4 dataFromFloat =
+        cl::sycl::float4 dataFromFloat =
             img_acc.read(image_access<dims>::get_float(item));
       };
       cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
     });
 
-    queue.submit([&](handler &cgh) {
+    queue.submit([&](cl::sycl::handler &cgh) {
       auto img_acc =
-          img.template get_access<float4, cl::sycl::access::mode::write>(cgh);
-      auto myKernel = [=](item<1> item) {
+          img.template get_access<cl::sycl::float4,
+                                  cl::sycl::access::mode::write>(cgh);
+      auto myKernel = [=](cl::sycl::item<1> item) {
         // Write image data
-        img_acc.write(image_access<dims>::get_int(item), float4(0.5f));
+        img_acc.write(image_access<dims>::get_int(item),
+                      cl::sycl::float4(0.5f));
       };
       cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
     });
@@ -199,9 +203,9 @@ class TEST_NAME : public util::test_base_opencl {
       const int elemsPerDim2 = 8;
       const int elemsPerDim3 = 4;
 
-      range<1> range_1d(elemsPerDim1);
-      range<2> range_2d(elemsPerDim2, elemsPerDim2);
-      range<3> range_3d(elemsPerDim3, elemsPerDim3, elemsPerDim3);
+      cl::sycl::range<1> range_1d(elemsPerDim1);
+      cl::sycl::range<2> range_2d(elemsPerDim2, elemsPerDim2);
+      cl::sycl::range<3> range_3d(elemsPerDim3, elemsPerDim3, elemsPerDim3);
 
       // Test without pitch
       {
@@ -215,8 +219,8 @@ class TEST_NAME : public util::test_base_opencl {
 
       // Test with pitch
       {
-        range<1> pitch_1d(elemsPerDim2);
-        range<2> pitch_2d(elemsPerDim3, elemsPerDim3 * elemsPerDim3);
+        cl::sycl::range<1> pitch_1d(elemsPerDim2);
+        cl::sycl::range<2> pitch_2d(elemsPerDim3, elemsPerDim3 * elemsPerDim3);
 
         image_ctors<2> img_2d;
         image_ctors<3> img_3d;

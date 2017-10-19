@@ -1,13 +1,10 @@
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-#  SYCL CONFORMANCE TEST SUITE
-#  Usage guide
-#  22/08/17
-#
+==============================================
+SYCL 1.2.1 Conformance Test Suite (10/10/2017)
+==============================================
 
+Introduction
+------------
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Introduction
-#
     This conformance test suite is divided into two parts, a binary
     executable containing all of the tests and a python user interface.
     It is intended that the user only runs the test suite via the python
@@ -18,9 +15,9 @@
     and one 'fat' executable that contains the tests from all categories.
 
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Compilation and execution prerequisites
-#
+Compilation and execution prerequisites
+---------------------------------------
+
     - An implementation of SYCL
     - A conformant implementation of OpenCL
     - Python 2.7
@@ -31,9 +28,9 @@
     implementation has passed the Khronos OpenCL CTS.
 
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Building on Linux
-#
+Building on Linux
+-----------------
+
     - Checkout the SYCL test suite repository.
 
     - Run CMake
@@ -49,9 +46,9 @@
         contains all tests in the suite.
 
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Building on Windows
-#
+Building on Windows
+-------------------
+
     - Checkout the SYCL test suite repository.
 
     - Run CMake
@@ -66,27 +63,28 @@
         sycl-cts 'build/bin' directory.  The 'test_all' executable
         contains all tests in the suite.
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# CMake flags
-#
+CMake flags
+-----------
 
     When configuring CMake, it is possible to use these flags:
-    - COMPUTECPP_INSTALL_DIR                Required only for ComputeCpp
-    - SYCL_CTS_TEST_FILTER                  Specify which filter to use when
-                                              building tests
-    - HOST_COMPILER_FLAGS                   Flags that will be passed to the
-                                              host compiler
-    - DEVICE_COMPILER_FLAGS                 Flags that will be passed to the
-                                              device compiler
+
+    - COMPUTECPP_INSTALL_DIR
+        - Required only for ComputeCpp.
+    - SYCL_CTS_TEST_FILTER
+        - Specify which filter to use when building tests.
+    - HOST_COMPILER_FLAGS
+        - Flags that will be passed to the host compiler.
+    - DEVICE_COMPILER_FLAGS
+        - Flags that will be passed to the device compiler.
 
 
-# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-# Launching the test suite
-#
+Launching the test suite
+------------------------
 
     The SYCL test suite can be launched via the following command:
 
         $ python runtests.py --help
+        
         usage: runtests.py [-h] [-b BINPATH] [--csvpath CSVPATH] [--list]
                            [-j JUNIT] [-p {host,intel,amd}]
                            [-d {host,opencl_cpu,opencl_gpu}]
@@ -94,6 +92,7 @@
         Khronos SYCL CTS
 
         optional arguments:
+
           -h, --help            show this help message and exit
           -b BINPATH, --binpath BINPATH
                                 specify path to the cts executable file
@@ -101,10 +100,12 @@
           --list                list all tests in a test binary
           -j JUNIT, --junit JUNIT
                                 specify output path for a junit xml file
-          -p {host,intel,amd}, --platform {host,intel,amd}
-                                The platform to run on
-          -d {host,opencl_cpu,opencl_gpu}, --device {host,opencl_cpu,opencl_gpu}
-                                The device to run on
+          -p PLATFORM, --platform PLATFORM
+                                The platform to run on (where PLATFORM can be
+                                host, intel, amd)
+          -d DEVICE, --device DEVICE
+                                The device to run on (where DEVICE can be host,
+                                opencl_cpu, opencl_gpu)
  
     The '--binpath' argument is mandatory and must point to one of the CTS
     test executables built in the previous step.
@@ -124,9 +125,13 @@
     stored in a test executable.  For instance:
     
         $ python runtests.py -b build\bin\test_context.exe --list
+
         3 tests in executable
+
           . context_api
+
           . context_constructors
+
           . context_getinfo
     
     Passing the '--junit' option will output test results in junit format
@@ -146,7 +151,8 @@
     The following failure importantly shows the source file containing the
     test and the line number that signalled the failure.
 
-        ## platform_api
+        platform_api:
+
          ?   note: sycl exception caught
          ?   note: what - Failed to get platform information.
          + result: fail
@@ -162,4 +168,4 @@
          - failed : 1
            + platform_api
          - skipped: 2
-         = 81% pass rate
+         - 81% pass rate

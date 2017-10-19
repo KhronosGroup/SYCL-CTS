@@ -68,8 +68,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    using namespace cl::sycl;
-
     try {
       auto queue = util::get_cts_object::queue();
       // Prepare the kernel and get the required info
@@ -89,13 +87,15 @@ class TEST_NAME : public util::test_base {
 
       // Collect the group indices
       {
-        buffer<size_t, 1> buf(result.data(), range<1>(resultSize));
-        queue.submit([&](handler &cgh) {
+        cl::sycl::buffer<size_t, 1> buf(result.data(),
+                                        cl::sycl::range<1>(resultSize));
+        queue.submit([&](cl::sycl::handler &cgh) {
           auto a_dev = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
 
           cgh.parallel_for_work_group<class TEST_NAME>(
-              range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D, GROUP_RANGE_3D),
-              [=](group<3> my_group) {
+              cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D,
+                                 GROUP_RANGE_3D),
+              [=](cl::sycl::group<3> my_group) {
                 const size_t groupLinearID = my_group.get_linear();
 
                 // get()
@@ -117,7 +117,8 @@ class TEST_NAME : public util::test_base {
 
                 // get_global_range()
                 {
-                  range<3> m_get_global_range = my_group.get_global_range();
+                  cl::sycl::range<3> m_get_global_range =
+                      my_group.get_global_range();
                   auto indexBase =
                       get_index(groupLinearID, getter::global_range);
                   a_dev[indexBase + 0] = m_get_global_range.get(0);
@@ -136,7 +137,8 @@ class TEST_NAME : public util::test_base {
 
                 // get_group_range()
                 {
-                  range<3> m_get_group_range = my_group.get_group_range();
+                  cl::sycl::range<3> m_get_group_range =
+                      my_group.get_group_range();
                   auto indexBase =
                       get_index(groupLinearID, getter::group_range);
                   a_dev[indexBase + 0] = m_get_group_range.get(0);

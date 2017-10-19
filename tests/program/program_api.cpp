@@ -23,7 +23,6 @@ struct program_api_kernel {
 
 namespace program_api__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** simple OpenCL test kernel
  */
@@ -48,8 +47,6 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   void run(util::logger &log) override {
     try {
-      using namespace cl::sycl;
-
       auto context = util::get_cts_object::context();
 
       {
@@ -57,7 +54,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
-        program prog(context);
+        cl::sycl::program prog(context);
         prog.build_from_kernel_name<program_api_kernel>();
 
         // Check get_devices()
@@ -69,13 +66,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         bool isHost = prog.is_host();
 
         // Check get_binaries()
-        vector_class<vector_class<char>> binaries = prog.get_binaries();
+        cl::sycl::vector_class<cl::sycl::vector_class<char>> binaries =
+            prog.get_binaries();
 
         // Check get_binary_sizes()
-        vector_class<::size_t> binarySizes = prog.get_binary_sizes();
+        cl::sycl::vector_class<::size_t> binarySizes = prog.get_binary_sizes();
 
         // Check get_build_options()
-        string_class buildOptions = prog.get_build_options();
+        cl::sycl::string_class buildOptions = prog.get_build_options();
 
         // Check get()
         if (!context.is_host()) {
@@ -84,13 +82,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Check get_kernel()
         {
-          auto q = queue(selector);
+          auto q = cl::sycl::queue(selector);
           q.submit([](cl::sycl::handler &cgh) {
             cgh.single_task(program_api_kernel());
           });
           q.wait_and_throw();
 
-          kernel k = prog.get_kernel<program_api_kernel>();
+          cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
         }
 
         // Check is_linked()
@@ -104,7 +102,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         log.note("build program without build options");
 
         auto myQueue = util::get_cts_object::queue();
-        program prog(myQueue.get_context());
+        cl::sycl::program prog(myQueue.get_context());
 
         if (prog.is_linked()) {
           FAIL(log, "Newly created program should not be linked yet");
@@ -121,8 +119,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Wrong value for program.get_binaries()");
         }
 
-        myQueue.submit(
-            [&](handler &cgh) { cgh.single_task(program_kernel<0>()); });
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<0>());
+        });
       }
 
       {
@@ -130,7 +129,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         auto myQueue = util::get_cts_object::queue();
 
-        program prog(myQueue.get_context());
+        cl::sycl::program prog(myQueue.get_context());
 
         if (prog.is_linked()) {
           FAIL(log, "Newly created program should not be linked yet");
@@ -147,8 +146,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Wrong value for program.get_binaries()");
         }
 
-        myQueue.submit(
-            [&](handler &cgh) { cgh.single_task(program_kernel<1>()); });
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<1>());
+        });
       }
 
       {
@@ -157,7 +157,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             "options");
 
         auto myQueue = util::get_cts_object::queue();
-        program prog(myQueue.get_context());
+        cl::sycl::program prog(myQueue.get_context());
 
         if (prog.is_linked()) {
           FAIL(log, "Newly created program should not be linked yet");
@@ -186,8 +186,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "program.get_build_options() shouldn't be empty");
         }
 
-        myQueue.submit(
-            [&](handler &cgh) { cgh.single_task(program_kernel<2>()); });
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<2>());
+        });
       }
 
       if (!context.is_host()) {
@@ -225,8 +226,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Program was not linked");
         }
 
-        myQueue.submit(
-            [&](handler &cgh) { cgh.single_task(program_kernel<3>()); });
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<3>());
+        });
       }
 
       if (!context.is_host()) {
@@ -265,8 +267,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Program was not linked");
         }
 
-        myQueue.submit(
-            [&](handler &cgh) { cgh.single_task(program_kernel<4>()); });
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<4>());
+        });
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

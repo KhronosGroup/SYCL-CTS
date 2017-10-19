@@ -27,7 +27,6 @@ static const int localItemsTotal = (localItems1d * localItems2d * localItems3d);
 static const int groupRangeTotal = (groupItemsTotal / localItemsTotal);
 
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 /** test cl::sycl::range::get(int index) return size_t
  */
@@ -49,24 +48,27 @@ class TEST_NAME : public util::test_base {
       }
 
       {
-        buffer<int, 1> outputBuffer(outputData, range<1>(groupItemsTotal));
+        cl::sycl::buffer<int, 1> outputBuffer(
+            outputData, cl::sycl::range<1>(groupItemsTotal));
 
-        queue myQueue(util::get_cts_object::queue());
+        cl::sycl::queue myQueue(util::get_cts_object::queue());
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
 
-          auto groupRange = range<3>(groupRange1d, groupRange2d, groupRange3d);
-          auto localRange = range<3>(localItems1d, localItems2d, localItems3d);
+          auto groupRange =
+              cl::sycl::range<3>(groupRange1d, groupRange2d, groupRange3d);
+          auto localRange =
+              cl::sycl::range<3>(localItems1d, localItems2d, localItems3d);
 
           auto outputPtr =
-              outputBuffer.get_access<access::mode::read_write>(cgh);
+              outputBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
           cgh.parallel_for_work_group<class hierarchical_implicit_conditional>(
-              groupRange, localRange, [=](group<3> group) {
+              groupRange, localRange, [=](cl::sycl::group<3> group) {
                 // Create a local variable to store the work item id.
                 int work_item_id;
 
-                parallel_for_work_item(group, [&](item<3> item) {
+                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
                   // Assign the work item id to a local variable.
                   work_item_id = group.get_linear() * item.get_range().size() +
                                  item.get_linear_id();

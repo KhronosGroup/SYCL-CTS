@@ -12,15 +12,14 @@
 
 namespace test_item_1d__ {
 using namespace sycl_cts;
-using namespace cl::sycl;
 
 class kernel_item_1d {
  protected:
-  typedef accessor<int, 1, cl::sycl::access::mode::read,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, 1, cl::sycl::access::mode::read,
+                             cl::sycl::access::target::global_buffer>
       t_readAccess;
-  typedef accessor<int, 1, cl::sycl::access::mode::write,
-                   cl::sycl::access::target::global_buffer>
+  typedef cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
+                             cl::sycl::access::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_x;
@@ -29,15 +28,15 @@ class kernel_item_1d {
  public:
   kernel_item_1d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
-  void operator()(item<1> item) {
-    id<1> gid = item.get_id();
+  void operator()(cl::sycl::item<1> item) {
+    cl::sycl::id<1> gid = item.get_id();
 
-    size_t dim_a = item.get(0);
+    size_t dim_a = item.get_id(0);
     size_t dim_b = item[0];
 
-    range<1> localRange = item.get_range();
+    cl::sycl::range<1> localRange = item.get_range();
 
-    id<1> offset = item.get_offset();
+    cl::sycl::id<1> offset = item.get_offset();
 
     /* get work item range */
     const size_t nWidth = localRange.get(0);
@@ -78,20 +77,20 @@ bool test_item_1d(util::logger &log) {
   buffer_fill(dataIn.get(), nWidth);
 
   try {
-    range<1> dataRange(nWidth);
+    cl::sycl::range<1> dataRange(nWidth);
 
-    buffer<int, 1> bufIn(dataIn.get(), dataRange);
-    buffer<int, 1> bufOut(dataOut.get(), dataRange);
+    cl::sycl::buffer<int, 1> bufIn(dataIn.get(), dataRange);
+    cl::sycl::buffer<int, 1> bufOut(dataOut.get(), dataRange);
 
     auto cmdQueue = util::get_cts_object::queue();
 
-    cmdQueue.submit([&](handler &cgh) {
+    cmdQueue.submit([&](cl::sycl::handler &cgh) {
       auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
       auto accOut =
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
       kernel_item_1d kern = kernel_item_1d(accIn, accOut);
-      cgh.parallel_for(range<1>(dataRange), kern);
+      cgh.parallel_for(cl::sycl::range<1>(dataRange), kern);
     });
 
     cmdQueue.wait_and_throw();

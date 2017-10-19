@@ -266,8 +266,32 @@ size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
   return id[0] + (id[1] * r[0]) + (id[2] * r[0] * r[1]);
 }
 
-/** tests accessor multi dim read syntax for 1 dimension
-  * specialised for buffer accessors
+/** helper function for image accessor read/write operations
+  */
+auto make_index(const cl::sycl::id<1> &idx) -> decltype(idx) { return idx; }
+
+/** helper function for image accessor read/write operations
+  */
+cl::sycl::int2 make_index(const cl::sycl::id<2> &idx) {
+  return {idx[0], idx[1]};
+}
+
+/** helper function for image accessor read/write operations
+  */
+cl::sycl::int3 make_index(const cl::sycl::id<3> &idx) {
+  return {idx[0], idx[1], idx[2]};
+}
+
+/** @brief tests accessor multi dim read syntax for 1 dimension
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The target of the accessor
+  * @tparam placeholder Determines whether or not the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
   */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
@@ -280,18 +304,16 @@ T multidim_subscript_read(
   return acc[idx[0]];
 }
 
-/** tests accessor multi dim read syntax for 1 dimension
-  * specialised for image accessors
-  */
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_read(cl::sycl::accessor<T, 1, mode, target> &acc,
-                          cl::sycl::id<1> idx) {
-  return acc.read(idx[0]);
-}
-
-/** tests accessor multi dim read syntax for 2 dimensions
-  * specialised for buffer accessors
+/** @brief tests accessor multi dim read syntax for 2 dimensions
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The target of the accessor
+  * @tparam placeholder Determines whether or not the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
   */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
@@ -304,18 +326,16 @@ T multidim_subscript_read(
   return acc[idx[0]][idx[1]];
 }
 
-/** tests accessor multi dim read syntax for 2 dimensions
-  * specialised for image accessors
-  */
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_read(cl::sycl::accessor<T, 2, mode, target> &acc,
-                          cl::sycl::id<2> idx) {
-  return acc.read(cl::sycl::int2(idx[0], idx[1]));
-}
-
-/** tests accessor multi dim read syntax for 3 dimensions
-  * specialised for buffer accessors
+/** @brief tests accessor multi dim read syntax for 3 dimensions
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The target of the accessor
+  * @tparam placeholder Determines whether or not the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
   */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
@@ -328,46 +348,96 @@ T multidim_subscript_read(
   return acc[idx[0]][idx[1]][idx[2]];
 }
 
-/** tests accessor multi dim read syntax for 3 dimensions
-  * specialised for image accessors
+/** @brief tests accessor multi dim read syntax for n dimensions
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam dims        The number of dimensions that the accessor has
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The target of the accessor
+  * @pre                is_image<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param i            The index of the image_array, unused
   */
-template <typename T, cl::sycl::access::mode mode,
+template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_read(cl::sycl::accessor<T, 3, mode, target> &acc,
-                          cl::sycl::id<3> idx) {
-  return acc.read(cl::sycl::int3(idx[0], idx[1], idx[2]));
+T multidim_subscript_read(cl::sycl::accessor<T, dims, mode, target> &acc,
+                          cl::sycl::id<dims> idx, std::size_t = 0) {
+  return acc.read(make_index(idx));
 }
 
-/** tests accessor multi dim sampled read syntax for 1 dimension
-*/
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_sampled_read(cl::sycl::accessor<T, 1, mode, target> &acc,
-                                  cl::sycl::sampler smpl, cl::sycl::id<1> idx) {
-  return acc.read(idx[0], smpl);
+/** @brief tests accessor multi dim read syntax for n dimensions
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam dims        The number of dimensions that the accessor has
+  * @tparam mode        The read/write mode of the accessor
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param i            The index of the image_array
+  */
+template <typename T, int dims, cl::sycl::access::mode mode>
+T multidim_subscript_read(
+    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
+        &acc,
+    cl::sycl::id<dims> idx, std::size_t i) {
+  return acc[i].read(make_index(idx));
 }
 
-/** tests accessor multi dim sampled read syntax for 2 dimension
-*/
-template <typename T, cl::sycl::access::mode mode,
+/** @brief tests accessor multi dim read syntax for n dimensions, with sample
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam dims        The number of dimensions that the accessor has
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The target of the accessor
+  * @pre                is_image<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param smpl         The sample to be read
+  * @param i            The index of the image_array, unused
+  */
+template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_sampled_read(cl::sycl::accessor<T, 2, mode, target> &acc,
-                                  cl::sycl::sampler smpl, cl::sycl::id<2> idx) {
-  return acc.read(cl::sycl::int2(idx[0], idx[1]), smpl);
+T multidim_subscript_sampled_read(
+    cl::sycl::accessor<T, dims, mode, target> &acc, cl::sycl::sampler smpl,
+    cl::sycl::id<dims> idx, std::size_t) {
+  return acc.read(make_index(idx), smpl);
 }
 
-/** tests accessor multi dim sampled read syntax for 3 dimension
-*/
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-T multidim_subscript_sampled_read(cl::sycl::accessor<T, 3, mode, target> &acc,
-                                  cl::sycl::sampler smpl, cl::sycl::id<3> idx) {
-  return acc.read(cl::sycl::int3(idx[0], idx[1], idx[2]), smpl);
+/** @brief tests accessor multi dim read syntax for n dimensions, with sample
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam dims        The number of dimensions that the accessor has
+  * @tparam mode        The read/write mode of the accessor
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param smpl         The sample to be read
+  * @param i            The index of the image_array
+  */
+template <typename T, int dims, cl::sycl::access::mode mode>
+T multidim_subscript_sampled_read(
+    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
+        &acc,
+    cl::sycl::sampler smpl, cl::sycl::id<dims> idx, std::size_t i) {
+  return acc[i].read(make_index(idx), smpl);
 }
 
-/** tests accessor multi dim write syntax for 1 dimension
-  * specialised for buffer accessors
-*/
+/** @brief tests accessor multi dim write syntax for 1 dimension
+  *        specialised for buffer accessors
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The accessor target type
+  * @tparam placeholder Determines if the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param value        The value to be written
+  */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder =
@@ -379,18 +449,18 @@ void multidim_subscript_write(
   acc[idx[0]] = value;
 }
 
-/** tests accessor multi dim write syntax for 1 dimension
-  * specialised for image accessors
-  */
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-void multidim_subscript_write(cl::sycl::accessor<T, 1, mode, target> &acc,
-                              cl::sycl::id<1> idx, T value) {
-  acc.write(idx[0], value);
-}
-
-/** tests accessor multi dim write syntax for 2 dimension
-  * specialised for buffer accessors
+/** @brief tests accessor multi dim write syntax for 2 dimensions
+  *        specialised for buffer accessors
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The accessor target type
+  * @tparam placeholder Determines if the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param value        The value to be written
   */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
@@ -403,18 +473,18 @@ void multidim_subscript_write(
   acc[idx[0]][idx[1]] = value;
 }
 
-/** tests accessor multi dim write syntax for 2 dimension
-  * specialised for image accessors
-  */
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-void multidim_subscript_write(cl::sycl::accessor<T, 2, mode, target> &acc,
-                              cl::sycl::id<2> idx, T value) {
-  acc.write(cl::sycl::int2(idx[0], idx[1]), value);
-}
-
-/** tests accessor multi dim write syntax for 3 dimension
-  * specialised for buffer accessors
+/** @brief tests accessor multi dim write syntax for 3 dimensions
+  *        specialised for buffer accessors
+  *
+  * @tparam T           The underlying type of the accessor
+  * @tparam mode        The read/write mode of the accessor
+  * @tparam target      The accessor target type
+  * @tparam placeholder Determines if the accessor is a placeholder
+  * @pre                is_buffer<target>::value
+  *
+  * @param acc          The accessor to be written to
+  * @param idx          The index of the accessor
+  * @param value        The value to be written
   */
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
@@ -427,14 +497,46 @@ void multidim_subscript_write(
   acc[idx[0]][idx[1]][idx[2]] = value;
 }
 
-/** tests accessor multi dim write syntax for 3 dimension
-  * specialised for image accessors
+/** @brief  tests accessor multi dim write syntax for n dimensions
+  *         specialised for image accessors
+  *
+  * @tparam T       The underlying type of the accessor
+  * @tparam dims    The number of dimensions that the accessor has
+  * @tparam mode    The read/write mode of the accessor
+  * @tparam target  The accessor target type
+  * @pre            is_image<target>::value
+  *
+  * @param acc      The image accessor to be written to
+  * @param idx      The index of the accessor
+  * @param value    The value to be written
   */
-template <typename T, cl::sycl::access::mode mode,
+template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target, REQUIRES(is_image<target>::value)>
-void multidim_subscript_write(cl::sycl::accessor<T, 3, mode, target> &acc,
-                              cl::sycl::id<3>, T) {
-  // CTS not required to test -- this is an extension
+void multidim_subscript_write(cl::sycl::accessor<T, dims, mode, target> &acc,
+                              cl::sycl::id<dims> idx, T value) {
+  acc.write(make_index(idx), value);
+}
+
+/** @brief tests accessor multi dim write syntax for n < 3 dimensions
+  *        overloaded for image_array accessors
+  *
+  * @tparam T       The underlying type of the accessor
+  * @tparam dims    The number of dimensions that the accessor has
+  * @tparam mode    The read/write mode of the accessor
+  * @pre            is_image<target>::value
+  *
+  * @param acc      The image accessor to be written to
+  * @param idx      The index of the accessor
+  * @param value    The value to be written
+  */
+template <typename T, int dims, cl::sycl::access::mode mode>
+void multidim_subscript_write(
+    cl::sycl::accessor<T, dims, mode,
+                       cl::sycl::access::placeholder::image_array> &acc,
+    cl::sycl::id<dims> idx, T value) {
+  for (auto i = std::size_t{}; i != acc.get_size(); ++i) {
+    acc[i].write(make_index(idx), value);
+  }
 }
 
 /** tests buffer accessors reads
@@ -639,25 +741,36 @@ class image_accessor_api_r {
       m_errorAccessor[1] = 1;
     }
 
-    /** check size_t read syntax
-    */
-    elem = multidim_subscript_read(accessorC_, idx);
-    if (use_normalization_coefficient<T>::value) {
-      elem *= 255.f;
-    }
-    if (!check_element_valid(elem, linearID, true)) {
-      m_errorAccessor[2] = 1;
-    }
+    auto check =
+        [&](const std::size_t i = 0) {
+          /** check size_t read syntax
+          */
+          elem = multidim_subscript_read(accessorC_, idx, i);
 
-    /** check sampled size_t read syntax
-    */
-    elem = multidim_subscript_sampled_read(accessorD_, sampler_, idx);
-    if (use_normalization_coefficient<T>::value) {
-      elem *= 255.f;
-    }
-    if (!check_element_valid(elem, linearID, true)) {
-      m_errorAccessor[3] = 1;
-    }
+          if (use_normalization_coefficient<T>::value) {
+            elem *= 255.f;
+          }
+          if (!check_element_valid(elem, linearID, true)) {
+            m_errorAccessor[2] = 1;
+          }
+
+          /** check sampled size_t read syntax
+          */
+          elem = multidim_subscript_sampled_read(accessorD_, sampler_, idx, i);
+          if (use_normalization_coefficient<T>::value) {
+            elem *= 255.f;
+          }
+          if (!check_element_valid(elem, linearID, true)) {
+            m_errorAccessor[3] = 1;
+          }
+        }
+
+    if_constexpr<(target == cl::sycl::access::target::image_array)>(
+        check, [&check, &accessorC_] {
+          for (auto i = std::size_t{}; i != accessorC_.get_size(); ++i) {
+            check(i);
+          }
+        });
   }
 };
 
@@ -1741,6 +1854,12 @@ void check_image_accessor_api_dim(util::logger &log, cl::sycl::queue &queue,
   */
   check_image_accessor_api_target<T, dims, count, size,
                                   cl::sycl::access::target::host_image>(
+      log, queue, range);
+
+  /** check image accessor api for image_array
+  */
+  check_image_accessor_api_target<T, dims, count, size,
+                                  cl::sycl::access::target::image_array>(
       log, queue, range);
 }
 
