@@ -279,7 +279,7 @@ bool test_specific_return_type_vector_operators(vecType testValue1,
   cl::sycl::vec<retType, vecSize> resVec;
 
   // Logical operators
-  resVec = cl::sycl::vec<int, vecSize>(-(testValue1 && testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 && testValue2));
   if (!check_single_vector_op<vecSize>(
           resVec, [=]() { return testVec1 && testVec2; })) {
     return false;
@@ -288,7 +288,7 @@ bool test_specific_return_type_vector_operators(vecType testValue1,
           resVec, [=]() { return testVec1 && testValue2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<int, vecSize>(-(testValue1 || testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 || testValue2));
   if (!check_single_vector_op<vecSize>(
           resVec, [=]() { return testVec1 || testVec2; })) {
     return false;
@@ -297,40 +297,47 @@ bool test_specific_return_type_vector_operators(vecType testValue1,
           resVec, [=]() { return testVec1 || testValue2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(!testValue1);
-  if (!check_single_vector_op<vecSize>(resVec, [=]() { return !testVec1; })) {
+  resVec = cl::sycl::vec<retType, vecSize>(-(!testValue1);
+  if (!check_single_vector_op<vecSize>(resVec, [=]() {
+    return !testVec1; })) {
     return false;
   }
 
   // Relational Operators
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 == testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 == testValue2));
   if (!check_single_vector_op<vecSize>(
-          resVec, [=]() { return testVec1 == testVec2; })) {
+          resVec, [=]() {
+    return testVec1 == testVec2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 != testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 != testValue2));
   if (!check_single_vector_op<vecSize>(
-          resVec, [=]() { return testVec1 != testVec2; })) {
+          resVec, [=]() {
+    return testVec1 != testVec2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 <= testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 <= testValue2));
   if (!check_single_vector_op<vecSize>(
-          resVec, [=]() { return testVec1 <= testVec2; })) {
+          resVec, [=]() {
+    return testVec1 <= testVec2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 >= testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 >= testValue2));
   if (!check_single_vector_op<vecSize>(
-          resVec, [=]() { return testVec1 >= testVec2; })) {
+          resVec, [=]() {
+    return testVec1 >= testVec2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 < testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 < testValue2));
   if (!check_single_vector_op<vecSize>(resVec,
-                                       [=]() { return testVec1 < testVec2; })) {
+                                       [=]() {
+    return testVec1 < testVec2; })) {
     return false;
   }
-  resVec = cl::sycl::vec<vecType, vecSize>(-(testValue1 > testValue2));
+  resVec = cl::sycl::vec<retType, vecSize>(-(testValue1 > testValue2));
   if (!check_single_vector_op<vecSize>(resVec,
-                                       [=]() { return testVec1 > testVec2; })) {
+                                       [=]() {
+    return testVec1 > testVec2; })) {
     return false;
   }
   return true;
