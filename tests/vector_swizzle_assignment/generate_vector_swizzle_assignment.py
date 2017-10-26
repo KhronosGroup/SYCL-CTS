@@ -17,18 +17,20 @@ swizzle_xyzw_rgba_assignment_template = Template("""
         auto swizzledVec = cl::sycl::vec<${type}, ${size}>();
         swizzledVec.${indexes}() = ${vecName}DimTestVec;
         ${type} vals[] = {${orderedValues}};
-        if (check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
-            resAcc[0] = false;
+        if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
+          resAcc[0] = false;
         }
 """)
 
 swizzle_elem_assignment_template = Template("""
-        cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-        auto swizzledVec = cl::sycl::vec<${type}, ${size}>();
-        swizzledVec.template swizzle<${indexes}>() = ${vecName}DimTestVec;
-        ${type} vals[] = {${orderedValues}};
-        if (check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
+        {
+          cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+          auto swizzledVec = cl::sycl::vec<${type}, ${size}>();
+          swizzledVec.template swizzle<${indexes}>() = ${vecName}DimTestVec;
+          ${type} vals[] = {${orderedValues}};
+          if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
             resAcc[0] = false;
+          }
         }
 """)
 

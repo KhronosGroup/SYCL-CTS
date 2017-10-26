@@ -16,16 +16,19 @@ vector_api_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
         ${type} vals[] = {${vals}};
         ${type} reversed_vals[] = {${reversed_vals}};
-        if (check_vector_member_functions<${type}, ${size}, ${convertType}, ${asType}>(inputVec, vals)) {
-            resAcc[0] = false;
+        if (!check_vector_member_functions<${type}, ${size}, ${convertType}, ${asType}>(inputVec, vals)) {
+          resAcc[0] = false;
         }
         cl::sycl::vec<${type}, ${size}> swizzledVec = inputVec.template swizzle<${swizIndexes}>();
-        if (check_vector_values<${type}, ${size}>(swizzledVec, reversed_vals)) {
-            resAcc[0] = false;
+        if (!check_vector_values<${type}, ${size}>(swizzledVec, reversed_vals)) {
+          resAcc[0] = false;
         }
 """)
 
-lo_hi_odd_even_template = Template("""      check_lo_hi_odd_even<${type}, ${size}>(inputVec, vals);
+lo_hi_odd_even_template = Template("""
+        if (!check_lo_hi_odd_even<${type}, ${size}>(inputVec, vals))
+          resAcc[0] = false;
+        }
 """)
 
 

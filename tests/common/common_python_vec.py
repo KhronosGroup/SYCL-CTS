@@ -181,11 +181,11 @@ def wrap_with_half_check(type_str, test_string):
     return string
 
 
-def wrap_with_kernel(type_str, kernelName, testName, test_string):
+def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     """Wraps test_string inside a kernel with given name and a test for cl_khr_fp16 if appropriate"""
-    string = kernel_start_template.substitute(kernelName=kernelName)
+    string = kernel_start_template.substitute(kernelName=kernel_name)
     string += test_string
-    string += kernel_end_template.substitute(testName=testName)
+    string += kernel_end_template.substitute(testName=test_name)
     return wrap_with_half_check(type_str, string)
 
 
