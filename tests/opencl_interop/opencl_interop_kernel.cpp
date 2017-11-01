@@ -25,17 +25,17 @@ template <typename T>
 using privatePtrType = typename cl::sycl::private_ptr<T>::pointer;
 template <typename T>
 using globalMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::address_space::global_space>::pointer;
+    T, cl::sycl::access::address_space::global_space>::pointer;
 template <typename T>
 using constantMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::address_space::constant_space>::pointer;
+    T, cl::sycl::access::address_space::constant_space>::pointer;
 template <typename T>
 using localMultiPtrType =
     typename cl::sycl::multi_ptr<T,
-                                 cl::sycl::address_space::local_space>::pointer;
+                                 cl::sycl::access::address_space::local_space>::pointer;
 template <typename T>
 using privateMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::address_space::private_space>::pointer;
+    T, cl::sycl::access::address_space::private_space>::pointer;
 template <typename T, int dims>
 using vectorType = typename cl::sycl::vec<T, dims>::vector_t;
 

@@ -371,7 +371,7 @@ class image_ctors {
                                      r);
           cl::sycl::image<dims> imgB = imgA;
 
-          cl::sycl::hash_class<image<dims>> hasher;
+          cl::sycl::hash_class<cl::sycl::image<dims>> hasher;
 
           if (hasher(imgA) != hasher(imgB)) {
             FAIL(log, "image hashing failed. (hashing of equals)");

@@ -34,7 +34,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queue = util::get_cts_object::queue(selector);
 
-        cl::sycl::event event();
+        cl::sycl::event event;
 
         if (!event.is_host()) {
           FAIL(log, "event was not constructed correctly (is_host).");

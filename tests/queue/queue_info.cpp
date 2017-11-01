@@ -38,7 +38,6 @@ class TEST_NAME : public util::test_base {
       /** check get_info parameters
       */
       {
-        auto queue = util::get_cts_object::queue();
         cts_selector selector;
         auto queue = util::get_cts_object::queue(selector);
         check_get_info_param<cl::sycl::info::queue,
