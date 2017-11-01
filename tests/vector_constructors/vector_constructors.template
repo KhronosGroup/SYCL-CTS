@@ -29,7 +29,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-
     try {
       auto testQueue = util::get_cts_object::queue();
       {
@@ -73,7 +72,8 @@ class TEST_NAME : public util::test_base {
               {
                 auto test = cl::sycl::vec<unsigned char, 2>(1, 2);
                 unsigned char vals[] = {1, 2};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned char, 2>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned char, 2>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned char, 2>(test)) {
@@ -99,7 +99,8 @@ class TEST_NAME : public util::test_base {
               {
                 auto test = cl::sycl::vec<unsigned short, 4>(1, 2, 3, 4);
                 unsigned short vals[] = {1, 2, 3, 4};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned short, 4>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned short, 4>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned short, 4>(test)) {
@@ -127,7 +128,8 @@ class TEST_NAME : public util::test_base {
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
                 unsigned int vals[] = {1, 2,  3,  4,  5,  6,  7,  8,
                                        9, 10, 11, 12, 13, 14, 15, 16};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned int, 16>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned int, 16>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned int, 16>(test)) {
@@ -153,7 +155,8 @@ class TEST_NAME : public util::test_base {
               {
                 auto test = cl::sycl::vec<unsigned long, 2>(1, 2);
                 unsigned long vals[] = {1, 2};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned long, 2>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned long, 2>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned long, 2>(test)) {
@@ -179,8 +182,8 @@ class TEST_NAME : public util::test_base {
               {
                 auto test = cl::sycl::vec<unsigned long long, 4>(1, 2, 3, 4);
                 unsigned long long vals[] = {1, 2, 3, 4};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned long long, 4>>(
-                        test)) {
+                if (!check_equal_type_bool<
+                        cl::sycl::vec<unsigned long long, 4>>(test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned long long, 4>(test)) {
@@ -191,8 +194,8 @@ class TEST_NAME : public util::test_base {
                 }
               }
               {
-                auto test = cl::sycl::vec<float, 8>(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f,
-                                          7.0f, 8.0f);
+                auto test = cl::sycl::vec<float, 8>(1.0f, 2.0f, 3.0f, 4.0f,
+                                                    5.0f, 6.0f, 7.0f, 8.0f);
                 float vals[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
                 if (!check_equal_type_bool<cl::sycl::vec<float, 8>>(test)) {
                   resAcc[0] = false;
@@ -224,7 +227,8 @@ class TEST_NAME : public util::test_base {
                 auto anotherVec = cl::sycl::vec<unsigned char, 1>(1);
                 auto test = cl::sycl::vec<unsigned char, 2>(anotherVec, 2);
                 unsigned char vals[] = {1, 2};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned char, 2>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned char, 2>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned char, 2>(test)) {
@@ -253,7 +257,8 @@ class TEST_NAME : public util::test_base {
                 auto test =
                     cl::sycl::vec<unsigned short, 4>(1, 2, 3, anotherVec);
                 unsigned short vals[] = {1, 2, 3, 4};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned short, 4>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned short, 4>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned short, 4>(test)) {
@@ -289,7 +294,8 @@ class TEST_NAME : public util::test_base {
                     cl::sycl::vec<unsigned int, 16>(anotherVec1, anotherVec2);
                 unsigned int vals[] = {1, 2,  3,  4,  5,  6,  7,  8,
                                        9, 10, 11, 12, 13, 14, 15, 16};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned int, 16>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned int, 16>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned int, 16>(test)) {
@@ -303,7 +309,8 @@ class TEST_NAME : public util::test_base {
                 auto anotherVec = cl::sycl::vec<unsigned long, 1>(2);
                 auto test = cl::sycl::vec<unsigned long, 2>(1, anotherVec);
                 unsigned long vals[] = {1, 2};
-                if (!check_equal_type_bool<cl::sycl::vec<unsigned long, 2>>(test)) {
+                if (!check_equal_type_bool<cl::sycl::vec<unsigned long, 2>>(
+                        test)) {
                   resAcc[0] = false;
                 }
                 if (!check_vector_size<unsigned long, 2>(test)) {
@@ -360,13 +367,12 @@ class TEST_NAME : public util::test_base {
          */
         $VEC_TESTS
 
-        /** Test
-         *  vec(vector_t openclVector)
-         */
+/** Test
+ *  vec(vector_t openclVector)
+ */
 #ifdef __SYCL_DEVICE_ONLY__
         $OPENCL_TESTS
 #endif /* __SYCL_DEVICE_ONLY__ */
-
       }
 
       testQueue.wait_and_throw();

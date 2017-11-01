@@ -37,7 +37,6 @@ class TEST_NAME : public util::test_base {
         /** Test OpenCL type vector aliases
          */
         $OPENCL_ALIAS
-
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

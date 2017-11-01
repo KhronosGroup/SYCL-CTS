@@ -26,7 +26,6 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-
 #define CHECK_EXISTS(EXCEPTION_NAME)                       \
   if (!std::is_class<EXCEPTION_NAME>::value) {             \
     FAIL(log, "EXCEPTION_NAME is not defined as a class"); \

@@ -30,7 +30,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-
     try {
       auto testQueue = util::get_cts_object::queue();
       {
@@ -55,7 +54,6 @@ class TEST_NAME : public util::test_base {
 
         // 16 dimensional swizzles
         $16D_SWIZZLES
-
       }
 
       testQueue.wait_and_throw();

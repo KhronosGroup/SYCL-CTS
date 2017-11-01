@@ -18,7 +18,7 @@ namespace util {
  *
  */
 class test_manager : public singleton<test_manager> {
-public:
+ public:
   /** constructor
    */
   test_manager();
@@ -48,12 +48,12 @@ public:
   void on_start();
   void on_exit();
 
-protected:
+ protected:
   bool m_willExecute;
   bool m_wimpyMode;
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_TEST_MANAGER_H

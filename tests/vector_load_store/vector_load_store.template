@@ -24,9 +24,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-
     try {
-
       auto testQueue = util::get_cts_object::queue();
       {
         auto testDevice = testQueue.get_device();
@@ -34,7 +32,6 @@ class TEST_NAME : public util::test_base {
         /** Test load and store methods
          */
         $LOAD_STORE_TESTS
-
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

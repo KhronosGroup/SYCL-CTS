@@ -19,7 +19,7 @@ namespace util {
 /** this class is a central repository of tests
  */
 class collection : public singleton<collection> {
-public:
+ public:
   /** test structure
    */
   struct test_info {
@@ -70,7 +70,7 @@ public:
    */
   void prepare();
 
-protected:
+ protected:
   /** set the skip status of a test by name
    */
   void set_test_skip(const std::string &testName, bool skip);
@@ -79,7 +79,7 @@ protected:
   std::vector<test_info> m_tests;
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_COLLECTION_H

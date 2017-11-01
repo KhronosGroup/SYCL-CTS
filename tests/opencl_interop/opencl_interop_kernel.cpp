@@ -30,9 +30,8 @@ template <typename T>
 using constantMultiPtrType = typename cl::sycl::multi_ptr<
     T, cl::sycl::access::address_space::constant_space>::pointer;
 template <typename T>
-using localMultiPtrType =
-    typename cl::sycl::multi_ptr<T,
-                                 cl::sycl::access::address_space::local_space>::pointer;
+using localMultiPtrType = typename cl::sycl::multi_ptr<
+    T, cl::sycl::access::address_space::local_space>::pointer;
 template <typename T>
 using privateMultiPtrType = typename cl::sycl::multi_ptr<
     T, cl::sycl::access::address_space::private_space>::pointer;

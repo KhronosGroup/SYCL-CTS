@@ -18,13 +18,13 @@ namespace util {
  *
  */
 class executor : public singleton<executor> {
-public:
+ public:
   /** execute all tests currently in the collection
    */
   bool run_all();
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_EXECUTOR_H

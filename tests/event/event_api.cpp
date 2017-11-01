@@ -28,7 +28,6 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-
       /** check get()
       */
       {

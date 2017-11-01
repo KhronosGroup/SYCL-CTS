@@ -30,20 +30,18 @@ class TEST_NAME : public util::test_base {
     try {
       /** check default constructor and destructor
       */
-      {
-        cl::sycl::queue queue;
-      }
+      { cl::sycl::queue queue; }
 
       /** check (property_list) constructor
       */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(
-          { cl::sycl::property::queue::enable_profiling() });
+        cl::sycl::queue queue({cl::sycl::property::queue::enable_profiling()});
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with property_list was not constructed correctly "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with property_list was not constructed correctly "
                "(has_property)");
         }
       }
@@ -60,11 +58,12 @@ class TEST_NAME : public util::test_base {
       {
         cts_async_handler asyncHandler;
         cl::sycl::queue queue(asyncHandler,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with async_handler and property_list was not "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with async_handler and property_list was not "
                "constructed correctly (has_property)");
         }
       }
@@ -76,13 +75,15 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(selector);
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with device_selector was not constructed correctly "
+          FAIL(log,
+               "queue with device_selector was not constructed correctly "
                "(is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device_selector was not constructed "
+            FAIL(log,
+                 "queue with device_selector was not constructed "
                  "correctly (get)");
           }
         }
@@ -93,23 +94,26 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         cl::sycl::queue queue(selector,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with device_selector and property list was not "
+          FAIL(log,
+               "queue with device_selector and property list was not "
                "constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device_selector and property_list was not "
+            FAIL(log,
+                 "queue with device_selector and property_list was not "
                  "constructed correctly (get)");
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with device_selector and property_list was not "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with device_selector and property_list was not "
                "constructed correctly (has_property)");
         }
       }
@@ -122,13 +126,15 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(selector, asyncHandler);
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with device_selector and async_handler was not "
+          FAIL(log,
+               "queue with device_selector and async_handler was not "
                "constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device_selector and async_handler was not "
+            FAIL(log,
+                 "queue with device_selector and async_handler was not "
                  "constructed correctly (get)");
           }
         }
@@ -140,23 +146,26 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         cts_async_handler asyncHandler;
         cl::sycl::queue queue(selector, asyncHandler,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with device_selector, async_handler and "
+          FAIL(log,
+               "queue with device_selector, async_handler and "
                "property_list was not constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device_selector, async_handler and "
+            FAIL(log,
+                 "queue with device_selector, async_handler and "
                  "property_list was not constructed correctly (get)");
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with device_selector, async_handler and "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with device_selector, async_handler and "
                "property_list was not constructed correctly (has_property)");
         }
       }
@@ -168,7 +177,8 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(device);
 
         if (queue.is_host() != device.is_host()) {
-          FAIL(log, "queue with device was not constructed correctly "
+          FAIL(log,
+               "queue with device was not constructed correctly "
                "(is_host)");
         }
 
@@ -184,10 +194,11 @@ class TEST_NAME : public util::test_base {
       {
         cl::sycl::device device = util::get_cts_object::device();
         cl::sycl::queue queue(device,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != device.is_host()) {
-          FAIL(log, "queue with device was not constructed correctly "
+          FAIL(log,
+               "queue with device was not constructed correctly "
                "(is_host)");
         }
 
@@ -197,9 +208,10 @@ class TEST_NAME : public util::test_base {
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with device and property_list was not constructed "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with device and property_list was not constructed "
                "correctly (has_property)");
         }
       }
@@ -212,13 +224,15 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(device, asyncHandler);
 
         if (queue.is_host() != device.is_host()) {
-          FAIL(log, "queue with device and async_hander was not constructed "
+          FAIL(log,
+               "queue with device and async_hander was not constructed "
                "correctly (is_host)");
         }
 
         if (!device.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device and async_hander was not constructed "
+            FAIL(log,
+                 "queue with device and async_hander was not constructed "
                  "correctly (get)");
           }
         }
@@ -230,23 +244,26 @@ class TEST_NAME : public util::test_base {
         cl::sycl::device device = util::get_cts_object::device();
         cts_async_handler asyncHandler;
         cl::sycl::queue queue(device, asyncHandler,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != device.is_host()) {
-          FAIL(log, "queue with device and async_hander was not constructed "
+          FAIL(log,
+               "queue with device and async_hander was not constructed "
                "correctly (is_host)");
         }
 
         if (!device.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with device and async_hander was not constructed "
+            FAIL(log,
+                 "queue with device and async_hander was not constructed "
                  "correctly (get)");
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with device, async_handler and property_list was "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with device, async_handler and property_list was "
                "not constructed correctly (has_property)");
         }
       }
@@ -259,13 +276,15 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(context, selector);
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with context and device_selector was not "
+          FAIL(log,
+               "queue with context and device_selector was not "
                "constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with context and device_selector was not "
+            FAIL(log,
+                 "queue with context and device_selector was not "
                  "constructed correctly (get)");
           }
         }
@@ -277,23 +296,26 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
         cl::sycl::queue queue(context, selector,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with context and device_selector was not "
+          FAIL(log,
+               "queue with context and device_selector was not "
                "constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with context and device_selector was not "
+            FAIL(log,
+                 "queue with context and device_selector was not "
                  "constructed correctly (get)");
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with context, device_selector and property_list was "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with context, device_selector and property_list was "
                "not constructed correctly (has_property)");
         }
       }
@@ -307,13 +329,15 @@ class TEST_NAME : public util::test_base {
         cl::sycl::queue queue(context, selector, asyncHandler);
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with context, device_selector and async_handler was "
+          FAIL(log,
+               "queue with context, device_selector and async_handler was "
                "not constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with context, device_selector and async_handler "
+            FAIL(log,
+                 "queue with context, device_selector and async_handler "
                  "was not constructed correctly (get)");
           }
         }
@@ -327,23 +351,26 @@ class TEST_NAME : public util::test_base {
         auto context = util::get_cts_object::context(selector);
         cts_async_handler asyncHandler;
         cl::sycl::queue queue(context, selector, asyncHandler,
-          { cl::sycl::property::queue::enable_profiling() });
+                              {cl::sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
-          FAIL(log, "queue with context, device_selector, async_handler and "
+          FAIL(log,
+               "queue with context, device_selector, async_handler and "
                "property_list was not constructed correctly (is_host)");
         }
 
         if (!selector.is_host()) {
           if (queue.get() == nullptr) {
-            FAIL(log, "queue with context, device_selector, async_handler and "
+            FAIL(log,
+                 "queue with context, device_selector, async_handler and "
                  "property_list was not constructed correctly (get)");
           }
         }
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with context, device_selector, async_handler and "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with context, device_selector, async_handler and "
                "property_list was not constructed correctly (has_property)");
         }
       }
@@ -496,4 +523,3 @@ class TEST_NAME : public util::test_base {
 util::test_proxy<TEST_NAME> proxy;
 
 } /* namespace TEST_NAMESPACE */
-

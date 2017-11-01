@@ -36,17 +36,19 @@ class TEST_NAME : public util::test_base {
         cl::sycl::property::queue::enable_profiling enableProfiling();
         cl::sycl::queue queue(enableProfiling);
 
-        if (!queue.has_property<
-            cl::sycl::property::queue::enable_profiling>()) {
-          FAIL(log, "queue with enable_profiling property was not constructed "
+        if (!queue
+                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+          FAIL(log,
+               "queue with enable_profiling property was not constructed "
                "correctly");
         }
 
-        auto prop = queue.get_property<
-          cl::sycl::property::queue::enable_profiling>();
-        check_return_type<cl::sycl::property::queue::enable_profiling>(log,
-          prop, "cl::sycl::queue::has_property<cl::sycl::property::queue::"
-          "enable_profiling>()");
+        auto prop =
+            queue.get_property<cl::sycl::property::queue::enable_profiling>();
+        check_return_type<cl::sycl::property::queue::enable_profiling>(
+            log, prop,
+            "cl::sycl::queue::has_property<cl::sycl::property::queue::"
+            "enable_profiling>()");
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

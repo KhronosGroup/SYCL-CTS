@@ -22,5 +22,5 @@ bool opencl_helper::check_cl_success(logger &log, const cl_int clError,
   return clError == CL_SUCCESS;
 }
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

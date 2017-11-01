@@ -88,5 +88,5 @@ bool executor::run_all() {
   return (numPassed == nTests);
 }
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

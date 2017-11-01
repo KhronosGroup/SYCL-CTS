@@ -21,7 +21,7 @@ namespace util {
 /** Common base class for OpenCL inter operation tests
  */
 class test_base_opencl : public sycl_cts::util::test_base {
-public:
+ public:
   /** ctor
    */
   test_base_opencl();
@@ -30,7 +30,7 @@ public:
    */
   virtual ~test_base_opencl() {}
 
-protected:
+ protected:
   /** return information about this test
    *  @param info, test_base::info structure as output
    */
@@ -95,9 +95,9 @@ protected:
   std::vector<cl_kernel> m_openKernels;
   std::vector<cl_program> m_openPrograms;
 
-}; // class test_base
+};  // class test_base
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_TEST_BASE_OPENCL_H
