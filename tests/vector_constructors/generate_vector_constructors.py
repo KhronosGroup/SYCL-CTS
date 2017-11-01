@@ -13,10 +13,10 @@ import itertools
 from string import Template
 
 default_constructor_vec_template = Template("""        auto test = cl::sycl::vec<${type}, ${size}>();
-        if (check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
-        if (check_vector_size<${type}, ${size}>(test)) {
+        if (!check_vector_size<${type}, ${size}>(test)) {
           resAcc[0] = false;
         }
 """)
@@ -24,26 +24,26 @@ default_constructor_vec_template = Template("""        auto test = cl::sycl::vec
 explicit_constructor_vec_template = Template("""        const ${type} val = ${val};
         ${type} vals[] = {${vals}};
         auto test = cl::sycl::vec<${type}, ${size}>(val);
-        if (check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
-        if (check_vector_size<${type}, ${size}>(test)) {
+        if (!check_vector_size<${type}, ${size}>(test)) {
           resAcc[0] = false;
         }
-        if (check_vector_values<${type}, ${size}>(test, vals)) {
+        if (!check_vector_values<${type}, ${size}>(test, vals)) {
           resAcc[0] = false;
         }
 """)
 
 vec_constructor_vec_template = Template("""        auto test = cl::sycl::vec<${type}, ${size}>(${val});
         ${type} vals[] = {${vals}};
-        if (check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
-        if (check_vector_size<${type}, ${size}>(test)) {
+        if (!check_vector_size<${type}, ${size}>(test)) {
           resAcc[0] = false;
         }
-        if (check_vector_values<${type}, ${size}>(test, vals)) {
+        if (!check_vector_values<${type}, ${size}>(test, vals)) {
           resAcc[0] = false;
         }
 """)
