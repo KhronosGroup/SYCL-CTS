@@ -41,48 +41,47 @@ bool csv::load_file(const std::string &path) {
   for (;;) {
     // read a character from the stream
     stream.read(&ch, sizeof(ch));
-    if (!stream.good())
-      break;
+    if (!stream.good()) break;
 
     switch (ch) {
-    // skip over these characters
-    case (' '):
-    case ('\r'):
-      continue;
+      // skip over these characters
+      case (' '):
+      case ('\r'):
+        continue;
 
-    // new line start of new row
-    case ('\n'): {
-      // null terminate the buffer string
-      buffer[index] = '\0';
-      // add string to items list
-      m_items.push_back(std::string(buffer));
-      index = 0;
+      // new line start of new row
+      case ('\n'): {
+        // null terminate the buffer string
+        buffer[index] = '\0';
+        // add string to items list
+        m_items.push_back(std::string(buffer));
+        index = 0;
 
-      // index of next item marks start of new row
-      int32_t items = int32_t(m_items.size());
-      m_rowIndex.push_back(items);
-    } break;
+        // index of next item marks start of new row
+        int32_t items = int32_t(m_items.size());
+        m_rowIndex.push_back(items);
+      } break;
 
-    // marks next entry in a column
-    case (','): {
-      // null terminate the buffer string
-      buffer[index] = '\0';
-      // add string to items list
-      m_items.push_back(std::string(buffer));
-      index = 0;
-    } break;
+      // marks next entry in a column
+      case (','): {
+        // null terminate the buffer string
+        buffer[index] = '\0';
+        // add string to items list
+        m_items.push_back(std::string(buffer));
+        index = 0;
+      } break;
 
-    // add new character to the buffer
-    default:
-      // check for buffer overflow
-      if (index >= int32_t(sizeof(buffer) - 1u)) {
-        m_error = "value exceeds buffer length";
-        return false;
-      } else
-        buffer[index++] = ch;
+      // add new character to the buffer
+      default:
+        // check for buffer overflow
+        if (index >= int32_t(sizeof(buffer) - 1u)) {
+          m_error = "value exceeds buffer length";
+          return false;
+        } else
+          buffer[index++] = ch;
 
-    }; // switch
-  };   // while
+    };  // switch
+  };    // while
 
   // push any remaining item
   if (index > 0) {
@@ -120,8 +119,7 @@ bool csv::get_item(int32_t row, int32_t column, std::string &out) {
 
   // find the index of the end of this row
   int32_t limit = nItems - 1;
-  if ((row + 1) < nRowIndices)
-    limit = m_rowIndex.at(size_t(row + 1)) - 1;
+  if ((row + 1) < nRowIndices) limit = m_rowIndex.at(size_t(row + 1)) - 1;
 
   // test the index doesn't pass end of the row
   if (index < 0 || index > limit) {
@@ -148,5 +146,5 @@ bool csv::get_last_error(std::string &out) {
   return !m_error.empty();
 }
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

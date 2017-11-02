@@ -354,8 +354,7 @@ class TEST_NAME : public util::test_base {
             cl::sycl::vector_class<cl::sycl::info::execution_capability>,
             cl::sycl::info::device::execution_capabilities>(log, dev);
         check_get_info_param<cl::sycl::info::device, bool,
-                             cl::sycl::info::device::queue_profiling>(
-            log, dev);
+                             cl::sycl::info::device::queue_profiling>(log, dev);
         check_get_info_param<cl::sycl::info::device,
                              cl::sycl::vector_class<cl::sycl::string_class>,
                              cl::sycl::info::device::built_in_kernels>(log,

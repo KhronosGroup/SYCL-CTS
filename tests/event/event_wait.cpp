@@ -26,8 +26,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
   /* enqueue an add command and return the complete event */
   cl::sycl::event add_operation(sycl_cts::util::logger &log,
-    cl::sycl::queue &queue, cl::sycl::buffer<float, 1> &d_data,
-    const float operand) {
+                                cl::sycl::queue &queue,
+                                cl::sycl::buffer<float, 1> &d_data,
+                                const float operand) {
     return queue.submit([&](cl::sycl::handler &cgh) {
       auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>(cgh);
 
@@ -37,8 +38,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
   /* enqueue a mul command and return the complete event */
   cl::sycl::event mul_operation(sycl_cts::util::logger &log,
-    cl::sycl::queue &queue, cl::sycl::buffer<float, 1> &d_data,
-    const float operand) {
+                                cl::sycl::queue &queue,
+                                cl::sycl::buffer<float, 1> &d_data,
+                                const float operand) {
     return queue.submit([&](cl::sycl::handler &cgh) {
       auto a_data = d_data.get_access<cl::sycl::access::mode::read_write>(cgh);
 
@@ -71,14 +73,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
           }
           case 2: {  // Test cl::sycl::event::wait(vector_class<event>)
             cl::sycl::vector_class<cl::sycl::event> evt_list =
-              complete.get_wait_list();
+                complete.get_wait_list();
             cl::sycl::event::wait(evt_list);
             break;
           }
           case 3: {  // Test
             // cl::sycl::event::wait_and_throw(vector_class<event>)
             cl::sycl::vector_class<cl::sycl::event> evt_list =
-              complete.get_wait_list();
+                complete.get_wait_list();
             cl::sycl::event::wait_and_throw(evt_list);
             break;
           }

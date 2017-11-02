@@ -17,14 +17,15 @@ namespace util {
 /** implement a singleton interface to all derived class.
  *  template argument T must be the derived class.
  */
-template <class T> class singleton {
+template <class T>
+class singleton {
   // must be a friend of class T to access the constructor
   friend T;
 
   // singleton instance
   static std::unique_ptr<T> m_instance;
 
-public:
+ public:
   /** destructor
    *  ensure that we release the singleton instance
    */
@@ -50,13 +51,17 @@ public:
 
 /** instance of the singleton
  */
-template <class T> std::unique_ptr<T> singleton<T>::m_instance;
+template <class T>
+std::unique_ptr<T> singleton<T>::m_instance;
 
 /** easy singleton accessors
  */
-template <class T> static inline T &get() { return T::instance(); }
+template <class T>
+static inline T &get() {
+  return T::instance();
+}
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_SINGLETON_H

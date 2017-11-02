@@ -18,7 +18,7 @@ namespace util {
 /** command line parser
  */
 class cmdarg : public singleton<cmdarg> {
-public:
+ public:
   /** parse a set of given command line arguments
    *  @return, false if there was an error parsing
    *           true if the cmd line was parsed
@@ -41,7 +41,7 @@ public:
    */
   bool get_last_error(std::string &out) const;
 
-protected:
+ protected:
   /** a simple key value pair container
    */
   struct pair {
@@ -61,7 +61,7 @@ protected:
   std::string m_error;
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_CMDARG_H

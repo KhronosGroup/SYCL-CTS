@@ -35,9 +35,9 @@ void collection::add_test(test_base *testobj) {
 
   // encapsulate in testinfo structure
   test_info test = {
-      testobj, // test
-      false,   // skip
-      -1       // timeout
+      testobj,  // test
+      false,    // skip
+      -1        // timeout
   };
 
   // add this test to the collection
@@ -123,12 +123,10 @@ static inline bool partial_strcmp(const std::string &a, const std::string &b) {
   // advance both string in lock step
   for (;; _a++, _b++) {
     // if 'b' is totally consumed then we pass
-    if (*_b == '\0')
-      return true;
+    if (*_b == '\0') return true;
 
     // if they are equal advance
-    if (*_a == *_b)
-      continue;
+    if (*_a == *_b) continue;
 
     // otherwise 'b' does not prefix 'a'
     return false;
@@ -173,12 +171,10 @@ bool collection::filter_tests_csv(const std::string &csvPath) {
   for (int32_t r = 0; r < csvFile.size(); r++) {
     // first column is test name
     std::string csvName;
-    if (!csvFile.get_item(r, 0, csvName))
-      continue;
+    if (!csvFile.get_item(r, 0, csvName)) continue;
 
     // check for empty string
-    if (csvName.empty())
-      continue;
+    if (csvName.empty()) continue;
 
     // enable a test with this name
     set_test_skip(csvName, false);
@@ -234,5 +230,5 @@ void collection::prepare() {
   std::sort(m_tests.begin(), m_tests.end(), test_order_func);
 }
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

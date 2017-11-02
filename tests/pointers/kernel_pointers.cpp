@@ -42,7 +42,7 @@ class TEST_NAME : public util::test_base {
           auto acc_result =
               buf_result.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-          cgh.single_task<TEST_NAME>([=]() {
+          cgh.single_task<TEST_NAME>([acc_result, outer_index]() {
             uint8_t my_array[] = {0, 1, 2, 3, 4};
 
             uint8_t *ptr = my_array + outer_index;

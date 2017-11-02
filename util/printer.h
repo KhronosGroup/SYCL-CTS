@@ -20,7 +20,7 @@ namespace util {
  *  this class handles the output from the logger class
  */
 class printer : public singleton<printer> {
-public:
+ public:
   enum eformat { ejson = 0, etext };
 
   enum epacket {
@@ -45,7 +45,7 @@ public:
   /** a string output channel
    */
   class channel {
-  public:
+   public:
     virtual ~channel() {}
 
     /* output string over channel */
@@ -61,7 +61,7 @@ public:
   /** formats a packet of information
    */
   class formatter {
-  public:
+   public:
     virtual ~formatter() {}
 
     /* print a packet */
@@ -111,7 +111,7 @@ public:
   void print(const char *fstr, ...);
   void print(const std::string &str);
 
-protected:
+ protected:
   // next log id to be issued from new_log_id()
   std::atomic_int m_nextLogId;
 
@@ -122,7 +122,7 @@ protected:
   channel *m_channel;
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_PRINTER_H

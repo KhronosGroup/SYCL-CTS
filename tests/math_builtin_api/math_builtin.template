@@ -15,7 +15,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
      */
   void get_info(test_base::info &out) const override {

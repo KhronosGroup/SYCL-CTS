@@ -26,7 +26,7 @@ namespace util {
 class stdout_channel : public printer::channel {
   std::mutex m_outputMutex;
 
-public:
+ public:
   virtual void write(const std::string &msg) {
     if (!msg.empty()) {
       std::lock_guard<std::mutex> lock(m_outputMutex);
@@ -50,15 +50,14 @@ class file_channel : public printer::channel {
   std::mutex m_outputMutex;
   FILE *m_file;
 
-public:
+ public:
   file_channel() : m_outputMutex(), m_file(nullptr) {}
 
   ~file_channel() { close(); }
 
   bool open(const char *path) {
     std::lock_guard<std::mutex> lock(m_outputMutex);
-    if (m_file != nullptr)
-      fclose(m_file);
+    if (m_file != nullptr) fclose(m_file);
     m_file = nullptr;
     m_file = fopen(path, "wb");
     return m_file != nullptr;
@@ -77,8 +76,7 @@ public:
     std::string t = std::string(in);
     for (uint32_t i = 0; i < t.length(); i++) {
       char &ch = t[i];
-      if (ch < 0x20 || ch >= 0x7f)
-        ch = '.';
+      if (ch < 0x20 || ch >= 0x7f) ch = '.';
     }
     return t;
   }
@@ -107,15 +105,14 @@ public:
   }
 
   virtual void flush() {
-    if (m_file != nullptr)
-      fflush(m_file);
+    if (m_file != nullptr) fflush(m_file);
   }
 };
 
 /** JSON printer
  */
 class json_formatter : public printer::formatter {
-public:
+ public:
   virtual void write(printer::channel &out, int32_t id, printer::epacket packet,
                      const std::string &data) {
     std::string strId = std::to_string(id);
@@ -137,26 +134,26 @@ public:
 /** human readable text printer
  */
 class text_formatter : public printer::formatter {
-public:
+ public:
   virtual void write(printer::channel &out, int32_t, printer::epacket packet,
                      const std::string &data) {
     switch (packet) {
-    default:
-      // ignore packets we dont know
-      return;
-    case (printer::name):
-      out.write("--- ");
-      break;
-    case (printer::line):
-      out.write("  . line: ");
-      break;
-    case (printer::note):
-    case (printer::list_test_name):
-      out.write("  . ");
-      break;
-    case (printer::list_test_count):
-      out.writeln(data + " tests in executable");
-      return;
+      default:
+        // ignore packets we dont know
+        return;
+      case (printer::name):
+        out.write("--- ");
+        break;
+      case (printer::line):
+        out.write("  . line: ");
+        break;
+      case (printer::note):
+      case (printer::list_test_name):
+        out.write("  . ");
+        break;
+      case (printer::list_test_count):
+        out.writeln(data + " tests in executable");
+        return;
     }
     out.writeln(data);
   }
@@ -164,31 +161,30 @@ public:
   virtual void write(printer::channel &out, int32_t id, printer::epacket packet,
                      int data) {
     switch (packet) {
-    case (printer::result): {
-      switch (data) {
-      case (logger::epass):
-        out.writeln("  - pass\n");
-        break;
-      case (logger::efail):
-        out.writeln("  - fail\n");
-        break;
-      case (logger::eskip):
-        out.writeln("  - skip\n");
-        break;
-      case (logger::efatal):
-        out.writeln("  - fatal\n");
-        break;
+      case (printer::result): {
+        switch (data) {
+          case (logger::epass):
+            out.writeln("  - pass\n");
+            break;
+          case (logger::efail):
+            out.writeln("  - fail\n");
+            break;
+          case (logger::eskip):
+            out.writeln("  - skip\n");
+            break;
+          case (logger::efatal):
+            out.writeln("  - fatal\n");
+            break;
+        }
       }
-    }
-      return;
-    case (printer::progress):
-      out.write("\r  . progress " + std::to_string(data) + "%");
-      if (data == 100)
-        out.write("\n");
-      return;
-    default:
-      // stringify and pass to string handler
-      write(out, id, packet, std::to_string(data));
+        return;
+      case (printer::progress):
+        out.write("\r  . progress " + std::to_string(data) + "%");
+        if (data == 100) out.write("\n");
+        return;
+      default:
+        // stringify and pass to string handler
+        write(out, id, packet, std::to_string(data));
     }
   }
 };
@@ -222,22 +218,21 @@ int32_t printer::new_log_id() {
  */
 void printer::set_format(printer::eformat fmt) {
   switch (fmt) {
-  case (printer::eformat::ejson):
-    m_formatter = &gJsonFormat;
-    break;
-  case (printer::eformat::etext):
-    m_formatter = &gTextFormat;
-    break;
-  default:
-    assert(!"Unknown printer format");
+    case (printer::eformat::ejson):
+      m_formatter = &gJsonFormat;
+      break;
+    case (printer::eformat::etext):
+      m_formatter = &gTextFormat;
+      break;
+    default:
+      assert(!"Unknown printer format");
   }
 }
 
 /** redirect the printer to write to a file
  */
 bool printer::set_file_channel(const char *path) {
-  if (!gFileChannel.open(path))
-    return false;
+  if (!gFileChannel.open(path)) return false;
   m_channel = &gFileChannel;
   return true;
 }
@@ -245,15 +240,13 @@ bool printer::set_file_channel(const char *path) {
 /** write a packet using the set formatter and channel
  */
 void printer::write(int32_t id, epacket packet, std::string data) {
-  if (m_formatter)
-    m_formatter->write(*m_channel, id, packet, data);
+  if (m_formatter) m_formatter->write(*m_channel, id, packet, data);
 }
 
 /** write a packet using the set formatter and channel
  */
 void printer::write(int32_t id, epacket packet, int data) {
-  if (m_formatter)
-    m_formatter->write(*m_channel, id, packet, data);
+  if (m_formatter) m_formatter->write(*m_channel, id, packet, data);
 }
 
 /** global printf
@@ -273,23 +266,20 @@ void printer::print(const char *fmt, ...) {
   buffer[sizeof(buffer) - 1] = '\0';
 
   // output string via channel
-  if (m_channel)
-    m_channel->write(std::string(buffer));
+  if (m_channel) m_channel->write(std::string(buffer));
 }
 
 /** global print
  */
 void printer::print(const std::string &str) {
-  if (m_channel)
-    m_channel->write(str);
+  if (m_channel) m_channel->write(str);
 }
 
 /** finish all writing operations
  */
 void printer::finish() {
-  if (m_channel)
-    m_channel->flush();
+  if (m_channel) m_channel->flush();
 }
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts

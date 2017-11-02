@@ -20,7 +20,7 @@ namespace util {
 /** comma separated values file parser
  */
 class csv {
-public:
+ public:
   /** constructor destructor
    */
   csv();
@@ -46,7 +46,7 @@ public:
    */
   bool get_item(int32_t row, int32_t column, std::string &out);
 
-protected:
+ protected:
   // the last error message set
   std::string m_error;
 
@@ -57,7 +57,7 @@ protected:
   std::vector<int> m_rowIndex;
 };
 
-} // namespace util
-} // namespace sycl_cts
+}  // namespace util
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_UTIL_CSV_H

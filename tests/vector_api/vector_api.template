@@ -25,7 +25,6 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-
     /** Check some enum values exist
      */
     check_enum_class_value(cl::sycl::rounding_mode::automatic);
@@ -70,7 +69,6 @@ class TEST_NAME : public util::test_base {
         /** Test vector api with interop types
          */
         $INTEROP_API_CHECKS
-
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

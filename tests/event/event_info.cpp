@@ -28,7 +28,6 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-
       /** check cl::sycl::info::event_command_status
       */
       check_enum_class_value(cl::sycl::info::event_command_status::complete);
@@ -55,19 +54,21 @@ class TEST_NAME : public util::test_base {
         });
 
         check_get_info_param<cl::sycl::info::event,
-          cl::sycl::info::event_command_status,
-          cl::sycl::info::event::command_execution_status>(log, event);
-        check_get_info_param<cl::sycl::info::event, cl::sycl::cl_uint,
-          cl::sycl::info::event::reference_count>(log, event);
-        check_get_profiling_info_param<cl::sycl::info::event_profiling,
-          cl::sycl::cl_ulong, cl::sycl::info::event_profiling::command_submit>(
+                             cl::sycl::info::event_command_status,
+                             cl::sycl::info::event::command_execution_status>(
             log, event);
-        check_get_profiling_info_param<cl::sycl::info::event_profiling,
-          cl::sycl::cl_ulong, cl::sycl::info::event_profiling::command_start>(
-          log, event);
-        check_get_profiling_info_param<cl::sycl::info::event_profiling,
-          cl::sycl::cl_ulong, cl::sycl::info::event_profiling::command_end>(
-          log, event);
+        check_get_info_param<cl::sycl::info::event, cl::sycl::cl_uint,
+                             cl::sycl::info::event::reference_count>(log,
+                                                                     event);
+        check_get_profiling_info_param<
+            cl::sycl::info::event_profiling, cl::sycl::cl_ulong,
+            cl::sycl::info::event_profiling::command_submit>(log, event);
+        check_get_profiling_info_param<
+            cl::sycl::info::event_profiling, cl::sycl::cl_ulong,
+            cl::sycl::info::event_profiling::command_start>(log, event);
+        check_get_profiling_info_param<
+            cl::sycl::info::event_profiling, cl::sycl::cl_ulong,
+            cl::sycl::info::event_profiling::command_end>(log, event);
       }
 
     } catch (const cl::sycl::exception &e) {
