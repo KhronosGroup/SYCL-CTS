@@ -14,7 +14,7 @@ from itertools import permutations
 
 swizzle_xyzw_rgba_assignment_template = Template("""
         cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-        auto swizzledVec = cl::sycl::vec<${type}, ${size}>();
+        cl::sycl::vec<${type}, ${size}> swizzledVec = cl::sycl::vec<${type}, ${size}>();
         swizzledVec.${indexes}() = ${vecName}DimTestVec;
         ${type} vals[] = {${orderedValues}};
         if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
@@ -25,7 +25,7 @@ swizzle_xyzw_rgba_assignment_template = Template("""
 swizzle_elem_assignment_template = Template("""
         {
           cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-          auto swizzledVec = cl::sycl::vec<${type}, ${size}>();
+          cl::sycl::vec<${type}, ${size}> swizzledVec = cl::sycl::vec<${type}, ${size}>();
           swizzledVec.template swizzle<${indexes}>() = ${vecName}DimTestVec;
           ${type} vals[] = {${orderedValues}};
           if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
