@@ -85,15 +85,16 @@ class TEST_NAME : public util::test_base {
               cl::sycl::range<3>(l_items_1d, l_items_2d, l_items_3d),
               [=](cl::sycl::group<3> group) {
 
-                int groupId0 = group.get_id(0);
-                int groupId1 = group.get_id(1);
-                int groupId2 = group.get_id(2);
-                int groupIdL = group.get_linear_id();
-
                 int groupRange0 = group.get_group_range(0);
                 int groupRange1 = group.get_group_range(1);
                 int groupRange2 = group.get_group_range(2);
                 int groupRangeL = group.get_group_range().size();
+
+                int groupId0 = group.get_id(0);
+                int groupId1 = group.get_id(1);
+                int groupId2 = group.get_id(2);
+                int groupIdL = groupId2 + (groupId1 * groupRange2) + (groupId0
+                  * groupRange2 * groupRange1);
 
                 groupIdPtr[groupIdL] =
                     cl::sycl::int4(groupId0, groupId1, groupId2, groupIdL);

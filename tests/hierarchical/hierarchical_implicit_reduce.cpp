@@ -76,7 +76,7 @@ T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
 
           /* Sum items in each work group */
           for (int i = 0; i < localItemsTotal; i++)
-            groupSumsPtr[group.get(0)].increment(localSums[i]);
+            groupSumsPtr[group.get_id(0)].increment(localSums[i]);
         });
   });
 

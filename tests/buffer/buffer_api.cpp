@@ -104,7 +104,10 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
   try {
     cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
-    const cl::sycl::id<dims> offset;
+    cl::sycl::id<dims> offset;
+    for (int i = 0; i < dims; i++) {
+      offset[i] = 0;
+    }
 
     /* create a sycl buffer from the host buffer */
     cl::sycl::buffer<T, dims> buf(data.get(), r);
@@ -159,7 +162,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     /* check the buffer returns the correct type of accessor */
     q.submit([&](cl::sycl::handler& cgh) {
       auto acc = buf.template get_access<cl::sycl::access::mode::read,
-                                         target::constant_buffer>(cgh);
+                                         access::target::constant_buffer>(cgh);
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::constant_buffer>>(

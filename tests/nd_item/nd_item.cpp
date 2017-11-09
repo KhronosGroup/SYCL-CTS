@@ -61,7 +61,7 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       groups[i] = myitem.get_group(i);
-      if (groups[i] != group_id.get(i)) {
+      if (groups[i] != group_id.get_id(i)) {
         failed = true;
       }
     }
@@ -92,7 +92,7 @@ class kernel_nd_item {
     }
 
     for (int i = 0; i < dimensions; ++i) {
-      if (group_id.get(i) != (global_id.get(i) / localRange.get(i)))
+      if (group_id.get_id(i) != (global_id.get(i) / localRange.get(i)))
         failed = true;
     }
 
