@@ -105,9 +105,6 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
     cl::sycl::id<dims> offset;
-    for (int i = 0; i < dims; i++) {
-      offset[i] = 0;
-    }
 
     /* create a sycl buffer from the host buffer */
     cl::sycl::buffer<T, dims> buf(data.get(), r);
