@@ -15,7 +15,7 @@ from itertools import product
 
 swizzle_template = Template(
     """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-        auto swizzledVec = ${name}DimTestVec.${indexes}();
+        cl::sycl::vec<${type}, ${size}> swizzledVec = ${name}DimTestVec.${indexes}();
         ${type} in_order_vals[] = {${in_order_vals}};
         ${type} reversed_vals[] = {${reversed_vals}};
         ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
