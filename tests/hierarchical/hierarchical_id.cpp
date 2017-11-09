@@ -85,16 +85,15 @@ class TEST_NAME : public util::test_base {
               cl::sycl::range<3>(l_items_1d, l_items_2d, l_items_3d),
               [=](cl::sycl::group<3> group) {
 
+                int groupId0 = group.get_id(0);
+                int groupId1 = group.get_id(1);
+                int groupId2 = group.get_id(2);
+                int groupIdL = group.get_linear();
+
                 int groupRange0 = group.get_group_range(0);
                 int groupRange1 = group.get_group_range(1);
                 int groupRange2 = group.get_group_range(2);
                 int groupRangeL = group.get_group_range().size();
-
-                int groupId0 = group.get_id(0);
-                int groupId1 = group.get_id(1);
-                int groupId2 = group.get_id(2);
-                int groupIdL = groupId2 + (groupId1 * groupRange2) + (groupId0
-                  * groupRange2 * groupRange1);
 
                 groupIdPtr[groupIdL] =
                     cl::sycl::int4(groupId0, groupId1, groupId2, groupIdL);
@@ -118,7 +117,8 @@ class TEST_NAME : public util::test_base {
                   int globalId0 = group.get_id(0) * localSize0 + localId0;
                   int globalId1 = group.get_id(1) * localSize1 + localId1;
                   int globalId2 = group.get_id(2) * localSize2 + localId2;
-                  int globalIdL = group.get_linear();
+                  int globalIdL = ((globalId0 * g_items_2d * g_items_3d) +
+                                   (globalId1 * g_items_3d) + globalId2);
 
                   localIdPtr[globalIdL] =
                       cl::sycl::int4(localId0, localId1, localId2, localIdL);
