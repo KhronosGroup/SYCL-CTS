@@ -118,8 +118,7 @@ class TEST_NAME : public util::test_base {
                   int globalId0 = group.get_id(0) * localSize0 + localId0;
                   int globalId1 = group.get_id(1) * localSize1 + localId1;
                   int globalId2 = group.get_id(2) * localSize2 + localId2;
-                  int globalIdL = ((globalId0 * g_items_2d * g_items_3d) +
-                                   (globalId1 * g_items_3d) + globalId2);
+                  int globalIdL = group.get_linear();
 
                   localIdPtr[globalIdL] =
                       cl::sycl::int4(localId0, localId1, localId2, localIdL);
