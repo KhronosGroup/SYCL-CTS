@@ -32,7 +32,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       auto queue = util::get_cts_object::queue();
 
       cl::sycl::program program(queue.get_context());
-      program.build_from_kernel_name<kernel0>();
+      program.build_with_kernel_type<kernel0>();
       cl::sycl::kernel kernel = program.get_kernel<kernel0>();
       queue.submit(
           [&](cl::sycl::handler &cgh) { cgh.single_task<kernel0>([=]() {}); });
@@ -51,7 +51,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       /** check program info parameters
       */
-      clUintRet = kernel.get_info<cl::sycl::info::kernel::reference_count>();
+      if (!queue.is_host()) {
+        clUintRet = kernel.get_info<cl::sycl::info::kernel::reference_count>();
+      }
       stringRet = kernel.get_info<cl::sycl::info::kernel::function_name>();
       clUintRet = kernel.get_info<cl::sycl::info::kernel::num_args>();
       stringRet = kernel.get_info<cl::sycl::info::kernel::attributes>();

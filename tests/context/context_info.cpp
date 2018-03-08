@@ -43,9 +43,9 @@ class TEST_NAME : public util::test_base {
       /** check get_info for info::context::platform
        */
       {
-        auto num_dev = context.get_info<cl::sycl::info::context::platform>();
-        check_return_type<cl_uint>(
-            log, ref_count, "get_info<cl::sycl::info::context::platform>()");
+        auto platform = context.get_info<cl::sycl::info::context::platform>();
+        check_return_type<cl::sycl::platform>(
+            log, platform, "get_info<cl::sycl::info::context::platform>()");
         TEST_TYPE_TRAIT(context, platform, context);
       }
 

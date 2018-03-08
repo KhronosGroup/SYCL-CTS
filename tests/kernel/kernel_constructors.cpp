@@ -43,7 +43,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<0>>();
+        prog.build_with_kernel_type<test_kernel<0>>();
         auto kernelA = prog.get_kernel<test_kernel<0>>();
 
         cl::sycl::kernel kernelB(kernelA);
@@ -65,7 +65,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<1>>();
+        prog.build_with_kernel_type<test_kernel<1>>();
         auto kernelA = prog.get_kernel<test_kernel<1>>();
 
         ctsQueue.submit(
@@ -87,7 +87,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<2>>();
+        prog.build_with_kernel_type<test_kernel<2>>();
         auto kernelA = prog.get_kernel<test_kernel<2>>();
 
         ctsQueue.submit(
@@ -109,7 +109,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<3>>();
+        prog.build_with_kernel_type<test_kernel<3>>();
         auto kernelA = prog.get_kernel<test_kernel<3>>();
         ctsQueue.submit(
             [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<3>()); });
@@ -130,7 +130,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<4>>();
+        prog.build_with_kernel_type<test_kernel<4>>();
         auto kernelA = prog.get_kernel<test_kernel<4>>();
         ctsQueue.submit(
             [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<4>()); });
@@ -161,7 +161,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto ctsQueue = util::get_cts_object::queue();
 
         cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_from_kernel_name<test_kernel<5>>();
+        prog.build_with_kernel_type<test_kernel<5>>();
         auto kernelA = prog.get_kernel<test_kernel<5>>();
         ctsQueue.submit(
             [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<5>()); });

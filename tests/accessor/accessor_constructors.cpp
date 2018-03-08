@@ -6,10 +6,10 @@
 //
 *******************************************************************************/
 
+#define TEST_NAME accessor_constructors
+
 #include "../common/common.h"
 #include "accessor_utility.h"
-
-#define TEST_NAME accessor_constructors
 
 namespace TEST_NAMESPACE {
 
@@ -28,7 +28,7 @@ template <typename T, int dims, int size, cl::sycl::access::mode mode,
           REQUIRES(is_buffer<target>::value)>
 void check_implemenation(
     util::logger &log, const std::string &op,
-    cl::sycl::accessor<T, dims, size, mode, target, placeholder> &a,
+    cl::sycl::accessor<T, dims, mode, target, placeholder> &a,
     const std::tuple<Args...> &args) {
   if (!(std::get<0>(args) == a.get_size())) {
     FAIL(log, op + "(get_size failed)");
@@ -53,7 +53,7 @@ template <typename T, int dims, int size, cl::sycl::access::mode mode,
           REQUIRES(is_image<target>::value)>
 void check_implemenation(
     util::logger &log, const std::string &op,
-    const cl::sycl::accessor<T, dims, size, mode, target, placeholder> &a,
+    const cl::sycl::accessor<T, dims, mode, target, placeholder> &a,
     const std::tuple<Args...> &args) {
   if (!(std::get<0>(args) == a.get_size())) {
     FAIL(log, op + "(get_size failed)");
@@ -195,14 +195,14 @@ class buffer_accessor_constructors {
 
           /** check host_buffer accessor is Copyable
           */
-          check_special_members(log, a1, exposed_interface(a));
+          check_special_members(log, a1, exposed_interface(a1));
 
           /** check host_buffer accessor is EqualityComparable and hashable
           */
           check_equality_comparable(log, a1);
         },
         [&] {
-          cl::sycl::buffer<T, dims> buffer2(data, range);
+          cl::sycl::buffer<T, dims> buffer2(data.data(), range);
           queue.submit([&](cl::sycl::handler &h) {
             /** check (buffer, handler) constructor
             */
@@ -224,7 +224,7 @@ class buffer_accessor_constructors {
 
             /** dummy kernel as no kernel is required for these checks
             */
-            handler.single_task(dummy_functor());
+            h.single_task(dummy_functor());
           });
         });
   }
@@ -239,7 +239,7 @@ class local_accessor_constructors {
     queue.submit([&](cl::sycl::handler &h) {
       /** check (range, handler) constructor
       */
-      auto a1 = make_accessor<T, dims, mode, target>(range, handler);
+      auto a1 = make_accessor<T, dims, mode, target>(range, h);
 
       /** check local accessor is Copyable
       */
@@ -251,10 +251,10 @@ class local_accessor_constructors {
 
       /** dummy kernel as no kernel is required for these checks
       */
-      handler.single_task(dummy_functor());
+      h.single_task(dummy_functor());
     });
   }
-}
+};
 
 template <typename T, int dims, int size, cl::sycl::access::mode mode,
           cl::sycl::access::target target>
@@ -483,8 +483,8 @@ class buffer_accessor_targets {
 template <typename T, int dims, int size>
 class local_accessor_targets {
  public:
-  void operator(util::logger &log, cl::sycl::queue &queue,
-                cl::sycl::range<dims> &range) {
+  void operator()(util::logger &log, cl::sycl::queue &queue,
+                  cl::sycl::range<dims> &range) {
     /** check local accessor constructor
     */
     local_accessor_modes<T, dims, size> localTests;

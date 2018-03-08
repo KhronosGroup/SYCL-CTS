@@ -186,8 +186,8 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        auto contextA = util::get_cts_object::context(selector);
-        cl::sycl::context contextB(contextA);
+        cl::sycl::context contextA = util::get_cts_object::context(selector);
+        cl::sycl::context contextB{contextA};
         cl::sycl::context contextC = contextA;
 
         if (!(contextA == contextB)) {
@@ -195,8 +195,8 @@ class TEST_NAME : public util::test_base {
                "device equality does not work correctly (equality of equal "
                "failed)");
         }
-        if (!(contextA == contextC) &&
-            check_equality(log, contextA, contextC, !selector.is_host())) {
+        if (!(contextA == contextC)) {
+          check_equality(log, contextA, contextC, !selector.is_host());
           FAIL(log,
                "device equality does not work correctly (equality of equal "
                "failed)");
