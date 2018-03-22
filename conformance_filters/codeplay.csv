@@ -17,6 +17,5 @@ nd_range
 platform
 pointers
 range
-scalars
 std_classes
 vector_constructors
