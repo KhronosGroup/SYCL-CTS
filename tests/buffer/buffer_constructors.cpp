@@ -181,8 +181,9 @@ class buffer_ctors {
       const cl::sycl::property_list propertyList{
           cl::sycl::property::buffer::use_host_ptr()};
 
-      cl::sycl::buffer<T, dims> bufA(r, propertyList);
-      cl::sycl::buffer<T, dims> bufB(r);
+      T data[size];
+      cl::sycl::buffer<T, dims> bufA(data, r, propertyList);
+      cl::sycl::buffer<T, dims> bufB(data, r);
 
       bufB = bufA;
 
@@ -198,10 +199,12 @@ class buffer_ctors {
 
     /* Check move assignment */
     {
-      const property_list propertyList{property::buffer::use_host_ptr()};
+      const cl::sycl::property_list propertyList{
+          cl::sycl::property::buffer::use_host_ptr()};
 
-      cl::sycl::buffer<T, dims> bufA(r, propertyList);
-      cl::sycl::buffer<T, dims> bufB(r);
+      T data[size];
+      cl::sycl::buffer<T, dims> bufA(data, r, propertyList);
+      cl::sycl::buffer<T, dims> bufB(data, r);
 
       bufB = std::move(bufA);
 
@@ -281,7 +284,6 @@ class TEST_NAME : public util::test_base {
     cl::sycl::mutex_class mutex;
     auto context = util::get_cts_object::context();
     const cl::sycl::property_list pl{
-        cl::sycl::property::buffer::use_host_ptr(),
         cl::sycl::property::buffer::use_mutex(mutex),
         cl::sycl::property::buffer::context_bound(context)};
 

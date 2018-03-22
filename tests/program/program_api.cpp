@@ -55,7 +55,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
         cl::sycl::program prog(context);
-        prog.build_from_kernel_name<program_api_kernel>();
+        prog.build_with_kernel_type<program_api_kernel>();
 
         // Check get_devices()
         if (prog.get_devices().size() < 1) {
@@ -108,7 +108,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
-        prog.build_from_kernel_name<program_kernel<0>>();
+        prog.build_with_kernel_type<program_kernel<0>>();
 
         if (!prog.is_linked()) {
           FAIL(log, "Program was not built properly (is_linked())");
@@ -135,7 +135,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
-        prog.build_from_kernel_name<program_kernel<1>>();
+        prog.build_with_kernel_type<program_kernel<1>>();
 
         if (!prog.is_linked()) {
           FAIL(log, "Program was not built properly (is_linked())");
@@ -163,7 +163,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
-        prog.compile_from_kernel_name<program_kernel<2>>();
+        prog.compile_with_kernel_type<program_kernel<2>>();
 
         if (prog.is_linked()) {
           FAIL(log, "Program should not be linked after compilation");
@@ -213,7 +213,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Add in the SYCL program object for our kernel
         cl::sycl::program mySyclProgram(myQueue.get_context());
-        mySyclProgram.compile_from_kernel_name<program_kernel<3>>();
+        mySyclProgram.compile_with_kernel_type<program_kernel<3>>();
 
         if (mySyclProgram.is_linked()) {
           FAIL(log, "Compiled SYCL program should not be linked yet");
@@ -252,7 +252,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Add in the SYCL program object for our kernel
         cl::sycl::program mySyclProgram(myQueue.get_context());
-        mySyclProgram.compile_from_kernel_name<program_kernel<4>>(
+        mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
             "-cl-opt-disable");
 
         if (mySyclProgram.is_linked()) {
