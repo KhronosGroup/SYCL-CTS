@@ -42,7 +42,7 @@ load_store_template = Template("""
         testVec${type_as_str}${size}.store(sizeof(${type}) * ${size}, outPtr${type_as_str}${size});
 
         auto cleanVec${type_as_str}${size} = cl::sycl::vec<${type}, ${size}>(${val});
-        auto swizzledVec = cleanVec${type_as_str}${size}.template swizzle<${swizVals}>();
+        cl::sycl::vec<${type}, ${size}> swizzledVec = cleanVec${type_as_str}${size}.template swizzle<${swizVals}>();
         swizzledVec.load(sizeof(${type}) * ${size}, swizzleInPtr${type_as_str}${size});
         swizzledVec.store(sizeof(${type}) * ${size}, swizzleOutPtr${type_as_str}${size});
       });

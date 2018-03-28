@@ -90,7 +90,7 @@ struct get_cts_object {
     template <class kernel_name>
     static cl::sycl::kernel prebuilt(cl::sycl::queue &queue) {
       cl::sycl::program program(queue.get_context());
-      program.build_from_kernel_name<kernel_name>();
+      program.build_with_kernel_type<kernel_name>();
       return program.get_kernel<kernel_name>();
     }
   };
@@ -120,7 +120,7 @@ struct get_cts_object {
       q.submit([](cl::sycl::handler &cgh) {
         cgh.single_task(dummy_functor<kernel_name>());
       });
-      program.compile_from_kernel_name<dummy_functor<kernel_name>>(
+      program.compile_with_kernel_type<dummy_functor<kernel_name>>(
           compileOptions);
 
       return program;
@@ -146,7 +146,7 @@ struct get_cts_object {
       q.submit([](cl::sycl::handler &cgh) {
         cgh.single_task(dummy_functor<kernel_name>());
       });
-      program.build_from_kernel_name<dummy_functor<kernel_name>>(buildOptions);
+      program.build_with_kernel_type<dummy_functor<kernel_name>>(buildOptions);
 
       return program;
     }

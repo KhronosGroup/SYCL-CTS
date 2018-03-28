@@ -136,7 +136,7 @@ struct accessor_helper<dataT, dims, mode, target_t::host_buffer> {
   static constexpr target_t target = target_t::host_buffer;
   static cl::sycl::accessor<dataT, dims, mode, target> get(
       cl::sycl::handler& cgh, cl::sycl::buffer<dataT, dims>& buf) {
-    return buf.template get_access<mode, target>();
+    return buf.template get_access<mode>();
   }
 };
 template <typename dataT, int dims, mode_t mode>

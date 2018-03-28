@@ -4,7 +4,7 @@
 import os
 import subprocess
 
-gClangFormat = 'clang-format.exe'
+gClangFormat = 'clang-format'
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # run clang format for the given file

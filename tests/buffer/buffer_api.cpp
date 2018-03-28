@@ -158,8 +158,10 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](cl::sycl::handler& cgh) {
-      auto acc = buf.template get_access<cl::sycl::access::mode::read,
-                                         access::target::constant_buffer>(cgh);
+      auto acc =
+          buf.template get_access<cl::sycl::access::mode::read,
+                                  cl::sycl::access::target::constant_buffer>(
+              cgh);
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::constant_buffer>>(
@@ -169,9 +171,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
 
     /* check the buffer returns the correct type of accessor */
     {
-      auto acc =
-          buf.template get_access<cl::sycl::access::mode::read_write,
-                                  cl::sycl::access::target::host_buffer>();
+      auto acc = buf.template get_access<cl::sycl::access::mode::read_write>();
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::host_buffer>>(
@@ -181,7 +181,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     /* check the buffer returns the correct type of accessor */
     q.submit([&](cl::sycl::handler& cgh) {
       auto acc = buf.template get_access<cl::sycl::access::mode::read_write>(
-          cgh, offset, r);
+          cgh, r, offset);
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::global_buffer>>(
@@ -192,7 +192,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     /* check the buffer returns the correct type of accessor */
     {
       auto acc = buf.template get_access<cl::sycl::access::mode::read_write>(
-          offset, r);
+          r, offset);
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::host_buffer>>(
@@ -230,18 +230,12 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       cl::sycl::mutex_class mutex;
       auto context = util::get_cts_object::context();
       const cl::sycl::property_list pl{
-          cl::sycl::property::buffer::use_host_ptr(),
           cl::sycl::property::buffer::use_mutex(mutex),
           cl::sycl::property::buffer::context_bound(context)};
 
       cl::sycl::buffer<T, dims> buf(r, pl);
 
       /* check has_property() */
-
-      auto hasHostPtrProperty =
-          buf.template has_property<cl::sycl::property::buffer::use_host_ptr>();
-      check_return_type<bool>(log, hasHostPtrProperty,
-                              "has_property<use_host_ptr>()");
 
       auto hasUseMutexProperty =
           buf.template has_property<cl::sycl::property::buffer::use_mutex>();
@@ -254,11 +248,6 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
                               "has_property<context_bound>()");
 
       /* check get_property() */
-
-      auto hostPtrProperty =
-          buf.template get_property<cl::sycl::property::buffer::use_host_ptr>();
-      check_return_type<cl::sycl::property::buffer::use_host_ptr>(
-          log, hostPtrProperty, "get_property<use_host_ptr>()");
 
       auto useMutexProperty =
           buf.template get_property<cl::sycl::property::buffer::use_mutex>();

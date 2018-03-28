@@ -154,7 +154,7 @@ class accessor_factory {
   }
 
   template <int d, typename A, REQUIRES(dims <= 3)>
-  accessor_t impl(access::image<d, A>& i, sycl::handler& h,
+  accessor_t impl(sycl::image<d, A>& i, sycl::handler& h,
                   requires_image_array) const {
     return accessor_t(i, h);
   }
