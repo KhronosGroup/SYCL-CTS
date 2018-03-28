@@ -104,6 +104,8 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
   try {
     cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
+    
+    // Create a default offset with indices 0.
     cl::sycl::id<dims> offset;
 
     /* create a sycl buffer from the host buffer */
