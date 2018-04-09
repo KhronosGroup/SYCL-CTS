@@ -98,7 +98,7 @@ foreach(test_project_dir ${test_projects_dir_list})
         # remove the "generate_" from the python script to obtain the template name
         string(SUBSTRING ${test_generate_script_name} 9 -1 test_template_name)
 
-        set(test_template_source ${test_template_name}.template)
+        # set(test_template_source ${test_template_name}.template)
         set(test_regenerator re${test_generate_script_name}_tests)
         set(test_generator_folder ${test_exe_name}_generators)
 

@@ -8,171 +8,122 @@
 
 import sys
 sys.path.append('../common/')
-from common_python_vec import Data, replace_string_in_source_string, append_fp_postfix, wrap_with_half_check
+from common_python_vec import (Data, replace_string_in_source_string,
+                               append_fp_postfix, make_func_call,
+                               wrap_with_test_func, write_source_file)
 from string import Template
 
+TEST_NAME = 'LOAD_STORE'
 
-load_store_buffers_template = Template("""
-  ${type} inputData${type_as_str}${size}[${size}] = {${in_order_vals}};
-  ${type} outputData${type_as_str}${size}[${size}] = {${val}};
-  ${type} swizzleInputData${type_as_str}${size}[${size}] = {${reverse_order_vals}};
-  ${type} swizzleOutputData${type_as_str}${size}[${size}] = {${val}};
-  {
-    cl::sycl::buffer<${type}, 1> inBuffer${type_as_str}${size}(inputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
-    cl::sycl::buffer<${type}, 1> outBuffer${type_as_str}${size}(outputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
-    cl::sycl::buffer<${type}, 1> swizzleInBuffer${type_as_str}${size}(swizzleInputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
-    cl::sycl::buffer<${type}, 1> swizzleOutBuffer${type_as_str}${size}(swizzleOutputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
+load_store_test_template = Template(
+    """        ${type} inputData${type_as_str}${size}[${size}] = {${in_order_vals}};
+        ${type} outputData${type_as_str}${size}[${size}] = {${val}};
+        ${type} swizzleInputData${type_as_str}${size}[${size}] = {${reverse_order_vals}};
+        ${type} swizzleOutputData${type_as_str}${size}[${size}] = {${val}};
+        {
+          cl::sycl::buffer<${type}, 1> inBuffer${type_as_str}${size}(inputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
+          cl::sycl::buffer<${type}, 1> outBuffer${type_as_str}${size}(outputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
+          cl::sycl::buffer<${type}, 1> swizzleInBuffer${type_as_str}${size}(swizzleInputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
+          cl::sycl::buffer<${type}, 1> swizzleOutBuffer${type_as_str}${size}(swizzleOutputData${type_as_str}${size}, cl::sycl::range<1>(${size}));
 
-""")
+          testQueue.submit([&](cl::sycl::handler &cgh) {
+            auto inPtr${type_as_str}${size} = inBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read_write>(cgh);
+            auto outPtr${type_as_str}${size} = outBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-load_store_accessors_template = Template("""
-    testQueue.submit([&](cl::sycl::handler &cgh) {
-      auto inPtr${type_as_str}${size} = inBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read>(cgh);
-      auto outPtr${type_as_str}${size} = outBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::write>(cgh);
+            auto swizzleInPtr${type_as_str}${size} = swizzleInBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read_write>(cgh);
+            auto swizzleOutPtr${type_as_str}${size} = swizzleOutBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-      auto swizzleInPtr${type_as_str}${size} = swizzleInBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::read>(cgh);
-      auto swizzleOutPtr${type_as_str}${size} = swizzleOutBuffer${type_as_str}${size}.get_access<cl::sycl::access::mode::write>(cgh);
+            cgh.single_task<class ${kernelName}>([=]() {
+              auto testVec${type_as_str}${size} = cl::sycl::vec<${type}, ${size}>(${val});
+              testVec${type_as_str}${size}.load(0, inPtr${type_as_str}${size});
+              testVec${type_as_str}${size}.store(0, outPtr${type_as_str}${size});
 
-""")
+              auto cleanVec${type_as_str}${size} = cl::sycl::vec<${type}, ${size}>(${val});
+              cl::sycl::vec<${type}, ${size}> swizzledVec {cleanVec${type_as_str}${size}.template swizzle<${swizVals}>()};
+              swizzledVec.load(0, swizzleInPtr${type_as_str}${size});
+              swizzledVec.store(0, swizzleOutPtr${type_as_str}${size});
+            });
+          });
 
-load_store_template = Template("""
-      cgh.single_task<class ${kernelName}>([=]() {
-        auto testVec${type_as_str}${size} = cl::sycl::vec<${type}, ${size}>(${val});
-        testVec${type_as_str}${size}.load(sizeof(${type}) * ${size}, inPtr${type_as_str}${size});
-        testVec${type_as_str}${size}.store(sizeof(${type}) * ${size}, outPtr${type_as_str}${size});
+        }
+        check_array_equality<${type}, ${size}>(log, inputData${type_as_str}${size}, outputData${type_as_str}${size});
+        check_array_equality<${type}, ${size}>(log, swizzleInputData${type_as_str}${size}, swizzleOutputData${type_as_str}${size});
 
-        auto cleanVec${type_as_str}${size} = cl::sycl::vec<${type}, ${size}>(${val});
-        cl::sycl::vec<${type}, ${size}> swizzledVec = cleanVec${type_as_str}${size}.template swizzle<${swizVals}>();
-        swizzledVec.load(sizeof(${type}) * ${size}, swizzleInPtr${type_as_str}${size});
-        swizzledVec.store(sizeof(${type}) * ${size}, swizzleOutPtr${type_as_str}${size});
-      });
-    });
-
-""")
-
-load_store_check_template = Template("""
-  }
-  check_array_equality<${type}, ${size}>(log, inputData${type_as_str}${size}, outputData${type_as_str}${size});
-  ${type} reversedInputData${type_as_str}${size}[${size}] = {${reverse_order_vals}};
-  check_array_equality<${type}, ${size}>(log, reversedInputData${type_as_str}${size}, swizzleOutputData${type_as_str}${size});
-
-  testQueue.wait_and_throw();
-
-""")
+        testQueue.wait_and_throw();
+      """)
 
 
-def gen_load_store_buffers(type_str, size):
-    no_whitespace_type_str = type_str.replace(
-        ' ', '').replace(
+def gen_kernel_name(type_str, size):
+    return 'KERNEL_load_store_' + type_str.replace('cl::sycl::', '').replace(
+        ' ', '') + str(size)
+
+
+def gen_load_store_test(type_str, size):
+    no_whitespace_type_str = type_str.replace(' ', '').replace(
         'cl::sycl::', '')
-    return load_store_buffers_template.substitute(
+    test_string = load_store_test_template.substitute(
         type=type_str,
         type_as_str=no_whitespace_type_str,
         size=size,
         val=Data.value_default_dict[type_str],
-        in_order_vals=', '.join(append_fp_postfix(type_str, Data.vals_list_dict[size])),
-        reverse_order_vals=', '.join(append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])))
-
-
-def gen_load_store_accessors(type_str, size):
-    no_whitespace_type_str = type_str.replace(
-        ' ', '').replace(
-        'cl::sycl::', '')
-    return load_store_accessors_template.substitute(
-        type_as_str=no_whitespace_type_str, size=size)
-
-
-def gen_load_stores(type_str, size):
-    no_whitespace_type_str = type_str.replace(
-        ' ', '').replace(
-        'cl::sycl::', '')
-    return load_store_template.substitute(
-        type=type_str,
-        size=size,
-        kernelName='KERNEL_' +
-        type_str.replace(
-            'cl::sycl::',
-            '').replace(
-            ' ',
-            '') +
-        str(size),
-        val=Data.value_default_dict[type_str],
-        type_as_str=no_whitespace_type_str,
-        swizVals=', '.join(
-            Data.swizzle_elem_list_dict[size]))
-
-
-def gen_load_store_checks(type_str, size):
-    no_whitespace_type_str = type_str.replace(
-        ' ', '').replace(
-        'cl::sycl::', '')
-    return load_store_check_template.substitute(
-        type=type_str,
-        size=size,
-        type_as_str=no_whitespace_type_str,
-        reverse_order_vals=', '.join(append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])))
+        in_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+        reverse_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+        kernelName=gen_kernel_name(type_str, size),
+        swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
+    return wrap_with_test_func(TEST_NAME, type_str, test_string, str(size))
 
 
 def make_tests(input_file, output_file):
-    string = ''
 
     # Test with type_str='char'
+    test_string = ''
+    func_calls = ''
     for size in Data.standard_sizes:
-        test_string = gen_load_store_buffers(
-            'char', size)
-        test_string += gen_load_store_accessors(
-            'char', size)
-        test_string += gen_load_stores('char', size)
-        test_string += gen_load_store_checks(
-            'char', size)
-        string += wrap_with_half_check('char', test_string)
+        test_string += gen_load_store_test('char', size)
+        func_calls += make_func_call(TEST_NAME, 'char', str(size))
+    write_source_file(test_string, func_calls, TEST_NAME, input_file,
+                      output_file, 'char')
 
     for base_type in Data.standard_types:
+        if (base_type.count('half') is not 0):
+            continue
         for sign in Data.signs:
-            if (base_type == 'float' or base_type ==
-                    'double' or base_type == 'cl::sycl::half') and sign is False:
+            if (base_type == 'float' or base_type == 'double'
+                    or base_type == 'cl::sycl::half') and sign is False:
                 continue
             type_str = Data.standard_type_dict[(sign, base_type)]
+            test_string = ''
+            func_calls = ''
             for size in Data.standard_sizes:
-                test_string = gen_load_store_buffers(
-                    type_str, size)
-                test_string += gen_load_store_accessors(
-                    type_str, size)
-                test_string += gen_load_stores(type_str, size)
-                test_string += gen_load_store_checks(
-                    type_str, size)
-                string += wrap_with_half_check(type_str, test_string)
+                test_string += gen_load_store_test(type_str, size)
+                func_calls += make_func_call(TEST_NAME, type_str, str(size))
+            write_source_file(test_string, func_calls, TEST_NAME, input_file,
+                              output_file, type_str)
 
     for base_type in Data.opencl_types:
+        if (base_type.count('half') is not 0):
+            continue
         for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float' or base_type ==
-                    'cl::sycl::cl_double' or base_type == 'cl::sycl::cl_half') and sign is False:
+            if (base_type.count('half') is not 0):
+                continue
+            if (base_type == 'cl::sycl::cl_float'
+                    or base_type == 'cl::sycl::cl_double'
+                    or base_type == 'cl::sycl::cl_half') and sign is False:
                 continue
             type_str = Data.opencl_type_dict[(sign, base_type)]
+            test_string = ''
+            func_calls = ''
             for size in Data.standard_sizes:
-                test_string = gen_load_store_buffers(
-                    type_str, size)
-                test_string += gen_load_store_accessors(
-                    type_str, size)
-                test_string += gen_load_stores(type_str, size)
-                test_string += gen_load_store_checks(
-                    type_str, size)
-                string += wrap_with_half_check(type_str, test_string)
-
-    with open(input_file, 'r') as source_file:
-        source = source_file.read()
-
-    source = replace_string_in_source_string(
-        source,
-        string,
-        '$LOAD_STORE_TESTS')
-
-    with open(output_file, 'w+') as output:
-        output.write(source)
+                test_string += gen_load_store_test(type_str, size)
+                func_calls += make_func_call(TEST_NAME, type_str, str(size))
+            write_source_file(test_string, func_calls, TEST_NAME, input_file,
+                              output_file, type_str)
 
 
 def main():
-    make_tests('vector_load_store.template', 'vector_load_store.cpp')
+    make_tests('../common/vector.template', 'vector_load_store.cpp')
 
 
 if __name__ == '__main__':

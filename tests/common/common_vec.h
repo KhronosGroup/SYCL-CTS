@@ -58,10 +58,10 @@ bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
 template <int vecSize, typename vectorType, typename lambdaFunc>
 bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
   auto vector2 = lambda();
-  if (check_return_type_bool<vectorType>(vector2)) {
+  if (!check_return_type_bool<vectorType>(vector2)) {
     return false;
   }
-  if (std::is_same<vectorType, decltype(vector2)>::value) {
+  if (!std::is_same<vectorType, decltype(vector2)>::value) {
     return false;
   }
   for (int i = 0; i < vecSize; i++) {
@@ -97,18 +97,12 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, vecCount> inputVec,
 
   // convert()
   cl::sycl::vec<convertType, vecCount> convertedVec =
-      inputVec
-          .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+      inputVec.template convert<cl::sycl::vec<convertType, vecCount>,
+                                cl::sycl::rounding_mode::automatic>();
 
   // as()
   cl::sycl::vec<asType, vecCount> asVec =
-      inputVec.template as<asType, vecCount>();
-
-  // swizzle()
-  if (vecCount == 1) {
-    auto swizzleVec = inputVec.template swizzle<1>();
-    auto swizzleVecDetail = inputVec.template swizzle<cl::sycl::elem::s0>();
-  }
+      inputVec.template as<cl::sycl::vec<asType, vecCount>>();
   return true;
 }
 
@@ -122,45 +116,52 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, vecCount> inputVec,
 template <typename vecType, int vecCount>
 bool check_lo_hi_odd_even(cl::sycl::vec<vecType, vecCount> inputVec,
                           vecType* vals) {
-  constexpr size_t stdIndex = ((vecCount / 2) + (vecCount % 2));
-  constexpr size_t oddIndex = vecCount / 2;
-  constexpr size_t length = ((vecCount + vecCount % 2) / 2);
+  constexpr size_t mid = ((vecCount / 2) + (vecCount % 2));
   // lo()
-  cl::sycl::vec<vecType, stdIndex> loVec = inputVec.lo();
-  vecType loVals[stdIndex] = {0};
-  for (int i = 0; i < length; i++) {
+  cl::sycl::vec<vecType, mid> loVec{inputVec.lo()};
+  vecType loVals[mid] = {0};
+  for (size_t i = 0; i < mid; i++) {
     loVals[i] = vals[i];
   }
-  if (!check_vector_values<vecType, stdIndex>(loVec, loVals)) {
+  if (!check_vector_values<vecType, mid>(loVec, loVals)) {
     return false;
   }
-  // hi()
-  cl::sycl::vec<vecType, stdIndex> hiVec = inputVec.hi();
-  vecType hiVals[stdIndex] = {0};
-  for (int i = length; i < vecCount; i++) {
-    hiVals[i] = vals[i + vecCount + vecCount % 2];
+  // As the second element from hi() on 3 element vectors is undefined, don't
+  // test it
+  if (vecCount != 3) {
+    // hi()
+    cl::sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+    vecType hiVals[mid] = {0};
+    for (size_t i = 0; i < mid; i++) {
+      hiVals[i] = vals[i + mid];
+    }
+    if (!check_vector_values<vecType, mid>(hiVec, hiVals)) {
+      return false;
+    }
   }
-  if (!check_vector_values<vecType, stdIndex>(hiVec, hiVals)) {
-    return false;
-  }
-  // odd()
-  cl::sycl::vec<vecType, oddIndex> oddVec = inputVec.odd();
-  vecType oddVals[oddIndex] = {0};
-  for (int i = 0; i < oddIndex; ++i) {
-    oddVals[i] = vals[i * 2 + 1];
-  }
-  if (!check_vector_values<vecType, oddIndex>(oddVec, oddVals)) {
-    return false;
+  // As the second element from odd() on 3 element vectors is undefined, don't
+  // test it
+  if (vecCount != 3) {
+    // odd()
+    cl::sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+    vecType oddVals[mid] = {0};
+    for (size_t i = 0; i < mid; ++i) {
+      oddVals[i] = vals[i * 2 + 1];
+    }
+    if (!check_vector_values<vecType, mid>(oddVec, oddVals)) {
+      return false;
+    }
   }
   // even()
-  cl::sycl::vec<vecType, stdIndex> evenVec = inputVec.even();
-  vecType evenVals[stdIndex] = {0};
-  for (int i = 0; i < stdIndex; ++i) {
+  cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+  vecType evenVals[mid] = {0};
+  for (size_t i = 0; i < mid; ++i) {
     evenVals[i] = vals[i * 2];
   }
-  if (!check_vector_values<vecType, stdIndex>(evenVec, evenVals)) {
+  if (!check_vector_values<vecType, mid>(evenVec, evenVals)) {
     return false;
   }
+
   return true;
 }
 }
