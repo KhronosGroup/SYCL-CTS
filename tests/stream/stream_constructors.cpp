@@ -14,6 +14,10 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
+struct stream_kernel {
+  void operator()() {}
+};
+
 /** tests the constructors for cl::sycl::stream
 */
 class TEST_NAME : public util::test_base {
@@ -59,7 +63,7 @@ class TEST_NAME : public util::test_base {
                  "incorrect value.");
           }
 
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -97,7 +101,7 @@ class TEST_NAME : public util::test_base {
                  "incorrect value after copy constructed.");
           }
 
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -107,7 +111,8 @@ class TEST_NAME : public util::test_base {
         queue.submit([&](cl::sycl::handler &handler) {
 
           cl::sycl::stream osA(bufferSize, maxStatementSize, handler);
-          cl::sycl::stream osB = osA;
+          cl::sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
+          osB = osA;
 
           if (osA.get_max_statement_size() != osB.get_max_statement_size()) {
             FAIL(log,
@@ -136,7 +141,7 @@ class TEST_NAME : public util::test_base {
                  "incorrect value after copy assigned.");
           }
 
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -159,7 +164,7 @@ class TEST_NAME : public util::test_base {
                  "incorrect value after move constructed.");
           }
 
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -169,7 +174,8 @@ class TEST_NAME : public util::test_base {
         queue.submit([&](cl::sycl::handler &handler) {
 
           cl::sycl::stream osA(bufferSize, maxStatementSize, handler);
-          cl::sycl::stream osB = std::move(osA);
+          cl::sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
+          osB = std::move(osA);
 
           if (osB.get_size() != bufferSize) {
             FAIL(log,
@@ -182,7 +188,7 @@ class TEST_NAME : public util::test_base {
                  "incorrect value after move assigned.");
           }
 
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -203,7 +209,7 @@ class TEST_NAME : public util::test_base {
             FAIL(log,
                  "stream equality does not work correctly (copy assigned)");
           }
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
 
@@ -216,12 +222,12 @@ class TEST_NAME : public util::test_base {
 
           cl::sycl::hash_class<cl::sycl::stream> hasher;
 
-          if (hasher(osA) == hasher(osB)) {
+          if (hasher(osA) != hasher(osB)) {
             FAIL(log,
                  "stream hashing does not work correctly (hashing of equal "
                  "failed)");
           }
-          handler.single_task([=] {});
+          handler.single_task(stream_kernel{});
         });
       }
     } catch (const cl::sycl::exception &e) {
