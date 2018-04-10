@@ -57,9 +57,9 @@ T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
           T localSums[localItemsTotal];
 
           // process items in each work item
-          parallel_for_work_item(group, [=,
-                                         &localSums](cl::sycl::item<3> item) {
-            int localId = item.get_linear_id();
+          group.parallel_for_work_item([=,
+                                        &localSums](cl::sycl::h_item<3> item) {
+            int localId = item.get_local().get_linear_id();
             /* Split the array into work-group-size different arrays */
             int valuesPerItem = (inputSize / numGroups) / localItemsTotal;
             int idStart = 0;
@@ -68,15 +68,19 @@ T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
             /* Handle the case where the number of input values is not divisible
             * by
             * the number of items. */
-            if (idEnd > inputSize - 1) idEnd = inputSize - 1;
+            if (idEnd > inputSize - 1) {
+              idEnd = inputSize - 1;
+            }
 
-            for (int i = idStart; i < idEnd; i++)
+            for (int i = idStart; i < idEnd; i++) {
               localSums[i].increment(input_ptr[i]);
+            }
           });
 
           /* Sum items in each work group */
-          for (int i = 0; i < localItemsTotal; i++)
+          for (int i = 0; i < localItemsTotal; i++) {
             groupSumsPtr[group.get_id(0)].increment(localSums[i]);
+          }
         });
   });
 

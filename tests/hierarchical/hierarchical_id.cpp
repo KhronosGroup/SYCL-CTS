@@ -100,19 +100,19 @@ class TEST_NAME : public util::test_base {
                 groupRangePtr[groupIdL] = cl::sycl::int4(
                     groupRange0, groupRange1, groupRange2, groupRangeL);
 
-                parallel_for_work_item(group, [&](cl::sycl::item<3> itemID) {
+                group.parallel_for_work_item([&](cl::sycl::h_item<3> itemID) {
 
-                  int localId0 = itemID.get_id(0);
-                  int localId1 = itemID.get_id(1);
-                  int localId2 = itemID.get_id(2);
-                  int localIdL = itemID.get_linear_id();
+                  int localId0 = itemID.get_local_id(0);
+                  int localId1 = itemID.get_local_id(1);
+                  int localId2 = itemID.get_local_id(2);
+                  int localIdL = itemID.get_local().get_linear_id();
 
-                  int localSize0 = itemID.get_range()[0];
-                  int localSize1 = itemID.get_range()[1];
-                  int localSize2 = itemID.get_range()[2];
-                  int localSizeL = itemID.get_range()[0] *
-                                   itemID.get_range()[1] *
-                                   itemID.get_range()[2];
+                  int localSize0 = itemID.get_local_range(0);
+                  int localSize1 = itemID.get_local_range(1);
+                  int localSize2 = itemID.get_local_range(2);
+                  int localSizeL = itemID.get_local_range(0) *
+                                   itemID.get_local_range(1) *
+                                   itemID.get_local_range(2);
 
                   int globalId0 = group.get_id(0) * localSize0 + localId0;
                   int globalId1 = group.get_id(1) * localSize1 + localId1;
