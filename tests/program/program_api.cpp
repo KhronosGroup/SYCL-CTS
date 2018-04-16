@@ -200,7 +200,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // obtain an existing OpenCL C program object
         cl_program myClProgram = nullptr;
-        if (!create_compiled_program(kernel_source, myClProgram, log)) {
+        if (!create_compiled_program(kernel_source, context.get(),
+                                     myQueue.get_device().get(), myClProgram,
+                                     log)) {
           FAIL(log, "Didn't create the cl_program");
         }
 
@@ -239,7 +241,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // obtain an existing OpenCL C program object
         cl_program myClProgram = nullptr;
-        if (!create_compiled_program(kernel_source, myClProgram, log)) {
+        if (!create_compiled_program(kernel_source, context.get(),
+                                     myQueue.get_device().get(), myClProgram,
+                                     log)) {
           FAIL(log, "Didn't create the cl_program");
         }
 

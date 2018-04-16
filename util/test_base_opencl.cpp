@@ -97,6 +97,15 @@ bool test_base_opencl::setup(logger &log) {
 bool test_base_opencl::create_compiled_program(const std::string &source,
                                                cl_program &out_program,
                                                logger &log) {
+  return this->create_compiled_program(source, m_cl_context, m_cl_device_id,
+                                       out_program, log);
+}
+
+bool test_base_opencl::create_compiled_program(const std::string &source,
+                                               cl_context clContext,
+                                               cl_device_id clDeviceId,
+                                               cl_program &out_program,
+                                               logger &log) {
   assert(!source.empty());
 
   const char *source_c = source.c_str();
@@ -104,10 +113,10 @@ bool test_base_opencl::create_compiled_program(const std::string &source,
   assert(source_c != nullptr);
 
   cl_int error = CL_SUCCESS;
-  out_program = clCreateProgramWithSource(m_cl_context, 1, &source_c,
-                                          &sourceSize, &error);
+  out_program =
+      clCreateProgramWithSource(clContext, 1, &source_c, &sourceSize, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
-  error = clCompileProgram(out_program, 1, &m_cl_device_id, nullptr, 0, nullptr,
+  error = clCompileProgram(out_program, 1, &clDeviceId, nullptr, 0, nullptr,
                            nullptr, nullptr, nullptr);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
 
@@ -118,6 +127,15 @@ bool test_base_opencl::create_compiled_program(const std::string &source,
 bool test_base_opencl::create_built_program(const std::string &source,
                                             cl_program &out_program,
                                             logger &log) {
+  return this->create_built_program(source, m_cl_context, m_cl_device_id,
+                                    out_program, log);
+}
+
+bool test_base_opencl::create_built_program(const std::string &source,
+                                            cl_context clContext,
+                                            cl_device_id clDeviceId,
+                                            cl_program &out_program,
+                                            logger &log) {
   assert(!source.empty());
 
   const char *source_c = source.c_str();
@@ -125,11 +143,11 @@ bool test_base_opencl::create_built_program(const std::string &source,
   assert(source_c != nullptr);
 
   cl_int error = CL_SUCCESS;
-  out_program = clCreateProgramWithSource(m_cl_context, 1, &source_c,
-                                          &sourceSize, &error);
+  out_program =
+      clCreateProgramWithSource(clContext, 1, &source_c, &sourceSize, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
-  error = clBuildProgram(out_program, 1, &m_cl_device_id, nullptr, nullptr,
-                         nullptr);
+  error =
+      clBuildProgram(out_program, 1, &clDeviceId, nullptr, nullptr, nullptr);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
 
   m_openPrograms.push_back(out_program);
