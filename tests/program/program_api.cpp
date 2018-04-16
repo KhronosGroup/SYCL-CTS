@@ -91,10 +91,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
         }
 
-        // Check is_linked()
-        bool isLinked = prog.is_linked();
-        if (!isLinked) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        // Check get_state()
+        cl::sycl::program_state state = prog.get_state();
+        if (state != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
       }
 
@@ -104,14 +104,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto myQueue = util::get_cts_object::queue();
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         prog.build_with_kernel_type<program_kernel<0>>();
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
         // check for get_binaries()
@@ -131,14 +131,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         prog.build_with_kernel_type<program_kernel<1>>();
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
         // check for get_binaries()
@@ -159,21 +159,21 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto myQueue = util::get_cts_object::queue();
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         prog.compile_with_kernel_type<program_kernel<2>>();
 
-        if (prog.is_linked()) {
-          FAIL(log, "Program should not be linked after compilation");
+        if (prog.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Program should be in compiled state after compilation");
         }
 
         // Check link()
         prog.link();
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
         // check for get_binaries()
@@ -207,22 +207,22 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // Create a SYCL program object from a cl_program object
         cl::sycl::program myExternProgram(myQueue.get_context(), myClProgram);
 
-        if (myExternProgram.is_linked()) {
-          FAIL(log, "Compiled interop program should not be linked yet");
+        if (myExternProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled interop program should be in compiled state");
         }
 
         // Add in the SYCL program object for our kernel
         cl::sycl::program mySyclProgram(myQueue.get_context());
         mySyclProgram.compile_with_kernel_type<program_kernel<3>>();
 
-        if (mySyclProgram.is_linked()) {
-          FAIL(log, "Compiled SYCL program should not be linked yet");
+        if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled SYCL program should be in compiled state");
         }
 
         // Link myClProgram with the SYCL program object
         cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram});
 
-        if (!myLinkedProgram.is_linked()) {
+        if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not linked");
         }
 
@@ -246,8 +246,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // Create a SYCL program object from a cl_program object
         cl::sycl::program myExternProgram(myQueue.get_context(), myClProgram);
 
-        if (myExternProgram.is_linked()) {
-          FAIL(log, "Compiled interop program should not be linked yet");
+        if (myExternProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled interop program should be in compiled state");
         }
 
         // Add in the SYCL program object for our kernel
@@ -255,15 +255,15 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
             "-cl-opt-disable");
 
-        if (mySyclProgram.is_linked()) {
-          FAIL(log, "Compiled SYCL program should not be linked yet");
+        if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled SYCL program should be in compiled state");
         }
 
         // Link myClProgram with the SYCL program object
         cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
                                           "-cl-fast-relaxed-math");
 
-        if (!myLinkedProgram.is_linked()) {
+        if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not linked");
         }
 
