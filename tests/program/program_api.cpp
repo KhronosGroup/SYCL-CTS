@@ -113,6 +113,27 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
       }
 
+      if (!context.is_host()) {
+        log.note("check compiling and building from source");
+
+        {  // Check compile_with_source(source)
+          cl::sycl::program prog(context);
+          prog.compile_with_source(kernel_source);
+        }
+        {  // Check compile_with_source(source, options)
+          cl::sycl::program prog(context);
+          prog.compile_with_source(kernel_source, compileOptions);
+        }
+        {  // Check build_with_source(source)
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source);
+        }
+        {  // Check build_with_source(source, options)
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source, linkOptions);
+        }
+      }
+
       {
         log.note("build program without build options");
 
