@@ -56,6 +56,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         log.note("check program class methods");
 
         cl::sycl::program prog(context);
+
+        // Check build_with_kernel_type()
         prog.build_with_kernel_type<program_api_kernel>();
 
         // Check get_devices()
@@ -70,18 +72,23 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         cl::sycl::vector_class<cl::sycl::vector_class<char>> binaries =
             prog.get_binaries();
 
-        // Check get_binary_sizes()
-        cl::sycl::vector_class<::size_t> binarySizes = prog.get_binary_sizes();
+        // Check get_context()
+        cl::sycl::context progCtx = prog.get_context();
+
+        // Check get_compile_options()
+        cl::sycl::string_class progCompileOptions = prog.get_compile_options();
+
+        // Check get_link_options()
+        cl::sycl::string_class progLinkOptions = prog.get_link_options();
 
         // Check get_build_options()
-        cl::sycl::string_class buildOptions = prog.get_build_options();
+        cl::sycl::string_class progBuildOptions = prog.get_build_options();
 
         // Check get()
         if (!context.is_host()) {
           cl_program clProgram = prog.get();
         }
 
-        // Check get_kernel()
         {
           auto q = cl::sycl::queue(context, selector);
           q.submit([](cl::sycl::handler &cgh) {
@@ -89,6 +96,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           });
           q.wait_and_throw();
 
+          // Check has_kernel()
+          bool hasKernel = prog.has_kernel<program_api_kernel>();
+          if (!hasKernel) {
+            FAIL(log, "Program was not built properly (has_kernel())");
+          }
+
+          // Check get_kernel()
           cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
         }
 
@@ -142,6 +156,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Program was not built properly (get_state())");
         }
 
+        if (prog.get_build_options().find(linkOptions) ==
+            cl::sycl::string_class::npos) {
+          FAIL(log, "Built program did not store the build options");
+        }
+
         // check for get_binaries()
         if (prog.get_binaries().size() < 1) {
           FAIL(log, "Wrong value for program.get_binaries()");
@@ -164,6 +183,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
+        // Check compile_with_kernel_type()
         prog.compile_with_kernel_type<program_kernel<2>>();
 
         if (prog.get_state() != cl::sycl::program_state::compiled) {
@@ -264,12 +284,20 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Compiled SYCL program should be in compiled state");
         }
 
+        if (mySyclProgram.get_compile_options() != compileOptions) {
+          FAIL(log, "Compiled SYCL program did not store the compile options");
+        }
+
         // Link myClProgram with the SYCL program object
         cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
                                           linkOptions);
 
         if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not linked");
+        }
+
+        if (myLinkedProgram.get_link_options() != linkOptions) {
+          FAIL(log, "Linked program did not store the link options");
         }
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
