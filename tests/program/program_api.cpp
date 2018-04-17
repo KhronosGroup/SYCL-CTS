@@ -49,6 +49,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
     try {
       auto selector = cts_selector();
       auto context = util::get_cts_object::context(selector);
+      const cl::sycl::string_class compileOptions = "-cl-opt-disable";
+      const cl::sycl::string_class linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note("check program class methods");
@@ -134,7 +136,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
-        prog.build_with_kernel_type<program_kernel<1>>();
+        prog.build_with_kernel_type<program_kernel<1>>(linkOptions);
 
         if (prog.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not built properly (get_state())");
@@ -256,7 +258,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         // Add in the SYCL program object for our kernel
         cl::sycl::program mySyclProgram(myQueue.get_context());
         mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
-            "-cl-opt-disable");
+            compileOptions);
 
         if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
           FAIL(log, "Compiled SYCL program should be in compiled state");
@@ -264,7 +266,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Link myClProgram with the SYCL program object
         cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
-                                          "-cl-fast-relaxed-math");
+                                          linkOptions);
 
         if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not linked");
