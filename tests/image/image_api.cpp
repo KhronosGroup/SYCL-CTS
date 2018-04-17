@@ -15,6 +15,8 @@ template <int dims>
 struct image_kernel_read;
 template <int dims>
 struct image_kernel_write;
+template <int dims>
+struct image_kernel_get_access;
 
 namespace image_api__ {
 using namespace sycl_cts;
@@ -38,13 +40,17 @@ class image_ctors {
     const auto elementSize = channelTypeSize * channelCount;
     const auto numElems = static_cast<int>(r[0] * r[1] * r[2]);
 
+    // Pitch has to be at least as large as the multiple of element size
+    image_generic<dims>::multiply_pitch(p, elementSize);
+
     // Create image host data
-    auto imageHost = get_image_host<dims>(channelTypeSize, channelCount);
+    auto imageHost =
+        get_image_host<dims>(numElems, channelTypeSize, channelCount);
 
     // Creates an image, either with a pitch or without
     // The pitch is not used for a 1D image or when null
     cl::sycl::image<dims> img = image_generic<dims>::create_with_pitch(
-        static_cast<void *>(imageHost.get()), channelOrder, channelType, r, p);
+        static_cast<void *>(imageHost.data()), channelOrder, channelType, r, p);
 
     // Check get_range()
     if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0))) ||
@@ -79,7 +85,7 @@ class image_ctors {
       /* create another image with a custom allocator */
       auto imgAlloc =
           image_generic<dims>::template create_with_pitch_and_allocator<
-              AllocatorT>(static_cast<void *>(imageHost.get()), channelOrder,
+              AllocatorT>(static_cast<void *>(imageHost.data()), channelOrder,
                           channelType, r, p);
 
       auto allocator = imgAlloc.get_allocator();
@@ -102,81 +108,197 @@ class image_ctors {
           cl::sycl::property::image::use_mutex(mutex),
           cl::sycl::property::image::context_bound(context)};
 
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(channelOrder, channelType, r, propList);
+      // Create another image
+      auto img2 = cl::sycl::image<dims>(static_cast<void *>(imageHost.data()),
+                                        channelOrder, channelType, r, propList);
 
       /* check has_property() */
 
       auto hasHostPtrProperty =
-          img.template has_property<cl::sycl::property::image::use_host_ptr>();
+          img2.template has_property<cl::sycl::property::image::use_host_ptr>();
       check_return_type<bool>(log, hasHostPtrProperty,
                               "has_property<use_host_ptr>()");
 
       auto hasUseMutexProperty =
-          img.template has_property<cl::sycl::property::image::use_mutex>();
+          img2.template has_property<cl::sycl::property::image::use_mutex>();
       check_return_type<bool>(log, hasUseMutexProperty,
                               "has_property<use_mutex>()");
 
-      auto hasContentBoundProperty =
-          img.template has_property<cl::sycl::property::image::context_bound>();
+      auto hasContentBoundProperty = img2.template has_property<
+          cl::sycl::property::image::context_bound>();
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
 
       /* check get_property() */
 
       auto hostPtrProperty =
-          img.template get_property<cl::sycl::property::image::use_host_ptr>();
+          img2.template get_property<cl::sycl::property::image::use_host_ptr>();
       check_return_type<cl::sycl::property::image::use_host_ptr>(
           log, hostPtrProperty, "get_property<use_host_ptr>()");
 
       auto useMutexProperty =
-          img.template get_property<cl::sycl::property::image::use_mutex>();
+          img2.template get_property<cl::sycl::property::image::use_mutex>();
       check_return_type<cl::sycl::property::image::use_mutex>(
           log, useMutexProperty, "get_property<use_mutex>()");
+      check_return_type<cl::sycl::mutex_class *>(
+          log, useMutexProperty.get_mutex_ptr(),
+          "image::use_mutex::get_mutex_ptr()");
 
-      auto contentBoundProperty =
-          img.template get_property<cl::sycl::property::image::context_bound>();
+      auto contextBoundProperty = img2.template get_property<
+          cl::sycl::property::image::context_bound>();
       check_return_type<cl::sycl::property::image::context_bound>(
-          log, contentBoundProperty, "get_property<context_bound>()");
+          log, contextBoundProperty, "get_property<context_bound>()");
+      check_return_type<cl::sycl::context>(
+          log, contextBoundProperty.get_context(),
+          "image::context_bound::get_context()");
+    }
+
+    // Check image enum classes
+    {
+      // Check image channel orders
+      check_enum_class_value(cl::sycl::image_channel_order::a);
+      check_enum_class_value(cl::sycl::image_channel_order::r);
+      check_enum_class_value(cl::sycl::image_channel_order::rx);
+      check_enum_class_value(cl::sycl::image_channel_order::rg);
+      check_enum_class_value(cl::sycl::image_channel_order::rgx);
+      check_enum_class_value(cl::sycl::image_channel_order::ra);
+      check_enum_class_value(cl::sycl::image_channel_order::rgb);
+      check_enum_class_value(cl::sycl::image_channel_order::rgbx);
+      check_enum_class_value(cl::sycl::image_channel_order::rgba);
+      check_enum_class_value(cl::sycl::image_channel_order::argb);
+      check_enum_class_value(cl::sycl::image_channel_order::bgra);
+      check_enum_class_value(cl::sycl::image_channel_order::intensity);
+      check_enum_class_value(cl::sycl::image_channel_order::luminance);
+
+      // Check image channel types
+      check_enum_class_value(cl::sycl::image_channel_type::snorm_int8);
+      check_enum_class_value(cl::sycl::image_channel_type::snorm_int16);
+      check_enum_class_value(cl::sycl::image_channel_type::unorm_int8);
+      check_enum_class_value(cl::sycl::image_channel_type::unorm_int16);
+      check_enum_class_value(cl::sycl::image_channel_type::unorm_short_565);
+      check_enum_class_value(cl::sycl::image_channel_type::unorm_short_555);
+      check_enum_class_value(cl::sycl::image_channel_type::unorm_int_101010);
+      check_enum_class_value(cl::sycl::image_channel_type::signed_int8);
+      check_enum_class_value(cl::sycl::image_channel_type::signed_int16);
+      check_enum_class_value(cl::sycl::image_channel_type::signed_int32);
+      check_enum_class_value(cl::sycl::image_channel_type::unsigned_int8);
+      check_enum_class_value(cl::sycl::image_channel_type::unsigned_int16);
+      check_enum_class_value(cl::sycl::image_channel_type::unsigned_int32);
+      check_enum_class_value(cl::sycl::image_channel_type::fp16);
+      check_enum_class_value(cl::sycl::image_channel_type::fp32);
     }
 
     // Check set_write_back()
-    img.set_write_back(false);
-    img.set_write_back(true);
+    {
+      img.set_write_back();
+      img.set_write_back(false);
+      img.set_write_back(true);
+    }
 
-    auto queue = util::get_cts_object::queue();
+    // Check set_final_data()
+    {
+      // Create another image
+      auto imageHost2 =
+          get_image_host<dims>(numElems, channelTypeSize, channelCount);
+      auto img2 = cl::sycl::image<dims>(static_cast<void *>(imageHost2.data()),
+                                        channelOrder, channelType, r);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto img_acc = img.template get_access<cl::sycl::float4,
-                                             cl::sycl::access::mode::read>(cgh);
-      auto myKernel = [=](cl::sycl::item<1> item) {
-        // Read image data using integer coordinates
-        cl::sycl::float4 dataFromInt =
-            img_acc.read(image_access<dims>::get_int(item));
-        // Read image data using floating point coordinates
-        cl::sycl::float4 dataFromFloat =
-            img_acc.read(image_access<dims>::get_float(item));
-      };
-      cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
-    });
+      auto rawPtr = imageHost2.data();
+      auto rawPtrVoid = static_cast<void *>(rawPtr);
+      auto rawPtrFloat = static_cast<float *>(rawPtrVoid);
+      auto sharedPtrVoid =
+          cl::sycl::shared_ptr_class<void>(rawPtrVoid, [](void *) {});
+      auto sharedPtrFloat =
+          cl::sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
+      auto weakPtrVoid = cl::sycl::weak_ptr_class<void>(sharedPtrVoid);
+      auto weakPtrFloat = cl::sycl::weak_ptr_class<float>(sharedPtrFloat);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto img_acc =
-          img.template get_access<cl::sycl::float4,
-                                  cl::sycl::access::mode::write>(cgh);
-      auto myKernel = [=](cl::sycl::item<1> item) {
-        // Write image data
-        img_acc.write(image_access<dims>::get_int(item),
-                      cl::sycl::float4(0.5f));
-      };
-      cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
-    });
+      img.set_final_data();
+      img.set_final_data(nullptr);
+      img.set_final_data(rawPtr);
+      img.set_final_data(rawPtrVoid);
+      img.set_final_data(rawPtrFloat);
+      img.set_final_data(sharedPtrVoid);
+      img.set_final_data(sharedPtrFloat);
+      img.set_final_data(weakPtrVoid);
+      img.set_final_data(weakPtrFloat);
+    }
 
-    queue.wait_and_throw();
+    // Check get_access()
+    {
+      // Create another image
+      auto img2 = cl::sycl::image<dims>(static_cast<void *>(imageHost.data()),
+                                        channelOrder, channelType, r);
+
+      {
+        // target::host_image
+        img2.template get_access<cl::sycl::float4,
+                                 cl::sycl::access::mode::read_write>();
+      }
+
+      auto queue = util::get_cts_object::queue();
+      queue.submit([&](cl::sycl::handler &cgh) {
+        // target::image
+        auto imgAcc =
+            img2.template get_access<cl::sycl::float4,
+                                     cl::sycl::access::mode::write>(cgh);
+        cgh.single_task<image_kernel_get_access<dims>>([]() {});
+      });
+    }
+
+    const auto expected = 0.5f;
+
+    {
+      cl::sycl::image<dims> img2 = image_generic<dims>::create_with_pitch(
+          static_cast<void *>(imageHost.data()), channelOrder, channelType, r,
+          p);
+
+      auto queue = util::get_cts_object::queue();
+
+      queue.submit([&](cl::sycl::handler &cgh) {
+        auto img_acc =
+            img2.template get_access<cl::sycl::float4,
+                                     cl::sycl::access::mode::read>(cgh);
+
+        auto sampler = cl::sycl::sampler(
+            cl::sycl::coordinate_normalization_mode::unnormalized,
+            cl::sycl::addressing_mode::clamp,
+            cl::sycl::filtering_mode::nearest);
+
+        auto myKernel = [img_acc, sampler](cl::sycl::item<dims> item) {
+          // Read image data using integer coordinates
+          cl::sycl::float4 dataFromInt =
+              img_acc.read(image_access<dims>::get_int(item));
+          // Read image data using integer coordinates and a sampler
+          cl::sycl::float4 dataFromIntWithSampler =
+              img_acc.read(image_access<dims>::get_int(item), sampler);
+          // Read image data using floating point coordinates
+          // Only works with a sampler
+          cl::sycl::float4 dataFromFloat =
+              img_acc.read(image_access<dims>::get_float(item), sampler);
+        };
+        cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
+      });
+
+      queue.submit([&](cl::sycl::handler &cgh) {
+        auto img_acc =
+            img2.template get_access<cl::sycl::float4,
+                                     cl::sycl::access::mode::write>(cgh);
+        auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
+          // Write image data
+          img_acc.write(image_access<dims>::get_int(item),
+                        cl::sycl::float4(expected));
+        };
+        cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
+      });
+
+      queue.wait_and_throw();
+    }
 
     // Check image values
-    for (int i = 0; i < numElems; i++) {
-      if (!CHECK_VALUE(log, imageHost.get()[i], 0.5f, i)) {
+    const auto floatData = reinterpret_cast<float *>(imageHost.data());
+    for (int i = 0; i < numElems; ++i) {
+      if (!CHECK_VALUE(log, floatData[i], 0.5f, i)) {
         FAIL(log, "Image contains wrong values.");
       }
     }
