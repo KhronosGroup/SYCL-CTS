@@ -47,13 +47,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   void run(util::logger &log) override {
     try {
-      auto context = util::get_cts_object::context();
+      auto selector = cts_selector();
+      auto context = util::get_cts_object::context(selector);
 
       {
         log.note("check program class methods");
 
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
         cl::sycl::program prog(context);
         prog.build_with_kernel_type<program_api_kernel>();
 
@@ -82,7 +81,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Check get_kernel()
         {
-          auto q = cl::sycl::queue(selector);
+          auto q = cl::sycl::queue(context, selector);
           q.submit([](cl::sycl::handler &cgh) {
             cgh.single_task(program_api_kernel());
           });
@@ -101,7 +100,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         log.note("build program without build options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
         cl::sycl::program prog(myQueue.get_context());
 
         if (prog.get_state() != cl::sycl::program_state::none) {
@@ -127,7 +126,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         log.note("build program with build options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
 
         cl::sycl::program prog(myQueue.get_context());
 
@@ -156,7 +155,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             "compile and link program without without compile and link "
             "options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
         cl::sycl::program prog(myQueue.get_context());
 
         if (prog.get_state() != cl::sycl::program_state::none) {
@@ -196,7 +195,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             "link an OpenCL and a SYCL program without compile and link "
             "options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
 
         // obtain an existing OpenCL C program object
         cl_program myClProgram = nullptr;
@@ -237,7 +236,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         log.note(
             "link an OpenCL and a SYCL program with compile and link options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
 
         // obtain an existing OpenCL C program object
         cl_program myClProgram = nullptr;
