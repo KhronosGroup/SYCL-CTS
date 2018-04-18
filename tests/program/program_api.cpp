@@ -26,6 +26,7 @@ using namespace sycl_cts;
 
 /** simple OpenCL test kernel
  */
+const cl::sycl::string_class kernelName = "sample";
 cl::sycl::string_class kernel_source = R"(
 __kernel void sample(__global float * input)
 {
@@ -96,13 +97,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           });
           q.wait_and_throw();
 
-          // Check has_kernel()
+          // Check has_kernel<>()
           bool hasKernel = prog.has_kernel<program_api_kernel>();
           if (!hasKernel) {
             FAIL(log, "Program was not built properly (has_kernel())");
           }
 
-          // Check get_kernel()
+          // Check get_kernel<>()
           cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
         }
 
@@ -131,6 +132,21 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         {  // Check build_with_source(source, options)
           cl::sycl::program prog(context);
           prog.build_with_source(kernel_source, linkOptions);
+        }
+
+        {  // Check retrieveing kernel
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source);
+
+          // Check has_kernel(string_class)
+          bool hasKernel = prog.has_kernel(kernelName);
+          if (!hasKernel) {
+            FAIL(log,
+                 "Program was not built properly (has_kernel(string_class))");
+          }
+
+          // Check get_kernel(string_class)
+          cl::sycl::kernel k = prog.get_kernel(kernelName);
         }
       }
 
