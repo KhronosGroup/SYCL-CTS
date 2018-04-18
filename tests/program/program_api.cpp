@@ -233,6 +233,57 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         });
       }
 
+      {
+        log.note(
+            "compile and link program without with compile and link "
+            "options");
+
+        auto myQueue = cl::sycl::queue(context, selector);
+        cl::sycl::program prog(myQueue.get_context());
+
+        if (prog.get_state() != cl::sycl::program_state::none) {
+          FAIL(log, "Newly created program should not be linked yet");
+        }
+
+        // Check compile_with_kernel_type(options)
+        prog.compile_with_kernel_type<program_kernel<2>>(compileOptions);
+
+        if (prog.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Program should be in compiled state after compilation");
+        }
+
+        // Check link(options)
+        prog.link(linkOptions);
+
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
+        }
+
+        // check for get_binaries()
+        if (prog.get_binaries().size() < 1) {
+          FAIL(log, "Wrong value for program.get_binaries()");
+        }
+
+        // check for get_build_options()
+        if (prog.get_build_options().length() == 0) {
+          FAIL(log, "program.get_build_options() shouldn't be empty");
+        }
+
+        // check compile options
+        if (prog.get_compile_options() != compileOptions) {
+          FAIL(log, "Linked program did not store the compile options");
+        }
+
+        // check link options
+        if (prog.get_link_options() != linkOptions) {
+          FAIL(log, "Linked program did not store the link options");
+        }
+
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<3>());
+        });
+      }
+
       if (!context.is_host()) {
         log.note(
             "link an OpenCL and a SYCL program without compile and link "
@@ -271,7 +322,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
-          cgh.single_task(program_kernel<3>());
+          cgh.single_task(program_kernel<4>());
         });
       }
 
@@ -322,7 +373,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
-          cgh.single_task(program_kernel<4>());
+          cgh.single_task(program_kernel<5>());
         });
       }
     } catch (const cl::sycl::exception &e) {
