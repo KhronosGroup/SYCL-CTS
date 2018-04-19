@@ -70,10 +70,16 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   bool create_compiled_program(const std::string &source,
                                cl_program &outProgram, logger &log);
+  bool create_compiled_program(const std::string &source, cl_context clContext,
+                               cl_device_id clDeviceId, cl_program &outProgram,
+                               logger &log);
 
   /** create and build an OpenCL program
   */
   bool create_built_program(const std::string &source, cl_program &outProgram,
+                            logger &log);
+  bool create_built_program(const std::string &source, cl_context clContext,
+                            cl_device_id clDeviceId, cl_program &outProgram,
                             logger &log);
 
   /** create an OpenCL kernel

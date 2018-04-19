@@ -118,8 +118,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (!context.is_host() && (programB.get() == nullptr)) {
           FAIL(log, "program was not copy constructed correctly. (get)");
         }
-        if (programA.is_linked() != programB.is_linked()) {
-          FAIL(log, "program was not copy constructed correctly. (is_linked)");
+        if (programA.get_state() != programB.get_state()) {
+          FAIL(log, "program was not copy constructed correctly. (get_state)");
         }
       }
 
@@ -134,8 +134,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (!context.is_host() && (programB.get() == nullptr)) {
           FAIL(log, "program was not copy assigned correctly. (get)");
         }
-        if (programA.is_linked() != programB.is_linked()) {
-          FAIL(log, "program was not copy assigned correctly. (is_linked)");
+        if (programA.get_state() != programB.get_state()) {
+          FAIL(log, "program was not copy assigned correctly. (get_state)");
         }
       }
 
@@ -150,8 +150,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (!context.is_host() && (programB.get() == nullptr)) {
           FAIL(log, "program was not move constructed correctly. (get)");
         }
-        if (programB.is_linked()) {
-          FAIL(log, "program was not move constructed correctly. (is_linked)");
+        if (programB.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "program was not move constructed correctly. (get_state)");
         }
       }
 
@@ -166,8 +166,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (!context.is_host() && (programB.get() == nullptr)) {
           FAIL(log, "program was not move assigned correctly. (get)");
         }
-        if (programB.is_linked()) {
-          FAIL(log, "program was not move assigned correctly. (is_linked)");
+        if (programB.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "program was not move assigned correctly. (get_state)");
         }
       }
 
