@@ -42,13 +42,13 @@ class check_base_atomics {
 
     /** Check atomic global functions
     */
-    old = atomic_load(&a, order);
-    atomic_store(&a, static_cast<T>(0), order);
-    old = atomic_exchange(&a, static_cast<T>(1), order);
-    old = atomic_compare_exchange_strong(&a, &old, static_cast<T>(1), order,
-                                         order);
-    old = atomic_fetch_add(&a, static_cast<T>(1), order);
-    old = atomic_fetch_sub(&a, static_cast<T>(1), order);
+    old = cl::sycl::atomic_load(&a, order);
+    cl::sycl::atomic_store(&a, static_cast<T>(0), order);
+    old = cl::sycl::atomic_exchange(&a, static_cast<T>(1), order);
+    old = cl::sycl::atomic_compare_exchange_strong(&a, &old, static_cast<T>(1),
+                                         order, order);
+    old = cl::sycl::atomic_fetch_add(&a, static_cast<T>(1), order);
+    old = cl::sycl::atomic_fetch_sub(&a, static_cast<T>(1), order);
   }
 };
 
@@ -85,7 +85,7 @@ class check_base_atomics<float, target, addressSpace> {
 /** Check extended atomic operations
 */
 template <typename T, cl::sycl::access::target target,
-          cl::sycl::access::address_space addressSpace, addressSpace>
+          cl::sycl::access::address_space addressSpace>
 class check_extended_atomics {
   cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> m_acc;
 

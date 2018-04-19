@@ -88,7 +88,7 @@ class TEST_NAME : public util::test_base {
                 int groupId0 = group.get_id(0);
                 int groupId1 = group.get_id(1);
                 int groupId2 = group.get_id(2);
-                int groupIdL = group.get_linear_id();
+                int groupIdL = group.get_linear();
 
                 int groupRange0 = group.get_group_range(0);
                 int groupRange1 = group.get_group_range(1);

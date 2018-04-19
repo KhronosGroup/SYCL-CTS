@@ -27,7 +27,7 @@ class kernel0 {
     parallel_for_work_item(group_pid, [=](cl::sycl::item<2> itemID) {
       auto localId = itemID.get_id();
       auto localSize = itemID.get_range();
-      auto globalId = group_pid.get() * localSize + localId;
+      auto globalId = group_pid.get_id() * localSize + localId;
       int globalIdL = ((globalId.get(0) * 2 * 1) + globalId.get(1));
 
       ptr[globalIdL] = globalIdL;
