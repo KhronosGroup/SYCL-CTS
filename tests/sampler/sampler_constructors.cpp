@@ -210,6 +210,9 @@ class TEST_NAME : public util::test_base {
             cl::sycl::coordinate_normalization_mode::normalized,
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
         samplerC = samplerA;
+        cl::sycl::sampler samplerD(
+            cl::sycl::coordinate_normalization_mode::normalized,
+            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
 
         if (!(samplerA == samplerB) &&
             ((samplerA.is_host() != samplerB.is_host()) ||
@@ -230,6 +233,26 @@ class TEST_NAME : public util::test_base {
              (samplerA.get_coordinate_normalization_mode() !=
               samplerC.get_coordinate_normalization_mode()))) {
           FAIL(log, "sampler equality does not work correctly (copy assigned)");
+        }
+        if (samplerA != samplerB) {
+          FAIL(log,
+               "sampler non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (samplerA != samplerC) {
+          FAIL(log,
+               "sampler non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (samplerC == samplerD) {
+          FAIL(log,
+               "sampler equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(samplerC != samplerD)) {
+          FAIL(log,
+               "sampler non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 

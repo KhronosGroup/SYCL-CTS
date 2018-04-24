@@ -122,7 +122,9 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         cl::sycl::platform platformA(selector);
         cl::sycl::platform platformB = platformA;
-        cl::sycl::platform platformC(platformA);
+        cl::sycl::platform platformC(selector);
+        platformC = platformA;
+        cl::sycl::platform platformD(selector);
 
         if (!(platformA == platformB)) {
           FAIL(log,
@@ -131,6 +133,26 @@ class TEST_NAME : public util::test_base {
         if (!(platformA == platformC)) {
           FAIL(log,
                "platform equality does not work correctly (copy assigned)");
+        }
+        if (platformA != platformB) {
+          FAIL(log,
+               "platform non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (platformA != platformC) {
+          FAIL(log,
+               "platform non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (platformC == platformD) {
+          FAIL(log,
+               "platform equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(platformC != platformD)) {
+          FAIL(log,
+               "platform non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 
