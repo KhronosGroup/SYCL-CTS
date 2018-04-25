@@ -17,5 +17,6 @@ platform
 pointers
 program
 range
+stream
 std_classes
 vector_constructors
