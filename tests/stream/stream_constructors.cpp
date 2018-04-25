@@ -198,7 +198,9 @@ class TEST_NAME : public util::test_base {
         queue.submit([&](cl::sycl::handler &handler) {
           cl::sycl::stream osA(bufferSize, maxStatementSize, handler);
           cl::sycl::stream osB(osA);
-          cl::sycl::stream osC = osA;
+          cl::sycl::stream osC(bufferSize * 2, maxStatementSize * 2, handler);
+          osC = osA;
+          cl::sycl::stream osD(bufferSize * 2, maxStatementSize * 2, handler);
 
           if (!(osA == osB) && areEqual(osA, osB)) {
             FAIL(log,
@@ -209,6 +211,27 @@ class TEST_NAME : public util::test_base {
             FAIL(log,
                  "stream equality does not work correctly (copy assigned)");
           }
+          if (osA != osB) {
+            FAIL(log,
+                 "stream non-equality does not work correctly"
+                 "(copy constructed)");
+          }
+          if (osA != osC) {
+            FAIL(log,
+                 "stream non-equality does not work correctly"
+                 "(copy assigned)");
+          }
+          if (osC == osD) {
+            FAIL(log,
+                 "stream equality does not work correctly"
+                 "(comparing same)");
+          }
+          if (!(osC != osD)) {
+            FAIL(log,
+                 "stream non-equality does not work correctly"
+                 "(comparing same)");
+          }
+
           handler.single_task(stream_kernel{});
         });
       }
