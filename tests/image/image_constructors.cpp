@@ -348,10 +348,16 @@ class image_ctors {
 
         /* check equality operator */
         {
+          const auto r2 = r * 2;
+
           cl::sycl::image<dims> imgA(imageHostPtr, channelOrder, channelType,
                                      r);
           cl::sycl::image<dims> imgB(imgA);
-          cl::sycl::image<dims> imgC = imgA;
+          cl::sycl::image<dims> imgC(imageHostPtr, channelOrder, channelType,
+                                     r2);
+          imgC = imgA;
+          cl::sycl::image<dims> imgD(imageHostPtr, channelOrder, channelType,
+                                     r2);
 
           // check equality
           bool equality = (imgA == imgB);
@@ -362,6 +368,26 @@ class image_ctors {
           if (!(imgA == imgC)) {
             FAIL(log, "image equality comparison failed. (copy assigned)");
             combinationSuccess = false;
+          }
+          if (imgA != imgB) {
+            FAIL(log,
+                 "image non-equality does not work correctly"
+                 "(copy constructed)");
+          }
+          if (imgA != imgC) {
+            FAIL(log,
+                 "image non-equality does not work correctly"
+                 "(copy assigned)");
+          }
+          if (imgC == imgD) {
+            FAIL(log,
+                 "image equality does not work correctly"
+                 "(comparing same)");
+          }
+          if (!(imgC != imgD)) {
+            FAIL(log,
+                 "image non-equality does not work correctly"
+                 "(comparing same)");
           }
         }
 

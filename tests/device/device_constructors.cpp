@@ -121,7 +121,9 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         cl::sycl::device deviceA(selector);
         cl::sycl::device deviceB(deviceA);
-        cl::sycl::device deviceC = deviceA;
+        cl::sycl::device deviceC(selector);
+        deviceC = deviceA;
+        cl::sycl::device deviceD(selector);
 
         if (!(deviceA == deviceB)) {
           FAIL(log,
@@ -129,6 +131,26 @@ class TEST_NAME : public util::test_base {
         }
         if (!(deviceA == deviceC)) {
           FAIL(log, "device equality does not work correctly (copy assigned)");
+        }
+        if (deviceA != deviceB) {
+          FAIL(log,
+               "device non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (deviceA != deviceC) {
+          FAIL(log,
+               "device non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (deviceC == deviceD) {
+          FAIL(log,
+               "device equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(deviceC != deviceD)) {
+          FAIL(log,
+               "device non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 
