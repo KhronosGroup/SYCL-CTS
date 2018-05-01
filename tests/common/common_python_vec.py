@@ -2,7 +2,7 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
@@ -55,6 +55,19 @@ class Data:
         (True, 'cl::sycl::cl_double'): 'cl::sycl::cl_double',
         (False, 'cl::sycl::cl_half'): 'cl::sycl::cl_half',
         (True, 'cl::sycl::cl_half'): 'cl::sycl::cl_half'
+    }
+    opencl_sized_return_type_dict = {
+        'cl::sycl::cl_char': 'cl::sycl::cl_char',
+        'cl::sycl::cl_uchar': 'cl::sycl::cl_char',
+        'cl::sycl::cl_short': 'cl::sycl::cl_short',
+        'cl::sycl::cl_ushort': 'cl::sycl::cl_short',
+        'cl::sycl::cl_half': 'cl::sycl::cl_short',
+        'cl::sycl::cl_int': 'cl::sycl::cl_int',
+        'cl::sycl::cl_uint': 'cl::sycl::cl_int',
+        'cl::sycl::cl_float': 'cl::sycl::cl_int',
+        'cl::sycl::cl_long': 'cl::sycl::cl_long',
+        'cl::sycl::cl_ulong': 'cl::sycl::cl_long',
+        'cl::sycl::cl_double': 'cl::sycl::cl_long'
     }
     alias_dict = {
         'char': 'cl::sycl::char',

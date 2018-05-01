@@ -2,16 +2,15 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
 import sys
-sys.path.append('../common/')
-from common_python_vec import (Data, replace_string_in_source_string,
-                               append_fp_postfix, make_func_call,
-                               wrap_with_test_func, write_source_file)
 from string import Template
+sys.path.append('../common/')
+from common_python_vec import (Data, append_fp_postfix, make_func_call,
+                               wrap_with_test_func, write_source_file)
 
 TEST_NAME = 'LOAD_STORE'
 
@@ -87,8 +86,6 @@ def make_tests(input_file, output_file):
                       output_file, 'char')
 
     for base_type in Data.standard_types:
-        if (base_type.count('half') is not 0):
-            continue
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double'
                     or base_type == 'cl::sycl::half') and sign is False:
@@ -103,11 +100,7 @@ def make_tests(input_file, output_file):
                               output_file, type_str)
 
     for base_type in Data.opencl_types:
-        if (base_type.count('half') is not 0):
-            continue
         for sign in Data.signs:
-            if (base_type.count('half') is not 0):
-                continue
             if (base_type == 'cl::sycl::cl_float'
                     or base_type == 'cl::sycl::cl_double'
                     or base_type == 'cl::sycl::cl_half') and sign is False:

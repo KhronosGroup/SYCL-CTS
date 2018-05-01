@@ -2,16 +2,16 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
 import sys
-sys.path.append('../common/')
-from common_python_vec import (
-    Data, replace_string_in_source_string, append_fp_postfix, wrap_with_kernel,
-    wrap_with_test_func, make_func_call, write_source_file)
 from string import Template
+sys.path.append('../common/')
+from common_python_vec import (Data, append_fp_postfix, wrap_with_kernel,
+                               wrap_with_test_func, make_func_call,
+                               write_source_file)
 
 TEST_NAME = 'API'
 
@@ -19,7 +19,7 @@ vector_api_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
         ${type} vals[] = {${vals}};
         ${type} reversed_vals[] = {${reversed_vals}};
-        if (!check_vector_member_functions<${type}, ${size}, ${convertType}, ${asType}>(inputVec, vals)) {
+        if (!check_vector_member_functions<${type}, ${convertType}, ${asType}>(inputVec, vals)) {
           resAcc[0] = false;
         }
         cl::sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};
@@ -29,7 +29,7 @@ vector_api_template = Template("""
 """)
 
 lo_hi_odd_even_template = Template("""
-        if (!check_lo_hi_odd_even<${type}, ${size}>(inputVec, vals)) {
+        if (!check_lo_hi_odd_even<${type}>(inputVec, vals)) {
           resAcc[0] = false;
         }
 """)
@@ -62,8 +62,7 @@ def gen_host_checks(type_str, reverse_type_str, size):
         asType=reverse_type_str,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
     if size != 1:
-        test_string += lo_hi_odd_even_template.substitute(
-            type=type_str, size=size)
+        test_string += lo_hi_odd_even_template.substitute(type=type_str)
     string = wrap_with_kernel(
         type_str, kernel_name,
         'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
@@ -84,8 +83,7 @@ def gen_interop_checks(type_str, reverse_type_str, size):
         asType=reverse_type_str,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
     if size != 1:
-        test_string += lo_hi_odd_even_template.substitute(
-            type=type_str, size=size)
+        test_string += lo_hi_odd_even_template.substitute(type=type_str)
     string = wrap_with_kernel(
         type_str, kernel_name,
         'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
@@ -105,8 +103,6 @@ def make_tests(input_file, output_file):
                       output_file, 'char')
 
     for base_type in Data.standard_types:
-        if (base_type.count('half') is not 0):
-            continue
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double'
                     or base_type == 'cl::sycl::half') and sign is False:
@@ -122,8 +118,6 @@ def make_tests(input_file, output_file):
                               output_file, type_str)
 
     for base_type in Data.opencl_types:
-        if (base_type.count('half') is not 0):
-            continue
         for sign in Data.signs:
             if (base_type == 'cl::sycl::cl_float'
                     or base_type == 'cl::sycl::cl_double'

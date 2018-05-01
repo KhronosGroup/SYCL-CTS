@@ -2,18 +2,17 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
 import sys
-sys.path.append('../common/')
-from common_python_vec import (
-    Data, replace_string_in_source_string, swap_pairs, generate_value_list,
-    append_fp_postfix, wrap_with_kernel, wrap_with_test_func, make_func_call,
-    write_source_file)
 from string import Template
 from itertools import permutations
+sys.path.append('../common/')
+from common_python_vec import (
+    Data, swap_pairs, generate_value_list, append_fp_postfix, wrap_with_kernel,
+    wrap_with_test_func, make_func_call, write_source_file)
 
 TEST_NAME = 'SWIZZLE_ASSIGNMENT'
 
@@ -39,6 +38,45 @@ swizzle_elem_assignment_template = Template("""
         }
 """)
 
+index_positions_dict = {
+    'x': 0,
+    'y': 1,
+    'z': 2,
+    'w': 3,
+    'r': 0,
+    'g': 1,
+    'b': 2,
+    'a': 3,
+    'cl::sycl::elem::s0': 0,
+    'cl::sycl::elem::s1': 1,
+    'cl::sycl::elem::s2': 2,
+    'cl::sycl::elem::s3': 3,
+    'cl::sycl::elem::s4': 4,
+    'cl::sycl::elem::s5': 5,
+    'cl::sycl::elem::s6': 6,
+    'cl::sycl::elem::s7': 7,
+    'cl::sycl::elem::s8': 8,
+    'cl::sycl::elem::s9': 9,
+    'cl::sycl::elem::sA': 10,
+    'cl::sycl::elem::sB': 11,
+    'cl::sycl::elem::sC': 12,
+    'cl::sycl::elem::sD': 13,
+    'cl::sycl::elem::sE': 14,
+    'cl::sycl::elem::sF': 15
+}
+
+
+def gen_ordered_values(index_string):
+    """
+    Generates a list of values from 0 to 16 
+    """
+    ordered_val_list = [None] * len(index_string)
+    val = 0
+    for index in index_string:
+        ordered_val_list[index_positions_dict[index]] = str(val)
+        val += 1
+    return ordered_val_list
+
 
 def gen_xyzw_str(type_str, size):
     """Generates tests for each combination of xyzw up to the size given.
@@ -49,11 +87,10 @@ def gen_xyzw_str(type_str, size):
                 permutations(Data.swizzle_xyzw_list_dict[size][:size], length),
                 permutations(Data.vals_list_dict[size][:size], length)):
             index_string = ''
-            val_list = []
-            for index, value in zip(index_subset, value_subset):
+            for index in index_subset:
                 index_string += index
-                val_list.append(value)
-            val_list = append_fp_postfix(type_str, val_list)
+            val_list = append_fp_postfix(type_str,
+                                         gen_ordered_values(index_string))
             val_string = ', '.join(val_list)
             test_string = swizzle_xyzw_rgba_assignment_template.substitute(
                 type=type_str,
@@ -80,11 +117,10 @@ def gen_rgba_str(type_str, size):
                 permutations(Data.swizzle_rgba_list_dict[size][:size], length),
                 permutations(Data.vals_list_dict[size][:size], length)):
             index_string = ''
-            val_list = []
-            for index, value in zip(index_subset, value_subset):
+            for index in index_subset:
                 index_string += index
-                val_list.append(value)
-            val_list = append_fp_postfix(type_str, val_list)
+            val_list = append_fp_postfix(type_str,
+                                         gen_ordered_values(index_string))
             val_string = ', '.join(val_list)
             test_string = swizzle_xyzw_rgba_assignment_template.substitute(
                 type=type_str,
@@ -110,14 +146,16 @@ def gen_elem_str(type_str, size):
       1, 0, 3, 2
       2, 3, 1, 0
       3, 2, 1, 0"""
+    index_list = Data.swizzle_elem_list_dict[size][:size]
+    index_string = ', '.join(index_list)
     test_string = swizzle_elem_assignment_template.substitute(
         type=type_str,
         size=size,
         testVecValues=generate_value_list(type_str, size),
-        indexes=', '.join(Data.swizzle_elem_list_dict[size][:size]),
+        indexes=index_string,
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size][:size])))
+            append_fp_postfix(type_str, gen_ordered_values(index_list))))
     if size == 1:
         return wrap_with_kernel(
             test_string, 'ELEM_KERNEL_' + type_str.replace(
@@ -127,6 +165,8 @@ def gen_elem_str(type_str, size):
             type_str + ', ' + str(size) + '> .swizzle<' +
             ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>',
             test_string)
+    index_list = swap_pairs(Data.swizzle_elem_list_dict[size][:size])
+    index_string = ', '.join(index_list)
     test_string += swizzle_elem_assignment_template.substitute(
         type=type_str,
         size=size,
@@ -135,9 +175,9 @@ def gen_elem_str(type_str, size):
             swap_pairs(Data.swizzle_elem_list_dict[size][:size])),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            swap_pairs(
-                append_fp_postfix(type_str, Data.vals_list_dict[size][:
-                                                                      size]))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+    index_list = swap_pairs(Data.swizzle_elem_list_dict[size][::-1])
+    index_string = ', '.join(index_list)
     test_string += swizzle_elem_assignment_template.substitute(
         type=type_str,
         size=size,
@@ -145,8 +185,9 @@ def gen_elem_str(type_str, size):
         indexes=', '.join(swap_pairs(Data.swizzle_elem_list_dict[size][::-1])),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            swap_pairs(
-                append_fp_postfix(type_str, Data.vals_list_dict[size][::-1]))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+    index_list = Data.swizzle_elem_list_dict[size][::-1]
+    index_string = ', '.join(index_list)
     test_string += swizzle_elem_assignment_template.substitute(
         type=type_str,
         size=size,
@@ -154,11 +195,11 @@ def gen_elem_str(type_str, size):
         indexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])))
+            append_fp_postfix(type_str, gen_ordered_values(index_list))))
     return wrap_with_kernel(
-        test_string,
-        'KERNEL_SWIZZLE_ASSIGNMENT_ELEM_' + type_str.replace('cl::sycl::', '').replace(' ', '') +
-        str(size) + ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
+        test_string, 'KERNEL_SWIZZLE_ASSIGNMENT_ELEM_' + type_str.replace(
+            'cl::sycl::', '').replace(' ', '') + str(size) +
+        ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
             'cl::sycl::elem::', ''), 'Swizzle assignment test for vec<' +
         type_str + ', ' + str(size) + '> .swizzle<' +
         ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>', test_string)
@@ -174,6 +215,7 @@ def gen_test(type_str, size):
             string += gen_rgba_str(type_str, size)
     string += gen_elem_str(type_str, size)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
+
 
 def make_tests(input_file, output_file):
 

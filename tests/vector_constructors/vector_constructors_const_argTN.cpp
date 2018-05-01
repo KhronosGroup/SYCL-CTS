@@ -2,7 +2,7 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 

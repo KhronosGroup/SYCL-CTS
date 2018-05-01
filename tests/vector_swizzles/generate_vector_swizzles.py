@@ -2,17 +2,17 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
 import sys
+from string import Template
+from itertools import product
 sys.path.append('../common/')
 from common_python_vec import (Data, replace_string_in_source_string,
                                swap_pairs, generate_value_list,
                                append_fp_postfix, wrap_with_kernel)
-from string import Template
-from itertools import product
 
 swizzle_template = Template(
     """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
@@ -30,13 +30,13 @@ swizzle_template = Template(
         if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>(swizzledVec, in_order_vals)) {
+        if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>(swizzledVec, in_order_vals)) {
             resAcc[0] = false;
         }
 """)
 
 lo_hi_odd_even_template = Template(
-    """        if (!check_lo_hi_odd_even<${type}, ${size}>(swizzledVec, in_order_vals)) {
+    """        if (!check_lo_hi_odd_even<${type}>(swizzledVec, in_order_vals)) {
           resAcc[0] = false;
         }
 """)
@@ -73,7 +73,7 @@ swizzle_full_test_template = Template(
         if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+        if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
           (inOrderSwizzleFunctionVec, in_order_vals)) {
             resAcc[0] = false;
         }
@@ -89,7 +89,7 @@ swizzle_full_test_template = Template(
         if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+        if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
           (reverseOrderSwizzleFunctionVec, reversed_vals)) {
             resAcc[0] = false;
         }
@@ -105,7 +105,7 @@ swizzle_full_test_template = Template(
         if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+        if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
           (inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
             resAcc[0] = false;
         }
@@ -121,7 +121,7 @@ swizzle_full_test_template = Template(
         if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
             resAcc[0] = false;
         }
-        if (!check_vector_member_functions<${type}, ${size}, ${convert_type}, ${as_type}>
+        if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
           (reverseOrderReversedPairSwizzleFunctionVec,
            reverse_order_reversed_pair_vals)) {
             resAcc[0] = false;

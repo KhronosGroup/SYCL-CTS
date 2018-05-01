@@ -2,16 +2,15 @@
 #
 #   SYCL Conformance Test Suite
 #
-#   Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+#   Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 #
 # ************************************************************************
 
 import sys
-sys.path.append('../common/')
-from common_python_vec import (Data, replace_string_in_source_string,
-                               wrap_with_kernel, wrap_with_test_func,
-                               make_func_call, write_source_file)
 from string import Template
+sys.path.append('../common/')
+from common_python_vec import (Data, wrap_with_kernel, wrap_with_test_func,
+                               make_func_call, write_source_file)
 
 TEST_NAME = 'ALIAS'
 
