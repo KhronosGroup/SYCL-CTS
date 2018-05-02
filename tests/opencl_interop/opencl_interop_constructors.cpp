@@ -59,6 +59,20 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
       }
 
+      /** check context (cl_context) constructor
+      */
+      {
+        cl::sycl::context context(m_cl_context);
+
+        cl_context interopContext = context.get();
+        if (interopContext != m_cl_context) {
+          FAIL(log, "context was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
+          FAIL(log, "failed to release OpenCL context");
+        }
+      }
+
       /** check context (cl_context, async_handler) constructor
       */
       {
@@ -71,6 +85,21 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
         if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
           FAIL(log, "failed to release OpenCL context");
+        }
+      }
+
+      /** check queue (cl_command_queue, const context&) constructor
+      */
+      {
+        auto context = util::get_cts_object::context();
+        cl::sycl::queue queue(m_cl_command_queue, context);
+
+        cl_command_queue interopQueue = queue.get();
+        if (interopQueue != m_cl_command_queue) {
+          FAIL(log, "queue was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
+          FAIL(log, "failed to release OpenCL command queue");
         }
       }
 

@@ -77,6 +77,25 @@ class TEST_NAME : public util::test_base {
         }
       }
 
+      /** check (device, async_handler) constructor
+      */
+      {
+        cts_selector selector;
+        cts_async_handler asyncHandler;
+        auto device = util::get_cts_object::device(selector);
+        cl::sycl::context context(device, asyncHandler);
+
+        if (context.is_host() != selector.is_host()) {
+          FAIL(log, "context was not constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (context.get() == nullptr) {
+            FAIL(log, "context was not constructed correctly (get)");
+          }
+        }
+      }
+
       /** check (vector_class<device>) constructor
       */
       {
@@ -96,12 +115,51 @@ class TEST_NAME : public util::test_base {
         }
       }
 
+      /** check (vector_class<device>, async_handler) constructor
+      */
+      {
+        cts_selector selector;
+        cts_async_handler asyncHandler;
+        auto platform = util::get_cts_object::platform(selector);
+        auto deviceList = platform.get_devices();
+        cl::sycl::context context(deviceList, asyncHandler);
+
+        if (context.is_host() != selector.is_host()) {
+          FAIL(log, "context was not constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (context.get() == nullptr) {
+            FAIL(log, "context was not constructed correctly (get)");
+          }
+        }
+      }
+
       /** check (platform) constructor
       */
       {
         cts_selector selector;
         auto platform = util::get_cts_object::platform(selector);
         cl::sycl::context context(platform);
+
+        if (context.is_host() != selector.is_host()) {
+          FAIL(log, "context was not constructed correctly (is_host)");
+        }
+
+        if (!selector.is_host()) {
+          if (context.get() == nullptr) {
+            FAIL(log, "context was not constructed correctly (get)");
+          }
+        }
+      }
+
+      /** check (platform, async_handler) constructor
+      */
+      {
+        cts_selector selector;
+        cts_async_handler asyncHandler;
+        auto platform = util::get_cts_object::platform(selector);
+        cl::sycl::context context(platform, asyncHandler);
 
         if (context.is_host() != selector.is_host()) {
           FAIL(log, "context was not constructed correctly (is_host)");
