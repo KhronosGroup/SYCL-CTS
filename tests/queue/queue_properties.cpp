@@ -33,7 +33,8 @@ class TEST_NAME : public util::test_base {
       /** check property::queue::enable_profiling
       */
       {
-        cl::sycl::queue queue({cl::sycl::property::queue::enable_profiling()});
+        cl::sycl::queue queue(cl::sycl::property_list{
+            cl::sycl::property::queue::enable_profiling()});
 
         if (!queue
                  .has_property<cl::sycl::property::queue::enable_profiling>()) {
