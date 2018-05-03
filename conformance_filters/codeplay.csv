@@ -12,7 +12,6 @@ kernel_args
 nd_item
 nd_range
 platform
-pointers
 program
 queue
 range
