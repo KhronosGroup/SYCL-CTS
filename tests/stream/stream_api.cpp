@@ -40,12 +40,18 @@ class TEST_NAME : public util::test_base {
     try {
       /** check cl::sycl::stream_manipulator
       */
-      check_enum_class_value(cl::sycl::stream_manipulator::endl);
-      check_enum_class_value(cl::sycl::stream_manipulator::scientific);
+      check_enum_class_value(cl::sycl::stream_manipulator::dec);
       check_enum_class_value(cl::sycl::stream_manipulator::hex);
       check_enum_class_value(cl::sycl::stream_manipulator::oct);
+      check_enum_class_value(cl::sycl::stream_manipulator::noshowbase);
       check_enum_class_value(cl::sycl::stream_manipulator::showbase);
+      check_enum_class_value(cl::sycl::stream_manipulator::noshowpos);
       check_enum_class_value(cl::sycl::stream_manipulator::showpos);
+      check_enum_class_value(cl::sycl::stream_manipulator::endl);
+      check_enum_class_value(cl::sycl::stream_manipulator::fixed);
+      check_enum_class_value(cl::sycl::stream_manipulator::scientific);
+      check_enum_class_value(cl::sycl::stream_manipulator::hexfloat);
+      check_enum_class_value(cl::sycl::stream_manipulator::defaultfloat);
 
       /** Check stream interface
       */
@@ -71,6 +77,8 @@ class TEST_NAME : public util::test_base {
                 log, maxStatementSize,
                 "cl::sycl::context::get_max_statement_size()");
           }
+
+          cgh.single_task<class test_kernel_0>([=]() {});
         });
       }
 
@@ -86,7 +94,6 @@ class TEST_NAME : public util::test_base {
 
             /** check stream operator for basic types
             */
-            os << cl::sycl::string_class("hello world!");
             os << "hello world!";
             os << const_cast<char *>("hello world!");
             os << char('c');
@@ -105,6 +112,15 @@ class TEST_NAME : public util::test_base {
             os << true;
             os << size_t(5);
 
+            // check stream operator for pointers
+            int a = 5;
+            int *aPtr = &a;
+            os << aPtr;
+            const int *const aConstPtr = &a;
+            os << aConstPtr;
+            auto multiPtr = cl::sycl::private_ptr<int>(aPtr);
+            os << multiPtr;
+
             /** check stream operator for cl types
             */
             os << "hello world!";
@@ -122,8 +138,11 @@ class TEST_NAME : public util::test_base {
 
             /** check stream operator for sycl types
             */
+            os << cl::sycl::byte(72);
             os << cl::sycl::id<3>(1, 2, 3);
             os << cl::sycl::range<3>(1, 2, 3);
+            os << cl::sycl::nd_range<3>(cl::sycl::range<3>(2, 4, 1),
+                                        cl::sycl::range<3>(1, 2, 1));
 
             /** check stream operator for sycl vec types
             */
@@ -135,11 +154,18 @@ class TEST_NAME : public util::test_base {
             */
             os << cl::sycl::endl;
             os << cl::sycl::setprecision(5) << float(5.0f);
-            os << cl::sycl::scientific << float(5.0f);
+            os << cl::sycl::setw(3) << float(5.0f);
             os << cl::sycl::hex << float(5.0f);
             os << cl::sycl::oct << float(5.0f);
+            os << cl::sycl::dec << float(5.0f);
             os << cl::sycl::showbase << int(5);
+            os << cl::sycl::noshowbase << int(5);
             os << cl::sycl::showpos << int(-5) << int(5);
+            os << cl::sycl::noshowpos << int(-5) << int(5);
+            os << cl::sycl::fixed << float(5.0f);
+            os << cl::sycl::scientific << float(5.0f);
+            os << cl::sycl::hexfloat << float(5.0f);
+            os << cl::sycl::defaultfloat << float(5.0f);
           });
         });
       }
@@ -153,12 +179,15 @@ class TEST_NAME : public util::test_base {
           cl::sycl::stream os(2048, 80, cgh);
 
           cgh.parallel_for<class test_kernel_2>(
-              cl::sycl::nd_range<3>(cl::sycl::range<3>(16, 8, 4),
-                                    cl::sycl::range<3>(8, 4, 2)),
+              cl::sycl::nd_range<3>(cl::sycl::range<3>(2, 4, 1),
+                                    cl::sycl::range<3>(1, 2, 1)),
               [=](cl::sycl::nd_item<3> ndItem) {
                 /** check stream operator for nd_item
                 */
                 os << ndItem;
+
+                // check stream operator for nd_range
+                os << ndItem.get_nd_range();
               });
         });
       }
@@ -171,7 +200,7 @@ class TEST_NAME : public util::test_base {
 
           cl::sycl::stream os(2048, 80, cgh);
 
-          cgh.parallel_for<class test_kernel_3>(cl::sycl::range<3>(16, 8, 4),
+          cgh.parallel_for<class test_kernel_3>(cl::sycl::range<3>(4, 2, 1),
                                                 [=](cl::sycl::item<3> it) {
                                                   /** check stream operator for
                                                    * item
@@ -190,7 +219,7 @@ class TEST_NAME : public util::test_base {
           cl::sycl::stream os(2048, 80, cgh);
 
           cgh.parallel_for_work_group<class test_kernel_4>(
-              cl::sycl::range<3>(16, 8, 4), cl::sycl::range<3>(1, 1, 1),
+              cl::sycl::range<3>(4, 2, 1), cl::sycl::range<3>(1, 1, 1),
               [=](cl::sycl::group<3> gp) {
                 /** check stream operator for cl::sycl::group
                 */
@@ -203,6 +232,23 @@ class TEST_NAME : public util::test_base {
                 });
               });
         });
+      }
+
+      // Check stream operator for cl::sycl::half
+      {
+        auto testQueue = util::get_cts_object::queue();
+
+        if (testQueue.get_device().has_extension("cl_khr_fp16")) {
+          testQueue.submit([&](cl::sycl::handler &cgh) {
+
+            cl::sycl::stream os(2048, 80, cgh);
+
+            cgh.single_task<class test_kernel_5>([=]() {
+              os << cl::sycl::half(0.2f);
+              os << cl::sycl::cl_half(0.3f);
+            });
+          });
+        }
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);

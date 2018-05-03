@@ -178,7 +178,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         cl::sycl::program programA(context);
         cl::sycl::program programB(programA);
-        cl::sycl::program programC = programA;
+        cl::sycl::program programC(context);
+        programC = programA;
+        cl::sycl::program programD(context);
 
         if (!(programA == programB) &&
             (context.is_host() && (programA.get() != programB.get()))) {
@@ -189,6 +191,26 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             (context.is_host() && (programA.get() == programC.get()))) {
           FAIL(log,
                "program equality does not work correctly. (copy assigned)");
+        }
+        if (programA != programB) {
+          FAIL(log,
+               "program non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (programA != programC) {
+          FAIL(log,
+               "program non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (programC == programD) {
+          FAIL(log,
+               "program equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(programC != programD)) {
+          FAIL(log,
+               "program non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 

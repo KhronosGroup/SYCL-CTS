@@ -486,7 +486,9 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
         cl::sycl::queue queueB(queueA);
-        cl::sycl::queue queueC = queueA;
+        cl::sycl::queue queueC(selector);
+        queueC = queueA;
+        cl::sycl::queue queueD(selector);
 
         if (!(queueA == queueB)) {
           FAIL(log,
@@ -494,6 +496,26 @@ class TEST_NAME : public util::test_base {
         }
         if (!(queueA == queueC)) {
           FAIL(log, "queue equality does not work correctly (copy assigned)");
+        }
+        if (queueA != queueB) {
+          FAIL(log,
+               "queue non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (queueA != queueC) {
+          FAIL(log,
+               "queue non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (queueC == queueD) {
+          FAIL(log,
+               "queue equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(queueC != queueD)) {
+          FAIL(log,
+               "queue non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 

@@ -220,9 +220,13 @@ class buffer_ctors {
 
     /* Check equality operator */
     {
+      const auto r2 = r * 2;
+
       cl::sycl::buffer<T, dims> bufA(r);
       cl::sycl::buffer<T, dims> bufB(bufA);
-      cl::sycl::buffer<T, dims> bufC = bufA;
+      cl::sycl::buffer<T, dims> bufC(r2);
+      bufC = bufA;
+      cl::sycl::buffer<T, dims> bufD(r2);
 
       /* equality of copy constructed */
       if (!(bufA == bufB)) {
@@ -231,6 +235,26 @@ class buffer_ctors {
       /* equality of copy assigned */
       if (!(bufA == bufC)) {
         FAIL(log, "buffer equality of equals failed. (copy assignment)");
+      }
+      if (bufA != bufB) {
+        FAIL(log,
+             "buffer non-equality does not work correctly"
+             "(copy constructed)");
+      }
+      if (bufA != bufC) {
+        FAIL(log,
+             "buffer non-equality does not work correctly"
+             "(copy assigned)");
+      }
+      if (bufC == bufD) {
+        FAIL(log,
+             "buffer equality does not work correctly"
+             "(comparing same)");
+      }
+      if (!(bufC != bufD)) {
+        FAIL(log,
+             "buffer non-equality does not work correctly"
+             "(comparing same)");
       }
     }
 

@@ -15,5 +15,6 @@ platform
 program
 queue
 range
+stream
 std_classes
 vector_constructors

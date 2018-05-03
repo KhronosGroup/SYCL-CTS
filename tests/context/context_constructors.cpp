@@ -246,7 +246,9 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         cl::sycl::context contextA = util::get_cts_object::context(selector);
         cl::sycl::context contextB{contextA};
-        cl::sycl::context contextC = contextA;
+        cl::sycl::context contextC = util::get_cts_object::context(selector);
+        contextC = contextA;
+        cl::sycl::context contextD = util::get_cts_object::context(selector);
 
         if (!(contextA == contextB)) {
           FAIL(log,
@@ -258,6 +260,26 @@ class TEST_NAME : public util::test_base {
           FAIL(log,
                "device equality does not work correctly (equality of equal "
                "failed)");
+        }
+        if (contextA != contextB) {
+          FAIL(log,
+               "context non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (contextA != contextC) {
+          FAIL(log,
+               "context non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (contextC == contextD) {
+          FAIL(log,
+               "context equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(contextC != contextD)) {
+          FAIL(log,
+               "context non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 
