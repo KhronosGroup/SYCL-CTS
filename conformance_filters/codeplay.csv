@@ -15,4 +15,10 @@ platform
 pointers
 range
 std_classes
+vector_alias
+vector_api
 vector_constructors
+vector_operators
+vector_swizzle_assignment
+vector_swizzles
+vector_swizzles_opencl
