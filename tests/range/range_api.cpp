@@ -210,8 +210,7 @@ class test_range {
   static const int m_y = 32;
   static const int m_z = 64;
   static const int m_local = 2;
-  static const int error_size =
-      19 * 2;  // 19 test cases, with 2 variants each, worst case: all fail
+  static const int error_size = 204; // up to 204 possible errors
   int m_error[error_size];
 
   void operator()(util::logger &log, cl::sycl::range<dims> global,
@@ -238,6 +237,26 @@ class test_range {
           cl::sycl::range<dims> range = item.get_nd_range().get_global();
 
           size_t check[] = {m_x, m_y, m_z};
+
+          if (dims == 1) {
+            if (range.size() != m_x) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          } else if (dims == 2) {
+            if (range.size() != m_x * m_y) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          } else if (dims == 3) {
+            if (range.size() != m_x * m_y * m_z) {
+              // report an error
+              error_ptr[m_iteration] = __LINE__;
+              m_iteration++;
+            }
+          }
 
           for (int i = 0; i < dims; i++) {
             if (range.get(i) > check[i] || range[i] > check[i]) {
