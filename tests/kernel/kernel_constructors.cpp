@@ -136,7 +136,20 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<4>()); });
 
         cl::sycl::kernel kernelB(kernelA);
-        cl::sycl::kernel kernelC = kernelA;
+
+        cl::sycl::program progC(ctsQueue.get_context());
+        progC.build_with_kernel_type<test_kernel<4>>();
+        auto kernelC = progC.get_kernel<test_kernel<4>>();
+        ctsQueue.submit(
+            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<5>()); });
+        kernelC = (kernelA);
+
+        cl::sycl::program progD(ctsQueue.get_context());
+        progD.build_with_kernel_type<test_kernel<4>>();
+        auto kernelD = progD.get_kernel<test_kernel<4>>();
+        ctsQueue.submit(
+            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<6>()); });
+
         if (!ctsSelector.is_host()) {
           if (kernelA == kernelB &&
               (kernelA.get() != kernelB.get() ||
@@ -152,6 +165,26 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             FAIL(log,
                  "kernel equality does not work correctly (copy assigned)");
           }
+          if (kernelA != kernelB) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(copy constructed)");
+          }
+          if (kernelA != kernelC) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(copy assigned)");
+          }
+          if (kernelC == kernelD) {
+            FAIL(log,
+                 "kernel equality does not work correctly"
+                 "(comparing same)");
+          }
+          if (!(kernelC != kernelD)) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(comparing same)");
+          }
         }
       }
 
@@ -164,7 +197,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         prog.build_with_kernel_type<test_kernel<5>>();
         auto kernelA = prog.get_kernel<test_kernel<5>>();
         ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<5>()); });
+            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<7>()); });
 
         cl::sycl::kernel kernelB = kernelA;
 

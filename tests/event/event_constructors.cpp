@@ -108,6 +108,7 @@ class TEST_NAME : public util::test_base {
         cl::sycl::event eventB(eventA);
         auto eventC = get_queue_event<class event_constructors_7>(queue);
         eventC = eventA;
+        auto eventD = get_queue_event<class event_constructors_8>(queue);
 
         if (!(eventA == eventB)) {
           FAIL(log,
@@ -115,6 +116,26 @@ class TEST_NAME : public util::test_base {
         }
         if (!(eventA == eventC)) {
           FAIL(log, "event equality does not work correctly (copy assigned)");
+        }
+        if (eventA != eventB) {
+          FAIL(log,
+               "event non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (eventA != eventC) {
+          FAIL(log,
+               "event non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (eventC == eventD) {
+          FAIL(log,
+               "event equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(eventC != eventD)) {
+          FAIL(log,
+               "event non-equality does not work correctly"
+               "(comparing same)");
         }
       }
 
@@ -124,7 +145,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queue = util::get_cts_object::queue(selector);
 
-        auto eventA = get_queue_event<class event_constructors_8>(queue);
+        auto eventA = get_queue_event<class event_constructors_9>(queue);
         cl::sycl::event eventB = eventA;
         cl::sycl::hash_class<cl::sycl::event> hasher;
 

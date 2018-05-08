@@ -26,6 +26,7 @@ using namespace sycl_cts;
 
 /** simple OpenCL test kernel
  */
+const cl::sycl::string_class kernelName = "sample";
 cl::sycl::string_class kernel_source = R"(
 __kernel void sample(__global float * input)
 {
@@ -47,14 +48,17 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   void run(util::logger &log) override {
     try {
-      auto context = util::get_cts_object::context();
+      auto selector = cts_selector();
+      auto context = util::get_cts_object::context(selector);
+      const cl::sycl::string_class compileOptions = "-cl-opt-disable";
+      const cl::sycl::string_class linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note("check program class methods");
 
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
         cl::sycl::program prog(context);
+
+        // Check build_with_kernel_type()
         prog.build_with_kernel_type<program_api_kernel>();
 
         // Check get_devices()
@@ -69,49 +73,97 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         cl::sycl::vector_class<cl::sycl::vector_class<char>> binaries =
             prog.get_binaries();
 
-        // Check get_binary_sizes()
-        cl::sycl::vector_class<::size_t> binarySizes = prog.get_binary_sizes();
+        // Check get_context()
+        cl::sycl::context progCtx = prog.get_context();
+
+        // Check get_compile_options()
+        cl::sycl::string_class progCompileOptions = prog.get_compile_options();
+
+        // Check get_link_options()
+        cl::sycl::string_class progLinkOptions = prog.get_link_options();
 
         // Check get_build_options()
-        cl::sycl::string_class buildOptions = prog.get_build_options();
+        cl::sycl::string_class progBuildOptions = prog.get_build_options();
 
         // Check get()
         if (!context.is_host()) {
           cl_program clProgram = prog.get();
         }
 
-        // Check get_kernel()
         {
-          auto q = cl::sycl::queue(selector);
+          auto q = cl::sycl::queue(context, selector);
           q.submit([](cl::sycl::handler &cgh) {
             cgh.single_task(program_api_kernel());
           });
           q.wait_and_throw();
 
+          // Check has_kernel<>()
+          bool hasKernel = prog.has_kernel<program_api_kernel>();
+          if (!hasKernel) {
+            FAIL(log, "Program was not built properly (has_kernel())");
+          }
+
+          // Check get_kernel<>()
           cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
         }
 
-        // Check is_linked()
-        bool isLinked = prog.is_linked();
-        if (!isLinked) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        // Check get_state()
+        cl::sycl::program_state state = prog.get_state();
+        if (state != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
+        }
+      }
+
+      if (!context.is_host()) {
+        log.note("check compiling and building from source");
+
+        {  // Check compile_with_source(source)
+          cl::sycl::program prog(context);
+          prog.compile_with_source(kernel_source);
+        }
+        {  // Check compile_with_source(source, options)
+          cl::sycl::program prog(context);
+          prog.compile_with_source(kernel_source, compileOptions);
+        }
+        {  // Check build_with_source(source)
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source);
+        }
+        {  // Check build_with_source(source, options)
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source, linkOptions);
+        }
+
+        {  // Check retrieveing kernel
+          cl::sycl::program prog(context);
+          prog.build_with_source(kernel_source);
+
+          // Check has_kernel(string_class)
+          bool hasKernel = prog.has_kernel(kernelName);
+          if (!hasKernel) {
+            FAIL(log,
+                 "Program was not built properly (has_kernel(string_class))");
+          }
+
+          // Check get_kernel(string_class)
+          cl::sycl::kernel k = prog.get_kernel(kernelName);
         }
       }
 
       {
         log.note("build program without build options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         prog.build_with_kernel_type<program_kernel<0>>();
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
         // check for get_binaries()
@@ -127,18 +179,23 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         log.note("build program with build options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
 
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
-        prog.build_with_kernel_type<program_kernel<1>>();
+        prog.build_with_kernel_type<program_kernel<1>>(linkOptions);
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
+        }
+
+        if (prog.get_build_options().find(linkOptions) ==
+            cl::sycl::string_class::npos) {
+          FAIL(log, "Built program did not store the build options");
         }
 
         // check for get_binaries()
@@ -156,24 +213,25 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             "compile and link program without without compile and link "
             "options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
         cl::sycl::program prog(myQueue.get_context());
 
-        if (prog.is_linked()) {
+        if (prog.get_state() != cl::sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
+        // Check compile_with_kernel_type()
         prog.compile_with_kernel_type<program_kernel<2>>();
 
-        if (prog.is_linked()) {
-          FAIL(log, "Program should not be linked after compilation");
+        if (prog.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Program should be in compiled state after compilation");
         }
 
         // Check link()
         prog.link();
 
-        if (!prog.is_linked()) {
-          FAIL(log, "Program was not built properly (is_linked())");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
         // check for get_binaries()
@@ -191,39 +249,50 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         });
       }
 
-      if (!context.is_host()) {
+      {
         log.note(
-            "link an OpenCL and a SYCL program without compile and link "
+            "compile and link program without with compile and link "
             "options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
+        cl::sycl::program prog(myQueue.get_context());
 
-        // obtain an existing OpenCL C program object
-        cl_program myClProgram = nullptr;
-        if (!create_compiled_program(kernel_source, myClProgram, log)) {
-          FAIL(log, "Didn't create the cl_program");
+        if (prog.get_state() != cl::sycl::program_state::none) {
+          FAIL(log, "Newly created program should not be linked yet");
         }
 
-        // Create a SYCL program object from a cl_program object
-        cl::sycl::program myExternProgram(myQueue.get_context(), myClProgram);
+        // Check compile_with_kernel_type(options)
+        prog.compile_with_kernel_type<program_kernel<2>>(compileOptions);
 
-        if (myExternProgram.is_linked()) {
-          FAIL(log, "Compiled interop program should not be linked yet");
+        if (prog.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Program should be in compiled state after compilation");
         }
 
-        // Add in the SYCL program object for our kernel
-        cl::sycl::program mySyclProgram(myQueue.get_context());
-        mySyclProgram.compile_with_kernel_type<program_kernel<3>>();
+        // Check link(options)
+        prog.link(linkOptions);
 
-        if (mySyclProgram.is_linked()) {
-          FAIL(log, "Compiled SYCL program should not be linked yet");
+        if (prog.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not built properly (get_state())");
         }
 
-        // Link myClProgram with the SYCL program object
-        cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram});
+        // check for get_binaries()
+        if (prog.get_binaries().size() < 1) {
+          FAIL(log, "Wrong value for program.get_binaries()");
+        }
 
-        if (!myLinkedProgram.is_linked()) {
-          FAIL(log, "Program was not linked");
+        // check for get_build_options()
+        if (prog.get_build_options().length() == 0) {
+          FAIL(log, "program.get_build_options() shouldn't be empty");
+        }
+
+        // check compile options
+        if (prog.get_compile_options() != compileOptions) {
+          FAIL(log, "Linked program did not store the compile options");
+        }
+
+        // check link options
+        if (prog.get_link_options() != linkOptions) {
+          FAIL(log, "Linked program did not store the link options");
         }
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
@@ -233,42 +302,94 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       if (!context.is_host()) {
         log.note(
-            "link an OpenCL and a SYCL program with compile and link options");
+            "link an OpenCL and a SYCL program without compile and link "
+            "options");
 
-        auto myQueue = util::get_cts_object::queue();
+        auto myQueue = cl::sycl::queue(context, selector);
 
         // obtain an existing OpenCL C program object
         cl_program myClProgram = nullptr;
-        if (!create_compiled_program(kernel_source, myClProgram, log)) {
+        if (!create_compiled_program(kernel_source, context.get(),
+                                     myQueue.get_device().get(), myClProgram,
+                                     log)) {
           FAIL(log, "Didn't create the cl_program");
         }
 
         // Create a SYCL program object from a cl_program object
         cl::sycl::program myExternProgram(myQueue.get_context(), myClProgram);
 
-        if (myExternProgram.is_linked()) {
-          FAIL(log, "Compiled interop program should not be linked yet");
+        if (myExternProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled interop program should be in compiled state");
         }
 
         // Add in the SYCL program object for our kernel
         cl::sycl::program mySyclProgram(myQueue.get_context());
-        mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
-            "-cl-opt-disable");
+        mySyclProgram.compile_with_kernel_type<program_kernel<3>>();
 
-        if (mySyclProgram.is_linked()) {
-          FAIL(log, "Compiled SYCL program should not be linked yet");
+        if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled SYCL program should be in compiled state");
         }
 
         // Link myClProgram with the SYCL program object
-        cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
-                                          "-cl-fast-relaxed-math");
+        cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram});
 
-        if (!myLinkedProgram.is_linked()) {
+        if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
           FAIL(log, "Program was not linked");
         }
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
           cgh.single_task(program_kernel<4>());
+        });
+      }
+
+      if (!context.is_host()) {
+        log.note(
+            "link an OpenCL and a SYCL program with compile and link options");
+
+        auto myQueue = cl::sycl::queue(context, selector);
+
+        // obtain an existing OpenCL C program object
+        cl_program myClProgram = nullptr;
+        if (!create_compiled_program(kernel_source, context.get(),
+                                     myQueue.get_device().get(), myClProgram,
+                                     log)) {
+          FAIL(log, "Didn't create the cl_program");
+        }
+
+        // Create a SYCL program object from a cl_program object
+        cl::sycl::program myExternProgram(myQueue.get_context(), myClProgram);
+
+        if (myExternProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled interop program should be in compiled state");
+        }
+
+        // Add in the SYCL program object for our kernel
+        cl::sycl::program mySyclProgram(myQueue.get_context());
+        mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
+            compileOptions);
+
+        if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          FAIL(log, "Compiled SYCL program should be in compiled state");
+        }
+
+        if (mySyclProgram.get_compile_options() != compileOptions) {
+          FAIL(log, "Compiled SYCL program did not store the compile options");
+        }
+
+        // Link myClProgram with the SYCL program object
+        cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
+                                          linkOptions);
+
+        if (myLinkedProgram.get_state() != cl::sycl::program_state::linked) {
+          FAIL(log, "Program was not linked");
+        }
+
+        if (myLinkedProgram.get_link_options() != linkOptions) {
+          FAIL(log, "Linked program did not store the link options");
+        }
+
+        myQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task(program_kernel<5>());
         });
       }
     } catch (const cl::sycl::exception &e) {

@@ -154,8 +154,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create buffer failed");
         }
 
-        cl::sycl::buffer<int, size> buffer(clBuffer, queue.get_context(),
-                                           event);
+        cl::sycl::buffer<int, 1> buffer(clBuffer, queue.get_context(), event);
 
         queue.submit([&](cl::sycl::handler &handler) {
           auto accessor =

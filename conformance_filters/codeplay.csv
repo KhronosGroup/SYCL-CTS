@@ -13,7 +13,9 @@ nd_item
 nd_range
 platform
 pointers
+program
 range
+stream
 std_classes
 vector_alias
 vector_api
