@@ -70,7 +70,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       auto queue = util::get_cts_object::queue();
 
       cl::sycl::buffer<int, 1> buffer(bufferData,
-                                               cl::sycl::range<1>(bufferSize));
+                                      cl::sycl::range<1>(bufferSize));
 
       cl::sycl::image<imageSize> image(
           imageData, cl::sycl::image_channel_order::rgba,
@@ -98,8 +98,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             image.get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
                 handler);
 
-        cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
-                                  cl::sycl::filtering_mode::nearest);
+        cl::sycl::sampler sampler(
+            cl::sycl::coordinate_normalization_mode::unnormalized,
+            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
 
         /** check the set_arg() methods
         */
@@ -121,8 +122,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             image.get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
                 handler);
 
-        cl::sycl::sampler sampler(false, cl::sycl::addressing_mode::none,
-                                  cl::sycl::filtering_mode::nearest);
+        cl::sycl::sampler sampler(
+            cl::sycl::coordinate_normalization_mode::unnormalized,
+            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
 
         /** check the set_arg() methods
         */

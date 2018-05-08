@@ -205,8 +205,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         queue.submit([&](cl::sycl::handler &handler) {
           auto accessor =
-              image.get_access<access::mode::read, access::target::image>(
-                  handler);
+              image.get_access<cl::sycl::access::mode::read,
+                               cl::sycl::access::target::image>(handler);
         });
 
         error = clReleaseMemObject(clImage);
@@ -220,7 +220,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         auto queue = util::get_cts_object::queue();
         cl_sampler clSampler;
-        create_sampler(sampler, log);
+        create_sampler(clSampler, log);
 
         queue.submit([&](cl::sycl::handler &handler) {
 

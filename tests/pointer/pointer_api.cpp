@@ -340,13 +340,13 @@ class pointer_apis {
           auto lPtr = localMultiPtr.get();
           auto pPtr = privateMultiPtr.get();
 
-          ASSERT_RETURN_TYPE(typename cl::sycl::global_ptr<U>::pointer, gPtr,
+          ASSERT_RETURN_TYPE(typename cl::sycl::global_ptr<U>::pointer_t, gPtr,
                              "cl::sycl::multi_ptr::get()");
-          ASSERT_RETURN_TYPE(typename cl::sycl::constant_ptr<U>::pointer, cPtr,
+          ASSERT_RETURN_TYPE(typename cl::sycl::constant_ptr<U>::pointer_t,
+                             cPtr, "cl::sycl::multi_ptr::get()");
+          ASSERT_RETURN_TYPE(typename cl::sycl::local_ptr<U>::pointer_t, lPtr,
                              "cl::sycl::multi_ptr::get()");
-          ASSERT_RETURN_TYPE(typename cl::sycl::local_ptr<U>::pointer, lPtr,
-                             "cl::sycl::multi_ptr::get()");
-          ASSERT_RETURN_TYPE(typename cl::sycl::private_ptr<U>::pointer, pPtr,
+          ASSERT_RETURN_TYPE(typename cl::sycl::private_ptr<U>::pointer_t, pPtr,
                              "cl::sycl::multi_ptr::get()");
         }
 
@@ -457,18 +457,18 @@ class pointer_apis {
         */
         {
           multiPtrGlobal globalMultiPtr =
-              cl::sycl::make_ptr<T,
+              cl::sycl::make_ptr<U,
                                  cl::sycl::access::address_space::global_space>(
                   &globalAccessor[0]);
           multiPtrConstant constantMultiPtr = cl::sycl::make_ptr<
-              T, cl::sycl::access::address_space::constant_space>(
+              U, cl::sycl::access::address_space::constant_space>(
               &constantAccessor[0]);
           multiPtrLocal localMultiPtr =
-              cl::sycl::make_ptr<T,
+              cl::sycl::make_ptr<U,
                                  cl::sycl::access::address_space::local_space>(
                   &localAccessor[0]);
           multiPtrPrivate privateMultiPtr = cl::sycl::make_ptr<
-              T, cl::sycl::access::address_space::private_space>(privateData);
+              U, cl::sycl::access::address_space::private_space>(privateData);
         }
 
         /** check relation functions
@@ -504,10 +504,10 @@ class pointer_apis {
       cl::sycl::local_ptr<U> localPtrA;
       cl::sycl::private_ptr<U> privatePtrA;
 
-      auto resG = globalPtrA.space;
-      auto resC = constantPtrA.space;
-      auto resL = localPtrA.space;
-      auto resP = privatePtrA.space;
+      static constexpr auto resG = decltype(globalPtrA)::address_space;
+      static constexpr auto resC = decltype(constantPtrA)::address_space;
+      static constexpr auto resL = decltype(localPtrA)::address_space;
+      static constexpr auto resP = decltype(privatePtrA)::address_space;
 
       check_return_type<cl::sycl::access::address_space>(
           log, resG, "cl::sycl::multi_ptr::space");

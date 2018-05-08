@@ -55,8 +55,10 @@ class TEST_NAME : public util::test_base {
 
           // Check set_arg(int, sampler)
           {
-            cl::sycl::sampler sampler(true, cl::sycl::addressing_mode::clamp,
-                                      cl::sycl::filtering_mode::nearest);
+            cl::sycl::sampler sampler(
+                cl::sycl::coordinate_normalization_mode::normalized,
+                cl::sycl::addressing_mode::clamp,
+                cl::sycl::filtering_mode::nearest);
             cgh.set_arg(2, sampler);
           }
 
@@ -75,8 +77,10 @@ class TEST_NAME : public util::test_base {
               buffer.get_access<cl::sycl::access::mode::read_write,
                                 cl::sycl::access::target::global_buffer>(cgh);
           int scalar = 5;
-          cl::sycl::sampler sampler(true, cl::sycl::addressing_mode::clamp,
-                                    cl::sycl::filtering_mode::nearest);
+          cl::sycl::sampler sampler(
+              cl::sycl::coordinate_normalization_mode::normalized,
+              cl::sycl::addressing_mode::clamp,
+              cl::sycl::filtering_mode::nearest);
           simple_struct custom{3, .14f};
 
           // Check set_args(Ts...)

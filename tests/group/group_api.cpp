@@ -100,7 +100,7 @@ class TEST_NAME : public util::test_base {
 
                 // get()
                 {
-                  auto m_get_group = my_group.get();
+                  auto m_get_group = my_group.get_id();
                   auto indexBase = get_index(groupLinearID, getter::get);
                   a_dev[indexBase + 0] = m_get_group.get(0);
                   a_dev[indexBase + 1] = m_get_group.get(1);
@@ -110,9 +110,9 @@ class TEST_NAME : public util::test_base {
                 // get(int)
                 {
                   auto indexBase = get_index(groupLinearID, getter::get_dims);
-                  a_dev[indexBase + 0] = my_group.get(0);
-                  a_dev[indexBase + 1] = my_group.get(1);
-                  a_dev[indexBase + 2] = my_group.get(2);
+                  a_dev[indexBase + 0] = my_group.get_id(0);
+                  a_dev[indexBase + 1] = my_group.get_id(1);
+                  a_dev[indexBase + 2] = my_group.get_id(2);
                 }
 
                 // get_global_range()

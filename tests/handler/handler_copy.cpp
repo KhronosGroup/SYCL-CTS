@@ -272,7 +272,7 @@ void test_write_acc_copy_functions(cl::sycl::queue& queue) {
     const auto func = [](cl::sycl::handler& cgh, acc_read_t accRead,
                          acc_write_t accWrite, host_shared_ptr hostPtrRead,
                          host_shared_ptr hostPtrWrite) {
-      const auto pattern = dataT(137);
+      const auto pattern = dataT(117);
       cgh.fill(accWrite, pattern);
     };
     TEST_SINGLE_COPY_FUNCTION_ACC_WRITE(dataT, dims, readMode, writeMode,
