@@ -10,7 +10,7 @@
 
 #define TEST_NAME id_api
 
-namespace TEST_NAMESPACE {
+namespace id_api__ {
 using namespace sycl_cts;
 
 template <int dims>
@@ -23,7 +23,7 @@ void test_id_kernels(
                        cl::sycl::access::target::global_buffer>
         error_ptr,
     int m_iteration) {
-  cl::sycl::id<dims> id_two(id * 2);
+  cl::sycl::id<dims> id_two(id * static_cast<size_t>(2));
   cl::sycl::id<dims> id_three(id);
   size_t integer = 16;
   for (int j = 0; j < dims; j++) {
@@ -203,6 +203,45 @@ void test_id_kernels(
 }
 
 template <int dims>
+void test_size_t_conversion(
+    cl::sycl::id<dims> id,
+    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                       cl::sycl::access::target::global_buffer>
+        error_ptr,
+    int m_iteration);
+
+template <>
+void test_size_t_conversion(
+    cl::sycl::id<1> id,
+    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                       cl::sycl::access::target::global_buffer>
+        error_ptr,
+    int m_iteration) {
+  size_t size = id.get(0);
+  if (size != id) {
+    // report an error
+    error_ptr[m_iteration] = __LINE__;
+    m_iteration++;
+  }
+}
+
+template <>
+void test_size_t_conversion(
+    cl::sycl::id<2> id,
+    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                       cl::sycl::access::target::global_buffer>
+        error_ptr,
+    int m_iteration) {}
+
+template <>
+void test_size_t_conversion(
+    cl::sycl::id<3> id,
+    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
+                       cl::sycl::access::target::global_buffer>
+        error_ptr,
+    int m_iteration) {}
+
+template <int dims>
 class test_id {
  public:
   // golden values
@@ -210,8 +249,7 @@ class test_id {
   static const int m_y = 32;
   static const int m_z = 64;
   static const int m_local = 2;
-  static const int error_size =
-      19 * 2;  // 19 test cases, with 2 variants each, worst case: all fail
+  static const int error_size = 204;  // up to 204 possible errors
   int m_error[error_size];
 
   void operator()(util::logger &log, cl::sycl::range<dims> global,
@@ -236,6 +274,8 @@ class test_id {
 
           // create check table
           cl::sycl::id<dims> id = item.get_nd_range().get_global();
+
+          test_size_t_conversion(id, error_ptr, m_iteration);
 
           size_t check[] = {m_x, m_y, m_z};
 
@@ -289,28 +329,6 @@ class TEST_NAME : public util::test_base {
         cl::sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
                                       test_id<3>::m_local);
 
-        size_t test_sizes[] = {15, 3, 23};
-        {
-          cl::sycl::range<1> r1(test_sizes[0]);
-          if (r1.size() != test_sizes[0]) {
-            FAIL(log, "range<1> size returns incorrect size");
-          }
-        }
-
-        {
-          cl::sycl::range<2> r1(test_sizes[0], test_sizes[1]);
-          if (r1.size() != test_sizes[0] * test_sizes[1]) {
-            FAIL(log, "range<2> size returns incorrect size");
-          }
-        }
-
-        {
-          cl::sycl::range<3> r1(test_sizes[0], test_sizes[1], test_sizes[2]);
-          if (r1.size() != test_sizes[0] * test_sizes[1] * test_sizes[2]) {
-            FAIL(log, "range<3> size returns incorrect size");
-          }
-        }
-
         test_id<1> test1d;
         test1d(log, range_1d_g, range_1d_l, my_queue);
         test_id<2> test2d;
@@ -330,4 +348,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace id_api__ */
+}  // namespace id_api__
