@@ -5,7 +5,9 @@ device
 device_selector
 error
 exception_handling
+h_item
 header
+hierarchical
 id
 item
 kernel_args
@@ -17,4 +19,10 @@ queue
 range
 stream
 std_classes
+vector_alias
+vector_api
 vector_constructors
+vector_operators
+vector_swizzle_assignment
+vector_swizzles
+vector_swizzles_opencl

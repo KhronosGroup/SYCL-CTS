@@ -1,0 +1,40 @@
+/*************************************************************************
+//
+//  SYCL Conformance Test Suite
+//
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
+//
+**************************************************************************/
+
+#define SYCL_SIMPLE_SWIZZLES
+
+#include "../common/common.h"
+#include "../common/common_vec.h"
+
+#define TEST_NAME vector_$CATEGORY_$TYPE_NAME
+
+namespace vector_$CATEGORY_$TYPE_NAME__ {
+using namespace sycl_cts;
+
+class TEST_NAME : public util::test_base {
+ public:
+  /** return information about this test
+   */
+  void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  $TEST_FUNCS
+
+  /** execute the test
+   */
+  void run(util::logger &log) override {
+
+    $FUNC_CALLS
+
+  }
+};
+
+util::test_proxy<TEST_NAME> proxy;
+
+} /* namespace vector_$CATEGORY_$TYPE_NAME__ */

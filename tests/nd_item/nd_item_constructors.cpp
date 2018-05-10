@@ -10,12 +10,12 @@
 
 #include <array>
 
-#define TEST_NAME group_constructors
+#define TEST_NAME nd_item_constructors
 
 namespace {
 
 template <int numDims>
-struct group_constructors_kernel;
+struct nd_item_constructors_kernel;
 
 enum class current_check {
   copy_constructor,
@@ -42,23 +42,23 @@ using success_array_t =
 
 template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
-                                  const cl::sycl::group<numDims>& actual,
-                                  const cl::sycl::group<numDims>& expected) {
-  CHECK_EQUALITY_HELPER(success, actual.get_id(index), expected.get_id(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_global_range(index),
-                        expected.get_global_range(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_local_range(index),
-                        expected.get_local_range(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_group_range(index),
-                        expected.get_group_range(index));
-  CHECK_EQUALITY_HELPER(success, actual[index], expected[index]);
+                                  const cl::sycl::nd_item<numDims>& actual,
+                                  const cl::sycl::nd_item<numDims>& expected) {
+  CHECK_EQUALITY_HELPER(success, actual.get_global(index),
+                        expected.get_global(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_local(index),
+                        expected.get_local(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_group(index),
+                        expected.get_group(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_num_groups(index),
+                        expected.get_num_groups(index));
 }
 
 template <int numDims, typename success_acc_t>
 inline void check_equality(success_acc_t& successAcc,
                            current_check currentCheck,
-                           const cl::sycl::group<numDims>& actual,
-                           const cl::sycl::group<numDims>& expected) {
+                           const cl::sycl::nd_item<numDims>& actual,
+                           const cl::sycl::nd_item<numDims>& expected) {
   auto& success = successAcc[static_cast<size_t>(currentCheck)];
   if (numDims >= 1) {
     check_equality_helper<0>(success, actual, expected);
@@ -69,7 +69,12 @@ inline void check_equality(success_acc_t& successAcc,
   if (numDims >= 3) {
     check_equality_helper<2>(success, actual, expected);
   }
-  CHECK_EQUALITY_HELPER(success, actual.get_linear(), expected.get_linear());
+  CHECK_EQUALITY_HELPER(success, actual.get_global_linear_id(),
+                        expected.get_global_linear_id());
+  CHECK_EQUALITY_HELPER(success, actual.get_local_linear_id(),
+                        expected.get_local_linear_id());
+  CHECK_EQUALITY_HELPER(success, actual.get_group_linear_id(),
+                        expected.get_group_linear_id());
 }
 
 #undef CHECK_EQUALITY_HELPER
@@ -102,27 +107,28 @@ class TEST_NAME : public util::test_base {
           auto successAcc =
               successBuf.get_access<cl::sycl::access::mode::write>(cgh);
 
-          cgh.parallel_for_work_group<group_constructors_kernel<numDims>>(
-              simpleRange, simpleRange, [=](cl::sycl::group<numDims> group) {
+          cgh.parallel_for<nd_item_constructors_kernel<numDims>>(
+              cl::sycl::nd_range<numDims>(simpleRange, simpleRange),
+              [=](cl::sycl::nd_item<numDims> item) {
                 // Check copy constructor
-                cl::sycl::group<numDims> copied(group);
+                cl::sycl::nd_item<numDims> copied(item);
                 check_equality(successAcc, current_check::copy_constructor,
-                               copied, group);
+                               copied, item);
 
                 // Check move constructor
-                cl::sycl::group<numDims> moved(std::move(copied));
+                cl::sycl::nd_item<numDims> moved(std::move(copied));
                 check_equality(successAcc, current_check::move_constructor,
-                               moved, group);
+                               moved, item);
 
                 // Check copy assignment
                 copied = moved;
                 check_equality(successAcc, current_check::copy_assignment,
-                               copied, group);
+                               copied, item);
 
                 // Check move assignment
                 moved = std::move(copied);
                 check_equality(successAcc, current_check::move_assignment,
-                               moved, group);
+                               moved, item);
               });
         });
       }

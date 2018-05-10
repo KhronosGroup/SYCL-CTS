@@ -61,12 +61,13 @@ struct parallel_for_work_group_range_functor {
   parallel_for_work_group_range_functor(accessor_t acc) : acc(acc) {}
 
   void operator()(cl::sycl::group<1> group) {
-    parallel_for_work_item(group, [&](cl::sycl::item<1> item) { acc[0] = 10; });
+    group.parallel_for_work_item(
+        [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
 
     cl::sycl::range<1> subRange(1);
 
-    parallel_for_work_item(group, subRange,
-                           [&](cl::sycl::item<1> item) { acc[0] = 10; });
+    group.parallel_for_work_item(
+        subRange, [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
   }
 
   accessor_t acc;
@@ -397,19 +398,19 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       {
         const cl::sycl::range<1> range = 1;
-        check_api_call(
-            "parallel_for_work_group(range, lambda)", log, queue,
-            [&](handler &cgh, accessor_t acc) {
-              cgh.parallel_for_work_group<
-                  class parallel_for_work_group_1range_lambda>(
-                  range, [=](cl::sycl::group<1> group) {
-                    parallel_for_work_item(
-                        group, [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                    parallel_for_work_item(
-                        group, subRange,
-                        [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                  });
-            });
+        check_api_call("parallel_for_work_group(range, lambda)", log, queue,
+                       [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for_work_group<
+                             class parallel_for_work_group_1range_lambda>(
+                             range, [=](cl::sycl::group<1> group) {
+                               group.parallel_for_work_item([&](
+                                   cl::sycl::h_item<1> item) { acc[0] = 10; });
+                               group.parallel_for_work_item(
+                                   subRange, [&](cl::sycl::h_item<1> item) {
+                                     acc[0] = 10;
+                                   });
+                             });
+                       });
       }
 
       check_api_call("parallel_for_work_group(range, functor)", log, queue,
@@ -424,19 +425,19 @@ class TEST_NAME : public sycl_cts::util::test_base {
             get_prebuilt_kernel<parallel_for_work_group_1range_lambda_prebuilt>(
                 queue);
 
-        check_api_call(
-            "parallel_for_work_group(kernel, range, lambda)", log, queue,
-            [&](handler &cgh, accessor_t acc) {
-              cgh.parallel_for_work_group<
-                  parallel_for_work_group_1range_lambda_prebuilt>(
-                  range, [=](cl::sycl::group<1> group) {
-                    parallel_for_work_item(
-                        group, [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                    parallel_for_work_item(
-                        group, subRange,
-                        [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                  });
-            });
+        check_api_call("parallel_for_work_group(kernel, range, lambda)", log,
+                       queue, [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for_work_group<
+                             parallel_for_work_group_1range_lambda_prebuilt>(
+                             range, [=](cl::sycl::group<1> group) {
+                               group.parallel_for_work_item([&](
+                                   cl::sycl::h_item<1> item) { acc[0] = 10; });
+                               group.parallel_for_work_item(
+                                   subRange, [&](cl::sycl::h_item<1> item) {
+                                     acc[0] = 10;
+                                   });
+                             });
+                       });
       }
 
       {
@@ -459,11 +460,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
             cgh.parallel_for_work_group<
                 class parallel_for_work_group_2range_lambda>(
                 globalRange, localRange, [=](cl::sycl::group<1> group) {
-                  parallel_for_work_item(
-                      group, [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                  parallel_for_work_item(
-                      group, subRange,
-                      [&](cl::sycl::item<1> item) { acc[0] = 10; });
+                  group.parallel_for_work_item(
+                      [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
+                  group.parallel_for_work_item(
+                      subRange, [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
                 });
           });
 
@@ -485,11 +485,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
               cgh.parallel_for_work_group<
                   parallel_for_work_group_2range_lambda_prebuilt>(
                   globalRange, localRange, [=](cl::sycl::group<1> group) {
-                    parallel_for_work_item(
-                        group, [&](cl::sycl::item<1> item) { acc[0] = 10; });
-                    parallel_for_work_item(
-                        group, subRange,
-                        [&](cl::sycl::item<1> item) { acc[0] = 10; });
+                    group.parallel_for_work_item(
+                        [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
+                    group.parallel_for_work_item(
+                        subRange,
+                        [&](cl::sycl::h_item<1> item) { acc[0] = 10; });
                   });
             });
       }

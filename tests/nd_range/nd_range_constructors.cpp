@@ -2,7 +2,7 @@
 //
 //  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
 
@@ -13,6 +13,17 @@
 namespace nd_range_constructors__ {
 using namespace sycl_cts;
 
+/**
+ * @brief Constructs a default nd_range
+ * @tparam dim Number of dimensions of the nd_range
+ * @return nd_range<dim> object with default values
+ */
+template <int dim>
+inline cl::sycl::nd_range<dim> get_default_nd_range() {
+  return cl::sycl::nd_range<dim>(cl::sycl::range<dim>{},
+                                 cl::sycl::range<dim>{});
+}
+
 template <int dim>
 void test_nd_range_constructors(util::logger &log, cl::sycl::range<dim> gs,
                                 cl::sycl::range<dim> ls,
@@ -21,6 +32,23 @@ void test_nd_range_constructors(util::logger &log, cl::sycl::range<dim> gs,
   cl::sycl::nd_range<dim> deep_copy(no_offset);
   cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
   cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
+
+  {  // Copy assignment, no offset
+    auto defaultRange = get_default_nd_range<dim>();
+    defaultRange = no_offset;
+  }
+  {  // Copy assignment, with offset
+    auto defaultRange = get_default_nd_range<dim>();
+    defaultRange = with_offset;
+  }
+  {  // Move assignment, no offset
+    auto defaultRange = get_default_nd_range<dim>();
+    defaultRange = std::move(no_offset);
+  }
+  {  // Move assignment, with offset
+    auto defaultRange = get_default_nd_range<dim>();
+    defaultRange = std::move(with_offset);
+  }
 }
 
 /** test cl::sycl::nd_range initialization
