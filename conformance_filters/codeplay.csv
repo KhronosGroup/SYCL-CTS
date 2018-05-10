@@ -2,7 +2,6 @@ address_space
 buffer
 context
 device
-device_event
 device_selector
 error
 exception_handling
