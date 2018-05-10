@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME event_api
+#define TEST_NAME event_info
 
 namespace TEST_NAMESPACE {
 

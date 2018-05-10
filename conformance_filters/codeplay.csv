@@ -10,7 +10,9 @@ h_item
 header
 hierarchical
 id
+invoke
 item
+kernel
 kernel_args
 nd_item
 nd_range
@@ -19,6 +21,7 @@ pointers
 program
 range
 stream
+sampler
 std_classes
 vector_alias
 vector_api

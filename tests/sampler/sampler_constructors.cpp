@@ -133,7 +133,7 @@ class TEST_NAME : public util::test_base {
         bool isHostSamplerA = samplerA.is_host();
         cl::sycl::sampler samplerB(std::move(samplerA));
 
-        if (samplerB.is_host != isHostSamplerA) {
+        if (samplerB.is_host() != isHostSamplerA) {
           FAIL(log,
                "sampler was not move constructed correctly. "
                "(is_host)");

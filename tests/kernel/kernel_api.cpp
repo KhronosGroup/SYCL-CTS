@@ -10,6 +10,10 @@
 
 #define TEST_NAME kernel_api
 
+struct test_kernel_name {
+  void operator()() const {}
+};
+
 namespace kernel_api__ {
 using namespace sycl_cts;
 
@@ -36,39 +40,28 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   void run(util::logger &log) override {
     try {
-      cl_program clProgram = nullptr;
-      if (!create_built_program(kernel_source, clProgram, log)) {
-        return;
-      }
+      auto ctsQueue = util::get_cts_object::queue();
+      const auto isHostCtx = ctsQueue.is_host();
 
-      cl_kernel clKernel = nullptr;
-      if (!create_kernel(clProgram, "sample", clKernel, log)) {
-        return;
-      }
+      // Create kernel
+      cl::sycl::program prog(ctsQueue.get_context());
+      prog.build_with_kernel_type<test_kernel_name>();
+      auto k = prog.get_kernel<test_kernel_name>();
 
-      cl::sycl::kernel k(clKernel);
-
-      cl_kernel krnl = k.get();
-
-      cl_uint ref_cnt;
-
-      int err = clGetKernelInfo(krnl, CL_KERNEL_REFERENCE_COUNT,
-                                sizeof(cl_uint), &ref_cnt, nullptr);
-
-      CHECK_VALUE(log, err, CL_SUCCESS, 0);
-
-      if (ref_cnt <= 0) {
-        FAIL(log, "ref_cnt is incorrect. Problem with obtained cl_kernel.");
+      if (!isHostCtx) {
+        // Check get()
+        cl_kernel krnl = k.get();
       }
 
       // Check is_host()
       bool isHost = k.is_host();
 
-      // just to make sure if returned context is correct type
+      // Check get_context()
       auto cxt = k.get_context();
       check_return_type<cl::sycl::context>(log, cxt,
                                            "cl::sycl::kernel::get_context()");
 
+      // Check get_program()
       auto prgrm = k.get_program();
       check_return_type<cl::sycl::program>(log, prgrm,
                                            "cl::sycl::kernel::get_program()");

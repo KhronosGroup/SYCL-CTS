@@ -111,8 +111,10 @@ class TEST_NAME : public util::test_base {
               cl::sycl::nd_range<2>(cl::sycl::range<2>(4, 1),
                                     cl::sycl::range<2>(1, 1)),
               ([=](cl::sycl::nd_item<2> itemID) {
-                outPtr[itemID.get_global()] =
-                    inPtr(sampler)[itemID.get_global()];
+                const auto globalId = itemID.get_global();
+                const auto coords = cl::sycl::cl_int2(globalId[0], globalId[1]);
+                auto value = inPtr.read(coords, sampler);
+                outPtr.write(coords, value);
               }));
         });
 
