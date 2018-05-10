@@ -298,9 +298,8 @@ inline void if_constexpr(const F& f) {
   }
 }
 
-template <template <int dims> class A, int dims>
-void check_equality_comparable_generic(sycl_cts::util::logger& log,
-                                       const A<dims>& a,
+template <typename T>
+void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
                                        std::string test_name) {
   /** check for reflexivity
   */
@@ -345,20 +344,6 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log,
   } else if (a != c) {
     FAIL(log, (test_name +
                " is not equality-comparable (operator!= transitivity  failed)")
-                  .c_str());
-  }
-
-  /** check copy-assignment
-  */
-  A<dims> d;
-  d = a;
-  if (!(d == a)) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator==, copy assignment)")
-                  .c_str());
-  } else if (d != b) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator!=, copy assignment)")
                   .c_str());
   }
 }
