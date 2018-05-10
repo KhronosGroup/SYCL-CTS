@@ -46,7 +46,7 @@ class check_base_atomics {
     cl::sycl::atomic_store(&a, static_cast<T>(0), order);
     old = cl::sycl::atomic_exchange(&a, static_cast<T>(1), order);
     old = cl::sycl::atomic_compare_exchange_strong(&a, &old, static_cast<T>(1),
-                                         order, order);
+                                                   order, order);
     old = cl::sycl::atomic_fetch_add(&a, static_cast<T>(1), order);
     old = cl::sycl::atomic_fetch_sub(&a, static_cast<T>(1), order);
   }
