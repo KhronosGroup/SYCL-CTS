@@ -27,7 +27,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      /** check qait() member function
+      /** check wait() member function
        */
       {
         auto testQueue = util::get_cts_object::queue();
