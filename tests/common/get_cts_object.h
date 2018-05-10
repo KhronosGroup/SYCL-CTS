@@ -151,6 +151,61 @@ struct get_cts_object {
       return program;
     }
   };
+
+  /**
+   * @brief Uniform way to retrieve a range of different dimensions by always
+   *        specifying three components
+   */
+  template <int dimensions>
+  struct range;
+};
+
+/**
+ * @brief Specialization that returns a range<1> from three components
+ */
+template <>
+struct get_cts_object::range<1> {
+  /**
+   * @brief Constructs a range<1> by only using one component out of three
+   * @param r0 Value of the first component of the range
+   * @return range<1>
+   */
+  static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
+    return cl::sycl::range<1>(r0);
+  }
+};
+
+/**
+ * @brief Specialization that returns a range<2> from three components
+ */
+template <>
+struct get_cts_object::range<2> {
+  /**
+   * @brief Constructs a range<2> by only using two components out of three
+   * @param r0 Value of the first component of the range
+   * @param r1 Value of the second component of the range
+   * @return range<2>
+   */
+  static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
+    return cl::sycl::range<2>(r0, r1);
+  }
+};
+
+/**
+ * @brief Specialization that returns a range<3> from three components
+ */
+template <>
+struct get_cts_object::range<3> {
+  /**
+   * @brief Constructs a range<3>
+   * @param r0 Value of the first component of the range
+   * @param r1 Value of the second component of the range
+   * @param r2 Value of the third component of the range
+   * @return range<3>
+   */
+  static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
+    return cl::sycl::range<3>(r0, r1, r2);
+  }
 };
 
 }  // namespace util

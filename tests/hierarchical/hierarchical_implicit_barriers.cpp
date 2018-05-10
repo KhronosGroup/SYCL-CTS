@@ -69,27 +69,19 @@ class TEST_NAME : public util::test_base {
 
           cgh.parallel_for_work_group<class hierarchical_implicit_barriers>(
               globalRange, localRange, [=](cl::sycl::group<3> group) {
-                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
-                  cl::sycl::range<3> global_range = group.get_global_range();
-                  cl::sycl::id<3> gID =
-                      group.get_id() * item.get_range() + item.get_id();
-                  int globalId = (gID[2] * global_range[0] * global_range[1]) +
-                                 gID[1] * global_range[0] + gID[0];
-                  int globalSize = group.get_global_range().size();
-                  int localId = item.get_linear_id();
+                group.parallel_for_work_item([&](cl::sycl::h_item<3> item) {
+                  auto globalId = item.get_global().get_linear_id();
+                  auto localId = item.get_local().get_linear_id();
 
+                  int globalSize = group.get_global_range().size();
                   int invertedVal = (globalSize - 1) - inputPtr[globalId];
 
                   localPtr[localId] = invertedVal;
                 });
 
-                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
-                  cl::sycl::range<3> global_range = group.get_global_range();
-                  cl::sycl::id<3> gID =
-                      group.get_id() * item.get_range() + item.get_id();
-                  int globalId = (gID[2] * global_range[0] * global_range[1]) +
-                                 gID[1] * global_range[0] + gID[0];
-                  int localId = item.get_linear_id();
+                group.parallel_for_work_item([&](cl::sycl::h_item<3> item) {
+                  auto globalId = item.get_global().get_linear_id();
+                  auto localId = item.get_local().get_linear_id();
 
                   inputPtr[globalId] = localPtr[localId];
                 });

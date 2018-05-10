@@ -68,10 +68,11 @@ class TEST_NAME : public util::test_base {
                 // Create a local variable to store the work item id.
                 int work_item_id;
 
-                parallel_for_work_item(group, [&](cl::sycl::item<3> item) {
+                group.parallel_for_work_item([&](cl::sycl::h_item<3> item) {
                   // Assign the work item id to a local variable.
-                  work_item_id = group.get_linear() * item.get_range().size() +
-                                 item.get_linear_id();
+                  work_item_id =
+                      group.get_linear() * item.get_local_range().size() +
+                      item.get_local().get_linear_id();
                 });
 
                 // Assign a value for the work item stored. Although this is

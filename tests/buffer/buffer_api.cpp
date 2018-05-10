@@ -116,6 +116,16 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     check_return_type<cl::sycl::range<dims>>(log, ret_range,
                                              "cl::sycl::buffer::get_range()");
 
+    /* Check alias types */
+    {
+      using myValueType = cl::sycl::buffer<T, dims>::value_type;
+      using myValueRef = cl::sycl::buffer<T, dims>::reference;
+      using myValueConstRef = cl::sycl::buffer<T, dims>::const_reference;
+      using myAllocator =
+          cl::sycl::buffer<T, dims,
+                           cl::sycl::default_allocator<T>>::allocator_type;
+    }
+
     /* Check that ret_range is the correct size */
     for (int i = 0; i < dims; ++i) {
       if (ret_range[i] != r[i]) {
@@ -154,7 +164,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::global_buffer>>(
-          log, acc, "cl::sycl::buffer::get_access()");
+          log, acc, "cl::sycl::buffer::get_access<read_write>(handler&)");
       cgh.single_task(empty_kernel());
     });
 
@@ -167,7 +177,8 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::constant_buffer>>(
-          log, acc, "cl::sycl::buffer::get_access()");
+          log, acc,
+          "cl::sycl::buffer::get_access<read, constant_buffer>(handler&)");
       cgh.single_task(empty_kernel());
     });
 
@@ -177,7 +188,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::host_buffer>>(
-          log, acc, "cl::sycl::buffer::get_access()");
+          log, acc, "cl::sycl::buffer::get_access<read_write, host_buffer>()");
     }
 
     /* check the buffer returns the correct type of accessor */
@@ -187,7 +198,9 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::global_buffer>>(
-          log, acc, "cl::sycl::buffer::get_access()");
+          log, acc,
+          "cl::sycl::buffer::get_access<read_write, global_buffer>(handler&, "
+          "range<>, id<>)");
       cgh.single_task(empty_kernel());
     });
 
@@ -198,7 +211,9 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       check_return_type<
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::host_buffer>>(
-          log, acc, "cl::sycl::buffer::get_access()");
+          log, acc,
+          "cl::sycl::buffer::get_access<read_write, host_buffer>(range<>, "
+          "id<>)");
     }
 
     /* check get_allocator() */
@@ -255,11 +270,17 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
           buf.template get_property<cl::sycl::property::buffer::use_mutex>();
       check_return_type<cl::sycl::property::buffer::use_mutex>(
           log, useMutexProperty, "get_property<use_mutex>()");
+      check_return_type<cl::sycl::mutex_class*>(
+          log, useMutexProperty.get_mutex_ptr(),
+          "cl::sycl::property::buffer::use_mutex::get_mutex_ptr()");
 
       auto contentBoundProperty = buf.template get_property<
           cl::sycl::property::buffer::context_bound>();
       check_return_type<cl::sycl::property::buffer::context_bound>(
           log, contentBoundProperty, "get_property<context_bound>()");
+      check_return_type<cl::sycl::context>(
+          log, contentBoundProperty.get_context(),
+          "cl::sycl::property::buffer::context_bound::get_context()");
     }
 
     q.wait_and_throw();

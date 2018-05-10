@@ -2,16 +2,16 @@
 //
 //  SYCL Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 **************************************************************************/
 
 #include "../common/common.h"
 #include "../common/common_vec.h"
 
-#define TEST_NAME vector_constructors
+#define TEST_NAME vector_constructors_const_argTN
 
-namespace vector_constructors__ {
+namespace vector_constructors_const_argTN__ {
 using namespace sycl_cts;
 
 /** Test a cross section of vector constructors
@@ -34,16 +34,6 @@ class TEST_NAME : public util::test_base {
       {
         auto testDevice = testQueue.get_device();
 
-        /** Test
-         *  vec()
-         */
-        $DEFAULT_TESTS
-
-        /** Test
-         *  explicit vec(const T &arg)
-         */
-        $EXPLICIT_TESTS
-
         {
           bool resArray[1] = {true};
           cl::sycl::buffer<bool, 1> boolBuffer(resArray, cl::sycl::range<1>(1));
@@ -51,7 +41,7 @@ class TEST_NAME : public util::test_base {
             auto resAcc =
                 boolBuffer.get_access<cl::sycl::access::mode::write>(cgh);
 
-            cgh.single_task<class VEC_CONST_ARGTN>([=]() {
+            cgh.single_task<class VEC_CONST_ARGTN_CONSTRUCTOR_KERNEL>([=]() {
               /** Test
                *  template <typename... argTN>
                *  vec(const argTN&... args)
@@ -361,18 +351,6 @@ class TEST_NAME : public util::test_base {
                           "A vec(const &vecT) constructor test has failed"));
           }
         }
-
-        /** Test
-         *  vec<T, dims>(const &vec<T, dims>)
-         */
-        $VEC_TESTS
-
-/** Test
- *  vec(vector_t openclVector)
- */
-#ifdef __SYCL_DEVICE_ONLY__
-        $OPENCL_TESTS
-#endif /* __SYCL_DEVICE_ONLY__ */
       }
 
       testQueue.wait_and_throw();
@@ -387,4 +365,4 @@ class TEST_NAME : public util::test_base {
 
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace vector_constructors__ */
+} /* namespace vector_constructors_const_argTN__ */
