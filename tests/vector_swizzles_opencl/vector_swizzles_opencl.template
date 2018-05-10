@@ -11,9 +11,9 @@
 #include "../common/common.h"
 #include "../common/common_vec.h"
 
-#define TEST_NAME vector_swizzles_opencl
+#define TEST_NAME vector_swizzles_opencl_$TYPE_NAME
 
-namespace vector_swizzles_opencl__ {
+namespace vector_swizzles_opencl_$TYPE_NAME__ {
 using namespace sycl_cts;
 
 /** Test each combination of vector swizzles can be generated
@@ -68,4 +68,4 @@ class TEST_NAME : public util::test_base {
 
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace vector_swizzles_opencl__ */
+} /* namespace vector_swizzles_opencl_$TYPE_NAME__ */
