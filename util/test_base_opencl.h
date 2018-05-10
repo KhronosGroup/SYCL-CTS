@@ -30,6 +30,19 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   virtual ~test_base_opencl() {}
 
+  /** create an OpenCL buffer
+   */
+  bool create_buffer(cl_mem &outBuffer, size_t size, logger &log);
+
+  /** create an OpenCL image
+   */
+  bool create_image(cl_mem &outImage, const cl_image_format &format,
+                    const cl_image_desc &desc, logger &log);
+
+  /** return a valid OpenCL cl_context object
+   */
+  cl_context get_cl_context() { return m_cl_context; }
+
  protected:
   /** return information about this test
    *  @param info, test_base::info structure as output
@@ -58,10 +71,6 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   cl_device_id get_cl_device_id() { return m_cl_device_id; }
 
-  /** return a valid OpenCL cl_context object
-   */
-  cl_context get_cl_context() { return m_cl_context; }
-
   /** return a valid OpenCL cl_command_queue object
    */
   cl_command_queue get_cl_command_queue() { return m_cl_command_queue; }
@@ -75,7 +84,7 @@ class test_base_opencl : public sycl_cts::util::test_base {
                                logger &log);
 
   /** create and build an OpenCL program
-  */
+   */
   bool create_built_program(const std::string &source, cl_program &outProgram,
                             logger &log);
   bool create_built_program(const std::string &source, cl_context clContext,
@@ -88,7 +97,7 @@ class test_base_opencl : public sycl_cts::util::test_base {
                      cl_kernel &outKernel, logger &log);
 
   /** create an OpenCL sampler
-  */
+   */
   bool create_sampler(cl_sampler &outSampler, logger &log);
 
   /* instances of OpenCL objects */
@@ -100,6 +109,10 @@ class test_base_opencl : public sycl_cts::util::test_base {
   /*  */
   std::vector<cl_kernel> m_openKernels;
   std::vector<cl_program> m_openPrograms;
+  std::vector<cl_mem> m_openBuffers;
+  std::vector<cl_mem> m_openImages;
+
+  std::vector<std::shared_ptr<uint8_t>> m_openBufferHostPtrs;
 
 };  // class test_base
 

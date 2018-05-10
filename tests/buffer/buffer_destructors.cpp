@@ -40,8 +40,8 @@ class buffer_dtors {
 };
 
 /**
-* test cl::sycl::buffer initialization
-*/
+ * test cl::sycl::buffer initialization
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -77,4 +77,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace buffer_constructors__ */
+}  // namespace buffer_destructors__
