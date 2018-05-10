@@ -30,8 +30,8 @@ test_base_opencl::test_base_opencl()
  */
 bool test_base_opencl::setup(logger &log) {
   /* get the OpenCLHelper object */
-  using sycl_cts::util::opencl_helper;
   using sycl_cts::util::get;
+  using sycl_cts::util::opencl_helper;
   opencl_helper &openclHelper = get<opencl_helper>();
 
   cl::sycl::unique_ptr_class<cl_platform_id> platforms;
@@ -179,13 +179,51 @@ bool test_base_opencl::create_sampler(cl_sampler &outSampler, logger &log) {
   return CHECK_CL_SUCCESS(log, error);
 }
 
+bool test_base_opencl::create_buffer(cl_mem &outBuffer, size_t size,
+                                     logger &log) {
+  m_openBufferHostPtrs.push_back(std::shared_ptr<uint8_t>(
+      new uint8_t[size], std::default_delete<uint8_t[]>()));
+  cl_int error = CL_SUCCESS;
+  outBuffer = clCreateBuffer(
+      m_cl_context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, size,
+      m_openBufferHostPtrs[m_openBufferHostPtrs.size() - 1].get(), &error);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+
+  assert(outBuffer);
+
+  m_openBuffers.push_back(outBuffer);
+  return true;
+}
+
+bool test_base_opencl::create_image(cl_mem &outImage,
+                                    const cl_image_format &format,
+                                    const cl_image_desc &desc, logger &log) {
+  cl_int error = CL_SUCCESS;
+  outImage =
+      clCreateImage(m_cl_context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+                    &format, &desc, nullptr, &error);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+
+  assert(outImage);
+
+  m_openImages.push_back(outImage);
+  return true;
+}
+
 /** called after this test has executed
  */
 void test_base_opencl::cleanup() {
+  size_t i = 0;
+  for (i = 0; i < m_openBuffers.size(); i++)
+    clReleaseMemObject(m_openBuffers[i]);
+  m_openBuffers.clear();
+
+  for (i = 0; i < m_openImages.size(); i++) clReleaseMemObject(m_openImages[i]);
+  m_openImages.clear();
+
   clReleaseCommandQueue(m_cl_command_queue);
   clReleaseContext(m_cl_context);
 
-  size_t i = 0;
   for (i = 0; i < m_openKernels.size(); i++) clReleaseKernel(m_openKernels[i]);
   m_openKernels.clear();
 

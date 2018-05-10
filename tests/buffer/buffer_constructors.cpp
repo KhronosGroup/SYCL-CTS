@@ -7,11 +7,15 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../../util/test_base_opencl.h"
 
 #define TEST_NAME buffer_constructors
 
 namespace buffer_constructors__ {
 using namespace sycl_cts;
+
+template <typename T, int size, int dims>
+class BufferInteropNoEvent;
 
 template <typename T, int size, int dims>
 class buffer_ctors {
@@ -20,21 +24,27 @@ class buffer_ctors {
                                     const char *msg, int line);
   void operator()(cl::sycl::range<dims> &r, cl::sycl::id<dims> &i,
                   const cl::sycl::property_list &propList,
-                  fail_proxy_alias fail_proxy, util::logger &log) {
+                  fail_proxy_alias fail_proxy,
+                  sycl_cts::util::test_base_opencl &helper, util::logger &log) {
     /* Check range constructor */
-    { cl::sycl::buffer<T, dims> buf(r, propList); }
+    {
+      cl::sycl::buffer<T, dims> buf(r, propList);
+      cl::sycl::buffer<T, dims> buf1(r);
+    }
 
     /* check (data pointer, range) constructor*/
     {
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r);
     }
 
     /* check (const data pointer, range) constructor*/
     {
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims> buf(data, r, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r);
     }
 
     /* check (shared pointer, range) constructor*/
@@ -42,6 +52,7 @@ class buffer_ctors {
       cl::sycl::shared_ptr_class<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r);
     }
 
     /* Check buffer iterator constructor */
@@ -49,6 +60,7 @@ class buffer_ctors {
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf_iter(data, data + size, propList);
+      cl::sycl::buffer<T, dims> buf_iter1(data, data + size);
     }
 
     /* Check subBuffer (buffer, id, range) constructor*/
@@ -64,6 +76,7 @@ class buffer_ctors {
     {
       cl::sycl::buffer_allocator<T> buf_alloc;
       cl::sycl::buffer<T, dims> buf(r, buf_alloc, propList);
+      cl::sycl::buffer<T, dims> buf1(r, buf_alloc);
     }
 
     /* check (data pointer, range, allocator) constructor*/
@@ -72,6 +85,7 @@ class buffer_ctors {
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc, propList);
     }
 
     /* check (const data pointer, range, allocator) constructor*/
@@ -79,6 +93,7 @@ class buffer_ctors {
       cl::sycl::buffer_allocator<T> buf_alloc;
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc);
     }
 
     /* check (shared pointer, range, allocator) constructor*/
@@ -87,6 +102,7 @@ class buffer_ctors {
       cl::sycl::shared_ptr_class<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
+      cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc);
     }
 
     /* Check buffer (iterator, allocator) constructor */
@@ -96,6 +112,7 @@ class buffer_ctors {
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf_iter(data, data + size, buf_alloc,
                                          propList);
+      cl::sycl::buffer<T, dims> buf_iter1(data, data + size, buf_alloc);
     }
 
     /* Check (range, std allocator) constructor */
@@ -143,6 +160,113 @@ class buffer_ctors {
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf_iter(data, data + size,
                                                             buf_alloc);
+    }
+
+    /* Check interop constructor */
+    {
+      // calculate element count, size and range for the interop buffer
+      cl::sycl::range<dims> interopRange;
+      size_t count = r[0];
+      interopRange[0] = r[0];
+      if (dims > 1) {
+        count *= r[1];
+        interopRange[0] *= r[1];
+        interopRange[1] = 1;
+      }
+      if (dims > 1) {
+        count *= r[2];
+        interopRange[0] *= r[2];
+        interopRange[2] = 1;
+      }
+      size_t size = count * sizeof(T);
+
+      // construct the SYCL buffer
+      cl_mem opencl_buffer;
+      if (!helper.create_buffer(opencl_buffer, size, log)) {
+        FAIL(log,
+             "opencl buffer was not constructed properly. (interop), failed to "
+             "create OpenCL buffer");
+      }
+      cl::sycl::buffer<T, dims> buf(opencl_buffer,
+                                    cl::sycl::context(helper.get_cl_context()));
+
+      // check the buffer
+      if (buf.is_sub_buffer()) {
+        FAIL(log,
+             "opencl buffer was not interop constructed properly. "
+             "(is_sub_buffer) ");
+      }
+      if (buf.get_size() != size) {
+        FAIL(log,
+             "opencl buffer was not interop constructed properly. (get_size) ");
+      }
+      if (buf.get_range() != interopRange) {
+        FAIL(
+            log,
+            "opencl buffer was not interop constructed properly. (get_range) ");
+      }
+      if (buf.get_count() != count) {
+        FAIL(
+            log,
+            "opencl buffer was not interop constructed properly. (get_count) ");
+      }
+    }
+
+    /* Check interop constructor with event*/
+    {
+      // create an event to wait for
+      cl::sycl::queue q;
+      cl::sycl::event e = q.submit([](cl::sycl::handler &cgh) {
+        cgh.single_task<BufferInteropNoEvent<T, size, dims>>(
+            []() {});  // do not do anything here, we only need the event
+      });
+
+      // calculate element count, size and range for the interop buffer
+      cl::sycl::range<dims> interopRange;
+      size_t count = r[0];
+      interopRange[0] = r[0];
+      if (dims > 1) {
+        count *= r[1];
+        interopRange[0] *= r[1];
+        interopRange[1] = 1;
+      }
+      if (dims > 1) {
+        count *= r[2];
+        interopRange[0] *= r[2];
+        interopRange[2] = 1;
+      }
+      size_t size = count * sizeof(T);
+
+      // construct the SYCL buffer
+      cl_mem opencl_buffer;
+      if (!helper.create_buffer(opencl_buffer, size, log)) {
+        FAIL(log,
+             "opencl buffer was not constructed properly. (interop), failed to "
+             "create OpenCL buffer");
+      }
+      cl::sycl::buffer<T, dims> buf(
+          opencl_buffer, cl::sycl::context(helper.get_cl_context()), e);
+
+      // check the buffer
+      if (buf.is_sub_buffer()) {
+        FAIL(log,
+             "opencl buffer was not interop constructed properly. "
+             "(is_sub_buffer) ");
+      }
+      if (buf.get_size() != size) {
+        FAIL(log,
+             "opencl buffer was not interop constructed properly. (get_size) ");
+      }
+      if (buf.get_range() != interopRange) {
+        FAIL(
+            log,
+            "opencl buffer was not interop constructed properly. (get_range) ");
+      }
+      if (buf.get_count() != count) {
+        FAIL(
+            log,
+            "opencl buffer was not interop constructed properly. (get_count) ");
+      }
     }
 
     /* Check copy constructor */
@@ -275,7 +399,7 @@ class buffer_ctors {
 /**
  * test cl::sycl::buffer initialization
  */
-class TEST_NAME : public util::test_base {
+class TEST_NAME : public sycl_cts::util::test_base_opencl {
  public:
   /** return information about this test
    */
@@ -313,15 +437,15 @@ class TEST_NAME : public util::test_base {
 
     /* test buffer constructors with empty property list */
 
-    buf1d(range1d, id1d, empty_pl, fail_proxy, log);
-    buf2d(range2d, id2d, empty_pl, fail_proxy, log);
-    buf3d(range3d, id3d, empty_pl, fail_proxy, log);
+    buf1d(range1d, id1d, empty_pl, fail_proxy, *this, log);
+    buf2d(range2d, id2d, empty_pl, fail_proxy, *this, log);
+    buf3d(range3d, id3d, empty_pl, fail_proxy, *this, log);
 
     /* test buffer constructors with non-empty property list */
 
-    buf1d_with_properties(range1d, id1d, pl, fail_proxy, log);
-    buf2d_with_properties(range2d, id2d, pl, fail_proxy, log);
-    buf3d_with_properties(range3d, id3d, pl, fail_proxy, log);
+    buf1d_with_properties(range1d, id1d, pl, fail_proxy, *this, log);
+    buf2d_with_properties(range2d, id2d, pl, fail_proxy, *this, log);
+    buf3d_with_properties(range3d, id3d, pl, fail_proxy, *this, log);
   }
 
   /** execute the test

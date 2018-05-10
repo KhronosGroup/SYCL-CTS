@@ -59,17 +59,29 @@ class buffer_storage_test {
       m.unlock();
       std::weak_ptr<T> data_final;
       buf_shrd.set_final_data(data_final);
+      buf_shrd.set_write_back(true);
+    }
+    {
+      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
+          data_shrd, r,
+          cl::sycl::property_list{cl::sycl::property::buffer::use_mutex(m)});
+      m.lock();
+      std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
+      m.unlock();
+      T *data_final = nullptr;
+      buf_shrd.set_final_data(data_final);
+      buf_shrd.set_write_back(false);
     }
   }
 };
 
 /**
-* test cl::sycl::buffer initialization
-*/
+ * test cl::sycl::buffer initialization
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
@@ -91,7 +103,7 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute the test
-  */
+   */
   void run(util::logger &log) override {
     try {
       test_buffers<custom_alloc<int>, int>(log);
@@ -109,4 +121,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace buffer_constructors__ */
+}  // namespace buffer_storage__
