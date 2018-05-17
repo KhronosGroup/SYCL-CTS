@@ -178,11 +178,11 @@ class buffer_ctors {
         interopRange[0] *= r[2];
         interopRange[2] = 1;
       }
-      size_t size = count * sizeof(T);
+      size_t interopSize = count * sizeof(T);
 
       // construct the SYCL buffer
       cl_mem opencl_buffer;
-      if (!helper.create_buffer(opencl_buffer, size, log)) {
+      if (!helper.create_buffer(opencl_buffer, interopSize, log)) {
         FAIL(log,
              "opencl buffer was not constructed properly. (interop), failed to "
              "create OpenCL buffer");
@@ -196,7 +196,7 @@ class buffer_ctors {
              "opencl buffer was not interop constructed properly. "
              "(is_sub_buffer) ");
       }
-      if (buf.get_size() != size) {
+      if (buf.get_size() != interopSize) {
         FAIL(log,
              "opencl buffer was not interop constructed properly. (get_size) ");
       }
@@ -235,11 +235,11 @@ class buffer_ctors {
         interopRange[0] *= r[2];
         interopRange[2] = 1;
       }
-      size_t size = count * sizeof(T);
+      size_t interopSize = count * sizeof(T);
 
       // construct the SYCL buffer
       cl_mem opencl_buffer;
-      if (!helper.create_buffer(opencl_buffer, size, log)) {
+      if (!helper.create_buffer(opencl_buffer, interopSize, log)) {
         FAIL(log,
              "opencl buffer was not constructed properly. (interop), failed to "
              "create OpenCL buffer");
@@ -253,7 +253,7 @@ class buffer_ctors {
              "opencl buffer was not interop constructed properly. "
              "(is_sub_buffer) ");
       }
-      if (buf.get_size() != size) {
+      if (buf.get_size() != interopSize) {
         FAIL(log,
              "opencl buffer was not interop constructed properly. (get_size) ");
       }

@@ -118,12 +118,12 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
 
     /* Check alias types */
     {
-      using myValueType = cl::sycl::buffer<T, dims>::value_type;
-      using myValueRef = cl::sycl::buffer<T, dims>::reference;
-      using myValueConstRef = cl::sycl::buffer<T, dims>::const_reference;
-      using myAllocator =
-          cl::sycl::buffer<T, dims,
-                           cl::sycl::default_allocator<T>>::allocator_type;
+      using myValueType = typename cl::sycl::buffer<T, dims>::value_type;
+      using myValueRef = typename cl::sycl::buffer<T, dims>::reference;
+      using myValueConstRef =
+          typename cl::sycl::buffer<T, dims>::const_reference;
+      using myAllocator = typename cl::sycl::buffer<
+          T, dims, cl::sycl::default_allocator<T>>::allocator_type;
     }
 
     /* Check that ret_range is the correct size */
