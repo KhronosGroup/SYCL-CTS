@@ -41,7 +41,7 @@ void fail_test(sycl_cts::util::logger& log, cl::sycl::string_class errorMsg) {
  * @brief Helper function to check the return value of a function.
  */
 template <typename T>
-void check_return_value(sycl_cts::util::logger& log, T& a, T& b,
+void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
                         cl::sycl::string_class functionName) {
   if (a != b) {
     FAIL(log, functionName + " returns an incorrect value");

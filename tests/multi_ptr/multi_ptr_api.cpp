@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME pointer_api
+#define TEST_NAME multi_ptr_apis
 
 namespace TEST_NAME {
 using namespace sycl_cts;
@@ -23,7 +23,7 @@ template <typename T, typename U>
 class kernel0;
 
 template <typename T, typename U = T>
-class pointer_apis {
+class check_helper {
  public:
   using multiPtrGlobal =
       cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
@@ -34,10 +34,24 @@ class pointer_apis {
   using multiPtrPrivate =
       cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
 
-  static void check_conversion_operators(multiPtrGlobal globalMultiPtr,
-                                         multiPtrConstant constantMultiPtr,
-                                         multiPtrLocal localMultiPtr,
-                                         multiPtrPrivate privateMultiPtr) {
+  template <cl::sycl::access::address_space Space>
+  void pointer_assignment(cl::sycl::multi_ptr<U, Space> multiPtr,
+                          T *elementTypePtr) const {
+    // Check assigning pointer_t
+    auto pointerT = multiPtr.get();
+    multiPtr = pointerT;
+
+    // Check assigning ElementType*
+    multiPtr = static_cast<U *>(elementTypePtr);
+
+    // Check assigning nullptr_t
+    multiPtr = nullptr;
+  }
+
+  void conversion_operators(multiPtrGlobal globalMultiPtr,
+                            multiPtrConstant constantMultiPtr,
+                            multiPtrLocal localMultiPtr,
+                            multiPtrPrivate privateMultiPtr) const {
     using voidMultiPtrGlobal =
         cl::sycl::multi_ptr<void,
                             cl::sycl::access::address_space::global_space>;
@@ -69,44 +83,30 @@ class pointer_apis {
                        "cl::sycl::access::address_space::private_space>()");
   }
 
-  static void check_access_operators(multiPtrGlobal globalMultiPtr,
-                                     multiPtrConstant constantMultiPtr,
-                                     multiPtrLocal localMultiPtr,
-                                     multiPtrPrivate privateMultiPtr) {
-    {
-      U globalElem = globalMultiPtr[0];
-      U constantElem = constantMultiPtr[0];
-      U localElem = localMultiPtr[0];
-      U privateElem = privateMultiPtr[0];
-    }
-
+  void access_operators(multiPtrGlobal globalMultiPtr,
+                        multiPtrConstant constantMultiPtr,
+                        multiPtrLocal localMultiPtr,
+                        multiPtrPrivate privateMultiPtr) const {
     {
       U globalElem = (*globalMultiPtr);
       U constantElem = (*constantMultiPtr);
       U localElem = (*localMultiPtr);
       U privateElem = (*privateMultiPtr);
     }
-
-    {
-      globalMultiPtr.prefetch(1);
-      constantMultiPtr.prefetch(1);
-      localMultiPtr.prefetch(1);
-      privateMultiPtr.prefetch(1);
-    }
   }
 
-  static void check_arrow_operators(multiPtrGlobal globalMultiPtr,
-                                    multiPtrConstant constantMultiPtr,
-                                    multiPtrLocal localMultiPtr,
-                                    multiPtrPrivate privateMultiPtr) {
+  void arrow_operators(multiPtrGlobal globalMultiPtr,
+                       multiPtrConstant constantMultiPtr,
+                       multiPtrLocal localMultiPtr,
+                       multiPtrPrivate privateMultiPtr) const {
     // primitives do not have any members
     return;
   }
 
-  static void check_arithmetic_operators(multiPtrGlobal globalMultiPtr,
-                                         multiPtrConstant constantMultiPtr,
-                                         multiPtrLocal localMultiPtr,
-                                         multiPtrPrivate privateMultiPtr) {
+  void arithmetic_operators(multiPtrGlobal globalMultiPtr,
+                            multiPtrConstant constantMultiPtr,
+                            multiPtrLocal localMultiPtr,
+                            multiPtrPrivate privateMultiPtr) const {
     std::ptrdiff_t diff = 10;
 
     // check all arithmetic operators for global multi_ptr
@@ -215,7 +215,7 @@ class pointer_apis {
   }
 
   template <cl::sycl::access::address_space Space>
-  static void check_relation_operators(cl::sycl::multi_ptr<U, Space> multiPtr) {
+  void relational_operators(cl::sycl::multi_ptr<U, Space> multiPtr) const {
 #define TEST_RELATION_OPERATOR_TEMPLATE(OP, LHS, RHS, LHS_TY_STR, RHS_TY_STR) \
   {                                                                           \
     auto res = LHS OP RHS;                                                    \
@@ -242,6 +242,49 @@ class pointer_apis {
 #undef TEST_RELATION_OPERATOR
   }
 
+  template <cl::sycl::access::address_space Space>
+  void reference_member_types(cl::sycl::multi_ptr<U, Space> multiPtr) const {
+    using multi_ptr_t = cl::sycl::multi_ptr<U, Space>;
+
+    using pointer_t = typename multi_ptr_t::reference_t;
+    using const_reference_t = typename multi_ptr_t::const_reference_t;
+  }
+
+  template <cl::sycl::access::address_space Space>
+  void member_types(cl::sycl::multi_ptr<U, Space> multiPtr) const {
+    using multi_ptr_t = cl::sycl::multi_ptr<U, Space>;
+
+    using element_type = typename multi_ptr_t::element_type;
+    using difference_type = typename multi_ptr_t::difference_type;
+    using pointer_t = typename multi_ptr_t::pointer_t;
+    using const_pointer_t = typename multi_ptr_t::const_pointer_t;
+
+    static_assert(std::is_same<difference_type, std::ptrdiff_t>::value,
+                  "Difference type is wrong");
+
+    reference_member_types(multiPtr);
+  }
+
+  template <cl::sycl::access::address_space Space>
+  void address_space_member(cl::sycl::multi_ptr<U, Space> multiPtr) const {
+    static constexpr cl::sycl::access::address_space addressSpace =
+        cl::sycl::multi_ptr<U, Space>::address_space;
+    static_assert(addressSpace == Space, "Wrong address space");
+  }
+};
+
+template <typename T, typename U = T>
+class pointer_apis {
+ public:
+  using multiPtrGlobal =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
+  using multiPtrConstant =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
+  using multiPtrLocal =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
+  using multiPtrPrivate =
+      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
+
   void operator()(util::logger &log, cl::sycl::queue &queue) {
     const int size = 64;
     cl::sycl::range<1> range(size);
@@ -260,8 +303,52 @@ class pointer_apis {
                          cl::sycl::access::target::local>
           localAccessor(size, handler);
 
-      handler.single_task< class kernel0<T, U> >([=]() {
+      handler.single_task< class kernel0<T, U> >(
+            [globalAccessor, constantAccessor, localAccessor]() {
         T privateData[1];
+        check_helper<T, U> checker;
+
+        /** check member types
+        */
+        {
+          // construct a set of multi_ptr
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
+          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+
+          multiPtrGlobal globalMultiPtr(globalPtr);
+          multiPtrConstant constantMultiPtr(constantPtr);
+          multiPtrLocal localMultiPtr(localPtr);
+          multiPtrPrivate privateMultiPtr(privatePtr);
+
+          checker.member_types(globalMultiPtr);
+          checker.member_types(constantMultiPtr);
+          checker.member_types(localMultiPtr);
+          checker.member_types(privateMultiPtr);
+        }
+
+        /** check address_space member
+        */
+        {
+          // construct a set of multi_ptr
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
+          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+
+          multiPtrGlobal globalMultiPtr(globalPtr);
+          multiPtrConstant constantMultiPtr(constantPtr);
+          multiPtrLocal localMultiPtr(localPtr);
+          multiPtrPrivate privateMultiPtr(privatePtr);
+
+          checker.address_space_member(globalMultiPtr);
+          checker.address_space_member(constantMultiPtr);
+          checker.address_space_member(localMultiPtr);
+          checker.address_space_member(privateMultiPtr);
+        }
 
         /** check copy assignment operators
         */
@@ -270,7 +357,7 @@ class pointer_apis {
           cl::sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
           cl::sycl::constant_ptr<U> constantPtrA(
-              static_cast<U *>(&constantAccessor[0]));
+              constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
@@ -298,7 +385,7 @@ class pointer_apis {
           cl::sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
           cl::sycl::constant_ptr<U> constantPtrA(
-              static_cast<U *>(&constantAccessor[0]));
+              constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
@@ -319,14 +406,35 @@ class pointer_apis {
           privateMultiPtrB = std::move(privateMultiPtrA);
         }
 
+        /** check assigning to multi_ptr
+        */
+        {
+          // construct a set of multi_ptr
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
+          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+
+          multiPtrGlobal globalMultiPtr(globalPtr);
+          multiPtrConstant constantMultiPtr(constantPtr);
+          multiPtrLocal localMultiPtr(localPtr);
+          multiPtrPrivate privateMultiPtr(privatePtr);
+
+          checker.pointer_assignment(globalMultiPtr, &globalAccessor[0]);
+          checker.pointer_assignment(constantMultiPtr,
+                                     constantAccessor.get_pointer());
+          checker.pointer_assignment(localMultiPtr, &localAccessor[0]);
+          checker.pointer_assignment(privateMultiPtr, privateData);
+        }
+
         /** check get() methods
          */
         {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -350,14 +458,24 @@ class pointer_apis {
                              "cl::sycl::multi_ptr::get()");
         }
 
-        /** check conversion operator
+        /** check prefetch() method
+        */
+        {
+          // construct a global multi_ptr
+          cl::sycl::global_ptr<U> globalPtr(
+              static_cast<U *>(&globalAccessor[0]));
+          multiPtrGlobal globalMultiPtr(globalPtr);
+
+          globalMultiPtr.prefetch(1);
+        }
+
+        /** check implicit conversion to a raw pointer
          */
         {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -378,8 +496,7 @@ class pointer_apis {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -388,8 +505,8 @@ class pointer_apis {
           multiPtrLocal localMultiPtr(localPtr);
           multiPtrPrivate privateMultiPtr(privatePtr);
 
-          check_conversion_operators(globalMultiPtr, constantMultiPtr,
-                                     localMultiPtr, privateMultiPtr);
+          checker.conversion_operators(globalMultiPtr, constantMultiPtr,
+                                       localMultiPtr, privateMultiPtr);
         }
 
         /** check operator[int]() methods
@@ -399,8 +516,7 @@ class pointer_apis {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -409,8 +525,8 @@ class pointer_apis {
           multiPtrLocal localMultiPtr(localPtr);
           multiPtrPrivate privateMultiPtr(privatePtr);
 
-          check_access_operators(globalMultiPtr, constantMultiPtr,
-                                 localMultiPtr, privateMultiPtr);
+          checker.access_operators(globalMultiPtr, constantMultiPtr,
+                                   localMultiPtr, privateMultiPtr);
         }
 
         /** check operator->() methods
@@ -419,8 +535,7 @@ class pointer_apis {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -429,8 +544,8 @@ class pointer_apis {
           multiPtrLocal localMultiPtr(localPtr);
           multiPtrPrivate privateMultiPtr(privatePtr);
 
-          check_arrow_operators(globalMultiPtr, constantMultiPtr, localMultiPtr,
-                                privateMultiPtr);
+          checker.arrow_operators(globalMultiPtr, constantMultiPtr,
+                                  localMultiPtr, privateMultiPtr);
         }
 
         /** check arithmetic operators
@@ -439,8 +554,7 @@ class pointer_apis {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -449,8 +563,8 @@ class pointer_apis {
           multiPtrLocal localMultiPtr(localPtr);
           multiPtrPrivate privateMultiPtr(privatePtr);
 
-          check_arithmetic_operators(globalMultiPtr, constantMultiPtr,
-                                     localMultiPtr, privateMultiPtr);
+          checker.arithmetic_operators(globalMultiPtr, constantMultiPtr,
+                                       localMultiPtr, privateMultiPtr);
         }
 
         /** check make_ptr function
@@ -462,7 +576,7 @@ class pointer_apis {
                   &globalAccessor[0]);
           multiPtrConstant constantMultiPtr = cl::sycl::make_ptr<
               U, cl::sycl::access::address_space::constant_space>(
-              &constantAccessor[0]);
+              constantAccessor.get_pointer().get());
           multiPtrLocal localMultiPtr =
               cl::sycl::make_ptr<U,
                                  cl::sycl::access::address_space::local_space>(
@@ -477,19 +591,14 @@ class pointer_apis {
           // construct a set of multi_ptr
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
-          check_relation_operators<
-              cl::sycl::access::address_space::global_space>(globalPtr);
-          check_relation_operators<
-              cl::sycl::access::address_space::constant_space>(constantPtr);
-          check_relation_operators<
-              cl::sycl::access::address_space::local_space>(localPtr);
-          check_relation_operators<
-              cl::sycl::access::address_space::private_space>(privatePtr);
+          checker.relational_operators(globalPtr);
+          checker.relational_operators(constantPtr);
+          checker.relational_operators(localPtr);
+          checker.relational_operators(privatePtr);
         }
 
       });
@@ -535,11 +644,11 @@ class pointer_apis {
 };
 
 template <>
-void pointer_apis<int, void>::check_conversion_operators(
-    pointer_apis<int, void>::multiPtrGlobal globalMultiPtr,
-    pointer_apis<int, void>::multiPtrConstant constantMultiPtr,
-    pointer_apis<int, void>::multiPtrLocal localMultiPtr,
-    pointer_apis<int, void>::multiPtrPrivate privateMultiPtr) {
+void check_helper<int, void>::conversion_operators(
+    check_helper<int, void>::multiPtrGlobal globalMultiPtr,
+    check_helper<int, void>::multiPtrConstant constantMultiPtr,
+    check_helper<int, void>::multiPtrLocal localMultiPtr,
+    check_helper<int, void>::multiPtrPrivate privateMultiPtr) const {
   using floatMultiPtrGlobal =
       cl::sycl::multi_ptr<float, cl::sycl::access::address_space::global_space>;
   using floatMultiPtrConstant =
@@ -571,31 +680,31 @@ void pointer_apis<int, void>::check_conversion_operators(
 }
 
 template <>
-void pointer_apis<int, void>::check_access_operators(
-    pointer_apis<int, void>::multiPtrGlobal globalMultiPtr,
-    pointer_apis<int, void>::multiPtrConstant constantMultiPtr,
-    pointer_apis<int, void>::multiPtrLocal localMultiPtr,
-    pointer_apis<int, void>::multiPtrPrivate privateMultiPtr) {
+void check_helper<int, void>::access_operators(
+    check_helper<int, void>::multiPtrGlobal globalMultiPtr,
+    check_helper<int, void>::multiPtrConstant constantMultiPtr,
+    check_helper<int, void>::multiPtrLocal localMultiPtr,
+    check_helper<int, void>::multiPtrPrivate privateMultiPtr) const {
   // void type does not support access operators
   return;
 }
 
 template <>
-void pointer_apis<int, void>::check_arithmetic_operators(
-    pointer_apis<int, void>::multiPtrGlobal globalMultiPtr,
-    pointer_apis<int, void>::multiPtrConstant constantMultiPtr,
-    pointer_apis<int, void>::multiPtrLocal localMultiPtr,
-    pointer_apis<int, void>::multiPtrPrivate privateMultiPtr) {
+void check_helper<int, void>::arithmetic_operators(
+    check_helper<int, void>::multiPtrGlobal globalMultiPtr,
+    check_helper<int, void>::multiPtrConstant constantMultiPtr,
+    check_helper<int, void>::multiPtrLocal localMultiPtr,
+    check_helper<int, void>::multiPtrPrivate privateMultiPtr) const {
   // void type does not support arithmetic operators
   return;
 }
 
 template <>
-void pointer_apis<user_struct>::check_arrow_operators(
-    pointer_apis<user_struct>::multiPtrGlobal globalMultiPtr,
-    pointer_apis<user_struct>::multiPtrConstant constantMultiPtr,
-    pointer_apis<user_struct>::multiPtrLocal localMultiPtr,
-    pointer_apis<user_struct>::multiPtrPrivate privateMultiPtr) {
+void check_helper<user_struct>::arrow_operators(
+    check_helper<user_struct>::multiPtrGlobal globalMultiPtr,
+    check_helper<user_struct>::multiPtrConstant constantMultiPtr,
+    check_helper<user_struct>::multiPtrLocal localMultiPtr,
+    check_helper<user_struct>::multiPtrPrivate privateMultiPtr) const {
   auto globalElem = globalMultiPtr->a;
   auto constantElem = constantMultiPtr->a;
   auto localElem = localMultiPtr->a;
@@ -605,6 +714,13 @@ void pointer_apis<user_struct>::check_arrow_operators(
   ASSERT_RETURN_TYPE(float, constantElem, "cl::sycl::multi_ptr operator->()");
   ASSERT_RETURN_TYPE(float, localElem, "cl::sycl::multi_ptr operator->()");
   ASSERT_RETURN_TYPE(float, privateElem, "cl::sycl::multi_ptr operator->()");
+}
+
+template <>
+template <cl::sycl::access::address_space Space>
+void check_helper<int, void>::reference_member_types(
+    cl::sycl::multi_ptr<void, Space> multiPtr) const {
+  // multi_ptr<void> does not have any reference member types
 }
 
 /** tests the api for explicit pointers

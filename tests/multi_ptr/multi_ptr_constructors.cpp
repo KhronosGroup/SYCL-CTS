@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME pointer_constructors
+#define TEST_NAME multi_ptr_constructors
 
 namespace TEST_NAME {
 using namespace sycl_cts;
@@ -68,8 +68,7 @@ class pointer_ctors {
         {
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -84,8 +83,7 @@ class pointer_ctors {
         {
           cl::sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(
-              static_cast<U *>(&constantAccessor[0]));
+          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
@@ -118,7 +116,7 @@ class pointer_ctors {
           cl::sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
           cl::sycl::constant_ptr<U> constantPtrA(
-              static_cast<U *>(&constantAccessor[0]));
+              constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
@@ -139,7 +137,7 @@ class pointer_ctors {
           cl::sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
           cl::sycl::constant_ptr<U> constantPtrA(
-              static_cast<U *>(&constantAccessor[0]));
+              constantAccessor.get_pointer());
           cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
           cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
