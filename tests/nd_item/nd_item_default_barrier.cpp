@@ -18,15 +18,13 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
   const int globalSize = 64;
 
   /* allocate and assign host data */
-  std::unique_ptr<int[]> data(new int[globalSize]);
+  std::vector<int> data(globalSize);
 
-  for (int i = 0; i < globalSize; ++i) {
-    data.get()[i] = i;
-  }
+  std::iota(data.begin(), data.end(), 0);
 
   /* run kernel to swap adjacent work item's global & local ids*/
   {
-    cl::sycl::buffer<int, 1> buffer(data.get(), cl::sycl::range<1>(globalSize));
+    cl::sycl::buffer<int, 1> buffer(data.data(), cl::sycl::range<1>(globalSize));
 
     queue.submit([&](cl::sycl::handler &cgh) {
       auto ptr = buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
