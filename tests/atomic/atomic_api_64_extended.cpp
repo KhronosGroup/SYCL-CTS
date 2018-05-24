@@ -35,38 +35,38 @@ class check_extended_atomics {
     /** Check atomic member functions with default order
     */
     T old = a.load();
-    old = a.fetch_and(static_cast<T>(0xFFFFFFFF));
-    old = a.fetch_or(static_cast<T>(0));
-    old = a.fetch_xor(static_cast<T>(0xFFFFFFFE));
-    old = a.fetch_min(static_cast<T>(0xFFFFFFFF));
-    old = a.fetch_max(static_cast<T>(0));
+    old = a.fetch_and(T{0xFFFFFFFF});
+    old = a.fetch_or(T{0});
+    old = a.fetch_xor(T{0xFFFFFFFE});
+    old = a.fetch_min(T{0xFFFFFFFF});
+    old = a.fetch_max(T{0});
 
     /** Check atomic member functions
     */
     old = a.load(order);
-    old = a.fetch_and(static_cast<T>(0xFFFFFFFF), order);
-    old = a.fetch_or(static_cast<T>(0), order);
-    old = a.fetch_xor(static_cast<T>(0xFFFFFFFE), order);
-    old = a.fetch_min(static_cast<T>(0xFFFFFFFF), order);
-    old = a.fetch_max(static_cast<T>(0), order);
+    old = a.fetch_and(T{0xFFFFFFFF}, order);
+    old = a.fetch_or(T{0}, order);
+    old = a.fetch_xor(T{0xFFFFFFFE}, order);
+    old = a.fetch_min(T{0xFFFFFFFF}, order);
+    old = a.fetch_max(T{0}, order);
 
     /** Check atomic global functions with default order
     */
     old = cl::sycl::atomic_load(a);
-    old = cl::sycl::atomic_fetch_and(a, static_cast<T>(0xFFFFFFFF));
-    old = cl::sycl::atomic_fetch_or(a, static_cast<T>(0));
-    old = cl::sycl::atomic_fetch_xor(a, static_cast<T>(0xFFFFFFFE));
-    old = cl::sycl::atomic_fetch_min(a, static_cast<T>(0xFFFFFFFF));
-    old = cl::sycl::atomic_fetch_max(a, static_cast<T>(0));
+    old = cl::sycl::atomic_fetch_and(a, T{0xFFFFFFFF});
+    old = cl::sycl::atomic_fetch_or(a, T{0});
+    old = cl::sycl::atomic_fetch_xor(a, T{0xFFFFFFFE});
+    old = cl::sycl::atomic_fetch_min(a, T{0xFFFFFFFF});
+    old = cl::sycl::atomic_fetch_max(a, T{0});
 
     /** Check atomic global functions
     */
     old = cl::sycl::atomic_load(a, order);
-    old = cl::sycl::atomic_fetch_and(a, static_cast<T>(0xFFFFFFFF), order);
-    old = cl::sycl::atomic_fetch_or(a, static_cast<T>(0), order);
-    old = cl::sycl::atomic_fetch_xor(a, static_cast<T>(0xFFFFFFFE), order);
-    old = cl::sycl::atomic_fetch_min(a, static_cast<T>(0xFFFFFFFF), order);
-    old = cl::sycl::atomic_fetch_max(a, static_cast<T>(0), order);
+    old = cl::sycl::atomic_fetch_and(a, T{0xFFFFFFFF}, order);
+    old = cl::sycl::atomic_fetch_or(a, T{0}, order);
+    old = cl::sycl::atomic_fetch_xor(a, T{0xFFFFFFFE}, order);
+    old = cl::sycl::atomic_fetch_min(a, T{0xFFFFFFFF}, order);
+    old = cl::sycl::atomic_fetch_max(a, T{0}, order);
   }
 };
 

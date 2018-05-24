@@ -35,39 +35,38 @@ class check_base_atomics {
     /** Check atomic member functions with default order
     */
     T old = a.load();
-    a.store(static_cast<T>(0));
-    old = a.exchange(static_cast<T>(1));
-    bool res = a.compare_exchange_strong(old, static_cast<T>(1));
-    old = a.fetch_add(static_cast<T>(1));
-    old = a.fetch_sub(static_cast<T>(1));
+    a.store(T{0});
+    old = a.exchange(T{1});
+    bool res = a.compare_exchange_strong(old, T{1});
+    old = a.fetch_add(T{1});
+    old = a.fetch_sub(T{1});
 
     /** Check atomic member functions
     */
     old = a.load(order);
-    a.store(static_cast<T>(0), order);
-    old = a.exchange(static_cast<T>(1), order);
-    res = a.compare_exchange_strong(old, static_cast<T>(1), order, order);
-    old = a.fetch_add(static_cast<T>(1), order);
-    old = a.fetch_sub(static_cast<T>(1), order);
+    a.store(T{0}, order);
+    old = a.exchange(T{1}, order);
+    res = a.compare_exchange_strong(old, T{1}, order, order);
+    old = a.fetch_add(T{1}, order);
+    old = a.fetch_sub(T{1}, order);
 
     /** Check atomic global functions with default order
     */
     old = cl::sycl::atomic_load(a);
-    cl::sycl::atomic_store(a, static_cast<T>(0));
-    old = cl::sycl::atomic_exchange(a, static_cast<T>(1));
-    old = cl::sycl::atomic_compare_exchange_strong(a, &old, static_cast<T>(1));
-    old = cl::sycl::atomic_fetch_add(a, static_cast<T>(1));
-    old = cl::sycl::atomic_fetch_sub(a, static_cast<T>(1));
+    cl::sycl::atomic_store(a, T{0});
+    old = cl::sycl::atomic_exchange(a, T{1});
+    old = cl::sycl::atomic_compare_exchange_strong(a, &old, T{1});
+    old = cl::sycl::atomic_fetch_add(a, T{1});
+    old = cl::sycl::atomic_fetch_sub(a, T{1});
 
     /** Check atomic global functions
     */
     old = cl::sycl::atomic_load(a, order);
-    cl::sycl::atomic_store(a, static_cast<T>(0), order);
-    old = cl::sycl::atomic_exchange(a, static_cast<T>(1), order);
-    old = cl::sycl::atomic_compare_exchange_strong(a, &old, static_cast<T>(1),
-                                                   order, order);
-    old = cl::sycl::atomic_fetch_add(a, static_cast<T>(1), order);
-    old = cl::sycl::atomic_fetch_sub(a, static_cast<T>(1), order);
+    cl::sycl::atomic_store(a, T{0}, order);
+    old = cl::sycl::atomic_exchange(a, T{1}, order);
+    old = cl::sycl::atomic_compare_exchange_strong(a, &old, T{1}, order, order);
+    old = cl::sycl::atomic_fetch_add(a, T{1}, order);
+    old = cl::sycl::atomic_fetch_sub(a, T{1}, order);
   }
 };
 
