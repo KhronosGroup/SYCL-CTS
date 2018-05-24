@@ -312,7 +312,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check event (cl_event, const context&) constructor
       */
       {
-        cl_event clEvent = clCreateUserEvent(ctsContext.get(), NULL);
+        cl_event clEvent = clCreateUserEvent(ctsContext.get(), nullptr);
         cl::sycl::event event(clEvent, ctsContext);
 
         cl_event interopEvent = event.get();
