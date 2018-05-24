@@ -199,6 +199,16 @@ bool check_type_sign(bool expected_sign) {
   return !(std::is_signed<T>::value != expected_sign);
 }
 
+
+/**
+ * @brief Helper function to see if cl::sycl::half is of the wrong sign
+ */
+template <>
+bool check_type_sign<cl::sycl::half>(bool expected_sign) {
+  bool is_signed = cl::sycl::half(1) > cl::sycl::half(-1);
+  return is_signed == expected_sign;
+}
+
 /**
  * @brief Helper function to log a failure if a type is of the wrong size or
  * sign
