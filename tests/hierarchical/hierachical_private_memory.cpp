@@ -2,7 +2,7 @@
 //
 //  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
 
@@ -43,8 +43,8 @@ class TEST_NAME : public util::test_base {
         myQueue.submit([&](cl::sycl::handler &cgh) {
           auto accessor =
               buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
-          auto globalRange = cl::sycl::range<2>(globalRange1d, globalRange2d);
-          auto localRange = cl::sycl::range<2>(local, local);
+          cl::sycl::range<2> globalRange(globalRange1d, globalRange2d);
+          cl::sycl::range<2> localRange(local, local);
           auto groupRange = globalRange / localRange;
           cgh.parallel_for_work_group<class hierarchical_private_memory>(
               groupRange, localRange, [=](cl::sycl::group<2> group_pid) {
@@ -65,7 +65,7 @@ class TEST_NAME : public util::test_base {
       }
 
       for (size_t i = 0; i < data.size(); i++) {
-        if (data[i] != i + 1) {
+        if (data[i] != i) {
           cl::sycl::string_class errorMessage =
               cl::sycl::string_class("Value for global id ") +
               std::to_string(i) + cl::sycl::string_class(" was not correct (") +
