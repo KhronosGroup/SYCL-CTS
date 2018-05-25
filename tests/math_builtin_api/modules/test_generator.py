@@ -1,11 +1,25 @@
 import sycl_functions
 import random
 
-test_case_template = ("test_function<$TEST_ID, $RETURN_TYPE>(\n"
-                      "[=](){\n"
-                      "$FUNCTION_CALL\n"
-                      "});\n\n")
+test_case_templates = { "private" : ("\n\n{\n"
+                    "test_function<$TEST_ID, $RETURN_TYPE>(\n"
+                    "[=](){\n"
+                    "$FUNCTION_CALL"
+                    "});\n}\n"),
 
+                    "local" : ("\n\n{\n"
+                    "$DECL"
+                    "test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(\n"
+                    "[=]($ACCESSOR acc){\n"
+                    "$FUNCTION_CALL"
+                    "}, $DATA);\n}\n"),
+
+                    "global" : ("\n\n{\n"
+                    "$DECL"
+                    "test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(\n"
+                    "[=]($ACCESSOR acc){\n"
+                    "$FUNCTION_CALL"
+                    "}, $DATA);\n}\n") }
 
 def generate_value(base_type, dim, unsigned):
     val = ""
@@ -28,83 +42,107 @@ def generate_value(base_type, dim, unsigned):
         # random 32 bit integer
         if base_type == "long int" or base_type == "int32_t":
             if unsigned:
-                val += str(random.randint(0, 4294967295)) + ","
+                val += str(random.randint(0, 4294967295)) + "U" + ","
             else:
                 val += str(random.randint(-2147483648, 2147483647)) + ","
         # random 64 bit integer
         if base_type == "long long int" or base_type == "int64_t":
             if unsigned:
-                val += str(random.randint(0, 18446744073709551615)) + ","
+                val += str(random.randint(0, 18446744073709551615)) + "LLU" + ","
             else:
                 val += str(random.randint(-9223372036854775808,
-                                          9223372036854775807)) + ","
+                                          9223372036854775807)) + "LL" + ","
     return val[:-1]
 
+def generate_multi_ptr(var_name, var_type, var_index, memory):
+    decl = ""
+    if memory == "global":
+        decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::global_space> " + var_name + "(acc);\n"
+    if memory == "local":
+        decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::local_space> " + var_name + "(acc);\n"
+    if memory == "private":
+        source_name = "multiPtrSource_" + str(var_index)
+        decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim, var_type.unsigned) + ");\n"
+        decl += "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
+    return decl
 
-def generate_argument(arg_name, arg, is_pointer):
-    arg_decl = ""
-    arg_del = ""
-    # At this point, it is guaranteed that arg is a dictionary with one entry.
-    for rr in arg.keys():
-        if is_pointer is False:
-            arg_decl = arg[rr].name + " " + arg_name + "(" + generate_value(
-                arg[rr].base_type, arg[rr].dim, arg[rr].unsigned) + ");\n"
-        else:
-            arg_decl = arg[rr].name + " * " + arg_name + " = new " + arg[rr].name + \
-                "(" + generate_value(arg[rr].base_type,
-                                     arg[rr].dim, arg[rr].unsigned) + ");\n"
-            arg_del = "delete " + arg_name + ";\n"
-    return (arg_decl, arg_del)
+def generate_variable(var_name, var_type, var_index):
+    return var_type.name + " " + var_name + "(" + generate_value(var_type.base_type, var_type.dim, var_type.unsigned) + ");\n"
 
+def extract_type(type_dict):
+    # At this point, it is guaranteed that type_dict is a dictionary with one entry.
+    for bt in type_dict.keys():
+        return type_dict[bt]
 
-def generate_arguments(types, sig):
+def generate_arguments(types, sig, memory):
     arg_src = ""
-    arg_src_deletes = ""
     arg_names = []
     arg_index = 0
     for arg in sig.arg_types:
+        # Get argument type.
+        arg_type = extract_type(types[arg])
+        
+        # Create argument name.
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
+        
+        # Identify whether aegument is a pointer.
         is_pointer = False
         # Value 0 in pntr_indx is reserved for the return type.
         if (arg_index + 1) in sig.pntr_indx:
             is_pointer = True
-        (current_arg, current_arg_del) = generate_argument(
-            arg_name, types[arg], is_pointer)
+
+        current_arg = ""
+        if is_pointer:
+            current_arg = generate_multi_ptr(arg_name, arg_type, arg_index, memory)
+        else:
+            current_arg = generate_variable(arg_name, arg_type, arg_index)
+        
         arg_src += current_arg
-        arg_src_deletes += current_arg_del
         arg_index += 1
-    return (arg_names, arg_src, arg_src_deletes)
+    return (arg_names, arg_src)
 
-
-def generate_function_call(types, sig):
-    (arg_names, arg_src, arg_src_deletes) = generate_arguments(types, sig)
+def generate_function_call(types, sig, memory):
+    (arg_names, arg_src) = generate_arguments(types, sig, memory)
     fc = arg_src
     fc += "return " + sig.namespace + "::" + sig.name + "("
     for arg_n in arg_names:
         fc += arg_n + ","
     fc = fc[:-1] + ");\n"
-    fc += arg_src_deletes
     return fc
 
-
-def generate_test_case(test_id, types, sig):
-    testCaseSource = test_case_template
+def generate_test_case(test_id, types, sig, memory):
+    testCaseSource = test_case_templates[memory]
     testCaseId = str(test_id)
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
     testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type)
-    testCaseSource = testCaseSource.replace(
-        "$FUNCTION_CALL", generate_function_call(types, sig))
+    if memory != "private":
+        # We rely on the fact that all SYCL math builtins have at most one arguments as pointer.
+        pointerType = sig.arg_types[sig.pntr_indx[0] - 1]
+        sourcePtrDataName = "multiPtrSourceData"
+        sourcePtrData =  generate_variable(sourcePtrDataName, extract_type(types[pointerType]), 0)
+        testCaseSource = testCaseSource.replace("$DECL", sourcePtrData)
+        testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
+        accessorType = ""
+        if memory == "local":
+            accessorType = "cl::sycl::accessor<" + pointerType + ", 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local>"
+        if memory == "global":
+            accessorType = "cl::sycl::accessor<" + pointerType + ", 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>"
+        testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)
+    testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(types, sig, memory))
     return testCaseSource
 
-
-def generate_test_cases(types, sig_list):
+def generate_test_cases(test_id, types, sig_list):
     random.seed(0)
     test_source = ""
-    test_id = 0
     for sig in sig_list:
-        test_source += generate_test_case(test_id, types, sig)
+        test_source += generate_test_case(test_id, types, sig, "private")
         test_id += 1
+        if sig.pntr_indx:#If the signature contains a pointer argument.
+            test_source += generate_test_case(test_id, types, sig, "local")
+            test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "global")
+            test_id += 1
     return test_source
 
 # Given the current combination of:
@@ -113,7 +151,6 @@ def generate_test_cases(types, sig_list):
 # -- dimension(1,2,3,4,8,16)
 # -- unsigned flag(e.g. intn vs uintn)
 # We attempt to find a combination that is part of the current generic type (e.g. floatn)
-
 
 def attempt_match(runner, var_type, base_type, dim, unsigned, current_type):
     # Change sign.
@@ -136,7 +173,6 @@ def attempt_match(runner, var_type, base_type, dim, unsigned, current_type):
     return None
 
 # Produces all possible overloads of a function signature.
-
 
 def expand_signature(runner, types, signature):
     current_types = [types[signature.ret_type]]
@@ -193,7 +229,6 @@ def expand_signature(runner, types, signature):
                                       var_type + ", " + base_type + ", " + str(dim) + ", " + str(unsigned))
     return exp_sig
 
-
 def get_unique_signatures(signatures):
     uniq_sig = []
 
@@ -202,7 +237,6 @@ def get_unique_signatures(signatures):
             uniq_sig.append(sig)
 
     return uniq_sig
-
 
 def expand_signatures(runner, types, signatures):
     ex_sig_list = []
@@ -215,7 +249,6 @@ def expand_signatures(runner, types, signatures):
 # Expands a generic type (e.g. floatn) to the collection of its basic types.
 # Uses recursion.
 
-
 def expand_type(types, current):
     # If this is a basic type, stop.
     if types[current].dim > 0:
@@ -226,7 +259,6 @@ def expand_type(types, current):
         base_types.update(expand_type(types, ct))
 
     return base_types
-
 
 def expand_types(types):
     ex_types = {}

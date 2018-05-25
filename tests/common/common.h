@@ -41,7 +41,7 @@ void fail_test(sycl_cts::util::logger& log, cl::sycl::string_class errorMsg) {
  * @brief Helper function to check the return value of a function.
  */
 template <typename T>
-void check_return_value(sycl_cts::util::logger& log, T& a, T& b,
+void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
                         cl::sycl::string_class functionName) {
   if (a != b) {
     FAIL(log, functionName + " returns an incorrect value");
@@ -197,6 +197,16 @@ bool check_type_min_size(size_t minSize) {
 template <typename T>
 bool check_type_sign(bool expected_sign) {
   return !(std::is_signed<T>::value != expected_sign);
+}
+
+
+/**
+ * @brief Helper function to see if cl::sycl::half is of the wrong sign
+ */
+template <>
+bool check_type_sign<cl::sycl::half>(bool expected_sign) {
+  bool is_signed = cl::sycl::half(1) > cl::sycl::half(-1);
+  return is_signed == expected_sign;
 }
 
 /**

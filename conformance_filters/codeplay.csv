@@ -1,4 +1,5 @@
 address_space
+atomic
 buffer
 context
 device
@@ -14,6 +15,7 @@ invoke
 item
 kernel
 kernel_args
+multi_ptr
 nd_item
 nd_range
 platform
