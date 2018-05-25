@@ -24,6 +24,7 @@ queue
 range
 stream
 sampler
+scalars
 std_classes
 vector_alias
 vector_api

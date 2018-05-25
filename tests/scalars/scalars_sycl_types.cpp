@@ -64,13 +64,13 @@ class TEST_NAME : public util::test_base {
 
       auto myQueue = util::get_cts_object::queue();
 
-      bool signResults[14];
-      bool sizeResults[15];
+      bool signResults[15];
+      bool sizeResults[16];
       {
         cl::sycl::buffer<bool, 1> bufSignResult(signResults,
                                                 cl::sycl::range<1>(14));
         cl::sycl::buffer<bool, 1> bufSizeResult(sizeResults,
-                                                cl::sycl::range<1>(15));
+                                                cl::sycl::range<1>(16));
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
           auto accSignResult =
@@ -92,6 +92,10 @@ class TEST_NAME : public util::test_base {
             accSignResult[8] = check_type_sign<unsigned long long int>(false);
             accSignResult[9] = check_type_sign<long long int>(true);
             accSignResult[10] = check_type_sign<size_t>(false);
+            accSignResult[11] = check_type_sign<cl::sycl::byte>(false);
+            accSignResult[12] = check_type_sign<cl::sycl::half>(true);
+            accSignResult[13] = check_type_sign<float>(true);
+            accSignResult[14] = check_type_sign<double>(true);
 
             // sizes
             accSizeResult[0] = check_type_min_size<char>(1);
@@ -106,17 +110,11 @@ class TEST_NAME : public util::test_base {
             accSizeResult[9] = check_type_min_size<unsigned long long int>(8);
             accSizeResult[10] = check_type_min_size<long long int>(8);
             accSizeResult[11] = check_type_min_size<size_t>(host_size_t_size);
+            accSizeResult[12] = check_type_min_size<cl::sycl::byte>(1);
+            accSizeResult[13] = check_type_min_size<cl::sycl::half>(2);
+            accSizeResult[14] = check_type_min_size<float>(4);
+            accSizeResult[15] = check_type_min_size<double>(8);
 
-            // SYCL Floating Point Data Types
-            // signs
-            accSignResult[11] = check_type_sign<cl::sycl::half>(true);
-            accSignResult[12] = check_type_sign<float>(true);
-            accSignResult[13] = check_type_sign<double>(true);
-
-            // sizes
-            accSizeResult[12] = check_type_min_size<cl::sycl::half>(2);
-            accSizeResult[13] = check_type_min_size<float>(4);
-            accSizeResult[14] = check_type_min_size<double>(8);
           });
         });
       }
@@ -156,12 +154,15 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "sign: size_t");
       }
       if (!signResults[11]) {
-        FAIL(log, errorStr + "sign: cl::sycl::half");
+        FAIL(log, errorStr + "sign: cl::sycl::byte");
       }
       if (!signResults[12]) {
-        FAIL(log, errorStr + "sign: float");
+        FAIL(log, errorStr + "sign: cl::sycl::half");
       }
       if (!signResults[13]) {
+        FAIL(log, errorStr + "sign: float");
+      }
+      if (!signResults[14]) {
         FAIL(log, errorStr + "sign: double");
       }
 
@@ -203,12 +204,15 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "size: size_t");
       }
       if (!sizeResults[12]) {
-        FAIL(log, errorStr + "size: cl::sycl::half");
+        FAIL(log, errorStr + "size: cl::sycl::byte");
       }
       if (!sizeResults[13]) {
-        FAIL(log, errorStr + "size: float");
+        FAIL(log, errorStr + "size: cl::sycl::half");
       }
       if (!sizeResults[14]) {
+        FAIL(log, errorStr + "size: float");
+      }
+      if (!sizeResults[15]) {
         FAIL(log, errorStr + "size: double");
       }
 
