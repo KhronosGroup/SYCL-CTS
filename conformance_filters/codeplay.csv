@@ -19,6 +19,7 @@ multi_ptr
 nd_item
 nd_range
 platform
+pointers
 program
 queue
 range
