@@ -73,7 +73,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       int bufferData[bufferSize] = {0};
 
       static constexpr size_t imageSideSize = 32;
-      static constexpr auto imageSize = imageSideSize * imageSideSize;
+      static constexpr size_t imgAccElemSize = 4;  // rgba
+      static constexpr auto imageSize =
+          (imgAccElemSize * imageSideSize * imageSideSize);
       float imageData[imageSize] = {0.0f};
 
       auto queue = util::get_cts_object::queue(ctsSelector);
@@ -89,8 +91,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           cl::sycl::range<2>(imageSideSize, imageSideSize));
 
       cl_program clProgram = nullptr;
-      if (!create_built_program(kernelSource, context.get(),
-                                device.get(), clProgram, log)) {
+      if (!create_built_program(kernelSource, context.get(), device.get(),
+                                clProgram, log)) {
         FAIL(log, "create_built_program failed");
       }
 
