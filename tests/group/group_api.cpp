@@ -16,19 +16,24 @@ using namespace sycl_cts;
 static const size_t GROUP_RANGE_1D = 2;
 static const size_t GROUP_RANGE_2D = 4;
 static const size_t GROUP_RANGE_3D = 8;
+static const size_t LOCAL_RANGE_1D = 16;
+static const size_t LOCAL_RANGE_2D = 8;
+static const size_t LOCAL_RANGE_3D = 4;
 static const size_t NUM_DIMENSIONS = 3;
 static const size_t NUM_GROUPS =
     GROUP_RANGE_1D * GROUP_RANGE_2D * GROUP_RANGE_3D;
-static const size_t NUM_METHODS = 7;
+static const size_t NUM_METHODS = 9;
 
 enum class getter : size_t {
   get = 0,
   get_dims = 1,
-  global_range = 2,
-  global_range_dims = 3,
-  group_range = 4,
-  group_range_dims = 5,
-  subscript = 6,
+  local_range = 2,
+  local_range_dims = 3,
+  global_range = 4,
+  global_range_dims = 5,
+  group_range = 6,
+  group_range_dims = 7,
+  subscript = 8,
 };
 
 inline size_t get_index(size_t groupLinearID, getter getterMethod) {
@@ -42,6 +47,10 @@ const char *getter_name(getter getterMethod) {
       return "get()";
     case getter::get_dims:
       return "get(int)";
+    case getter::local_range:
+      return "get_local_range()";
+    case getter::local_range_dims:
+      return "get_local_range(int)";
     case getter::global_range:
       return "get_global_range()";
     case getter::global_range_dims:
@@ -70,13 +79,6 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
-      // Prepare the kernel and get the required info
-      cl::sycl::kernel kernel =
-          util::get_cts_object::kernel::prebuilt<class TEST_NAME>(queue);
-      auto optimalLocalWorkGroupSize =
-          kernel.get_work_group_info<cl::sycl::info::kernel_work_group::
-                                         preferred_work_group_size_multiple>(
-              util::get_cts_object::device());
 
       size_t resultSize = NUM_GROUPS * NUM_METHODS * NUM_DIMENSIONS;
       cl::sycl::vector_class<size_t> result(resultSize);
@@ -95,6 +97,8 @@ class TEST_NAME : public util::test_base {
           cgh.parallel_for_work_group<class TEST_NAME>(
               cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D,
                                  GROUP_RANGE_3D),
+              cl::sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D,
+                                 LOCAL_RANGE_3D),
               [=](cl::sycl::group<3> my_group) {
                 const size_t groupLinearID = my_group.get_linear();
 
@@ -113,6 +117,26 @@ class TEST_NAME : public util::test_base {
                   a_dev[indexBase + 0] = my_group.get_id(0);
                   a_dev[indexBase + 1] = my_group.get_id(1);
                   a_dev[indexBase + 2] = my_group.get_id(2);
+                }
+
+                // get_local_range()
+                {
+                  cl::sycl::range<3> m_get_local_range =
+                      my_group.get_local_range();
+                  auto indexBase =
+                      get_index(groupLinearID, getter::local_range);
+                  a_dev[indexBase + 0] = m_get_local_range.get(0);
+                  a_dev[indexBase + 1] = m_get_local_range.get(1);
+                  a_dev[indexBase + 2] = m_get_local_range.get(2);
+                }
+
+                // get_local_range(int)
+                {
+                  auto indexBase =
+                      get_index(groupLinearID, getter::local_range_dims);
+                  a_dev[indexBase + 0] = my_group.get_local_range(0);
+                  a_dev[indexBase + 1] = my_group.get_local_range(1);
+                  a_dev[indexBase + 2] = my_group.get_local_range(2);
                 }
 
                 // get_global_range()
@@ -201,20 +225,38 @@ class TEST_NAME : public util::test_base {
               check_indices(getter::get_dims, 2, groupID2);
             }
 
+            // get_local_range()
+            {
+              check_indices(getter::local_range, 0, LOCAL_RANGE_1D);
+              check_indices(getter::local_range, 1, LOCAL_RANGE_2D);
+              check_indices(getter::local_range, 2, LOCAL_RANGE_3D);
+            }
+
+            // get_local_range(int)
+            {
+              check_indices(getter::local_range_dims, 0, LOCAL_RANGE_1D);
+              check_indices(getter::local_range_dims, 1, LOCAL_RANGE_2D);
+              check_indices(getter::local_range_dims, 2, LOCAL_RANGE_3D);
+            }
+
             // get_global_range()
             {
               check_indices(getter::global_range, 0,
-                            GROUP_RANGE_1D * optimalLocalWorkGroupSize);
-              check_indices(getter::global_range, 1, GROUP_RANGE_2D);
-              check_indices(getter::global_range, 2, GROUP_RANGE_3D);
+                            GROUP_RANGE_1D * LOCAL_RANGE_1D);
+              check_indices(getter::global_range, 1,
+                            GROUP_RANGE_2D * LOCAL_RANGE_2D);
+              check_indices(getter::global_range, 2,
+                            GROUP_RANGE_3D * LOCAL_RANGE_3D);
             }
 
             // get_global_range(int)
             {
               check_indices(getter::global_range_dims, 0,
-                            GROUP_RANGE_1D * optimalLocalWorkGroupSize);
-              check_indices(getter::global_range_dims, 1, GROUP_RANGE_2D);
-              check_indices(getter::global_range_dims, 2, GROUP_RANGE_3D);
+                            GROUP_RANGE_1D * LOCAL_RANGE_1D);
+              check_indices(getter::global_range_dims, 1,
+                            GROUP_RANGE_2D * LOCAL_RANGE_2D);
+              check_indices(getter::global_range_dims, 2,
+                            GROUP_RANGE_3D * LOCAL_RANGE_3D);
             }
 
             // get_group_range()

@@ -19,11 +19,11 @@ item
 kernel
 kernel_args
 math_builtin_api
+multi_ptr
 nd_item
 nd_range
 opencl_interop
 platform
-pointer
 pointers
 program
 queue

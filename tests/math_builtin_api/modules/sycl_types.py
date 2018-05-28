@@ -463,7 +463,7 @@ def create_types():
     t_gen_float = argtype("genfloat", "NULL", "NULL", 0, ["genfloatf","genfloatd","genfloath"])
     type_dic["genfloat"] = t_gen_float
 
-    t_sgen_float = argtype("sgenfloat", "NULL", "NULL", 0, ["float","double"])
+    t_sgen_float = argtype("sgenfloat", "NULL", "NULL", 0, ["float","double","cl::sycl::half"])
     type_dic["sgenfloat"] = t_sgen_float
 
     t_gen_geofloat = argtype("gengeofloat", "NULL", "NULL", 0, ["float","cl::sycl::float2","cl::sycl::float3","cl::sycl::float4"])

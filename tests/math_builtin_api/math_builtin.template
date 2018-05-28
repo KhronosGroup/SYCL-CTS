@@ -9,7 +9,7 @@
 #include "../common/common.h"
 #include "math_builtin.h"
 
-#define TEST_NAME math_builtins
+#define TEST_NAME $math_builtins
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -26,5 +26,7 @@ class TEST_NAME : public util::test_base {
 };
 
 // construction of this proxy will register the above test
+namespace {
 util::test_proxy<TEST_NAME> proxy;
+}
 }

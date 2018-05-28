@@ -361,7 +361,7 @@ def create_float_signatures():
     f_atan = funsig("cl::sycl", "genfloat", "atan", ["genfloat"])
     sig_list.append(f_atan)
 
-    f_atan2 = funsig("cl::sycl", "genfloat", "atan2", ["genfloat"])
+    f_atan2 = funsig("cl::sycl", "genfloat", "atan2", ["genfloat", "genfloat"])
     sig_list.append(f_atan2)
 
     f_atanh = funsig("cl::sycl", "genfloat", "atanh", ["genfloat"])

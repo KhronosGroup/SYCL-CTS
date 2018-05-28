@@ -14,6 +14,36 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 /**
+ * @brief Checks exception_list for aliased types
+ */
+void check_exception_list_types() {
+  using value_type = cl::sycl::exception_list::value_type;
+  static_assert(std::is_same<value_type, cl::sycl::exception_ptr_class>::value,
+                "exception_list::value_type is of wrong type");
+
+  using reference = cl::sycl::exception_list::reference;
+  using const_reference = cl::sycl::exception_list::const_reference;
+
+  using size_type = cl::sycl::exception_list::size_type;
+  static_assert(std::is_same<size_type, std::size_t>::value,
+                "exception_list::size_type is of wrong type");
+
+  using iterator = cl::sycl::exception_list::iterator;
+  using const_iterator = cl::sycl::exception_list::const_iterator;
+}
+
+/**
+ * @brief Checks exception_list for member functions
+ * @param exceptionList List to check
+ */
+void check_exception_list_members(
+    const cl::sycl::exception_list &exceptionList) {
+  auto size = exceptionList.size();
+  auto beginIt = exceptionList.begin();
+  auto endIt = exceptionList.end();
+}
+
+/**
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -69,6 +99,10 @@ class TEST_NAME : public util::test_base {
       cl::sycl::vector_class<cl::sycl::exception_ptr_class> excps;
       cl::sycl::function_class<void(cl::sycl::exception_list)>
           asyncHandlerLambda = [&excps](cl::sycl::exception_list l) {
+            // Check the exception list interface
+            check_exception_list_types();
+            check_exception_list_members(l);
+
             for (auto &e : l) {
               excps.push_back(e);
             }
