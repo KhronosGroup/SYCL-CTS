@@ -48,7 +48,12 @@ class TEST_NAME : public util::test_base {
       /** check get_info & get_profiling_info parameters
       */
       {
-        auto queue = util::get_cts_object::queue();
+        const cl::sycl::device_selector &selector = cts_selector();
+        static cts_async_handler asyncHandler;
+        cl::sycl::queue queue =
+            cl::sycl::queue(selector, asyncHandler,
+                            {cl::sycl::property::queue::enable_profiling()});
+
         cl::sycl::event event = queue.submit([&](cl::sycl::handler &handler) {
           handler.single_task(dummy_functor<class TEST_NAME>());
         });
@@ -70,7 +75,6 @@ class TEST_NAME : public util::test_base {
             cl::sycl::info::event_profiling, cl::sycl::cl_ulong,
             cl::sycl::info::event_profiling::command_end>(log, event);
       }
-
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
