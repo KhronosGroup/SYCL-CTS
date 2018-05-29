@@ -23,7 +23,7 @@ void test_id_kernels(
                        cl::sycl::access::target::global_buffer>
         error_ptr,
     int m_iteration) {
-  cl::sycl::id<dims> id_two(id * static_cast<size_t>(2));
+  cl::sycl::id<dims> id_two(id * 2);
   cl::sycl::id<dims> id_three(id);
   size_t integer = 16;
   for (int j = 0; j < dims; j++) {
@@ -203,45 +203,6 @@ void test_id_kernels(
 }
 
 template <int dims>
-void test_size_t_conversion(
-    cl::sycl::id<dims> id,
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>
-        error_ptr,
-    int m_iteration);
-
-template <>
-void test_size_t_conversion(
-    cl::sycl::id<1> id,
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>
-        error_ptr,
-    int m_iteration) {
-  size_t size = id.get(0);
-  if (size != id) {
-    // report an error
-    error_ptr[m_iteration] = __LINE__;
-    m_iteration++;
-  }
-}
-
-template <>
-void test_size_t_conversion(
-    cl::sycl::id<2> id,
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>
-        error_ptr,
-    int m_iteration) {}
-
-template <>
-void test_size_t_conversion(
-    cl::sycl::id<3> id,
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>
-        error_ptr,
-    int m_iteration) {}
-
-template <int dims>
 class test_id {
  public:
   // golden values
@@ -249,7 +210,7 @@ class test_id {
   static const int m_y = 32;
   static const int m_z = 64;
   static const int m_local = 2;
-  static const int error_size = 204;  // up to 204 possible errors
+  static const int error_size = 200;  // up to 200 possible errors
   int m_error[error_size];
 
   void operator()(util::logger &log, cl::sycl::range<dims> global,
@@ -274,8 +235,6 @@ class test_id {
 
           // create check table
           cl::sycl::id<dims> id = item.get_nd_range().get_global();
-
-          test_size_t_conversion(id, error_ptr, m_iteration);
 
           size_t check[] = {m_x, m_y, m_z};
 
