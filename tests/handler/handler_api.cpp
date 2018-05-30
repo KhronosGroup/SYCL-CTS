@@ -35,6 +35,7 @@ class TEST_NAME : public util::test_base {
       auto queue = util::get_cts_object::queue();
       const auto range = cl::sycl::range<1>(1);
       const auto offset = cl::sycl::id<1>(0);
+      int data[1]{0};
 
       {
         auto buffer = cl::sycl::buffer<int, 1>(range);
@@ -68,6 +69,12 @@ class TEST_NAME : public util::test_base {
             cgh.set_arg(3, custom);
           }
 
+          // Check set_arg(int, stream)
+          {
+            cl::sycl::stream os(2048, 80, cgh);
+            cgh.set_arg(4, os);
+          }
+
           cgh.single_task<class test_set_arg>([=]() {});
         });
 
@@ -82,12 +89,33 @@ class TEST_NAME : public util::test_base {
               cl::sycl::addressing_mode::clamp,
               cl::sycl::filtering_mode::nearest);
           simple_struct custom{3, .14f};
+          cl::sycl::stream os(2048, 80, cgh);
 
           // Check set_args(Ts...)
-          cgh.set_args(accessor, scalar, sampler, custom);
+          cgh.set_args(accessor, scalar, sampler, custom, os);
 
           cgh.single_task<class test_set_args>([=]() {});
         });
+
+        log.note("Check requires method");
+        cl::sycl::buffer<int, 1> resultBuf(data, cl::sycl::range<1>(1));
+        auto placeholder =
+            cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
+                               cl::sycl::access::target::global_buffer,
+                               cl::sycl::access::placeholder::true_t>(
+                resultBuf);
+
+        queue.submit([&](cl::sycl::handler &cgh) {
+          cgh.require(placeholder);
+
+          cgh.single_task<class test_placeholder>(
+              [=]() { placeholder[0] = 1; });
+
+        });
+      }
+
+      if (data[0] != 1) {
+        FAIL(log, "requires method test did not set accessor data correctly");
       }
 
       queue.wait_and_throw();

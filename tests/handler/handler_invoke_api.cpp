@@ -18,6 +18,13 @@ struct use_offset {
 namespace handler_invoke_api__ {
 using namespace sycl_cts;
 
+class kernel_test_class0;
+class kernel_test_class1;
+class kernel_test_class2;
+class kernel_test_class3;
+class kernel_test_class4;
+class kernel_test_class5;
+
 using accessor_t =
     cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
                        cl::sycl::access::target::global_buffer>;
@@ -505,6 +512,92 @@ class TEST_NAME : public sycl_cts::util::test_base {
                              parallel_for_work_group_2range_functor(acc));
                        });
       }
+
+      /* single_task with kernel object */
+
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class0>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class0>());
+
+        check_api_call(
+            "single_task<kernel_test_class>()", log, queue,
+            [&](handler &cgh, accessor_t acc) {
+              cgh.single_task<kernel_test_class0>([=]() { acc[0] = 10; });
+            });
+      }
+
+      /* parallel_for with kernel object */
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class1>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class1>());
+
+        check_api_call("parallel_for(range, kernel) with id", log, queue,
+                       [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for<kernel_test_class1>(
+                             range, [=](cl::sycl::id<1> id) { acc[0] = 10; });
+                       });
+      }
+
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class2>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class2>());
+
+        check_api_call("parallel_for(range, offset, kernel) with id", log,
+                       queue, [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for<kernel_test_class2>(
+                             range, offset,
+                             [=](cl::sycl::id<1> id) { acc[0] = 10; });
+                       });
+      }
+
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class3>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class3>());
+
+        check_api_call("parallel_for(range, kernel) with item", log, queue,
+                       [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for<kernel_test_class3>(
+                             range,
+                             [=](cl::sycl::item<1> item) { acc[0] = 10; });
+                       });
+      }
+
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class4>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class4>());
+
+        check_api_call("parallel_for(range, offset, kernel) with item", log,
+                       queue, [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for<kernel_test_class4>(
+                             range, offset,
+                             [=](cl::sycl::item<1> item) { acc[0] = 10; });
+                       });
+      }
+
+      {
+        cl::sycl::program test_program(queue.get_context());
+        test_program.build_with_kernel_type<kernel_test_class5>();
+        cl::sycl::kernel test_kernel(
+            test_program.get_kernel<kernel_test_class5>());
+
+        check_api_call("parallel_for(nd_range, kernel);", log, queue,
+                       [&](handler &cgh, accessor_t acc) {
+                         cgh.parallel_for<kernel_test_class5>(
+                             ndRange,
+                             [=](cl::sycl::nd_item<1> ndItem) { acc[0] = 10; });
+                       });
+      }
+
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       FAIL(log,
