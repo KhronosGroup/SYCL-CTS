@@ -25,7 +25,7 @@
 #include "../../util/math_vector.h"
 
 #include <string>
-
+#include <sstream>
 #include <type_traits>
 
 namespace {
@@ -199,7 +199,6 @@ bool check_type_sign(bool expected_sign) {
   return !(std::is_signed<T>::value != expected_sign);
 }
 
-
 /**
  * @brief Helper function to see if cl::sycl::half is of the wrong sign
  */
@@ -255,6 +254,22 @@ cl::sycl::event get_queue_event(cl::sycl::queue& queue) {
  */
 #define REQUIRES_IMPL(B) typename std::enable_if<(B), int>::type = 1
 #define REQUIRES(...) REQUIRES_IMPL((__VA_ARGS__))
+
+/**
+ * @brief Transforms the input type into a dependant type and performs
+ *        an enable_if based on the condition.
+ *
+ *        Useful for disabling a member function based on a template parameter
+ *        of the class.
+ * @param typeName Non-dependant type to be made dependant
+ * @param condition The condition specifying when the template
+ *        should be enabled. typeName can occur within this expression.
+ */
+#define ENABLE_IF_DEPENDANT(typeName, condition)                               \
+  typename overloadDependantT = typeName,                                      \
+           typename = typename std::enable_if <                                \
+                          std::is_same<typeName, overloadDependantT>::value && \
+                      (condition) > ::type
 
 template <bool condition, typename F1, typename F2,
           bool same_return_type =
@@ -356,6 +371,122 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
                " is not equality-comparable (operator!= transitivity  failed)")
                   .c_str());
   }
+}
+
+/**
+ * @brief Helps with retrieving the right access type for reading/writing
+ *        an image
+ * @tparam dims Number of image dimensions
+ */
+template <int dims>
+struct image_access;
+
+/**
+ * @brief Specialization for one dimension
+ */
+template <>
+struct image_access<1> {
+  using int_type = cl::sycl::cl_int;
+  using float_type = cl::sycl::cl_float;
+  static int_type get_int(const cl::sycl::id<1>& i) {
+    return int_type(i.get(0));
+  }
+  static int_type get_int(const cl::sycl::item<1>& i) {
+    return get_int(i.get_id());
+  }
+  static float_type get_float(const cl::sycl::id<1>& i) {
+    return float_type(static_cast<float>(i.get(0)));
+  }
+  static float_type get_float(const cl::sycl::item<1>& i) {
+    return get_float(i.get_id());
+  }
+};
+
+/**
+ * @brief Specialization for two dimensions
+ */
+template <>
+struct image_access<2> {
+  using int_type = cl::sycl::cl_int2;
+  using float_type = cl::sycl::cl_float2;
+  static int_type get_int(const cl::sycl::id<2>& i) {
+    return int_type(i.get(0), i.get(1));
+  }
+  static int_type get_int(const cl::sycl::item<2>& i) {
+    return get_int(i.get_id());
+  }
+  static float_type get_float(const cl::sycl::id<2>& i) {
+    return float_type(static_cast<float>(i.get(0)),
+                      static_cast<float>(i.get(1)));
+  }
+  static float_type get_float(const cl::sycl::item<2>& i) {
+    return get_float(i.get_id());
+  }
+};
+
+/**
+ * @brief Specialization for three dimensions
+ */
+template <>
+struct image_access<3> {
+  using int_type = cl::sycl::cl_int4;
+  using float_type = cl::sycl::cl_float4;
+  static int_type get_int(const cl::sycl::id<3>& i) {
+    return int_type(i.get(0), i.get(1), i.get(2), 0);
+  }
+  static int_type get_int(const cl::sycl::item<3>& i) {
+    return get_int(i.get_id());
+  }
+  static float_type get_float(const cl::sycl::id<3>& i) {
+    return float_type(static_cast<float>(i.get(0)),
+                      static_cast<float>(i.get(1)),
+                      static_cast<float>(i.get(2)), .0f);
+  }
+  static float_type get_float(const cl::sycl::item<3>& i) {
+    return get_float(i.get_id());
+  }
+};
+
+/**
+ * @brief Display the name of the type
+ * @tparam T Type to inspect
+ * @param Dummy parameter used only for type deduction
+ * @return String representing the type
+ */
+template <typename T>
+cl::sycl::string_class type_to_string(T) {
+  using no_cv_t = typename std::remove_cv<T>::type;
+  if (std::is_integral<no_cv_t>::value) {
+    cl::sycl::string_class intStr;
+    if (std::is_signed<no_cv_t>::value) {
+      intStr = "int";
+    } else {
+      intStr = "uint";
+    }
+    const auto typeSizeBits = sizeof(T) * 8;
+    return intStr + std::to_string(typeSizeBits) + "_t";
+  } else if (std::is_same<no_cv_t, float>::value) {
+    return "float";
+  } else if (std::is_same<no_cv_t, double>::value) {
+    return "double";
+  } else if (std::is_same<no_cv_t, cl::sycl::half>::value) {
+    return "half";
+  }
+  return "unknown";
+}
+
+/**
+ * @brief Display the name of the vec type
+ * @tparam dataT Underlying type of the vector
+ * @tparam numElems Number of elements of the vector
+ * @param Dummy parameter used only for type deduction
+ * @return String representing the vec type
+ */
+template <typename dataT, int numElems>
+cl::sycl::string_class type_to_string(cl::sycl::vec<dataT, numElems>) {
+  std::stringstream stream;
+  stream << "vec<" << type_to_string(dataT{}) << ", " << numElems << ">";
+  return stream.str();
 }
 
 }  // namespace

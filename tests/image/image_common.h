@@ -152,59 +152,6 @@ struct image_generic<1> {
 };
 
 /**
- * @brief Helps with retrieving the right access type for reading/writing
- *        an image
- * @tparam dims Number of image dimensions
- */
-template <int dims>
-struct image_access;
-/**
- * @brief Specialization for one dimension
- */
-template <>
-struct image_access<1> {
-  using int_type = cl::sycl::cl_int;
-  using float_type = cl::sycl::cl_float;
-  static int_type get_int(const cl::sycl::item<1> &i) {
-    return int_type(i.get_id(0));
-  }
-  static float_type get_float(const cl::sycl::item<1> &i) {
-    return float_type(static_cast<float>(i.get_id(0)));
-  }
-};
-/**
- * @brief Specialization for two dimensions
- */
-template <>
-struct image_access<2> {
-  using int_type = cl::sycl::cl_int2;
-  using float_type = cl::sycl::cl_float2;
-  static int_type get_int(const cl::sycl::item<2> &i) {
-    return int_type(i.get_id(0), i.get_id(1));
-  }
-  static float_type get_float(const cl::sycl::item<2> &i) {
-    return float_type(static_cast<float>(i.get_id(0)),
-                      static_cast<float>(i.get_id(1)));
-  }
-};
-/**
- * @brief Specialization for three dimensions
- */
-template <>
-struct image_access<3> {
-  using int_type = cl::sycl::cl_int4;
-  using float_type = cl::sycl::cl_float4;
-  static int_type get_int(const cl::sycl::item<3> &i) {
-    return int_type(i.get_id(0), i.get_id(1), i.get_id(2), 0);
-  }
-  static float_type get_float(const cl::sycl::item<3> &i) {
-    return float_type(static_cast<float>(i.get_id(0)),
-                      static_cast<float>(i.get_id(1)),
-                      static_cast<float>(i.get_id(2)), .0f);
-  }
-};
-
-/**
  * @brief Map entry type that specifies the size and name (as a string) for an
  *        image channel type
  */
