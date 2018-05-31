@@ -20,11 +20,13 @@ nd_item
 nd_range
 opencl_interop
 platform
+pointers
 program
 queue
 range
 stream
 sampler
+scalars
 std_classes
 vector_alias
 vector_api
