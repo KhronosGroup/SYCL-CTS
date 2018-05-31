@@ -26,6 +26,10 @@ vector_api_template = Template("""
         if (!check_vector_values<${type}, ${size}>(swizzledVec, reversed_vals)) {
           resAcc[0] = false;
         }
+        if (std::alignment_of<cl::sycl::vec<${type}, ${size}>>::value !=
+            sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
+          resAcc[0] = false;
+        }
 """)
 
 lo_hi_odd_even_template = Template("""
