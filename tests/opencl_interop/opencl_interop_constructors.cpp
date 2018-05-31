@@ -27,6 +27,15 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
    */
   void run(util::logger &log) override {
     try {
+      cts_selector ctsSelector;
+      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsDevice = ctsContext.get_devices()[0];
+
+      if (ctsContext.is_host()) {
+        log.note("OpenCL interop doesn't work on host");
+        return;
+      }
+
       cl::sycl::string_class kernelSource = R"(
             __kernel void test_kernel(__global float *input)
             {
@@ -91,8 +100,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check queue (cl_command_queue, const context&) constructor
       */
       {
-        auto context = util::get_cts_object::context();
-        cl::sycl::queue queue(m_cl_command_queue, context);
+        cl::sycl::queue queue(m_cl_command_queue, ctsContext);
 
         cl_command_queue interopQueue = queue.get();
         if (interopQueue != m_cl_command_queue) {
@@ -108,8 +116,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       */
       {
         cts_async_handler asyncHandler;
-        auto context = util::get_cts_object::context();
-        cl::sycl::queue queue(m_cl_command_queue, context, asyncHandler);
+        cl::sycl::queue queue(m_cl_command_queue, ctsContext, asyncHandler);
 
         cl_command_queue interopQueue = queue.get();
         if (interopQueue != m_cl_command_queue) {
@@ -124,13 +131,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       */
       {
         cl_program clProgram = nullptr;
-        if (!create_built_program(kernelSource, clProgram, log)) {
+        if (!create_built_program(kernelSource, ctsContext.get(),
+                                  ctsDevice.get(), clProgram, log)) {
           FAIL(log, "create_built_program failed");
         }
 
-        auto context = util::get_cts_object::context();
-
-        cl::sycl::program program(context, clProgram);
+        cl::sycl::program program(ctsContext, clProgram);
 
         cl_program interopProgram = program.get();
         if (interopProgram != clProgram) {
@@ -145,7 +151,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       */
       {
         cl_program clProgram = nullptr;
-        if (!create_built_program(kernelSource, clProgram, log)) {
+        if (!create_built_program(kernelSource, ctsContext.get(),
+                                  ctsDevice.get(), clProgram, log)) {
           FAIL(log, "create_built_program failed");
         }
 
@@ -154,8 +161,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create_kernel failed");
         }
 
-        auto context = util::get_cts_object::context();
-        cl::sycl::kernel kernel(clKernel, context);
+        cl::sycl::kernel kernel(clKernel, ctsContext);
 
         cl_kernel interopKernel = kernel.get();
         if (interopKernel != clKernel) {
@@ -173,7 +179,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         int data[size] = {0};
         cl_int error = CL_SUCCESS;
 
-        auto queue = util::get_cts_object::queue();
+        auto queue = util::get_cts_object::queue(ctsSelector);
         cl::sycl::event event;
 
         cl_mem clBuffer = clCreateBuffer(
@@ -190,6 +196,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               buffer.get_access<cl::sycl::access::mode::read_write,
                                 cl::sycl::access::target::global_buffer>(
                   handler);
+          handler.single_task<class buffer_interop_constructor_kernel>([]() {});
         });
 
         error = clReleaseMemObject(clBuffer);
@@ -201,58 +208,93 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check image (cl_mem, const context&, event) constructor
       */
       {
-        const size_t size = 256;
+        constexpr size_t imageSideSize = 16;
+        constexpr auto size = imageSideSize * imageSideSize;
         float data[size] = {0.0f};
         cl_int error = CL_SUCCESS;
 
-        auto queue = util::get_cts_object::queue();
-        cl::sycl::event event;
+        auto queue = util::get_cts_object::queue(ctsSelector);
+
+        const auto clContext = queue.get_context().get();
 
         cl_image_format clImageFormat;
         clImageFormat.image_channel_data_type = CL_FLOAT;
         clImageFormat.image_channel_order = CL_RGBA;
 
         cl_image_desc clImageDesc;
-        clImageDesc.image_width = 32;
-        clImageDesc.image_height = 32;
-        clImageDesc.image_depth = 1;
+        clImageDesc.image_type = CL_MEM_OBJECT_IMAGE2D;
+        clImageDesc.image_width = imageSideSize;
+        clImageDesc.image_height = imageSideSize;
+        clImageDesc.image_depth = 0;
         clImageDesc.image_array_size = 1;
         clImageDesc.image_row_pitch = 0;
         clImageDesc.image_slice_pitch = 0;
         clImageDesc.num_mip_levels = 0;
         clImageDesc.num_samples = 0;
-        clImageDesc.buffer = 0;
+        clImageDesc.buffer = nullptr;
 
-        cl_mem clImage = clCreateImage(
-            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-            &clImageFormat, &clImageDesc, data, &error);
-        if (!CHECK_CL_SUCCESS(log, error)) {
-          FAIL(log, "create buffer failed");
+        // Check constructing image with defaulted event
+        {
+          cl_mem clImage = clCreateImage(
+              clContext, (CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR),
+              &clImageFormat, &clImageDesc, data, &error);
+          if (!CHECK_CL_SUCCESS(log, error)) {
+            FAIL(log, "create image failed");
+          }
+
+          cl::sycl::image<2> image(clImage, queue.get_context());
+
+          queue.submit([&](cl::sycl::handler &handler) {
+            auto accessor =
+                image
+                    .get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
+                        handler);
+            handler.single_task<
+                class image_interop_constructor_kernel_default_event>([]() {});
+          });
+
+          error = clReleaseMemObject(clImage);
+          if (!CHECK_CL_SUCCESS(log, error)) {
+            FAIL(log, "failed to release OpenCL image");
+          }
         }
 
-        cl::sycl::image<2> image(clImage, queue.get_context(), event);
+        // Check constructing image with specified event
+        {
+          cl::sycl::event event;
+          cl_mem clImage = clCreateImage(
+              clContext, (CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR),
+              &clImageFormat, &clImageDesc, data, &error);
+          if (!CHECK_CL_SUCCESS(log, error)) {
+            FAIL(log, "create image failed");
+          }
 
-        queue.submit([&](cl::sycl::handler &handler) {
-          auto accessor =
-              image.get_access<cl::sycl::access::mode::read,
-                               cl::sycl::access::target::image>(handler);
-        });
+          cl::sycl::image<2> image(clImage, queue.get_context(), event);
 
-        error = clReleaseMemObject(clImage);
-        if (!CHECK_CL_SUCCESS(log, error)) {
-          FAIL(log, "failed to release OpenCL image");
+          queue.submit([&](cl::sycl::handler &handler) {
+            auto accessor =
+                image
+                    .get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
+                        handler);
+            handler.single_task<
+                class image_interop_constructor_kernel_provided_event>([]() {});
+          });
+
+          error = clReleaseMemObject(clImage);
+          if (!CHECK_CL_SUCCESS(log, error)) {
+            FAIL(log, "failed to release OpenCL image");
+          }
         }
       }
 
       /** check sampler (cl_sampler, const context&) constructor
       */
       {
-        auto queue = util::get_cts_object::queue();
+        auto queue = util::get_cts_object::queue(ctsSelector);
         cl_sampler clSampler;
         create_sampler(clSampler, log);
 
         queue.submit([&](cl::sycl::handler &handler) {
-
           cl::sycl::sampler sampler(clSampler, queue.get_context());
           cl_sampler interopSampler = sampler.get();
           if (interopSampler != clSampler) {
@@ -262,15 +304,16 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             FAIL(log, "failed to release OpenCL sampler");
           }
 
+          handler.single_task<class sampler_interop_constructor_kernel>(
+              []() {});
         });
       }
 
       /** check event (cl_event, const context&) constructor
       */
       {
-        cl::sycl::context context = util::get_cts_object::context();
-        cl_event clEvent = clCreateUserEvent(context.get(), NULL);
-        cl::sycl::event event(clEvent, context);
+        cl_event clEvent = clCreateUserEvent(ctsContext.get(), nullptr);
+        cl::sycl::event event(clEvent, ctsContext);
 
         cl_event interopEvent = event.get();
         if (interopEvent != clEvent) {

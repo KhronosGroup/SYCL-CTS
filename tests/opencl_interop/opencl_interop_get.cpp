@@ -10,10 +10,12 @@
 
 #define TEST_NAME opencl_interop_get
 
+struct program_get_kernel {
+  void operator()() const {}
+};
+
 namespace opencl_interop_get__ {
 using namespace sycl_cts;
-
-class kernel_get_test;
 
 /** tests the get() methods for OpenCL inter-op
  */
@@ -30,6 +32,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
   void run(util::logger &log) override {
     try {
       cts_selector ctsSelector;
+      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsDevice = ctsContext.get_devices()[0];
+
+      if (ctsContext.is_host()) {
+        log.note("OpenCL interop doesn't work on host");
+        return;
+      }
 
       /** check platform get() method
       */
@@ -100,8 +109,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check program get() method
       */
       {
-        auto context = util::get_cts_object::context(ctsSelector);
-        auto program = cl::sycl::program(context);
+        auto program =
+            util::get_cts_object::program::compiled<program_get_kernel>(
+                ctsContext);
         if (!program.is_host()) {
           auto interopProgram = program.get();
           check_return_type<cl_program>(log, interopProgram,
@@ -117,10 +127,24 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check kernel get() method
       */
       {
-        auto queue = util::get_cts_object::queue(ctsSelector);
-        auto kernel =
-            util::get_cts_object::kernel::prebuilt<kernel_get_test>(queue);
-        if (!kernel.is_host()) {
+        if (!ctsContext.is_host()) {
+          cl::sycl::string_class kernelSource = R"(
+          __kernel void test_kernel() {}
+          )";
+
+          cl_program clProgram = nullptr;
+          if (!create_built_program(kernelSource, ctsContext.get(),
+                                    ctsDevice.get(), clProgram, log)) {
+            FAIL(log, "create_built_program failed");
+          }
+
+          cl_kernel clKernel = nullptr;
+          if (!create_kernel(clProgram, "test_kernel", clKernel, log)) {
+            FAIL(log, "create_kernel failed");
+          }
+
+          cl::sycl::kernel kernel(clKernel, ctsContext);
+
           auto interopKernel = kernel.get();
           check_return_type<cl_kernel>(log, interopKernel,
                                        "cl::sycl::kernel::get()");
@@ -135,7 +159,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check event get() method
       */
       {
-        auto event = cl::sycl::event();
+        auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+
+        cl::sycl::event event = ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          cgh.single_task<class event_kernel>([]() {});
+        });
+
         if (!event.is_host()) {
           auto interopEvent = event.get();
           check_return_type<cl_event>(log, interopEvent,
@@ -150,11 +179,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check sampler get() method
       */
       {
-        auto sampler = cl::sycl::sampler(
-            cl::sycl::coordinate_normalization_mode::normalized,
-            cl::sycl::addressing_mode::mirrored_repeat,
-            cl::sycl::filtering_mode::nearest);
-        if (!sampler.is_host()) {
+        if (!ctsContext.is_host()) {
+          cl_sampler clSampler;
+          create_sampler(clSampler, log);
+          cl::sycl::sampler sampler(clSampler, ctsContext);
+
           auto interopSampler = sampler.get();
           check_return_type<cl_sampler>(log, interopSampler,
                                         "cl::sycl::sampler::get()");
