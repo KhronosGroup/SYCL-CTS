@@ -27,6 +27,7 @@
 #include <string>
 
 #include <type_traits>
+#include <numeric>
 
 namespace {
 
@@ -255,6 +256,10 @@ cl::sycl::event get_queue_event(cl::sycl::queue& queue) {
  */
 #define REQUIRES_IMPL(B) typename std::enable_if<(B), int>::type = 1
 #define REQUIRES(...) REQUIRES_IMPL((__VA_ARGS__))
+
+#define REQUIRES_SPECIAL_IMPL(B) typename std::enable_if<(B), int>::type
+#define REQUIRES_SPECIAL(...) REQUIRES_SPECIAL_IMPL((__VA_ARGS__))
+
 
 template <bool condition, typename F1, typename F2,
           bool same_return_type =

@@ -20,6 +20,7 @@
 template <class kernel_name = void>
 struct dummy_functor {
   void operator()() {}
+  void operator()(cl::sycl::group<3> g) {}
 };
 
 namespace sycl_cts {
