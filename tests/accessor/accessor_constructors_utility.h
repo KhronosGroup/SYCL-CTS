@@ -12,16 +12,20 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_UTILITY_H
 
 #include "../common/common.h"
-#include <stdexcept>
-#include <utility>
 
 namespace TEST_NAMESPACE {
 
 	using namespace sycl_cts;
 
+	/** Helper function that calculates the amount of elements
+	 *  of a range
+	 */
 	template <size_t dims>
 	size_t getElementsCount(const cl::sycl::range<dims> &range);
 
+	/** Specializations of for getElementsCount each supported
+	 *  dimensionality
+	 */
 	template <>
 	size_t getElementsCount<1>(const cl::sycl::range<1> &range) {
 		return range[0];
@@ -37,9 +41,15 @@ namespace TEST_NAMESPACE {
 		return range[0] * range[1] * range[2];
 	}
 
+	/** Helper function that calculates a range from a size so
+	 *  that each dimension equals size
+	 */
 	template <size_t dims>
 	cl::sycl::range<dims> getRange(const size_t &size);
 
+	/** Specializations of for getRange each supported
+	 *  dimensionality
+	 */
 	template <>
 	cl::sycl::range<1> getRange<1>(const size_t &size) {
 		return cl::sycl::range<1>(size);
