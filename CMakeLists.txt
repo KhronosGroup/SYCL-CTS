@@ -1,41 +1,44 @@
 # check CMake Version
 cmake_minimum_required(VERSION 3.2)
-
 project(sycl_cts)
 
-# Find OpenCL library and headers
-find_package(OpenCL REQUIRED)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(OpenCLTargets REQUIRED)
+find_package(PythonInterp 2.7 REQUIRED)
 
 # set host compiler flags
 if(WIN32)
-# need c++ exception handling
-#   set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} /EHsc")
-    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} /bigobj")
-elseif(APPLE)
-# need c++11
-    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} -std=c++0x")
-else(WIN32)
-# need c++11
-    set(HOST_COMPILER_FLAGS "${HOST_COMPILER_FLAGS} -std=c++11 -Wall -Wno-unused-variable")
-endif(WIN32)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${HOST_COMPILER_FLAGS})
+    add_compile_options(/bigobj)
+endif()
+
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+   ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    add_compile_options(-Wall -Wno-unused-variable)
+endif()
+
+
+include(AddSYCLExecutable)
+
 # ------------------
-
-include_directories(${OpenCL_INCLUDE_DIR})
-
-include(cmake/build_sycl.cmake)
-
-# find the python interpreter
-find_package(PythonInterp REQUIRED)
-# ------------------
-
 # Double and Half variables
-#set(SYCL_CTS_ENABLE_DOUBLE_TESTS ON CACHE BOOL "Enable Double tests.")
-#set(SYCL-CTS_ENABLE_HALF_TESTS ON CACHE BOOL "Enable Half tests.")
+option(SYCL_CTS_ENABLE_DOUBLE_TESTS OFF "Enable Double tests.")
+option(SYCL_CTS_ENABLE_HALF_TESTS OFF "Enable Half tests.")
+if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
+    add_definitions(-DSYCL_CTS_TEST_DOUBLE)
+endif()
+if(SYCL_CTS_ENABLE_HALF_TESTS)
+    add_definitions(-DSYCL_CTS_TEST_HALF)
+endif()
 # ------------------
 
 enable_testing()
 
-add_subdirectory (util)
-add_subdirectory (tests)
-add_subdirectory (oclmath)
+add_subdirectory(util)
+add_subdirectory(tests)
+add_subdirectory(oclmath)
