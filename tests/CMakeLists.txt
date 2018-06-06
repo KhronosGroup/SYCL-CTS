@@ -61,10 +61,6 @@ foreach(test_project_dir ${test_projects_dir_list})
 endforeach()
 message(STATUS "Generating tests done")
 
-# create a target to group all tests together into one test executable
-add_executable(test_all)
-target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
-
 # create test executable targets for each test project using the build_sycl function
 foreach(test_project_dir ${test_projects_dir_list})
     file(GLOB test_cases_list ${tests_dir}/${test_project_dir}/*.cpp)
@@ -76,5 +72,9 @@ foreach(test_project_dir ${test_projects_dir_list})
     target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
     add_test(NAME ${test_exe_name} COMMAND ${test_exe_name})
-    target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
+    list(APPEND test_all_sources $<TARGET_OBJECTS:${test_exe_name}_objects>)
 endforeach()
+
+# create a target to group all tests together into one test executable
+add_executable(test_all ${test_all_sources})
+target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
