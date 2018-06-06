@@ -2,14 +2,14 @@
 //
 //  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
 
 #define TEST_NAME accessor_constructors_buffer
 
 #include "../common/common.h"
-#include "../accessor/accessor_constructors_utility.h"
+#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 /** unique dummy_functor per file
@@ -59,7 +59,7 @@ class buffer_accessor_dims {
                  "(get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "global_buffer accessor for read is not constructed correctly "
                  "(get_offset)");
@@ -93,7 +93,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for read is not constructed "
                  "correctly (get_offset)");
@@ -128,7 +128,7 @@ class buffer_accessor_dims {
                 "(get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(
                 log,
                 "global_buffer accessor for write is not constructed correctly "
@@ -163,7 +163,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for write is not constructed "
                  "correctly (get_offset)");
@@ -196,7 +196,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "global_buffer accessor for read_write is not constructed "
                  "correctly (get_offset)");
@@ -229,7 +229,7 @@ class buffer_accessor_dims {
                  "constructed correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for read_write is not "
                  "constructed correctly (get_offset)");
@@ -262,7 +262,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "global_buffer accessor for discard_write is not constructed "
                  "correctly (get_offset)");
@@ -295,7 +295,7 @@ class buffer_accessor_dims {
                  "constructed correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for discard_write is not "
                  "constructed correctly (get_offset)");
@@ -330,7 +330,7 @@ class buffer_accessor_dims {
                  "constructed correctly (get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "global_buffer accessor for discard_read_write is not "
                  "constructed correctly (get_offset)");
@@ -364,7 +364,7 @@ class buffer_accessor_dims {
                  "constructed correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for discard_read_write is not "
                  "constructed correctly (get_offset)");
@@ -399,7 +399,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "global_buffer accessor for atomic is not constructed "
                  "correctly (get_offset)");
@@ -432,7 +432,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "global_buffer ranged accessor for atomic is not constructed "
                  "correctly (get_offset)");
@@ -532,7 +532,7 @@ class buffer_accessor_dims {
                 "global_buffer accessor is not move constructible (get_count)");
           }
 
-          if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
             FAIL(log,
                  "global_buffer accessor is not move constructible "
                  "(get_offset)");
@@ -568,7 +568,7 @@ class buffer_accessor_dims {
                  "global_buffer accessor is not move assignable (get_count)");
           }
 
-          if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
             FAIL(log,
                  "global_buffer accessor is not move assignable (get_offset)");
           }
@@ -610,7 +610,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != getRange<dims>(0)) {
+          if (a.get_offset() != getId<dims>(0)) {
             FAIL(log,
                  "constant_buffer accessor for read is not constructed "
                  "correctly (get_offset)");
@@ -643,7 +643,7 @@ class buffer_accessor_dims {
                  "correctly (get_count)");
           }
 
-          if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (a.get_offset() != offset) {
             FAIL(log,
                  "constant_buffer ranged accessor for read is not constructed "
                  "correctly (get_offset)");
@@ -746,7 +746,7 @@ class buffer_accessor_dims {
                  "(get_count)");
           }
 
-          if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
             FAIL(log,
                  "constant_buffer accessor is not move constructible "
                  "(get_offset)");
@@ -782,7 +782,7 @@ class buffer_accessor_dims {
                  "constant_buffer accessor is not move assignable (get_count)");
           }
 
-          if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+          if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
             FAIL(
                 log,
                 "constant_buffer accessor is not move assignable (get_offset)");
@@ -825,7 +825,7 @@ class buffer_accessor_dims {
                "(get_count)");
         }
 
-        if (a.get_offset() != getRange<dims>(0)) {
+        if (a.get_offset() != getId<dims>(0)) {
           FAIL(log,
                "host_buffer accessor for read is not constructed correctly "
                "(get_offset)");
@@ -858,7 +858,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (a.get_offset() != offset) {
           FAIL(log,
                "host_buffer ranged accessor for read is not constructed "
                "correctly (get_offset)");
@@ -891,7 +891,7 @@ class buffer_accessor_dims {
                "(get_count)");
         }
 
-        if (a.get_offset() != getRange<dims>(0)) {
+        if (a.get_offset() != getId<dims>(0)) {
           FAIL(log,
                "host_buffer accessor for write is not constructed correctly "
                "(get_offset)");
@@ -924,7 +924,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (a.get_offset() != offset) {
           FAIL(log,
                "host_buffer ranged accessor for write is not constructed "
                "correctly (get_offset)");
@@ -957,7 +957,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != getRange<dims>(0)) {
+        if (a.get_offset() != getId<dims>(0)) {
           FAIL(log,
                "host_buffer accessor for read_write is not constructed "
                "correctly (get_offset)");
@@ -990,7 +990,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (a.get_offset() != offset) {
           FAIL(log,
                "host_buffer ranged accessor for read_write is not constructed "
                "correctly (get_offset)");
@@ -1023,7 +1023,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != getRange<dims>(0)) {
+        if (a.get_offset() != getId<dims>(0)) {
           FAIL(log,
                "host_buffer accessor for discard_write is not constructed "
                "correctly (get_offset)");
@@ -1058,7 +1058,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (a.get_offset() != offset) {
           FAIL(log,
                "host_buffer ranged accessor for discard_write is not "
                "constructed "
@@ -1093,7 +1093,7 @@ class buffer_accessor_dims {
                "correctly (get_count)");
         }
 
-        if (a.get_offset() != getRange<dims>(0)) {
+        if (a.get_offset() != getId<dims>(0)) {
           FAIL(log,
                "host_buffer accessor for discard_read_write is not constructed "
                "correctly (get_offset)");
@@ -1126,7 +1126,7 @@ class buffer_accessor_dims {
                "constructed correctly (get_count)");
         }
 
-        if (a.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (a.get_offset() != offset) {
           FAIL(log,
                "host_buffer ranged accessor for discard_read_write is not "
                "constructed correctly (get_offset)");
@@ -1218,7 +1218,7 @@ class buffer_accessor_dims {
                "host_buffer accessor is not move constructible (get_count)");
         }
 
-        if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
           FAIL(log,
                "host_buffer accessor is not move constructible (get_offset)");
         }
@@ -1250,7 +1250,7 @@ class buffer_accessor_dims {
           FAIL(log, "host_buffer accessor is not move assignable (get_count)");
         }
 
-        if (b.get_offset() != cl::sycl::range<dims>(range / 2)) {
+        if (b.get_offset() != cl::sycl::id<dims>(range / 2)) {
           FAIL(log, "host_buffer accessor is not move assignable (get_offset)");
         }
 
@@ -1292,18 +1292,6 @@ class buffer_accessor_dims<T, 0> {
                  "global_buffer accessor for read is not constructed "
                  "correctly (get_count)");
           }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for read is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for read is not constructed "
-                 "correctly (get_range)");
-          }
         }
 
         /** check (buffer) constructor for write global_buffer
@@ -1323,18 +1311,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "global_buffer accessor for write is not constructed "
                  "correctly (get_count)");
-          }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for write is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for write is not constructed "
-                 "correctly (get_range)");
           }
         }
 
@@ -1356,18 +1332,6 @@ class buffer_accessor_dims<T, 0> {
                  "global_buffer accessor for read_write is not constructed "
                  "correctly (get_count)");
           }
-
-          if (a.get_offset() != cl::sycl::range<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for read_write is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != cl::sycl::range<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for read_write is not constructed "
-                 "correctly (get_range)");
-          }
         }
 
         /** check (buffer) constructor for discard_write global_buffer
@@ -1387,18 +1351,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "global_buffer accessor for discard_write is not constructed "
                  "correctly (get_count)");
-          }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for discard_write is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for discard_write is not constructed "
-                 "correctly (get_range)");
           }
         }
 
@@ -1420,18 +1372,6 @@ class buffer_accessor_dims<T, 0> {
                  "global_buffer accessor for discard_read_write is not "
                  "constructed correctly (get_count)");
           }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for discard_read_write is not "
-                 "constructed correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for discard_read_write is not "
-                 "constructed correctly (get_range)");
-          }
         }
 
         /** check (buffer) constructor for atomic global_buffer
@@ -1451,18 +1391,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "global_buffer accessor for atomic is not constructed "
                  "correctly (get_count)");
-          }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor for atomic is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor for atomic is not constructed "
-                 "correctly (get_range)");
           }
         }
 
@@ -1484,18 +1412,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(
                 log,
                 "global_buffer accessor is not copy constructible (get_count)");
-          }
-
-          if (a.get_offset() != b.get_offset()) {
-            FAIL(log,
-                 "global_buffer accessor is not copy constructible "
-                 "(get_offset)");
-          }
-
-          if (a.get_range() != b.get_range()) {
-            FAIL(
-                log,
-                "global_buffer accessor is not copy constructible (get_range)");
           }
         }
 
@@ -1522,16 +1438,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "global_buffer accessor is not copy assignable (get_count)");
           }
-
-          if (a.get_offset() != b.get_offset()) {
-            FAIL(log,
-                 "global_buffer accessor is not copy assignable (get_offset)");
-          }
-
-          if (a.get_range() != b.get_range()) {
-            FAIL(log,
-                 "global_buffer accessor is not copy assignable (get_range)");
-          }
         }
 
         /** check accessor is Move Constructible
@@ -1552,18 +1458,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(
                 log,
                 "global_buffer accessor is not move constructible (get_count)");
-          }
-
-          if (b.get_offset() != cl::sycl::range<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor is not move constructible "
-                 "(get_offset)");
-          }
-
-          if (b.get_range() != cl::sycl::range<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor is not move constructible "
-                 "(get_range)");
           }
         }
 
@@ -1590,18 +1484,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(
                 log,
                 "global_buffer accessor is not move constructible (get_count)");
-          }
-
-          if (b.get_offset() != cl::sycl::range<1>(0)) {
-            FAIL(log,
-                 "global_buffer accessor is not move constructible "
-                 "(get_offset)");
-          }
-
-          if (b.get_range() != cl::sycl::range<1>(1)) {
-            FAIL(log,
-                 "global_buffer accessor is not move constructible "
-                 "(get_range)");
           }
         }
 
@@ -1635,18 +1517,6 @@ class buffer_accessor_dims<T, 0> {
                  "constant_buffer accessor for read is not constructed "
                  "correctly (get_count)");
           }
-
-          if (a.get_offset() != getRange<1>(0)) {
-            FAIL(log,
-                 "constant_buffer accessor for read is not constructed "
-                 "correctly (get_offset)");
-          }
-
-          if (a.get_range() != getRange<1>(1)) {
-            FAIL(log,
-                 "constant_buffer accessor for read is not constructed "
-                 "correctly (get_range)");
-          }
         }
 
         /** check accessor is Copy Constructible
@@ -1668,18 +1538,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "constant_buffer accessor is not copy constructible "
                  "(get_count)");
-          }
-
-          if (a.get_offset() != b.get_offset()) {
-            FAIL(log,
-                 "constant_buffer accessor is not copy constructible "
-                 "(get_offset)");
-          }
-
-          if (a.get_range() != b.get_range()) {
-            FAIL(log,
-                 "constant_buffer accessor is not copy constructible "
-                 "(get_range)");
           }
         }
 
@@ -1706,17 +1564,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "constant_buffer accessor is not copy assignable (get_count)");
           }
-
-          if (a.get_offset() != b.get_offset()) {
-            FAIL(
-                log,
-                "constant_buffer accessor is not copy assignable (get_offset)");
-          }
-
-          if (a.get_range() != b.get_range()) {
-            FAIL(log,
-                 "constant_buffer accessor is not copy assignable (get_range)");
-          }
         }
 
         /** check accessor is Move Constructible
@@ -1738,18 +1585,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "constant_buffer accessor is not move constructible "
                  "(get_count)");
-          }
-
-          if (b.get_offset() != cl::sycl::range<1>(0)) {
-            FAIL(log,
-                 "constant_buffer accessor is not move constructible "
-                 "(get_offset)");
-          }
-
-          if (b.get_range() != cl::sycl::range<1>(1)) {
-            FAIL(log,
-                 "constant_buffer accessor is not move constructible "
-                 "(get_range)");
           }
         }
 
@@ -1777,18 +1612,6 @@ class buffer_accessor_dims<T, 0> {
             FAIL(log,
                  "constant_buffer accessor is not move constructible "
                  "(get_count)");
-          }
-
-          if (b.get_offset() != cl::sycl::range<1>(0)) {
-            FAIL(log,
-                 "constant_buffer accessor is not move constructible "
-                 "(get_offset)");
-          }
-
-          if (b.get_range() != cl::sycl::range<1>(1)) {
-            FAIL(log,
-                 "constant_buffer accessor is not move constructible "
-                 "(get_range)");
           }
         }
 
@@ -1821,18 +1644,6 @@ class buffer_accessor_dims<T, 0> {
                "host_buffer accessor for read is not constructed "
                "correctly (get_count)");
         }
-
-        if (a.get_offset() != getRange<1>(0)) {
-          FAIL(log,
-               "host_buffer accessor for read is not constructed "
-               "correctly (get_offset)");
-        }
-
-        if (a.get_range() != getRange<1>(1)) {
-          FAIL(log,
-               "host_buffer accessor for read is not constructed "
-               "correctly (get_range)");
-        }
       }
 
       /** check (buffer) constructor for write host_buffer
@@ -1852,18 +1663,6 @@ class buffer_accessor_dims<T, 0> {
           FAIL(log,
                "host_buffer accessor for write is not constructed "
                "correctly (get_count)");
-        }
-
-        if (a.get_offset() != getRange<1>(0)) {
-          FAIL(log,
-               "host_buffer accessor for write is not constructed "
-               "correctly (get_offset)");
-        }
-
-        if (a.get_range() != getRange<1>(1)) {
-          FAIL(log,
-               "host_buffer accessor for write is not constructed "
-               "correctly (get_range)");
         }
       }
 
@@ -1885,18 +1684,6 @@ class buffer_accessor_dims<T, 0> {
                "host_buffer accessor for read_write is not constructed "
                "correctly (get_count)");
         }
-
-        if (a.get_offset() != cl::sycl::range<1>(0)) {
-          FAIL(log,
-               "host_buffer accessor for read_write is not constructed "
-               "correctly (get_offset)");
-        }
-
-        if (a.get_range() != cl::sycl::range<1>(1)) {
-          FAIL(log,
-               "host_buffer accessor for read_write is not constructed "
-               "correctly (get_range)");
-        }
       }
 
       /** check (buffer) constructor for discard_write host_buffer
@@ -1916,18 +1703,6 @@ class buffer_accessor_dims<T, 0> {
           FAIL(log,
                "host_buffer accessor for discard_write is not constructed "
                "correctly (get_count)");
-        }
-
-        if (a.get_offset() != getRange<1>(0)) {
-          FAIL(log,
-               "host_buffer accessor for discard_write is not constructed "
-               "correctly (get_offset)");
-        }
-
-        if (a.get_range() != getRange<1>(1)) {
-          FAIL(log,
-               "host_buffer accessor for discard_write is not constructed "
-               "correctly (get_range)");
         }
       }
 
@@ -1949,18 +1724,6 @@ class buffer_accessor_dims<T, 0> {
                "host_buffer accessor for discard_read_write is not "
                "constructed correctly (get_count)");
         }
-
-        if (a.get_offset() != getRange<1>(0)) {
-          FAIL(log,
-               "host_buffer accessor for discard_read_write is not "
-               "constructed correctly (get_offset)");
-        }
-
-        if (a.get_range() != getRange<1>(1)) {
-          FAIL(log,
-               "host_buffer accessor for discard_read_write is not "
-               "constructed correctly (get_range)");
-        }
       }
 
       /** check accessor is Copy Constructible
@@ -1980,17 +1743,6 @@ class buffer_accessor_dims<T, 0> {
         if (a.get_count() != b.get_count()) {
           FAIL(log,
                "global_buffer accessor is not copy constructible (get_count)");
-        }
-
-        if (a.get_offset() != b.get_offset()) {
-          FAIL(log,
-               "global_buffer accessor is not copy constructible "
-               "(get_offset)");
-        }
-
-        if (a.get_range() != b.get_range()) {
-          FAIL(log,
-               "global_buffer accessor is not copy constructible (get_range)");
         }
       }
 
@@ -2016,16 +1768,6 @@ class buffer_accessor_dims<T, 0> {
           FAIL(log,
                "global_buffer accessor is not copy assignable (get_count)");
         }
-
-        if (a.get_offset() != b.get_offset()) {
-          FAIL(log,
-               "global_buffer accessor is not copy assignable (get_offset)");
-        }
-
-        if (a.get_range() != b.get_range()) {
-          FAIL(log,
-               "global_buffer accessor is not copy assignable (get_range)");
-        }
       }
 
       /** check accessor is Move Constructible
@@ -2045,18 +1787,6 @@ class buffer_accessor_dims<T, 0> {
         if (b.get_count() != 1) {
           FAIL(log,
                "global_buffer accessor is not move constructible (get_count)");
-        }
-
-        if (b.get_offset() != cl::sycl::range<1>(0)) {
-          FAIL(log,
-               "global_buffer accessor is not move constructible "
-               "(get_offset)");
-        }
-
-        if (b.get_range() != cl::sycl::range<1>(1)) {
-          FAIL(log,
-               "global_buffer accessor is not move constructible "
-               "(get_range)");
         }
       }
 
@@ -2082,18 +1812,6 @@ class buffer_accessor_dims<T, 0> {
         if (b.get_count() != 1) {
           FAIL(log,
                "global_buffer accessor is not move constructible (get_count)");
-        }
-
-        if (b.get_offset() != cl::sycl::range<1>(0)) {
-          FAIL(log,
-               "global_buffer accessor is not move constructible "
-               "(get_offset)");
-        }
-
-        if (b.get_range() != cl::sycl::range<1>(1)) {
-          FAIL(log,
-               "global_buffer accessor is not move constructible "
-               "(get_range)");
         }
       }
     }

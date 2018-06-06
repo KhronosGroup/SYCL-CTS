@@ -2,14 +2,14 @@
 //
 //  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
 
 #define TEST_NAME accessor_constructors_local
 
 #include "../common/common.h"
-#include "../accessor/accessor_constructors_utility.h"
+#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 /** unique dummy_functor per file

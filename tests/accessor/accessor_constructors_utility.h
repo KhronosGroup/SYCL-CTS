@@ -63,6 +63,30 @@ namespace TEST_NAMESPACE {
 		return cl::sycl::range<3>(size, size, size);
 	}
 
+	/** Helper function that calculates an id from a size so
+	*  that each dimension equals size
+	*/
+	template <size_t dims>
+	cl::sycl::id<dims> getId(const size_t &size);
+
+	/** Specializations of for getId each supported
+	*  dimensionality
+	*/
+	template <>
+	cl::sycl::id<1> getId<1>(const size_t &size) {
+		return cl::sycl::id<1>(size);
+	}
+	template <>
+	cl::sycl::id<2> getId<2>(const size_t &size) {
+		return cl::sycl::id<2>(size, size);
+	}
+	template <>
+	cl::sycl::id<3> getId<3>(const size_t &size) {
+		return cl::sycl::id<3>(size, size, size);
+	}
+
+
+
 }  // namespace accessor_utility__
 
 #endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_UTILITY_H
