@@ -112,7 +112,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder ranged accessor for read is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -151,7 +151,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -190,7 +190,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder ranged accessor for write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -229,7 +229,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for read_write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -268,8 +268,8 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder ranged accessor for read_write is "
+                 "not constructed correctly (is_placeholder)");
           }
         }
 
@@ -307,7 +307,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for discard_write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -346,8 +346,8 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder ranged accessor for discard_write "
+                 "is not constructed correctly (is_placeholder)");
           }
         }
 
@@ -387,8 +387,8 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor for discard_read_write is "
+                 "not constructed correctly (is_placeholder)");
           }
         }
         /** check (buffer, range, offset) constructor for
@@ -428,8 +428,9 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder ranged accessor for "
+                 "discard_read_write is not constructed correctly "
+                 "(is_placeholder)");
           }
         }
 
@@ -469,7 +470,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for atomic is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -507,7 +508,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder ranged accessor for atomic is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -523,29 +524,61 @@ class placeholder_accessor_dims {
 
           if (a.get_size() != b.get_size()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_size)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_size)");
           }
 
           if (a.get_count() != b.get_count()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_count)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_count)");
           }
 
           if (a.get_offset() != b.get_offset()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_offset)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_offset)");
           }
 
           if (a.get_range() != b.get_range()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_range)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_range)");
           }
 
-          if (a.is_placeholder() != true) {
+          if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(is_placeholder)");
           }
+
+		  // check operator ==
+		  if (!(a == b)) {
+			  FAIL(log, "accessor is not equality-comparable (operator==)");
+		  }
+
+		  if (!(b == a)) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator== symmetry "
+				  "failed)");
+		  }
+
+		  if (a != b) {
+			  FAIL(log, "accessor is not equality-comparable (operator!=)");
+		  }
+
+		  if (b != a) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator!= symmetry "
+				  "failed)");
+		  }
+
+		  // check std::hash<accessor<>>
+		  std::hash<decltype(a)> hasher;
+
+		  if (hasher(a) != hasher(b)) {
+			  FAIL(log, "accessor hashing of equal failed");
+		  }
         }
 
         /** check accessor is Copy Assignable
@@ -587,8 +620,8 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not copy assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -603,28 +636,32 @@ class placeholder_accessor_dims {
 
           if (b.get_size() != getElementsCount<dims>(range) * sizeof(T)) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_size)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_size)");
           }
 
           if (b.get_count() != getElementsCount<dims>(range)) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_count)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_count)");
           }
 
           if (b.get_offset() != offset) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_offset)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_offset)");
           }
 
           if (b.get_range() != range) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_range)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_range)");
           }
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(is_placeholder)");
           }
         }
 
@@ -667,8 +704,8 @@ class placeholder_accessor_dims {
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not move assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -717,7 +754,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "constant_buffer placeholder accessor for read is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -756,7 +793,7 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "constant_buffer placeholder ranged accessor for read is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -794,11 +831,39 @@ class placeholder_accessor_dims {
                  "constructible (get_range)");
           }
 
-          if (a.is_placeholder() != true) {
+          if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not copy "
+                 "constructible (is_placeholder)");
           }
+
+		  // check operator ==
+		  if (!(a == b)) {
+			  FAIL(log, "accessor is not equality-comparable (operator==)");
+		  }
+
+		  if (!(b == a)) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator== symmetry "
+				  "failed)");
+		  }
+
+		  if (a != b) {
+			  FAIL(log, "accessor is not equality-comparable (operator!=)");
+		  }
+
+		  if (b != a) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator!= symmetry "
+				  "failed)");
+		  }
+
+		  // check std::hash<accessor<>>
+		  std::hash<decltype(a)> hasher;
+
+		  if (hasher(a) != hasher(b)) {
+			  FAIL(log, "accessor hashing of equal failed");
+		  }
         }
 
         /** check accessor is Copy Assignable
@@ -840,8 +905,8 @@ class placeholder_accessor_dims {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not copy assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -880,8 +945,8 @@ class placeholder_accessor_dims {
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not move "
+                 "constructible (is_placeholder)");
           }
         }
 
@@ -924,8 +989,8 @@ class placeholder_accessor_dims {
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not move assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -998,7 +1063,7 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -1024,7 +1089,7 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for read_write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -1050,7 +1115,7 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for discard_write is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -1076,8 +1141,8 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor for discard_read_write is "
+                 "not constructed correctly (is_placeholder)");
           }
         }
 
@@ -1102,7 +1167,7 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "global_buffer placeholder accessor for atomic is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -1118,19 +1183,49 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.get_size() != b.get_size()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_size)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_size)");
           }
 
           if (a.get_count() != b.get_count()) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not copy constructible (get_count)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(get_count)");
           }
 
-          if (a.is_placeholder() != true) {
+          if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not copy constructible "
+                 "(is_placeholder)");
           }
+
+		  // check operator ==
+		  if (!(a == b)) {
+			  FAIL(log, "accessor is not equality-comparable (operator==)");
+		  }
+
+		  if (!(b == a)) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator== symmetry "
+				  "failed)");
+		  }
+
+		  if (a != b) {
+			  FAIL(log, "accessor is not equality-comparable (operator!=)");
+		  }
+
+		  if (b != a) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator!= symmetry "
+				  "failed)");
+		  }
+
+		  // check std::hash<accessor<>>
+		  std::hash<decltype(a)> hasher;
+
+		  if (hasher(a) != hasher(b)) {
+			  FAIL(log, "accessor hashing of equal failed");
+		  }
         }
 
         /** check accessor is Copy Assignable
@@ -1161,8 +1256,8 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not copy assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -1177,18 +1272,20 @@ class placeholder_accessor_dims<T, 0> {
 
           if (b.get_size() != sizeof(T)) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_size)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_size)");
           }
 
           if (b.get_count() != 1) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_count)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_count)");
           }
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(is_placeholder)");
           }
         }
 
@@ -1208,18 +1305,20 @@ class placeholder_accessor_dims<T, 0> {
 
           if (b.get_size() != sizeof(T)) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_size)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_size)");
           }
 
           if (b.get_count() != 1) {
             FAIL(log,
-                 "global_buffer placeholder accessor is not move constructible (get_count)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(get_count)");
           }
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "global_buffer placeholder accessor is not move constructible "
+                 "(is_placeholder)");
           }
         }
 
@@ -1256,7 +1355,7 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
+                 "constant_buffer placeholder accessor for read is not "
                  "constructed correctly (is_placeholder)");
           }
         }
@@ -1282,11 +1381,39 @@ class placeholder_accessor_dims<T, 0> {
                  "constructible (get_count)");
           }
 
-          if (a.is_placeholder() != true) {
+          if (a.is_placeholder() != b.is_placeholder()) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not copy "
+                 "constructible (is_placeholder)");
           }
+
+		  // check operator ==
+		  if (!(a == b)) {
+			  FAIL(log, "accessor is not equality-comparable (operator==)");
+		  }
+
+		  if (!(b == a)) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator== symmetry "
+				  "failed)");
+		  }
+
+		  if (a != b) {
+			  FAIL(log, "accessor is not equality-comparable (operator!=)");
+		  }
+
+		  if (b != a) {
+			  FAIL(log,
+				  "accessor is not equality-comparable (operator!= symmetry "
+				  "failed)");
+		  }
+
+		  // check std::hash<accessor<>>
+		  std::hash<decltype(a)> hasher;
+
+		  if (hasher(a) != hasher(b)) {
+			  FAIL(log, "accessor hashing of equal failed");
+		  }
         }
 
         /** check accessor is Copy Assignable
@@ -1317,8 +1444,8 @@ class placeholder_accessor_dims<T, 0> {
 
           if (a.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not copy assignable "
+                 "(is_placeholder)");
           }
         }
 
@@ -1345,8 +1472,8 @@ class placeholder_accessor_dims<T, 0> {
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not move "
+                 "constructible (is_placeholder)");
           }
         }
 
@@ -1378,8 +1505,8 @@ class placeholder_accessor_dims<T, 0> {
 
           if (b.is_placeholder() != true) {
             FAIL(log,
-                 "global_buffer placeholder accessor for read is not "
-                 "constructed correctly (is_placeholder)");
+                 "constant_buffer placeholder accessor is not move "
+                 "constructible (is_placeholder)");
           }
         }
 
