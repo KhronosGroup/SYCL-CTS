@@ -552,33 +552,33 @@ class placeholder_accessor_dims {
                  "(is_placeholder)");
           }
 
-		  // check operator ==
-		  if (!(a == b)) {
-			  FAIL(log, "accessor is not equality-comparable (operator==)");
-		  }
+          // check operator ==
+          if (!(a == b)) {
+            FAIL(log, "accessor is not equality-comparable (operator==)");
+          }
 
-		  if (!(b == a)) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator== symmetry "
-				  "failed)");
-		  }
+          if (!(b == a)) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator== symmetry "
+                 "failed)");
+          }
 
-		  if (a != b) {
-			  FAIL(log, "accessor is not equality-comparable (operator!=)");
-		  }
+          if (a != b) {
+            FAIL(log, "accessor is not equality-comparable (operator!=)");
+          }
 
-		  if (b != a) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator!= symmetry "
-				  "failed)");
-		  }
+          if (b != a) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator!= symmetry "
+                 "failed)");
+          }
 
-		  // check std::hash<accessor<>>
-		  std::hash<decltype(a)> hasher;
+          // check std::hash<accessor<>>
+          std::hash<decltype(a)> hasher;
 
-		  if (hasher(a) != hasher(b)) {
-			  FAIL(log, "accessor hashing of equal failed");
-		  }
+          if (hasher(a) != hasher(b)) {
+            FAIL(log, "accessor hashing of equal failed");
+          }
         }
 
         /** check accessor is Copy Assignable
@@ -837,33 +837,33 @@ class placeholder_accessor_dims {
                  "constructible (is_placeholder)");
           }
 
-		  // check operator ==
-		  if (!(a == b)) {
-			  FAIL(log, "accessor is not equality-comparable (operator==)");
-		  }
+          // check operator ==
+          if (!(a == b)) {
+            FAIL(log, "accessor is not equality-comparable (operator==)");
+          }
 
-		  if (!(b == a)) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator== symmetry "
-				  "failed)");
-		  }
+          if (!(b == a)) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator== symmetry "
+                 "failed)");
+          }
 
-		  if (a != b) {
-			  FAIL(log, "accessor is not equality-comparable (operator!=)");
-		  }
+          if (a != b) {
+            FAIL(log, "accessor is not equality-comparable (operator!=)");
+          }
 
-		  if (b != a) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator!= symmetry "
-				  "failed)");
-		  }
+          if (b != a) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator!= symmetry "
+                 "failed)");
+          }
 
-		  // check std::hash<accessor<>>
-		  std::hash<decltype(a)> hasher;
+          // check std::hash<accessor<>>
+          std::hash<decltype(a)> hasher;
 
-		  if (hasher(a) != hasher(b)) {
-			  FAIL(log, "accessor hashing of equal failed");
-		  }
+          if (hasher(a) != hasher(b)) {
+            FAIL(log, "accessor hashing of equal failed");
+          }
         }
 
         /** check accessor is Copy Assignable
@@ -1199,33 +1199,33 @@ class placeholder_accessor_dims<T, 0> {
                  "(is_placeholder)");
           }
 
-		  // check operator ==
-		  if (!(a == b)) {
-			  FAIL(log, "accessor is not equality-comparable (operator==)");
-		  }
+          // check operator ==
+          if (!(a == b)) {
+            FAIL(log, "accessor is not equality-comparable (operator==)");
+          }
 
-		  if (!(b == a)) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator== symmetry "
-				  "failed)");
-		  }
+          if (!(b == a)) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator== symmetry "
+                 "failed)");
+          }
 
-		  if (a != b) {
-			  FAIL(log, "accessor is not equality-comparable (operator!=)");
-		  }
+          if (a != b) {
+            FAIL(log, "accessor is not equality-comparable (operator!=)");
+          }
 
-		  if (b != a) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator!= symmetry "
-				  "failed)");
-		  }
+          if (b != a) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator!= symmetry "
+                 "failed)");
+          }
 
-		  // check std::hash<accessor<>>
-		  std::hash<decltype(a)> hasher;
+          // check std::hash<accessor<>>
+          std::hash<decltype(a)> hasher;
 
-		  if (hasher(a) != hasher(b)) {
-			  FAIL(log, "accessor hashing of equal failed");
-		  }
+          if (hasher(a) != hasher(b)) {
+            FAIL(log, "accessor hashing of equal failed");
+          }
         }
 
         /** check accessor is Copy Assignable
@@ -1387,33 +1387,33 @@ class placeholder_accessor_dims<T, 0> {
                  "constructible (is_placeholder)");
           }
 
-		  // check operator ==
-		  if (!(a == b)) {
-			  FAIL(log, "accessor is not equality-comparable (operator==)");
-		  }
+          // check operator ==
+          if (!(a == b)) {
+            FAIL(log, "accessor is not equality-comparable (operator==)");
+          }
 
-		  if (!(b == a)) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator== symmetry "
-				  "failed)");
-		  }
+          if (!(b == a)) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator== symmetry "
+                 "failed)");
+          }
 
-		  if (a != b) {
-			  FAIL(log, "accessor is not equality-comparable (operator!=)");
-		  }
+          if (a != b) {
+            FAIL(log, "accessor is not equality-comparable (operator!=)");
+          }
 
-		  if (b != a) {
-			  FAIL(log,
-				  "accessor is not equality-comparable (operator!= symmetry "
-				  "failed)");
-		  }
+          if (b != a) {
+            FAIL(log,
+                 "accessor is not equality-comparable (operator!= symmetry "
+                 "failed)");
+          }
 
-		  // check std::hash<accessor<>>
-		  std::hash<decltype(a)> hasher;
+          // check std::hash<accessor<>>
+          std::hash<decltype(a)> hasher;
 
-		  if (hasher(a) != hasher(b)) {
-			  FAIL(log, "accessor hashing of equal failed");
-		  }
+          if (hasher(a) != hasher(b)) {
+            FAIL(log, "accessor hashing of equal failed");
+          }
         }
 
         /** check accessor is Copy Assignable
@@ -1557,10 +1557,6 @@ class TEST_NAME : public util::test_base {
       /** check accessor constructors for float
        */
       check_all_dims<float>(log, queue);
-
-      /** check accessor constructors for double
-       */
-      check_all_dims<double>(log, queue);
 
       /** check accessor constructors for char
        */

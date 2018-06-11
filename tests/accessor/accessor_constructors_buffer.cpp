@@ -2360,10 +2360,6 @@ class TEST_NAME : public util::test_base {
        */
       check_all_dims<float>(log, queue);
 
-      /** check accessor constructors for double
-       */
-      check_all_dims<double>(log, queue);
-
       /** check accessor constructors for char
        */
       check_all_dims<char>(log, queue);
