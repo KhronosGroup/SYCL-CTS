@@ -196,7 +196,7 @@ bool check_type_min_size(size_t minSize) {
  */
 template <typename T>
 bool check_type_sign(bool expected_sign) {
-  return !(std::is_signed<T>::value != expected_sign);
+  return (std::is_signed<T>::value == expected_sign);
 }
 
 
