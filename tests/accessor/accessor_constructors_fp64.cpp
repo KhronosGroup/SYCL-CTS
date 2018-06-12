@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#define TEST_NAME accessor_constructors_buffer_fp64
+#define TEST_NAME accessor_constructors_fp64
 
 #include "../common/common.h"
 #include "accessor_constructors_utility.h"
@@ -4017,6 +4017,293 @@ class placeholder_accessor_dims_fp64<T, 0> {
   }
 };
 
+
+template <typename T, size_t dims>
+class local_accessor_dims_fp64 {
+public:
+	static void check(util::logger &log, cl::sycl::queue &queue) {
+		int size = 32;
+
+		/** check buffer accessor constructors for n > 0 dimension
+		*/
+
+		cl::sycl::range<dims> range = getRange<dims>(size);
+		std::vector<uint8_t> data(getElementsCount<dims>(range) * sizeof(T), 0);
+		cl::sycl::buffer<T, dims> buffer(reinterpret_cast<T *>(data.data()), range);
+		/** check buffer accessor constructors for local
+		*/
+		{
+			queue.submit([&](cl::sycl::handler &h) {
+				/** check (handler, range) constructor for read_write local
+				*/
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+
+					if (a.get_size() != getElementsCount<dims>(range) * sizeof(T)) {
+						FAIL(log,
+							"local accessor for read_write is not constructed "
+							"correctly (get_size)");
+					}
+
+					if (a.get_count() != getElementsCount<dims>(range)) {
+						FAIL(log,
+							"local accessor for read_write is not constructed "
+							"correctly (get_count)");
+					}
+				}
+				/** check buffer accessor constructors for atomic, only available in
+				* local target
+				*/
+
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::atomic,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+
+					if (a.get_size() != getElementsCount<dims>(range) * sizeof(T)) {
+						FAIL(log,
+							"local accessor for atomic is not constructed "
+							"correctly (get_size)");
+					}
+
+					if (a.get_count() != getElementsCount<dims>(range)) {
+						FAIL(log,
+							"local accessor for atomic is not constructed "
+							"correctly (get_count)");
+					}
+				}
+				/** check accessor is Copy Constructible
+				*/
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+					auto b{ a };
+
+					if (a.get_size() != b.get_size()) {
+						FAIL(log, "local accessor is not copy constructible (get_size)");
+					}
+
+					if (a.get_count() != b.get_count()) {
+						FAIL(log, "local accessor is not copy constructible (get_count)");
+					}
+				}
+
+				/** check accessor is Copy Assignable
+				*/
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						b(range, h);
+					b = a;
+
+					if (a.get_size() != b.get_size()) {
+						FAIL(log, "local accessor is not copy assignable (get_size)");
+					}
+
+					if (a.get_count() != b.get_count()) {
+						FAIL(log, "local accessor is not copy assignable (get_count)");
+					}
+				}
+
+				/** check accessor is Move Constructible
+				*/
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+					auto b{ std::move(a) };
+
+					if (b.get_size() != getElementsCount<dims>(range) * sizeof(T)) {
+						FAIL(log, "local accessor is not move constructible (get_size)");
+					}
+
+					if (b.get_count() != getElementsCount<dims>(range)) {
+						FAIL(log, "local accessor is not move constructible (get_count)");
+					}
+				}
+
+				/** check accessor is Move Assignable
+				*/
+				{
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(range, h);
+					cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						b(range, h);
+					b = std::move(a);
+
+					if (b.get_size() != getElementsCount<dims>(range) * sizeof(T)) {
+						FAIL(log, "local accessor is not move assignable (get_size)");
+					}
+
+					if (b.get_count() != getElementsCount<dims>(range)) {
+						FAIL(log, "local accessor is not move assignable (get_count)");
+					}
+				}
+
+				/** dummy kernel as no kernel is required for these checks
+				*/
+				h.single_task(dummy_functor{});
+			});
+			queue.wait_and_throw();
+		}
+	}
+};
+
+template <typename T>
+class local_accessor_dims_fp64<T, 0> {
+public:
+	static void check(util::logger &log, cl::sycl::queue &queue) {
+		/** check buffer accessor constructors for local
+		*/
+		{
+			queue.submit([&](cl::sycl::handler &h) {
+				/** check (buffer) constructor for read_write local
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+					if (a.get_size() != sizeof(T)) {
+						FAIL(log,
+							"local accessor for read_write is not constructed "
+							"correctly (get_size)");
+					}
+
+					if (a.get_count() != 1) {
+						FAIL(log,
+							"local accessor for read_write is not constructed "
+							"correctly (get_count)");
+					}
+				}
+
+				/** check (buffer) constructor for atomic local
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::atomic,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+					if (a.get_size() != sizeof(T)) {
+						FAIL(log,
+							"local accessor for atomic is not constructed "
+							"correctly (get_size)");
+					}
+
+					if (a.get_count() != 1) {
+						FAIL(log,
+							"local accessor for atomic is not constructed "
+							"correctly (get_count)");
+					}
+				}
+
+				/** check accessor is Copy Constructible
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+					auto b{ a };
+
+					if (a.get_size() != b.get_size()) {
+						FAIL(log, "local accessor is not copy constructible (get_size)");
+					}
+
+					if (a.get_count() != b.get_count()) {
+						FAIL(log, "local accessor is not copy constructible (get_count)");
+					}
+				}
+
+				/** check accessor is Copy Assignable
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						b(h);
+					b = a;
+
+					if (a.get_size() != b.get_size()) {
+						FAIL(log, "local accessor is not copy assignable (get_size)");
+					}
+
+					if (a.get_count() != b.get_count()) {
+						FAIL(log, "local accessor is not copy assignable (get_count)");
+					}
+				}
+
+				/** check accessor is Move Constructible
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+					auto b{ std::move(a) };
+
+					if (b.get_size() != sizeof(T)) {
+						FAIL(log, "local accessor is not move constructible (get_size)");
+					}
+
+					if (b.get_count() != 1) {
+						FAIL(log, "local accessor is not move constructible (get_count)");
+					}
+				}
+
+				/** check accessor is Move Assignable
+				*/
+				{
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						a(h);
+
+					cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
+						cl::sycl::access::target::local,
+						cl::sycl::access::placeholder::false_t>
+						b(h);
+					b = std::move(a);
+
+					if (b.get_size() != sizeof(T)) {
+						FAIL(log, "local accessor is not move constructible (get_size)");
+					}
+
+					if (b.get_count() != 1) {
+						FAIL(log, "local accessor is not move constructible (get_count)");
+					}
+
+					/** dummy kernel as no kernel is required for these checks
+					*/
+					h.single_task(dummy_functor{});
+				}
+			});
+			queue.wait_and_throw();
+		}
+	}
+};
+
 /** tests the constructors for cl::sycl::accessor
  */
 class TEST_NAME : public util::test_base {
@@ -4033,6 +4320,12 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
+	  if (!queue.get_device().has_extension("cl_khr_fp64")) {
+		  log.note(
+			  "Device does not support double precision floating point operations");
+		  return;
+	  }
+
       /** check accessor constructors for double (fp64)
        */
       buffer_accessor_dims_fp64<double, 0>::check(log, queue);
@@ -4044,6 +4337,11 @@ class TEST_NAME : public util::test_base {
       placeholder_accessor_dims_fp64<double, 1>::check(log, queue);
       placeholder_accessor_dims_fp64<double, 2>::check(log, queue);
       placeholder_accessor_dims_fp64<double, 3>::check(log, queue);
+
+	  local_accessor_dims_fp64<double, 0>::check(log, queue);
+	  local_accessor_dims_fp64<double, 1>::check(log, queue);
+	  local_accessor_dims_fp64<double, 2>::check(log, queue);
+	  local_accessor_dims_fp64<double, 3>::check(log, queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

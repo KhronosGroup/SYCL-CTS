@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#define TEST_NAME accessor_constructors_half
+#define TEST_NAME accessor_constructors_fp16
 
 #include "../common/common.h"
 #include "accessor_constructors_utility.h"
@@ -20,7 +20,7 @@ class dummy_accessor_constructors_half {};
 using dummy_functor = ::dummy_functor<dummy_accessor_constructors_half>;
 
 template <typename T, size_t dims>
-class buffer_accessor_half_dims {
+class buffer_accessors_fp16_dims {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     int size = 32;
@@ -1549,7 +1549,7 @@ class buffer_accessor_half_dims {
 };
 
 template <typename T>
-class buffer_accessor_half_dims<T, 0> {
+class buffer_accessors_fp16_dims<T, 0> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     cl::sycl::range<1> range = getRange<1>(1);
@@ -2323,7 +2323,7 @@ class buffer_accessor_half_dims<T, 0> {
 };
 
 template <typename T, size_t dims>
-class placeholder_accessor_half_dims {
+class placeholder_accessors_fp16_dims {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     int size = 32;
@@ -3308,7 +3308,7 @@ class placeholder_accessor_half_dims {
 };
 
 template <typename T>
-class placeholder_accessor_half_dims<T, 0> {
+class placeholder_accessors_fp16_dims<T, 0> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     cl::sycl::range<1> range = getRange<1>(1);
@@ -3824,7 +3824,7 @@ class placeholder_accessor_half_dims<T, 0> {
 };
 
 template <typename T, size_t dims>
-class local_accessor_half_dims {
+class local_accessors_fp16_dims {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     int size = 32;
@@ -3971,7 +3971,7 @@ class local_accessor_half_dims {
 };
 
 template <typename T>
-class local_accessor_half_dims<T, 0> {
+class local_accessors_fp16_dims<T, 0> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     /** check buffer accessor constructors for local
@@ -4110,7 +4110,7 @@ class local_accessor_half_dims<T, 0> {
 };
 
 template <typename T, size_t dims>
-class image_accessor_half_dims {
+class image_accessors_fp16_dims {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     int size = 32;
@@ -4427,7 +4427,7 @@ class image_accessor_half_dims {
 };
 
 template <typename T, size_t dims>
-class image_array_accessor_half_dims {
+class image_array_accessors_fp16_dims {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     int size = 32;
@@ -4614,34 +4614,40 @@ class TEST_NAME : public util::test_base {
 
   template <typename T>
   void checkBufferAndLocal(util::logger &log, cl::sycl::queue &queue) {
-    buffer_accessor_half_dims<cl::sycl::cl_half, 0>::check(log, queue);
-    buffer_accessor_half_dims<cl::sycl::cl_half, 1>::check(log, queue);
-    buffer_accessor_half_dims<cl::sycl::cl_half, 2>::check(log, queue);
-    buffer_accessor_half_dims<cl::sycl::cl_half, 3>::check(log, queue);
+    buffer_accessors_fp16_dims<cl::sycl::cl_half, 0>::check(log, queue);
+    buffer_accessors_fp16_dims<cl::sycl::cl_half, 1>::check(log, queue);
+    buffer_accessors_fp16_dims<cl::sycl::cl_half, 2>::check(log, queue);
+    buffer_accessors_fp16_dims<cl::sycl::cl_half, 3>::check(log, queue);
 
-    placeholder_accessor_half_dims<cl::sycl::cl_half, 0>::check(log, queue);
-    placeholder_accessor_half_dims<cl::sycl::cl_half, 1>::check(log, queue);
-    placeholder_accessor_half_dims<cl::sycl::cl_half, 2>::check(log, queue);
-    placeholder_accessor_half_dims<cl::sycl::cl_half, 3>::check(log, queue);
+    placeholder_accessors_fp16_dims<cl::sycl::cl_half, 0>::check(log, queue);
+    placeholder_accessors_fp16_dims<cl::sycl::cl_half, 1>::check(log, queue);
+    placeholder_accessors_fp16_dims<cl::sycl::cl_half, 2>::check(log, queue);
+    placeholder_accessors_fp16_dims<cl::sycl::cl_half, 3>::check(log, queue);
 
-    local_accessor_half_dims<cl::sycl::cl_half, 0>::check(log, queue);
-    local_accessor_half_dims<cl::sycl::cl_half, 1>::check(log, queue);
-    local_accessor_half_dims<cl::sycl::cl_half, 2>::check(log, queue);
-    local_accessor_half_dims<cl::sycl::cl_half, 3>::check(log, queue);
+    local_accessors_fp16_dims<cl::sycl::cl_half, 0>::check(log, queue);
+    local_accessors_fp16_dims<cl::sycl::cl_half, 1>::check(log, queue);
+    local_accessors_fp16_dims<cl::sycl::cl_half, 2>::check(log, queue);
+    local_accessors_fp16_dims<cl::sycl::cl_half, 3>::check(log, queue);
   }
 
   void checkImage(util::logger &log, cl::sycl::queue &queue) {
-    image_accessor_half_dims<cl::sycl::cl_half4, 1>::check(log, queue);
-    image_accessor_half_dims<cl::sycl::cl_half4, 2>::check(log, queue);
-    image_accessor_half_dims<cl::sycl::cl_half4, 3>::check(log, queue);
-    image_array_accessor_half_dims<cl::sycl::cl_half4, 1>::check(log, queue);
-    image_array_accessor_half_dims<cl::sycl::cl_half4, 2>::check(log, queue);
+    image_accessors_fp16_dims<cl::sycl::cl_half4, 1>::check(log, queue);
+    image_accessors_fp16_dims<cl::sycl::cl_half4, 2>::check(log, queue);
+    image_accessors_fp16_dims<cl::sycl::cl_half4, 3>::check(log, queue);
+    image_array_accessors_fp16_dims<cl::sycl::cl_half4, 1>::check(log, queue);
+    image_array_accessors_fp16_dims<cl::sycl::cl_half4, 2>::check(log, queue);
   }
   /** execute this test
    */
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
+
+	  if (!queue.get_device().has_extension("cl_khr_fp16")) {
+		  log.note(
+			  "Device does not support half precision floating point operations");
+		  return;
+	  }
 
       /** check accessor constructors for cl_half
        */
