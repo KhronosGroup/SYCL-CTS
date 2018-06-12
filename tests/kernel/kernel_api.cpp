@@ -10,7 +10,7 @@
 
 #define TEST_NAME kernel_api
 
-struct test_kernel_name {
+struct kernel_name_api {
   void operator()() const {}
 };
 
@@ -45,8 +45,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       // Create kernel
       cl::sycl::program prog(ctsQueue.get_context());
-      prog.build_with_kernel_type<test_kernel_name>();
-      auto k = prog.get_kernel<test_kernel_name>();
+      prog.build_with_kernel_type<kernel_name_api>();
+      auto k = prog.get_kernel<kernel_name_api>();
+      ctsQueue.submit(
+          [&](cl::sycl::handler &h) { h.single_task(kernel_name_api{}); });
 
       if (!isHostCtx) {
         // Check get()
