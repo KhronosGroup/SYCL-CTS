@@ -16,7 +16,6 @@
 
 namespace TEST_NAMESPACE {
 
-
 /** tests the constructors for cl::sycl::accessor
  */
 class TEST_NAME : public util::test_base {
@@ -33,33 +32,57 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-	  if (!queue.get_device().has_extension("cl_khr_fp64")) {
-		  log.note(
-			  "Device does not support double precision floating point operations");
-		  return;
-	  }
+      if (!queue.get_device().has_extension("cl_khr_fp64")) {
+        log.note(
+            "Device does not support double precision floating point "
+            "operations");
+        return;
+      }
 
       /** check accessor constructors for double (fp64)
        */
-	  buffer_accessor_dims<double, 0, false, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 1, false, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 2, false, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 3, false, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 0, true, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 1, true, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 2, true, cl::sycl::access::placeholder::false_t>::check(log, queue);
-	  buffer_accessor_dims<double, 3, true, cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 0, is_host_buffer::false_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 1, is_host_buffer::false_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 2, is_host_buffer::false_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 3, is_host_buffer::false_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 0, is_host_buffer::true_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 1, is_host_buffer::true_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 2, is_host_buffer::true_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
+      buffer_accessor_dims<
+          double, 3, is_host_buffer::true_t,
+          cl::sycl::access::placeholder::false_t>::check(log, queue);
 
-	  buffer_accessor_dims<double, 0, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<double, 1, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<double, 2, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<double, 3, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
+      buffer_accessor_dims<double, 0, is_host_buffer::false_t,
+                           cl::sycl::access::placeholder::true_t>::check(log,
+                                                                         queue);
+      buffer_accessor_dims<double, 1, is_host_buffer::false_t,
+                           cl::sycl::access::placeholder::true_t>::check(log,
+                                                                         queue);
+      buffer_accessor_dims<double, 2, is_host_buffer::false_t,
+                           cl::sycl::access::placeholder::true_t>::check(log,
+                                                                         queue);
+      buffer_accessor_dims<double, 3, is_host_buffer::false_t,
+                           cl::sycl::access::placeholder::true_t>::check(log,
+                                                                         queue);
 
-	  local_accessor_dims<double, 0>::check(log, queue);
-	  local_accessor_dims<double, 1>::check(log, queue);
-	  local_accessor_dims<double, 2>::check(log, queue);
-	  local_accessor_dims<double, 3>::check(log, queue);
-
+      local_accessor_dims<double, 0>::check(log, queue);
+      local_accessor_dims<double, 1>::check(log, queue);
+      local_accessor_dims<double, 2>::check(log, queue);
+      local_accessor_dims<double, 3>::check(log, queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

@@ -22,6 +22,8 @@ template <typename T, size_t dims, cl::sycl::access::mode kMode,
           cl::sycl::access::target kTarget>
 class check_accessor_constructor_image;
 
+/** Creates a image accessor and checks all its members for correctness.
+*/
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_constructor_image<T, dims, kMode,
                                        cl::sycl::access::target::image> {
@@ -44,6 +46,8 @@ class check_accessor_constructor_image<T, dims, kMode,
   }
 };
 
+/** Creates a host_image accessor and checks all its members for correctness.
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_constructor_image<T, dims, kMode,
                                        cl::sycl::access::target::host_image> {
@@ -65,6 +69,8 @@ class check_accessor_constructor_image<T, dims, kMode,
   }
 };
 
+/** Creates a image_array accessor and checks all its members for correctness.
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_constructor_image<T, dims, kMode,
                                        cl::sycl::access::target::image_array> {
@@ -88,6 +94,8 @@ class check_accessor_constructor_image<T, dims, kMode,
   }
 };
 
+/** Used to test the image accessor combinations for image and host_image
+ */
 template <typename T, size_t dims>
 class image_accessor_dims {
  public:
@@ -102,29 +110,29 @@ class image_accessor_dims {
     int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
 
     /** check image accessor constructors for image
-    */
+     */
     {
       queue.submit([&](cl::sycl::handler &h) {
         /** check (image, handler) constructor for reading image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::image>::check(image, h, range, log);
 
         /** check (image, handler) constructor for writing image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::write,
             cl::sycl::access::target::image>::check(image, h, range, log);
 
         /** check (image, handler) constructor for discard_write image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::discard_write,
             cl::sycl::access::target::image>::check(image, h, range, log);
 
         /** check accessor is Copy Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image,
@@ -139,7 +147,7 @@ class image_accessor_dims {
         }
 
         /** check accessor is Copy Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image,
@@ -161,7 +169,7 @@ class image_accessor_dims {
         }
 
         /** check accessor is Move Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image,
@@ -177,7 +185,7 @@ class image_accessor_dims {
         }
 
         /** check accessor is Move Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image,
@@ -200,35 +208,35 @@ class image_accessor_dims {
         }
 
         /** dummy kernel as no kernel is required for these checks
-        */
+         */
         h.single_task(dummy_functor<T, cl::sycl::access::target::image>{});
       });
       queue.wait_and_throw();
     }
 
     /** check host_image accessor constructors for host_image
-    */
+     */
     {
       /** check (image) constructor for reading host_image
-      */
+       */
       check_accessor_constructor_image<
           T, dims, cl::sycl::access::mode::read,
           cl::sycl::access::target::host_image>::check(image, range, log);
 
       /** check (image) constructor for writing host_image
-      */
+       */
       check_accessor_constructor_image<
           T, dims, cl::sycl::access::mode::write,
           cl::sycl::access::target::host_image>::check(image, range, log);
 
       /** check (image) constructor for discard_write host_image
-      */
+       */
       check_accessor_constructor_image<
           T, dims, cl::sycl::access::mode::discard_write,
           cl::sycl::access::target::host_image>::check(image, range, log);
 
       /** check accessor is Copy Constructible
-      */
+       */
       {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
@@ -246,7 +254,7 @@ class image_accessor_dims {
       }
 
       /** check accessor is Copy Assignable
-      */
+       */
       {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
@@ -268,7 +276,7 @@ class image_accessor_dims {
       }
 
       /** check accessor is Move Constructible
-      */
+       */
       {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
@@ -286,7 +294,7 @@ class image_accessor_dims {
       }
 
       /** check accessor is Move Assignable
-      */
+       */
       {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
@@ -310,6 +318,8 @@ class image_accessor_dims {
   }
 };
 
+/** Used to test the imagearray accessor combinations
+ */
 template <typename T, size_t dims>
 class image_array_accessor_dims {
  public:
@@ -323,29 +333,29 @@ class image_array_accessor_dims {
     int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
 
     /** check image array accessor constructors for image
-    */
+     */
     {
       queue.submit([&](cl::sycl::handler &h) {
         /** check (image, handler) constructor for reading image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::image_array>::check(image, h, range, log);
 
         /** check (image, handler) constructor for writing image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::write,
             cl::sycl::access::target::image_array>::check(image, h, range, log);
 
         /** check (image, handler) constructor for discard_write image
-        */
+         */
         check_accessor_constructor_image<
             T, dims, cl::sycl::access::mode::discard_write,
             cl::sycl::access::target::image_array>::check(image, h, range, log);
 
         /** check accessor is Copy Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image_array,
@@ -360,7 +370,7 @@ class image_array_accessor_dims {
         }
 
         /** check accessor is Copy Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image_array,
@@ -382,7 +392,7 @@ class image_array_accessor_dims {
         }
 
         /** check accessor is Move Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image_array,
@@ -398,7 +408,7 @@ class image_array_accessor_dims {
         }
 
         /** check accessor is Move Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                              cl::sycl::access::target::image_array,
@@ -421,8 +431,9 @@ class image_array_accessor_dims {
         }
 
         /** dummy kernel as no kernel is required for these checks
-        */
-        h.single_task(dummy_functor<T, cl::sycl::access::target::image_array>{});
+         */
+        h.single_task(
+            dummy_functor<T, cl::sycl::access::target::image_array>{});
       });
       queue.wait_and_throw();
     }
@@ -431,4 +442,4 @@ class image_array_accessor_dims {
 
 }  // namespace accessor_utility__
 
-#endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_UTILITY_H
+#endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_IMAGE_UTILITY_H

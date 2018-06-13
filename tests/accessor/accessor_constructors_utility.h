@@ -18,9 +18,9 @@
 namespace TEST_NAMESPACE {
 
 /** unique dummy_functor per file
-*  this is a hack until the CMake script is fixed; kill both the alias and the
-*  dummy class once it is fixed
-*/
+ *  this is a hack until the CMake script is fixed; kill both the alias and the
+ *  dummy class once it is fixed
+ */
 template <typename T, cl::sycl::access::target kTarget>
 class dummy_accessor_api_buffer {};
 template <typename T, cl::sycl::access::target kTarget>
@@ -75,14 +75,14 @@ cl::sycl::range<3> getRange<3>(const size_t &size) {
 }
 
 /** Helper function that calculates an id from a size so
-*  that each dimension equals size
-*/
+ *  that each dimension equals size
+ */
 template <size_t dims>
 cl::sycl::id<dims> getId(const size_t &size);
 
 /** Specializations of for getId each supported
-*  dimensionality
-*/
+ *  dimensionality
+ */
 template <>
 cl::sycl::id<1> getId<1>(const size_t &size) {
   return cl::sycl::id<1>(size);
@@ -96,6 +96,8 @@ cl::sycl::id<3> getId<3>(const size_t &size) {
   return cl::sycl::id<3>(size, size, size);
 }
 
+/** Returns the string representation of a SYCL access mode
+ */
 std::string access_mode_to_string(cl::sycl::access::mode kMode) {
   static const std::array<std::string, 6> names = {
       "read",  "write", "read_write", "discard_write", "discard_read_write",
@@ -104,6 +106,8 @@ std::string access_mode_to_string(cl::sycl::access::mode kMode) {
   return names[static_cast<unsigned int>(kMode)];
 }
 
+/** Returns the string representation of a SYCL access target
+ */
 std::string access_target_to_string(cl::sycl::access::target kTarget) {
   static const std::array<std::string, 7> names = {
       "host_buffer", "global_buffer", "constant_buffer", "local",
@@ -112,6 +116,9 @@ std::string access_target_to_string(cl::sycl::access::target kTarget) {
   return names[static_cast<unsigned int>(kTarget)];
 }
 
+/** generates an error message containing all required information to trace a
+ * failure
+ */
 std::string get_error_message(size_t dims, cl::sycl::access::mode kMode,
                               cl::sycl::access::target kTarget,
                               cl::sycl::access::placeholder isPlaceholder,
@@ -128,6 +135,8 @@ std::string get_error_message(size_t dims, cl::sycl::access::mode kMode,
   return ss.str();
 }
 
+/** checks all available accessor members to ensure no failure occured
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode,
           cl::sycl::access::target kTarget,
           cl::sycl::access::placeholder isPlaceholder>
@@ -165,6 +174,8 @@ class check_accessor_members {
   }
 };
 
+/** specialization of check_accessor_members for 0 dimensional buffer accessors
+ */
 template <typename T, cl::sycl::access::mode kMode,
           cl::sycl::access::target kTarget,
           cl::sycl::access::placeholder isPlaceholder>
@@ -193,6 +204,8 @@ class check_accessor_members<T, 0, kMode, kTarget, isPlaceholder> {
   }
 };
 
+/** specialization of check_accessor_members for n dimensional local accessors
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_members<T, dims, kMode, cl::sycl::access::target::local,
                              cl::sycl::access::placeholder::false_t> {
@@ -216,6 +229,8 @@ class check_accessor_members<T, dims, kMode, cl::sycl::access::target::local,
   }
 };
 
+/** specialization of check_accessor_members for 0 dimensional local accessors
+ */
 template <typename T, cl::sycl::access::mode kMode>
 class check_accessor_members<T, 0, kMode, cl::sycl::access::target::local,
                              cl::sycl::access::placeholder::false_t> {
@@ -239,6 +254,8 @@ class check_accessor_members<T, 0, kMode, cl::sycl::access::target::local,
   }
 };
 
+/** specialization of check_accessor_members for image accessors
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
                              cl::sycl::access::placeholder::false_t> {
@@ -262,6 +279,8 @@ class check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
   }
 };
 
+/** specialization of check_accessor_members for host_images accessors
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_members<T, dims, kMode,
                              cl::sycl::access::target::host_image,
@@ -287,6 +306,8 @@ class check_accessor_members<T, dims, kMode,
   }
 };
 
+/** specialization of check_accessor_members for image_array accessors
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_members<T, dims, kMode,
                              cl::sycl::access::target::image_array,

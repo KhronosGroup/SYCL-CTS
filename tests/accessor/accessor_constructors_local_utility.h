@@ -18,6 +18,8 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
+/** Creates a local accessor and checks all its members for correctness.
+ */
 template <typename T, size_t dims, cl::sycl::access::mode kMode>
 class check_accessor_constructor_local {
  public:
@@ -36,6 +38,9 @@ class check_accessor_constructor_local {
   }
 };
 
+/** Creates a 0 dimensional local accessor and checks all its members for
+ * correctness.
+ */
 template <typename T, cl::sycl::access::mode kMode>
 class check_accessor_constructor_local<T, 0, kMode> {
  public:
@@ -52,6 +57,8 @@ class check_accessor_constructor_local<T, 0, kMode> {
   }
 };
 
+/** Used to test the local accessor combinations
+ */
 template <typename T, size_t dims>
 class local_accessor_dims {
  public:
@@ -59,12 +66,12 @@ class local_accessor_dims {
     int size = 32;
 
     /** check buffer accessor constructors for n > 0 dimensions
-    */
+     */
 
     cl::sycl::range<dims> range = getRange<dims>(size);
 
     /** check buffer accessor constructors for local
-    */
+     */
     {
       queue.submit([&](cl::sycl::handler &h) {
         /** check (handler, range) constructor for reading
@@ -73,13 +80,13 @@ class local_accessor_dims {
         check_accessor_constructor_local<
             T, dims, cl::sycl::access::mode::read_write>::check(range, h, log);
 
-        /** check (handler, range) constructor for atomic access of local buffer
-		 */
+        /** check (handler, range) constructor for atomic local buffer
+         */
         check_accessor_constructor_local<
             T, dims, cl::sycl::access::mode::atomic>::check(range, h, log);
 
         /** check accessor is Copy Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -119,7 +126,7 @@ class local_accessor_dims {
         }
 
         /** check accessor is Copy Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -141,7 +148,7 @@ class local_accessor_dims {
         }
 
         /** check accessor is Move Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -157,7 +164,7 @@ class local_accessor_dims {
         }
 
         /** check accessor is Move Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -177,7 +184,7 @@ class local_accessor_dims {
         }
 
         /** dummy kernel as no kernel is required for these checks
-        */
+         */
         h.single_task(dummy_functor<T, cl::sycl::access::target::local>{});
       });
       queue.wait_and_throw();
@@ -185,27 +192,29 @@ class local_accessor_dims {
   }
 };
 
+/** Used to test the 0 dimensional local accessor combinations
+*/
 template <typename T>
 class local_accessor_dims<T, 0> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue) {
     /** check buffer accessor constructors for local
-    */
+     */
     {
       queue.submit([&](cl::sycl::handler &h) {
         /** check (handler, range) constructor for reading
-        * local buffer
-        */
+         * local buffer
+         */
         check_accessor_constructor_local<
             T, 0, cl::sycl::access::mode::read_write>::check(h, log);
 
         /** check (handler, range) constructor for atomic access of local buffer
-        */
+         */
         check_accessor_constructor_local<
             T, 0, cl::sycl::access::mode::atomic>::check(h, log);
 
         /** check accessor is Copy Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -245,7 +254,7 @@ class local_accessor_dims<T, 0> {
         }
 
         /** check accessor is Copy Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -266,7 +275,7 @@ class local_accessor_dims<T, 0> {
         }
 
         /** check accessor is Move Constructible
-        */
+         */
         {
           cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -281,7 +290,7 @@ class local_accessor_dims<T, 0> {
         }
 
         /** check accessor is Move Assignable
-        */
+         */
         {
           cl::sycl::accessor<T, 0, cl::sycl::access::mode::read_write,
                              cl::sycl::access::target::local,
@@ -302,7 +311,7 @@ class local_accessor_dims<T, 0> {
         }
 
         /** dummy kernel as no kernel is required for these checks
-        */
+         */
         h.single_task(dummy_functor<T, cl::sycl::access::target::local>{});
       });
       queue.wait_and_throw();
@@ -312,4 +321,4 @@ class local_accessor_dims<T, 0> {
 
 }  // namespace accessor_utility__
 
-#endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_UTILITY_H
+#endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_LOCAL_UTILITY_H

@@ -32,10 +32,18 @@ class TEST_NAME : public util::test_base {
 
   template <typename T>
   void check_all_dims(util::logger &log, cl::sycl::queue &queue) {
-	  buffer_accessor_dims<T, 0, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<T, 1, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<T, 2, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
-	  buffer_accessor_dims<T, 3, false, cl::sycl::access::placeholder::true_t>::check(log, queue);
+    buffer_accessor_dims<T, 0, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t>::check(log,
+                                                                       queue);
+    buffer_accessor_dims<T, 1, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t>::check(log,
+                                                                       queue);
+    buffer_accessor_dims<T, 2, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t>::check(log,
+                                                                       queue);
+    buffer_accessor_dims<T, 3, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t>::check(log,
+                                                                       queue);
   }
 
   /** execute this test
