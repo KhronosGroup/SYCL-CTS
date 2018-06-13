@@ -17,15 +17,6 @@ struct kernel_name_api {
 namespace kernel_api__ {
 using namespace sycl_cts;
 
-/** simple OpenCL test kernel
- */
-cl::sycl::string_class kernel_source = R"(
-__kernel void sample(__global float * input)
-{
-    int x = get_global_id(0);
-}
-)";
-
 /** test cl::sycl::kernel
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl {
