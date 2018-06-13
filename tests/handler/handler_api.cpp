@@ -40,64 +40,7 @@ class TEST_NAME : public util::test_base {
       {
         auto buffer = cl::sycl::buffer<int, 1>(range);
 
-        log.note("Check set_arg() methods");
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-          // Check set_arg(int, accessor)
-          cgh.set_arg(0, accessor);
-
-          // Check set_arg(int, int)
-          {
-            int scalar = 5;
-            cgh.set_arg(1, scalar);
-          }
-
-          // Check set_arg(int, sampler)
-          {
-            cl::sycl::sampler sampler(
-                cl::sycl::coordinate_normalization_mode::normalized,
-                cl::sycl::addressing_mode::clamp,
-                cl::sycl::filtering_mode::nearest);
-            cgh.set_arg(2, sampler);
-          }
-
-          // Check set_arg(int, trivially-copyable standard layout custom type)
-          {
-            simple_struct custom{3, .14f};
-            cgh.set_arg(3, custom);
-          }
-
-          // Check set_arg(int, stream)
-          {
-            cl::sycl::stream os(2048, 80, cgh);
-            cgh.set_arg(4, os);
-          }
-
-          cgh.single_task<class test_set_arg>([=]() {});
-        });
-
-        log.note("Check set_args() method");
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-          int scalar = 5;
-          cl::sycl::sampler sampler(
-              cl::sycl::coordinate_normalization_mode::normalized,
-              cl::sycl::addressing_mode::clamp,
-              cl::sycl::filtering_mode::nearest);
-          simple_struct custom{3, .14f};
-          cl::sycl::stream os(2048, 80, cgh);
-
-          // Check set_args(Ts...)
-          cgh.set_args(accessor, scalar, sampler, custom, os);
-
-          cgh.single_task<class test_set_args>([=]() {});
-        });
-
-        log.note("Check requires method");
+        log.note("Check require() method");
         cl::sycl::buffer<int, 1> resultBuf(data, cl::sycl::range<1>(1));
         auto placeholder =
             cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
