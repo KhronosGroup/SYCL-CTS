@@ -457,8 +457,10 @@ class check_image_accessor_api_methods {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   image_range_t<dims, target> range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_methods",
                                         log);
+#endif  // VERBOSE_LOG
 
     auto data = get_image_input_data<T>(size);
     auto image = image_t(data.data(), image_format_channel<T>::order,
@@ -526,7 +528,9 @@ class check_image_accessor_api_reads {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   image_range_t<dims, target> range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_reads", log);
+#endif  // VERBOSE_LOG
 
     auto dataCoordsSyntax = get_image_input_data<T>(size);
     auto dataCoordsSamplerSyntax = get_image_input_data<T>(size);
@@ -645,7 +649,9 @@ class check_image_accessor_api_writes {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   image_range_t<dims, target> range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_writes", log);
+#endif  // VERBOSE_LOG
 
     static constexpr bool initialize = false;
     auto dataCoordsSyntax = get_image_input_data<T>(size, initialize);
@@ -719,6 +725,10 @@ class check_image_accessor_api_writes {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Enable tests for all combinations
+////////////////////////////////////////////////////////////////////////////////
+
 /** tests image accessors with different modes
 */
 
@@ -747,6 +757,8 @@ template <typename T, int dims, cl::sycl::access::mode mode,
 void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
                                    cl::sycl::queue &queue,
                                    image_range_t<dims, target> range) {
+  log_accessor<T, dims, mode, target>("", log);
+
   /** check image accessor members
    */
   check_accessor_members<T, dims, mode, target>(log);

@@ -35,21 +35,22 @@ cl::sycl::string_class type_to_string(const accessor_utility::user_struct&) {
 namespace accessor_utility {
 
 /**
+ * @brief Tag used in cases where the dimension doesn't matter
+ */
+struct generic_dim_tag {};
+
+/**
  * @brief Constructs a type that can determine whether (dim == 0)
  * @tparam dim Number of dimensions to check
  */
 template <int dim>
-using is_zero_dim = std::integral_constant<bool, (dim == 0)>;
+struct is_zero_dim : std::integral_constant<bool, (dim == 0)>,
+                     generic_dim_tag {};
 
 /**
  * @brief Tag to use when (dim == 0)
  */
 using zero_dim_tag = is_zero_dim<0>;
-
-/**
- * @brief Tag to use when (dim != 0)
- */
-using non_zero_dim_tag = is_zero_dim<1>;
 
 /**
  * @brief Helper alias for identifying the number of dimensions
@@ -345,59 +346,94 @@ template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 struct accessor_factory {
-  static constexpr auto isHost = detail::is_host_target<target>::value;
-  static constexpr auto isPlaceholder =
-      (placeholder == cl::sycl::access::placeholder::true_t);
-
   using acc_t = cl::sycl::accessor<T, dims, mode, target, placeholder>;
 
-  template <typename buf_t, ENABLE_IF_DEPENDANT(T, (!isHost && !isPlaceholder))>
-  static acc_t make(buf_t&& buf, cl::sycl::handler& cgh) {
-    return acc_t(buf, cgh);
-  }
-
-  template <typename buf_t, ENABLE_IF_DEPENDANT(T, (isHost || isPlaceholder))>
-  static acc_t make(buf_t&& buf) {
-    return acc_t(buf);
-  }
-
-  static acc_t make(const sycl_range_t<dims>& rng, cl::sycl::handler& cgh) {
-    return acc_t(rng, cgh);
-  }
-
-  template <typename buf_t>
-  static acc_t make_generic(buf_t& buf, sycl_range_t<dims>* rng,
-                            cl::sycl::handler* cgh, acc_type_tag::generic) {
-    assert(cgh != nullptr);
-    return make(buf, *cgh);
-  }
-
-  template <typename buf_t>
-  static acc_t make_generic(buf_t& buf, sycl_range_t<dims>* rng,
-                            cl::sycl::handler* cgh, acc_type_tag::host) {
-    return make(buf);
-  }
-
-  static acc_t make_generic(buffer_t<T, dims>& buf, sycl_range_t<dims>* rng,
-                            cl::sycl::handler* cgh, acc_type_tag::placeholder) {
-    return make(buf);
-  }
-
-  static acc_t make_generic(buffer_t<T, dims>& buf, sycl_range_t<dims>* rng,
-                            cl::sycl::handler* cgh, acc_type_tag::local) {
-    assert(rng != nullptr);
-    assert(cgh != nullptr);
-    return make(*rng, *cgh);
-  }
-
   static acc_t make_local_generic(const sycl_range_t<dims>& rng,
-                                  cl::sycl::handler& cgh, non_zero_dim_tag) {
+                                  cl::sycl::handler& cgh, generic_dim_tag) {
     return acc_t(rng, cgh);
   }
 
   static acc_t make_local_generic(const sycl_range_t<dims>& rng,
                                   cl::sycl::handler& cgh, zero_dim_tag) {
     return acc_t(cgh);
+  }
+
+  template <typename buf_t>
+  static acc_t make_generic(buf_t& buf, const sycl_range_t<dims>* rng,
+                            const sycl_id_t<dims>* accessOffset,
+                            cl::sycl::handler* cgh, acc_type_tag::generic,
+                            generic_dim_tag) {
+    assert(cgh != nullptr);
+    if ((rng == nullptr) && (accessOffset == nullptr)) {
+      return acc_t(buf, *cgh);
+    } else if ((rng != nullptr) && (accessOffset == nullptr)) {
+      return acc_t(buf, *cgh, *rng);
+    } else {
+      assert(rng != nullptr);
+      assert(accessOffset != nullptr);
+      return acc_t(buf, *cgh, *rng, *accessOffset);
+    }
+  }
+
+  template <typename buf_t>
+  static acc_t make_generic(buf_t& buf, const sycl_range_t<dims>* /*rng*/,
+                            const sycl_id_t<dims>* /*accessOffset*/,
+                            cl::sycl::handler* cgh, acc_type_tag::generic,
+                            zero_dim_tag) {
+    assert(cgh != nullptr);
+    return acc_t(buf, *cgh);
+  }
+
+  template <typename buf_t>
+  static acc_t make_generic(buf_t& buf, const sycl_range_t<dims>* rng,
+                            const sycl_id_t<dims>* accessOffset,
+                            cl::sycl::handler* cgh, acc_type_tag::host,
+                            generic_dim_tag) {
+    if ((rng == nullptr) && (accessOffset == nullptr)) {
+      return acc_t(buf);
+    } else if ((rng != nullptr) && (accessOffset == nullptr)) {
+      return acc_t(buf, *rng);
+    } else {
+      assert(rng != nullptr);
+      assert(accessOffset != nullptr);
+      return acc_t(buf, *rng, *accessOffset);
+    }
+  }
+
+  template <typename buf_t>
+  static acc_t make_generic(buf_t& buf, const sycl_range_t<dims>* /*rng*/,
+                            const sycl_id_t<dims>* /*accessOffset*/,
+                            cl::sycl::handler* cgh, acc_type_tag::host,
+                            zero_dim_tag) {
+    return acc_t(buf);
+  }
+
+  static acc_t make_generic(buffer_t<T, dims>& buf,
+                            const sycl_range_t<dims>* rng,
+                            const sycl_id_t<dims>* accessOffset,
+                            cl::sycl::handler* cgh, acc_type_tag::placeholder,
+                            generic_dim_tag) {
+    // Placeholder accessors use the same constructors as host ones
+    return make_generic(buf, rng, accessOffset, cgh, acc_type_tag::host{},
+                        generic_dim_tag{});
+  }
+
+  static acc_t make_generic(buffer_t<T, dims>& buf,
+                            const sycl_range_t<dims>* rng,
+                            const sycl_id_t<dims>* /*accessOffset*/,
+                            cl::sycl::handler* cgh, acc_type_tag::placeholder,
+                            zero_dim_tag) {
+    return acc_t(buf);
+  }
+
+  static acc_t make_generic(buffer_t<T, dims>& buf,
+                            const sycl_range_t<dims>* rng,
+                            const sycl_id_t<dims>* /*accessOffset*/,
+                            cl::sycl::handler* cgh, acc_type_tag::local,
+                            generic_dim_tag) {
+    assert(rng != nullptr);
+    assert(cgh != nullptr);
+    return acc_t(*rng, *cgh);
   }
 };
 
@@ -421,7 +457,7 @@ template <typename T, int dims, cl::sycl::access::mode mode,
           typename... Args>
 cl::sycl::accessor<T, dims, mode, target, placeholder> make_accessor(
     Args&&... args) {
-  return detail::accessor_factory<T, dims, mode, target, placeholder>::make(
+  return cl::sycl::accessor<T, dims, mode, target, placeholder>(
       std::forward<Args>(args)...);
 }
 
@@ -453,8 +489,10 @@ make_local_accessor_generic(const sycl_range_t<dims>& rng,
  * @tparam placeholder Whether the accessor is a placeholder
  * @tparam T Underlying type of the accessor, deduced from the buffer argument
  * @param buf The buffer to construct the accessor from
- * @param Optional range to use on construction, can be null
- * @param Optional handler to use on construction, can be null
+ * @param rng Optional range to use on construction, can be null
+ * @param accessOffset Optional access offset to use on construction,
+ *        can be null
+ * @param cgh Optional handler to use on construction, can be null
  * @return Fully constructed buffer accessor
  */
 template <int dims, cl::sycl::access::mode mode,
@@ -464,10 +502,13 @@ template <int dims, cl::sycl::access::mode mode,
           typename T>
 cl::sycl::accessor<T, dims, mode, target, placeholder> make_accessor_generic(
     buffer_t<T, dims>& buf,
-    typename std::add_pointer<sycl_range_t<dims>>::type rng,
+    typename std::add_pointer<const sycl_range_t<dims>>::type rng,
+    typename std::add_pointer<const sycl_id_t<dims>>::type accessOffset,
     cl::sycl::handler* cgh) {
   return detail::accessor_factory<T, dims, mode, target, placeholder>::
-      make_generic(buf, rng, cgh, acc_type_tag::get<target, placeholder>());
+      make_generic(buf, rng, accessOffset, cgh,
+                   acc_type_tag::get<target, placeholder>(),
+                   is_zero_dim<dims>{});
 }
 
 /** Convenient compile-time evaluation to determine if an accessor is an image
@@ -515,11 +556,14 @@ template <typename T, int dims, cl::sycl::access::mode mode,
 void log_accessor(const cl::sycl::string_class& functionName,
                   sycl_cts::util::logger& log) {
   std::stringstream stream;
-  stream << functionName << " -> accessor<" << type_to_string(T{}) << ", "
-         << dims << ", mode{" << static_cast<int>(mode) << "}, target{"
-         << static_cast<int>(target) << "}";
+  if (!functionName.empty()) {
+    stream << functionName << " -> ";
+  }
+  stream << "accessor<" << type_to_string(T{}) << ", " << dims << ", mode{"
+         << static_cast<int>(mode) << "}, target{" << static_cast<int>(target)
+         << "}";
   if (!is_image<target>::value) {
-    stream << ", placeholder {"
+    stream << ", placeholder{"
            << (placeholder == cl::sycl::access::placeholder::true_t) << "}";
   }
   stream << ">";

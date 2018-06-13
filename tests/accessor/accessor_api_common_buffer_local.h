@@ -136,7 +136,7 @@ class buffer_accessor_api_r {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, non_zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
     size_t linearID = compute_linear_id(idx, m_range);
     const auto expectedRead = static_cast<T>(linearID);
 
@@ -203,7 +203,7 @@ class buffer_accessor_api_w {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, non_zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
     size_t linearID = compute_linear_id(idx, m_range);
     const auto expected = static_cast<T>(linearID);
 
@@ -265,7 +265,7 @@ class buffer_accessor_api_rw {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, non_zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
     size_t linearID = compute_linear_id(idx, m_range);
 
     T elem;

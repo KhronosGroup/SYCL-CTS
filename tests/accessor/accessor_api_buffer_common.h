@@ -76,13 +76,20 @@ class check_buffer_accessor_api_methods {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   const sycl_range_t<dims> &range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods", log);
+#endif  // VERBOSE_LOG
 
     auto data = get_buffer_input_data<T>(count, dims);
     buffer_t<T, dims> buffer(data.data(), range);
 
-    check_all_methods(log, queue, range, buffer,
+    // Prepare access range and access offset
+    const auto accessRange = range / 2;
+    auto accessOffset = sycl_id_t<dims>{};
+    accessOffset[0] = accessRange[0] / 2;
+
+    check_all_methods(log, queue, accessRange, accessOffset, buffer,
                       acc_type_tag::get<target, placeholder>());
   }
 
@@ -124,7 +131,9 @@ class check_buffer_accessor_api_methods {
     }
   }
 
-  void check_range_offset(util::logger &log, const sycl_range_t<dims> &range,
+  void check_range_offset(util::logger &log,
+                          const sycl_range_t<dims> &accessRange,
+                          const sycl_id_t<dims> &accessOffset,
                           const acc_t &accessor) const {
     {
       /** check get_range() method
@@ -132,7 +141,7 @@ class check_buffer_accessor_api_methods {
       auto accessorRange = accessor.get_range();
       check_return_type<sycl_range_t<dims>>(log, accessor.get_range(),
                                             "get_range()");
-      if (accessorRange != range) {
+      if (accessorRange != accessRange) {
         FAIL(log, "accessor does not return the correct range");
       }
     }
@@ -142,7 +151,7 @@ class check_buffer_accessor_api_methods {
       auto accessorOffset = accessor.get_offset();
       check_return_type<sycl_id_t<dims>>(log, accessor.get_offset(),
                                          "get_offset()");
-      if (accessorOffset != sycl_id_t<dims>{}) {
+      if (accessorOffset != accessOffset) {
         FAIL(log, "accessor does not return the correct offset");
       }
     }
@@ -151,13 +160,15 @@ class check_buffer_accessor_api_methods {
   /**
    * @brief Checks member functions where (dims != 0)
    * @param log The logger object
-   * @param range The range used on construction
+   * @param accessRange The range used on construction
+   * @param accessOffset The offset used on construction
    * @param accessor Accessor under test
    */
-  void check_methods(util::logger &log, const sycl_range_t<dims> &range,
-                     const acc_t &accessor, non_zero_dim_tag) const {
+  void check_methods(util::logger &log, const sycl_range_t<dims> &accessRange,
+                     const sycl_id_t<dims> &accessOffset, const acc_t &accessor,
+                     generic_dim_tag) const {
     check_common_methods(log, accessor);
-    check_range_offset(log, range, accessor);
+    check_range_offset(log, accessRange, accessOffset, accessor);
   }
 
   /**
@@ -165,7 +176,9 @@ class check_buffer_accessor_api_methods {
    * @param log The logger object
    * @param accessor Accessor under test
    */
-  void check_methods(util::logger &log, const sycl_range_t<dims> & /*range*/,
+  void check_methods(util::logger &log,
+                     const sycl_range_t<dims> & /*accessRange*/,
+                     const sycl_id_t<dims> & /*accessOffset*/,
                      const acc_t &accessor, zero_dim_tag) const {
     check_common_methods(log, accessor);
     // Zero-dim accessors do not provide get_range() and get_offset()
@@ -175,17 +188,19 @@ class check_buffer_accessor_api_methods {
    * @brief Checks member functions of accessors that can be used in kernels
    * @param log The logger object
    * @param queue SYCL queue where a kernel will be executed
-   * @param range The range of the buffer
+   * @param accessRange The range of the accessor
+   * @param accessOffset The offset of the accessor
    * @param buffer SYCL buffer used for constructing the accessor
    */
   void check_all_methods(util::logger &log, cl::sycl::queue &queue,
-                         const sycl_range_t<dims> &range,
+                         const sycl_range_t<dims> &accessRange,
+                         const sycl_id_t<dims> &accessOffset,
                          buffer_t<T, dims> &buffer,
                          acc_type_tag::generic) const {
     queue.submit([&](cl::sycl::handler &cgh) {
       auto acc = make_accessor_generic<dims, mode, target, placeholder>(
-          buffer, nullptr, &cgh);
-      check_methods(log, range, acc, is_zero_dim<dims>{});
+          buffer, &accessRange, &accessOffset, &cgh);
+      check_methods(log, accessRange, accessOffset, acc, is_zero_dim<dims>{});
       cgh.single_task(dummy_functor<T>{});
     });
   }
@@ -193,15 +208,17 @@ class check_buffer_accessor_api_methods {
   /**
    * @brief Checks member functions of host accessors
    * @param log The logger object
-   * @param range The range of the buffer
+   * @param accessRange The range of the accessor
+   * @param accessOffset The offset of the accessor
    * @param buffer SYCL buffer used for constructing the accessor
    */
   void check_all_methods(util::logger &log, cl::sycl::queue & /*queue*/,
-                         const sycl_range_t<dims> &range,
+                         const sycl_range_t<dims> &accessRange,
+                         const sycl_id_t<dims> &accessOffset,
                          buffer_t<T, dims> &buffer, acc_type_tag::host) const {
-    auto acc =
-        make_accessor_generic<dims, mode, target>(buffer, nullptr, nullptr);
-    check_methods(log, range, acc, is_zero_dim<dims>{});
+    auto acc = make_accessor_generic<dims, mode, target>(
+        buffer, &accessRange, &accessOffset, nullptr);
+    check_methods(log, accessRange, accessOffset, acc, is_zero_dim<dims>{});
   }
 };
 
@@ -220,17 +237,20 @@ class check_buffer_accessor_api {
   */
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range, acc_mode_tag::read_only) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::reads", log);
+#endif  // VERBOSE_LOG
 
     auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
     auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims);
-    int errors[2] = {0};
+    auto errors = get_error_data(2);
 
     {
       buffer_t<T, dims> bufIdSyntax(dataIdSyntax.data(), range);
       buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.data(), range);
-      error_buffer_t errorBuffer(errors, cl::sycl::range<1>(2));
+      error_buffer_t errorBuffer(errors.data(),
+                                 cl::sycl::range<1>(errors.size()));
 
       check_command_group_read_only(queue, bufIdSyntax, bufMultiDimSyntax,
                                     errorBuffer, range,
@@ -368,8 +388,10 @@ class check_buffer_accessor_api {
   */
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range, acc_mode_tag::write_only) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::writes", log);
+#endif  // VERBOSE_LOG
 
     static constexpr bool useIndexes = false;
     auto dataIdSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
@@ -493,8 +515,10 @@ class check_buffer_accessor_api {
   */
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range, acc_mode_tag::generic) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::reads_and_writes", log);
+#endif  // VERBOSE_LOG
 
     // In case of dims == 0, there will be a read from dataIdSyntax
     // and a write to dataMultiDimSyntax
@@ -676,6 +700,10 @@ class check_buffer_accessor_api {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Enable tests for all combinations
+////////////////////////////////////////////////////////////////////////////////
+
 /** tests buffer accessors with different modes
 */
 template <typename T, int dims, cl::sycl::access::mode mode,
@@ -685,6 +713,8 @@ template <typename T, int dims, cl::sycl::access::mode mode,
 void check_buffer_accessor_api_mode(util::logger &log, size_t count,
                                     size_t size, cl::sycl::queue &queue,
                                     sycl_range_t<dims> range) {
+  log_accessor<T, dims, mode, target, placeholder>("", log);
+
   /** check buffer accessor members
    */
   check_accessor_members<T, dims, mode, target, placeholder>(log);

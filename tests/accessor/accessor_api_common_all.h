@@ -27,8 +27,10 @@ template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::placeholder placeholder =
               cl::sycl::access::placeholder::false_t>
 void check_accessor_members(sycl_cts::util::logger &log) {
+#ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target, placeholder>("check_accessor_members",
                                                    log);
+#endif  // VERBOSE_LOG
 
   using acc_t = cl::sycl::accessor<T, dims, mode, target, placeholder>;
 

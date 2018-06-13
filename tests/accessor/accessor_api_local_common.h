@@ -64,8 +64,10 @@ class check_local_accessor_api_methods {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_local_accessor_api_methods",
                                         log);
+#endif  // VERBOSE_LOG
 
     queue.submit([&](cl::sycl::handler &h) {
       auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
@@ -112,8 +114,10 @@ class check_local_accessor_api_reads_and_writes {
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range) {
+#ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>(
         "check_local_accessor_api_reads_and_writes", log);
+#endif  // VERBOSE_LOG
 
     auto errors = get_error_data(4);
 
@@ -165,12 +169,18 @@ class check_local_accessor_api_reads_and_writes {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Enable tests for all combinations
+////////////////////////////////////////////////////////////////////////////////
+
 /** tests local accessors with different dimensions
 */
 template <typename T, int dims>
 void check_local_accessor_api_dim(util::logger &log, size_t count, size_t size,
                                   cl::sycl::queue &queue,
                                   sycl_range_t<dims> range) {
+  log_accessor<T, dims, mode, target>("", log);
+
   /** check local accessor members
    */
   check_accessor_members<T, dims, mode, target>(log);
