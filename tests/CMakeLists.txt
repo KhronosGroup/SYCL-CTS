@@ -71,6 +71,11 @@ foreach(test_project_dir ${test_projects_dir_list})
                         TESTS          ${test_cases_list})
     target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
+    set_property(TARGET ${test_exe_name}
+                 PROPERTY FOLDER "Tests/${test_exe_name}")
+    set_property(TARGET ${test_exe_name}_objects
+                 PROPERTY FOLDER "Tests/${test_exe_name}")
+
     add_test(NAME ${test_exe_name} COMMAND ${test_exe_name})
     list(APPEND test_all_sources $<TARGET_OBJECTS:${test_exe_name}_objects>)
 endforeach()
