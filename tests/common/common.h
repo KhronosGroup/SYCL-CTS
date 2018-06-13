@@ -141,7 +141,7 @@ void check_get_profiling_info_param(sycl_cts::util::logger& log,
   */
   using paramTraitsType =
       typename cl::sycl::info::param_traits<enumT, kValue>::return_type;
-  if (std::is_same<paramTraitsType, returnT>::value) {
+  if (!std::is_same<paramTraitsType, returnT>::value) {
     FAIL(log, "param_trait specialization has incorrect return type");
   }
 

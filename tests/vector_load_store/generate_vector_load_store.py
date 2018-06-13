@@ -10,7 +10,8 @@ import sys
 from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, append_fp_postfix, make_func_call,
-                               wrap_with_test_func, write_source_file)
+                               wrap_with_test_func, write_source_file,
+                               wrap_with_extension_checks)
 
 TEST_NAME = 'LOAD_STORE'
 
@@ -71,7 +72,9 @@ def gen_load_store_test(type_str, size):
             append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
         kernelName=gen_kernel_name(type_str, size),
         swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
-    return wrap_with_test_func(TEST_NAME, type_str, test_string, str(size))
+    return wrap_with_test_func(TEST_NAME, type_str,
+                               wrap_with_extension_checks(
+                                   type_str, test_string), str(size))
 
 
 def make_tests(input_file, output_file):

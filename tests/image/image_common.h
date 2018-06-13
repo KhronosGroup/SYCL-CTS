@@ -6,6 +6,9 @@
 //
 *******************************************************************************/
 
+#ifndef SYCL_CTS_TEST_IMAGE_IMAGE_COMMON_H
+#define SYCL_CTS_TEST_IMAGE_IMAGE_COMMON_H
+
 #include "../common/common.h"
 
 namespace {
@@ -96,6 +99,19 @@ struct image_generic {
     return create_with_pitch_and_allocator<cl::sycl::image_allocator>(
         imageData, channelOrder, channelType, r, pitch);
   }
+
+  /**
+   * @brief Multiplies the pitch with a custom multiplier
+   * @param pitch Image pitch
+   * @param multiplier What to multiply the pitch by
+   */
+  static void multiply_pitch(cl::sycl::range<dims - 1> *pitch,
+                             size_t multiplier) {
+    if (pitch == nullptr) {
+      return;
+    }
+    *pitch *= multiplier;
+  }
 };
 /**
  * @brief Specialization for one dimension
@@ -129,6 +145,10 @@ struct image_generic<1> {
     return create_with_pitch_and_allocator<cl::sycl::image_allocator>(
         imageData, channelOrder, channelType, r, pitch);
   }
+
+  static void multiply_pitch(void *pitch, size_t multiplier) {
+    // There is no pitch for 1D images
+  }
 };
 
 /**
@@ -145,9 +165,11 @@ template <>
 struct image_access<1> {
   using int_type = cl::sycl::cl_int;
   using float_type = cl::sycl::cl_float;
-  static int_type get_int(cl::sycl::item<1> i) { return int_type(i.get(0)); }
-  static float_type get_float(cl::sycl::item<1> i) {
-    return float_type(static_cast<float>(i.get(0)));
+  static int_type get_int(const cl::sycl::item<1> &i) {
+    return int_type(i.get_id(0));
+  }
+  static float_type get_float(const cl::sycl::item<1> &i) {
+    return float_type(static_cast<float>(i.get_id(0)));
   }
 };
 /**
@@ -157,12 +179,12 @@ template <>
 struct image_access<2> {
   using int_type = cl::sycl::cl_int2;
   using float_type = cl::sycl::cl_float2;
-  static int_type get_int(cl::sycl::item<2> i) {
-    return int_type(i.get(0), i.get(1));
+  static int_type get_int(const cl::sycl::item<2> &i) {
+    return int_type(i.get_id(0), i.get_id(1));
   }
-  static float_type get_float(cl::sycl::item<2> i) {
-    return float_type(static_cast<float>(i.get(0)),
-                      static_cast<float>(i.get(1)));
+  static float_type get_float(const cl::sycl::item<2> &i) {
+    return float_type(static_cast<float>(i.get_id(0)),
+                      static_cast<float>(i.get_id(1)));
   }
 };
 /**
@@ -172,13 +194,13 @@ template <>
 struct image_access<3> {
   using int_type = cl::sycl::cl_int4;
   using float_type = cl::sycl::cl_float4;
-  static int_type get_int(cl::sycl::item<3> i) {
-    return int_type(i.get(0), i.get(1), i.get(2), 0);
+  static int_type get_int(const cl::sycl::item<3> &i) {
+    return int_type(i.get_id(0), i.get_id(1), i.get_id(2), 0);
   }
-  static float_type get_float(cl::sycl::item<3> i) {
-    return float_type(static_cast<float>(i.get(0)),
-                      static_cast<float>(i.get(1)),
-                      static_cast<float>(i.get(2)), .0f);
+  static float_type get_float(const cl::sycl::item<3> &i) {
+    return float_type(static_cast<float>(i.get_id(0)),
+                      static_cast<float>(i.get_id(1)),
+                      static_cast<float>(i.get_id(2)), .0f);
   }
 };
 
@@ -426,12 +448,14 @@ collection get_test_set_minimum(cl::sycl::image_channel_order order) {
   return testSet;
 }
 
-template <int numElems>
-cl::sycl::unique_ptr_class<cl::sycl::byte[]> get_image_host(
-    unsigned int channelCount, unsigned int channelTypeSize) {
-  cl::sycl::unique_ptr_class<cl::sycl::byte[]> imageHost(
-      new cl::sycl::byte[numElems * channelTypeSize * channelCount]);
-  for (unsigned int ii = 0; ii < numElems * channelCount; ii++) {
+template <int dims>
+cl::sycl::vector_class<cl::sycl::byte> get_image_host(
+    unsigned int numElems, unsigned int channelCount,
+    unsigned int channelTypeSize) {
+  const auto sizePerChannelType = (dims * numElems * channelCount);
+  const auto size = (sizePerChannelType * channelTypeSize);
+  cl::sycl::vector_class<cl::sycl::byte> imageHost(size);
+  for (unsigned int ii = 0; ii < sizePerChannelType; ii++) {
     for (unsigned int ij = 0; ij < channelTypeSize; ij++) {
       imageHost[ii * channelTypeSize + ij] = ij + 1;
     }
@@ -440,3 +464,5 @@ cl::sycl::unique_ptr_class<cl::sycl::byte[]> get_image_host(
 }
 
 }  // namespace
+
+#endif  // SYCL_CTS_TEST_IMAGE_IMAGE_COMMON_H

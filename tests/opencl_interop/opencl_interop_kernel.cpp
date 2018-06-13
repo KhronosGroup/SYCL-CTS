@@ -52,6 +52,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
   */
   void run(util::logger &log) override {
     try {
+      cts_selector ctsSelector;
+      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+
+      if (ctsContext.is_host()) {
+        log.note("OpenCL interop doesn't work on host");
+        return;
+      }
+
       static const cl::sycl::string_class kernelSource =
           R"(
             __kernel void test_kernel(__global int *argOne,
@@ -64,20 +72,27 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       const size_t bufferSize = 32;
       int bufferData[bufferSize] = {0};
 
-      const size_t imageSize = 1024;
+      static constexpr size_t imageSideSize = 32;
+      static constexpr size_t imgAccElemSize = 4;  // rgba
+      static constexpr auto imageSize =
+          (imgAccElemSize * imageSideSize * imageSideSize);
       float imageData[imageSize] = {0.0f};
 
-      auto queue = util::get_cts_object::queue();
+      auto queue = util::get_cts_object::queue(ctsSelector);
+      auto context = queue.get_context();
+      auto device = queue.get_device();
 
       cl::sycl::buffer<int, 1> buffer(bufferData,
                                       cl::sycl::range<1>(bufferSize));
 
-      cl::sycl::image<imageSize> image(
+      cl::sycl::image<2> image(
           imageData, cl::sycl::image_channel_order::rgba,
-          cl::sycl::image_channel_type::fp32, cl::sycl::range<2>(32, 32));
+          cl::sycl::image_channel_type::fp32,
+          cl::sycl::range<2>(imageSideSize, imageSideSize));
 
       cl_program clProgram = nullptr;
-      if (!create_built_program(kernelSource, clProgram, log)) {
+      if (!create_built_program(kernelSource, context.get(), device.get(),
+                                clProgram, log)) {
         FAIL(log, "create_built_program failed");
       }
 
@@ -86,7 +101,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         FAIL(log, "create_kernel failed");
       }
 
-      cl::sycl::kernel kernel(clKernel);
+      cl::sycl::kernel kernel(clKernel, context);
 
       /** test single_task(kernel)
       */
