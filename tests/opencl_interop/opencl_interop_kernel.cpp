@@ -38,6 +38,14 @@ using privateMultiPtrType = typename cl::sycl::multi_ptr<
 template <typename T, int dims>
 using vectorType = typename cl::sycl::vec<T, dims>::vector_t;
 
+/**
+ * @brief Trivially-copyable standard layout custom type
+ */
+struct simple_struct {
+  int a;
+  float b;
+};
+
 /** tests the kernel execution for OpenCL inter-op
  */
 class TEST_NAME : public sycl_cts::util::test_base_opencl {
@@ -60,14 +68,21 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         return;
       }
 
-      static const cl::sycl::string_class kernelSource =
-          R"(
-            __kernel void test_kernel(__global int *argOne,
-                                      read_only image2d_t arg2,
-                                      sampler_t arg3, float arg4)
-            {
-                ;
-            })";
+      static const cl::sycl::string_class kernelSource = R"(
+struct simple_struct {
+  int a;
+  float b;
+};
+
+__kernel void test_kernel(__global int* arg0_buffer,
+                          read_only image2d_t arg1,
+                          sampler_t arg2,
+                          float arg3,
+                          int arg4,
+                          struct simple_struct arg5,
+                          __global char* arg6_stream)
+{}
+)";
 
       const size_t bufferSize = 32;
       int bufferData[bufferSize] = {0};
@@ -117,12 +132,27 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             cl::sycl::coordinate_normalization_mode::unnormalized,
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
 
+        simple_struct simpleStruct{19, 13.37f};
+
+        cl::sycl::stream os(2048, 80, handler);
+
         /** check the set_arg() methods
         */
+
+        // set_args(int, buffer)
         handler.set_arg(0, bufferAccessor);
+        // set_args(int, image)
         handler.set_arg(1, imageAccessor);
+        // set_args(int, sampler)
         handler.set_arg(2, sampler);
+        // set_args(int, float)
         handler.set_arg(3, 15.0f);
+        // set_args(int, int)
+        handler.set_arg(4, 17);
+        // set_args(int, simple_struct)
+        handler.set_arg(5, simpleStruct);
+        // set_args(int, stream)
+        handler.set_arg(6, os);
 
         handler.single_task(kernel);
       });
@@ -141,12 +171,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             cl::sycl::coordinate_normalization_mode::unnormalized,
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
 
-        /** check the set_arg() methods
+        simple_struct simpleStruct{19, 13.37f};
+
+        cl::sycl::stream os(2048, 80, handler);
+
+        /** check the set_args() method
         */
-        handler.set_arg(0, bufferAccessor);
-        handler.set_arg(1, imageAccessor);
-        handler.set_arg(2, sampler);
-        handler.set_arg(3, 15.0f);
+        handler.set_args(bufferAccessor, imageAccessor, sampler, 15.0f, 17,
+                         simpleStruct, os);
 
         cl::sycl::range<1> myRange(1024);
         handler.parallel_for(myRange, kernel);

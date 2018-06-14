@@ -35,59 +35,30 @@ class TEST_NAME : public util::test_base {
       auto queue = util::get_cts_object::queue();
       const auto range = cl::sycl::range<1>(1);
       const auto offset = cl::sycl::id<1>(0);
+      int data[1]{0};
 
       {
         auto buffer = cl::sycl::buffer<int, 1>(range);
 
-        log.note("Check set_arg() methods");
+        log.note("Check require() method");
+        cl::sycl::buffer<int, 1> resultBuf(data, cl::sycl::range<1>(1));
+        auto placeholder =
+            cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
+                               cl::sycl::access::target::global_buffer,
+                               cl::sycl::access::placeholder::true_t>(
+                resultBuf);
+
         queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-          // Check set_arg(int, accessor)
-          cgh.set_arg(0, accessor);
+          cgh.require(placeholder);
 
-          // Check set_arg(int, int)
-          {
-            int scalar = 5;
-            cgh.set_arg(1, scalar);
-          }
+          cgh.single_task<class test_placeholder>(
+              [=]() { placeholder[0] = 1; });
 
-          // Check set_arg(int, sampler)
-          {
-            cl::sycl::sampler sampler(
-                cl::sycl::coordinate_normalization_mode::normalized,
-                cl::sycl::addressing_mode::clamp,
-                cl::sycl::filtering_mode::nearest);
-            cgh.set_arg(2, sampler);
-          }
-
-          // Check set_arg(int, trivially-copyable standard layout custom type)
-          {
-            simple_struct custom{3, .14f};
-            cgh.set_arg(3, custom);
-          }
-
-          cgh.single_task<class test_set_arg>([=]() {});
         });
+      }
 
-        log.note("Check set_args() method");
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(cgh);
-          int scalar = 5;
-          cl::sycl::sampler sampler(
-              cl::sycl::coordinate_normalization_mode::normalized,
-              cl::sycl::addressing_mode::clamp,
-              cl::sycl::filtering_mode::nearest);
-          simple_struct custom{3, .14f};
-
-          // Check set_args(Ts...)
-          cgh.set_args(accessor, scalar, sampler, custom);
-
-          cgh.single_task<class test_set_args>([=]() {});
-        });
+      if (data[0] != 1) {
+        FAIL(log, "requires method test did not set accessor data correctly");
       }
 
       queue.wait_and_throw();
