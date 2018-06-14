@@ -10,21 +10,12 @@
 
 #define TEST_NAME kernel_api
 
-struct test_kernel_name {
+struct kernel_name_api {
   void operator()() const {}
 };
 
 namespace kernel_api__ {
 using namespace sycl_cts;
-
-/** simple OpenCL test kernel
- */
-cl::sycl::string_class kernel_source = R"(
-__kernel void sample(__global float * input)
-{
-    int x = get_global_id(0);
-}
-)";
 
 /** test cl::sycl::kernel
  */
@@ -45,8 +36,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
       // Create kernel
       cl::sycl::program prog(ctsQueue.get_context());
-      prog.build_with_kernel_type<test_kernel_name>();
-      auto k = prog.get_kernel<test_kernel_name>();
+      prog.build_with_kernel_type<kernel_name_api>();
+      auto k = prog.get_kernel<kernel_name_api>();
+      ctsQueue.submit(
+          [&](cl::sycl::handler &h) { h.single_task(kernel_name_api{}); });
 
       if (!isHostCtx) {
         // Check get()
