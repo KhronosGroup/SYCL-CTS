@@ -68,12 +68,6 @@ class TEST_NAME : public util::test_base {
         cl::sycl::sampler samplerA = defaultSampler();
         cl::sycl::sampler samplerB(samplerA);
 
-        if (samplerA.is_host() != samplerB.is_host()) {
-          FAIL(log,
-               "sampler was not copy constructed correctly. "
-               "(is_host)");
-        }
-
         if (samplerA.get_addressing_mode() != samplerB.get_addressing_mode()) {
           FAIL(log,
                "sampler was not copy constructed correctly. "
@@ -103,10 +97,6 @@ class TEST_NAME : public util::test_base {
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
         samplerB = samplerA;
 
-        if (samplerA.is_host() != samplerB.is_host()) {
-          FAIL(log, "sampler was not copied correctly. (is_host)");
-        }
-
         if (samplerA.get_addressing_mode() != samplerB.get_addressing_mode()) {
           FAIL(log, "sampler was not copied correctly. (get_addressing_mode)");
         }
@@ -130,14 +120,7 @@ class TEST_NAME : public util::test_base {
             cl::sycl::coordinate_normalization_mode::unnormalized,
             cl::sycl::addressing_mode::clamp,
             cl::sycl::filtering_mode::nearest);
-        bool isHostSamplerA = samplerA.is_host();
         cl::sycl::sampler samplerB(std::move(samplerA));
-
-        if (samplerB.is_host() != isHostSamplerA) {
-          FAIL(log,
-               "sampler was not move constructed correctly. "
-               "(is_host)");
-        }
 
         if (samplerB.get_addressing_mode() !=
             cl::sycl::addressing_mode::clamp) {
@@ -168,17 +151,10 @@ class TEST_NAME : public util::test_base {
             cl::sycl::coordinate_normalization_mode::unnormalized,
             cl::sycl::addressing_mode::clamp,
             cl::sycl::filtering_mode::nearest);
-        bool isHostSamplerA = samplerA.is_host();
         cl::sycl::sampler samplerB(
             cl::sycl::coordinate_normalization_mode::normalized,
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
         samplerB = std::move(samplerA);
-
-        if (samplerB.is_host() != isHostSamplerA) {
-          FAIL(log,
-               "sampler was not move assigned correctly."
-               "(is_host)");
-        }
 
         if (samplerB.get_addressing_mode() !=
             cl::sycl::addressing_mode::clamp) {
@@ -215,8 +191,7 @@ class TEST_NAME : public util::test_base {
             cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
 
         if (!(samplerA == samplerB) &&
-            ((samplerA.is_host() != samplerB.is_host()) ||
-             (samplerA.get_addressing_mode() !=
+            ((samplerA.get_addressing_mode() !=
               samplerB.get_addressing_mode()) ||
              (samplerA.get_filtering_mode() != samplerB.get_filtering_mode()) ||
              (samplerA.get_coordinate_normalization_mode() !=
@@ -226,8 +201,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!(samplerA == samplerC) &&
-            ((samplerA.is_host() != samplerC.is_host()) ||
-             (samplerA.get_addressing_mode() !=
+            ((samplerA.get_addressing_mode() !=
               samplerC.get_addressing_mode()) ||
              (samplerA.get_filtering_mode() != samplerC.get_filtering_mode()) ||
              (samplerA.get_coordinate_normalization_mode() !=
