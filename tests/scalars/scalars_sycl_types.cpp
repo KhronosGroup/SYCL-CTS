@@ -8,6 +8,8 @@
 
 #include "../common/common.h"
 
+#include <array>
+
 #define TEST_NAME scalars_sycl_types
 
 namespace scalars_sycl_types__ {
@@ -64,13 +66,13 @@ class TEST_NAME : public util::test_base {
 
       auto myQueue = util::get_cts_object::queue();
 
-      bool signResults[15];
-      bool sizeResults[16];
+      std::array<bool, 15> signResults;
+      std::array<bool, 16> sizeResults;
       {
-        cl::sycl::buffer<bool, 1> bufSignResult(signResults,
-                                                cl::sycl::range<1>(14));
-        cl::sycl::buffer<bool, 1> bufSizeResult(sizeResults,
-                                                cl::sycl::range<1>(16));
+        cl::sycl::buffer<bool, 1> bufSignResult(
+            signResults.data(), cl::sycl::range<1>(signResults.size()));
+        cl::sycl::buffer<bool, 1> bufSizeResult(
+            sizeResults.data(), cl::sycl::range<1>(sizeResults.size()));
 
         myQueue.submit([&](cl::sycl::handler &cgh) {
           auto accSignResult =
