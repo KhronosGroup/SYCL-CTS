@@ -66,7 +66,7 @@ g_xml_escapes = \
 # exit with an error message
 #
 def error_exit( string ):
-    print string
+    print(string)
     exit( )
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -133,7 +133,7 @@ def write_junit_summary( ):
     global g_junit_path
     global g_xml_escapes
 
-    print 'exporting JUNIT XML to: \'' + g_junit_path + '\''
+    print('exporting JUNIT XML to: \'' + g_junit_path + '\'')
 
     try:
         l_xml  = "<?xml version='1.0' ?>\n"
@@ -152,8 +152,8 @@ def write_junit_summary( ):
             f.write( l_xml )
 
     except Exception as e:
-        print "Exception thrown while writing junit output"
-        print str( e )
+        print("Exception thrown while writing junit output")
+        print(str(e))
         pass
 
     return
@@ -236,19 +236,22 @@ def print_summary( ):
             if not (l_result is None):
                 l_total += 1
 
-        print " " + str( l_total ) + ' tests ran in total'
+        print(" " + str( l_total ) + ' tests ran in total')
 
-        print '  - passed : ' + str( l_passes )
-        print '  - failed : ' + str( l_fails )
+        print('  - passed : ' + str( l_passes ))
+        print('  - failed : ' + str( l_fails ))
         for x in l_failing_tests:
-            print '    + ' + str( x )
-        print '  - skipped: ' + str( l_skipped )
+            print('    + ' + str( x ))
+        print('  - skipped: ' + str( l_skipped ))
 
-        l_percent = (100 * l_passes) / l_total
-        print '  = ' + str( l_percent ) + '% pass rate'
+        if l_total == 0:
+            l_percent = 0.0
+        else:
+            l_percent = (100 * l_passes) / l_total
+        print('  = ' + str( l_percent ) + '% pass rate')
 
     except Exception as e:
-        print 'Exception thrown: ' + e.message
+        print('Exception thrown: ' + e.message)
         pass
 
     return
@@ -259,7 +262,7 @@ def print_summary( ):
 def dispatch_packet( id, type, data ):
 
     if ( type is "test_start" ):
-        print "--- " + find_packet_data( id, 'name' )[0]
+        print("--- " + find_packet_data( id, 'name' )[0])
         pass
 
     if ( type is "test_end" ):
@@ -269,7 +272,7 @@ def dispatch_packet( id, type, data ):
 
         # print all of the notes
         for x in l_notes:
-            print "  . " + str( x )
+            print("  . " + str( x ))
 
         # print extended test info for non passes
         if not l_result == 'pass':
@@ -277,13 +280,13 @@ def dispatch_packet( id, type, data ):
             l_file = find_packet_data( id, 'file' )
             l_date = find_packet_data( id, 'date' )
             l_line = find_packet_data( id, 'line' )
-            if l_file: print "  - " + l_file[0]
-            if l_date: print "  - " + l_date[0]
-            if l_line: print "  - line " + l_line[0]
+            if l_file: print("  - " + l_file[0])
+            if l_date: print("  - " + l_date[0])
+            if l_line: print("  - line " + l_line[0])
 
         # print the result
-        print "  - " + l_result
-        print " "
+        print("  - " + l_result)
+        print(" ")
 
     return
 
@@ -475,11 +478,11 @@ def list_tests( ):
     l_list = g_packets[ -1 ]
     l_count = find_packet_data( -1, 'list_test_count' )
 
-    print l_count[0] + " tests in executable"
+    print(l_count[0] + " tests in executable")
 
     for x in l_list:
         if x['type'] == 'list_test_name':
-            print "  . " + x['data']
+            print("  . " + x['data'])
 
     return
 

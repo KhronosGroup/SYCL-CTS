@@ -69,6 +69,10 @@ foreach(test_project_dir ${test_projects_dir_list})
     add_sycl_executable(NAME           ${test_exe_name}
                         OBJECT_LIBRARY ${test_exe_name}_objects
                         TESTS          ${test_cases_list})
+
+    add_test(NAME ${test_exe_name}_host COMMAND ${test_exe_name} --platform host --device host --info-dump "../Testing/${test_exe_name}_host.info")
+    add_test(NAME ${test_exe_name}_opencl COMMAND ${test_exe_name} --platform intel --device opencl_cpu --info-dump "../Testing/${test_exe_name}_opencl.info")
+
     target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
     set_property(TARGET ${test_exe_name}
@@ -76,7 +80,6 @@ foreach(test_project_dir ${test_projects_dir_list})
     set_property(TARGET ${test_exe_name}_objects
                  PROPERTY FOLDER "Tests/${test_exe_name}")
 
-    add_test(NAME ${test_exe_name} COMMAND ${test_exe_name})
     list(APPEND test_all_sources $<TARGET_OBJECTS:${test_exe_name}_objects>)
 endforeach()
 
