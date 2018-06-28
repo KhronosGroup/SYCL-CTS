@@ -41,6 +41,9 @@ int main(int argc, const char **args) {
     return -1;
   }
 
+  // Dump device info
+  testManager.dump_device_info();
+
   // if the test harness will execute
   if (testManager.will_execute()) {
     // run all of the specified tests

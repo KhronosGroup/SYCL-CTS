@@ -43,6 +43,8 @@ class test_manager : public singleton<test_manager> {
    */
   bool wimpy_mode_enabled() const;
 
+  void dump_device_info();
+
   /** program lifetime hooks
    */
   void on_start();
@@ -51,6 +53,8 @@ class test_manager : public singleton<test_manager> {
  protected:
   bool m_willExecute;
   bool m_wimpyMode;
+  bool m_infoDump;
+  std::string m_infoDumpFile;
 };
 
 }  // namespace util

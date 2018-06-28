@@ -9,6 +9,7 @@ device_selector
 error
 event
 exception_handling
+group
 h_item
 handler
 header
@@ -28,10 +29,10 @@ pointers
 program
 queue
 range
-stream
 sampler
 scalars
 std_classes
+stream
 vector_alias
 vector_api
 vector_constructors
