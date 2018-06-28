@@ -63,23 +63,23 @@ def generate_cmake_call(build_system_name, conformance_filter,
     subprocess.call().
     """
     return [
-        'cmake', '../', '-G' + build_system_name, '-DCTEST_FULL_OUTPUT=ON',
+        'cmake', '../', '-G' + build_system_name,
         '-DSYCL_CTS_TEST_FILTER=' + conformance_filter
     ] + additional_cmake_args.split()
 
 
 def configure_and_run_tests(cmake_call, build_system_call):
     """
-	Configures the tests with cmake to produce a ninja.build file.
-	Runs the generated ninja file.
-	Runs ctest, overwriting any cached results.
-	"""
+    Configures the tests with cmake to produce a ninja.build file.
+    Runs the generated ninja file.
+    Runs ctest, overwriting any cached results.
+    """
 
     build_system_call = build_system_call.split()
     ctest_call = [
         'ctest', '.', '-T', 'Test', '--no-compress-output',
-        '--test-output-size-passed 10000', '--test-output-size-failed 10000',
-        '--overwrite'
+        '--test-output-size-passed', '0', '--test-output-size-failed',
+        '0', '--overwrite'
     ]
     subprocess.call(cmake_call)
     subprocess.call(build_system_call)
