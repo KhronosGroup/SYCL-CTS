@@ -44,6 +44,26 @@ def handle_args():
         type=str,
         required=True)
     parser.add_argument(
+        '--host-platform-name',
+        help='The name of the host platform to test on.',
+        type=str,
+        required=True)
+    parser.add_argument(
+        '--host-device-name',
+        help='The name of the host device to test on.',
+        type=str,
+        required=True)
+    parser.add_argument(
+        '--opencl-platform-name',
+        help='The name of the opencl platform to test on.',
+        type=str,
+        required=True)
+    parser.add_argument(
+        '--opencl-device-name',
+        help='The name of the opencl device to test on.',
+        type=str,
+        required=True)
+    parser.add_argument(
         '-n',
         '--implementation-name',
         help='The name of the implementation to be displayed in the report.',
@@ -51,20 +71,29 @@ def handle_args():
         required=True)
     args = parser.parse_args()
 
+    host_names = (args.host_platform_name, args.host_device_name)
+    opencl_names = (args.opencl_platform_name, args.opencl_device_name)
+
     return (args.build_system_name, args.build_system_call,
             args.conformance_filter, args.implementation_name,
-            args.additional_cmake_args)
+            args.additional_cmake_args, host_names, opencl_names)
 
 
 def generate_cmake_call(build_system_name, conformance_filter,
-                        additional_cmake_args):
+                        additional_cmake_args, host_names, opencl_names):
     """
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
     """
     return [
-        'cmake', '../', '-G' + build_system_name,
-        '-DSYCL_CTS_TEST_FILTER=' + conformance_filter
+        'cmake',
+        '../',
+        '-G' + build_system_name,
+        '-DSYCL_CTS_TEST_FILTER=' + conformance_filter,
+        '-Dhost_platform_name=' + host_names[0],
+        '-Dhost_device_name=' + host_names[1],
+        '-Dopencl_platform_name=' + opencl_names[0],
+        '-Dopencl_device_name=' + opencl_names[1],
     ] + additional_cmake_args.split()
 
 
@@ -78,8 +107,8 @@ def configure_and_run_tests(cmake_call, build_system_call):
     build_system_call = build_system_call.split()
     ctest_call = [
         'ctest', '.', '-T', 'Test', '--no-compress-output',
-        '--test-output-size-passed', '0', '--test-output-size-failed',
-        '0', '--overwrite'
+        '--test-output-size-passed', '0', '--test-output-size-failed', '0',
+        '--overwrite'
     ]
     subprocess.call(cmake_call)
     subprocess.call(build_system_call)
@@ -231,11 +260,13 @@ def main():
 
     # Parse and gather all the script args
     (build_system_name, build_system_call, conformance_filter,
-     implementation_name, additional_cmake_args) = handle_args()
+     implementation_name, additional_cmake_args, host_names,
+     opencl_names) = handle_args()
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(build_system_name, conformance_filter,
-                                     additional_cmake_args)
+                                     additional_cmake_args, host_names,
+                                     opencl_names)
 
     # Make a build directory if required and enter it
     if not os.path.isdir('build'):

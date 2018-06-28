@@ -190,6 +190,14 @@ Producing a conformance report
                           The call to the used build system.
     -f CONFORMANCE_FILTER, --conformance-filter CONFORMANCE_FILTER
                           The conformance filter to use.
+    --host-platform-name HOST_PLATFORM_NAME
+                          The name of the host platform to test on.
+    --host-device-name HOST_DEVICE_NAME
+                          The name of the host device to test on.
+    --opencl-platform-name OPENCL_PLATFORM_NAME
+                          The name of the opencl platform to test on.
+    --opencl-device-name OPENCL_DEVICE_NAME
+                          The name of the opencl device to test on.
     -n IMPLEMENTATION_NAME, --implementation-name IMPLEMENTATION_NAME
                           The name of the implementation to be displayed in the
                           report.
@@ -202,6 +210,18 @@ Producing a conformance report
     conformance filter when submitting for conformance.
     --implementation-name is mandatory and must be the name of the tested
     implementation to be displayed on the conformance report.
+    --host-platform-name is mandatory and must be the host name used to invoke
+    a host platform test.
+    This will be used for the CMake variable ${host_platform_name}.
+    --host-device-name is mandatory and must be the host name used to invoke
+    a host device test.
+    This will be used for the CMake variable ${host_device_name}.
+    --opencl-platform-name is mandatory and must be the name of the OpenCL
+    platform tested on.
+    This will be used for the CMake variable ${opencl_platform_name}.
+    --opencl-device-name is mandatory and must be the name of the OpenCL
+    device tested on.
+    This will be used for the CMake variable ${opencl_device_name}.
 
     The script will produce an xml conformance report detailing the tested
     implementation, host system, host device, opencl device, build configuration

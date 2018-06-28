@@ -70,8 +70,8 @@ foreach(test_project_dir ${test_projects_dir_list})
                         OBJECT_LIBRARY ${test_exe_name}_objects
                         TESTS          ${test_cases_list})
 
-    add_test(NAME ${test_exe_name}_host COMMAND ${test_exe_name} --platform host --device host --info-dump "../Testing/${test_exe_name}_host.info")
-    add_test(NAME ${test_exe_name}_opencl COMMAND ${test_exe_name} --platform intel --device opencl_cpu --info-dump "../Testing/${test_exe_name}_opencl.info")
+    add_test(NAME ${test_exe_name}_host COMMAND ${test_exe_name} --platform ${host_platform_name} --device ${host_device_name} --info-dump "../Testing/${test_exe_name}_host.info")
+    add_test(NAME ${test_exe_name}_opencl COMMAND ${test_exe_name} --platform ${opencl_platform_name} --device ${opencl_device_name} --info-dump "../Testing/${test_exe_name}_opencl.info")
 
     target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
