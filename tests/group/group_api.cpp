@@ -100,7 +100,7 @@ class TEST_NAME : public util::test_base {
               cl::sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D,
                                  LOCAL_RANGE_3D),
               [=](cl::sycl::group<3> my_group) {
-                const size_t groupLinearID = my_group.get_linear();
+                const size_t groupLinearID = my_group.get_linear_id();
 
                 // get()
                 {

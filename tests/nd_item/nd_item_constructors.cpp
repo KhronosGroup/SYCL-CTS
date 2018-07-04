@@ -44,14 +44,14 @@ template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
                                   const cl::sycl::nd_item<numDims>& actual,
                                   const cl::sycl::nd_item<numDims>& expected) {
-  CHECK_EQUALITY_HELPER(success, actual.get_global(index),
-                        expected.get_global(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_local(index),
-                        expected.get_local(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_global_id(index),
+                        expected.get_global_id(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_local_id(index),
+                        expected.get_local_id(index));
   CHECK_EQUALITY_HELPER(success, actual.get_group(index),
                         expected.get_group(index));
-  CHECK_EQUALITY_HELPER(success, actual.get_num_groups(index),
-                        expected.get_num_groups(index));
+  CHECK_EQUALITY_HELPER(success, actual.get_group_range(index),
+                        expected.get_group_range(index));
 }
 
 template <int numDims, typename success_acc_t>

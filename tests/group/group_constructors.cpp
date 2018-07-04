@@ -69,7 +69,7 @@ inline void check_equality(success_acc_t& successAcc,
   if (numDims >= 3) {
     check_equality_helper<2>(success, actual, expected);
   }
-  CHECK_EQUALITY_HELPER(success, actual.get_linear(), expected.get_linear());
+  CHECK_EQUALITY_HELPER(success, actual.get_linear_id(), expected.get_linear_id());
 }
 
 #undef CHECK_EQUALITY_HELPER

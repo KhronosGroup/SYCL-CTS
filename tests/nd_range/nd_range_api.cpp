@@ -20,10 +20,10 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
                    cl::sycl::range<dim> ls, cl::sycl::id<dim> offset) {
   for (int i = 0; i < dim; i++) {
     cl::sycl::nd_range<dim> no_offset(gs, ls);
-    CHECK_TYPE(log, no_offset.get_global()[i], sizes[i]);
-    CHECK_VALUE(log, no_offset.get_global()[i], sizes[i], i);
-    CHECK_TYPE(log, no_offset.get_local()[i], sizes[i] / 4);
-    CHECK_VALUE(log, no_offset.get_local()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, no_offset.get_global_range()[i], sizes[i]);
+    CHECK_VALUE(log, no_offset.get_global_range()[i], sizes[i], i);
+    CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
+    CHECK_VALUE(log, no_offset.get_local_range()[i], sizes[i] / 4, i);
 
     CHECK_TYPE(log, no_offset.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, no_offset.get_offset()[i], (size_t)0, i);
@@ -32,10 +32,10 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
 
     cl::sycl::nd_range<dim> deep_copy(no_offset);
 
-    CHECK_TYPE(log, deep_copy.get_global()[i], sizes[i]);
-    CHECK_VALUE(log, deep_copy.get_global()[i], sizes[i], i);
-    CHECK_TYPE(log, deep_copy.get_local()[i], sizes[i] / 4);
-    CHECK_VALUE(log, deep_copy.get_local()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, deep_copy.get_global_range()[i], sizes[i]);
+    CHECK_VALUE(log, deep_copy.get_global_range()[i], sizes[i], i);
+    CHECK_TYPE(log, deep_copy.get_local_range()[i], sizes[i] / 4);
+    CHECK_VALUE(log, deep_copy.get_local_range()[i], sizes[i] / 4, i);
 
     CHECK_TYPE(log, deep_copy.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, deep_copy.get_offset()[i], (size_t)0, i);
@@ -43,20 +43,20 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
     CHECK_VALUE(log, deep_copy.get_group()[i], sizes[i] / (sizes[i] / 4), i);
 
     cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
-    CHECK_TYPE(log, with_offset.get_global()[i], sizes[i]);
-    CHECK_VALUE(log, with_offset.get_global()[i], sizes[i], i);
-    CHECK_TYPE(log, with_offset.get_local()[i], sizes[i] / 4);
-    CHECK_VALUE(log, with_offset.get_local()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
+    CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);
+    CHECK_TYPE(log, with_offset.get_local_range()[i], sizes[i] / 4);
+    CHECK_VALUE(log, with_offset.get_local_range()[i], sizes[i] / 4, i);
     CHECK_TYPE(log, with_offset.get_offset()[i], sizes[i] / 8);
     CHECK_VALUE(log, with_offset.get_offset()[i], sizes[i] / 8, i);
     CHECK_TYPE(log, with_offset.get_group()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, with_offset.get_group()[i], sizes[i] / (sizes[i] / 4), i);
 
     cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
-    CHECK_TYPE(log, deep_copy_offset.get_global()[i], sizes[i]);
-    CHECK_VALUE(log, deep_copy_offset.get_global()[i], sizes[i], i);
-    CHECK_TYPE(log, deep_copy_offset.get_local()[i], sizes[i] / 4);
-    CHECK_VALUE(log, deep_copy_offset.get_local()[i], sizes[i] / 4, i);
+    CHECK_TYPE(log, deep_copy_offset.get_global_range()[i], sizes[i]);
+    CHECK_VALUE(log, deep_copy_offset.get_global_range()[i], sizes[i], i);
+    CHECK_TYPE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4);
+    CHECK_VALUE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4, i);
     CHECK_TYPE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8);
     CHECK_VALUE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8, i);
     CHECK_TYPE(log, deep_copy_offset.get_group()[i], sizes[i] / (sizes[i] / 4));

@@ -35,21 +35,21 @@ class kernel_nd_item {
     bool failed = false;
 
     /* test global ID*/
-    cl::sycl::id<dimensions> global_id = myitem.get_global();
+    cl::sycl::id<dimensions> global_id = myitem.get_global_id();
     size_t globals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
-      globals[i] = myitem.get_global(i);
+      globals[i] = myitem.get_global_id(i);
       if (globals[i] != global_id.get(i)) {
         failed = true;
       }
     }
 
-    cl::sycl::id<dimensions> local_id = myitem.get_local();
+    cl::sycl::id<dimensions> local_id = myitem.get_local_id();
     size_t locals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
-      locals[i] = myitem.get_local(i);
+      locals[i] = myitem.get_local_id(i);
       if (locals[i] != local_id.get(i)) {
         failed = true;
       }
@@ -97,11 +97,11 @@ class kernel_nd_item {
     }
 
     /* test number of groups*/
-    cl::sycl::id<dimensions> num_groups = myitem.get_num_groups();
+    cl::sycl::id<dimensions> num_groups = myitem.get_group_range();
     size_t nGroups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
-      nGroups[i] = myitem.get_num_groups(i);
+      nGroups[i] = myitem.get_group_range(i);
       if (nGroups[i] != num_groups.get(i)) {
         failed = true;
       }
@@ -118,8 +118,8 @@ class kernel_nd_item {
     cl::sycl::id<dimensions> offset = myitem.get_offset();
     cl::sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
 
-    cl::sycl::range<dimensions> ndGlobal = NDRange.get_global();
-    cl::sycl::range<dimensions> ndLocal = NDRange.get_local();
+    cl::sycl::range<dimensions> ndGlobal = NDRange.get_global_range();
+    cl::sycl::range<dimensions> ndLocal = NDRange.get_local_range();
     cl::sycl::id<dimensions> ndOffset = NDRange.get_offset();
 
     for (int i = 0; i < dimensions; ++i) {
