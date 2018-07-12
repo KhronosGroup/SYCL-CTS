@@ -234,7 +234,7 @@ class test_range {
           int m_iteration = 0;
 
           // create check table
-          cl::sycl::range<dims> range = item.get_nd_range().get_global();
+          cl::sycl::range<dims> range = item.get_nd_range().get_global_range();
 
           size_t check[] = {m_x, m_y, m_z};
 

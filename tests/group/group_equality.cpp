@@ -80,7 +80,7 @@ class TEST_NAME : public util::test_base {
 
           cgh.parallel_for_work_group<group_setup_kernel<numDims>>(
               itemRange, oneElemRange,
-              [=](item_t group) { itemAcc[group.get_linear()] = group; });
+              [=](item_t group) { itemAcc[group.get_linear_id()] = group; });
         });
 
         // Perform comparisons on the stored group objects

@@ -234,7 +234,7 @@ class test_id {
           int m_iteration = 0;
 
           // create check table
-          cl::sycl::id<dims> id = item.get_nd_range().get_global();
+          cl::sycl::id<dims> id = item.get_nd_range().get_global_range();
 
           size_t check[] = {m_x, m_y, m_z};
 

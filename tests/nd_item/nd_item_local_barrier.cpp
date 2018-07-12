@@ -40,7 +40,7 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
 
       cgh.parallel_for<class local_barrier_kernel>(
           NDRange, [=](cl::sycl::nd_item<1> item) {
-            int idx = (int)item.get_global(0);
+            int idx = (int)item.get_global_id(0);
             int pos = idx & 1;
             int opp = pos ^ 1;
 
