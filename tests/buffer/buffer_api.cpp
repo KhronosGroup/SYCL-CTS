@@ -123,7 +123,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       using myValueConstRef =
           typename cl::sycl::buffer<T, dims>::const_reference;
       using myAllocator = typename cl::sycl::buffer<
-          T, dims, cl::sycl::default_allocator<T>>::allocator_type;
+          T, dims, cl::sycl::buffer_allocator<T>>::allocator_type;
     }
 
     /* Check that ret_range is the correct size */
