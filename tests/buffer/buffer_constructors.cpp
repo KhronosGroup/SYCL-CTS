@@ -74,14 +74,14 @@ class buffer_ctors {
 
     /* Check (range, allocator) constructor */
     {
-      cl::sycl::buffer_allocator<T> buf_alloc;
+      cl::sycl::buffer_allocator buf_alloc;
       cl::sycl::buffer<T, dims> buf(r, buf_alloc, propList);
       cl::sycl::buffer<T, dims> buf1(r, buf_alloc);
     }
 
     /* check (data pointer, range, allocator) constructor*/
     {
-      cl::sycl::buffer_allocator<T> buf_alloc;
+      cl::sycl::buffer_allocator buf_alloc;
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
@@ -90,7 +90,7 @@ class buffer_ctors {
 
     /* check (const data pointer, range, allocator) constructor*/
     {
-      cl::sycl::buffer_allocator<T> buf_alloc;
+      cl::sycl::buffer_allocator buf_alloc;
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc);
@@ -98,7 +98,7 @@ class buffer_ctors {
 
     /* check (shared pointer, range, allocator) constructor*/
     {
-      cl::sycl::buffer_allocator<T> buf_alloc;
+      cl::sycl::buffer_allocator buf_alloc;
       cl::sycl::shared_ptr_class<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
@@ -107,7 +107,7 @@ class buffer_ctors {
 
     /* Check buffer (iterator, allocator) constructor */
     {
-      cl::sycl::buffer_allocator<T> buf_alloc;
+      cl::sycl::buffer_allocator buf_alloc;
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf_iter(data, data + size, buf_alloc,
