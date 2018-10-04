@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 import json
 import argparse
@@ -13,7 +14,7 @@ id ID #REQUIRED>
 """
 
 
-def handle_args():
+def handle_args(argv):
     """
     Handles the arguements to the script.
     """
@@ -69,14 +70,21 @@ def handle_args():
         help='The name of the implementation to be displayed in the report.',
         type=str,
         required=True)
-    args = parser.parse_args()
+    parser.add_argument(
+        '-V',
+        '--verbose',
+        help='Enable verbose CTest output',
+        type=bool,
+        default=False,
+        required=False)
+    args = parser.parse_args(argv)
 
     host_names = (args.host_platform_name, args.host_device_name)
     opencl_names = (args.opencl_platform_name, args.opencl_device_name)
 
     return (args.build_system_name, args.build_system_call,
             args.conformance_filter, args.implementation_name,
-            args.additional_cmake_args, host_names, opencl_names)
+            args.additional_cmake_args, host_names, opencl_names, args.verbose)
 
 
 def generate_cmake_call(build_system_name, conformance_filter,
@@ -87,7 +95,7 @@ def generate_cmake_call(build_system_name, conformance_filter,
     """
     return [
         'cmake',
-        '../',
+        '..',
         '-G' + build_system_name,
         '-DSYCL_CTS_TEST_FILTER=' + conformance_filter,
         '-Dhost_platform_name=' + host_names[0],
@@ -97,7 +105,7 @@ def generate_cmake_call(build_system_name, conformance_filter,
     ] + additional_cmake_args.split()
 
 
-def configure_and_run_tests(cmake_call, build_system_call):
+def configure_and_run_tests(cmake_call, build_system_call, verbose):
     """
     Configures the tests with cmake to produce a ninja.build file.
     Runs the generated ninja file.
@@ -110,9 +118,13 @@ def configure_and_run_tests(cmake_call, build_system_call):
         '--test-output-size-passed', '0', '--test-output-size-failed', '0',
         '--overwrite'
     ]
+    if verbose:
+        ctest_call.append('-V')
+
     subprocess.call(cmake_call)
     subprocess.call(build_system_call)
-    subprocess.call(ctest_call)
+    error_code = subprocess.call(ctest_call)
+    return error_code
 
 
 def collect_info_filenames():
@@ -124,12 +136,13 @@ def collect_info_filenames():
     host_info_filenames = []
     opencl_info_filenames = []
 
-    # Get all the test results in Testing/
-    for filename in os.listdir('Testing/'):
+    # Get all the test results in Testing
+    for filename in os.listdir('Testing'):
+        filename_full = os.path.join('Testing', filename)
         if filename.endswith('host.info'):
-            host_info_filenames.append('Testing/' + filename)
+            host_info_filenames.append(filename_full)
         if filename.endswith('opencl.info'):
-            opencl_info_filenames.append('Testing/' + filename)
+            opencl_info_filenames.append(filename_full)
 
     # Exit if we didn't find any test results
     if (len(host_info_filenames) == 0 or len(opencl_info_filenames) == 0):
@@ -183,10 +196,10 @@ def get_xml_test_results():
     Finds the xml file output by the test and returns the rool of the xml tree.
     """
     test_tag = ""
-    with open("Testing/TAG", 'r') as tag_file:
+    with open(os.path.join("Testing", "TAG"), 'r') as tag_file:
         test_tag = tag_file.readline()[:-1]
 
-    test_xml_file = "Testing/" + test_tag + "/Test.xml"
+    test_xml_file = os.path.join("Testing", test_tag, "Test.xml")
     test_xml_tree = ET.parse(test_xml_file)
     return test_xml_tree.getroot()
 
@@ -256,12 +269,12 @@ def update_xml_attribs(host_info_json, opencl_info_json, implementation_name,
     return test_xml_root
 
 
-def main():
+def main(argv=sys.argv):
 
     # Parse and gather all the script args
     (build_system_name, build_system_call, conformance_filter,
-     implementation_name, additional_cmake_args, host_names,
-     opencl_names) = handle_args()
+     implementation_name, additional_cmake_args, host_names, opencl_names,
+     verbose) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(build_system_name, conformance_filter,
@@ -274,7 +287,8 @@ def main():
     os.chdir('build')
 
     # Configure the build system with cmake, run the build, and run the tests.
-    configure_and_run_tests(cmake_call, build_system_call)
+    error_code = configure_and_run_tests(cmake_call, build_system_call,
+                                         verbose)
 
     # Collect the test info files, validate them and get the contents as json.
     host_info_filenames, opencl_info_filenames = collect_info_filenames()
@@ -288,7 +302,7 @@ def main():
         cmake_call, build_system_name, build_system_call)
 
     # Get the xml report stylesheet and add it to the results.
-    stylesheet_xml_file = "../tools/stylesheet.xml"
+    stylesheet_xml_file = os.path.join("..", "tools", "stylesheet.xml")
     stylesheet_xml_tree = ET.parse(stylesheet_xml_file)
     stylesheet_xml_root = stylesheet_xml_tree.getroot()
     result_xml_root.append(stylesheet_xml_root[0])
@@ -298,6 +312,8 @@ def main():
 
     with open("conformance_report.xml", 'w') as final_conformance_report:
         final_conformance_report.write(report)
+
+    return error_code
 
 
 if __name__ == "__main__":
