@@ -233,12 +233,13 @@ class TEST_NAME : public util::test_base {
       /* check hashing
       */
       {
-        cl::sycl::sampler samplerA = defaultSampler();
-        cl::sycl::sampler samplerB = std::move(samplerA);
-
         cl::sycl::hash_class<cl::sycl::sampler> hasher;
 
-        if (hasher(samplerA) != hasher(samplerB)) {
+        cl::sycl::sampler samplerA = defaultSampler();
+        auto hashA = hasher(samplerA);
+        cl::sycl::sampler samplerB = std::move(samplerA);
+
+        if (hashA != hasher(samplerB)) {
           FAIL(log,
                "sampler hashing does not work correctly (hashing of equal "
                "failed)");
