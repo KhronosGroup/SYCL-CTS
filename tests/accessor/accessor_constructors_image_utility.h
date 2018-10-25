@@ -106,6 +106,10 @@ class image_accessor_dims {
     cl::sycl::image<dims> image(data.data(),
                                 cl::sycl::image_channel_order::rgba,
                                 cl::sycl::image_channel_type::fp32, range);
+    std::vector<cl_float> data2(range.size() * 4, 0.0f);
+    cl::sycl::image<dims> image2(data2.data(),
+                                 cl::sycl::image_channel_order::rgba,
+                                 cl::sycl::image_channel_type::fp32, range);
 
     int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
 
@@ -263,7 +267,7 @@ class image_accessor_dims {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
                            cl::sycl::access::placeholder::false_t>
-            b(image);
+            b(image2);
         b = a;
 
         check_accessor_members<
@@ -303,7 +307,7 @@ class image_accessor_dims {
         cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
                            cl::sycl::access::target::host_image,
                            cl::sycl::access::placeholder::false_t>
-            b(image);
+            b(image2);
         b = std::move(a);
 
         check_accessor_members<
