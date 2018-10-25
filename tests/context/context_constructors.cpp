@@ -34,9 +34,6 @@ class TEST_NAME : public util::test_base {
         cl::sycl::context context;
 
         if (!context.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
-        if (!context.is_host()) {
           if (context.get() != nullptr) {
             FAIL(log, "context was not constructed correctly (get)");
           }
@@ -47,10 +44,6 @@ class TEST_NAME : public util::test_base {
       */
       {
         cl::sycl::context context(asyncHandler);
-
-        if (!context.is_host()) {
-          FAIL(log, "context was not constructed correctly (is_host)");
-        }
 
         if (!context.is_host()) {
           if (context.get() != nullptr) {
