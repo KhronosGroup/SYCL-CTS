@@ -35,7 +35,7 @@ set_target_properties(ComputeCpp::Runtime PROPERTIES
     IMPORTED_LOCATION                    "${ComputeCpp_LIBRARIES}"
     INTERFACE_INCLUDE_DIRECTORIES        "${ComputeCpp_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES             "OpenCL::OpenCL;Threads::Threads"
-    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl;-emit-llvm")
+    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl")
 if (WIN32)
     set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
                  INTERFACE_DEVICE_COMPILE_DEFINITIONS
