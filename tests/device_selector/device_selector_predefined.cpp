@@ -29,6 +29,7 @@ class TEST_NAME : public util::test_base {
     try {
       bool gpuAvailable = false;
       bool cpuAvailable = false;
+      bool acceleratorAvailable = false;
       auto devices = cl::sycl::device::get_devices();
       for (auto device : devices) {
         if (device.is_gpu()) {
@@ -36,6 +37,9 @@ class TEST_NAME : public util::test_base {
         }
         if (device.is_cpu()) {
           cpuAvailable = true;
+        }
+        if (device.is_accelerator()) {
+          acceleratorAvailable = true;
         }
       }
 
@@ -87,6 +91,17 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "gpu_selector failed to select an appropriate device");
         }
       }
+
+      /** check accelerator_selector
+      */
+      if (acceleratorAvailable) {
+        cl::sycl::accelerator_selector acceleratorSelector;
+        auto acceleratorDevice = util::get_cts_object::device(acceleratorSelector);
+        if (!(acceleratorDevice.is_accelerator())) {
+          FAIL(log, "accelerator_selector failed to select an appropriate device");
+        }
+      }
+
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
