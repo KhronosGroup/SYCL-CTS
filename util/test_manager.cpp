@@ -80,7 +80,8 @@ bool test_manager::parse(const int argc, const char **args) {
 
   // redirect all output to a file
   std::string filePath;
-  if (cmdarg.get_value("--file", filePath) || cmdarg.find_key("-f")) {
+  if (cmdarg.get_value("--file", filePath) ||
+      cmdarg.get_value("-f", filePath)) {
     if (!printer.set_file_channel(filePath.c_str())) {
       std::cout << "unable to create output file!" << std::endl;
       return false;
@@ -96,7 +97,7 @@ bool test_manager::parse(const int argc, const char **args) {
 
   // load a csv file used for specifying test parameters
   std::string csvfile;
-  if (cmdarg.get_value("--csv", csvfile) || cmdarg.find_key("-c")) {
+  if (cmdarg.get_value("--csv", csvfile) || cmdarg.get_value("-c", csvfile)) {
     // forward the csv file on to the collection for filtering
     if (!collection.filter_tests_csv(csvfile)) {
       std::cout << "unable to load csv file" << std::endl;
@@ -111,13 +112,15 @@ bool test_manager::parse(const int argc, const char **args) {
 
   // set the default sycl cts platform
   std::string platformName;
-  if (cmdarg.get_value("--platform", platformName) || cmdarg.find_key("-p")) {
+  if (cmdarg.get_value("--platform", platformName) ||
+      cmdarg.get_value("-p", platformName)) {
     selector.set_default_platform(platformName);
   }
 
   // set the default sycl cts device
   std::string deviceName;
-  if (cmdarg.get_value("--device", deviceName) || cmdarg.find_key("-d")) {
+  if (cmdarg.get_value("--device", deviceName) ||
+      cmdarg.get_value("-d", deviceName)) {
     selector.set_default_device(deviceName);
   }
 
@@ -134,7 +137,8 @@ bool test_manager::parse(const int argc, const char **args) {
 
   // check for device info dump
   std::string infoFile;
-  if (cmdarg.get_value("--info-dump", infoFile) || cmdarg.find_key("-i")) {
+  if (cmdarg.get_value("--info-dump", infoFile) ||
+      cmdarg.get_value("-i", infoFile)) {
     m_infoDump = true;
     m_infoDumpFile = infoFile;
   }
