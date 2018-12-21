@@ -65,7 +65,7 @@ class check_atomics_32 {
     old = cl::sycl::atomic_load(a);
     cl::sycl::atomic_store(a, T{0});
     old = cl::sycl::atomic_exchange(a, T{1});
-    old = cl::sycl::atomic_compare_exchange_strong(a, &old, T{1});
+    old = cl::sycl::atomic_compare_exchange_strong(a, old, T{1});
     old = cl::sycl::atomic_fetch_add(a, T{1});
     old = cl::sycl::atomic_fetch_sub(a, T{1});
     old = cl::sycl::atomic_fetch_and(a, T{1});
@@ -79,7 +79,7 @@ class check_atomics_32 {
     old = cl::sycl::atomic_load(a, order);
     cl::sycl::atomic_store(a, T{0}, order);
     old = cl::sycl::atomic_exchange(a, T{1}, order);
-    old = cl::sycl::atomic_compare_exchange_strong(a, &old, T{1}, order, order);
+    old = cl::sycl::atomic_compare_exchange_strong(a, old, T{1}, order, order);
     old = cl::sycl::atomic_fetch_add(a, T{1}, order);
     old = cl::sycl::atomic_fetch_sub(a, T{1}, order);
     old = cl::sycl::atomic_fetch_and(a, T{1}, order);
