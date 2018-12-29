@@ -35,7 +35,8 @@ namespace {
  */
 template <typename vecType, int numOfElems>
 bool check_vector_size(cl::sycl::vec<vecType, numOfElems> vector) {
-  return ((sizeof(vecType) * vector.get_count()) == vector.get_size());
+  int count = (vector.get_count() == 3) ? 4 : vector.get_count();
+  return ((sizeof(vecType) * count) == vector.get_size());
 }
 
 /**
@@ -194,14 +195,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 3> inputVec,
 
   // get_size()
   int size = inputVec.get_size();
-  if (size != sizeof(vecType) * 3) {
+  if (size != sizeof(vecType) * 4) {
     return false;
   }
   size = inputVec
              .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
                                cl::sycl::elem::s2>()
              .get_size();
-  if (size != sizeof(vecType) * 3) {
+  if (size != sizeof(vecType) * 4) {
     return false;
   }
 
