@@ -10,6 +10,23 @@
 
 #define TEST_NAME queue_constructors
 
+inline bool check_null_cl_command_queue(const cl::sycl::queue &q) {
+  auto clComQue = q.get();
+  bool isNull = clComQue == nullptr;
+  clReleaseCommandQueue(clComQue);
+  return isNull;
+}
+
+inline bool check_equal_cl_command_queues(const cl::sycl::queue &qA,
+                                          const cl::sycl::queue &qB) {
+  auto clComQueA = qA.get();
+  auto clComQueB = qB.get();
+  bool equalComQues = clComQueA == clComQueB;
+  clReleaseCommandQueue(clComQueA);
+  clReleaseCommandQueue(clComQueB);
+  return equalComQues;
+}
+
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
@@ -82,7 +99,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device_selector was not constructed "
                  "correctly (get)");
@@ -104,7 +121,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device_selector and property_list was not "
                  "constructed correctly (get)");
@@ -133,7 +150,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device_selector and async_handler was not "
                  "constructed correctly (get)");
@@ -156,7 +173,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device_selector, async_handler and "
                  "property_list was not constructed correctly (get)");
@@ -184,7 +201,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!device.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log, "queue with device was not constructed correctly (get)");
           }
         }
@@ -204,7 +221,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!device.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log, "queue with device was not constructed correctly (get)");
           }
         }
@@ -231,7 +248,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!device.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device and async_hander was not constructed "
                  "correctly (get)");
@@ -254,7 +271,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!device.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with device and async_hander was not constructed "
                  "correctly (get)");
@@ -283,7 +300,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with context and device_selector was not "
                  "constructed correctly (get)");
@@ -306,7 +323,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with context and device_selector was not "
                  "constructed correctly (get)");
@@ -336,7 +353,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with context, device_selector and async_handler "
                  "was not constructed correctly (get)");
@@ -361,7 +378,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queue.get() == nullptr) {
+          if (check_null_cl_command_queue(queue)) {
             FAIL(log,
                  "queue with context, device_selector, async_handler and "
                  "property_list was not constructed correctly (get)");
@@ -387,22 +404,20 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "queue source after copy construction failed (is_host)");
         }
 
+        if (queueA.is_host() != queueB.is_host()) {
+          FAIL(log,
+               "queue destination was not copy constructed correctly "
+               "(is_host)");
+        }
+
         if (!selector.is_host()) {
-          if (queueA.get() == nullptr) {
+          if (check_null_cl_command_queue(queueA)) {
             FAIL(log, "queue source after copy construction failed (get)");
           }
         }
 
         if (!selector.is_host()) {
-          if (queueB.get() == nullptr) {
-            FAIL(log,
-                 "queue destination was not copy constructed correctly "
-                 "(is_host)");
-          }
-        }
-
-        if (!selector.is_host()) {
-          if (queueA.get() != queueB.get()) {
+          if (!check_equal_cl_command_queues(queueA, queueB)) {
             FAIL(log,
                  "queue destination was not copy constructed correctly (get)");
           }
@@ -422,7 +437,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queueA.get() == nullptr) {
+          if (check_null_cl_command_queue(queueA)) {
             FAIL(log, "queue source after copy assignment (=) failed (get)");
           }
         }
@@ -434,7 +449,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queueA.get() != queueB.get()) {
+          if (!check_equal_cl_command_queues(queueA, queueB)) {
             FAIL(log,
                  "queue destination was not copy assigned (=) correctly "
                  "(get)");
@@ -454,7 +469,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queueB.get() == nullptr) {
+          if (check_null_cl_command_queue(queueB)) {
             FAIL(log, "queue was not move constructed correctly (get)");
           }
         }
@@ -474,7 +489,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (queueB.get() == nullptr) {
+          if (check_null_cl_command_queue(queueB)) {
             FAIL(log, "queue was not move assigned (=) correctly. (get)");
           }
         }
