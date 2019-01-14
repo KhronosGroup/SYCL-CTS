@@ -144,8 +144,6 @@ class TEST_NAME : public util::test_base {
           cl::sycl::info::partition_affinity_domain::not_applicable);
       check_enum_class_value(cl::sycl::info::partition_affinity_domain::numa);
       check_enum_class_value(
-          cl::sycl::info::partition_affinity_domain::unsupported);
-      check_enum_class_value(
           cl::sycl::info::partition_affinity_domain::L1_cache);
       check_enum_class_value(
           cl::sycl::info::partition_affinity_domain::L2_cache);
