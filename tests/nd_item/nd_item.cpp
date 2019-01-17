@@ -13,6 +13,18 @@
 namespace test_nd_item__ {
 using namespace sycl_cts;
 
+size_t getIndex(cl::sycl::id<1> Id, cl::sycl::range<1> Range) {
+  return Id.get(0);
+}
+
+size_t getIndex(cl::sycl::id<2> Id, cl::sycl::range<2> Range) {
+  return Id.get(1) + Id.get(0) * Range.get(1);
+}
+
+size_t getIndex(cl::sycl::id<3> Id, cl::sycl::range<3> Range) {
+  return Id.get(2) + Id.get(1) * Range.get(0) + Id.get(0) * Range.get(0) * Range.get(1);
+}
+
 template <int dimensions>
 class kernel_nd_item {
  protected:
@@ -69,10 +81,7 @@ class kernel_nd_item {
     /* test range*/
     cl::sycl::range<dimensions> globalRange = myitem.get_global_range();
 
-    size_t globalIndex =
-        global_id.get(2) + (global_id.get(1) * globalRange.get(2)) +
-        (global_id.get(0) * globalRange.get(2) * globalRange.get(1));
-
+    size_t globalIndex = getIndex(global_id, globalRange);
     for (int i = 0; i < dimensions; ++i) {
       if (m_globalID[global_id] != globalIndex) {
         failed = true;
@@ -81,10 +90,7 @@ class kernel_nd_item {
 
     cl::sycl::range<dimensions> localRange = myitem.get_local_range();
 
-    size_t localIndex =
-        local_id.get(2) + (local_id.get(1) * localRange.get(2)) +
-        (local_id.get(0) * localRange.get(2) * localRange.get(1));
-
+    size_t localIndex = getIndex(local_id, localRange);
     for (int i = 0; i < dimensions; ++i) {
       if (m_localID[local_id] != localIndex) {
         failed = true;
