@@ -58,6 +58,8 @@ class TEST_NAME : public util::test_base {
           handler.single_task(dummy_functor<class TEST_NAME>());
         });
 
+        event.wait();
+
         check_get_info_param<cl::sycl::info::event,
                              cl::sycl::info::event_command_status,
                              cl::sycl::info::event::command_execution_status>(
