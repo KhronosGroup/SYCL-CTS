@@ -1,0 +1,8 @@
+build/
+tests/math_*/*.cpp
+tests/vector_*/*.cpp
+!tests/vector_constructors/vector_constructors_const_argTN.cpp
+!test/vector_operators/vector_operators.cpp
+.idea
+log.txt
+*.pyc

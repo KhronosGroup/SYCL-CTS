@@ -1,0 +1,71 @@
+/*************************************************************************
+//
+//  SYCL Conformance Test Suite
+//
+//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//
+**************************************************************************/
+
+#define SYCL_SIMPLE_SWIZZLES
+
+#include "../common/common.h"
+#include "../common/common_vec.h"
+
+#define TEST_NAME vector_swizzles_$TYPE_NAME
+
+namespace vector_swizzles_$TYPE_NAME__ {
+using namespace sycl_cts;
+
+/** Test each combination of vector swizzles can be generated
+ *  and used like a normal vector
+ */
+class TEST_NAME : public util::test_base {
+ public:
+  /** return information about this test
+   */
+  void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  /** execute the test
+   */
+  void run(util::logger &log) override {
+    try {
+      auto testQueue = util::get_cts_object::queue();
+      {
+        auto testDevice = testQueue.get_device();
+
+        /** Test vector swizzles
+         */
+        // 1 dimensional swizzles
+        $1D_SWIZZLES
+
+        // 2 dimensional swizzles
+        $2D_SWIZZLES
+
+        // 3 dimensional swizzles
+        $3D_SWIZZLES
+
+        // 4 dimensional swizzles
+        $4D_SWIZZLES
+
+        // 8 dimensional swizzles
+        $8D_SWIZZLES
+
+        // 16 dimensional swizzles
+        $16D_SWIZZLES
+      }
+
+      testQueue.wait_and_throw();
+    } catch (const cl::sycl::exception &e) {
+      log_exception(log, e);
+      cl::sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
+    }
+  }
+};
+
+util::test_proxy<TEST_NAME> proxy;
+
+} /* namespace vector_swizzles_$TYPE_NAME__ */
