@@ -176,7 +176,7 @@ class TEST_NAME : public util::test_base {
        */
       check_enum_class_value(cl::sycl::info::global_mem_cache_type::none);
       check_enum_class_value(cl::sycl::info::global_mem_cache_type::read_only);
-      check_enum_class_value(cl::sycl::info::global_mem_cache_type::write_only);
+      check_enum_class_value(cl::sycl::info::global_mem_cache_type::read_write);
 
       /** check execution_capability
        */
