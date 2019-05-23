@@ -1,5 +1,16 @@
 # Include SYCL implementation CMake module
-find_package(ComputeCpp REQUIRED)
+if (NOT SYCL_IMPLEMENTATION)
+  set (SYCL_IMPLEMENTATION ComputeCpp)
+endif()
+
+set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;ComputeCpp")
+if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
+    message(FATAL_ERROR
+        "The SYCL CTS requires specifying a SYCL implementation with "
+        "-DSYCL_IMPLEMENTATION=[Intel_SYCL,ComputeCpp]")
+endif()
+
+find_package(${SYCL_IMPLEMENTATION} REQUIRED)
 
 if(NOT TARGET SYCL::SYCL)
     message(FATAL_ERROR
