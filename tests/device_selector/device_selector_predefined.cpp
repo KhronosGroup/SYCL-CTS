@@ -45,7 +45,7 @@ class TEST_NAME : public util::test_base {
 
       /** check default_selector
       */
-      if (!cpuAvailable && !gpuAvailable) {
+      if (!cpuAvailable && !gpuAvailable && !acceleratorAvailable) {
         cl::sycl::default_selector defaultSelector;
         try {
           auto defaultDevice = util::get_cts_object::device(defaultSelector);

@@ -100,7 +100,7 @@ The SYCL test suite can be launched via the following command::
 
     usage: runtests.py [-h] [-b BINPATH] [--csvpath CSVPATH] [--list]
                        [-j JUNIT] [-p {host,intel,amd}]
-                       [-d {host,opencl_cpu,opencl_gpu}]
+                       [-d {host,opencl_cpu,opencl_gpu,accelerator}]
 
     Khronos SYCL CTS
 
@@ -118,7 +118,7 @@ The SYCL test suite can be launched via the following command::
                             host, intel, amd)
       -d DEVICE, --device DEVICE
                             The device to run on (where DEVICE can be host,
-                            opencl_cpu, opencl_gpu)
+                            opencl_cpu, opencl_gpu, accelerator)
 
 The ``--binpath`` argument is mandatory and must point to one of the CTS
 test executables built in the previous step.

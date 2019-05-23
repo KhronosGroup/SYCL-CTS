@@ -177,6 +177,7 @@ Usage:
                    'host'
                    'opencl_cpu'
                    'opencl_gpu'
+                   'accelerator'
     --info-dump -i [file]  Dumps information about the device and platform
                            the tests were executed on to the file specified.
     --test         [name]  Specify a specific test to run by name, eg.
