@@ -17,7 +17,7 @@ foreach(cat ${MATH_CAT_WITH_VARIANT})
   endforeach()
 endforeach()
 
-foreach(cat ${MATH_CAT_WITH_VARIANT})
+foreach(cat ${MATH_CAT})
   # Invoke our generator
   # the path to the generated cpp file will be added to TEST_CASES_LIST
   generate_cts_test(TESTS TEST_CASES_LIST
