@@ -99,21 +99,45 @@ cl::sycl::id<3> getId<3>(const size_t &size) {
 /** Returns the string representation of a SYCL access mode
  */
 std::string access_mode_to_string(cl::sycl::access::mode kMode) {
-  static const std::array<std::string, 6> names = {
-      "read",  "write", "read_write", "discard_write", "discard_read_write",
-      "atomic"};
-
-  return names[static_cast<unsigned int>(kMode)];
+  switch (kMode) {
+    case cl::sycl::access::mode::read:
+      return "read";
+    case cl::sycl::access::mode::write:
+      return "write";
+    case cl::sycl::access::mode::read_write:
+      return "read_write";
+    case cl::sycl::access::mode::discard_write:
+      return "discard_write";
+    case cl::sycl::access::mode::discard_read_write:
+      return "discard_read_write";
+    case cl::sycl::access::mode::atomic:
+      return "atomic";
+    default:
+      return "";  // or throw an exception here
+  }
 }
 
 /** Returns the string representation of a SYCL access target
  */
 std::string access_target_to_string(cl::sycl::access::target kTarget) {
-  static const std::array<std::string, 7> names = {
-      "host_buffer", "global_buffer", "constant_buffer", "local",
-      "host_image",  "image",         "image_array"};
-
-  return names[static_cast<unsigned int>(kTarget)];
+  switch (kTarget) {
+    case cl::sycl::access::target::global_buffer:
+      return "global_buffer";
+    case cl::sycl::access::target::constant_buffer:
+      return "constant_buffer";
+    case cl::sycl::access::target::local:
+      return "local";
+    case cl::sycl::access::target::image:
+      return "image";
+    case cl::sycl::access::target::host_buffer:
+      return "host_buffer";
+    case cl::sycl::access::target::host_image:
+      return "host_image";
+    case cl::sycl::access::target::image_array:
+      return "image_array";
+    default:
+      return "";  // or throw an exception here
+  }
 }
 
 /** generates an error message containing all required information to trace a
