@@ -30,15 +30,26 @@ struct image_generic {
    * @param pitch Pointer to the pitch that the image pitch will be compared to
    * return True if pitches are equal
    */
-  static bool compare_pitch(util::logger &log, cl::sycl::image<dims> &img,
-                            cl::sycl::range<dims - 1> *pitch) {
+  static bool compare_pitch(util::logger &log, cl::sycl::image<3> &img,
+                            cl::sycl::range<2> *pitch) {
     if (pitch == nullptr) {
       // Don't compare if pitch is null
       return true;
     }
     if ((!CHECK_VALUE_SCALAR(log, img.get_pitch()[0], pitch->get(0))) ||
-        (!CHECK_VALUE_SCALAR(log, img.get_pitch()[1], pitch->get(1))) ||
-        (!CHECK_VALUE_SCALAR(log, img.get_pitch()[2], pitch->get(2)))) {
+        (!CHECK_VALUE_SCALAR(log, img.get_pitch()[1], pitch->get(1)))) {
+      return false;
+    }
+    return true;
+  }
+
+  static bool compare_pitch(util::logger &log, cl::sycl::image<2> &img,
+                            cl::sycl::range<1> *pitch) {
+    if (pitch == nullptr) {
+      // Don't compare if pitch is null
+      return true;
+    }
+    if (!CHECK_VALUE_SCALAR(log, img.get_pitch()[0], pitch->get(0))) {
       return false;
     }
     return true;

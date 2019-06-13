@@ -26,9 +26,27 @@ class image_ctors {
  public:
   void operator()(util::logger &log, cl::sycl::range<dims> &r,
                   cl::sycl::range<dims - 1> *p = nullptr) const {
-    log.note(
-        "Testing image combination: dims[%d], range[%d, %d, %d], pitch[%d]",
-        dims, r[0], r[1], r[2], (p != nullptr));
+    const auto numElems = 1;
+    switch (dims) {
+      case 1:
+        log.note("Testing image combination: dims[%d], range[%d]", dims, r[0]);
+        numElems = r[0];
+        break;
+      case 2:
+        log.note(
+            "Testing image combination: dims[%d], range[%d, %d], pitch[%d]",
+            dims, r[0], r[1], (p != nullptr));
+        numElems = r[0] * r[1];
+        break;
+      case 3:
+        log.note(
+            "Testing image combination: dims[%d], range[%d, %d, %d], pitch[%d]",
+            dims, r[0], r[1], r[2], (p != nullptr));
+        numElems = r[0] * r[1] * r[2];
+        break;
+      default:
+        break;
+    }
 
     // This combination is required to be supported by the OpenCL spec
     const auto channelOrder = cl::sycl::image_channel_order::rgba;
@@ -38,7 +56,6 @@ class image_ctors {
     const auto channelCount = get_channel_order_count(channelOrder);
     const auto channelTypeSize = get_channel_type_size(channelType);
     const auto elementSize = channelTypeSize * channelCount;
-    const auto numElems = r[0] * r[1] * r[2];
 
     // Pitch has to be at least as large as the multiple of element size
     image_generic<dims>::multiply_pitch(p, elementSize);
@@ -53,10 +70,23 @@ class image_ctors {
         static_cast<void *>(imageHost.data()), channelOrder, channelType, r, p);
 
     // Check get_range()
-    if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0))) ||
-        (!CHECK_VALUE_SCALAR(log, img.get_range()[1], r.get(1))) ||
-        (!CHECK_VALUE_SCALAR(log, img.get_range()[2], r.get(2)))) {
-      FAIL(log, "Ranges are not the same.");
+    if (dims == 3) {
+      if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0))) ||
+          (!CHECK_VALUE_SCALAR(log, img.get_range()[1], r.get(1))) ||
+          (!CHECK_VALUE_SCALAR(log, img.get_range()[2], r.get(2)))) {
+        FAIL(log, "Ranges are not the same.");
+      }
+    }
+    if (dims == 2) {
+      if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0))) ||
+          (!CHECK_VALUE_SCALAR(log, img.get_range()[1], r.get(1)))) {
+        FAIL(log, "Ranges are not the same.");
+      }
+    }
+    if (dims == 1) {
+      if ((!CHECK_VALUE_SCALAR(log, img.get_range()[0], r.get(0)))) {
+        FAIL(log, "Ranges are not the same.");
+      }
     }
 
     // Check get_pitch()

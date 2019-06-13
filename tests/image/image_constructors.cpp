@@ -410,12 +410,24 @@ class image_ctors {
   void operator()(util::logger &log, cl::sycl::range<dims> &r,
                   const cl::sycl::property_list &propList,
                   cl::sycl::range<dims - 1> *pitch = nullptr) {
-    log.note("Testing image combination: dims[%d], range[%d, %d, %d]", dims,
-             r[0], r[1], r[2]);
+    switch (dims) {
+      case 1:
+        log.note("Testing image combination: dims[%d], range[%d]", dims, r[0]);
+        break;
+      case 2:
+        log.note("Testing image combination: dims[%d], range[%d, %d]", dims,
+                 r[0], r[1]);
+        break;
+      case 3:
+        log.note("Testing image combination: dims[%d], range[%d, %d, %d]", dims,
+                 r[0], r[1], r[2]);
+        break;
+      default:
+        break;
+    }
 
     size_t itOrder = 0;
     size_t itType = 0;
-    const auto numElems = static_cast<int>(r[0] * r[1] * r[2]);
 
     // Pitch has to be at least as large as the multiple of element size,
     // just multiply by largest possible supported element size
