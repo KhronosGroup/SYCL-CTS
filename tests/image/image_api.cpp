@@ -26,7 +26,7 @@ class image_ctors {
  public:
   void operator()(util::logger &log, cl::sycl::range<dims> &r,
                   cl::sycl::range<dims - 1> *p = nullptr) const {
-    const auto numElems = 1;
+    auto numElems = 1;
     switch (dims) {
       case 1:
         log.note("Testing image combination: dims[%d], range[%d]", dims, r[0]);
@@ -242,6 +242,7 @@ class image_ctors {
           cl::sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
       auto weakPtrVoid = cl::sycl::weak_ptr_class<void>(sharedPtrVoid);
       auto weakPtrFloat = cl::sycl::weak_ptr_class<float>(sharedPtrFloat);
+      auto iterator = imageHost2.begin();
 
       img.set_final_data();
       img.set_final_data(nullptr);
@@ -252,6 +253,7 @@ class image_ctors {
       img.set_final_data(sharedPtrFloat);
       img.set_final_data(weakPtrVoid);
       img.set_final_data(weakPtrFloat);
+      img.set_final_data(iterator);
     }
 
     // Check get_access()
@@ -299,16 +301,16 @@ class image_ctors {
           // Read image data using integer coordinates
           cl::sycl::float4 dataFromInt =
               img_acc.read(image_access<dims>::get_int(item));
-          (void)dataFromInt; // silent warning
+          (void)dataFromInt;  // silent warning
           // Read image data using integer coordinates and a sampler
           cl::sycl::float4 dataFromIntWithSampler =
               img_acc.read(image_access<dims>::get_int(item), sampler);
-          (void)dataFromIntWithSampler; // silent warning
+          (void)dataFromIntWithSampler;  // silent warning
           // Read image data using floating point coordinates
           // Only works with a sampler
           cl::sycl::float4 dataFromFloat =
               img_acc.read(image_access<dims>::get_float(item), sampler);
-          (void)dataFromFloat; // silent warning
+          (void)dataFromFloat;  // silent warning
         };
         cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
       });
