@@ -183,7 +183,7 @@ void *FlushToZero( void )
 {
 #if defined( __APPLE__ ) || defined(__linux__) || defined (_WIN32)
     #if defined( __i386__ ) || defined( __x86_64__ ) || defined(_MSC_VER)
-        union{ int i;  void *p; }u = { _mm_getcsr() };
+        union{ unsigned int i;  void *p; }u = { _mm_getcsr() };
         _mm_setcsr( u.i | 0x8040 );
         return u.p;
     #elif defined( __arm__ )
