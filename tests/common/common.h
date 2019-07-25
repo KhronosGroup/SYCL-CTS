@@ -499,6 +499,28 @@ struct check_type_existence {
   check_type_existence() = default;
 };
 
+/** Helper function that calculates a range from a size so
+ *  that each dimension equals size
+ */
+template <size_t dims>
+cl::sycl::range<dims> getRange(const size_t &size);
+
+/** Specializations of for getRange each supported
+ *  dimensionality
+ */
+template <>
+cl::sycl::range<1> getRange<1>(const size_t &size) {
+  return cl::sycl::range<1>(size);
+}
+template <>
+cl::sycl::range<2> getRange<2>(const size_t &size) {
+  return cl::sycl::range<2>(size, size);
+}
+template <>
+cl::sycl::range<3> getRange<3>(const size_t &size) {
+  return cl::sycl::range<3>(size, size, size);
+}
+
 }  // namespace
 
 /** \brief tests the result of using operator op with operands lhs and rhs,
