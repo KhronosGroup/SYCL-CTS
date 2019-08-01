@@ -59,7 +59,7 @@ class TEST_NAME : public util::test_base {
                "1");
         }
 
-        cl::sycl::range<1> range_move_assign;
+        cl::sycl::range<1> range_move_assign{0};
         range_move_assign = std::move(range_deep);
         if ((range_move_assign[0] != sizes[0]) ||
             (range_move_assign.get(0) != sizes[0])) {
@@ -100,7 +100,7 @@ class TEST_NAME : public util::test_base {
                "2");
         }
 
-        cl::sycl::range<2> range_move_assign;
+        cl::sycl::range<2> range_move_assign{0, 0};
         range_move_assign = std::move(range_deep);
         if ((range_move_assign[0] != sizes[0]) ||
             (range_move_assign.get(0) != sizes[0]) ||
@@ -148,7 +148,7 @@ class TEST_NAME : public util::test_base {
                "3");
         }
 
-        cl::sycl::range<3> range_move_assign;
+        cl::sycl::range<3> range_move_assign{0, 0, 0};
         range_move_assign = std::move(range_deep);
         if ((range_move_assign[0] != sizes[0]) ||
             (range_move_assign.get(0) != sizes[0]) ||

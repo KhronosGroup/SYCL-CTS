@@ -46,7 +46,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       cl_uint clUintRet;
       cl::sycl::string_class stringRet;
       size_t sizeTRet;
-      cl::sycl::range<3> range3Ret;
+      cl::sycl::range<3> range3Ret{0, 0, 0};
       cl_ulong clUlongRet;
 
       // silent warnings
