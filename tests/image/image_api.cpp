@@ -269,13 +269,24 @@ class image_ctors {
       }
 
       auto queue = util::get_cts_object::queue();
-      queue.submit([&](cl::sycl::handler &cgh) {
-        // target::image
-        auto imgAcc =
-            img2.template get_access<cl::sycl::float4,
-                                     cl::sycl::access::mode::write>(cgh);
-        cgh.single_task<image_kernel_get_access<dims>>([]() {});
-      });
+      try {
+        queue.submit([&](cl::sycl::handler &cgh) {
+          // target::image
+          auto imgAcc =
+              img2.template get_access<cl::sycl::float4,
+                                       cl::sycl::access::mode::write>(cgh);
+          cgh.single_task<image_kernel_get_access<dims>>([]() {});
+        });
+
+        queue.wait_and_throw();
+      } catch (const cl::sycl::feature_not_supported &fnse) {
+        if (!queue.get_device()
+                 .template get_info<cl::sycl::info::device::image_support>()) {
+          log.note("device does not support images -- skipping check");
+        } else {
+          throw;
+        }
+      }
     }
 
     const auto expected = 0.5f;
@@ -287,54 +298,63 @@ class image_ctors {
 
       auto queue = util::get_cts_object::queue();
 
-      queue.submit([&](cl::sycl::handler &cgh) {
-        auto img_acc =
-            img2.template get_access<cl::sycl::float4,
-                                     cl::sycl::access::mode::read>(cgh);
+      try {
+        queue.submit([&](cl::sycl::handler &cgh) {
+          auto img_acc =
+              img2.template get_access<cl::sycl::float4,
+                                       cl::sycl::access::mode::read>(cgh);
 
-        auto sampler = cl::sycl::sampler(
-            cl::sycl::coordinate_normalization_mode::unnormalized,
-            cl::sycl::addressing_mode::clamp,
-            cl::sycl::filtering_mode::nearest);
+          auto sampler = cl::sycl::sampler(
+              cl::sycl::coordinate_normalization_mode::unnormalized,
+              cl::sycl::addressing_mode::clamp,
+              cl::sycl::filtering_mode::nearest);
 
-        auto myKernel = [img_acc, sampler](cl::sycl::item<dims> item) {
-          // Read image data using integer coordinates
-          cl::sycl::float4 dataFromInt =
-              img_acc.read(image_access<dims>::get_int(item));
-          (void)dataFromInt;  // silent warning
-          // Read image data using integer coordinates and a sampler
-          cl::sycl::float4 dataFromIntWithSampler =
-              img_acc.read(image_access<dims>::get_int(item), sampler);
-          (void)dataFromIntWithSampler;  // silent warning
-          // Read image data using floating point coordinates
-          // Only works with a sampler
-          cl::sycl::float4 dataFromFloat =
-              img_acc.read(image_access<dims>::get_float(item), sampler);
-          (void)dataFromFloat;  // silent warning
-        };
-        cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
-      });
+          auto myKernel = [img_acc, sampler](cl::sycl::item<dims> item) {
+            // Read image data using integer coordinates
+            cl::sycl::float4 dataFromInt =
+                img_acc.read(image_access<dims>::get_int(item));
+            (void)dataFromInt;  // silent warning
+            // Read image data using integer coordinates and a sampler
+            cl::sycl::float4 dataFromIntWithSampler =
+                img_acc.read(image_access<dims>::get_int(item), sampler);
+            (void)dataFromIntWithSampler;  // silent warning
+            // Read image data using floating point coordinates
+            // Only works with a sampler
+            cl::sycl::float4 dataFromFloat =
+                img_acc.read(image_access<dims>::get_float(item), sampler);
+            (void)dataFromFloat;  // silent warning
+          };
+          cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
+        });
 
-      queue.submit([&](cl::sycl::handler &cgh) {
-        auto img_acc =
-            img2.template get_access<cl::sycl::float4,
-                                     cl::sycl::access::mode::write>(cgh);
-        auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
-          // Write image data
-          img_acc.write(image_access<dims>::get_int(item),
-                        cl::sycl::float4(expected));
-        };
-        cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
-      });
+        queue.submit([&](cl::sycl::handler &cgh) {
+          auto img_acc =
+              img2.template get_access<cl::sycl::float4,
+                                       cl::sycl::access::mode::write>(cgh);
+          auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
+            // Write image data
+            img_acc.write(image_access<dims>::get_int(item),
+                          cl::sycl::float4(expected));
+          };
+          cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
+        });
 
-      queue.wait_and_throw();
-    }
+        queue.wait_and_throw();
 
-    // Check image values
-    const auto floatData = reinterpret_cast<float *>(imageHost.data());
-    for (int i = 0; i < numElems; ++i) {
-      if (!CHECK_VALUE(log, floatData[i], 0.5f, i)) {
-        FAIL(log, "Image contains wrong values.");
+        // Check image values
+        const auto floatData = reinterpret_cast<float *>(imageHost.data());
+        for (int i = 0; i < numElems; ++i) {
+          if (!CHECK_VALUE(log, floatData[i], 0.5f, i)) {
+            FAIL(log, "Image contains wrong values.");
+          }
+        }
+      } catch (const cl::sycl::feature_not_supported &fnse) {
+        if (!queue.get_device()
+                 .template get_info<cl::sycl::info::device::image_support>()) {
+          log.note("device does not support images -- skipping check");
+        } else {
+          throw;
+        }
       }
     }
   }
