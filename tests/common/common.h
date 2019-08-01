@@ -120,7 +120,7 @@ void check_enum_underlying_type(sycl_cts::util::logger& log) {
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
 void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
   /** check param_traits return type
-  */
+   */
   using paramTraitsType =
       typename cl::sycl::info::param_traits<enumT, kValue>::return_type;
   if (typeid(paramTraitsType) != typeid(returnT)) {
@@ -128,19 +128,19 @@ void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
   }
 
   /** check get_info return type
-  */
+   */
   auto returnValue = object.template get_info<kValue>();
   check_return_type<returnT>(log, returnValue, "object::get_info()");
 }
 
 /**
-* @brief Helper function to check a profiling info parameter.
-*/
+ * @brief Helper function to check a profiling info parameter.
+ */
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
 void check_get_profiling_info_param(sycl_cts::util::logger& log,
                                     const objectT& object) {
   /** check param_traits return type
-  */
+   */
   using paramTraitsType =
       typename cl::sycl::info::param_traits<enumT, kValue>::return_type;
   if (!std::is_same<paramTraitsType, returnT>::value) {
@@ -148,7 +148,7 @@ void check_get_profiling_info_param(sycl_cts::util::logger& log,
   }
 
   /** check get_profiling_info return type
-  */
+   */
   auto returnValue = object.template get_profiling_info<kValue>();
   check_return_type<returnT>(log, returnValue, "object::get_profiling_info()");
 }
@@ -159,13 +159,13 @@ void check_get_profiling_info_param(sycl_cts::util::logger& log,
 template <typename T>
 void check_equality(sycl_cts::util::logger& log, T& a, T& b, bool checkGet) {
   /** check is_host
-  */
+   */
   if (a.is_host() != b.is_host()) {
     FAIL(log, "two objects are not equal (is_host)");
   }
 
   /** check get
-  */
+   */
   if (checkGet) {
     if (a.get() != b.get()) {
       FAIL(log, "two objects are not equal (get)");
@@ -231,7 +231,7 @@ void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
 }
 
 /** helper function for retrieving an event from a submitted kernel
-*/
+ */
 template <typename kernelT>
 cl::sycl::event get_queue_event(cl::sycl::queue& queue) {
   return queue.submit([&](cl::sycl::handler& handler) {
@@ -329,7 +329,7 @@ template <typename T>
 void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
                                        std::string test_name) {
   /** check for reflexivity
-  */
+   */
   if (!(a == a)) {
     FAIL(log, (test_name +
                " is not equality-comparable (operator== reflexivity failed)")
@@ -341,7 +341,7 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
   }
 
   /** check for symmetry
-  */
+   */
   auto b = a;
   if (!(a == b)) {
     FAIL(log, (test_name +
@@ -362,7 +362,7 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
   }
 
   /** check for transitivity
-  */
+   */
   auto c = b;
   if (!(a == c)) {
     FAIL(log, (test_name +
@@ -494,7 +494,7 @@ cl::sycl::string_class type_to_string(cl::sycl::vec<dataT, numElems>) {
 /**
  * @brief Dummy template to check type existence without generating warnings.
  */
-template<typename T>
+template <typename T>
 struct check_type_existence {
   check_type_existence() = default;
 };
@@ -519,6 +519,35 @@ cl::sycl::range<2> getRange<2>(const size_t &size) {
 template <>
 cl::sycl::range<3> getRange<3>(const size_t &size) {
   return cl::sycl::range<3>(size, size, size);
+
+/**
+ * @brief Helper function to check if all devices support online compiler.
+ */
+bool is_compiler_available(
+    const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
+  bool compiler_available = true;
+  for (const auto& device : deviceList) {
+    if (!device.get_info<cl::sycl::info::device::is_compiler_available>()) {
+      compiler_available = false;
+      break;
+    }
+  }
+  return compiler_available;
+}
+
+/**
+ * @brief Helper function to check if all devices support online linker.
+ */
+bool is_linker_available(
+    const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
+  bool linker_available = true;
+  for (const auto& device : deviceList) {
+    if (!device.get_info<cl::sycl::info::device::is_linker_available>()) {
+      linker_available = false;
+      break;
+    }
+  }
+  return linker_available;
 }
 
 }  // namespace
@@ -574,7 +603,7 @@ cl::sycl::range<3> getRange<3>(const size_t &size) {
 
 /** \brief tests the result of operator op between scalar operand lhs and INDEX
  * operand rhs
-*/
+ */
 #define SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, result)                 \
   {                                                                          \
     result = integer op INDEX;                                               \
@@ -587,17 +616,18 @@ cl::sycl::range<3> getRange<3>(const size_t &size) {
     }                                                                        \
   }
 
-/** \brief tests the result of operator op between scalar operand and an INDEX
- * operand in any possible configuration
-*/
+/** \brief tests the result of operator \p op between \p integer operand and an
+ * \p INDEX operand in any possible configuration
+ */
 #define DUAL_SIZE_INDEX_KERNEL_TEST(op, INDEX, integer, result) \
   INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, result);         \
   SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, result)
 
-/** \brief tests the result of assignment operator op between assigning a to c
- * then use the assignment operator assignment_op with lhs operand c and lhs
- * operand b. Then tests the result using operator op with operands a and b.
-*/
+/** \brief tests the result of assignment operator \p op between assigning \p a
+ * to \p c then use the assignment operator \p assignment_op with lhs operand \p
+ * c and rhs operand \p b. Then tests the result using operator \p op with
+ * operands \p a and \p b.
+ */
 #define INDEX_ASSIGNMENT_TESTS(assignment_op, op, a, b, c)                    \
   {                                                                           \
     c = a;                                                                    \
@@ -610,11 +640,11 @@ cl::sycl::range<3> getRange<3>(const size_t &size) {
     }                                                                         \
   }
 
-/** \brief tests the result of assignment operator op between assigning a to c
-* then use the assignment operator assignment_op with lhs operand c and lhs
-* operand integer. Then tests the result using operator op with operands a and
-* integer.
-*/
+/** \brief tests the result of assignment operator \p op between assigning \p a
+ * to \p c then use the assignment operator \p assignment_op with lhs operand \p
+ * c and rhs operand \p integer. Then tests the result using operator \p op with
+ * operands \p a and \p integer.
+ */
 #define INDEX_ASSIGNMENT_INTEGER_TESTS(assignment_op, op, a, integer, c) \
   {                                                                      \
     c = a;                                                               \

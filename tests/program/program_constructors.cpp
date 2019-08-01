@@ -53,7 +53,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto context = util::get_cts_object::context();
         cl::sycl::program program(context);
 
-        if (!context.is_host() && (program.get_state() != cl::sycl::program_state::none)) {
+        if (!context.is_host() &&
+            (program.get_state() != cl::sycl::program_state::none)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
@@ -61,93 +62,174 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       log.note("check (context, vector_class<device>) constructor");
       {
         auto context = util::get_cts_object::context();
-        cl::sycl::vector_class<cl::sycl::device> deviceList =
-            context.get_devices();
+        auto deviceList = context.get_devices();
         cl::sycl::program program(context, deviceList);
 
-        if (!context.is_host() && (program.get_state() != cl::sycl::program_state::none)) {
+        if (!context.is_host() &&
+            (program.get_state() != cl::sycl::program_state::none)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
 
       log.note(
-          "check (vector_class<program>, string_class = \"\") constructor");
+          "check (vector_class<program>, string_class = empty_string) "
+          "constructor");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<0>>(context);
-        auto programB = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<1>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::vector_class<cl::sycl::program> programList;
-        programList.push_back(programA);
-        programList.push_back(programB);
-        cl::sycl::program programC(programList);
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<0>>(context);
+          auto programB = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<1>>(context);
+
+          cl::sycl::vector_class<cl::sycl::program> programList;
+          programList.push_back(programA);
+          programList.push_back(programB);
+          try {
+            cl::sycl::program programC(programList);
+          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+            if (!is_linker_available(deviceList)) {
+              log.note("online linker not available -- skipping check");
+            } else {
+              throw;
+            }
+          }
+
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
+        }
       }
 
       log.note("check (vector_class<program>, string_class) constructor");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<2>>(context);
-        auto programB = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<3>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::vector_class<cl::sycl::program> programList;
-        programList.push_back(programA);
-        programList.push_back(programB);
-        cl::sycl::program programC(programList, "-cl-fast-relaxed-math");
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<2>>(context);
+          auto programB = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<3>>(context);
+
+          cl::sycl::vector_class<cl::sycl::program> programList;
+          programList.push_back(programA);
+          programList.push_back(programB);
+          try {
+            cl::sycl::program programC(programList, "-cl-fast-relaxed-math");
+          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+            if (!is_linker_available(deviceList)) {
+              log.note("online linker not available -- skipping check");
+            } else {
+              throw;
+            }
+          }
+
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
+        }
       }
 
       log.note("check copy constructor");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<4>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::program programB(programA);
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<4>>(context);
 
-        if (programA.get_state() != programB.get_state()) {
-          FAIL(log, "program was not copy constructed correctly. (get_state)");
+          cl::sycl::program programB(programA);
+
+          if (programA.get_state() != programB.get_state()) {
+            FAIL(log,
+                 "program was not copy constructed correctly. (get_state)");
+          }
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
         }
       }
 
       log.note("check assignment operator");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<5>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::program programB = programA;
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<5>>(context);
 
-        if (programA.get_state() != programB.get_state()) {
-          FAIL(log, "program was not copy assigned correctly. (get_state)");
+          cl::sycl::program programB = programA;
+
+          if (programA.get_state() != programB.get_state()) {
+            FAIL(log, "program was not copy assigned correctly. (get_state)");
+          }
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
         }
       }
 
       log.note("check move constructor");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<6>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::program programB(std::move(programA));
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<6>>(context);
 
-        if (programB.get_state() != cl::sycl::program_state::compiled) {
-          FAIL(log, "program was not move constructed correctly. (get_state)");
+          cl::sycl::program programB(std::move(programA));
+
+          if (programB.get_state() != cl::sycl::program_state::compiled) {
+            FAIL(log,
+                 "program was not move constructed correctly. (get_state)");
+          }
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
         }
       }
 
       log.note("check move assignment operator");
       {
         auto context = util::get_cts_object::context();
-        auto programA = util::get_cts_object::program::compiled<
-            struct program_ctrs_kernel<7>>(context);
+        auto deviceList = context.get_devices();
 
-        cl::sycl::program programB = std::move(programA);
+        try {
+          auto programA = util::get_cts_object::program::compiled<
+              struct program_ctrs_kernel<7>>(context);
 
-        if (programB.get_state() != cl::sycl::program_state::compiled) {
-          FAIL(log, "program was not move assigned correctly. (get_state)");
+          cl::sycl::program programB = std::move(programA);
+
+          if (programB.get_state() != cl::sycl::program_state::compiled) {
+            FAIL(log, "program was not move assigned correctly. (get_state)");
+          }
+        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          if (!is_compiler_available(deviceList)) {
+            log.note("online compiler not available -- skipping check");
+          } else {
+            throw;
+          }
         }
       }
 
