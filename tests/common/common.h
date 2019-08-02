@@ -519,6 +519,7 @@ cl::sycl::range<2> getRange<2>(const size_t &size) {
 template <>
 cl::sycl::range<3> getRange<3>(const size_t &size) {
   return cl::sycl::range<3>(size, size, size);
+}
 
 /**
  * @brief Helper function to check if all devices support online compiler.
