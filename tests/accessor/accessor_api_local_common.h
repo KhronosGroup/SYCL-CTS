@@ -17,6 +17,7 @@
 #include <array>
 #include <numeric>
 #include <sstream>
+#include <type_traits>
 
 namespace {
 
@@ -97,6 +98,23 @@ class check_local_accessor_api_methods {
         check_return_type<explicit_pointer_t<T, target>>(log, acc.get_pointer(),
                                                          "get_pointer()");
       }
+
+      /** check local accessor type alias
+      */
+      static_assert(std::is_same<
+          decltype( local_accessor<T,dims>{range, h} ),
+          decltype( accessor<T, dims, mode, target> {range, h} )
+          >::value, "local accessor type alias check");
+
+      /** check default value of dims parameter in local accessor type alias
+      */
+      if (1 == dims) {
+        static_assert(std::is_same<
+            decltype( local_accessor<T>{range, h} ),
+            decltype( accessor<T, dims, mode, target> {range, h} )
+            >::value, "default dimension local accessor type alias check");
+      }
+
       /** dummy kernel, as no kernel is required for these checks
       */
       h.single_task(dummy_functor<T>());
