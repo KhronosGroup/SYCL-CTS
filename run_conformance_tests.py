@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import subprocess
 import sys
@@ -104,6 +105,7 @@ def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
     """
+    import shlex
     return [
         cmake_exe,
         '..',
@@ -113,7 +115,7 @@ def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
         '-Dhost_device_name=' + host_names[1],
         '-Dopencl_platform_name=' + opencl_names[0],
         '-Dopencl_device_name=' + opencl_names[1],
-    ] + additional_cmake_args.split()
+    ] + shlex.split(additional_cmake_args)
 
 
 def subprocess_call(parameter_list):
@@ -290,7 +292,7 @@ def update_xml_attribs(host_info_json, opencl_info_json, implementation_name,
     return test_xml_root
 
 
-def main(argv=sys.argv):
+def main(argv=sys.argv[1:]):
 
     # Parse and gather all the script args
     (cmake_exe, build_system_name, build_system_call, conformance_filter,
@@ -332,7 +334,7 @@ def main(argv=sys.argv):
     result_xml_root.append(stylesheet_xml_root[0])
 
     # Get the xml results as a string and append them to the report header.
-    report = REPORT_HEADER + ET.tostring(result_xml_root)
+    report = REPORT_HEADER + ET.tostring(result_xml_root).decode("utf-8")
 
     with open("conformance_report.xml", 'w') as final_conformance_report:
         final_conformance_report.write(report)

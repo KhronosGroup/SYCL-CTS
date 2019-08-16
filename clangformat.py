@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 # run clang format over all files
 #
@@ -56,4 +57,5 @@ def main( ):
     return
 
 # call the entry point
-main( )
+if __name__ == "__main__":
+    main()
