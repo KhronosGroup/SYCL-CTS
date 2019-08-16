@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 ################################################################################
 ##
 ##  SYCL 1.2.1 Conformance Test Suite
