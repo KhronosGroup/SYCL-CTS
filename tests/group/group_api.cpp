@@ -16,9 +16,9 @@ using namespace sycl_cts;
 static const size_t GROUP_RANGE_1D = 2;
 static const size_t GROUP_RANGE_2D = 4;
 static const size_t GROUP_RANGE_3D = 8;
-static const size_t LOCAL_RANGE_1D = 16;
-static const size_t LOCAL_RANGE_2D = 8;
-static const size_t LOCAL_RANGE_3D = 4;
+static const size_t DEFAULT_LOCAL_RANGE_1D = 4;
+static const size_t DEFAULT_LOCAL_RANGE_2D = 3;
+static const size_t DEFAULT_LOCAL_RANGE_3D = 2;
 static const size_t NUM_DIMENSIONS = 3;
 static const size_t NUM_GROUPS =
     GROUP_RANGE_1D * GROUP_RANGE_2D * GROUP_RANGE_3D;
@@ -79,6 +79,24 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
+
+      // Check if default work group size is supported
+      cl::sycl::program program(queue.get_context());
+      program.build_with_kernel_type<TEST_NAME>();
+      auto kernel = program.get_kernel<TEST_NAME>();
+      auto device = queue.get_device();
+
+      auto work_group_size_limit = kernel.get_work_group_info<
+          cl::sycl::info::kernel_work_group::work_group_size>(device);
+
+      auto default_wg_size = DEFAULT_LOCAL_RANGE_1D * DEFAULT_LOCAL_RANGE_2D *
+                             DEFAULT_LOCAL_RANGE_3D;
+      bool reduce_wg_size = default_wg_size > work_group_size_limit;
+
+      // Adjust work-group size
+      size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_1D;
+      size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_2D;
+      size_t LOCAL_RANGE_3D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_3D;
 
       size_t resultSize = NUM_GROUPS * NUM_METHODS * NUM_DIMENSIONS;
       cl::sycl::vector_class<size_t> result(resultSize);

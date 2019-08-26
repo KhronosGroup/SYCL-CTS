@@ -40,6 +40,8 @@ class buffer_storage_test {
   void operator()(util::logger &log, cl::sycl::range<dims> r) {
     std::unique_ptr<T[]> data(new T[size]);
     std::shared_ptr<T> data_shrd(new T[size], [](T *data) { delete[] data; });
+    std::vector<T> data_vector;
+    data_vector.reserve(size);
 
     cl::sycl::mutex_class m;
 
@@ -71,6 +73,17 @@ class buffer_storage_test {
       T *data_final = nullptr;
       buf_shrd.set_final_data(data_final);
       buf_shrd.set_write_back(false);
+    }
+    {
+      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
+          data_shrd, r,
+          cl::sycl::property_list{cl::sycl::property::buffer::use_mutex(m)});
+      m.lock();
+      std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
+      m.unlock();
+      auto data_final = data_vector.begin();
+      buf_shrd.set_final_data(data_final);
+      buf_shrd.set_write_back(true);
     }
   }
 };

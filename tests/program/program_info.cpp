@@ -28,33 +28,46 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
   void run(util::logger &log) override {
     try {
       auto context = util::get_cts_object::context();
-      auto program =
-          util::get_cts_object::program::built<class TEST_NAME>(context);
+      auto deviceList = context.get_devices();
 
-      /** check types
-      */
-      { check_type_existence<cl::sycl::info::program> typeCheck; }
-      using vectorDevicesInfo = cl::sycl::vector_class<cl::sycl::device>;
+      try {
+        auto program =
+            util::get_cts_object::program::built<class TEST_NAME>(context);
 
-      /** check program info parameters
-      */
-      {
-        cl::sycl::context programContext =
-            program.get_info<cl::sycl::info::program::context>();
-        TEST_TYPE_TRAIT(program, context, program);
-      }
-      {
-        vectorDevicesInfo vectorDevices =
-            program.get_info<cl::sycl::info::program::devices>();
-        TEST_TYPE_TRAIT(program, devices, program);
-      }
-      {
-        if (!program.is_host()) {
-          cl_uint referenceCount =
-              program.get_info<cl::sycl::info::program::reference_count>();
-          TEST_TYPE_TRAIT(program, reference_count, program);
+        /** check types
+         */
+        { check_type_existence<cl::sycl::info::program> typeCheck; }
+        using vectorDevicesInfo = cl::sycl::vector_class<cl::sycl::device>;
+
+        /** check program info parameters
+         */
+        {
+          cl::sycl::context programContext =
+              program.get_info<cl::sycl::info::program::context>();
+          TEST_TYPE_TRAIT(program, context, program);
+        }
+        {
+          vectorDevicesInfo vectorDevices =
+              program.get_info<cl::sycl::info::program::devices>();
+          TEST_TYPE_TRAIT(program, devices, program);
+        }
+        {
+          if (!program.is_host()) {
+            cl_uint referenceCount =
+                program.get_info<cl::sycl::info::program::reference_count>();
+            TEST_TYPE_TRAIT(program, reference_count, program);
+          }
+        }
+
+      } catch (const cl::sycl::feature_not_supported &fnse_build) {
+        if (!is_compiler_available(deviceList) ||
+            !is_linker_available(deviceList)) {
+          log.note("online compiler or linker not available -- skipping check");
+        } else {
+          throw;
         }
       }
+
     } catch (cl::sycl::exception e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

@@ -52,28 +52,6 @@ size_t getElementsCount<3>(const cl::sycl::range<3> &range) {
   return range[0] * range[1] * range[2];
 }
 
-/** Helper function that calculates a range from a size so
- *  that each dimension equals size
- */
-template <size_t dims>
-cl::sycl::range<dims> getRange(const size_t &size);
-
-/** Specializations of for getRange each supported
- *  dimensionality
- */
-template <>
-cl::sycl::range<1> getRange<1>(const size_t &size) {
-  return cl::sycl::range<1>(size);
-}
-template <>
-cl::sycl::range<2> getRange<2>(const size_t &size) {
-  return cl::sycl::range<2>(size, size);
-}
-template <>
-cl::sycl::range<3> getRange<3>(const size_t &size) {
-  return cl::sycl::range<3>(size, size, size);
-}
-
 /** Helper function that calculates an id from a size so
  *  that each dimension equals size
  */

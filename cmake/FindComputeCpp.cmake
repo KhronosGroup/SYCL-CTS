@@ -50,6 +50,10 @@ endif()
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
 set_target_properties(SYCL::SYCL PROPERTIES INTERFACE_LINK_LIBRARIES ComputeCpp::Runtime)
 
+set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
+separate_arguments(COMPUTECPP_USER_FLAGS)
+mark_as_advanced(COMPUTECPP_USER_FLAGS)
+
 # build_spir
 # Runs the device compiler on a single source file, creating the stub and the bc files.
 function(build_spir exe_name spir_target_name source_file output_path)
@@ -75,8 +79,8 @@ function(build_spir exe_name spir_target_name source_file output_path)
             -Wno-ignored-attributes
             -O2
             -mllvm -inline-threshold=1000
-            -DBUILD_PLATFORM_SPIR
             -intelspirmetadata
+            ${COMPUTECPP_USER_FLAGS}
             ${platform_specific_args}
             $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">
             $<$<BOOL:${device_compile_definitions}>:-D$<JOIN:${device_compile_definitions},\t-D>>

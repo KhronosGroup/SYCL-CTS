@@ -58,7 +58,7 @@ class cts_selector : public cl::sycl::device_selector {
           result = 1000;
         }
         break;
-      case selector::ctsdevice::accelerator:
+      case selector::ctsdevice::opencl_accelerator:
         if (type == cl::sycl::info::device_type::accelerator) {
           result = 1000;
         }

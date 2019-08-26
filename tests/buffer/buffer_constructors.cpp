@@ -164,9 +164,8 @@ class buffer_ctors {
     /* Check interop constructor */
     if (dims == 1) {
       // calculate element count, size and range for the interop buffer
-      cl::sycl::range<1> interopRange;
+      cl::sycl::range<1> interopRange{r[0]};
       size_t count = r[0];
-      interopRange[0] = r[0];
       size_t interopSize = count * sizeof(T);
 
       // construct the SYCL buffer
@@ -211,9 +210,8 @@ class buffer_ctors {
       });
 
       // calculate element count, size and range for the interop buffer
-      cl::sycl::range<1> interopRange;
+      cl::sycl::range<1> interopRange{r[0]};
       size_t count = r[0];
-      interopRange[0] = r[0];
       size_t interopSize = count * sizeof(T);
 
       // construct the SYCL buffer

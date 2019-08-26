@@ -31,7 +31,7 @@ class selector : public singleton<selector> {
     host,
     opencl_cpu,
     opencl_gpu,
-    accelerator,
+    opencl_accelerator,
     custom,
   };
 
@@ -56,7 +56,7 @@ class selector : public singleton<selector> {
    *      'host'
    *      'opencl_cpu'
    *      'opencl_gpu'
-   *      'accelerator'
+   *      'opencl_accelerator'
    */
   void set_default_device(const std::string &name);
 

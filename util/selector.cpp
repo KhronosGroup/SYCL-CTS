@@ -36,7 +36,7 @@ void selector::set_default_platform(const std::string &name) {
  *      'host'
  *      'opencl_cpu'
  *      'opencl_gpu'
- *      'accelerator'
+ *      'opencl_accelerator'
  */
 void selector::set_default_device(const std::string &name) {
   if (name == "host") {
@@ -48,8 +48,8 @@ void selector::set_default_device(const std::string &name) {
   if (name == "opencl_gpu") {
     m_device = ctsdevice::opencl_gpu;
   }
-  if (name == "accelerator") {
-    m_device = ctsdevice::accelerator;
+  if (name == "opencl_accelerator") {
+    m_device = ctsdevice::opencl_accelerator;
   }
 }
 
