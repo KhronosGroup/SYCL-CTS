@@ -32,22 +32,13 @@ void test_barrier(util::logger &log, cl::sycl::queue &queue) {
     queue.submit([&](cl::sycl::handler &cgh) {
       auto ptr = buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
 
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
-          tile(cl::sycl::range<1>(2), cgh);
-
       cgh.parallel_for<class global_barrier_kernel>(
           cl::sycl::nd_range<1>(cl::sycl::range<1>(64), cl::sycl::range<1>(2)),
           [=](cl::sycl::nd_item<1> item) {
             size_t idx = item.get_global_linear_id();
-            size_t pos = idx & 1;
-            size_t opp = pos ^ 1;
-
-            tile[pos] = ptr[idx];
-
+            int val = ptr[idx];
             item.barrier(cl::sycl::access::fence_space::global_space);
-
-            ptr[idx] = tile[opp];
+            ptr[idx^1] = val;
           });
     });
   }
