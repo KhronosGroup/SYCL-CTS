@@ -38,19 +38,26 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check image accessor api for cl_int4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_int4>(log, queue);
+      try {
+        /** check image accessor api for cl_int4
+         */
+        check_image_accessor_api_type<cl::sycl::cl_int4>(log, queue);
 
-      /** check image accessor api for cl_uint4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_uint4>(log, queue);
+        /** check image accessor api for cl_uint4
+         */
+        check_image_accessor_api_type<cl::sycl::cl_uint4>(log, queue);
 
-      /** check image accessor api for cl_float4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_float4>(log, queue);
-
-      queue.wait_and_throw();
+        /** check image accessor api for cl_float4
+         */
+        check_image_accessor_api_type<cl::sycl::cl_float4>(log, queue);
+      } catch (const cl::sycl::feature_not_supported &e) {
+        if (!queue.get_device()
+                .get_info<cl::sycl::info::device::image_support>()) {
+          log.note("device does not support images -- skipping check");
+        } else {
+          throw;
+        }
+      }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

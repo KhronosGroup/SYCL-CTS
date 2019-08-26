@@ -39,19 +39,28 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check accessor constructors for cl_int4
-       */
-      check_all_dims<cl::sycl::cl_int4>(log, queue);
+      try {
+        /** check accessor constructors for cl_int4
+         */
+        check_all_dims<cl::sycl::cl_int4>(log, queue);
 
-      /** check accessor constructors for cl_uint4
-       */
-      check_all_dims<cl::sycl::cl_uint4>(log, queue);
+        /** check accessor constructors for cl_uint4
+         */
+        check_all_dims<cl::sycl::cl_uint4>(log, queue);
 
-      /** check accessor constructors for cl_float4
-       */
-      check_all_dims<cl::sycl::cl_float4>(log, queue);
+        /** check accessor constructors for cl_float4
+         */
+        check_all_dims<cl::sycl::cl_float4>(log, queue);
 
-      queue.wait_and_throw();
+        queue.wait_and_throw();
+      } catch (const cl::sycl::feature_not_supported &fnse) {
+        if (!queue.get_device()
+                  .get_info<cl::sycl::info::device::image_support>()) {
+          log.note("device does not support images -- skipping check");
+        } else {
+          throw;
+        }
+      }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
