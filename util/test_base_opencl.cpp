@@ -94,6 +94,19 @@ bool test_base_opencl::setup(logger &log) {
   return true;
 }
 
+bool test_base_opencl::online_compiler_supported(cl_device_id clDeviceId,
+                                                 logger &log) {
+  cl_uint available;
+  cl_int error = clGetDeviceInfo(clDeviceId, CL_DEVICE_COMPILER_AVAILABLE,
+                                 sizeof(available), &available, NULL);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  if (available == 0) {
+    return false;
+  }
+
+  return true;
+}
+
 bool test_base_opencl::create_compiled_program(const std::string &source,
                                                cl_program &out_program,
                                                logger &log) {
