@@ -43,7 +43,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check platform get() method
-      */
+       */
       {
         auto platform = util::get_cts_object::platform(ctsSelector);
         if (!platform.is_host()) {
@@ -60,7 +60,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check device get() method
-      */
+       */
       {
         auto device = util::get_cts_object::device(ctsSelector);
         if (!device.is_host()) {
@@ -76,7 +76,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check context get() method
-      */
+       */
       {
         auto context = util::get_cts_object::context(ctsSelector);
         if (!context.is_host()) {
@@ -92,7 +92,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check queue get() method
-      */
+       */
       {
         auto queue = util::get_cts_object::queue(ctsSelector);
         if (!queue.is_host()) {
@@ -109,57 +109,69 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check program get() method
-      */
+       */
       {
-        auto program =
-            util::get_cts_object::program::compiled<program_get_kernel>(
-                ctsContext);
-        if (!program.is_host()) {
-          auto interopProgram = program.get();
-          check_return_type<cl_program>(log, interopProgram,
-                                        "cl::sycl::program::get()");
+        if (!util::get_cts_object::queue(ctsSelector)
+                   .get_device()
+                   .get_info<cl::sycl::info::device::is_compiler_available>()) {
+          log.note("online compiler not available -- skipping check");
+        } else {
+          auto program =
+              util::get_cts_object::program::compiled<program_get_kernel>(
+                  ctsContext);
+          if (!program.is_host()) {
+            auto interopProgram = program.get();
+            check_return_type<cl_program>(log, interopProgram,
+                                          "cl::sycl::program::get()");
 
-          if (interopProgram == nullptr) {
-            FAIL(log,
-                 "cl::sycl::program::get() did not return a valid cl_program");
+            if (interopProgram == nullptr) {
+              FAIL(
+                  log,
+                  "cl::sycl::program::get() did not return a valid cl_program");
+            }
           }
         }
       }
 
       /** check kernel get() method
-      */
+       */
       {
         if (!ctsContext.is_host()) {
-          cl::sycl::string_class kernelSource = R"(
-          __kernel void test_kernel() {}
-          )";
-
           cl_program clProgram = nullptr;
-          if (!create_built_program(kernelSource, ctsContext.get(),
-                                    ctsDevice.get(), clProgram, log)) {
-            FAIL(log, "create_built_program failed");
-          }
+          if (online_compiler_supported(ctsDevice.get(), log)) {
+            cl::sycl::string_class kernelSource = R"(
+            __kernel void opencl_interop_get_kernel() {}
+            )";
 
-          cl_kernel clKernel = nullptr;
-          if (!create_kernel(clProgram, "test_kernel", clKernel, log)) {
-            FAIL(log, "create_kernel failed");
-          }
+            if (!create_built_program(kernelSource, ctsContext.get(),
+                                      ctsDevice.get(), clProgram, log)) {
+              FAIL(log, "create_built_program failed");
+            }
 
-          cl::sycl::kernel kernel(clKernel, ctsContext);
+            cl_kernel clKernel = nullptr;
+            if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
+                               log)) {
+              FAIL(log, "create_kernel failed");
+            }
 
-          auto interopKernel = kernel.get();
-          check_return_type<cl_kernel>(log, interopKernel,
-                                       "cl::sycl::kernel::get()");
+            cl::sycl::kernel kernel(clKernel, ctsContext);
 
-          if (interopKernel == nullptr) {
-            FAIL(log,
-                 "cl::sycl::kernel::get() did not return a valid cl_kernel");
+            auto interopKernel = kernel.get();
+            check_return_type<cl_kernel>(log, interopKernel,
+                                         "cl::sycl::kernel::get()");
+
+            if (interopKernel == nullptr) {
+              FAIL(log,
+                   "cl::sycl::kernel::get() did not return a valid cl_kernel");
+            }
+          } else {
+            log.note("online compiler not available -- skipping check");
           }
         }
       }
 
       /** check event get() method
-      */
+       */
       {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
 
@@ -180,24 +192,6 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         ctsQueue.wait_and_throw();
       }
 
-      /** check sampler get() method
-      */
-      {
-        if (!ctsContext.is_host()) {
-          cl_sampler clSampler;
-          create_sampler(clSampler, log);
-          cl::sycl::sampler sampler(clSampler, ctsContext);
-
-          auto interopSampler = sampler.get();
-          check_return_type<cl_sampler>(log, interopSampler,
-                                        "cl::sycl::sampler::get()");
-
-          if (interopSampler == nullptr) {
-            FAIL(log,
-                 "cl::sycl::sampler::get() did not return a valid cl_sampler");
-          }
-        }
-      }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

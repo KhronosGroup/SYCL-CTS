@@ -75,6 +75,8 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   cl_command_queue get_cl_command_queue() { return m_cl_command_queue; }
 
+  bool online_compiler_supported(cl_device_id clDeviceId, logger &log);
+
   /** create and compile an OpenCL program
    */
   bool create_compiled_program(const std::string &source,
