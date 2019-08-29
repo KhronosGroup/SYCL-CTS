@@ -10,16 +10,6 @@
 
 #define TEST_NAME queue_constructors
 
-inline bool check_equal_cl_command_queues(const cl::sycl::queue &qA,
-                                          const cl::sycl::queue &qB) {
-  auto clComQueA = qA.get();
-  auto clComQueB = qB.get();
-  bool equalComQues = clComQueA == clComQueB;
-  clReleaseCommandQueue(clComQueA);
-  clReleaseCommandQueue(clComQueB);
-  return equalComQues;
-}
-
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
@@ -312,7 +302,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (!check_equal_cl_command_queues(queueA, queueB)) {
+          if (queueA != queueB) {
             FAIL(log,
                  "queue destination was not copy constructed correctly (get)");
           }
@@ -338,7 +328,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!selector.is_host()) {
-          if (!check_equal_cl_command_queues(queueA, queueB)) {
+          if (queueA != queueB) {
             FAIL(log,
                  "queue destination was not copy assigned (=) correctly "
                  "(get)");
