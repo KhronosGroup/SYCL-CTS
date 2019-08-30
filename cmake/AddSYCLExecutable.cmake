@@ -3,11 +3,11 @@ if (NOT SYCL_IMPLEMENTATION)
   set (SYCL_IMPLEMENTATION ComputeCpp)
 endif()
 
-set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;ComputeCpp")
+set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;ComputeCpp;hipSYCL")
 if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
     message(FATAL_ERROR
         "The SYCL CTS requires specifying a SYCL implementation with "
-        "-DSYCL_IMPLEMENTATION=[Intel_SYCL,ComputeCpp]")
+        "-DSYCL_IMPLEMENTATION=[Intel_SYCL,ComputeCpp,hipSYCL]")
 endif()
 
 find_package(${SYCL_IMPLEMENTATION} REQUIRED)
