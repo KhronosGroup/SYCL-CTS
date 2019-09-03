@@ -81,9 +81,17 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T>
+  template <typename T,
+            typename std::enable_if<sizeof(T) == 8>::type * = nullptr>
   void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
     return generic_check_for_atomics<T, check_extended_atomics>(log, testQueue);
+  }
+
+  template <typename T,
+            typename std::enable_if<sizeof(T) != 8>::type * = nullptr>
+  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
+    // generic_check_for_atomics assumes a 64-bit T type.
+    return;
   }
 
   /** Execute the test
