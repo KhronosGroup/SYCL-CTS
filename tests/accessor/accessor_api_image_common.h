@@ -549,7 +549,6 @@ class check_image_accessor_api_reads {
       check_command_group_reads(queue, range, imgCoordsSyntax,
                                 imgCoordsSamplerSyntax, errorBuffer,
                                 acc_type_tag::get<target>());
-      queue.wait_and_throw();
     }
 
     if (errors[0] != 0) {
@@ -664,7 +663,6 @@ class check_image_accessor_api_writes {
 
       check_command_group_writes(queue, range, imgCoordsSyntax,
                                  acc_type_tag::get<target>());
-      queue.wait_and_throw();
     }
 
     const auto storageData = convert_image_bytes_to_data<T>(dataCoordsSyntax);
