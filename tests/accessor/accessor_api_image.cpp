@@ -37,6 +37,11 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
+      if (!queue.get_device()
+               .get_info<cl::sycl::info::device::image_support>()) {
+        log.note("Device does not support images -- skipping check");
+        return;
+      }
 
       /** check image accessor api for cl_int4
        */
