@@ -111,6 +111,19 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         if (interopQueue != m_cl_command_queue) {
           FAIL(log, "queue was not constructed correctly");
         }
+
+        /** check that queue copy constructor preserve the same OpenCL queue
+         */
+        cl::sycl::queue queueCopy(queue);
+        auto clQueueCopy = queueCopy.get();
+        if (interopQueue != clQueueCopy) {
+          FAIL(log, "queue destination was not copy constructed correctly");
+        }
+
+        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(clQueueCopy))) {
+          FAIL(log, "failed to release OpenCL command queue");
+        }
+
         if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
           FAIL(log, "failed to release OpenCL command queue");
         }
