@@ -75,6 +75,8 @@ class test_base_opencl : public sycl_cts::util::test_base {
    */
   cl_command_queue get_cl_command_queue() { return m_cl_command_queue; }
 
+  bool get_exec_dir(char *path, size_t max_path_len);
+
   bool online_compiler_supported(cl_device_id clDeviceId, logger &log);
 
   /** create and compile an OpenCL program
@@ -92,6 +94,14 @@ class test_base_opencl : public sycl_cts::util::test_base {
   bool create_built_program(const std::string &source, cl_context clContext,
                             cl_device_id clDeviceId, cl_program &outProgram,
                             logger &log);
+
+  /** create an OpenCL program with binary
+   */
+  bool create_program_with_binary(const std::string &filename,
+                                  cl_program &outProgram, logger &log);
+  bool create_program_with_binary(const std::string &filename,
+                                  cl_context clContext, cl_device_id clDeviceId,
+                                  cl_program &outProgram, logger &log);
 
   /** create an OpenCL kernel
    */

@@ -112,8 +112,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
        */
       {
         if (!util::get_cts_object::queue(ctsSelector)
-                   .get_device()
-                   .get_info<cl::sycl::info::device::is_compiler_available>()) {
+                 .get_device()
+                 .get_info<cl::sycl::info::device::is_compiler_available>()) {
           log.note("online compiler not available -- skipping check");
         } else {
           auto program =
@@ -147,25 +147,35 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
                                       ctsDevice.get(), clProgram, log)) {
               FAIL(log, "create_built_program failed");
             }
-
-            cl_kernel clKernel = nullptr;
-            if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
-                               log)) {
-              FAIL(log, "create_kernel failed");
-            }
-
-            cl::sycl::kernel kernel(clKernel, ctsContext);
-
-            auto interopKernel = kernel.get();
-            check_return_type<cl_kernel>(log, interopKernel,
-                                         "cl::sycl::kernel::get()");
-
-            if (interopKernel == nullptr) {
-              FAIL(log,
-                   "cl::sycl::kernel::get() did not return a valid cl_kernel");
-            }
           } else {
-            log.note("online compiler not available -- skipping check");
+            cl::sycl::string_class programBinaryFile = "opencl_interop_get.bin";
+
+            if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
+                                            ctsDevice.get(), clProgram, log)) {
+              cl::sycl::string_class errorMsg =
+                  "create_program_with_binary failed.";
+              errorMsg +=
+                  " Since online compile is not supported, expecting to find " +
+                  programBinaryFile + " in same path as the executable binary";
+              FAIL(log, errorMsg.c_str());
+            }
+          }
+
+          cl_kernel clKernel = nullptr;
+          if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
+                             log)) {
+            FAIL(log, "create_kernel failed");
+          }
+
+          cl::sycl::kernel kernel(clKernel, ctsContext);
+
+          auto interopKernel = kernel.get();
+          check_return_type<cl_kernel>(log, interopKernel,
+                                       "cl::sycl::kernel::get()");
+
+          if (interopKernel == nullptr) {
+            FAIL(log,
+                 "cl::sycl::kernel::get() did not return a valid cl_kernel");
           }
         }
       }
