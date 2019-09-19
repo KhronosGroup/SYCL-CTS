@@ -80,18 +80,22 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
+      bool reduce_wg_size = true;
       // Check if default work group size is supported
       cl::sycl::program program(queue.get_context());
-      program.build_with_kernel_type<TEST_NAME>();
-      auto kernel = program.get_kernel<TEST_NAME>();
-      auto device = queue.get_device();
+      if (is_compiler_available(program.get_devices()) &&
+          is_linker_available(program.get_devices())) {
+        program.build_with_kernel_type<TEST_NAME>();
+        auto kernel = program.get_kernel<TEST_NAME>();
+        auto device = queue.get_device();
 
-      auto work_group_size_limit = kernel.get_work_group_info<
-          cl::sycl::info::kernel_work_group::work_group_size>(device);
+        auto work_group_size_limit = kernel.get_work_group_info<
+            cl::sycl::info::kernel_work_group::work_group_size>(device);
 
-      auto default_wg_size = DEFAULT_LOCAL_RANGE_1D * DEFAULT_LOCAL_RANGE_2D *
-                             DEFAULT_LOCAL_RANGE_3D;
-      bool reduce_wg_size = default_wg_size > work_group_size_limit;
+        auto default_wg_size = DEFAULT_LOCAL_RANGE_1D * DEFAULT_LOCAL_RANGE_2D *
+                               DEFAULT_LOCAL_RANGE_3D;
+        reduce_wg_size = default_wg_size > work_group_size_limit;
+      }
 
       // Adjust work-group size
       size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_1D;
