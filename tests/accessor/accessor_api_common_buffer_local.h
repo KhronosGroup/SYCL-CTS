@@ -295,16 +295,16 @@ class buffer_accessor_api_rw {
     */
     m_accIdSyntax[idx] = expectedWrite;
 
-    /** check size_t write syntax
-    */
-    multidim_subscript_write<T>(m_accMultiDimSyntax, idx, expectedWrite);
-
     /** validate id write syntax
     */
     elem = m_accIdSyntax[idx];
     if (!check_elems_equal(elem, expectedWrite)) {
       m_errorAccessor[2] = 1;
     }
+
+    /** check size_t write syntax
+    */
+    multidim_subscript_write<T>(m_accMultiDimSyntax, idx, expectedWrite);
 
     /** validate size_t write syntax
     */
