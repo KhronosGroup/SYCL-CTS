@@ -242,7 +242,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           log.note("Device does not support images");
         } else {
           constexpr size_t imageSideSize = 16;
-          constexpr auto size = imageSideSize * imageSideSize;
+          /* Size is *4 because image data is 4 channels (RGBA) */
+          constexpr auto size = imageSideSize * imageSideSize * 4;
           float data[size] = {0.0f};
 
           const auto clContext = queue.get_context().get();
