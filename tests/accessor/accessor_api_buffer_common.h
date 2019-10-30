@@ -86,15 +86,20 @@ class check_buffer_accessor_api_methods {
 
     // Prepare access range and access offset
     const auto accessRange = range / 2;
+    const size_t accessedCount = dims == 0 ? 1 : accessRange.size();
+    const size_t accessedSize = accessedCount * sizeof(T);
     auto accessOffset = sycl_id_t<dims>{};
     accessOffset[0] = accessRange[0] / 2;
 
-    check_all_methods(log, queue, accessRange, accessOffset, buffer,
+    check_all_methods(log, queue, accessRange, accessOffset,
+                      buffer, accessedSize, accessedCount,
                       acc_type_tag::get<target, placeholder>());
   }
 
  private:
-  void check_common_methods(util::logger &log, const acc_t &accessor) const {
+  void check_common_methods(util::logger &log, const acc_t &accessor,
+                            const size_t accessedSize,
+                            const size_t accessedCount) const {
     {
       /** check is_placeholder() method
        */
@@ -110,7 +115,7 @@ class check_buffer_accessor_api_methods {
        */
       auto accessorCount = accessor.get_count();
       check_return_type<size_t>(log, accessorCount, "get_count()");
-      if (accessorCount != count) {
+      if (accessorCount != accessedCount) {
         FAIL(log, "accessor does not return the correct count");
       }
     }
@@ -119,7 +124,7 @@ class check_buffer_accessor_api_methods {
        */
       auto accessorSize = accessor.get_size();
       check_return_type<size_t>(log, accessorSize, "get_size()");
-      if (accessorSize != size) {
+      if (accessorSize != accessedSize) {
         FAIL(log, "accessor does not return the correct size");
       }
     }
@@ -166,8 +171,9 @@ class check_buffer_accessor_api_methods {
    */
   void check_methods(util::logger &log, const sycl_range_t<dims> &accessRange,
                      const sycl_id_t<dims> &accessOffset, const acc_t &accessor,
+                     const size_t accessedSize, const size_t accessedCount,
                      generic_dim_tag) const {
-    check_common_methods(log, accessor);
+    check_common_methods(log, accessor, accessedSize, accessedCount);
     check_range_offset(log, accessRange, accessOffset, accessor);
   }
 
@@ -179,8 +185,11 @@ class check_buffer_accessor_api_methods {
   void check_methods(util::logger &log,
                      const sycl_range_t<dims> & /*accessRange*/,
                      const sycl_id_t<dims> & /*accessOffset*/,
-                     const acc_t &accessor, zero_dim_tag) const {
-    check_common_methods(log, accessor);
+                     const acc_t &accessor,
+                     const size_t accessedSize,
+                     const size_t accessedCount,
+                     zero_dim_tag) const {
+    check_common_methods(log, accessor, accessedSize, accessedCount);
     // Zero-dim accessors do not provide get_range() and get_offset()
   }
 
@@ -196,11 +205,14 @@ class check_buffer_accessor_api_methods {
                          const sycl_range_t<dims> &accessRange,
                          const sycl_id_t<dims> &accessOffset,
                          buffer_t<T, dims> &buffer,
+                         const size_t accessedSize,
+                         const size_t accessedCount,
                          acc_type_tag::generic) const {
     queue.submit([&](cl::sycl::handler &cgh) {
       auto acc = make_accessor_generic<dims, mode, target, placeholder>(
           buffer, &accessRange, &accessOffset, &cgh);
-      check_methods(log, accessRange, accessOffset, acc, is_zero_dim<dims>{});
+      check_methods(log, accessRange, accessOffset, acc, accessedSize,
+          accessedCount, is_zero_dim<dims>{});
       cgh.single_task(dummy_functor<T>{});
     });
   }
@@ -215,10 +227,12 @@ class check_buffer_accessor_api_methods {
   void check_all_methods(util::logger &log, cl::sycl::queue & /*queue*/,
                          const sycl_range_t<dims> &accessRange,
                          const sycl_id_t<dims> &accessOffset,
-                         buffer_t<T, dims> &buffer, acc_type_tag::host) const {
+                         buffer_t<T, dims> &buffer, const size_t accessedSize,
+                         size_t accessedCount, acc_type_tag::host) const {
     auto acc = make_accessor_generic<dims, mode, target>(
         buffer, &accessRange, &accessOffset, nullptr);
-    check_methods(log, accessRange, accessOffset, acc, is_zero_dim<dims>{});
+    check_methods(log, accessRange, accessOffset, acc,accessedSize,
+        accessedCount, is_zero_dim<dims>{});
   }
 };
 
