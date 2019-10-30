@@ -250,7 +250,9 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     /* check is_sub_buffer() */
     {
       cl::sycl::buffer<T, dims> buf(r);
-      cl::sycl::buffer<T, dims> buf_sub(buf, i, r);
+      cl::sycl::range<dims> sub_r = r;
+      sub_r[0] = r[0] - i[0];
+      cl::sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
       auto isSubBuffer = buf_sub.is_sub_buffer();
       check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
     }
@@ -323,8 +325,8 @@ class TEST_NAME : public util::test_base {
     cl::sycl::range<3> range3d(size, size, size);
 
     cl::sycl::id<1> id1d(2);
-    cl::sycl::id<2> id2d(2, 2);
-    cl::sycl::id<3> id3d(2, 2, 2);
+    cl::sycl::id<2> id2d(2, 0);
+    cl::sycl::id<3> id3d(2, 0, 0);
 
     test_buffer<T, size, 1>(log, range1d, id1d);
     test_buffer<T, size * size, 2>(log, range2d, id2d);

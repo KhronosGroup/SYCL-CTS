@@ -66,7 +66,9 @@ class buffer_ctors {
     /* Check subBuffer (buffer, id, range) constructor*/
     {
       cl::sycl::buffer<T, dims> buf(r);
-      cl::sycl::buffer<T, dims> buf_sub(buf, i, r);
+      cl::sycl::range<dims> sub_r = r;
+      sub_r[0] = r[0] - i[0];
+      cl::sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
       if (!buf_sub.is_sub_buffer()) {
         FAIL(log, "buffer was not identified as a sub-buffer. (is_sub_buffer)");
       }
@@ -392,8 +394,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
     cl::sycl::range<3> range3d(size, size, size);
 
     cl::sycl::id<1> id1d(2);
-    cl::sycl::id<2> id2d(2, 2);
-    cl::sycl::id<3> id3d(2, 2, 2);
+    cl::sycl::id<2> id2d(2, 0);
+    cl::sycl::id<3> id3d(2, 0, 0);
 
     buffer_ctors<T, size, 1> buf1d;
     buffer_ctors<T, size * size, 2> buf2d;
