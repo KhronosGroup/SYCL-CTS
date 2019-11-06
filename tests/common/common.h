@@ -205,7 +205,7 @@ bool check_type_sign(bool expected_sign) {
  * @brief Helper function to see if cl::sycl::half is of the wrong sign
  */
 template <>
-bool check_type_sign<cl::sycl::half>(bool expected_sign) {
+inline bool check_type_sign<cl::sycl::half>(bool expected_sign) {
   bool is_signed = cl::sycl::half(1) > cl::sycl::half(-1);
   return is_signed == expected_sign;
 }
@@ -509,22 +509,22 @@ cl::sycl::range<dims> getRange(const size_t &size);
  *  dimensionality
  */
 template <>
-cl::sycl::range<1> getRange<1>(const size_t &size) {
+inline cl::sycl::range<1> getRange<1>(const size_t &size) {
   return cl::sycl::range<1>(size);
 }
 template <>
-cl::sycl::range<2> getRange<2>(const size_t &size) {
+inline cl::sycl::range<2> getRange<2>(const size_t &size) {
   return cl::sycl::range<2>(size, size);
 }
 template <>
-cl::sycl::range<3> getRange<3>(const size_t &size) {
+inline cl::sycl::range<3> getRange<3>(const size_t &size) {
   return cl::sycl::range<3>(size, size, size);
 }
 
 /**
  * @brief Helper function to check if all devices support online compiler.
  */
-bool is_compiler_available(
+inline bool is_compiler_available(
     const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
   bool compiler_available = true;
   for (const auto& device : deviceList) {
@@ -539,7 +539,7 @@ bool is_compiler_available(
 /**
  * @brief Helper function to check if all devices support online linker.
  */
-bool is_linker_available(
+inline bool is_linker_available(
     const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
   bool linker_available = true;
   for (const auto& device : deviceList) {
