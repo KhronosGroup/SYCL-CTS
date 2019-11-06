@@ -202,7 +202,7 @@ static const int NUM_CHANNEL_TYPES =
 /**
  * @brief Retrieve the size of the image channel type
  */
-unsigned int get_channel_type_size(cl::sycl::image_channel_type channelType) {
+inline unsigned int get_channel_type_size(cl::sycl::image_channel_type channelType) {
   for (int i = 0; i < NUM_CHANNEL_TYPES; ++i) {
     if (g_channelTypeSize[i].type == channelType) {
       return g_channelTypeSize[i].size;
@@ -214,7 +214,7 @@ unsigned int get_channel_type_size(cl::sycl::image_channel_type channelType) {
 /**
  * @brief Retrieve the name of the image channel type
  */
-const char *get_channel_type_string(cl::sycl::image_channel_type channelType) {
+inline const char *get_channel_type_string(cl::sycl::image_channel_type channelType) {
   for (int i = 0; i < NUM_CHANNEL_TYPES; ++i) {
     if (g_channelTypeSize[i].type == channelType) {
       return g_channelTypeSize[i].str;
@@ -275,7 +275,7 @@ static const int MINIMUM_CHANNEL_ORDERS = 2;
 /**
  * @brief Retrieve the count of the image channel order
  */
-unsigned int get_channel_order_count(
+inline unsigned int get_channel_order_count(
     cl::sycl::image_channel_order channelOrder) {
   for (int i = 0; i < NUM_CHANNEL_ORDERS; ++i) {
     if (g_channelOrderCount[i].order == channelOrder) {
@@ -289,7 +289,7 @@ unsigned int get_channel_order_count(
 /**
  * @brief Retrieve the name of the image channel order
  */
-const char *get_channel_order_string(
+inline const char *get_channel_order_string(
     cl::sycl::image_channel_order channelOrder) {
   for (int i = 0; i < NUM_CHANNEL_ORDERS; ++i) {
     if (g_channelOrderCount[i].order == channelOrder) {
@@ -316,7 +316,7 @@ struct collection {
  * @param order Image channel order to be tested.
  * @return Collection of channel order and all valid channel types for the order
  */
-collection get_test_set_full(cl::sycl::image_channel_order order) {
+inline collection get_test_set_full(cl::sycl::image_channel_order order) {
   collection testSet;
   testSet.order = order;
   // Not all combinations are allowed
@@ -377,7 +377,7 @@ collection get_test_set_full(cl::sycl::image_channel_order order) {
  * @return Collection of channel order and the minimum of valid channel types
  *         for the order
  */
-collection get_test_set_minimum(cl::sycl::image_channel_order order) {
+inline collection get_test_set_minimum(cl::sycl::image_channel_order order) {
   collection testSet;
   testSet.order = order;
   switch (order) {

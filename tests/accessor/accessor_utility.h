@@ -604,7 +604,7 @@ cl::sycl::vector_class<cl::sycl::id<dims>> create_id_list(
 /** creates a list of ids (specialization for 1 dimension)
 */
 template <>
-cl::sycl::vector_class<cl::sycl::id<1>> create_id_list<1>(
+inline cl::sycl::vector_class<cl::sycl::id<1>> create_id_list<1>(
     const cl::sycl::range<1>& r) {
   cl::sycl::vector_class<cl::sycl::id<1>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
@@ -616,7 +616,7 @@ cl::sycl::vector_class<cl::sycl::id<1>> create_id_list<1>(
 /** creates a list of ids (specialization for 2 dimension)
 */
 template <>
-cl::sycl::vector_class<cl::sycl::id<2>> create_id_list<2>(
+inline cl::sycl::vector_class<cl::sycl::id<2>> create_id_list<2>(
     const cl::sycl::range<2>& r) {
   cl::sycl::vector_class<cl::sycl::id<2>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
@@ -630,7 +630,7 @@ cl::sycl::vector_class<cl::sycl::id<2>> create_id_list<2>(
 /** creates a list of ids (specialization for 3 dimension)
 */
 template <>
-cl::sycl::vector_class<cl::sycl::id<3>> create_id_list<3>(
+inline cl::sycl::vector_class<cl::sycl::id<3>> create_id_list<3>(
     const cl::sycl::range<3>& r) {
   cl::sycl::vector_class<cl::sycl::id<3>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
