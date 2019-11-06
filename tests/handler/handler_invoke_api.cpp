@@ -155,7 +155,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      using buffer = cl::sycl::buffer<int, 1>;
       using handler = cl::sycl::handler;
 
       auto queue = util::get_cts_object::queue();
