@@ -163,7 +163,7 @@ class check_ranged_accessor_constructor_buffer {
 
     // check the accessor
     check_accessor_members<T, dims, kMode, kTarget, isPlaceholder>::check(
-        a, buffer.get_size(), buffer.get_count(), offset, range,
+        a, range.size() * sizeof(T), range.size(), offset, range,
         "constructor(buffer, handler, range, offset)", log);
   }
 };
@@ -187,7 +187,7 @@ class check_ranged_accessor_constructor_buffer<
     // check the accessor
     check_accessor_members<
         T, dims, kMode, cl::sycl::access::target::host_buffer,
-        isPlaceholder>::check(a, buffer.get_size(), buffer.get_count(), offset,
+        isPlaceholder>::check(a, range.size() * sizeof(T), range.size(), offset,
                               range,
                               "constructor(buffer, handler, range, offset)",
                               log);
@@ -213,7 +213,7 @@ class check_ranged_accessor_constructor_buffer<
     // check the accessor
     check_accessor_members<
         T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t>::check(
-            a, buffer.get_size(), buffer.get_count(), offset, range,
+            a, range.size() * sizeof(T), range.size(), offset, range,
             "constructor(buffer, handler, range, offset)", log);
   }
 };
