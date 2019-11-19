@@ -60,9 +60,10 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
                 const size_t stride = 2;
-                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
-                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                              stride);
               });
         });
@@ -89,9 +90,10 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
                 const size_t stride = 2;
-                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
-                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                              stride);
               });
         });
@@ -119,9 +121,10 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
                 const size_t stride = 2;
-                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
-                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                              stride);
               });
         });

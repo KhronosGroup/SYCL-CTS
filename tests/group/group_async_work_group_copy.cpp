@@ -61,9 +61,10 @@ class TEST_NAME : public util::test_base {
                                                BUFFER_SIZE);
 
                 const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
@@ -90,9 +91,10 @@ class TEST_NAME : public util::test_base {
                                                BUFFER_SIZE);
 
                 const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
@@ -120,9 +122,10 @@ class TEST_NAME : public util::test_base {
                                                BUFFER_SIZE);
 
                 const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                const size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
