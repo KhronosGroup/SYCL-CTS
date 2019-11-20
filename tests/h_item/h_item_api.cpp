@@ -121,21 +121,21 @@ class TEST_NAME : public util::test_base {
         testQueue.submit([&](cl::sycl::handler& cgh) {
           cgh.parallel_for_work_group(
               kernelGroupRange, kernelPhysicalLocalRange,
-              h_item_api_kernel_single<numDims, 1>{kernelLogicalLocalRange});
+              h_item_api_kernel_single<numDims, 0>{kernelLogicalLocalRange});
         });
       }
       if (numDims >= 2) {
         testQueue.submit([&](cl::sycl::handler& cgh) {
           cgh.parallel_for_work_group(
               kernelGroupRange, kernelPhysicalLocalRange,
-              h_item_api_kernel_single<numDims, 2>{kernelLogicalLocalRange});
+              h_item_api_kernel_single<numDims, 1>{kernelLogicalLocalRange});
         });
       }
       if (numDims >= 3) {
         testQueue.submit([&](cl::sycl::handler& cgh) {
           cgh.parallel_for_work_group(
               kernelGroupRange, kernelPhysicalLocalRange,
-              h_item_api_kernel_single<numDims, 3>{kernelLogicalLocalRange});
+              h_item_api_kernel_single<numDims, 2>{kernelLogicalLocalRange});
         });
       }
 
