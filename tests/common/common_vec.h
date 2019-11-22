@@ -20,9 +20,7 @@
 #include "../../util/proxy.h"
 #include "macros.h"
 
-#include "../../util/opencl_helper.h"
 #include "../../util/test_base.h"
-#include "../../util/test_base_opencl.h"
 #include "../../util/math_vector.h"
 
 #include <string>

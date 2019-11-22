@@ -365,7 +365,7 @@ class image_ctors {
 /**
  * test cl::sycl::image initialization
  */
-class TEST_NAME : public util::test_base_opencl {
+class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
