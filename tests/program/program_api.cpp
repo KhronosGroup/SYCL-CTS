@@ -354,7 +354,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         // Check compile_with_kernel_type(options)
         try {
-          prog.compile_with_kernel_type<program_kernel<2>>(compileOptions);
+          prog.compile_with_kernel_type<program_kernel<3>>(compileOptions);
 
           if (prog.get_state() != cl::sycl::program_state::compiled) {
             FAIL(log, "Program should be in compiled state after compilation");
@@ -431,7 +431,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           // Add in the SYCL program object for our kernel
           cl::sycl::program mySyclProgram(myQueue.get_context());
-          mySyclProgram.compile_with_kernel_type<program_kernel<3>>();
+          mySyclProgram.compile_with_kernel_type<program_kernel<4>>();
 
           if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
@@ -490,7 +490,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           // Add in the SYCL program object for our kernel
           cl::sycl::program mySyclProgram(myQueue.get_context());
-          mySyclProgram.compile_with_kernel_type<program_kernel<4>>(
+          mySyclProgram.compile_with_kernel_type<program_kernel<5>>(
               compileOptions);
 
           if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
