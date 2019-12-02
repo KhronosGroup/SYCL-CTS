@@ -79,7 +79,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         cl::sycl::buffer<int, 1> buffer(bufferData,
                                         cl::sycl::range<1>(bufferSize));
 
-        cl_program clProgram = nullptr;
+        cl_program clProgram{};
         if (online_compiler_supported(device.get(), log)) {
           cl::sycl::string_class kernelSource = R"(
             struct simple_struct {
@@ -113,7 +113,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
 
-        cl_kernel clKernel = nullptr;
+        cl_kernel clKernel{};
         if (!create_kernel(clProgram, "opencl_interop_kernel_kernel", clKernel,
                            log)) {
           FAIL(log, "create_kernel failed");
@@ -188,7 +188,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               cl::sycl::image_channel_type::fp32,
               cl::sycl::range<2>(imageSideSize, imageSideSize));
 
-          cl_program clProgram = nullptr;
+          cl_program clProgram{};
           if (online_compiler_supported(device.get(), log)) {
             cl::sycl::string_class kernelSource = R"(
               struct simple_struct {
@@ -220,7 +220,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             }
           }
 
-          cl_kernel clKernel = nullptr;
+          cl_kernel clKernel{};
           if (!create_kernel(clProgram, "opencl_interop_image_kernel_kernel",
                              clKernel, log)) {
             FAIL(log, "create_kernel failed");

@@ -149,7 +149,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check program (context, cl_program) constructor
        */
       {
-        cl_program clProgram = nullptr;
+        cl_program clProgram{};
         if (online_compiler_supported(ctsDevice.get(), log)) {
           if (!create_built_program(kernelSource, ctsContext.get(),
                                     ctsDevice.get(), clProgram, log)) {
@@ -181,7 +181,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check kernel (cl_kernel, const context&) constructor
        */
       {
-        cl_program clProgram = nullptr;
+        cl_program clProgram{};
         if (online_compiler_supported(ctsDevice.get(), log)) {
           if (!create_built_program(kernelSource, ctsContext.get(),
                                     ctsDevice.get(), clProgram, log)) {
@@ -199,7 +199,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
 
-        cl_kernel clKernel = nullptr;
+        cl_kernel clKernel{};
         if (!create_kernel(clProgram, "opencl_interop_constructors_kernel",
                            clKernel, log)) {
           FAIL(log, "create_kernel failed");

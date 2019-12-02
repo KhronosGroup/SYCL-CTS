@@ -137,7 +137,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
        */
       {
         if (!ctsContext.is_host()) {
-          cl_program clProgram = nullptr;
+          cl_program clProgram{};
           if (online_compiler_supported(ctsDevice.get(), log)) {
             cl::sycl::string_class kernelSource = R"(
             __kernel void opencl_interop_get_kernel() {}
@@ -161,7 +161,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             }
           }
 
-          cl_kernel clKernel = nullptr;
+          cl_kernel clKernel{};
           if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
                              log)) {
             FAIL(log, "create_kernel failed");
