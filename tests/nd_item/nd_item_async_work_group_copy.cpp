@@ -13,10 +13,10 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-static const size_t RANGE_SIZE_1D = 2;
-static const size_t RANGE_SIZE_2D = 4;
-static const size_t RANGE_SIZE_3D = 8;
-static const size_t BUFFER_SIZE = 128;
+static constexpr size_t RANGE_SIZE_1D = 2;
+static constexpr size_t RANGE_SIZE_2D = 4;
+static constexpr size_t RANGE_SIZE_3D = 8;
+static constexpr size_t BUFFER_SIZE = 128;
 
 class nd_item_async_work_group_copy_1d;
 class nd_item_async_work_group_copy_2d;
@@ -59,8 +59,8 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
-                const size_t stride = 2;
-                const size_t numElements = BUFFER_SIZE / stride;
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
@@ -89,8 +89,8 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
-                const size_t stride = 2;
-                const size_t numElements = BUFFER_SIZE / stride;
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
@@ -120,8 +120,8 @@ class TEST_NAME : public util::test_base {
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE);
 
-                const size_t stride = 2;
-                const size_t numElements = BUFFER_SIZE / stride;
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
                 ndItem.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                              stride);
                 ndItem.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
