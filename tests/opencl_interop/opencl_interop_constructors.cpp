@@ -339,6 +339,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
                 []() {});
           });
 
+          cl_int error = clReleaseSampler(clSampler);
+          if (!CHECK_CL_SUCCESS(log, error)) {
+            FAIL(log, "failed to release OpenCL sampler");
+          }
+
           queue.wait_and_throw();
         }
       }
