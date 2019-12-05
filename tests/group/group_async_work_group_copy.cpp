@@ -13,10 +13,10 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-static const size_t GROUP_RANGE_1D = 2;
-static const size_t GROUP_RANGE_2D = 4;
-static const size_t GROUP_RANGE_3D = 8;
-static const size_t BUFFER_SIZE = 128;
+static constexpr size_t GROUP_RANGE_1D = 2;
+static constexpr size_t GROUP_RANGE_2D = 4;
+static constexpr size_t GROUP_RANGE_3D = 8;
+static constexpr size_t BUFFER_SIZE = 128;
 
 class group_async_work_group_copy_1d;
 class group_async_work_group_copy_2d;
@@ -60,10 +60,11 @@ class TEST_NAME : public util::test_base {
                 my_group.async_work_group_copy(ptrGlobal, ptrLocal,
                                                BUFFER_SIZE);
 
-                const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
@@ -89,10 +90,11 @@ class TEST_NAME : public util::test_base {
                 my_group.async_work_group_copy(ptrGlobal, ptrLocal,
                                                BUFFER_SIZE);
 
-                const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
@@ -119,10 +121,11 @@ class TEST_NAME : public util::test_base {
                 my_group.async_work_group_copy(ptrGlobal, ptrLocal,
                                                BUFFER_SIZE);
 
-                const size_t stride = 2;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, BUFFER_SIZE,
+                constexpr size_t stride = 2;
+                constexpr size_t numElements = BUFFER_SIZE / stride;
+                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
                                                stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, BUFFER_SIZE,
+                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                                stride);
               });
         });
