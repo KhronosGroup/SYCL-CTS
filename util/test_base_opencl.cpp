@@ -10,6 +10,12 @@
 #include "../tests/common/macros.h"
 #include "../util/opencl_helper.h"
 
+#ifdef _MSC_VER
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 // conformance test suite namespace
 namespace sycl_cts {
 namespace util {
@@ -107,6 +113,31 @@ bool test_base_opencl::online_compiler_supported(cl_device_id clDeviceId,
   return true;
 }
 
+bool test_base_opencl::get_exec_dir(char *path, size_t max_path_len) {
+  assert(max_path_len > 0 && "No space to store the path");
+#ifdef _MSC_VER
+  HMODULE hMod = GetModuleHandle(NULL);
+  if (!GetModuleFileNameA(hMod, path, max_path_len)) {
+    return false;
+  }
+  constexpr char pathDelim = '\\';
+#else
+  ssize_t n = readlink("/proc/self/exe", path, max_path_len - 1);
+  if (n < 0) {
+    return false;
+  }
+  path[n] = '\0';
+  constexpr const char pathDelim = '/';
+#endif
+  // Replace all characters with '\0' from back until '/' or '\\'
+  for (size_t i = strnlen(path, max_path_len) - 1;
+       i > 0 && path[i] != pathDelim; --i) {
+    path[i] = '\0';
+  }
+
+  return true;
+}
+
 bool test_base_opencl::create_compiled_program(const std::string &source,
                                                cl_program &out_program,
                                                logger &log) {
@@ -158,6 +189,59 @@ bool test_base_opencl::create_built_program(const std::string &source,
   cl_int error = CL_SUCCESS;
   out_program =
       clCreateProgramWithSource(clContext, 1, &source_c, &sourceSize, &error);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  error =
+      clBuildProgram(out_program, 1, &clDeviceId, nullptr, nullptr, nullptr);
+  if (!CHECK_CL_SUCCESS(log, error)) return false;
+
+  m_openPrograms.push_back(out_program);
+  return true;
+}
+
+bool test_base_opencl::create_program_with_binary(const std::string &filename,
+                                                  cl_program &out_program,
+                                                  logger &log) {
+  return this->create_program_with_binary(filename, m_cl_context,
+                                          m_cl_device_id, out_program, log);
+}
+
+bool test_base_opencl::create_program_with_binary(const std::string &filename,
+                                                  cl_context clContext,
+                                                  cl_device_id clDeviceId,
+                                                  cl_program &out_program,
+                                                  logger &log) {
+  assert(!filename.empty());
+
+  size_t maxPathLen = 512;
+  std::vector<char> pathToExe(maxPathLen);
+  if (!get_exec_dir(pathToExe.data(), maxPathLen)) {
+    FAIL(log, "couldn't get path to executable");
+  }
+
+  // Expecting to find the OpenCL program binary file next to the executable
+  std::string fullFilePath(pathToExe.data());
+  fullFilePath.append(filename);
+
+  std::ifstream binary_file(fullFilePath, std::ios::binary);
+  if (!binary_file) {
+    FAIL(log, "Failed to open program binary file");
+    return false;
+  }
+  binary_file.seekg(0, binary_file.end);
+  size_t length = binary_file.tellg();
+  assert(length);
+
+  binary_file.seekg(0, binary_file.beg);
+  std::vector<char> binary(length);
+  binary_file.read(binary.data(), length);
+  const unsigned char *binary_ptr =
+      reinterpret_cast<const unsigned char *>(binary.data());
+
+  binary_file.close();
+
+  cl_int error = CL_SUCCESS;
+  out_program = clCreateProgramWithBinary(clContext, 1, &clDeviceId, &length,
+                                          &binary_ptr, nullptr, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
   error =
       clBuildProgram(out_program, 1, &clDeviceId, nullptr, nullptr, nullptr);

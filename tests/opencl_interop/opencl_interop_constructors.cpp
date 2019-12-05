@@ -47,6 +47,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               input[get_global_id(0)] = get_global_id(0);
             }
             )";
+      cl::sycl::string_class programBinaryFile =
+          "opencl_interop_constructors.bin";
       /** check platform (cl_platform_id) constructor
        */
       {
@@ -147,54 +149,70 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check program (context, cl_program) constructor
        */
       {
+        cl_program clProgram{};
         if (online_compiler_supported(ctsDevice.get(), log)) {
-          cl_program clProgram = nullptr;
           if (!create_built_program(kernelSource, ctsContext.get(),
                                     ctsDevice.get(), clProgram, log)) {
             FAIL(log, "create_built_program failed");
           }
-
-          cl::sycl::program program(ctsContext, clProgram);
-
-          cl_program interopProgram = program.get();
-          if (interopProgram != clProgram) {
-            FAIL(log, "program was not constructed correctly");
-          }
-          if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgram))) {
-            FAIL(log, "failed to release OpenCL program");
-          }
         } else {
-          log.note("online compiler not available -- skipping check");
+          if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
+                                          ctsDevice.get(), clProgram, log)) {
+            cl::sycl::string_class errorMsg =
+                "create_program_with_binary failed.";
+            errorMsg +=
+                " Since online compile is not supported, expecting to find " +
+                programBinaryFile + " in same path as the executable binary";
+            FAIL(log, errorMsg.c_str());
+          }
+        }
+
+        cl::sycl::program program(ctsContext, clProgram);
+
+        cl_program interopProgram = program.get();
+        if (interopProgram != clProgram) {
+          FAIL(log, "program was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgram))) {
+          FAIL(log, "failed to release OpenCL program");
         }
       }
 
       /** check kernel (cl_kernel, const context&) constructor
        */
       {
+        cl_program clProgram{};
         if (online_compiler_supported(ctsDevice.get(), log)) {
-          cl_program clProgram = nullptr;
           if (!create_built_program(kernelSource, ctsContext.get(),
                                     ctsDevice.get(), clProgram, log)) {
             FAIL(log, "create_built_program failed");
           }
-
-          cl_kernel clKernel = nullptr;
-          if (!create_kernel(clProgram, "opencl_interop_constructors_kernel",
-                             clKernel, log)) {
-            FAIL(log, "create_kernel failed");
-          }
-
-          cl::sycl::kernel kernel(clKernel, ctsContext);
-
-          cl_kernel interopKernel = kernel.get();
-          if (interopKernel != clKernel) {
-            FAIL(log, "kernel was not constructed correctly");
-          }
-          if (!CHECK_CL_SUCCESS(log, clReleaseKernel(interopKernel))) {
-            FAIL(log, "failed to release OpenCL kernel");
-          }
         } else {
-          log.note("online compiler not available -- skipping check");
+          if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
+                                          ctsDevice.get(), clProgram, log)) {
+            cl::sycl::string_class errorMsg =
+                "create_program_with_binary failed.";
+            errorMsg +=
+                " Since online compile is not supported, expecting to find " +
+                programBinaryFile + " in same path as the executable binary";
+            FAIL(log, errorMsg.c_str());
+          }
+        }
+
+        cl_kernel clKernel{};
+        if (!create_kernel(clProgram, "opencl_interop_constructors_kernel",
+                           clKernel, log)) {
+          FAIL(log, "create_kernel failed");
+        }
+
+        cl::sycl::kernel kernel(clKernel, ctsContext);
+
+        cl_kernel interopKernel = kernel.get();
+        if (interopKernel != clKernel) {
+          FAIL(log, "kernel was not constructed correctly");
+        }
+        if (!CHECK_CL_SUCCESS(log, clReleaseKernel(interopKernel))) {
+          FAIL(log, "failed to release OpenCL kernel");
         }
       }
 
@@ -322,7 +340,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       }
 
       /** check sampler (cl_sampler, const context&) constructor
-      */
+       */
       {
         auto queue = util::get_cts_object::queue(ctsSelector);
         if (!queue.get_device()
