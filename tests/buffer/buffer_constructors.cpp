@@ -7,7 +7,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../../util/test_base_opencl.h"
 
 #define TEST_NAME buffer_constructors
 
@@ -25,7 +24,7 @@ class buffer_ctors {
   void operator()(cl::sycl::range<dims> &r, cl::sycl::id<dims> &i,
                   const cl::sycl::property_list &propList,
                   fail_proxy_alias fail_proxy,
-                  sycl_cts::util::test_base_opencl &helper, util::logger &log) {
+                  sycl_cts::util::test_base &helper, util::logger &log) {
     /* Check range constructor */
     {
       cl::sycl::buffer<T, dims> buf(r, propList);
@@ -163,91 +162,6 @@ class buffer_ctors {
                                                          buf_alloc);
     }
 
-    /* Check interop constructor */
-    if (dims == 1) {
-      // calculate element count, size and range for the interop buffer
-      cl::sycl::range<1> interopRange{r[0]};
-      size_t count = r[0];
-      size_t interopSize = count * sizeof(T);
-
-      // construct the SYCL buffer
-      cl_mem opencl_buffer;
-      if (!helper.create_buffer(opencl_buffer, interopSize, log)) {
-        FAIL(log,
-             "opencl buffer was not constructed properly. (interop), failed to "
-             "create OpenCL buffer");
-      }
-      cl::sycl::buffer<T, 1> buf(opencl_buffer,
-                                    cl::sycl::context(helper.get_cl_context()));
-
-      // check the buffer
-      if (buf.is_sub_buffer()) {
-        FAIL(log,
-             "opencl buffer was not interop constructed properly. "
-             "(is_sub_buffer) ");
-      }
-      if (buf.get_size() != interopSize) {
-        FAIL(log,
-             "opencl buffer was not interop constructed properly. (get_size) ");
-      }
-      if (buf.get_range() != interopRange) {
-        FAIL(
-            log,
-            "opencl buffer was not interop constructed properly. (get_range) ");
-      }
-      if (buf.get_count() != count) {
-        FAIL(
-            log,
-            "opencl buffer was not interop constructed properly. (get_count) ");
-      }
-    }
-
-    /* Check interop constructor with event*/
-    if (dims == 1) {
-      // create an event to wait for
-      cl::sycl::queue q;
-      cl::sycl::event e = q.submit([](cl::sycl::handler &cgh) {
-        cgh.single_task<BufferInteropNoEvent<T, size, dims>>(
-            []() {});  // do not do anything here, we only need the event
-      });
-
-      // calculate element count, size and range for the interop buffer
-      cl::sycl::range<1> interopRange{r[0]};
-      size_t count = r[0];
-      size_t interopSize = count * sizeof(T);
-
-      // construct the SYCL buffer
-      cl_mem opencl_buffer;
-      if (!helper.create_buffer(opencl_buffer, interopSize, log)) {
-        FAIL(log,
-             "opencl buffer was not constructed properly. (interop), failed to "
-             "create OpenCL buffer");
-      }
-      cl::sycl::buffer<T, 1> buf(
-          opencl_buffer, cl::sycl::context(helper.get_cl_context()), e);
-
-      // check the buffer
-      if (buf.is_sub_buffer()) {
-        FAIL(log,
-             "opencl buffer was not interop constructed properly. "
-             "(is_sub_buffer) ");
-      }
-      if (buf.get_size() != interopSize) {
-        FAIL(log,
-             "opencl buffer was not interop constructed properly. (get_size) ");
-      }
-      if (buf.get_range() != interopRange) {
-        FAIL(
-            log,
-            "opencl buffer was not interop constructed properly. (get_range) ");
-      }
-      if (buf.get_count() != count) {
-        FAIL(
-            log,
-            "opencl buffer was not interop constructed properly. (get_count) ");
-      }
-    }
-
     /* Check copy constructor */
     {
       cl::sycl::buffer<T, dims> bufA(r);
@@ -378,7 +292,7 @@ class buffer_ctors {
 /**
  * test cl::sycl::buffer initialization
  */
-class TEST_NAME : public sycl_cts::util::test_base_opencl {
+class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */

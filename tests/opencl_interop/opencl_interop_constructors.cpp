@@ -7,6 +7,8 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../../util/opencl_helper.h"
+#include "../../util/test_base_opencl.h"
 
 #define TEST_NAME opencl_interop_constructors
 
@@ -216,6 +218,66 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
       }
 
+      /** check buffer (cl_mem, contex) constructor
+       */
+      {
+        const size_t size = 32;
+        int data[size] = {0};
+        cl_int error = CL_SUCCESS;
+
+        auto queue = util::get_cts_object::queue(ctsSelector);
+
+        cl_mem clBuffer = clCreateBuffer(
+            queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+            size * sizeof(int), data, &error);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "create buffer failed");
+        }
+
+        cl::sycl::buffer<int, 1> buffer(clBuffer, queue.get_context());
+
+        // calculate element count, size and range for the interop buffer
+        cl::sycl::range<1> interopRange{size};
+        size_t interopSize = size * sizeof(int);
+
+
+        // check the buffer
+        if (buffer.is_sub_buffer()) {
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. "
+               "(is_sub_buffer) ");
+        }
+        if (buffer.get_size() != interopSize) {
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. (get_size) ");
+        }
+        if (buffer.get_range() != interopRange) {
+          FAIL(
+              log,
+              "opencl buffer was not interop constructed properly. (get_range) ");
+        }
+        if (buffer.get_count() != size) {
+          FAIL(
+              log,
+              "opencl buffer was not interop constructed properly. (get_count) ");
+        }
+
+        queue.submit([&](cl::sycl::handler &handler) {
+          auto accessor =
+              buffer.get_access<cl::sycl::access::mode::read_write,
+                                cl::sycl::access::target::global_buffer>(
+                  handler);
+          handler.single_task<class buffer_interop_constructor_kernel_no_event>([]() {});
+        });
+
+        error = clReleaseMemObject(clBuffer);
+        if (!CHECK_CL_SUCCESS(log, error)) {
+          FAIL(log, "failed to release OpenCL buffer");
+        }
+
+        queue.wait_and_throw();
+      }
+
       /** check buffer (cl_mem, context, event) constructor
        */
       {
@@ -224,7 +286,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         cl_int error = CL_SUCCESS;
 
         auto queue = util::get_cts_object::queue(ctsSelector);
-        cl::sycl::event event;
+
+        // create an event to wait for
+        cl::sycl::event event = queue.submit([](cl::sycl::handler &cgh) {
+          cgh.single_task<class buffer_interop_event>(
+              []() {});  // do not do anything here, we only need the event
+        });
 
         cl_mem clBuffer = clCreateBuffer(
             queue.get_context().get(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
@@ -235,12 +302,38 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         cl::sycl::buffer<int, 1> buffer(clBuffer, queue.get_context(), event);
 
+        // calculate element count, size and range for the interop buffer
+        cl::sycl::range<1> interopRange{size};
+        size_t interopSize = size * sizeof(int);
+
+
+        // check the buffer
+        if (buffer.is_sub_buffer()) {
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. "
+               "(is_sub_buffer) ");
+        }
+        if (buffer.get_size() != interopSize) {
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. (get_size) ");
+        }
+        if (buffer.get_range() != interopRange) {
+          FAIL(
+              log,
+              "opencl buffer was not interop constructed properly. (get_range) ");
+        }
+        if (buffer.get_count() != size) {
+          FAIL(
+              log,
+              "opencl buffer was not interop constructed properly. (get_count) ");
+        }
+
         queue.submit([&](cl::sycl::handler &handler) {
           auto accessor =
               buffer.get_access<cl::sycl::access::mode::read_write,
                                 cl::sycl::access::target::global_buffer>(
                   handler);
-          handler.single_task<class buffer_interop_constructor_kernel>([]() {});
+          handler.single_task<class buffer_interop_constructor_kernel_with_event>([]() {});
         });
 
         error = clReleaseMemObject(clBuffer);

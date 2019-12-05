@@ -36,7 +36,7 @@ using namespace sycl_cts;
 
 /** tests the constructors for cl::sycl::platform
  */
-class TEST_NAME : public sycl_cts::util::test_base_opencl {
+class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */

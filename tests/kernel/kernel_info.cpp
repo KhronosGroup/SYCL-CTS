@@ -17,7 +17,7 @@ class kernel0;
 
 /** tests the info for cl::sycl::kernel
  */
-class TEST_NAME : public sycl_cts::util::test_base_opencl {
+class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */

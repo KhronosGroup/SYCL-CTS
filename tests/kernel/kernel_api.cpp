@@ -19,7 +19,7 @@ using namespace sycl_cts;
 
 /** test cl::sycl::kernel
  */
-class TEST_NAME : public sycl_cts::util::test_base_opencl {
+class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */
@@ -41,11 +41,6 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       ctsQueue.submit(
           [&](cl::sycl::handler &h) { h.single_task(kernel_name_api{}); });
       ctsQueue.wait_and_throw();
-
-      if (!isHostCtx) {
-        // Check get()
-        cl_kernel krnl = k.get();
-      }
 
       // Check is_host()
       bool isHost = k.is_host();
