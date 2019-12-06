@@ -37,177 +37,228 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     try {
       /* Test copy constructor
-      */
+       */
       {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<0>>();
-        auto kernelA = prog.get_kernel<test_kernel<0>>();
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of copy "
+              "constructor");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
 
-        cl::sycl::kernel kernelB(kernelA);
+          prog.build_with_kernel_type<test_kernel<0>>();
+          auto kernelA = prog.get_kernel<test_kernel<0>>();
 
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<0>()); });
+          cl::sycl::kernel kernelB(kernelA);
 
-        if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
-          FAIL(log,
-               "kernel was not constructed correctly. (contains different "
-               "OpenCL kernel object)");
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<0>());
+          });
+
+          if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
+            FAIL(log,
+                 "kernel was not constructed correctly. (contains different "
+                 "OpenCL kernel object)");
+          }
+
+          ctsQueue.wait_and_throw();
         }
-
-        ctsQueue.wait_and_throw();
       }
 
       /* Test assignment operator
-      */
+       */
       {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<1>>();
-        auto kernelA = prog.get_kernel<test_kernel<1>>();
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of assignment "
+              "operator");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
+          prog.build_with_kernel_type<test_kernel<1>>();
+          auto kernelA = prog.get_kernel<test_kernel<1>>();
 
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<1>()); });
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<1>());
+          });
 
-        cl::sycl::kernel kernelB = kernelA;
+          cl::sycl::kernel kernelB = kernelA;
 
-        if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
-          FAIL(log,
-               "kernel was not constructed correctly. (contains different "
-               "OpenCL kernel object)");
+          if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
+            FAIL(log,
+                 "kernel was not constructed correctly. (contains different "
+                 "OpenCL kernel object)");
+          }
+
+          ctsQueue.wait_and_throw();
         }
-
-        ctsQueue.wait_and_throw();
       }
 
       /* Test move constructor
-      */
+       */
       {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<2>>();
-        auto kernelA = prog.get_kernel<test_kernel<2>>();
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of move "
+              "constructor");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
+          prog.build_with_kernel_type<test_kernel<2>>();
+          auto kernelA = prog.get_kernel<test_kernel<2>>();
 
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<2>()); });
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<2>());
+          });
 
-        cl::sycl::kernel kernelB(std::move(kernelA));
+          cl::sycl::kernel kernelB(std::move(kernelA));
 
-        ctsQueue.wait_and_throw();
+          ctsQueue.wait_and_throw();
+        }
       }
 
       /* Test move assignment operator
-      */
+       */
       {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<3>>();
-        auto kernelA = prog.get_kernel<test_kernel<3>>();
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<3>()); });
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of move "
+              "assignment operator");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
+          prog.build_with_kernel_type<test_kernel<3>>();
+          auto kernelA = prog.get_kernel<test_kernel<3>>();
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<3>());
+          });
 
-        cl::sycl::kernel kernelB = std::move(kernelA);
+          cl::sycl::kernel kernelB = std::move(kernelA);
 
-        ctsQueue.wait_and_throw();
+          ctsQueue.wait_and_throw();
+        }
       }
 
       /* Test equality operator
-      */
+       */
       {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<4>>();
-        auto kernelA = prog.get_kernel<test_kernel<4>>();
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<4>()); });
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of equality "
+              "operator");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
+          prog.build_with_kernel_type<test_kernel<4>>();
+          auto kernelA = prog.get_kernel<test_kernel<4>>();
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<4>());
+          });
 
-        cl::sycl::kernel kernelB(kernelA);
+          cl::sycl::kernel kernelB(kernelA);
 
-        cl::sycl::program progC(ctsQueue.get_context());
-        progC.build_with_kernel_type<test_kernel<5>>();
-        auto kernelC = progC.get_kernel<test_kernel<5>>();
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<5>()); });
-        kernelC = (kernelA);
+          cl::sycl::program progC(ctsQueue.get_context());
+          progC.build_with_kernel_type<test_kernel<5>>();
+          auto kernelC = progC.get_kernel<test_kernel<5>>();
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<5>());
+          });
+          kernelC = (kernelA);
 
-        cl::sycl::program progD(ctsQueue.get_context());
-        progD.build_with_kernel_type<test_kernel<6>>();
-        auto kernelD = progD.get_kernel<test_kernel<6>>();
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<6>()); });
+          cl::sycl::program progD(ctsQueue.get_context());
+          progD.build_with_kernel_type<test_kernel<6>>();
+          auto kernelD = progD.get_kernel<test_kernel<6>>();
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<6>());
+          });
 
-        if (!ctsSelector.is_host()) {
-          if (kernelA == kernelB &&
-              (kernelA.get() != kernelB.get() ||
-               kernelA.get_context().get() != kernelB.get_context().get() ||
-               kernelA.get_program().get() != kernelB.get_program().get())) {
-            FAIL(log,
-                 "kernel equality does not work correctly (copy constructed)");
+          if (!ctsSelector.is_host()) {
+            if (kernelA == kernelB &&
+                (kernelA.get() != kernelB.get() ||
+                 kernelA.get_context().get() != kernelB.get_context().get() ||
+                 kernelA.get_program().get() != kernelB.get_program().get())) {
+              FAIL(
+                  log,
+                  "kernel equality does not work correctly (copy constructed)");
+            }
+            if (kernelA == kernelC &&
+                (kernelA.get() != kernelC.get() ||
+                 kernelA.get_context().get() != kernelC.get_context().get() ||
+                 kernelA.get_program().get() != kernelC.get_program().get())) {
+              FAIL(log,
+                   "kernel equality does not work correctly (copy assigned)");
+            }
+            if (kernelA != kernelB) {
+              FAIL(log,
+                   "kernel non-equality does not work correctly"
+                   "(copy constructed)");
+            }
+            if (kernelA != kernelC) {
+              FAIL(log,
+                   "kernel non-equality does not work correctly"
+                   "(copy assigned)");
+            }
+            if (kernelC == kernelD) {
+              FAIL(log,
+                   "kernel equality does not work correctly"
+                   "(comparing same)");
+            }
+            if (!(kernelC != kernelD)) {
+              FAIL(log,
+                   "kernel non-equality does not work correctly"
+                   "(comparing same)");
+            }
           }
-          if (kernelA == kernelC &&
-              (kernelA.get() != kernelC.get() ||
-               kernelA.get_context().get() != kernelC.get_context().get() ||
-               kernelA.get_program().get() != kernelC.get_program().get())) {
-            FAIL(log,
-                 "kernel equality does not work correctly (copy assigned)");
-          }
-          if (kernelA != kernelB) {
-            FAIL(log,
-                 "kernel non-equality does not work correctly"
-                 "(copy constructed)");
-          }
-          if (kernelA != kernelC) {
-            FAIL(log,
-                 "kernel non-equality does not work correctly"
-                 "(copy assigned)");
-          }
-          if (kernelC == kernelD) {
-            FAIL(log,
-                 "kernel equality does not work correctly"
-                 "(comparing same)");
-          }
-          if (!(kernelC != kernelD)) {
-            FAIL(log,
-                 "kernel non-equality does not work correctly"
-                 "(comparing same)");
-          }
+
+          ctsQueue.wait_and_throw();
         }
-
-        ctsQueue.wait_and_throw();
       }
 
       /* Test hashing
-      */
+       */
       {
         auto ctsQueue = util::get_cts_object::queue();
+        auto deviceList = ctsQueue.get_context().get_devices();
 
-        cl::sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<test_kernel<7>>();
-        auto kernelA = prog.get_kernel<test_kernel<7>>();
-        ctsQueue.submit(
-            [&](cl::sycl::handler &cgh) { cgh.single_task(test_kernel<7>()); });
+        if (!is_compiler_available(deviceList)) {
+          log.note(
+              "online compiler is not available -- skipping test of hashing");
+        } else {
+          cl::sycl::program prog(ctsQueue.get_context());
+          prog.build_with_kernel_type<test_kernel<7>>();
+          auto kernelA = prog.get_kernel<test_kernel<7>>();
+          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            cgh.single_task(test_kernel<7>());
+          });
 
-        cl::sycl::kernel kernelB = kernelA;
+          cl::sycl::kernel kernelB = kernelA;
 
-        cl::sycl::hash_class<cl::sycl::kernel> hasher;
+          cl::sycl::hash_class<cl::sycl::kernel> hasher;
 
-        if (hasher(kernelA) != hasher(kernelB)) {
-          FAIL(log,
-               "kernel hashing does not work correctly (hashing of equal "
-               "failed)");
+          if (hasher(kernelA) != hasher(kernelB)) {
+            FAIL(log,
+                 "kernel hashing does not work correctly (hashing of equal "
+                 "failed)");
+          }
+
+          ctsQueue.wait_and_throw();
         }
-
-        ctsQueue.wait_and_throw();
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
