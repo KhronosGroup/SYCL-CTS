@@ -127,7 +127,7 @@ bool test_base_opencl::get_exec_dir(char *path, size_t max_path_len) {
     return false;
   }
   path[n] = '\0';
-  constexpr const char pathDelim = '/';
+  constexpr char pathDelim = '/';
 #endif
   // Replace all characters with '\0' from back until '/' or '\\'
   for (size_t i = strnlen(path, max_path_len) - 1;
