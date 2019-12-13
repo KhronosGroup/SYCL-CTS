@@ -57,7 +57,7 @@ vec_constructor_vec_template = Template(
 """)
 
 opencl_constructor_vec_template = Template(
-    """        cl::sycl::vec<${type}, ${size}>::vector_t interopVec;
+    """        cl::sycl::vec<${type}, ${size}>::vector_t interopVec{};
         auto test = cl::sycl::vec<${type}, ${size}>(interopVec);
 """)
 
