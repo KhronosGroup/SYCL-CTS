@@ -47,7 +47,7 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     if extension is None:
         extension = ""
     else:
-        extension = "#ifdef __SYCL_DEVICE_ONLY__\n#pragma OPENCL EXTENSION %s : enable\n#endif" % extension
+        extension = "#ifdef __SYCL_DEVICE_ONLY__\n#ifdef $s\n#pragma OPENCL EXTENSION %s : enable\n#endif\n#endif" % extension
     newSource = newSource.replace("$pragma_ext", extension)
     
     # Write the source to the output file
