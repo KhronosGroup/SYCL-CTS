@@ -28,8 +28,11 @@ void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
     localSize = (maxDeviceWorkGroupSize < localSize) ? maxDeviceWorkGroupSize
                                                      : localSize;
 
-    /* check work-group size kernel limit */
-    /* this check requires online compiler */
+    /* Check work-group size kernel limit - it must be >= 2 to test
+     * nd_item::mem_fence member function. To query
+     * info::kernel_work_group::work_group_size property, we need obtain test
+     * kernel handler, which requires online compilation
+     * */
     auto devices = queue.get_context().get_devices();
     if (!is_compiler_available(devices) || !is_linker_available(devices))
       return;
