@@ -465,26 +465,30 @@ class check_image_accessor_api_methods {
     auto data = get_image_input_data<T>(size);
     auto image = image_t(data.data(), image_format_channel<T>::order,
                          image_format_channel<T>::type, range);
-    check_methods_helper(log, queue, image, acc_type_tag::get<target>());
+    check_methods_helper(log, queue, image, range, acc_type_tag::get<target>());
   }
 
  private:
   template <typename acc_t>
-  void check_methods(util::logger &log, const acc_t &accessor) const {
-    /** check get_count() method
-     */
-    auto accessorCount = accessor.get_count();
-    check_return_type<size_t>(log, accessor.get_count(), "get_count");
-    if (accessorCount != count) {
-      FAIL(log, "accessor does not return the correct count");
+  void check_methods(util::logger &log, const acc_t &accessor,
+                     image_range_t<dims, target> range) const {
+    {
+      // check get_count() method
+      auto accessorCount = accessor.get_count();
+      check_return_type<size_t>(log, accessor.get_count(), "get_count");
+      if (accessorCount != count) {
+        FAIL(log, "accessor does not return the correct count");
+      }
     }
-
-    /** check get_size() method
-     */
-    auto accessorSize = accessor.get_size();
-    check_return_type<size_t>(log, accessor.get_size(), "get_size");
-    if (accessorSize != size) {
-      FAIL(log, "accessor does not return the correct size");
+    {
+      // check get_range() method
+      auto accessorRange = accessor.get_range();
+      log.note("Checking get_range");
+      check_return_type<image_range_t<dims, target>>(log, accessor.get_range(),
+                                                     "get_range()");
+      if (accessorRange != range) {
+        FAIL(log, "accessor does not return the correct range");
+      }
     }
   }
 
@@ -494,8 +498,9 @@ class check_image_accessor_api_methods {
    * @param image SYCL image to request access to
    */
   void check_methods_helper(util::logger &log, cl::sycl::queue & /*queue*/,
-                            image_t &image, acc_type_tag::host) const {
-    check_methods(log, make_accessor<T, dims, mode, target>(image));
+                            image_t &image, image_range_t<dims, target> range,
+                            acc_type_tag::host) const {
+    check_methods(log, make_accessor<T, dims, mode, target>(image), range);
   }
 
   /**
@@ -505,9 +510,11 @@ class check_image_accessor_api_methods {
    * @param image SYCL image to request access to
    */
   void check_methods_helper(util::logger &log, cl::sycl::queue &queue,
-                            image_t &image, acc_type_tag::generic) const {
+                            image_t &image, image_range_t<dims, target> range,
+                            acc_type_tag::generic) const {
     queue.submit([&](cl::sycl::handler &handler) {
-      check_methods(log, make_accessor<T, dims, mode, target>(image, handler));
+      check_methods(log, make_accessor<T, dims, mode, target>(image, handler),
+                    range);
       handler.single_task(dummy_functor<T>());
     });
   }

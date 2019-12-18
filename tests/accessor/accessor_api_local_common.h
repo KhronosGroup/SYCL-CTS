@@ -62,6 +62,24 @@ class check_local_accessor_api_methods {
   size_t count;
   size_t size;
 
+  using acc_t = decltype(make_local_accessor_generic<T, dims, mode>(
+      std::declval<sycl_range_t<dims>>(), std::declval<cl::sycl::handler &>()));
+
+  static void check_get_range(util::logger &, acc_t, sycl_range_t<dims>,
+                              zero_dim_tag) {
+    // Not available with 0 dimensions
+  }
+
+  static void check_get_range(util::logger &log, acc_t acc,
+                              sycl_range_t<dims> range, generic_dim_tag) {
+    // check get_range() method
+    auto accessorRange = acc.get_range();
+    check_return_type<sycl_range_t<dims>>(log, accessorRange, "get_range()");
+    if (accessorRange != range) {
+      FAIL(log, "accessor does not return the correct range");
+    }
+  }
+
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   sycl_range_t<dims> range) {
 #ifdef VERBOSE_LOG
@@ -91,6 +109,7 @@ class check_local_accessor_api_methods {
           FAIL(log, "accessor does not return the correct size");
         }
       }
+      check_get_range(log, acc, range, is_zero_dim<dims>{});
       {
         /** check get_pointer() method
         */
