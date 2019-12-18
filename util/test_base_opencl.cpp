@@ -7,6 +7,8 @@
 *******************************************************************************/
 
 #include "test_base_opencl.h"
+#include "../tests/common/cts_selector.h"
+#include "../tests/common/get_cts_object.h"
 #include "../tests/common/macros.h"
 #include "../util/opencl_helper.h"
 
@@ -39,63 +41,34 @@ bool test_base_opencl::setup(logger &log) {
   using sycl_cts::util::get;
   using sycl_cts::util::opencl_helper;
   opencl_helper &openclHelper = get<opencl_helper>();
-
-  cl::sycl::unique_ptr_class<cl_platform_id> platforms;
-  cl::sycl::unique_ptr_class<cl_device_id> devices;
-
-  cl_uint N = 0;
   cl_int error = CL_SUCCESS;
 
-  error = clGetPlatformIDs(0, nullptr, &N);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  cts_selector ctsSelector;
+  const auto ctsContext = util::get_cts_object::context(ctsSelector);
 
-  if (N < 1) {
-    FAIL(log, "Unable to retrieve list of platforms via clGetPlatformIDs()");
+  if (ctsContext.get_devices().empty()) {
+    FAIL(log, "Unable to retrieve list of devices via cts_selector");
     return false;
   }
+  const auto ctsDevice = ctsContext.get_devices()[0];
 
-  platforms.reset(new cl_platform_id[N]);
-  if (platforms.get() == nullptr) {
-    FAIL(log, "Malloc failed to allocate memory for platform list");
-    return false;
-  }
+  // There is nothing else to do for a host device
+  if (ctsDevice.is_host()) return true;
 
-  error = clGetPlatformIDs(N, platforms.get(), nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
-
-  error =
-      clGetDeviceIDs(platforms.get()[0], CL_DEVICE_TYPE_ALL, 0, nullptr, &N);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
-
-  if (N < 1) {
-    FAIL(log, "Unable to retrieve list of devices via clGetDeviceIDs()");
-    return false;
-  }
-
-  devices.reset(new cl_device_id[N]);
-  if (devices.get() == nullptr) {
-    FAIL(log, "Malloc failed to allocate memory for device list");
-    return false;
-  }
-
-  error = clGetDeviceIDs(platforms.get()[0], CL_DEVICE_TYPE_ALL, N,
-                         devices.get(), nullptr);
-  if (!CHECK_CL_SUCCESS(log, error)) return false;
+  m_cl_platform_id = ctsDevice.get_platform().get();
+  m_cl_device_id = ctsDevice.get();
 
   cl_context_properties properties[3] = {
-      CL_CONTEXT_PLATFORM, (cl_context_properties)platforms.get()[0], 0};
+      CL_CONTEXT_PLATFORM, (cl_context_properties)m_cl_platform_id, 0};
 
   m_cl_context =
-      clCreateContext(properties, N, devices.get(), nullptr, nullptr, &error);
+      clCreateContext(properties, 1, &m_cl_device_id, nullptr, nullptr, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
 
   // No special queue properties wanted
   m_cl_command_queue =
-      clCreateCommandQueue(m_cl_context, devices.get()[0], 0, &error);
+      clCreateCommandQueue(m_cl_context, m_cl_device_id, 0, &error);
   if (!CHECK_CL_SUCCESS(log, error)) return false;
-
-  m_cl_platform_id = platforms.get()[0];
-  m_cl_device_id = devices.get()[0];
 
   return true;
 }
