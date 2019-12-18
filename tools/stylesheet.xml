@@ -122,6 +122,7 @@
   	<tr><td>CMake Input</td><td><xsl:value-of select="./@CMakeInput" /></td></tr>
   	<tr><td>Build System Generator</td><td><xsl:value-of select="./@BuildSystemGenerator" /></td></tr>
   	<tr><td>Build System Call</td><td><xsl:value-of select="./@BuildSystemCall" /></td></tr>
+  	<tr><td>CTest Call</td><td><xsl:value-of select="./@CTestCall" /></td></tr>
   </table>  
 </xsl:template>
 
