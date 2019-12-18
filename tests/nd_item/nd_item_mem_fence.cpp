@@ -16,8 +16,35 @@ using namespace sycl_cts;
 class mem_fence_kernel;
 void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
   /* set workspace size */
-  const int globalSize = 64;
-  const int localSize = 2;
+  constexpr size_t globalSize = 64;
+  size_t localSize = 2;
+
+  /* adjust work-group size */
+  {
+    /* check work-group size device limit */
+    auto device = queue.get_device();
+    auto maxDeviceWorkGroupSize =
+        device.template get_info<cl::sycl::info::device::max_work_group_size>();
+    localSize = (maxDeviceWorkGroupSize < localSize) ? maxDeviceWorkGroupSize
+                                                     : localSize;
+
+    /* Check work-group size kernel limit - it must be >= 2 to test
+     * nd_item::mem_fence member function. To query
+     * info::kernel_work_group::work_group_size property, we need obtain test
+     * kernel handler, which requires online compilation
+     * */
+    auto devices = queue.get_context().get_devices();
+    if (!is_compiler_available(devices) || !is_linker_available(devices))
+      return;
+
+    cl::sycl::program P(queue.get_context());
+    P.build_with_kernel_type<mem_fence_kernel>("");
+    auto kernel = P.get_kernel<mem_fence_kernel>();
+    auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
+        cl::sycl::info::kernel_work_group::work_group_size>(device);
+    localSize = (maxKernelWorkGroupSize < localSize) ? maxKernelWorkGroupSize
+                                                     : localSize;
+  }
 
   /* allocate and assign host data */
 
