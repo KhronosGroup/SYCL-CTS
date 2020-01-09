@@ -64,6 +64,11 @@ class image_ctors {
     auto imageHost =
         get_image_host<dims>(numElems, channelTypeSize, channelCount);
 
+    // Create final data
+    // Must outlive the image
+    auto finalData =
+        get_image_host<dims>(numElems, channelTypeSize, channelCount);
+
     // Creates an image, either with a pitch or without
     // The pitch is not used for a 1D image or when null
     cl::sycl::image<dims> img = image_generic<dims>::create_with_pitch(
@@ -227,13 +232,7 @@ class image_ctors {
 
     // Check set_final_data()
     {
-      // Create another image
-      auto imageHost2 =
-          get_image_host<dims>(numElems, channelTypeSize, channelCount);
-      auto img2 = cl::sycl::image<dims>(static_cast<void *>(imageHost2.data()),
-                                        channelOrder, channelType, r);
-
-      auto rawPtr = imageHost2.data();
+      auto rawPtr = finalData.data();
       auto rawPtrVoid = static_cast<void *>(rawPtr);
       auto rawPtrFloat = static_cast<float *>(rawPtrVoid);
       auto sharedPtrVoid =
@@ -242,7 +241,7 @@ class image_ctors {
           cl::sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
       auto weakPtrVoid = cl::sycl::weak_ptr_class<void>(sharedPtrVoid);
       auto weakPtrFloat = cl::sycl::weak_ptr_class<float>(sharedPtrFloat);
-      auto iterator = imageHost2.begin();
+      auto iterator = finalData.begin();
 
       img.set_final_data();
       img.set_final_data(nullptr);
