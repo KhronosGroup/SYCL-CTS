@@ -68,16 +68,6 @@ template <typename TIn, typename TOut>
 class test_buffer_reinterpret {
  public:
   unsigned elementsIn, elementsOut;
-  /*!
-  @brief constructor
-  @param elementsIn the dimension used to create the range for the original
-  buffer
-  @param elementsOut the dimension used to create the range for the
-  reinterpreted
-  buffer
-  */
-  test_buffer_reinterpret(unsigned ElementsIn, unsigned ElementsOut)
-      : elementsIn(ElementsIn), elementsOut(ElementsOut) {}
 
   template <size_t dims>
   void check(TIn* data, util::logger& log) {
@@ -95,6 +85,122 @@ class test_buffer_reinterpret {
     }
   }
 };
+
+/**
+ * @brief Test buffer reinterpret without specifying a range
+ * @tparam TIn Underlying type of the input buffer
+ * @tparam TOut Type to reinterpret to
+ * @tparam inputDim Number of input dimensions
+ * @tparam outputDim Number of output dimensions
+ */
+template <typename TIn, typename TOut, int inputDim, int outputDim>
+class test_buffer_reinterpret_no_range {
+ public:
+  static_assert((outputDim == 1) ||
+                    ((inputDim == outputDim) && (sizeof(TIn) == sizeof(TOut))),
+                "Can only omit range when targetting 1D or when reinterpreting "
+                "to a type of same size");
+
+  static void check(TIn* data, const size_t inputElemsPerDim,
+                    util::logger& log) {
+    cl::sycl::range<inputDim> rangeIn =
+        getRange<inputDim>(sizeof(TOut) * inputElemsPerDim / sizeof(TIn));
+    cl::sycl::buffer<TIn, inputDim> buf1(data, rangeIn);
+
+    auto buf2 = buf1.template reinterpret<TOut>();
+
+    if (buf2.get_count() != buf1.get_count()) {
+      const auto msg = "Reinterpret buffer has wrong count: " +
+                       std::to_string(buf2.get_count()) +
+                       " != " + std::to_string(buf1.get_count());
+      FAIL(log, msg);
+    }
+    if (buf2.get_size() != buf1.get_size()) {
+      const auto msg = "Reinterpret buffer has wrong size: " +
+                       std::to_string(buf2.get_size()) +
+                       " != " + std::to_string(buf1.get_size());
+      FAIL(log, msg);
+    }
+    if (buf2.get_range() != buf1.get_range()) {
+      FAIL(log, "Reinterpret buffer has wrong range");
+    }
+  }
+};
+
+/**
+ * @brief Performs the actual check for reinterpreted buffers
+ *        without providing a range, specialization for reinterpreting to 1D.
+ * @tparam TIn Underlying type of the input buffer
+ * @tparam TOut Type to reinterpret to
+ * @tparam inputDim Number of input dimensions
+ */
+template <typename TIn, typename TOut, int inputDim>
+class test_buffer_reinterpret_no_range<TIn, TOut, inputDim, 1> {
+ public:
+  static void check(TIn* data, const size_t inputElemsPerDim,
+                    util::logger& log) {
+    cl::sycl::range<inputDim> rangeIn =
+        getRange<inputDim>(sizeof(TOut) * inputElemsPerDim / sizeof(TIn));
+    cl::sycl::buffer<TIn, inputDim> buf1{data, rangeIn};
+    const auto expectedOutputCount = buf1.get_size() / sizeof(TOut);
+
+    auto buf2 = buf1.template reinterpret<TOut, 1>();
+
+    if (buf2.get_count() != expectedOutputCount) {
+      const auto msg = "Reinterpret buffer has wrong count: " +
+                       std::to_string(buf2.get_count()) +
+                       " != " + std::to_string(expectedOutputCount);
+      FAIL(log, msg);
+    }
+    if (buf2.get_size() != buf1.get_size()) {
+      const auto msg = "Reinterpret buffer has wrong size: " +
+                       std::to_string(buf2.get_size()) +
+                       " != " + std::to_string(buf1.get_size());
+      FAIL(log, msg);
+    }
+    if (buf2.get_range() != cl::sycl::range<1>{expectedOutputCount}) {
+      FAIL(log, "Reinterpret buffer has wrong range");
+    }
+  }
+};
+
+/**
+ * @brief Helper class for flipping the signedness of a type.
+ *
+ * Required because make_signed and similar fail to instantiate
+ * for types that don't have an inherent signedness.
+ *
+ * @tparam T Input type to have its signedness flipped
+ * @tparam isIntegral Whether the type is integral or not
+ */
+template <class T, bool isIntegral>
+struct flip_signedness_helper {
+  /// Just return the same type
+  using type = T;
+};
+
+/**
+ * @brief Helper class for flipping the signedness of a type,
+ *        specialization for integral types.
+ * @tparam T
+ */
+template <class T>
+struct flip_signedness_helper<T, true> {
+  /// Make the type signed or unsigned based on the input type
+  using type =
+      typename std::conditional<std::is_signed<T>::value,
+                                typename std::make_unsigned<T>::type,
+                                typename std::make_signed<T>::type>::type;
+};
+
+/**
+ * @brief Flips the signedness of the data type, if possible.
+ *        Otherwise returns the same type.
+ * @tparam T Input type to have its signedness flipped
+ */
+template <class T>
+using flip_signedness_t =
+    typename flip_signedness_helper<T, std::is_integral<T>::value>::type;
 
 /**
  * Generic buffer API test function
@@ -317,6 +423,34 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
+  /**
+   * @brief Tests reinterpreting a buffer
+   * @tparam T Underlying data type of the input buffer
+   * @tparam numDims Number of input dimensions
+   * @param log Logger object
+   */
+  template <typename T, int numDims>
+  void test_type_reinterpret(util::logger& log) {
+    static constexpr size_t inputElemsPerDim = 4;
+    std::vector<uint8_t> reinterpretInputData(sizeof(T) * inputElemsPerDim *
+                                              numDims);
+    using ReinterpretT = flip_signedness_t<T>;
+
+    // Check reinterpreting with a range
+    static constexpr auto numElems = inputElemsPerDim * numDims;
+    test_buffer_reinterpret<uint8_t, T>{sizeof(T) * numElems, numElems}
+        .template check<numDims>(reinterpretInputData.data(), log);
+
+    // Check reinterpreting without a range to 1D
+    test_buffer_reinterpret_no_range<uint8_t, T, numDims, 1>::check(
+        reinterpretInputData.data(), inputElemsPerDim, log);
+
+    // Check reinterpreting without a range to the same dimension
+    test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
+        reinterpret_cast<T*>(reinterpretInputData.data()), inputElemsPerDim,
+        log);
+  }
+
   template <typename T>
   void test_type(util::logger& log) {
     const int size = 8;
@@ -333,22 +467,9 @@ class TEST_NAME : public util::test_base {
     test_buffer<T, size * size * size, 3>(log, range3d, id3d);
 
     /* check reinterpret() */
-
-    {
-      cl::sycl::vector_class<uint8_t> data(sizeof(T));
-      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
-          .template check<1>(data.data(), log);
-    }
-    {
-      cl::sycl::vector_class<uint8_t> data(sizeof(T)*sizeof(T));
-      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
-          .template check<2>(data.data(), log);
-    }
-    {
-      cl::sycl::vector_class<uint8_t> data(sizeof(T)*sizeof(T)*sizeof(T));
-      test_buffer_reinterpret<uint8_t, T>(sizeof(T), 1)
-          .template check<3>(data.data(), log);
-    }
+    test_type_reinterpret<T, 1>(log);
+    test_type_reinterpret<T, 2>(log);
+    test_type_reinterpret<T, 3>(log);
   }
 
   /** execute the test
