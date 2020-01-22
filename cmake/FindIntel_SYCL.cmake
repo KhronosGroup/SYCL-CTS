@@ -7,7 +7,7 @@ set(CMAKE_C_COMPILER    ${INTEL_SYCL_C_EXECUTABLE})
 set(CMAKE_CXX_COMPILER  ${INTEL_SYCL_CXX_EXECUTABLE})
 
 if(NOT DEFINED INTEL_SYCL_TRIPLE)
-   set(INTEL_SYCL_TRIPLE spir64-unknown-linux-sycldevice)
+   set(INTEL_SYCL_TRIPLE spir64-unknown-unknown-sycldevice)
 endif()
 message("Intel SYCL: compiling SYCL to ${INTEL_SYCL_TRIPLE}")
 
@@ -19,7 +19,7 @@ add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
 set_target_properties(INTEL_SYCL::Runtime PROPERTIES
     INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
     INTERFACE_COMPILE_OPTIONS   "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}"
-    INTERFACE_LINK_OPTIONS      "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}")
+    INTERFACE_LINK_OPTIONS      "-fsycl;-fsycl-device-code-split=per_source;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}")
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
 set_target_properties(SYCL::SYCL PROPERTIES
