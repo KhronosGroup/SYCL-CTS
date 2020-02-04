@@ -40,9 +40,8 @@ class check_accessor_constructor_image<T, dims, kMode,
     // check the accessor
     check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
                            cl::sycl::access::placeholder::false_t>::
-        check(a, getElementsCount<dims>(range) * elementSize,
-              getElementsCount<dims>(range), "constructor(image, handler)",
-              log);
+        check(a, range, getElementsCount<dims>(range),
+              "constructor(image, handler)", log);
   }
 };
 
@@ -64,8 +63,8 @@ class check_accessor_constructor_image<T, dims, kMode,
     // check the accessor
     check_accessor_members<T, dims, kMode, cl::sycl::access::target::host_image,
                            cl::sycl::access::placeholder::false_t>::
-        check(a, getElementsCount<dims>(range) * elementSize,
-              getElementsCount<dims>(range), "constructor(image)", log);
+        check(a, range, getElementsCount<dims>(range), "constructor(image)",
+              log);
   }
 };
 
@@ -88,9 +87,8 @@ class check_accessor_constructor_image<T, dims, kMode,
     check_accessor_members<T, dims, kMode,
                            cl::sycl::access::target::image_array,
                            cl::sycl::access::placeholder::false_t>::
-        check(a, getElementsCount<dims + 1>(range) * elementSize,
-              getElementsCount<dims + 1>(range), "constructor(image, handler)",
-              log);
+        check(a, range, getElementsCount<dims + 1>(range),
+              "constructor(image, handler)", log);
   }
 };
 
@@ -147,7 +145,7 @@ class image_accessor_dims {
           check_accessor_members<T, dims, cl::sycl::access::mode::read,
                                  cl::sycl::access::target::image,
                                  cl::sycl::access::placeholder::false_t>::
-              check(b, a.get_size(), a.get_count(), "copy construction", log);
+              check(b, a.get_range(), a.get_count(), "copy construction", log);
         }
 
         /** check accessor is Copy Assignable
@@ -166,7 +164,7 @@ class image_accessor_dims {
           check_accessor_members<
               T, dims, cl::sycl::access::mode::read,
               cl::sycl::access::target::image,
-              cl::sycl::access::placeholder::false_t>::check(b, a.get_size(),
+              cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
                                                              a.get_count(),
                                                              "copy assignment",
                                                              log);
@@ -184,8 +182,8 @@ class image_accessor_dims {
           check_accessor_members<T, dims, cl::sycl::access::mode::read,
                                  cl::sycl::access::target::image,
                                  cl::sycl::access::placeholder::false_t>::
-              check(b, image.get_size(), image.get_count(), "move construction",
-                    log);
+              check(b, image.get_range(), image.get_count(),
+                    "move construction", log);
         }
 
         /** check accessor is Move Assignable
@@ -205,7 +203,7 @@ class image_accessor_dims {
               T, dims, cl::sycl::access::mode::read,
               cl::sycl::access::target::image,
               cl::sycl::access::placeholder::false_t>::check(b,
-                                                             image.get_size(),
+                                                             image.get_range(),
                                                              image.get_count(),
                                                              "move assignment",
                                                              log);
@@ -251,7 +249,7 @@ class image_accessor_dims {
         check_accessor_members<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, a.get_size(),
+            cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
                                                            a.get_count(),
                                                            "copy construction",
                                                            log);
@@ -273,7 +271,7 @@ class image_accessor_dims {
         check_accessor_members<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, a.get_size(),
+            cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
                                                            a.get_count(),
                                                            "copy assignment",
                                                            log);
@@ -291,7 +289,7 @@ class image_accessor_dims {
         check_accessor_members<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, image.get_size(),
+            cl::sycl::access::placeholder::false_t>::check(b, image.get_range(),
                                                            image.get_count(),
                                                            "move construction",
                                                            log);
@@ -313,7 +311,7 @@ class image_accessor_dims {
         check_accessor_members<
             T, dims, cl::sycl::access::mode::read,
             cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, image.get_size(),
+            cl::sycl::access::placeholder::false_t>::check(b, image.get_range(),
                                                            image.get_count(),
                                                            "move assignment",
                                                            log);
@@ -370,7 +368,7 @@ class image_array_accessor_dims {
           check_accessor_members<T, dims, cl::sycl::access::mode::read,
                                  cl::sycl::access::target::image_array,
                                  cl::sycl::access::placeholder::false_t>::
-              check(a, b.get_size(), b.get_count(), "copy construction", log);
+              check(a, b.get_range(), b.get_count(), "copy construction", log);
         }
 
         /** check accessor is Copy Assignable
@@ -389,7 +387,7 @@ class image_array_accessor_dims {
           check_accessor_members<
               T, dims, cl::sycl::access::mode::read,
               cl::sycl::access::target::image_array,
-              cl::sycl::access::placeholder::false_t>::check(b, a.get_size(),
+              cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
                                                              a.get_count(),
                                                              "copy assignment",
                                                              log);
@@ -407,8 +405,8 @@ class image_array_accessor_dims {
           check_accessor_members<T, dims, cl::sycl::access::mode::read,
                                  cl::sycl::access::target::image_array,
                                  cl::sycl::access::placeholder::false_t>::
-              check(b, image.get_size(), image.get_count(), "move construction",
-                    log);
+              check(b, image.get_range(), image.get_count(),
+                    "move construction", log);
         }
 
         /** check accessor is Move Assignable
@@ -428,7 +426,7 @@ class image_array_accessor_dims {
               T, dims, cl::sycl::access::mode::read,
               cl::sycl::access::target::image_array,
               cl::sycl::access::placeholder::false_t>::check(b,
-                                                             image.get_size(),
+                                                             image.get_range(),
                                                              image.get_count(),
                                                              "move assignmnet",
                                                              log);
