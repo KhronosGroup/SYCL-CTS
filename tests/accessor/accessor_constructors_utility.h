@@ -266,13 +266,14 @@ class check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
       const cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::image,
                                cl::sycl::access::placeholder::false_t>
           a,
-      size_t size, size_t count, std::string operation, util::logger &log) {
+      cl::sycl::range<dims> range, size_t count, std::string operation,
+      util::logger &log) {
     std::string error_message =
         get_error_message(dims, kMode, cl::sycl::access::target::image,
                           cl::sycl::access::placeholder::false_t, operation);
 
-    if (a.get_size() < size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
+    if (a.get_range() != range) {
+      FAIL(log, (error_message + " check(get_range)").c_str());
     }
 
     if (a.get_count() != count) {
@@ -292,14 +293,14 @@ class check_accessor_members<T, dims, kMode,
                         T, dims, kMode, cl::sycl::access::target::host_image,
                         cl::sycl::access::placeholder::false_t>
                         a,
-                    size_t size, size_t count, std::string operation,
-                    util::logger &log) {
+                    cl::sycl::range<dims> range, size_t count,
+                    std::string operation, util::logger &log) {
     std::string error_message =
         get_error_message(dims, kMode, cl::sycl::access::target::host_image,
                           cl::sycl::access::placeholder::false_t, operation);
 
-    if (a.get_size() < size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
+    if (a.get_range() != range) {
+      FAIL(log, (error_message + " check(get_range)").c_str());
     }
 
     if (a.get_count() != count) {
@@ -319,14 +320,14 @@ class check_accessor_members<T, dims, kMode,
                         T, dims, kMode, cl::sycl::access::target::image_array,
                         cl::sycl::access::placeholder::false_t>
                         a,
-                    size_t size, size_t count, std::string operation,
-                    util::logger &log) {
+                    cl::sycl::range<dims + 1> range, size_t count,
+                    std::string operation, util::logger &log) {
     std::string error_message =
         get_error_message(dims, kMode, cl::sycl::access::target::image_array,
                           cl::sycl::access::placeholder::false_t, operation);
 
-    if (a.get_size() < size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
+    if (a.get_range() != range) {
+      FAIL(log, (error_message + " check(get_range)").c_str());
     }
 
     if (a.get_count() != count) {
