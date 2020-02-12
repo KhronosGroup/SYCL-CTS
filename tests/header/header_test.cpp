@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-/** checks CL_SYCL_LANGUAGE_VERSION is defined
+/** checks that CL_SYCL_LANGUAGE_VERSION is defined
 */
 #if !defined(CL_SYCL_LANGUAGE_VERSION)
 #define TEST_FAIL
@@ -35,19 +35,19 @@ class TEST_NAME : public util::test_base {
     log.note("CL_SYCL_LANGUAGE_VERSION = %d", (int)CL_SYCL_LANGUAGE_VERSION);
 #endif
 
-/** checks CL_SYCL_LANGUAGE_VERSION is defined
+/** checks that __FAST_RELAXED_MATH__ is defined
 */
 #if defined(__FAST_RELAXED_MATH__)
     log.note("__FAST_RELAXED_MATH__ defined");
 #endif
 
-/** checks __SYCL_DEVICE_ONLY__ is defined
+/** checks that __SYCL_DEVICE_ONLY__ is defined
 */
 #if defined(__SYCL_DEVICE_ONLY__)
     log.note("__SYCL_DEVICE_ONLY__ defined");
 #endif
 
-/** checks __SYCL_DEVICE_ONLY__ is defined
+/** checks that __SYCL_SINGLE_SOURCE__ is defined
 */
 #if defined(__SYCL_SINGLE_SOURCE__)
     log.note("__SYCL_SINGLE_SOURCE__ defined");
