@@ -24,7 +24,7 @@ class kernel0 {
                            cl::sycl::access::target::global_buffer>(cgh)) {}
 
   void operator()(cl::sycl::group<2> group_pid) const {
-    group_pid.parallel_for_work_item([=](cl::sycl::h_item<2> itemID) {
+    group_pid.parallel_for_work_item([&](cl::sycl::h_item<2> itemID) {
       auto globalIdL = itemID.get_global().get_linear_id();
       ptr[globalIdL] = globalIdL;
     });
