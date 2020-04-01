@@ -59,9 +59,11 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "device was not copied correctly (is_host)");
         }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && deviceA.get() != deviceB.get()) {
           FAIL(log, "device was not assigned correctly (get)");
         }
+#endif
       }
 
       /** check assignment operator
@@ -74,9 +76,11 @@ class TEST_NAME : public util::test_base {
         if (deviceA.is_host() != deviceB.is_host()) {
           FAIL(log, "device was not assigned correctly (is_host)");
         }
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && deviceA.get() != deviceB.get()) {
           FAIL(log, "device was not assigned correctly (get)");
         }
+#endif
       }
 
       /** check move constructor

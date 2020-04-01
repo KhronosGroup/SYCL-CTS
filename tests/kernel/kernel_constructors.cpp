@@ -59,11 +59,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
             cgh.single_task(test_kernel<0>());
           });
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
             FAIL(log,
                  "kernel was not constructed correctly. (contains different "
                  "OpenCL kernel object)");
           }
+#endif
 
           ctsQueue.wait_and_throw();
         }
@@ -91,11 +93,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
           cl::sycl::kernel kernelB = kernelA;
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
             FAIL(log,
                  "kernel was not constructed correctly. (contains different "
                  "OpenCL kernel object)");
           }
+#endif
 
           ctsQueue.wait_and_throw();
         }
@@ -189,6 +193,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           });
 
           if (!ctsSelector.is_host()) {
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
             if (kernelA == kernelB &&
                 (kernelA.get() != kernelB.get() ||
                  kernelA.get_context().get() != kernelB.get_context().get() ||
@@ -204,6 +209,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
               FAIL(log,
                    "kernel equality does not work correctly (copy assigned)");
             }
+#endif
             if (kernelA != kernelB) {
               FAIL(log,
                    "kernel non-equality does not work correctly"

@@ -128,9 +128,11 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "context was not copied correctly (is_host)");
         }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && (contextA.get() != contextB.get())) {
           FAIL(log, "context was not copied correctly (get)");
         }
+#endif
       }
 
       /** check assignment operator
@@ -144,9 +146,11 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "context was not assigned correctly (is_host)");
         }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && (contextA.get() != contextB.get())) {
           FAIL(log, "context was not assigned correctly (get)");
         }
+#endif
       }
 
       /** check move constructor

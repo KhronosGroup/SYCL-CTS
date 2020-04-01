@@ -64,6 +64,7 @@ class TEST_NAME : public util::test_base {
                                             "cl::sycl::queue::get_device()");
       }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
       /** check get() member function
        */
       {
@@ -75,6 +76,7 @@ class TEST_NAME : public util::test_base {
                                               "cl::sycl::queue::get()");
         }
       }
+#endif
 
       /** check submit(command_group_scope) member function
       */

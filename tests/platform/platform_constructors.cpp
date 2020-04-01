@@ -59,9 +59,11 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "platform was not copy constructed correctly (is_host)");
         }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && platformA.get() != platformB.get()) {
           FAIL(log, "platform was not copy constructed correctly (get)");
         }
+#endif
       }
 
       /** check assignment operator
@@ -75,9 +77,11 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "platform was not copy assigned correctly (is_host)");
         }
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!selector.is_host() && platformA.get() != platformB.get()) {
           FAIL(log, "platform was not copy assigned correctly (get)");
         }
+#endif
       }
 
       /** check move constructor
