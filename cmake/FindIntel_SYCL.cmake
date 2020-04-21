@@ -16,6 +16,7 @@ if(DEFINED INTEL_SYCL_FLAGS)
 endif()
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
+# -fsycl-device-code-split option not yet supported for CUDA
 if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
     set_target_properties(INTEL_SYCL::Runtime PROPERTIES
         INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
