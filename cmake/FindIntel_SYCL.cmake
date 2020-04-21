@@ -16,7 +16,7 @@ if(DEFINED INTEL_SYCL_FLAGS)
 endif()
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
     set_target_properties(INTEL_SYCL::Runtime PROPERTIES
         INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
         INTERFACE_COMPILE_OPTIONS   "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}"
