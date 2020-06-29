@@ -27,13 +27,22 @@ include(AddSYCLExecutable)
 
 # ------------------
 # Double and Half variables
-option(SYCL_CTS_ENABLE_DOUBLE_TESTS OFF "Enable Double tests.")
-option(SYCL_CTS_ENABLE_HALF_TESTS OFF "Enable Half tests.")
+option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." OFF)
+option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." OFF)
 if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
     add_definitions(-DSYCL_CTS_TEST_DOUBLE)
 endif()
 if(SYCL_CTS_ENABLE_HALF_TESTS)
     add_definitions(-DSYCL_CTS_TEST_HALF)
+endif()
+# ------------------
+
+# ------------------
+# OpenCL interoperability
+option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
+       "Enable OpenCL interoperability tests." ON)
+if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
+    add_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
 endif()
 # ------------------
 

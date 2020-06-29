@@ -83,10 +83,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           // Check get_build_options()
           cl::sycl::string_class progBuildOptions = prog.get_build_options();
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           // Check get()
           if (!context.is_host()) {
             cl_program clProgram = prog.get();
           }
+#endif
 
           {
             auto q = cl::sycl::queue(context, selector);

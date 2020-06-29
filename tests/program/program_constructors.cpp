@@ -244,6 +244,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         programC = programA;
         cl::sycl::program programD(context);
 
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!(programA == programB) &&
             (context.is_host() && (programA.get() != programB.get()))) {
           FAIL(log,
@@ -254,6 +255,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           FAIL(log,
                "program equality does not work correctly. (copy assigned)");
         }
+#endif
         if (programA != programB) {
           FAIL(log,
                "program non-equality does not work correctly"

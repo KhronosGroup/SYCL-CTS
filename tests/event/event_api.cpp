@@ -36,6 +36,8 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
+
+#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
       /** check get()
       */
       {
@@ -48,6 +50,7 @@ class TEST_NAME : public util::test_base {
         }
         queue.wait_and_throw();
       }
+#endif
 
       /** check is_host()
       */
