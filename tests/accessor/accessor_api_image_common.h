@@ -166,11 +166,17 @@ struct image_format_channel;
 */
 template <>
 struct image_format_channel<cl::sycl::cl_int4> {
+#ifdef SYCL_CTS_INTEL_PI_CUDA
+  static constexpr cl::sycl::image_channel_type type =
+      cl::sycl::image_channel_type::signed_int32;
+  using storage_t = cl::sycl::cl_int;
+#else
   static constexpr cl::sycl::image_channel_type type =
       cl::sycl::image_channel_type::signed_int8;
+  using storage_t = cl::sycl::cl_char;
+#endif
   static constexpr cl::sycl::image_channel_order order =
       cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_char;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
@@ -178,11 +184,17 @@ struct image_format_channel<cl::sycl::cl_int4> {
 */
 template <>
 struct image_format_channel<cl::sycl::cl_uint4> {
+#ifdef SYCL_CTS_INTEL_PI_CUDA
+  static constexpr cl::sycl::image_channel_type type =
+      cl::sycl::image_channel_type::unsigned_int32;
+  using storage_t = cl::sycl::cl_uint;
+#else
   static constexpr cl::sycl::image_channel_type type =
       cl::sycl::image_channel_type::unsigned_int8;
+  using storage_t = cl::sycl::cl_uchar;
+#endif
   static constexpr cl::sycl::image_channel_order order =
       cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_uchar;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
