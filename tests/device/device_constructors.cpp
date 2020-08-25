@@ -115,7 +115,6 @@ class TEST_NAME : public util::test_base {
         cl::sycl::device deviceB(deviceA);
         cl::sycl::device deviceC(selector);
         deviceC = deviceA;
-        cl::sycl::device deviceD(selector);
 
         if (!(deviceA == deviceB)) {
           FAIL(log,
@@ -133,16 +132,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log,
                "device non-equality does not work correctly"
                "(copy assigned)");
-        }
-        if (deviceC == deviceD) {
-          FAIL(log,
-               "device equality does not work correctly"
-               "(comparing same)");
-        }
-        if (!(deviceC != deviceD)) {
-          FAIL(log,
-               "device non-equality does not work correctly"
-               "(comparing same)");
         }
       }
 
