@@ -116,7 +116,6 @@ class TEST_NAME : public util::test_base {
         cl::sycl::platform platformB = platformA;
         cl::sycl::platform platformC(selector);
         platformC = platformA;
-        cl::sycl::platform platformD(selector);
 
         if (!(platformA == platformB)) {
           FAIL(log,
@@ -135,16 +134,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log,
                "platform non-equality does not work correctly"
                "(copy assigned)");
-        }
-        if (platformC == platformD) {
-          FAIL(log,
-               "platform equality does not work correctly"
-               "(comparing same)");
-        }
-        if (!(platformC != platformD)) {
-          FAIL(log,
-               "platform non-equality does not work correctly"
-               "(comparing same)");
         }
       }
 
