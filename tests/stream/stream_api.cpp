@@ -16,15 +16,6 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/**
- * Function that streams a type using the cl::sycl::stream object.
- */
-// There no uses of this function in this file. Is this a dead code?
-template <typename T>
-void stream_type(cl::sycl::stream &os, T var) {
-  os << var;
-}
-
 class test_kernel_0;
 class test_kernel_1;
 class test_kernel_2;

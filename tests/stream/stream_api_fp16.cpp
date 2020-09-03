@@ -34,19 +34,18 @@ class TEST_NAME : public util::test_base {
       {
         auto testQueue = util::get_cts_object::queue();
 
-        if (testQueue.get_device().has_extension("cl_khr_fp16")) {
-          testQueue.submit([&](cl::sycl::handler &cgh) {
+        if (!testQueue.get_device().has_extension("cl_khr_fp16")) return;
 
-            cl::sycl::stream os(2048, 80, cgh);
+        testQueue.submit([&](cl::sycl::handler &cgh) {
+          cl::sycl::stream os(2048, 80, cgh);
 
-            cgh.single_task<class test_kernel>([=]() {
-              os << cl::sycl::half(0.2f);
-              os << cl::sycl::cl_half(0.3f);
-            });
+          cgh.single_task<class test_kernel>([=]() {
+            os << cl::sycl::half(0.2f);
+            os << cl::sycl::cl_half(0.3f);
           });
+        });
 
-          testQueue.wait_and_throw();
-        }
+        testQueue.wait_and_throw();
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
