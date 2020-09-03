@@ -15,20 +15,22 @@ if(DEFINED INTEL_SYCL_FLAGS)
     message("Intel SYCL: compiling SYCL using `${INTEL_SYCL_FLAGS}`")
 endif()
 
+set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;${INTEL_SYCL_FLAGS}")
+
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
+set_target_properties(INTEL_SYCL::Runtime PROPERTIES
+  INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
+  INTERFACE_COMPILE_OPTIONS   "${INTEL_SYCL_FLAGS}")
+
 if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
 #   The DPC++ compiler currently retains a requirement for certain OpenCL definitions when using CUDA. 
 #   The INTERFACE_LINK_OPTIONS definition is required, however the '-fsycl-device-code-split=' option 
 #   is not yet supported and has been removed.
     set_target_properties(INTEL_SYCL::Runtime PROPERTIES
-        INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
-        INTERFACE_COMPILE_OPTIONS   "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}"
-        INTERFACE_LINK_OPTIONS      "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}")
+        INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS}")
 else()
     set_target_properties(INTEL_SYCL::Runtime PROPERTIES
-        INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
-        INTERFACE_COMPILE_OPTIONS   "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}"
-        INTERFACE_LINK_OPTIONS      "-fsycl;-fsycl-device-code-split=per_source;-fsycl-targets=${INTEL_SYCL_TRIPLE};${INTEL_SYCL_FLAGS}")
+        INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS};-fsycl-device-code-split=per_source")
 endif()
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
