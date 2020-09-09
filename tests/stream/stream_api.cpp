@@ -16,20 +16,11 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/**
- * Function that streams a type using the cl::sycl::stream object.
- */
-template <typename T>
-void stream_type(cl::sycl::stream &os, T var) {
-  os << var;
-}
-
 class test_kernel_0;
 class test_kernel_1;
 class test_kernel_2;
 class test_kernel_3;
 class test_kernel_4;
-class test_kernel_5;
 
 /** test cl::sycl::stream interface
 */
@@ -249,25 +240,6 @@ class TEST_NAME : public util::test_base {
         });
 
         testQueue.wait_and_throw();
-      }
-
-      // Check stream operator for cl::sycl::half
-      {
-        auto testQueue = util::get_cts_object::queue();
-
-        if (testQueue.get_device().has_extension("cl_khr_fp16")) {
-          testQueue.submit([&](cl::sycl::handler &cgh) {
-
-            cl::sycl::stream os(2048, 80, cgh);
-
-            cgh.single_task<class test_kernel_5>([=]() {
-              os << cl::sycl::half(0.2f);
-              os << cl::sycl::cl_half(0.3f);
-            });
-          });
-
-          testQueue.wait_and_throw();
-        }
       }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
