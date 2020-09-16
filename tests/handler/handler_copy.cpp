@@ -182,15 +182,35 @@ struct type_helper<cl::sycl::vec<dataT, numElements>> {
 };
 
 template <typename dataT, int dims>
-class fill_kernel;
+struct scalar_init_op {
+  dataT value;
+  scalar_init_op(dataT value) : value(value) {}
+  dataT operator()(cl::sycl::id<dims>) const { return value; }
+};
 
 template <typename dataT, int dims>
+struct encode_index_init_op {
+  dataT operator()(cl::sycl::id<dims> id) const {
+    size_t result = 10000 * id[0];
+    if (dims > 1) result += 100 * id[1];
+    if (dims > 2) result += id[2];
+    // If dataT can't fit the value the result is implementation defined,
+    // and we may weaken the robustness of the test.
+    // However, it's still better than using a constant value throughout.
+    return type_helper<dataT>::make(result);
+  }
+};
+
+template <typename dataT, int dims, typename initOp>
+class fill_kernel;
+
+template <typename dataT, int dims, template <typename, int> class initOp>
 void fill_buffer(cl::sycl::queue& queue, cl::sycl::buffer<dataT, dims>& buf,
-                 dataT value) {
+                 initOp<dataT, dims> init_op) {
   queue.submit([&](cl::sycl::handler& cgh) {
     auto acc = buf.template get_access<mode_t::discard_write>(cgh);
-    cgh.parallel_for<fill_kernel<dataT, dims>>(
-        buf.get_range(), [=](cl::sycl::id<dims> id) { acc[id] = value; });
+    cgh.parallel_for<fill_kernel<dataT, dims, initOp<dataT, dims>>>(
+        buf.get_range(), [=](cl::sycl::id<dims> id) { acc[id] = init_op(id); });
   });
 }
 
@@ -260,9 +280,10 @@ class copy_test_context {
         host_shared_ptr(new dataT[numElems], std::default_delete<dataT[]>());
 
     for (size_t i = 0; i < numElems; ++i) {
-      srcBufHostMemory.get()[i] = hostCanary;
-      srcHostPtr.get()[i] = bufferInitValue;
-      dstHostPtr.get()[i] = hostCanary;
+      srcBufHostMemory.get()[i] = static_cast<dataT>(hostCanary);
+      srcHostPtr.get()[i] = encode_index_init_op<dataT, dim_src>{}(
+          reconstruct_index(srcBufRange, i));
+      dstHostPtr.get()[i] = static_cast<dataT>(hostCanary);
     }
 
     srcBuf = std::unique_ptr<buffer_src_t>(new buffer_src_t(
@@ -271,8 +292,8 @@ class copy_test_context {
             cl::sycl::property::buffer::use_mutex{srcBufHostMemoryMutex}}));
     dstBuf = std::unique_ptr<buffer_dst_t>(new buffer_dst_t(dstBufRange));
 
-    fill_buffer(queue, *srcBuf, bufferInitValue);
-    fill_buffer(queue, *dstBuf, deviceCanary);
+    fill_buffer(queue, *srcBuf, encode_index_init_op<dataT, dim_src>());
+    fill_buffer(queue, *dstBuf, scalar_init_op<dataT, dim_dst>(deviceCanary));
 
     queue.wait_and_throw();
   }
@@ -285,7 +306,8 @@ class copy_test_context {
     run_test_function(fn, lh);
 
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = bufferInitValue;
+      const auto expected = encode_index_init_op<dataT, dim_src>{}(
+          reconstruct_index(srcBufRange, i));
       const auto received = dstHostPtr.get()[i];
       if (!th::equal(received, expected)) {
         log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
@@ -304,7 +326,8 @@ class copy_test_context {
 
     std::lock_guard<cl::sycl::mutex_class> lock(srcBufHostMemoryMutex);
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = bufferInitValue;
+      const auto expected = encode_index_init_op<dataT, dim_src>{}(
+          reconstruct_index(srcBufRange, i));
       const auto received = srcBufHostMemory.get()[i];
       if (!th::equal(received, expected)) {
         log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
@@ -323,7 +346,8 @@ class copy_test_context {
     // TODO: Consider verifying directly on device.
     auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = bufferInitValue;
+      const auto expected = encode_index_init_op<dataT, dim_src>{}(
+          reconstruct_index(srcBufRange, i));
       const auto dstIndex = reconstruct_index(dstBufRange, i);
       const auto received = acc[dstIndex];
 
@@ -366,7 +390,6 @@ class copy_test_context {
  private:
   cl::sycl::queue& queue;
 
-  const dataT bufferInitValue = th::make(17);
   const dataT hostCanary = th::make(12345);
   const dataT deviceCanary = th::make(54321);
 
