@@ -89,6 +89,12 @@ class log_helper {
     return result;
   }
 
+  log_helper set_extra_info(const std::string& info) const {
+    auto result = *this;
+    result.info = info;
+    return result;
+  }
+
   log_helper set_op(const std::string& pattern) const {
     auto result = *this;
     result.pattern = pattern;
@@ -112,6 +118,7 @@ class log_helper {
   std::string modeDst = "(unknown mode)";
   std::string target = "(unknown target)";
   int line = __LINE__;
+  std::string info = "";
   std::string pattern = "";
 
   static std::string get_mode_string(mode_t mode) {
@@ -154,6 +161,9 @@ class log_helper {
     desc = std::regex_replace(desc, std::regex("\\$mode_src"), modeSrc);
     desc = std::regex_replace(desc, std::regex("\\$mode_dst"), modeDst);
     desc = std::regex_replace(desc, std::regex("\\$target"), target);
+    if (!info.empty()) {
+      desc += " [" + info + "]";
+    }
     return desc;
   }
 };
@@ -260,8 +270,25 @@ using id_helper = range_id_helper<cl::sycl::id, dims, 0>;
  * @brief The copy_test_context encapsulates all host and device data required
  * for testing, and provides utility functions for verifying the result
  * of the various explicit memory operations.
+ *
+ * Based on the provided template parameters, the copy_test_context generates
+ * appropriately sized buffers, copy ranges and offsets. If the dimensionality
+ * of the source and destination buffers doesn't match, it ensures that the same
+ * number of items will be copied regardless.
+ *
+ * @tparam dataT
+ * @tparam dim_src
+ * @tparam dim_dst
+ * @tparam strided_copy Whether copies should be strided, i.e., with an offset
+ * and range smaller than the source and/or destination buffer range.
+ * @tparam transposed_copy If dim_src == dim_dst, a transposed copy will
+ * generate a target buffer that has its coordinates flipped, e.g., instead of
+ * copying a range [4,8] to [4,8], it will copy [4,8] to [8,4]. If the source
+ * and target dimensions don't match, dimensions will be condensed in reverse
+ * order (see copy_test_context::setup_ranges).
  */
-template <typename dataT, int dim_src, int dim_dst>
+template <typename dataT, int dim_src, int dim_dst, bool strided_copy,
+          bool transposed_copy>
 class copy_test_context {
   using host_shared_ptr = cl::sycl::shared_ptr_class<dataT>;
   using buffer_src_t = cl::sycl::buffer<dataT, dim_src>;
@@ -300,18 +327,31 @@ class copy_test_context {
 
   /**
    * @brief Verifies a device to host copy.
+   *
+   * While the device source may be strided, the target host memory region is
+   * always dense.
    */
   template <typename test_fn>
   void verify_d2h_copy(test_fn fn, const log_helper& lh) const {
     run_test_function(fn, lh);
 
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = encode_index_init_op<dataT, dim_src>{}(
-          reconstruct_index(srcBufRange, i));
       const auto received = dstHostPtr.get()[i];
-      if (!th::equal(received, expected)) {
-        log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
-        return;
+
+      if (i < srcCopyRange.size()) {
+        const auto srcRelIdx = reconstruct_index(srcCopyRange, i);
+        const auto expected =
+            encode_index_init_op<dataT, dim_src>{}(srcCopyOffset + srcRelIdx);
+
+        if (!th::equal(received, expected)) {
+          log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
+          return;
+        }
+      } else {
+        if (!th::equal(received, hostCanary)) {
+          log_canary_violation(lh, cl::sycl::id<3>(i, 0, 0), received);
+          return;
+        }
       }
     }
   }
@@ -319,6 +359,10 @@ class copy_test_context {
   /**
    * @brief Verifies that the host memory backing the source buffer has been
    * updated correctly.
+   *
+   * Note that we don't check any canary values outside of the updated region
+   * (when using a ranged accessor) as a SYCL implementation is free to also
+   * update other parts of the host memory.
    */
   template <typename test_fn>
   void verify_update_host(test_fn fn, const log_helper& lh) const {
@@ -326,40 +370,94 @@ class copy_test_context {
 
     std::lock_guard<cl::sycl::mutex_class> lock(srcBufHostMemoryMutex);
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = encode_index_init_op<dataT, dim_src>{}(
-          reconstruct_index(srcBufRange, i));
-      const auto received = srcBufHostMemory.get()[i];
-      if (!th::equal(received, expected)) {
-        log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
-        return;
+      const auto idx = reconstruct_index(srcBufRange, i);
+      if (is_within_window(srcCopyOffset, srcCopyRange, idx)) {
+        const auto expected = encode_index_init_op<dataT, dim_src>{}(idx);
+        const auto received = srcBufHostMemory.get()[i];
+        if (!th::equal(received, expected)) {
+          log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
+          return;
+        }
       }
     }
   }
 
   /**
-   * @brief Verifies a host to device or device to device copy.
+   * @brief Verifies a host to device copy.
+   *
+   * While the device target may be strided, the source host memory region is
+   * always dense.
    */
   template <typename test_fn>
-  void verify_device_copy(test_fn fn, const log_helper& lh) {
+  void verify_h2d_copy(test_fn fn, const log_helper& lh) {
     run_test_function(fn, lh);
 
     // TODO: Consider verifying directly on device.
     auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
-      const auto expected = encode_index_init_op<dataT, dim_src>{}(
-          reconstruct_index(srcBufRange, i));
-      const auto dstIndex = reconstruct_index(dstBufRange, i);
-      const auto received = acc[dstIndex];
+      const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
+      const auto received = acc[dstAbsIdx];
+      if (is_within_window(dstCopyOffset, dstCopyRange, dstAbsIdx)) {
+        // Compute relative linear index within destination copy range.
+        const size_t relLinearIdx =
+            compute_relative_linear_id(dstCopyOffset, dstCopyRange, dstAbsIdx);
 
-      if (!th::equal(received, expected)) {
-        log_error(lh, id_helper<3>::cast(dstIndex), received, expected);
-        return;
+        // SYCL doesn't support strided H2D copies, so this is dense.
+        const auto expected = srcHostPtr.get()[relLinearIdx];
+
+        if (!th::equal(received, expected)) {
+          log_error(lh, id_helper<3>::cast(dstAbsIdx), received, expected);
+          return;
+        }
+      } else {
+        if (!th::equal(received, deviceCanary)) {
+          log_canary_violation(lh, id_helper<3>::cast(dstAbsIdx), received);
+          return;
+        }
       }
     }
   }
 
   /**
-   * @brief Verifies that the device buffer has been filled correctly.
+   * @brief Verifies a device to device copy.
+   */
+  template <typename test_fn>
+  void verify_d2d_copy(test_fn fn, const log_helper& lh) {
+    run_test_function(fn, lh);
+
+    // TODO: Consider verifying directly on device.
+    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
+    for (size_t i = 0; i < numElems; ++i) {
+      const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
+      const auto received = acc[dstAbsIdx];
+      if (is_within_window(dstCopyOffset, dstCopyRange, dstAbsIdx)) {
+        // Compute relative linear index within destination copy range.
+        const size_t relLinearIdx =
+            compute_relative_linear_id(dstCopyOffset, dstCopyRange, dstAbsIdx);
+
+        // Now compute relative index in source copy range.
+        const auto srcRelIdx = reconstruct_index(srcCopyRange, relLinearIdx);
+
+        // Convert to absolute source index and use to compute expected value.
+        const auto expected =
+            encode_index_init_op<dataT, dim_src>{}(srcCopyOffset + srcRelIdx);
+
+        if (!th::equal(received, expected)) {
+          log_error(lh, id_helper<3>::cast(dstAbsIdx), received, expected);
+          return;
+        }
+      } else {
+        if (!th::equal(received, deviceCanary)) {
+          log_canary_violation(lh, id_helper<3>::cast(dstAbsIdx), received);
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * @brief Verifies that the accessed device memory region has been filled
+   * correctly.
    *
    * @param fn
    * @param expected The value that was used to fill the region.
@@ -374,12 +472,25 @@ class copy_test_context {
     for (size_t i = 0; i < numElems; ++i) {
       const auto idx = reconstruct_index(dstBufRange, i);
       const auto received = acc[idx];
-      if (!th::equal(received, expected)) {
-        log_error(lh, id_helper<3>::cast(idx), received, expected);
-        return;
+      if (is_within_window(dstCopyOffset, dstCopyRange, idx)) {
+        if (!th::equal(received, expected)) {
+          log_error(lh, id_helper<3>::cast(idx), received, expected);
+          return;
+        }
+      } else {
+        if (!th::equal(received, deviceCanary)) {
+          log_canary_violation(lh, id_helper<3>::cast(idx), received);
+          return;
+        }
       }
     }
   }
+
+  cl::sycl::id<dim_src> getSrcCopyOffset() const { return srcCopyOffset; }
+  cl::sycl::id<dim_dst> getDstCopyOffset() const { return dstCopyOffset; }
+
+  cl::sycl::range<dim_src> getSrcCopyRange() const { return srcCopyRange; }
+  cl::sycl::range<dim_dst> getDstCopyRange() const { return dstCopyRange; }
 
   buffer_src_t getSrcBuf() const { return *srcBuf; }
   buffer_dst_t getDstBuf() const { return *dstBuf; }
@@ -395,6 +506,12 @@ class copy_test_context {
 
   cl::sycl::range<dim_src> srcBufRange = range_helper<dim_src>::make(0, 0, 0);
   cl::sycl::range<dim_dst> dstBufRange = range_helper<dim_dst>::make(0, 0, 0);
+
+  cl::sycl::id<dim_src> srcCopyOffset = id_helper<dim_src>::make(0, 0, 0);
+  cl::sycl::id<dim_dst> dstCopyOffset = id_helper<dim_dst>::make(0, 0, 0);
+
+  cl::sycl::range<dim_src> srcCopyRange = srcBufRange;
+  cl::sycl::range<dim_dst> dstCopyRange = dstBufRange;
 
   std::unique_ptr<buffer_src_t> srcBuf;
   std::unique_ptr<buffer_dst_t> dstBuf;
@@ -421,6 +538,26 @@ class copy_test_context {
     return range_helper<dim>::make(d0, d1, d2);
   }
 
+  template <int dim>
+  static size_t compute_relative_linear_id(cl::sycl::id<dim> offset,
+                                           cl::sycl::range<dim> range,
+                                           cl::sycl::id<dim> absIdx) {
+    const auto relIdx3 = id_helper<3>::cast(absIdx - offset);
+    const auto range3 = range_helper<3>::cast(range);
+    const size_t relLinearIdx = relIdx3[0] * range3[1] * range3[2] +
+                                relIdx3[1] * range3[2] + relIdx3[2];
+    return relLinearIdx;
+  }
+
+  template <int dim>
+  static bool is_within_window(cl::sycl::id<dim> windowOffset,
+                               cl::sycl::range<dim> windowRange,
+                               cl::sycl::id<dim> idx) {
+    return ((idx >= windowOffset == id_helper<dim>::make(true, true, true)) &&
+            (idx < windowOffset + windowRange ==
+             id_helper<dim>::make(true, true, true)));
+  }
+
   static void log_error(const log_helper& lh, cl::sycl::id<3> index,
                         dataT received, dataT expected) {
     std::stringstream ss;
@@ -431,17 +568,112 @@ class copy_test_context {
     lh.fail(ss.str());
   }
 
+  static void log_canary_violation(const log_helper& lh, cl::sycl::id<3> index,
+                                   dataT received) {
+    std::stringstream ss;
+    ss << "Canary violation at index ";
+    ss << "[" << index[0] << "," << index[1] << "," << index[2] << "]: ";
+    ss << "received " << th::value(received) << "\n";
+    lh.fail(ss.str());
+  }
+
+  /**
+   * @brief Sets up src and dst copy ranges (and offsets) in *interesting* ways.
+   *
+   * The basic mechanism is to first define the buffer range, copy range and
+   * offset (if doing a strided copy) for the "larger" dimension out of
+   * dim_src and dim_dst, where "larger" could also mean equal. Then, the
+   * larger ranges and offset are "condensed" into the smaller ones, so that the
+   * total number of items remains the same. For example, if the large buffer
+   * range is range<3>(3,4,2), a 2-dimensional small range will become
+   * range<2>(3,4*2 = 8).
+   *
+   * If the dimensions match, the ranges and offsets will be equal, unless
+   * transposed_copy is set, in which case the destination will be transposed.
+   */
   void setup_ranges() {
-    const auto elemsSrcPerDim = (dim_src == 1) ? 64 : (dim_src == 2) ? 8 : 4;
-    const auto elemsDstPerDim = (dim_dst == 1) ? 64 : (dim_dst == 2) ? 8 : 4;
+    constexpr auto dim_large = dim_src > dim_dst ? dim_src : dim_dst;
+    constexpr auto dim_small = dim_src <= dim_dst ? dim_src : dim_dst;
 
-    srcBufRange = range_helper<dim_src>::make(elemsSrcPerDim, elemsSrcPerDim,
-                                              elemsSrcPerDim);
-    dstBufRange = range_helper<dim_dst>::make(elemsDstPerDim, elemsDstPerDim,
-                                              elemsDstPerDim);
+    auto largeBufRange =
+        range_helper<3>::cast(range_helper<dim_large>::make(5, 7, 9));
+    auto smallBufRange = cl::sycl::range<3>(1, 1, 1);
 
-    assert(srcBufRange.size() == dstBufRange.size());
+    // Condense large range into small range so that both
+    // have the same size (= same number of items).
+    for (int d = 0; d < dim_large; ++d) {
+      if (transposed_copy) {
+        smallBufRange[std::min(d, dim_small - 1)] *=
+            largeBufRange[dim_large - d - 1];
+      } else {
+        smallBufRange[std::min(d, dim_small - 1)] *= largeBufRange[d];
+      }
+    }
+    assert(smallBufRange.size() == largeBufRange.size());
+
+    auto largeCopyRange = largeBufRange;
+    auto smallCopyRange = smallBufRange;
+
+    auto largeCopyOffset = cl::sycl::id<3>(0, 0, 0);
+    auto smallCopyOffset = cl::sycl::id<3>(0, 0, 0);
+
+    // When doing a strided copy, we simply add an offset of 1 in every large
+    // dimension, and reduce the copy range by 2 (resulting in an 1-item gap
+    // before and after every "line" of data). For the small dimension, some
+    // additional care has to be taken.
+    if (strided_copy) {
+      largeCopyOffset = id_helper<3>::cast(id_helper<dim_large>::make(1, 1, 1));
+      smallCopyOffset = id_helper<3>::cast(id_helper<dim_large>::make(1, 1, 1));
+
+      // We now need to compute the small offset and copy range in
+      // such a way that the same total number of items will be copied.
+      // For this we compute the difference in the number of items
+      // copied in the (potentially) condensed dimensions.
+
+      size_t condensedItems = 1;
+      size_t offsetCondensedItems = 1;
+      size_t condensedCopyCount = 1;
+      for (int d = dim_small - 1; d < dim_large; ++d) {
+        const auto i = transposed_copy ? dim_large - d - 1 : d;
+        condensedItems *= largeBufRange[i];
+        offsetCondensedItems *= largeBufRange[i] - largeCopyOffset[i];
+        condensedCopyCount *= largeBufRange[i] - 2 * largeCopyOffset[i];
+      }
+      smallCopyOffset[dim_small - 1] = condensedItems - offsetCondensedItems;
+
+      largeCopyRange -= range_helper<3>::cast(2 * largeCopyOffset);
+      smallCopyRange -= range_helper<3>::cast(2 * smallCopyOffset);
+      smallCopyRange[dim_small - 1] = condensedCopyCount;
+    }
+
+    if (dim_src > dim_dst) {
+      srcBufRange = range_helper<dim_src>::cast(largeBufRange);
+      dstBufRange = range_helper<dim_dst>::cast(smallBufRange);
+      srcCopyOffset = id_helper<dim_src>::cast(largeCopyOffset);
+      dstCopyOffset = id_helper<dim_dst>::cast(smallCopyOffset);
+      srcCopyRange = range_helper<dim_src>::cast(largeCopyRange);
+      dstCopyRange = range_helper<dim_dst>::cast(smallCopyRange);
+    } else {
+      dstBufRange = range_helper<dim_dst>::cast(largeBufRange);
+      srcBufRange = range_helper<dim_src>::cast(smallBufRange);
+      dstCopyOffset = id_helper<dim_dst>::cast(largeCopyOffset);
+      srcCopyOffset = id_helper<dim_src>::cast(smallCopyOffset);
+      dstCopyRange = range_helper<dim_dst>::cast(largeCopyRange);
+      srcCopyRange = range_helper<dim_src>::cast(smallCopyRange);
+    }
+
     numElems = srcBufRange.size();
+
+    assert(srcBufRange.size() > 0 && dstBufRange.size() > 0);
+    assert(srcBufRange.size() == dstBufRange.size());
+    assert(srcCopyRange.size() > 0 && dstCopyRange.size() > 0);
+    assert(srcCopyRange.size() == dstCopyRange.size());
+    assert((srcCopyOffset + srcCopyRange <=
+            id_helper<dim_src>::cast(srcBufRange)) ==
+           id_helper<dim_src>::make(true, true, true));
+    assert((dstCopyOffset + dstCopyRange <=
+            id_helper<dim_dst>::cast(dstBufRange)) ==
+           id_helper<dim_dst>::make(true, true, true));
   }
 
   template <typename test_fn>
@@ -462,15 +694,17 @@ class copy_test_context {
  *        on to be tested. This doesn't include functions that expect a write
  *        accessor.
  */
-template <typename dataT, int dim, mode_t mode_src, target_t target>
+template <typename dataT, int dim, mode_t mode_src, target_t target,
+          bool strided, bool transposed>
 void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_target(target);
   {
     // Check copy(accessor, shared_ptr_class)
-    copy_test_context<dataT, dim, dim> ctx(queue);
+    copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_d2h_copy(
         [&](cl::sycl::handler& cgh) {
-          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(cgh);
+          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
+              cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.copy(r, ctx.getDstHostPtr());
         },
         lh.set_line(__LINE__).set_op(
@@ -479,10 +713,11 @@ void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   }
   {
     // Check copy(accessor, dataT*)
-    copy_test_context<dataT, dim, dim> ctx(queue);
+    copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_d2h_copy(
         [&](cl::sycl::handler& cgh) {
-          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(cgh);
+          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
+              cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.copy(r, ctx.getDstHostPtr().get());
         },
         lh.set_line(__LINE__).set_op(
@@ -491,10 +726,11 @@ void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   }
   {
     // Check update_host(accessor)
-    copy_test_context<dataT, dim, dim> ctx(queue);
+    copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_update_host(
         [&](cl::sycl::handler& cgh) {
-          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(cgh);
+          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
+              cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.update_host(r);
         },
         lh.set_line(__LINE__).set_op(
@@ -507,15 +743,16 @@ void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
  *        on to be tested. This includes functions that expect a write accessor.
  */
 template <typename dataT, int dim_src, int dim_dst, mode_t mode_src,
-          mode_t mode_dst, target_t target>
+          mode_t mode_dst, target_t target, bool strided, bool transposed>
 void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_mode_dst(mode_dst).set_target(target);
   {
     // Check copy(shared_ptr_class, accessor)
-    copy_test_context<dataT, dim_src, dim_dst> ctx(queue);
-    ctx.verify_device_copy(
+    copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
+    ctx.verify_h2d_copy(
         [&](cl::sycl::handler& cgh) {
-          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(cgh);
+          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
+              cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.copy(ctx.getSrcHostPtr(), w);
         },
         lh.set_line(__LINE__).set_op(
@@ -524,10 +761,11 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   }
   {
     // Check copy(dataT*, accessor)
-    copy_test_context<dataT, dim_src, dim_dst> ctx(queue);
-    ctx.verify_device_copy(
+    copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
+    ctx.verify_h2d_copy(
         [&](cl::sycl::handler& cgh) {
-          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(cgh);
+          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
+              cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.copy(ctx.getSrcHostPtr().get(), w);
         },
         lh.set_line(__LINE__).set_op(
@@ -535,11 +773,13 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   }
   {
     // Check copy(accessor, accessor)
-    copy_test_context<dataT, dim_src, dim_dst> ctx(queue);
-    ctx.verify_device_copy(
+    copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
+    ctx.verify_d2d_copy(
         [&](cl::sycl::handler& cgh) {
-          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(cgh);
-          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(cgh);
+          auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
+              cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
+          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
+              cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.copy(r, w);
         },
         lh.set_line(__LINE__).set_op(
@@ -549,7 +789,7 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   {
     // Check fill(accessor, dataT)
     const auto pattern = type_helper<dataT>::make(117);
-    copy_test_context<dataT, dim_src, dim_dst> ctx(queue);
+    copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_fill(
         [&](cl::sycl::handler& cgh) {
           auto w = ctx.getDstBuf().template get_access<mode_dst, target>(cgh);
@@ -564,73 +804,104 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
 /**
  * @brief Tests all valid combinations of access modes and buffer targets.
  */
-template <typename dataT, int dim_src>
+template <typename dataT, int dim_src, bool strided, bool transposed>
 void test_all_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src);
   {
     constexpr auto target = target_t::global_buffer;
-    test_read_acc_copy_functions<dataT, dim_src, mode_t::read, target>(lh,
-                                                                       queue);
-    test_read_acc_copy_functions<dataT, dim_src, mode_t::read_write, target>(
-        lh, queue);
+    test_read_acc_copy_functions<dataT, dim_src, mode_t::read, target, strided,
+                                 transposed>(lh, queue);
+    test_read_acc_copy_functions<dataT, dim_src, mode_t::read_write, target,
+                                 strided, transposed>(lh, queue);
   }
   {
     constexpr auto target = target_t::constant_buffer;
-    test_read_acc_copy_functions<dataT, dim_src, mode_t::read, target>(lh,
-                                                                       queue);
+    test_read_acc_copy_functions<dataT, dim_src, mode_t::read, target, strided,
+                                 transposed>(lh, queue);
   }
 }
 
 /**
  * @brief Tests all valid combinations of source and destination access modes.
  */
-template <typename dataT, int dim_src, int dim_dst>
+template <typename dataT, int dim_src, int dim_dst, bool strided,
+          bool transposed>
 void test_all_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src).set_dim_dst(dim_dst);
   constexpr auto target = target_t::global_buffer;
 
+  constexpr auto st = strided;
+  constexpr auto tr = transposed;
+
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read,
-                                mode_t::write, target>(lh, queue);
+                                mode_t::write, target, st, tr>(lh, queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read,
-                                mode_t::read_write, target>(lh, queue);
+                                mode_t::read_write, target, st, tr>(lh, queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read,
-                                mode_t::discard_write, target>(lh, queue);
+                                mode_t::discard_write, target, st, tr>(lh,
+                                                                       queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read,
-                                mode_t::discard_read_write, target>(lh, queue);
+                                mode_t::discard_read_write, target, st, tr>(
+      lh, queue);
 
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read_write,
-                                mode_t::write, target>(lh, queue);
+                                mode_t::write, target, st, tr>(lh, queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read_write,
-                                mode_t::read_write, target>(lh, queue);
+                                mode_t::read_write, target, st, tr>(lh, queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read_write,
-                                mode_t::discard_write, target>(lh, queue);
+                                mode_t::discard_write, target, st, tr>(lh,
+                                                                       queue);
   test_write_acc_copy_functions<dataT, dim_src, dim_dst, mode_t::read_write,
-                                mode_t::discard_read_write, target>(lh, queue);
+                                mode_t::discard_read_write, target, st, tr>(
+      lh, queue);
 }
 
 /**
  * @brief Tests all valid combinations of source and destination dimensions.
  */
-template <typename dataT>
+template <typename dataT, bool strided, bool transposed>
 void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
+  const std::string strided_note = strided ? "strided" : "";
+  const std::string transposed_note = transposed ? "transposed" : "";
+  lh = lh.set_extra_info(strided_note + (strided && transposed ? ", " : "") +
+                         transposed_note);
+
+  constexpr auto st = strided;
+  constexpr auto tr = transposed;
+
+  test_all_read_acc_copy_functions<dataT, 1, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 1, 1, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 1, 2, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 1, 3, st, tr>(lh, queue);
+
+  test_all_read_acc_copy_functions<dataT, 2, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 2, 1, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 2, 2, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 2, 3, st, tr>(lh, queue);
+
+  test_all_read_acc_copy_functions<dataT, 3, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 3, 1, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 3, 2, st, tr>(lh, queue);
+  test_all_write_acc_copy_functions<dataT, 3, 3, st, tr>(lh, queue);
+}
+
+/**
+ * @brief Tests all combinations of unstrided, strided, transposed and
+ *        non-transposed explicit memory operations.
+ */
+template <typename dataT>
+void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_data_type<dataT>();
-  test_all_read_acc_copy_functions<dataT, 1>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 1, 1>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 1, 2>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 1, 3>(lh, queue);
 
-  test_all_read_acc_copy_functions<dataT, 2>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 2, 1>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 2, 2>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 2, 3>(lh, queue);
-
-  test_all_read_acc_copy_functions<dataT, 3>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 3, 1>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 3, 2>(lh, queue);
-  test_all_write_acc_copy_functions<dataT, 3, 3>(lh, queue);
+  test_all_dimensions<dataT, false, false>(lh, queue);
+  test_all_dimensions<dataT, true, false>(lh, queue);
+  test_all_dimensions<dataT, false, true>(lh, queue);
+  test_all_dimensions<dataT, true, true>(lh, queue);
 }
 
 /** tests the API for cl::sycl::handler
+ * TODO: Also test image accessors
+ * TODO: Also test copying between buffers of different data types.
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -648,19 +919,19 @@ class TEST_NAME : public util::test_base {
 
       log_helper lh(&log);
 
-      test_all_dimensions<char>(lh, queue);
-      test_all_dimensions<short>(lh, queue);
-      test_all_dimensions<int>(lh, queue);
-      test_all_dimensions<long>(lh, queue);
-      test_all_dimensions<float>(lh, queue);
-      test_all_dimensions<double>(lh, queue);
+      test_all_variants<char>(lh, queue);
+      test_all_variants<short>(lh, queue);
+      test_all_variants<int>(lh, queue);
+      test_all_variants<long>(lh, queue);
+      test_all_variants<float>(lh, queue);
+      test_all_variants<double>(lh, queue);
 
-      test_all_dimensions<cl::sycl::char2>(lh, queue);
-      test_all_dimensions<cl::sycl::short3>(lh, queue);
-      test_all_dimensions<cl::sycl::int4>(lh, queue);
-      test_all_dimensions<cl::sycl::long8>(lh, queue);
-      test_all_dimensions<cl::sycl::float8>(lh, queue);
-      test_all_dimensions<cl::sycl::double16>(lh, queue);
+      test_all_variants<cl::sycl::char2>(lh, queue);
+      test_all_variants<cl::sycl::short3>(lh, queue);
+      test_all_variants<cl::sycl::int4>(lh, queue);
+      test_all_variants<cl::sycl::long8>(lh, queue);
+      test_all_variants<cl::sycl::float8>(lh, queue);
+      test_all_variants<cl::sycl::double16>(lh, queue);
 
     } catch (const cl::sycl::exception& e) {
       log_exception(log, e);
