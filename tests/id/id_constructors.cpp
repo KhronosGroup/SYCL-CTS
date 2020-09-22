@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/common_by_value.h"
 
 #define TEST_NAME id_constructors
 

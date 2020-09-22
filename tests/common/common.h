@@ -323,54 +323,14 @@ inline void if_constexpr(const F& f) {
   }
 }
 
-template <typename T>
-void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
-                                       std::string test_name) {
-  /** check for reflexivity
-   */
-  if (!(a == a)) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator== reflexivity failed)")
-                  .c_str());
-  } else if (a != a) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator!= reflexivity failed)")
-                  .c_str());
-  }
-
-  /** check for symmetry
-   */
-  auto b = a;
-  if (!(a == b)) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator==, copy constructor)")
-                  .c_str());
-  } else if (!(b == a)) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator== symmetry failed)")
-                  .c_str());
-  } else if (a != b) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator!=, copy constructor)")
-                  .c_str());
-  } else if (b != a) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator!= symmetry failed)")
-                  .c_str());
-  }
-
-  /** check for transitivity
-   */
-  auto c = b;
-  if (!(a == c)) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator== transitivity failed)")
-                  .c_str());
-  } else if (a != c) {
-    FAIL(log, (test_name +
-               " is not equality-comparable (operator!= transitivity  failed)")
-                  .c_str());
-  }
+/**
+ * @brief Static cast scoped enum value to the underlying type
+ */
+template <typename enumT>
+constexpr auto to_integral(enumT const& value)
+  -> typename std::enable_if<std::is_enum<enumT>::value,
+                             typename std::underlying_type<enumT>::type>::type {
+    return static_cast<typename std::underlying_type<enumT>::type>(value);
 }
 
 /**
