@@ -7,66 +7,14 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../nd_item/nd_item_barrier_common.h"
 
 #define TEST_NAME nd_item_local_barrier
 
 namespace nd_item_local_barrier__ {
 using namespace sycl_cts;
 
-class local_barrier_kernel;
-void test_barrier(util::logger &log, cl::sycl::queue &queue) {
-  /* set workspace size */
-  const int globalSize = 64;
-  const int localSize = 2;
-
-  /* allocate and assign host data */
-  std::unique_ptr<int> data(new int[globalSize]);
-
-  for (int i = 0; i < globalSize; ++i) data.get()[i] = i;
-
-  /* init ranges*/
-  cl::sycl::range<1> globalRange(globalSize);
-  cl::sycl::range<1> localRange(localSize);
-  cl::sycl::nd_range<1> NDRange(globalRange, localRange);
-
-  /* run kernel to swap adjacent work item's global id*/
-  {
-    cl::sycl::buffer<int, 1> buf(data.get(), globalRange);
-
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto accGlobal = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
-          localScratch(localRange, cgh);
-
-      cgh.parallel_for<class local_barrier_kernel>(
-          NDRange, [=](cl::sycl::nd_item<1> item) {
-            int idx = (int)item.get_global_id(0);
-            int pos = idx & 1;
-            int opp = pos ^ 1;
-
-            localScratch[pos] = accGlobal[idx];
-
-            item.barrier(cl::sycl::access::fence_space::local_space);
-
-            accGlobal[idx] = localScratch[opp];
-          });
-    });
-  }
-
-  /* check correct results returned*/
-  bool passed = true;
-  for (int i = 0; i < globalSize; ++i) {
-    if (i % 2 == 0)
-      passed &= data.get()[i] == (i + 1);
-    else
-      passed &= data.get()[i] == (i - 1);
-  }
-
-  if (!passed) {
-    FAIL(log, "local barrier failed");
-  }
-}
+class local_barrier_kernel_fence;
 
 /** test cl::sycl::nd_item local barrier
 */
@@ -86,7 +34,20 @@ class TEST_NAME : public util::test_base {
     try {
       auto cmdQueue = util::get_cts_object::queue();
 
-      test_barrier(log, cmdQueue);
+      const auto barrierCall = [](cl::sycl::nd_item<1> item) {
+          item.barrier(cl::sycl::access::fence_space::local_space);
+        };
+
+      // Verify local barrier works as fence for local address space
+      {
+        const bool passed =
+            test_barrier_local_space<local_barrier_kernel_fence>(
+                log, cmdQueue, barrierCall);
+
+        if (!passed) {
+          FAIL(log, "local barrier failed for local address space");
+        }
+      }
 
       cmdQueue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
