@@ -16,9 +16,9 @@ using namespace sycl_cts;
 
 void no_delete(void *) {}
 
-template <int dims>
+template <int dims, typename AllocatorT>
 inline void check_constructed_correctly(util::logger &log,
-                                        cl::sycl::image<dims> &img,
+                                        cl::sycl::image<dims, AllocatorT> &img,
                                         int numElems, unsigned int elementSize,
                                         bool &combinationSuccess) {
   // Check get_size()
@@ -32,7 +32,7 @@ inline void check_constructed_correctly(util::logger &log,
   }
 }
 
-template <int dims>
+template <typename AllocatorT, int dims>
 void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
                                 cl::sycl::range<dims> &r, int numElems,
                                 unsigned int elementSize,
@@ -45,8 +45,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const property_list& = {})
    */
   {
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(imageHostPtr, channelOrder, channelType, r);
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(imageHostPtr, channelOrder, channelType, r);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -55,7 +55,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              image_channel_type, const range<dims>&, const property_list&)
    */
   {
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         imageHostPtr, channelOrder, channelType, r, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -66,8 +66,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const property_list& = {})
    */
   {
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         imageHostPtr, channelOrder, channelType, r, imgAlloc);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -78,20 +78,21 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const property_list&)
    */
   {
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         imageHostPtr, channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
+
   /* Constructor (const void*, image_channel_order,
    *              image_channel_type, const range<dims>&,
    *              const property_list& = {})
    */
   {
     const auto constHostPtr = imageHostPtr;
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(constHostPtr, channelOrder, channelType, r);
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(constHostPtr, channelOrder, channelType, r);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -101,7 +102,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    */
   {
     const auto constHostPtr = imageHostPtr;
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         constHostPtr, channelOrder, channelType, r, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -113,8 +114,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    */
   {
     const auto constHostPtr = imageHostPtr;
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         constHostPtr, channelOrder, channelType, r, imgAlloc);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -126,8 +127,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    */
   {
     const auto constHostPtr = imageHostPtr;
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         constHostPtr, channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -140,8 +141,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
   {
     auto hostPointer =
         cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(hostPointer, channelOrder, channelType, r);
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(hostPointer, channelOrder, channelType, r);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -152,7 +153,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
   {
     auto hostPointer =
         cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(hostPointer, channelOrder,
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(hostPointer, channelOrder,
                                                       channelType, r, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -163,10 +164,10 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const property_list& = {})
    */
   {
-    cl::sycl::image_allocator imgAlloc;
+    AllocatorT imgAlloc;
     auto hostPointer =
         cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(hostPointer, channelOrder,
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(hostPointer, channelOrder,
                                                       channelType, r, imgAlloc);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -177,10 +178,10 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const property_list&)
    */
   {
-    cl::sycl::image_allocator imgAlloc;
+    AllocatorT imgAlloc;
     auto hostPointer =
         cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-    cl::sycl::image<dims> img = cl::sycl::image<dims>(
+    cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
         hostPointer, channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
@@ -190,8 +191,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const range<dims>&, const property_list& = {})
    */
   {
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(channelOrder, channelType, r);
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -200,8 +201,8 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const range<dims>&, const property_list&)
    */
   {
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(channelOrder, channelType, r, propList);
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -210,9 +211,9 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const range<dims>&, allocator, const property_list& = {})
    */
   {
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(channelOrder, channelType, r, imgAlloc);
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, imgAlloc);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
@@ -221,15 +222,15 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    *              const range<dims>&, allocator, const property_list&)
    */
   {
-    cl::sycl::image_allocator imgAlloc;
-    cl::sycl::image<dims> img =
-        cl::sycl::image<dims>(channelOrder, channelType, r, imgAlloc, propList);
+    AllocatorT imgAlloc;
+    cl::sycl::image<dims, AllocatorT> img =
+        cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
                                 combinationSuccess);
   }
 }
 
-template <int dims>
+template <typename AllocatorT, int dims>
 struct test_constructors_with_pitch {
   test_constructors_with_pitch(util::logger &log, void *imageHostPtr,
                                cl::sycl::range<dims> &r, int numElems,
@@ -244,7 +245,7 @@ struct test_constructors_with_pitch {
      *              const range<dims - 1>&, const property_list& = {})
      */
     {
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           imageHostPtr, channelOrder, channelType, r, *pitch);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -255,7 +256,7 @@ struct test_constructors_with_pitch {
      *              const range<dims - 1>&, const property_list&)
      */
     {
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           imageHostPtr, channelOrder, channelType, r, *pitch, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -267,8 +268,8 @@ struct test_constructors_with_pitch {
      *              const property_list& = {})
      */
     {
-      cl::sycl::image_allocator imgAlloc;
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      AllocatorT imgAlloc;
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           imageHostPtr, channelOrder, channelType, r, *pitch, imgAlloc);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -279,9 +280,9 @@ struct test_constructors_with_pitch {
      *              const range<dims - 1>&, allocator, const property_list&)
      */
     {
-      cl::sycl::image_allocator imgAlloc;
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(imageHostPtr, channelOrder, channelType, r,
+      AllocatorT imgAlloc;
+      cl::sycl::image<dims, AllocatorT> img =
+          cl::sycl::image<dims, AllocatorT>(imageHostPtr, channelOrder, channelType, r,
                                 *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -294,7 +295,7 @@ struct test_constructors_with_pitch {
     {
       auto hostPointer =
           cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -307,7 +308,7 @@ struct test_constructors_with_pitch {
     {
       auto hostPointer =
           cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -319,10 +320,10 @@ struct test_constructors_with_pitch {
      *              const property_list& = {})
      */
     {
-      cl::sycl::image_allocator imgAlloc;
+      AllocatorT imgAlloc;
       auto hostPointer =
           cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch, imgAlloc);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -333,11 +334,11 @@ struct test_constructors_with_pitch {
      *              const range<dims - 1>&, allocator, const property_list&)
      */
     {
-      cl::sycl::image_allocator imgAlloc;
+      AllocatorT imgAlloc;
       auto hostPointer =
           cl::sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(hostPointer, channelOrder, channelType, r,
+      cl::sycl::image<dims, AllocatorT> img =
+          cl::sycl::image<dims, AllocatorT>(hostPointer, channelOrder, channelType, r,
                                 *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -348,8 +349,8 @@ struct test_constructors_with_pitch {
      *              const property_list& = {})
      */
     {
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(channelOrder, channelType, r, *pitch);
+      cl::sycl::image<dims, AllocatorT> img =
+          cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, *pitch);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
@@ -359,8 +360,8 @@ struct test_constructors_with_pitch {
      *              const property_list&)
      */
     {
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(channelOrder, channelType, r, *pitch, propList);
+      cl::sycl::image<dims, AllocatorT> img =
+          cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, *pitch, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
@@ -370,9 +371,9 @@ struct test_constructors_with_pitch {
      *              const property_list& = {})
      */
     {
-      cl::sycl::image_allocator imgAlloc;
-      cl::sycl::image<dims> img =
-          cl::sycl::image<dims>(channelOrder, channelType, r, *pitch, imgAlloc);
+      AllocatorT imgAlloc;
+      cl::sycl::image<dims, AllocatorT> img =
+          cl::sycl::image<dims, AllocatorT>(channelOrder, channelType, r, *pitch, imgAlloc);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
     }
@@ -382,8 +383,8 @@ struct test_constructors_with_pitch {
      *              const property_list&)
      */
     {
-      cl::sycl::image_allocator imgAlloc;
-      cl::sycl::image<dims> img = cl::sycl::image<dims>(
+      AllocatorT imgAlloc;
+      cl::sycl::image<dims, AllocatorT> img = cl::sycl::image<dims, AllocatorT>(
           channelOrder, channelType, r, *pitch, imgAlloc, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
                                   combinationSuccess);
@@ -391,8 +392,8 @@ struct test_constructors_with_pitch {
   }
 };
 
-template <>
-struct test_constructors_with_pitch<1> {
+template <typename AllocatorT>
+struct test_constructors_with_pitch<AllocatorT, 1> {
   test_constructors_with_pitch(util::logger &log, void *imageHostPtr,
                                cl::sycl::range<1> &r, int numElems,
                                unsigned int elementSize,
@@ -440,7 +441,7 @@ class image_ctors {
     // For each channel order
     for (itOrder = 0; itOrder < MINIMUM_CHANNEL_ORDERS; ++itOrder) {
       // Set up the test set for each channel separately
-      auto testSet = get_test_set_minimum(g_channelOrderCount[itOrder].order);
+      auto testSet = get_test_set_full(g_channelOrderCount[itOrder].order);
 
       // Get number of channels
       const auto channelOrder = testSet.order;
@@ -466,13 +467,21 @@ class image_ctors {
         void *imageHost2Ptr = static_cast<void *>(imageHost2.data());
 
         // Test all constructors that don't take a pitch
-        test_constructors_no_pitch(log, imageHostPtr, r, numElems, elementSize,
+        test_constructors_no_pitch<cl::sycl::image_allocator>(log, imageHostPtr, r, numElems, elementSize,
+                                   channelOrder, channelType,
+                                   combinationSuccess, propList);
+
+        test_constructors_no_pitch<std::allocator<cl::sycl::byte>>(log, imageHostPtr, r, numElems, elementSize,
                                    channelOrder, channelType,
                                    combinationSuccess, propList);
 
         // Test all constructors that take a pitch
         if (pitch != nullptr) {
-          test_constructors_with_pitch<dims>(
+          test_constructors_with_pitch<cl::sycl::image_allocator, dims>(
+              log, imageHostPtr, r, numElems, elementSize, channelOrder,
+              channelType, pitch, combinationSuccess, propList);
+
+          test_constructors_with_pitch<std::allocator<cl::sycl::byte>, dims>(
               log, imageHostPtr, r, numElems, elementSize, channelOrder,
               channelType, pitch, combinationSuccess, propList);
         }
