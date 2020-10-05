@@ -8,7 +8,7 @@
 
 #include "stream_api_common.h"
 
-#define TEST_NAME stream_api_fp16
+#define TEST_NAME stream_api_fp64
 
 namespace TEST_NAMESPACE {
 
@@ -30,23 +30,23 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      // Check stream operator for cl::sycl::half
-      {
-        auto testQueue = util::get_cts_object::queue();
+      // Check stream operator for cl::sycl::cl_double and double
+      auto testQueue = util::get_cts_object::queue();
 
-        if (!testQueue.get_device().has_extension("cl_khr_fp16")) return;
+      if (!testQueue.get_device().has_extension("cl_khr_fp64")) return;
 
-        testQueue.submit([&](cl::sycl::handler &cgh) {
-          cl::sycl::stream os(2048, 80, cgh);
+      testQueue.submit([&](cl::sycl::handler &cgh) {
 
-          cgh.single_task<class test_kernel>([=]() {
-            check_all_vec_dims(os, cl::sycl::half(0.2f));
-            check_all_vec_dims(os, cl::sycl::cl_half(0.3f));
-          });
+        cl::sycl::stream os(2048, 80, cgh);
+
+        cgh.single_task<class test_kernel>([=]() {
+          check_all_vec_dims(os, double(5.5));
+          check_all_vec_dims(os, cl::sycl::cl_double(5.5));
         });
+      });
 
-        testQueue.wait_and_throw();
-      }
+      testQueue.wait_and_throw();
+      
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
