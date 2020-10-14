@@ -792,7 +792,8 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_fill(
         [&](cl::sycl::handler& cgh) {
-          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(cgh);
+          auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
+              cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.fill(w, pattern);
         },
         pattern,
