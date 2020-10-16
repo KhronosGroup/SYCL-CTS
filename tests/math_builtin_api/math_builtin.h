@@ -9,12 +9,87 @@
 #ifndef CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
 #define CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
 
+#include "../../util/math_reference.h"
+#include <limits>
+#include <cfloat>
+
 template <int T>
 class kernel;
 
 inline cl::sycl::queue makeQueueOnce() {
   static cl::sycl::queue q = sycl_cts::util::get_cts_object::queue();
   return q;
+}
+
+template <typename T>
+T eps() {
+  return std::numeric_limits<T>::epsilon();
+}
+
+template <>
+inline cl::sycl::half eps<cl::sycl::half>() {
+  return static_cast<cl::sycl::half>(FLT_EPSILON * powf(2.0f, 13.0f));
+}
+
+template <typename T>
+T min_t() {
+  return std::numeric_limits<T>::min();
+}
+
+template <>
+inline cl::sycl::half min_t<cl::sycl::half>() {
+  return static_cast<cl::sycl::half>(powf(2.0f, -14.0f));
+}
+
+template <typename T>
+typename std::enable_if<std::is_floating_point<T>::value
+                      || std::is_same<cl::sycl::half, T>::value, bool>::type
+                      verify(sycl_cts::util::logger &log, T a, T b) {
+  return std::fabs(a - b) <= eps<T>() * std::fabs(a + b)
+                        // if result is undefined according to spec,
+                        // reference function for float numbers returns NAN
+            || std::fabs(a - b) < min_t<T>() || std::isnan(b);
+}
+
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, bool>::type
+                      verify(sycl_cts::util::logger &log, T a, T b) {
+  return a == b;
+}
+
+template <typename T, int N>
+bool verify(sycl_cts::util::logger &log,cl::sycl::vec<T, N> a,
+                                        cl::sycl::vec<T, N> b) {
+  for (int i = 0; i < sycl_cts::math::numElements(a); i++)
+    if (!verify(log, getElement(a, i), getElement(b, i)))
+      return false;
+  return true;
+}
+
+template <int N, typename returnT, typename funT>
+void check_function(sycl_cts::util::logger &log, funT fun, returnT ref) {
+  cl::sycl::range<1> ndRng(1);
+  returnT *kernelResult = new returnT[1];
+  auto testQueue = makeQueueOnce();
+  try {
+    cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
+    testQueue.submit([&](cl::sycl::handler &h) {
+    auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
+        h.single_task<kernel<N>>([=](){
+        resultPtr[0] = fun();
+        });
+    });
+
+  } catch (const cl::sycl::exception &e) {
+      log_exception(log, e);
+      cl::sycl::string_class errorMsg = "tests case: " + std::to_string(N) +
+          " a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      FAIL(log, errorMsg.c_str());
+  }
+
+  if(!verify(log, kernelResult[0], ref))
+    FAIL(log, "tests case: " + std::to_string(N) +". Correctness check failed.");
+  delete[] kernelResult;
 }
 
 template <int T, typename returnT, typename funT>

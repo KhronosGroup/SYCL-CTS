@@ -21,6 +21,13 @@ test_case_templates = { "private" : ("\n\n{\n"
                     "$FUNCTION_CALL"
                     "}, $DATA);\n}\n") }
 
+test_case_templates_check = { "private" : ("\n\n{\n"
+                    "$REFERENCE"
+                    "check_function<$TEST_ID, $RETURN_TYPE>(log, \n"
+                    "[=](){\n"
+                    "$FUNCTION_CALL"
+                    "}, ref);\n}\n")}
+
 def generate_value(base_type, dim, unsigned):
     val = ""
     for i in range(dim):
@@ -81,11 +88,11 @@ def generate_arguments(types, sig, memory):
     for arg in sig.arg_types:
         # Get argument type.
         arg_type = extract_type(types[arg])
-        
+
         # Create argument name.
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
-        
+
         # Identify whether aegument is a pointer.
         is_pointer = False
         # Value 0 in pntr_indx is reserved for the return type.
@@ -97,13 +104,12 @@ def generate_arguments(types, sig, memory):
             current_arg = generate_multi_ptr(arg_name, arg_type, arg_index, memory)
         else:
             current_arg = generate_variable(arg_name, arg_type, arg_index)
-        
+
         arg_src += current_arg
         arg_index += 1
     return (arg_names, arg_src)
 
-def generate_function_call(types, sig, memory):
-    (arg_names, arg_src) = generate_arguments(types, sig, memory)
+def generate_function_call(sig, arg_names, arg_src):
     fc = arg_src
     fc += "return " + sig.namespace + "::" + sig.name + "("
     for arg_n in arg_names:
@@ -111,9 +117,19 @@ def generate_function_call(types, sig, memory):
     fc = fc[:-1] + ");\n"
     return fc
 
-def generate_test_case(test_id, types, sig, memory):
-    testCaseSource = test_case_templates[memory]
+def generate_reference(sig, arg_names, arg_src):
+    fc = arg_src
+    fc += "$RETURN_TYPE ref = reference::" + sig.name + "("
+    for arg_n in arg_names:
+        fc += arg_n + ","
+    fc = fc[:-1] + ");\n"
+    return fc
+
+def generate_test_case(test_id, types, sig, memory, check):
+    testCaseSource = test_case_templates_check[memory] if check else test_case_templates[memory]
     testCaseId = str(test_id)
+    (arg_names, arg_src) = generate_arguments(types, sig, memory)
+    testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
     testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type)
     if memory != "private":
@@ -129,19 +145,19 @@ def generate_test_case(test_id, types, sig, memory):
         if memory == "global":
             accessorType = "cl::sycl::accessor<" + pointerType + ", 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>"
         testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)
-    testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(types, sig, memory))
+    testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(sig, arg_names, arg_src))
     return testCaseSource
 
-def generate_test_cases(test_id, types, sig_list):
+def generate_test_cases(test_id, types, sig_list, check):
     random.seed(0)
     test_source = ""
     for sig in sig_list:
-        test_source += generate_test_case(test_id, types, sig, "private")
+        test_source += generate_test_case(test_id, types, sig, "private", check)
         test_id += 1
         if sig.pntr_indx:#If the signature contains a pointer argument.
-            test_source += generate_test_case(test_id, types, sig, "local")
+            test_source += generate_test_case(test_id, types, sig, "local", check)
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "global")
+            test_source += generate_test_case(test_id, types, sig, "global", check)
             test_id += 1
     return test_source
 

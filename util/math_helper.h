@@ -19,6 +19,25 @@ namespace sycl_cts {
  */
 namespace math {
 
+template <typename T, int N, typename funT>
+cl::sycl::vec<T, N> vector_helper_1arg(cl::sycl::vec<T, N> a, funT fun) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, fun(getElement<T, N>(a, i)));
+  }
+  return res;
+}
+
+template <typename T, int N, typename funT>
+cl::sycl::vec<T, N> vector_helper_2arg(cl::sycl::vec<T, N> a,
+                              cl::sycl::vec<T, N> b, funT fun) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, fun(getElement<T, N>(a, i), getElement<T, N>(b, i)));
+  }
+  return res;
+}
+
 /* cast an integer to a float */
 float int_to_float(uint32_t x);
 
@@ -44,6 +63,17 @@ int numElements(const cl::sycl::int3 &);
 int numElements(const cl::sycl::int4 &);
 int numElements(const cl::sycl::int8 &);
 int numElements(const cl::sycl::int16 &);
+
+template <typename T>
+int numElements(const cl::sycl::vec<T, 2> &) { return 2; }
+template <typename T>
+int numElements(const cl::sycl::vec<T, 3> &) { return 3; }
+template <typename T>
+int numElements(const cl::sycl::vec<T, 4> &) { return 4; }
+template <typename T>
+int numElements(const cl::sycl::vec<T, 8> &) { return 8; }
+template <typename T>
+int numElements(const cl::sycl::vec<T, 16> &) { return 16; }
 
 /* extract an individual elements */
 float getElement(const float &f, int ix);
