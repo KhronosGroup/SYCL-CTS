@@ -69,14 +69,14 @@ bool verify(sycl_cts::util::logger &log,cl::sycl::vec<T, N> a,
 template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger &log, funT fun, returnT ref) {
   cl::sycl::range<1> ndRng(1);
-  returnT *kernelResult = new returnT[1];
+  std::unique_ptr<returnT[]> kernelResult(new returnT[1]);
   auto testQueue = makeQueueOnce();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
+    cl::sycl::buffer<returnT, 1> buffer(kernelResult.get(), ndRng);
     testQueue.submit([&](cl::sycl::handler &h) {
     auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
-        h.single_task<kernel<N>>([=](){
-        resultPtr[0] = fun();
+        h.single_task<kernel<N>>([=]() {
+          resultPtr[0] = fun();
         });
     });
 
@@ -89,7 +89,6 @@ void check_function(sycl_cts::util::logger &log, funT fun, returnT ref) {
 
   if(!verify(log, kernelResult[0], ref))
     FAIL(log, "tests case: " + std::to_string(N) +". Correctness check failed.");
-  delete[] kernelResult;
 }
 
 template <int T, typename returnT, typename funT>
