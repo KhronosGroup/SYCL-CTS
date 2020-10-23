@@ -24,10 +24,17 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
 
-    if(makeQueueOnce().get_device().has_extension("cl_khr_fp64")){
-      check_type_and_vec<double>(log);
-      check_type_and_vec<cl::sycl::cl_double>(log);
-    }
+    auto queue = util::get_cts_object::queue();
+
+    if (!queue.get_device().has_extension("cl_khr_fp64")) {
+        log.note(
+            "Device does not support double precision floating point "
+            "operations");
+        return;
+      }
+
+    check_type_and_vec<double>(log);
+    check_type_and_vec<cl::sycl::cl_double>(log);
   }
 };
 
