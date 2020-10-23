@@ -236,8 +236,8 @@ class TEST_NAME : public util::test_base {
         // nd_item is not default constructible, store two objects into the array
         static constexpr size_t numItems = 2;
         using item_array_t = std::array<cl::sycl::nd_item<numDims>, numItems>;
-        char rawItems[sizeof(item_array_t)];
-        auto& items = *reinterpret_cast<item_array_t*>(rawItems);
+        alignas(alignof(item_array_t)) char rawItems[sizeof(item_array_t)];
+        auto& items = reinterpret_cast<item_array_t&>(rawItems);
 
         store_nd_item_instances<nd_item_setup_kernel<numDims>>(items);
 
