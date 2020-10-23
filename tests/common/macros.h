@@ -71,13 +71,8 @@ inline void log_exception(sycl_cts::util::logger &log,
 }
 
 /* helper function for test failure cases */
-inline bool fail_proxy(sycl_cts::util::logger &log, const char *msg, int line) {
-  log.fail(msg, line);
-  return false;
-}
-
-inline bool fail_proxy(sycl_cts::util::logger &log,
-                       const cl::sycl::string_class &msg, int line) {
+template <typename string_t>
+inline bool fail_proxy(sycl_cts::util::logger &log, string_t&& msg, int line) {
   log.fail(msg, line);
   return false;
 }
