@@ -24,15 +24,15 @@ namespace {
  */
 template <typename T>
 void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
-                                       const std::string& test_name) {
+                                       const std::string& testName) {
   /** check for reflexivity
    */
   if (!(a == a)) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator== reflexivity failed)")
                   .c_str());
   } else if (a != a) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator!= reflexivity failed)")
                   .c_str());
   }
@@ -42,19 +42,19 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
   auto b = a;
   const auto& bReadOnly = b; // force const-correctness
   if (!(a == bReadOnly)) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator==, copy constructor)")
                   .c_str());
   } else if (!(bReadOnly == a)) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator== symmetry failed)")
                   .c_str());
   } else if (a != bReadOnly) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator!=, copy constructor)")
                   .c_str());
   } else if (bReadOnly != a) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator!= symmetry failed)")
                   .c_str());
   }
@@ -64,11 +64,11 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
   auto c = b;
   const auto& cReadOnly = c; // force const-correctness
   if (!(a == cReadOnly)) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator== transitivity failed)")
                   .c_str());
   } else if (a != cReadOnly) {
-    FAIL(log, (test_name +
+    FAIL(log, (testName +
                " is not equality-comparable (operator!= transitivity  failed)")
                   .c_str());
   }
