@@ -55,7 +55,7 @@ namespace {
         my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
                                         stride);
         });
-});
+    });
 
   }
 
