@@ -13,8 +13,8 @@
 
 #include "common.h"
 
-#include <string>
 #include <array>
+#include <string>
 #include <type_traits>
 
 namespace {
