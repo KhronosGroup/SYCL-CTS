@@ -33,7 +33,11 @@ class TEST_NAME : public util::test_base {
       // Check stream operator for cl::sycl::cl_double and double
       auto testQueue = util::get_cts_object::queue();
 
-      if (!testQueue.get_device().has_extension("cl_khr_fp64")) return;
+      if (!testQueue.get_device().has_extension("cl_khr_fp64")) {
+        log.note(
+            "Device does not support double precision floating point operations");
+        return;
+      }
 
       testQueue.submit([&](cl::sycl::handler &cgh) {
 
@@ -46,7 +50,7 @@ class TEST_NAME : public util::test_base {
       });
 
       testQueue.wait_and_throw();
-      
+
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
