@@ -24,7 +24,7 @@ namespace {
  */
 template <typename T>
 void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
-                                       std::string test_name) {
+                                       const std::string& test_name) {
   /** check for reflexivity
    */
   if (!(a == a)) {
@@ -105,7 +105,7 @@ public:
   template <typename kernelT>
   static void check_on_kernel(sycl_cts::util::logger& log,
                               const std::array<T, 2>& items,
-                              std::string testName) {
+                              const std::string& testName) {
     // Store comparison results from kernel into a success array
     success_array_t success;
     std::fill(std::begin(success), std::end(success), false);
