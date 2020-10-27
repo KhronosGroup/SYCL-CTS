@@ -26,11 +26,11 @@ class TEST_NAME : public util::test_base {
 
     auto queue = util::get_cts_object::queue();
 
-    if (!queue().get_device().has_extension("cl_khr_fp16")) {
-        log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
+    if (!queue.get_device().has_extension("cl_khr_fp16")) {
+      log.note(
+          "Device does not support half precision floating point operations");
+      return;
+    }
 
     check_type_and_vec<cl::sycl::half>(log);
     check_type_and_vec<cl::sycl::cl_half>(log);
