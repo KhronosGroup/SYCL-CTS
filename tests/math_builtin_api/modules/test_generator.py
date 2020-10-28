@@ -82,11 +82,11 @@ def generate_arguments(types, sig, memory):
     for arg in sig.arg_types:
         # Get argument type.
         arg_type = extract_type(types[arg])
-        
+
         # Create argument name.
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
-        
+
         # Identify whether aegument is a pointer.
         is_pointer = False
         # Value 0 in pntr_indx is reserved for the return type.
@@ -98,7 +98,7 @@ def generate_arguments(types, sig, memory):
             current_arg = generate_multi_ptr(arg_name, arg_type, arg_index, memory)
         else:
             current_arg = generate_variable(arg_name, arg_type, arg_index)
-        
+
         arg_src += current_arg
         arg_index += 1
     return (arg_names, arg_src)
@@ -154,9 +154,8 @@ def generate_test_cases(test_id, types, sig_list):
 # We attempt to find a combination that is part of the current generic type (e.g. floatn)
 
 def attempt_match(runner, var_type, base_type, dim, unsigned, current_type):
-    ct_keys = list(current_type.keys())
     ct_part_keys = []
-    for t in ct_keys:
+    for t in current_type.keys():
         ct_part_keys.append(t[:-1])
     # Change sign.
     if (var_type, base_type, dim, not unsigned) in ct_part_keys:
@@ -189,12 +188,12 @@ def expand_signature(runner, types, signature):
     # Iterate over all basic types
     # Try to match all function types (return type and argument types).
     all_types = sycl_types.create_basic_types()
-    for name in list(all_types.keys()):
+    for name in all_types.keys():
         match = False
         nomatch = []
         index = 0
         for ct in current_types:
-            ct_keys = list(ct.keys())
+            ct_keys = ct.keys()
             ct_part_keys = []
             for t in ct_keys:
                 ct_part_keys.append(t[4:])
@@ -215,7 +214,7 @@ def expand_signature(runner, types, signature):
                 all_matched = True
                 extra = False
                 for ct in current_types:
-                    ct_keys = list(ct.keys())
+                    ct_keys = ct.keys()
                     ct_part_keys = []
                     for t in ct_keys:
                         ct_part_keys.append(t[4:])
@@ -278,7 +277,7 @@ def expand_type(types, current):
     if types[current].dim > 0:
         # Name should be in the key too or we'll lose char or signed char - they both have the same var_type, base_type, dim, unsigned
         return {(types[current].var_type, types[current].base_type, types[current].dim, types[current].unsigned, types[current].name) : types[current]}
-        
+
     base_types = {}
     for ct in types[current].child_types:
         base_types.update(expand_type(types, ct))

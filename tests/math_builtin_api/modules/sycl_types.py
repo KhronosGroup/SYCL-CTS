@@ -444,7 +444,7 @@ def create_basic_types():
 
     # Generic Types
 def create_types():
-    type_dic = create_basic_types(
+    type_dic = create_basic_types()
     
     t_float_n = argtype("floatn", "NULL", "NULL", 0, ["cl::sycl::float2","cl::sycl::float3","cl::sycl::float4","cl::sycl::float8","cl::sycl::float16"])
     type_dic["floatn"] = t_float_n
