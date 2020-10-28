@@ -490,8 +490,7 @@ class image_api_check {
 
     // Check get_size()
     if (img.get_size() < (numElems * elementSize)) {
-      cl::sycl::string_class message =
-          cl::sycl::string_class("Sizes are not the same: expected at least ") +
+      std::string message = "Sizes are not the same: expected at least " +
           std::to_string(numElems * elementSize) + ", got " +
           std::to_string(img.get_size());
       FAIL(log, message);
@@ -755,7 +754,7 @@ class image_api_check {
           auto myKernel = [img_acc, sampler](cl::sycl::item<dims> item) {
               // Read image data using integer coordinates
               cl::sycl::float4 dataFromInt =
-                  img_acc.read(image_access<dims>::get_int(item));
+                              img_acc.read(image_access<dims>::get_int(item));
               (void)dataFromInt;  // silent warning
               // Read image data using integer coordinates and a sampler
               cl::sycl::float4 dataFromIntWithSampler =
@@ -771,15 +770,14 @@ class image_api_check {
           });
 
           queue.submit([&](cl::sycl::handler &cgh) {
-          auto img_acc =
-              img2.template get_access<cl::sycl::float4,
-                                      cl::sycl::access::mode::write>(cgh);
-          auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
+            auto img_acc = img2.template get_access<cl::sycl::float4,
+                                          cl::sycl::access::mode::write>(cgh);
+            auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
               // Write image data
               img_acc.write(image_access<dims>::get_int(item),
-                          cl::sycl::float4(expected));
-          };
-          cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
+                                                  cl::sycl::float4(expected));
+            };
+            cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
           });
 
           queue.wait_and_throw();
