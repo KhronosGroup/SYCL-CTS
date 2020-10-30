@@ -32,7 +32,7 @@ using accessor_t =
 struct single_task_functor {
   single_task_functor(accessor_t acc, size_t range) : acc(acc), range(range) {}
 
-  void operator()() {
+  void operator()() const {
     for (size_t i = 0; i < range; ++i) {
       acc[i] = i;
     }
@@ -46,7 +46,7 @@ template <int useOffset>
 struct parallel_for_range_id_functor {
   parallel_for_range_id_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::id<1> id) { acc[id] = id[0]; }
+  void operator()(cl::sycl::id<1> id) const { acc[id] = id[0]; }
 
   accessor_t acc;
 };
@@ -55,7 +55,7 @@ template <int useOffset>
 struct parallel_for_range_item_functor {
   parallel_for_range_item_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::item<1> item) { acc[item] = item[0]; }
+  void operator()(cl::sycl::item<1> item) const { acc[item] = item[0]; }
 
   accessor_t acc;
 };
@@ -63,7 +63,7 @@ struct parallel_for_range_item_functor {
 struct parallel_for_nd_range_functor {
   parallel_for_nd_range_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::nd_item<1> ndItem) {
+  void operator()(cl::sycl::nd_item<1> ndItem) const {
     acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
   }
 
@@ -77,7 +77,7 @@ struct parallel_for_nd_range_functor {
 struct parallel_for_work_group_dynamic_functor {
   parallel_for_work_group_dynamic_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::group<1> group) {
+  void operator()(cl::sycl::group<1> group) const {
     group.parallel_for_work_item([&](cl::sycl::h_item<1> item) { acc[0] = 0; });
 
     cl::sycl::range<1> subRange(1);
@@ -99,7 +99,7 @@ struct parallel_for_work_group_dynamic_functor {
 struct parallel_for_work_group_fixed_functor {
   parallel_for_work_group_fixed_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::group<1> group) {
+  void operator()(cl::sycl::group<1> group) const {
     group.parallel_for_work_item([&](cl::sycl::h_item<1> item) {
       if (item.get_global_id(0) > 0) {
         acc[item.get_global_id()] = item.get_global_id(0);
