@@ -6,10 +6,10 @@
 //
 *******************************************************************************/
 
-#include <regex>
-#include <mutex>
-#include <sstream>
 #include <memory>
+#include <mutex>
+#include <regex>
+#include <sstream>
 
 #include "../common/common.h"
 
@@ -168,6 +168,11 @@ class log_helper {
   }
 };
 
+/**
+ * @brief Helper class that provides a uniform creation and comparison interface
+ * for different data types, in particular scalar and vector types (see
+ * specialization below).
+ */
 template <typename T>
 struct type_helper {
   static T make(size_t v) { return static_cast<T>(v); }
@@ -224,6 +229,16 @@ void fill_buffer(cl::sycl::queue& queue, cl::sycl::buffer<dataT, dims>& buf,
   });
 }
 
+/**
+ * Helper class that facilitates the usage of SYCL ranges and ids in
+ * generic contexts. It provides a uniform factory interface for all
+ * dimensionalities, and allows to cast between ranges and ids of different
+ * dimensionalities (initializing empty entries to @p default_value, where
+ * necessary).
+ *
+ * This template is not meant to be used directly, instead see range_helper and
+ * id_helper for concrete instantiations.
+ */
 template <template <int> class T, int dims, size_t default_value>
 struct range_id_helper {};
 
@@ -392,30 +407,13 @@ class copy_test_context {
   void verify_h2d_copy(test_fn fn, const log_helper& lh) {
     run_test_function(fn, lh);
 
-    // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
-    for (size_t i = 0; i < numElems; ++i) {
-      const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
-      const auto received = acc[dstAbsIdx];
-      if (is_within_window(dstCopyOffset, dstCopyRange, dstAbsIdx)) {
-        // Compute relative linear index within destination copy range.
-        const size_t relLinearIdx =
-            compute_relative_linear_id(dstCopyOffset, dstCopyRange, dstAbsIdx);
-
-        // SYCL doesn't support strided H2D copies, so this is dense.
-        const auto expected = srcHostPtr.get()[relLinearIdx];
-
-        if (!th::equal(received, expected)) {
-          log_error(lh, id_helper<3>::cast(dstAbsIdx), received, expected);
-          return;
-        }
-      } else {
-        if (!th::equal(received, deviceCanary)) {
-          log_canary_violation(lh, id_helper<3>::cast(dstAbsIdx), received);
-          return;
-        }
-      }
-    }
+    verify_device_copy(
+        [this](size_t relativeLinearIdx) {
+          // SYCL doesn't support strided H2D copies, so this is dense.
+          const auto expected = srcHostPtr.get()[relativeLinearIdx];
+          return expected;
+        },
+        lh);
   }
 
   /**
@@ -425,34 +423,17 @@ class copy_test_context {
   void verify_d2d_copy(test_fn fn, const log_helper& lh) {
     run_test_function(fn, lh);
 
-    // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
-    for (size_t i = 0; i < numElems; ++i) {
-      const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
-      const auto received = acc[dstAbsIdx];
-      if (is_within_window(dstCopyOffset, dstCopyRange, dstAbsIdx)) {
-        // Compute relative linear index within destination copy range.
-        const size_t relLinearIdx =
-            compute_relative_linear_id(dstCopyOffset, dstCopyRange, dstAbsIdx);
-
-        // Now compute relative index in source copy range.
-        const auto srcRelIdx = reconstruct_index(srcCopyRange, relLinearIdx);
-
-        // Convert to absolute source index and use to compute expected value.
-        const auto expected =
-            encode_index_init_op<dataT, dim_src>{}(srcCopyOffset + srcRelIdx);
-
-        if (!th::equal(received, expected)) {
-          log_error(lh, id_helper<3>::cast(dstAbsIdx), received, expected);
-          return;
-        }
-      } else {
-        if (!th::equal(received, deviceCanary)) {
-          log_canary_violation(lh, id_helper<3>::cast(dstAbsIdx), received);
-          return;
-        }
-      }
-    }
+    verify_device_copy(
+        [this](size_t relativeLinearIdx) {
+          // Compute relative index in source copy range.
+          const auto srcRelIdx =
+              reconstruct_index(srcCopyRange, relativeLinearIdx);
+          // Convert to absolute source index and use to compute expected value.
+          const auto expected =
+              encode_index_init_op<dataT, dim_src>{}(srcCopyOffset + srcRelIdx);
+          return expected;
+        },
+        lh);
   }
 
   /**
@@ -556,6 +537,40 @@ class copy_test_context {
     return ((idx >= windowOffset == id_helper<dim>::make(true, true, true)) &&
             (idx < windowOffset + windowRange ==
              id_helper<dim>::make(true, true, true)));
+  }
+
+  /**
+   * @brief Verifies the result of a "to device" copy (i.e., either host to
+   * device or device to device).
+   *
+   * @tparam ExpectedValueCallback receives the relative linear index of the
+   * copied element and should return the corresponding expected value.
+   */
+  template <typename ExpectedValueCallback>
+  void verify_device_copy(ExpectedValueCallback getExpectedValue,
+                          const log_helper& lh) {
+    // TODO: Consider verifying directly on device.
+    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
+    for (size_t i = 0; i < numElems; ++i) {
+      const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
+      const auto received = acc[dstAbsIdx];
+      if (is_within_window(dstCopyOffset, dstCopyRange, dstAbsIdx)) {
+        // Compute relative linear index within destination copy range.
+        const size_t relLinearIdx =
+            compute_relative_linear_id(dstCopyOffset, dstCopyRange, dstAbsIdx);
+        const auto expected = getExpectedValue(relLinearIdx);
+
+        if (!th::equal(received, expected)) {
+          log_error(lh, id_helper<3>::cast(dstAbsIdx), received, expected);
+          return;
+        }
+      } else {
+        if (!th::equal(received, deviceCanary)) {
+          log_canary_violation(lh, id_helper<3>::cast(dstAbsIdx), received);
+          return;
+        }
+      }
+    }
   }
 
   static void log_error(const log_helper& lh, cl::sycl::id<3> index,
