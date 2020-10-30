@@ -326,13 +326,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
           },
           offset[0], offsetRange[0]);
 
-      check_api_call("parallel_for(range, id, functor) with id", log, queue,
-                     [&](handler &cgh, accessor_t acc) {
-                       cgh.parallel_for(
-                           offsetRange, offset,
-                           parallel_for_range_id_functor<use_offset::yes>(acc));
-                     },
-                     offset[0], offsetRange[0]);
+      check_api_call(
+          "parallel_for(range, id, functor) with id", log, queue,
+          [&](handler &cgh, accessor_t acc) {
+            cgh.parallel_for(
+                offsetRange, offset,
+                parallel_for_range_id_functor<use_offset::yes>(acc));
+          },
+          offset[0], offsetRange[0]);
 
       if (!is_compiler_available(deviceList)) {
         log.note(
@@ -536,12 +537,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           },
           offset[0], offsetRange[0]);
 
-      check_api_call("parallel_for(nd_range, functor) with offset", log, queue,
-                     [&](handler &cgh, accessor_t acc) {
-                       cgh.parallel_for(offsetNdRange,
-                                        parallel_for_nd_range_functor(acc));
-                     },
-                     offset[0], offsetRange[0]);
+      check_api_call(
+          "parallel_for(nd_range, functor) with offset", log, queue,
+          [&](handler &cgh, accessor_t acc) {
+            cgh.parallel_for(offsetNdRange, parallel_for_nd_range_functor(acc));
+          },
+          offset[0], offsetRange[0]);
 
       if (!is_compiler_available(deviceList)) {
         log.note(
@@ -570,13 +571,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto preBuiltKernel =
               get_prebuilt_kernel<parallel_for_nd_range_functor>(queue);
 
-          check_api_call("parallel_for(kernel, nd_range, functor) with offset",
-                         log, queue,
-                         [&](handler &cgh, accessor_t acc) {
-                           cgh.parallel_for(preBuiltKernel, offsetNdRange,
-                                            parallel_for_nd_range_functor(acc));
-                         },
-                         offset[0], offsetRange[0]);
+          check_api_call(
+              "parallel_for(kernel, nd_range, functor) with offset", log, queue,
+              [&](handler &cgh, accessor_t acc) {
+                cgh.parallel_for(preBuiltKernel, offsetNdRange,
+                                 parallel_for_nd_range_functor(acc));
+              },
+              offset[0], offsetRange[0]);
         }
       }
 
@@ -767,14 +768,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
           cl::sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class2>());
 
-          check_api_call("parallel_for(range, offset, kernel) with id", log,
-                         queue,
-                         [&](handler &cgh, accessor_t acc) {
-                           cgh.parallel_for<kernel_test_class2>(
-                               offsetRange, offset,
-                               [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
-                         },
-                         offset[0], offsetRange[0]);
+          check_api_call(
+              "parallel_for(range, offset, kernel) with id", log, queue,
+              [&](handler &cgh, accessor_t acc) {
+                cgh.parallel_for<kernel_test_class2>(
+                    offsetRange, offset,
+                    [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+              },
+              offset[0], offsetRange[0]);
         }
 
         {
