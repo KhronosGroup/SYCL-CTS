@@ -121,9 +121,9 @@ double degrees(double a);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> degrees(cl::sycl::vec<T, N> a) {
-  return sycl_cts::math::vector_helper_1arg<T, N>(a, [](T x){
+  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x){
       return degrees(x);
-    });
+    }, a);
 }
 
 /* radians */
@@ -132,9 +132,9 @@ double radians(double a);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> radians(cl::sycl::vec<T, N> a) {
-  return sycl_cts::math::vector_helper_1arg<T, N>(a, [](T x){
+  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x){
       return radians(x);
-    });
+    }, a);
 }
 
 /* step */
@@ -240,9 +240,9 @@ double max(const double a, const double b);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
-  return sycl_cts::math::vector_helper_2arg<T, N>(a, b, [](T x, T y){
+  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x, T y){
       return max(x, y);
-    });
+    }, a, b);
 }
 
 template <typename T, int N>
@@ -268,9 +268,9 @@ double min(const double a, const double b);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
-  return sycl_cts::math::vector_helper_2arg<T, N>(a, b, [](T x, T y){
+  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x, T y){
       return min(x, y);
-    });
+    }, a, b);
 }
 
 template <typename T, int N>

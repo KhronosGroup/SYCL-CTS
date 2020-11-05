@@ -19,21 +19,11 @@ namespace sycl_cts {
  */
 namespace math {
 
-template <typename T, int N, typename funT>
-cl::sycl::vec<T, N> vector_helper_1arg(cl::sycl::vec<T, N> a, funT fun) {
-  cl::sycl::vec<T, N> res;
+template <typename R, typename T, int N, typename funT, typename ... Args>
+cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args ... args) {
+  cl::sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, fun(getElement<T, N>(a, i)));
-  }
-  return res;
-}
-
-template <typename T, int N, typename funT>
-cl::sycl::vec<T, N> vector_helper_2arg(cl::sycl::vec<T, N> a,
-                              cl::sycl::vec<T, N> b, funT fun) {
-  cl::sycl::vec<T, N> res;
-  for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, fun(getElement<T, N>(a, i), getElement<T, N>(b, i)));
+    setElement<R, N>(res, i, fun(getElement<T, N>(args, i)...));
   }
   return res;
 }

@@ -397,7 +397,7 @@ double step(double a, double b) {
 
 template <typename T>
 T smoothstep_t(T a, T b, T c) {
-  if (a >= b || std::isnan(a) || std::isnan(b) || std::isnan(c))
+  if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
     return NAN;
   if (c <= a)
     return 0.0;
@@ -420,12 +420,12 @@ double smoothstep(double a, double b, double c) {
 
 template <typename T>
 T sign_t(T a) {
+  if (std::isnan(a))
+    return 0.0;
   if (a > 0)
     return 1.0;
   if (a < 0)
     return -1.0;
-  if (std::isnan(a))
-    return 0.0;
   if (signbit(a))
     return -0.0;
   return +0.0;

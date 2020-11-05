@@ -10,8 +10,8 @@
 #define CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
 
 #include "../../util/math_reference.h"
-#include <limits>
 #include <cfloat>
+#include <limits>
 
 template <int T>
 class kernel;
@@ -45,10 +45,10 @@ template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value
                       || std::is_same<cl::sycl::half, T>::value, bool>::type
                       verify(sycl_cts::util::logger &log, T a, T b) {
-  return std::fabs(a - b) <= eps<T>() * std::fabs(a + b)
-                        // if result is undefined according to spec,
-                        // reference function for float numbers returns NAN
-            || std::fabs(a - b) < min_t<T>() || std::isnan(b);
+        // if result is undefined according to spec,
+        // reference function for float numbers returns NAN
+  return std::isnan(b) || std::fabs(a - b) <= eps<T>() * std::fabs(a + b)
+                                          || std::fabs(a - b) < min_t<T>();
 }
 
 template <typename T>
@@ -69,10 +69,10 @@ bool verify(sycl_cts::util::logger &log,cl::sycl::vec<T, N> a,
 template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger &log, funT fun, returnT ref) {
   cl::sycl::range<1> ndRng(1);
-  std::unique_ptr<returnT[]> kernelResult(new returnT[1]);
+  returnT kernelResult;
   auto testQueue = makeQueueOnce();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(kernelResult.get(), ndRng);
+    cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     testQueue.submit([&](cl::sycl::handler &h) {
     auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
         h.single_task<kernel<N>>([=]() {
@@ -87,7 +87,7 @@ void check_function(sycl_cts::util::logger &log, funT fun, returnT ref) {
       FAIL(log, errorMsg.c_str());
   }
 
-  if(!verify(log, kernelResult[0], ref))
+  if(!verify(log, kernelResult, ref))
     FAIL(log, "tests case: " + std::to_string(N) +". Correctness check failed.");
 }
 
