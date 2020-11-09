@@ -228,6 +228,28 @@ void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
   }
 }
 
+/**
+ * @brief Verify two values are equal
+ */
+template <typename T>
+bool check_equal_values(const T& lhs, const T& rhs) {
+  return lhs == rhs;
+}
+
+/**
+ * @brief Instantiation for vectors with the same API as for scalar values
+ */
+template <typename T, int numElements>
+bool check_equal_values(const cl::sycl::vec<T, numElements>& lhs,
+                        const cl::sycl::vec<T, numElements>& rhs) {
+  bool result = true;
+  auto perElement = lhs == rhs;
+  for (int i = 0; i < numElements; ++i) {
+    result &= perElement[i] != 0;
+  }
+  return result;
+}
+
 /** helper function for retrieving an event from a submitted kernel
  */
 template <typename kernelT>

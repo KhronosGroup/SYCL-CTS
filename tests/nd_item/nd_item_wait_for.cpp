@@ -7,49 +7,28 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/async_work_group_copy.h"
+#include "../common/invoke.h"
 
 #define TEST_NAME nd_item_wait_for
 
-namespace nd_item_wait_for__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
+template <int dim>
 class wait_for_kernel;
-void test_wait_for(util::logger &log, cl::sycl::queue &queue) {
-  /* set workspace size */
-  const int globalSize = 64;
-  const int localSize = 2;
 
-  /* allocate and assign host data */
+template<int dim>
+struct check_dim {
+  void operator()(cl::sycl::queue &queue, sycl_cts::util::logger &log) {
+    using dataT = int;
+    using kernelT = wait_for_kernel<dim>;
+    using kernelInvokeT = invoke_nd_item<dim, kernelT>;
+    static const std::string instanceName = "nd_item";
 
-  /* init ranges*/
-  cl::sycl::range<1> globalRange(globalSize);
-  cl::sycl::range<1> localRange(localSize);
-  cl::sycl::nd_range<1> NDRange(globalRange, localRange);
-
-  /* run kernel to check wait_for interface is available*/
-  int data = 1234;
-  {
-    auto buf = cl::sycl::buffer<int, 1>(&data, cl::sycl::range<1>(1));
-
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto globalAcc = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-      auto localAcc =
-          cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                             cl::sycl::access::target::local>(
-              cl::sycl::range<1>(1), cgh);
-
-      cgh.parallel_for<class wait_for_kernel>(
-          NDRange, [=](cl::sycl::nd_item<1> item) {
-
-            cl::sycl::device_event device_event = item.async_work_group_copy(
-                localAcc.get_pointer(), globalAcc.get_pointer(), 1);
-
-            item.wait_for(device_event);
-
-          });
-    });
+    test_wait_for<kernelInvokeT, dataT>(queue, log, instanceName);
   }
-}
+};
 
 /** test cl::sycl::nd_item wait_for
 */
@@ -67,11 +46,10 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
     try {
-      auto cmdQueue = util::get_cts_object::queue();
+      auto queue = util::get_cts_object::queue();
 
-      test_wait_for(log, cmdQueue);
+      check_all_dims<check_dim>(queue, log);
 
-      cmdQueue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
