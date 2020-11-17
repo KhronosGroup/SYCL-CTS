@@ -8,9 +8,7 @@
 
 #include "../common/common.h"
 #include "../common/common_by_value.h"
-#include "../group/group_common.h"
-
-#include <array>
+#include "../common/invoke.h"
 
 #define TEST_NAME group_equality
 
@@ -40,11 +38,9 @@ class TEST_NAME : public util::test_base {
 
       // group is not default constructible, store two objects into the array
       static constexpr size_t numItems = 2;
-      using item_array_t = std::array<item_t, numItems>;
-      alignas(alignof(item_array_t)) char rawItems[sizeof(item_array_t)];
-      auto& items = reinterpret_cast<item_array_t&>(rawItems);
-
-      store_group_instances<group_setup_kernel<numDims>>(items);
+      using setup_kernel_t = group_setup_kernel<numDims>;
+      auto items =
+          store_instances<numItems, invoke_group<numDims, setup_kernel_t>>();
 
       // Check nd_item equality operator on the device side
       equality_comparable_on_device<item_t>::

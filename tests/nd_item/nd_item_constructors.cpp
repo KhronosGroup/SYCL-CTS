@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 #include "../common/common_by_value.h"
-#include "../nd_item/nd_item_common.h"
+#include "../common/invoke.h"
 
 #include <array>
 
@@ -235,12 +235,9 @@ class TEST_NAME : public util::test_base {
       if (success[to_integral(current_check::copy_assignment)]) {
         // nd_item is not default constructible, store two objects into the array
         static constexpr size_t numItems = 2;
-        using item_array_t = std::array<cl::sycl::nd_item<numDims>, numItems>;
-        alignas(alignof(item_array_t)) char rawItems[sizeof(item_array_t)];
-        auto& items = reinterpret_cast<item_array_t&>(rawItems);
-
-        store_nd_item_instances<nd_item_setup_kernel<numDims>>(items);
-
+        using setup_kernel_t = nd_item_setup_kernel<numDims>;
+        auto items =
+            store_instances<numItems, invoke_nd_item<numDims, setup_kernel_t>>();
         {
           const auto& item = items[0];
           const auto& itemReadOnly = item;
