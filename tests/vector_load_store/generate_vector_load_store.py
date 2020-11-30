@@ -13,7 +13,8 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, append_fp_postfix, make_func_call,
                                wrap_with_test_func, write_source_file,
-                               wrap_with_extension_checks)
+                               wrap_with_extension_checks, get_types,
+                               clear_type_str)
 
 TEST_NAME = 'LOAD_STORE'
 
@@ -70,13 +71,11 @@ load_store_test_template = Template(
 
 
 def gen_kernel_name(type_str, size):
-    return 'KERNEL_load_store_' + type_str.replace('cl::sycl::', '').replace(
-        ' ', '') + str(size)
+    return 'KERNEL_load_store_' + clear_type_str(type_str) + str(size)
 
 
 def gen_load_store_test(type_str, size):
-    no_whitespace_type_str = type_str.replace(' ', '').replace(
-        'cl::sycl::', '')
+    no_whitespace_type_str = clear_type_str(type_str)
     test_string = load_store_test_template.substitute(
         type=type_str,
         type_as_str=no_whitespace_type_str,
@@ -101,25 +100,6 @@ def make_tests(type_str, input_file, output_file):
         func_calls += make_func_call(TEST_NAME, type_str, str(size))
     write_source_file(test_string, func_calls, TEST_NAME, input_file,
                       output_file, type_str)
-
-def get_types():
-    types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
-        for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
-
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
 
 def main():
     argparser = argparse.ArgumentParser(

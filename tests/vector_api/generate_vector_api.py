@@ -13,7 +13,7 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file)
+                               write_source_file, get_reverse_type)
 
 TEST_NAME = 'API'
 
@@ -95,22 +95,6 @@ def gen_interop_checks(type_str, reverse_type_str, size):
         'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
         test_string)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
-
-def get_reverse_type(type_str):
-    if type_str == 'char':
-        return 'char'
-    if type_str in ReverseData.rev_standard_type_dict:
-        type_dict =  Data.standard_type_dict
-        rev_type_dict = ReverseData.rev_standard_type_dict
-    else:
-        type_dict =  Data.opencl_type_dict
-        rev_type_dict = ReverseData.rev_opencl_type_dict
-    (sign, base_type) = rev_type_dict[type_str]
-    if (not sign, base_type) in type_dict:
-        reverse_type_str = type_dict[(not sign, base_type)]
-    else:
-        reverse_type_str = type_str
-    return reverse_type_str
 
 def make_tests(type_str, input_file, output_file):
     reverse_type_str = get_reverse_type(type_str)

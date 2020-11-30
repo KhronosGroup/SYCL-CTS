@@ -8,7 +8,7 @@
 
 from collections import defaultdict
 from string import Template
-
+from itertools import product
 
 class Data:
     signs = [True, False]
@@ -31,6 +31,32 @@ class Data:
         (True, 'float'): 'float',
         (True, 'double'): 'double',
         (True, 'cl::sycl::half'): 'cl::sycl::half'
+    }
+
+    fixed_width_types = [
+        'std::int8_t', 'std::int16_t', 'std::int32_t', 'std::int64_t'
+    ]
+
+    fixed_width_type_dict = {
+        (False, 'std::int8_t'): 'std::uint8_t',
+        (True, 'std::int8_t'): 'std::int8_t',
+        (False, 'std::int16_t'): 'std::uint16_t',
+        (True, 'std::int16_t'): 'std::int16_t',
+        (False, 'std::int32_t'): 'std::uint32_t',
+        (True, 'std::int32_t'): 'std::int32_t',
+        (False, 'std::int64_t'): 'std::uint64_t',
+        (True, 'std::int64_t'): 'std::int64_t'
+    }
+
+    fixed_width_type_define_dict = {
+        ('std::uint8_t'): 'UINT8_MAX',
+        ('std::int8_t'): 'INT8_MAX',
+        ('std::uint16_t'): 'UINT16_MAX',
+        ('std::int16_t'): 'INT16_MAX',
+        ('std::uint32_t'): 'UINT32_MAX',
+        ('std::int32_t'): 'INT32_MAX',
+        ('std::uint64_t'): 'UINT32_MAX',
+        ('std::int64_t'): 'INT32_MAX'
     }
 
     opencl_types = [
@@ -156,6 +182,7 @@ class Data:
 class ReverseData:
     rev_standard_type_dict = { Data.standard_type_dict[k] : k for k in list(Data.standard_type_dict.keys()) }
     rev_opencl_type_dict = { Data.opencl_type_dict[k] : k for k in list(Data.opencl_type_dict.keys()) }
+    rev_fixed_width_type_dict = { Data.fixed_width_type_dict[k] : k for k in list(Data.fixed_width_type_dict.keys()) }
 
 
 kernel_template = Template("""  bool resArray[1] = {true};
@@ -192,6 +219,12 @@ void ${func_name}(util::logger &log) {
 }
 """)
 
+def clear_type_str(type_str):
+    """
+    Clear type name from from namespaces ans whitspaces
+    """
+    return type_str.replace('cl::sycl::', '').replace(
+            ' ', '_').replace('std::', '')
 
 def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     """
@@ -200,16 +233,17 @@ def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     Wraps kernels with checks for cl_khr_fp16 and cl_khr_fp64 when appropriate.
     The necessity for extension checks is determined based on |type_str|
     """
+
     return wrap_with_extension_checks(type_str,
                                       kernel_template.substitute(
-                                          kernelName=kernel_name,
+                                          kernelName=clear_type_str(kernel_name),
                                           testName=test_name,
                                           test=test_string))
 
 
 def wrap_with_test_func(test_name, type_str, test, additional=''):
     """
-    Wraps |test| in a function with name |func_name| and returns the resulting 
+    Wraps |test| in a function with name |func_name| and returns the resulting
     str.
     """
     return test_func_template.substitute(
@@ -325,6 +359,16 @@ def replace_string_in_source_string(source, generated_tests,
     # Return new source string
     return new_source
 
+def get_ifdef_string(source, type_str):
+    if type_str in ReverseData.rev_fixed_width_type_dict:
+        include_string = '#include <cstdint>\n'
+        ifdef_string = '#ifdef ' + Data.fixed_width_type_define_dict[type_str]
+        source = source.replace('$IFDEF', include_string + ifdef_string)
+        source = source.replace('$ENDIF', '#endif // ' + ifdef_string)
+    else:
+        source = source.replace('$IFDEF', '')
+        source = source.replace('$ENDIF', '')
+    return source
 
 def write_source_file(test_str, func_calls, test_name, input_file, output_file,
                       type_str):
@@ -333,12 +377,334 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
         source = source_file.read()
 
     source = replace_string_in_source_string(source,
-                                             type_str.replace(
-                                                 'cl::sycl::', '').replace(
-                                                     ' ', '_'), '$TYPE_NAME')
+                                             clear_type_str(type_str), '$TYPE_NAME')
     source = replace_string_in_source_string(source, test_name, '$CATEGORY')
     source = replace_string_in_source_string(source, test_str, '$TEST_FUNCS')
     source = replace_string_in_source_string(source, func_calls, '$FUNC_CALLS')
 
+    source = get_ifdef_string(source, type_str)
+
     with open(output_file, 'w+') as output:
         output.write(source)
+
+def get_standard_types():
+    types = list()
+    types.append('char')
+    types.append('cl::sycl::byte')
+    for base_type in Data.standard_types:
+        for sign in Data.signs:
+            if (base_type == 'float' or base_type == 'double'
+                or base_type == 'cl::sycl::half') and sign is False:
+                continue
+            types.append(Data.standard_type_dict[(sign, base_type)])
+
+    for base_type in Data.fixed_width_types:
+        for sign in Data.signs:
+            types.append(Data.fixed_width_type_dict[(sign, base_type)])
+    return types
+
+def get_opencl_types():
+    types = list()
+    for base_type in Data.opencl_types:
+        for sign in Data.signs:
+            if (base_type == 'cl::sycl::cl_float'
+                    or base_type == 'cl::sycl::cl_double'
+                    or base_type == 'cl::sycl::cl_half') and sign is False:
+                continue
+            types.append(Data.opencl_type_dict[(sign, base_type)])
+    return types
+
+def get_types():
+    types = list()
+    types += get_standard_types()
+    types += get_opencl_types()
+
+    return types
+
+class SwizzleData:
+    swizzle_template = Template(
+        """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+            cl::sycl::vec<${type}, ${size}> swizzledVec {${name}DimTestVec.${indexes}()};
+            ${type} in_order_vals[] = {${in_order_vals}};
+            ${type} reversed_vals[] = {${reversed_vals}};
+            ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
+            ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
+            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(swizzledVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_size<${type}, ${size}>(swizzledVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>(swizzledVec, in_order_vals)) {
+                resAcc[0] = false;
+            }
+    """)
+
+    lo_hi_odd_even_template = Template(
+        """        if (!check_lo_hi_odd_even<${type}>(swizzledVec, in_order_vals)) {
+            resAcc[0] = false;
+            }
+    """)
+
+    swizzle_elem_template = Template(
+        """        cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_swiz_indexes}>()};
+            if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
+                resAcc[0] = false;
+            }
+            cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_swiz_indexes}>()};
+            if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
+                resAcc[0] = false;
+            }
+            cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
+            if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+            cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
+            if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+    """)
+
+    swizzle_full_test_template = Template(
+        """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+            ${type} in_order_vals[] = {${in_order_vals}};
+            cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_swiz_indexes}>()};
+            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
+            (inOrderSwizzleFunctionVec, in_order_vals)) {
+                resAcc[0] = false;
+            }
+
+            ${type} reversed_vals[] = {${reversed_vals}};
+            cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>()};
+            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
+            (reverseOrderSwizzleFunctionVec, reversed_vals)) {
+                resAcc[0] = false;
+            }
+
+            ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
+            cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
+            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
+            (inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+
+            ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
+            cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
+            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
+            (reverseOrderReversedPairSwizzleFunctionVec,
+            reverse_order_reversed_pair_vals)) {
+                resAcc[0] = false;
+            }
+    """)
+
+def substitute_swizzles_templates(type_str, size, index_subset, value_subset, convert_type_str, as_type_str):
+    string = ''
+    index_list = []
+    val_list = []
+    for index, value in zip(index_subset, value_subset):
+        index_list.append(index)
+        val_list.append(value)
+    val_list = append_fp_postfix(type_str, val_list)
+    index_string = ''.join(index_list)
+    test_string = SwizzleData.swizzle_template.substitute(
+        name=Data.vec_name_dict[size],
+        indexes=index_string,
+        type=type_str,
+        testVecValues=generate_value_list(type_str, size),
+        in_order_vals=', '.join(val_list),
+        reversed_vals=', '.join(val_list[::-1]),
+        in_order_pair_vals=', '.join(swap_pairs(val_list)),
+        reverse_order_pair_vals=', '.join(
+            swap_pairs(val_list[::-1])),
+        in_order_positions=''.join(
+            Data.swizzle_xyzw_list_dict[size][:size]),
+        size=size,
+        swiz_vals=Data.swizzle_elem_list_dict[size][::-1],
+        convert_type=convert_type_str,
+        as_type=as_type_str)
+    if size > 1:
+        test_string += SwizzleData.lo_hi_odd_even_template.substitute(
+            type=type_str, size=size)
+    test_string += SwizzleData.swizzle_elem_template.substitute(
+        type=type_str,
+        size=size,
+        in_order_swiz_indexes=', '.join(
+            Data.swizzle_elem_list_dict[size]),
+        reverse_order_swiz_indexes=', '.join(
+            Data.swizzle_elem_list_dict[size][::-1]),
+        in_order_reversed_pair_swiz_indexes=', '.join(
+            swap_pairs(Data.swizzle_elem_list_dict[size])),
+        reverse_order_reversed_pair_swiz_indexes=', '.join(
+            swap_pairs(Data.swizzle_elem_list_dict[size][::-1])))
+    string += wrap_with_kernel(
+        type_str,
+        'KERNEL_' + type_str + str(size) +
+            index_string,
+        'vec<' + type_str + ', ' + str(size) + '>.' + index_string,
+        test_string)
+    return string
+
+def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
+    string = ''
+    if size > 4:
+        test_string = SwizzleData.swizzle_full_test_template.substitute(
+            name=Data.vec_name_dict[size],
+            type=type_str,
+            size=size,
+            testVecValues=generate_value_list(type_str, size),
+            convert_type=convert_type_str,
+            as_type=as_type_str,
+            in_order_swiz_indexes=', '.join(Data.swizzle_elem_list_dict[size]),
+            reverse_order_swiz_indexes=', '.join(
+                Data.swizzle_elem_list_dict[size][::-1]),
+            in_order_reversed_pair_swiz_indexes=', '.join(
+                swap_pairs(Data.swizzle_elem_list_dict[size])),
+            reverse_order_reversed_pair_swiz_indexes=', '.join(
+                swap_pairs(Data.swizzle_elem_list_dict[size][::-1])),
+            in_order_vals=', '.join(Data.vals_list_dict[size]),
+            reversed_vals=', '.join(Data.vals_list_dict[size][::-1]),
+            in_order_pair_vals=', '.join(
+                swap_pairs(Data.vals_list_dict[size])),
+            reverse_order_pair_vals=', '.join(
+                swap_pairs(Data.vals_list_dict[size][::-1])))
+        string += wrap_with_kernel(
+            type_str, 'ELEM_KERNEL_' + type_str + str(size) +
+            ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
+                'cl::sycl::elem::', ''),
+            'vec<' + type_str + ', ' + str(size) + '> .swizzle<' +
+            ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>',
+            test_string)
+        return string
+    # size <=4
+    for length in range(size, size + 1):
+        for index_subset, value_subset in zip(
+                product(
+                    Data.swizzle_xyzw_list_dict[size][:size],
+                    repeat=length),
+                product(Data.vals_list_dict[size][:size], repeat=length)):
+            string += substitute_swizzles_templates(type_str, size,
+                    index_subset, value_subset, convert_type_str, as_type_str)
+
+    if size == 4:
+        for length in range(size, size + 1):
+            for index_subset, value_subset in zip(
+                    product(
+                        Data.swizzle_rgba_list_dict[size][:size],
+                        repeat=length),
+                    product(
+                        Data.vals_list_dict[size][:size], repeat=length)):
+                string += substitute_swizzles_templates(type_str, size,
+                        index_subset, value_subset, convert_type_str, as_type_str)
+    return string
+
+
+def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
+
+    with open(input_file, 'r') as source_file:
+        source = source_file.read()
+
+    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
+
+    source = replace_string_in_source_string(source,
+                                             clear_type_str(type_str), '$TYPE_NAME')
+    if is_opencl_type:
+        source = source.replace('$OPENCL', 'opencl_')
+    else:
+        source = source.replace('$OPENCL', '')
+
+    source = replace_string_in_source_string(source, swizzles[0],
+                                             '$1D_SWIZZLES')
+    source = replace_string_in_source_string(source, swizzles[1],
+                                             '$2D_SWIZZLES')
+    source = replace_string_in_source_string(source, swizzles[2],
+                                             '$3D_SWIZZLES')
+    source = replace_string_in_source_string(source, swizzles[3],
+                                             '$4D_SWIZZLES')
+    source = replace_string_in_source_string(source, swizzles[4],
+                                             '$8D_SWIZZLES')
+    source = replace_string_in_source_string(source, swizzles[5],
+                                             '$16D_SWIZZLES')
+
+    source = get_ifdef_string(source, type_str)
+
+    with open(output_file, 'w+') as output:
+        output.write(source)
+
+def get_reverse_type(type_str):
+    if type_str == 'char' or type_str == 'cl::sycl::byte':
+      return type_str
+    if type_str in ReverseData.rev_standard_type_dict:
+        type_dict =  Data.standard_type_dict
+        rev_type_dict = ReverseData.rev_standard_type_dict
+    else:
+        if type_str in ReverseData.rev_opencl_type_dict:
+            type_dict =  Data.opencl_type_dict
+            rev_type_dict = ReverseData.rev_opencl_type_dict
+        else:
+            type_dict =  Data.fixed_width_type_dict
+            rev_type_dict = ReverseData.rev_fixed_width_type_dict
+    (sign, base_type) = rev_type_dict[type_str]
+    if (not sign, base_type) in type_dict:
+        reverse_type_str = type_dict[(not sign, base_type)]
+    else:
+        reverse_type_str = type_str
+    return reverse_type_str
+
+def make_swizzles_tests(type_str, input_file, output_file):
+    swizzles = [None] * 6
+
+    convert_type_str = get_reverse_type(type_str)
+    as_type_str = get_reverse_type(type_str)
+    swizzles[0] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 1)
+    swizzles[1] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 2)
+    swizzles[2] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 3)
+    swizzles[3] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 4)
+    swizzles[4] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 8)
+    swizzles[5] = gen_swizzle_test(type_str, convert_type_str,
+                                   as_type_str, 16)
+    write_swizzle_source_file(swizzles, input_file, output_file, type_str)
+

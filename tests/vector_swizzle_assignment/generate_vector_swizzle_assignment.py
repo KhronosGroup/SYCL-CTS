@@ -14,7 +14,7 @@ from itertools import permutations
 sys.path.append('../common/')
 from common_python_vec import (
     Data, swap_pairs, generate_value_list, append_fp_postfix, wrap_with_kernel,
-    wrap_with_test_func, make_func_call, write_source_file)
+    wrap_with_test_func, make_func_call, write_source_file, get_types)
 
 TEST_NAME = 'SWIZZLE_ASSIGNMENT'
 
@@ -68,9 +68,9 @@ index_positions_dict = {
 }
 
 
-def gen_ordered_values(index_string):
+def gen_ordered_values(index_string, type_str):
     """
-    Generates a list of values from 0 to 16 
+    Generates a list of values from 0 to 16
     """
     ordered_val_list = [None] * len(index_string)
     val = 0
@@ -92,7 +92,7 @@ def gen_xyzw_str(type_str, size):
             for index in index_subset:
                 index_string += index
             val_list = append_fp_postfix(type_str,
-                                         gen_ordered_values(index_string))
+                                         gen_ordered_values(index_string, type_str))
             val_string = ', '.join(val_list)
             test_string = swizzle_xyzw_rgba_assignment_template.substitute(
                 type=type_str,
@@ -103,8 +103,7 @@ def gen_xyzw_str(type_str, size):
                 orderedValues=val_string)
             xyzw_string += wrap_with_kernel(
                 type_str,
-                'XYZW_KERNEL_' + type_str.replace('cl::sycl::', '').replace(
-                    ' ', '') + str(size) + index_string,
+                'XYZW_KERNEL_' + type_str + str(size) + index_string,
                 'Swizzle assignment: vec<' + type_str + ', ' + str(size) + '>.'
                 + index_string, test_string)
     return xyzw_string
@@ -122,7 +121,7 @@ def gen_rgba_str(type_str, size):
             for index in index_subset:
                 index_string += index
             val_list = append_fp_postfix(type_str,
-                                         gen_ordered_values(index_string))
+                                         gen_ordered_values(index_string, type_str))
             val_string = ', '.join(val_list)
             test_string = swizzle_xyzw_rgba_assignment_template.substitute(
                 type=type_str,
@@ -133,8 +132,7 @@ def gen_rgba_str(type_str, size):
                 orderedValues=val_string)
             rgba_string += wrap_with_kernel(
                 type_str,
-                'RGBA_KERNEL_' + type_str.replace('cl::sycl::', '').replace(
-                    ' ', '') + str(size) + index_string,
+                'RGBA_KERNEL_' + type_str + str(size) + index_string,
                 'Swizzle assignment test for vec<' + type_str + ', ' +
                 str(size) + '>.' + index_string, test_string)
     return rgba_string
@@ -157,11 +155,10 @@ def gen_elem_str(type_str, size):
         indexes=index_string,
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list, type_str))))
     if size == 1:
         return wrap_with_kernel(
-            test_string, 'ELEM_KERNEL_' + type_str.replace(
-                'cl::sycl::', '').replace(' ', '') + str(size) +
+            test_string, 'ELEM_KERNEL_' + type_str + str(size) +
             ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
                 'cl::sycl::elem::', ''), 'Swizzle assignment test for vec<' +
             type_str + ', ' + str(size) + '> .swizzle<' +
@@ -177,7 +174,7 @@ def gen_elem_str(type_str, size):
             swap_pairs(Data.swizzle_elem_list_dict[size][:size])),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list, type_str))))
     index_list = swap_pairs(Data.swizzle_elem_list_dict[size][::-1])
     index_string = ', '.join(index_list)
     test_string += swizzle_elem_assignment_template.substitute(
@@ -187,7 +184,7 @@ def gen_elem_str(type_str, size):
         indexes=', '.join(swap_pairs(Data.swizzle_elem_list_dict[size][::-1])),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list, type_str))))
     index_list = Data.swizzle_elem_list_dict[size][::-1]
     index_string = ', '.join(index_list)
     test_string += swizzle_elem_assignment_template.substitute(
@@ -197,10 +194,9 @@ def gen_elem_str(type_str, size):
         indexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]),
         vecName=Data.vec_name_dict[size],
         orderedValues=', '.join(
-            append_fp_postfix(type_str, gen_ordered_values(index_list))))
+            append_fp_postfix(type_str, gen_ordered_values(index_list, type_str))))
     return wrap_with_kernel(
-        test_string, 'KERNEL_SWIZZLE_ASSIGNMENT_ELEM_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size) +
+        test_string, 'KERNEL_SWIZZLE_ASSIGNMENT_ELEM_' + type_str + str(size) +
         ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
             'cl::sycl::elem::', ''), 'Swizzle assignment test for vec<' +
         type_str + ', ' + str(size) + '> .swizzle<' +
@@ -227,25 +223,6 @@ def make_tests(type_str, input_file, output_file):
         func_calls += make_func_call(TEST_NAME, type_str, str(size))
     write_source_file(test_str, func_calls, TEST_NAME, input_file,
                       output_file, type_str)
-
-def get_types():
-    types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
-        for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
-
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
 
 def main():
     argparser = argparse.ArgumentParser(
