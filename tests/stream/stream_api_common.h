@@ -1,11 +1,3 @@
-/*******************************************************************************
-//
-//  SYCL 1.2.1 Conformance Test Suite
-//
-//  Copyright:	(c) 2020 by Codeplay Software LTD. All Rights Reserved.
-//
-*******************************************************************************/
-
 #ifndef SYCL_1_2_1_TESTS_STREAM_API_COMMON_H
 #define SYCL_1_2_1_TESTS_STREAM_API_COMMON_H
 
