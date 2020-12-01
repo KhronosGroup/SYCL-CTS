@@ -1,3 +1,11 @@
+/*******************************************************************************
+//
+//  SYCL 1.2.1 Conformance Test Suite
+//
+//  Provides common methods for stream tests
+//
+*******************************************************************************/
+
 #ifndef SYCL_1_2_1_TESTS_STREAM_API_COMMON_H
 #define SYCL_1_2_1_TESTS_STREAM_API_COMMON_H
 
