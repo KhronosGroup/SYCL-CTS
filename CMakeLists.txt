@@ -26,6 +26,15 @@ endif()
 include(AddSYCLExecutable)
 
 # ------------------
+# Extensive mode for improved coverage
+option(SYCL_CTS_ENABLE_EXTENSIVE_MODE
+       "Enable extensive mode with extended type coverage" OFF)
+if(SYCL_CTS_ENABLE_EXTENSIVE_MODE)
+    add_definitions(-DSYCL_CTS_EXTENSIVE_MODE)
+endif()
+# ------------------
+
+# ------------------
 # Double and Half variables
 option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
 option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)

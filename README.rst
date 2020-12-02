@@ -84,6 +84,9 @@ When configuring CMake, it is possible to use these flags:
 ``SYCL_CTS_TEST_FILTER``
   Specify which filter to use when building tests.
 
+``SYCL_CTS_ENABLE_EXTENSIVE_MODE``
+  Enable extended coverage with huge compilation and execution time
+
 ``HOST_COMPILER_FLAGS``
   Flags that will be passed to the host compiler.
 
