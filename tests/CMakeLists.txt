@@ -120,12 +120,20 @@ add_executable(test_all)
 function(add_cts_test)
   get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
   set(test_exe_name test_${test_dir})
+  set(test_cases_list ${ARGN})
+
+  if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
+    list(FILTER test_cases_list EXCLUDE REGEX .*_fp16\\.cpp$)
+  endif()
+  if(NOT SYCL_CTS_ENABLE_DOUBLE_TESTS)
+    list(FILTER test_cases_list EXCLUDE REGEX .*_fp64\\.cpp$)
+  endif()
 
   message(STATUS "Adding test: " ${test_exe_name})
 
   add_sycl_executable(NAME           ${test_exe_name}
                       OBJECT_LIBRARY ${test_exe_name}_objects
-                      TESTS          ${ARGN})
+                      TESTS          ${test_cases_list})
 
   target_include_directories(${test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
