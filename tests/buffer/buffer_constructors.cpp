@@ -19,12 +19,8 @@ class BufferInteropNoEvent;
 template <typename T, int size, int dims>
 class buffer_ctors {
  public:
-  using fail_proxy_alias = bool (*)(sycl_cts::util::logger &log,
-                                    const char *msg, int line);
   void operator()(cl::sycl::range<dims> &r, cl::sycl::id<dims> &i,
-                  const cl::sycl::property_list &propList,
-                  fail_proxy_alias fail_proxy,
-                  sycl_cts::util::test_base &helper, util::logger &log) {
+                  const cl::sycl::property_list &propList, util::logger &log) {
     /* Check range constructor */
     {
       cl::sycl::buffer<T, dims> buf(r, propList);
@@ -330,15 +326,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     /* test buffer constructors with empty property list */
 
-    buf1d(range1d, id1d, empty_pl, fail_proxy, *this, log);
-    buf2d(range2d, id2d, empty_pl, fail_proxy, *this, log);
-    buf3d(range3d, id3d, empty_pl, fail_proxy, *this, log);
+    buf1d(range1d, id1d, empty_pl, log);
+    buf2d(range2d, id2d, empty_pl, log);
+    buf3d(range3d, id3d, empty_pl, log);
 
     /* test buffer constructors with non-empty property list */
 
-    buf1d_with_properties(range1d, id1d, pl, fail_proxy, *this, log);
-    buf2d_with_properties(range2d, id2d, pl, fail_proxy, *this, log);
-    buf3d_with_properties(range3d, id3d, pl, fail_proxy, *this, log);
+    buf1d_with_properties(range1d, id1d, pl, log);
+    buf2d_with_properties(range2d, id2d, pl, log);
+    buf3d_with_properties(range3d, id3d, pl, log);
   }
 
   /** execute the test
