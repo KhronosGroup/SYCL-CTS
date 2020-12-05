@@ -9,13 +9,10 @@ set(CMAKE_CXX_COMPILER  ${INTEL_SYCL_CXX_EXECUTABLE})
 if(NOT DEFINED INTEL_SYCL_TRIPLE)
    set(INTEL_SYCL_TRIPLE spir64-unknown-unknown-sycldevice)
 endif()
-message("Intel SYCL: compiling SYCL to ${INTEL_SYCL_TRIPLE}")
+message("Intel SYCL target triple: ${INTEL_SYCL_TRIPLE}")
 
-if(DEFINED INTEL_SYCL_FLAGS)
-    message("Intel SYCL: compiling SYCL using `${INTEL_SYCL_FLAGS}`")
-endif()
-
-set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;${INTEL_SYCL_FLAGS}")
+set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;-ffp-model=precise;${INTEL_SYCL_FLAGS}")
+message("Intel SYCL compiler flags: `${INTEL_SYCL_FLAGS}`")
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
 set_target_properties(INTEL_SYCL::Runtime PROPERTIES
