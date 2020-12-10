@@ -387,7 +387,7 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
     with open(output_file, 'w+') as output:
         output.write(source)
 
-def get_standard_types():
+def get_standard_and_fixed_width_types():
     types = list()
     types.append('char')
     types.append('cl::sycl::byte')
@@ -416,7 +416,7 @@ def get_opencl_types():
 
 def get_types():
     types = list()
-    types += get_standard_types()
+    types += get_standard_and_fixed_width_types()
     types += get_opencl_types()
 
     return types
@@ -438,9 +438,10 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>(swizzledVec, in_order_vals)) {
+            if (!check_vector_get_count_get_size<${type}>(swizzledVec)) {
                 resAcc[0] = false;
             }
+            check_convert_as_all_types<${type}, ${size}>(swizzledVec);
     """)
 
     lo_hi_odd_even_template = Template(
@@ -481,10 +482,10 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
-            (inOrderSwizzleFunctionVec, in_order_vals)) {
+            if (!check_vector_get_count_get_size<${type}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
+            check_convert_as_all_types<${type}, ${size}>(inOrderSwizzleFunctionVec);
 
             ${type} reversed_vals[] = {${reversed_vals}};
             cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>()};
@@ -497,10 +498,10 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
-            (reverseOrderSwizzleFunctionVec, reversed_vals)) {
+            if (!check_vector_get_count_get_size<${type}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
+            check_convert_as_all_types<${type}, ${size}>(reverseOrderSwizzleFunctionVec);
 
             ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
             cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
@@ -513,10 +514,10 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
-            (inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
+            if (!check_vector_get_count_get_size<${type}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
+            check_convert_as_all_types<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec);
 
             ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
             cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
@@ -529,11 +530,10 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_member_functions<${type}, ${convert_type}, ${as_type}>
-            (reverseOrderReversedPairSwizzleFunctionVec,
-            reverse_order_reversed_pair_vals)) {
+            if (!check_vector_get_count_get_size<${type}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
+            check_convert_as_all_types<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec);
     """)
 
 def substitute_swizzles_templates(type_str, size, index_subset, value_subset, convert_type_str, as_type_str):
