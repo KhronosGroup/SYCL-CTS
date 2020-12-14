@@ -406,48 +406,6 @@ struct image_access<3> {
 };
 
 /**
- * @brief Display the name of the type
- * @tparam T Type to inspect
- * @param Dummy parameter used only for type deduction
- * @return String representing the type
- */
-template <typename T>
-cl::sycl::string_class type_to_string(T) {
-  using no_cv_t = typename std::remove_cv<T>::type;
-  if (std::is_integral<no_cv_t>::value) {
-    cl::sycl::string_class intStr;
-    if (std::is_signed<no_cv_t>::value) {
-      intStr = "int";
-    } else {
-      intStr = "uint";
-    }
-    const auto typeSizeBits = sizeof(T) * 8;
-    return intStr + std::to_string(typeSizeBits) + "_t";
-  } else if (std::is_same<no_cv_t, float>::value) {
-    return "float";
-  } else if (std::is_same<no_cv_t, double>::value) {
-    return "double";
-  } else if (std::is_same<no_cv_t, cl::sycl::half>::value) {
-    return "half";
-  }
-  return "unknown";
-}
-
-/**
- * @brief Display the name of the vec type
- * @tparam dataT Underlying type of the vector
- * @tparam numElems Number of elements of the vector
- * @param Dummy parameter used only for type deduction
- * @return String representing the vec type
- */
-template <typename dataT, int numElems>
-cl::sycl::string_class type_to_string(cl::sycl::vec<dataT, numElems>) {
-  std::stringstream stream;
-  stream << "vec<" << type_to_string(dataT{}) << ", " << numElems << ">";
-  return stream.str();
-}
-
-/**
  * @brief Dummy template to check type existence without generating warnings.
  */
 template <typename T>
