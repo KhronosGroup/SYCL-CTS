@@ -57,7 +57,8 @@ template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value ||
                             std::is_same<cl::sycl::half, T>::value,
                         bool>::type
-verify(sycl_cts::util::logger &log, T value, resultRef<T> r, int accuracy) {
+verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r,
+       int accuracy) {
   const T reference = r.res;
 
   if (!r.undefined.empty())
@@ -90,7 +91,7 @@ verify(sycl_cts::util::logger &log, T value, resultRef<T> r, int accuracy) {
 
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, bool>::type
-verify(sycl_cts::util::logger &log, T value, resultRef<T> r, int) {
+verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r, int) {
   bool result = value == r.res || !r.undefined.empty();
   if (!result)
     log.note("value: " + std::to_string(value) + ", reference: " +
@@ -100,7 +101,7 @@ verify(sycl_cts::util::logger &log, T value, resultRef<T> r, int) {
 
 template <typename T, int N>
 bool verify(sycl_cts::util::logger &log, cl::sycl::vec<T, N> a,
-            resultRef<cl::sycl::vec<T, N>> r, int accuracy) {
+            sycl_cts::resultRef<cl::sycl::vec<T, N>> r, int accuracy) {
   cl::sycl::vec<T, N> b = r.res;
   for (int i = 0; i < sycl_cts::math::numElements(a); i++)
     if (r.undefined.find(i) == r.undefined.end() &&
@@ -111,12 +112,12 @@ bool verify(sycl_cts::util::logger &log, cl::sycl::vec<T, N> a,
 
 template <typename T>
 bool verify(sycl_cts::util::logger &log, T a, T b, int accuracy) {
-  return verify(log, a, resultRef<T>(b), accuracy);
+  return verify(log, a, sycl_cts::resultRef<T>(b), accuracy);
 }
 
 template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger &log, funT fun,
-                    resultRef<returnT> ref, int accuracy = 0) {
+                    sycl_cts::resultRef<returnT> ref, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
@@ -142,8 +143,8 @@ void check_function(sycl_cts::util::logger &log, funT fun,
 
 template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
-                                      resultRef<returnT> ref, argT ptrRef,
-                                      int accuracy = 0) {
+                                      sycl_cts::resultRef<returnT> ref,
+                                      argT ptrRef, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
@@ -180,7 +181,7 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
 
 template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
-                                     argT arg, resultRef<returnT> ref,
+                                     argT arg, sycl_cts::resultRef<returnT> ref,
                                      argT ptrRef, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
@@ -214,7 +215,7 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
 
 template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
-                                    argT arg, resultRef<returnT> ref,
+                                    argT arg, sycl_cts::resultRef<returnT> ref,
                                     argT ptrRef, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;

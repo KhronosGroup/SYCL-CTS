@@ -154,7 +154,7 @@ def generate_function_private_call(sig, arg_names, arg_src, types):
 
 def generate_reference(sig, arg_names, arg_src):
     fc = arg_src
-    fc += "resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
+    fc += "sycl_cts::resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
     for arg_n in arg_names:
         fc += arg_n + ","
     fc = fc[:-1] + ");\n"
@@ -164,7 +164,7 @@ def generate_reference_ptr(types, sig, arg_names, arg_src):
     fc = arg_src[:arg_src.rfind('\n', 0, -1)] + "\n"
     fc += extract_type(types[sig.arg_types[-1]]).name
     fc += " refPtr = multiPtrSourceData;\n"
-    fc += "resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
+    fc += "sycl_cts::resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
     for arg_n in arg_names[:-1]:
         fc += arg_n + ","
     fc += "&refPtr"
@@ -260,6 +260,8 @@ def expand_signature(runner, types, signature):
     # to control cases when some arg types are base type of ret type
     sgeninteger = False
     exp_sig = []
+    # to control cases when arg types are base type of ret type
+    sgeninteger = False
     for arg in signature.arg_types:
         current_types.extend([types[arg]])
         if arg == "sgeninteger":

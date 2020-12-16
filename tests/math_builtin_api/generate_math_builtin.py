@@ -119,7 +119,7 @@ def main():
 
     if args.test == 'integer':
         integer_signatures = sycl_functions.create_integer_signatures()
-        create_tests(0, run, expanded_types, integer_signatures, args.variante, args.template, args.output)
+        create_tests(0, run, expanded_types, integer_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'common':
         common_signatures = sycl_functions.create_common_signatures()
