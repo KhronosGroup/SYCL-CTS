@@ -2,7 +2,7 @@
 //
 //  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Provides common methods for nd_item async_work_group_copy tests
 //
 *******************************************************************************/
 
