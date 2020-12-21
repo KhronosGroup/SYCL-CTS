@@ -181,7 +181,12 @@ def generate_test_case(test_id, types, sig, memory, check):
     testCaseSource = testCaseSource.replace("$FUNCTION_PRIVATE_CALL", generate_function_private_call(sig, arg_names, arg_src, types))
     testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type)
     if sig.accuracy:##If the signature contains an accuracy value
-        testCaseSource = testCaseSource.replace("$ACCURACY", ", " + sig.accuracy)
+        accuracy = sig.accuracy
+        # if accuracy depends on vecSize
+        if "vecSize" in accuracy:
+            vecSize = str(extract_type(types[sig.arg_types[0]]).dim)
+            accuracy = accuracy.replace("vecSize", vecSize)
+        testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy)
     else:
         testCaseSource = testCaseSource.replace("$ACCURACY", "")
 
