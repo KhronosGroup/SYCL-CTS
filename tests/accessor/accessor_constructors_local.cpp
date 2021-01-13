@@ -10,6 +10,7 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_local_utility.h"
+#include "accessor_types_core.h"
 
 namespace TEST_NAMESPACE {
 
@@ -25,44 +26,16 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T>
-  void check_all_dims(util::logger &log, cl::sycl::queue &queue,
-                      const std::string& typeName) {
-    local_accessor_dims<T, 0>::check(log, queue, typeName);
-    local_accessor_dims<T, 1>::check(log, queue, typeName);
-    local_accessor_dims<T, 2>::check(log, queue, typeName);
-    local_accessor_dims<T, 3>::check(log, queue, typeName);
-  }
-
   /** execute this test
    */
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check accessor constructors for int
-       */
-      check_all_dims<int>(log, queue, "int");
+      using extension_tag = sycl_cts::util::extensions::tag::core;
 
-      /** check accessor constructors for char
-       */
-      check_all_dims<char>(log, queue, "char");
-
-      /** check accessor constructors for vec
-       */
-      check_all_dims<cl::sycl::int2>(log, queue, "int");
-
-      /** check accessor constructors for vec
-       */
-      check_all_dims<cl::sycl::int3>(log, queue, "int");
-
-      /** check accessor constructors for vec
-       */
-      check_all_dims<cl::sycl::float4>(log, queue, "float");
-
-      /** check accessor constructors for user_struct
-       */
-      check_all_dims<user_struct>(log, queue, "user_struct");
+      check_all_types_core<local_accessor_all_dims,
+                           extension_tag>::run(queue, log);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

@@ -11,7 +11,7 @@
 
 #include "../common/common.h"
 #include "accessor_api_local_common.h"
-#include "accessor_api_types_fp16.h"
+#include "accessor_types_fp16.h"
 
 namespace TEST_NAMESPACE {
 

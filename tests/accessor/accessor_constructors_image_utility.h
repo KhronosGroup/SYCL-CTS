@@ -290,7 +290,33 @@ public:
     }
   }
 };
+/** @brief Run tests for all image accessor dimensions and targets
+ */
+template <typename T, typename ... allocatorT, typename ... argsT>
+void image_accessor_allocator(argsT&& ... args) {
+  image_accessor_dims<T, 1, allocatorT...>::check(
+      std::forward<argsT>(args)...);
+  image_accessor_dims<T, 2, allocatorT...>::check(
+      std::forward<argsT>(args)...);
+  image_accessor_dims<T, 3, allocatorT...>::check(
+      std::forward<argsT>(args)...);
+  image_array_accessor_dims<T, 1, allocatorT...>::check(
+      std::forward<argsT>(args)...);
+  image_array_accessor_dims<T, 2, allocatorT...>::check(
+      std::forward<argsT>(args)...);
+}
 
+template <typename T, typename /*extensionTag*/>
+class image_accessor_type {
+public:
+  template <typename ... argsT>
+  void operator()(argsT&& ... args) {
+    using user_allocator = std::allocator<T>;
+
+    image_accessor_allocator<T>(std::forward<argsT>(args)...);
+    image_accessor_allocator<T, user_allocator>(std::forward<argsT>(args)...);
+  }
+};
 }  // namespace accessor_utility__
 
 #endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_IMAGE_UTILITY_H

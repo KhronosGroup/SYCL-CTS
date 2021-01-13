@@ -2,12 +2,12 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide common code for accessor API verification with fp64 types
+//  Provide common code for accessor verification with fp64 types
 //
 *******************************************************************************/
 
-#ifndef SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_FP64_H
-#define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_FP64_H
+#ifndef SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_FP64_H
+#define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_FP64_H
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
@@ -19,16 +19,24 @@
 
 namespace TEST_NAMESPACE {
 
+template <typename T>
+struct kernel_name {};
+
+// Nested struct type usage in kernel name will be deprecated in SYCL 2020
+// These tests should be able to verify accessor data types without dependency
+// on kernel name restrictions
+struct nested_struct_kernel {};
+
 /**
  *  @brief Run specific accessors' tests for fp16 type set for generic code path
  */
-template <template <typename, typename> class action>
+template <template <typename, typename, typename> class action>
 class check_all_types_fp64 {
 
   using extension_tag_t = sycl_cts::util::extensions::tag::fp64;
 
   template <typename T>
-  using check_type = action<T, extension_tag_t>;
+  using check_type = action<T, extension_tag_t, kernel_name<T>>;
 
 public:
   static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
@@ -63,4 +71,4 @@ public:
 
 }  // namespace TEST_NAMESPACE
 
-#endif // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_FP64_H
+#endif // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_FP64_H
