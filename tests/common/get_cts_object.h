@@ -249,6 +249,13 @@ struct get_cts_object::id<1> {
   static cl::sycl::id<1> get(size_t v0, size_t, size_t) {
     return cl::sycl::id<1>(v0);
   }
+  /**
+   * @brief Constructs an id<1> by using any bigger id
+   */
+  template <int dims>
+  static cl::sycl::id<1> get(const cl::sycl::id<dims>& id) {
+    return cl::sycl::id<1>(id[0]);
+  }
 };
 /**
  * @brief Specialization that returns an id<2> from three components
@@ -263,6 +270,13 @@ struct get_cts_object::id<2> {
    */
   static cl::sycl::id<2> get(size_t v0, size_t v1, size_t) {
     return cl::sycl::id<2>(v0, v1);
+  }
+  /**
+   * @brief Constructs an id<2> by using any bigger id
+   */
+  template <int dims>
+  static cl::sycl::id<2> get(const cl::sycl::id<dims>& id) {
+    return cl::sycl::id<2>(id[0], id[1]);
   }
 };
 /**
@@ -279,6 +293,12 @@ struct get_cts_object::id<3> {
    */
   static cl::sycl::id<3> get(size_t v0, size_t v1, size_t v2) {
     return cl::sycl::id<3>(v0, v1, v2);
+  }
+  /**
+   * @brief Common code support for bigger id usage
+   */
+  static cl::sycl::id<3> get(cl::sycl::id<3> id) {
+    return id;
   }
 };
 
