@@ -181,6 +181,13 @@ struct get_cts_object::range<1> {
   static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
     return cl::sycl::range<1>(r0);
   }
+  /**
+   * @brief Constructs a range<1> by using any bigger range
+   */
+  template <int dims>
+  static cl::sycl::range<1> get(const cl::sycl::range<dims>& range) {
+    return cl::sycl::range<1>(range[0]);
+  }
 };
 
 /**
@@ -196,6 +203,13 @@ struct get_cts_object::range<2> {
    */
   static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
     return cl::sycl::range<2>(r0, r1);
+  }
+  /**
+   * @brief Constructs a range<2> by using any bigger range
+   */
+  template <int dims>
+  static cl::sycl::range<2> get(const cl::sycl::range<dims>& range) {
+    return cl::sycl::range<2>(range[0], range[1]);
   }
 };
 
@@ -213,6 +227,12 @@ struct get_cts_object::range<3> {
    */
   static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
     return cl::sycl::range<3>(r0, r1, r2);
+  }
+  /**
+   * @brief Common code support for bigger range usage
+   */
+  static cl::sycl::range<3> get(cl::sycl::range<3> range) {
+    return range;
   }
 };
 
