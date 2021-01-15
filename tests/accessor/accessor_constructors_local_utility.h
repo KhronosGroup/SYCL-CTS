@@ -24,7 +24,7 @@ using namespace sycl_cts;
 
 /** @brief Creates a local accessor and checks all its members for correctness
  */
-template <typename accTag>
+template <typename accTag, typename ... propertyListT>
 class check_accessor_constructor_local {
 public:
   /** @brief Overload to verify all constructors w/o range
@@ -32,9 +32,11 @@ public:
   static void check(sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler) {
+                    cl::sycl::handler& handler,
+                    const propertyListT& ... properties) {
     // construct the accessor
-    typename accTag::type accessor(handler);
+    typename accTag::type accessor(handler,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
@@ -48,9 +50,11 @@ public:
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler) {
+                    cl::sycl::handler& handler,
+                    const propertyListT& ... properties) {
     // construct the accessor
-    typename accTag::type accessor(range, handler);
+    typename accTag::type accessor(range, handler,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
@@ -72,15 +76,29 @@ public:
                     const std::string& typeName,
                     rangeArgsT&& ... range) {
     using accTag = accessor_type_info<T, dims, mode, target>;
-    using verifier = check_accessor_constructor_local<accTag>;
 
     constexpr bool usesRange = sizeof...(rangeArgsT) != 0;
     {
+      using verifier = check_accessor_constructor_local<accTag>;
+
       const auto constructorName = usesRange ?
           "constructor(range, handler)" :
           "constructor(handler)";
       verifier::check(range...,
                       log, constructorName, typeName, handler);
+    }
+    {
+      using property_list = cl::sycl::property_list;
+      using verifier = check_accessor_constructor_local<accTag, property_list>;
+
+      property_list properties {};
+      // no specific properties for local accessor in spec
+
+      const auto constructorName = usesRange ?
+          "constructor(range, handler, property_list)" :
+          "constructor(handler, property_list)";
+      verifier::check(range...,
+                      log, constructorName, typeName, handler, properties);
     }
   }
 };
