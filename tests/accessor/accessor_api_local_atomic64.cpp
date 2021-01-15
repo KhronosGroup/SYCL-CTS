@@ -1,15 +1,15 @@
 /*******************************************************************************
 //
-//  SYCL 2020 Conformance Test Suite
+//  SYCL 1.2.1 Conformance Test Suite
 //
-//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
+//  Provide tests only for core types which require atomic64 extension
 //
 *******************************************************************************/
 
-#define TEST_NAME accessor_api_buffer_core
+#define TEST_NAME accessor_api_local_atomic64
 
 #include "../common/common.h"
-#include "accessor_api_buffer_common.h"
+#include "accessor_api_local_common.h"
 #include "accessor_api_types_core.h"
 
 namespace TEST_NAMESPACE {
@@ -32,12 +32,11 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      using extension_tag = sycl_cts::util::extensions::tag::core;
+      using extension_tag = sycl_cts::util::extensions::tag::atomic64;
 
-      check_all_types_core<check_buffer_accessor_api_type,
+      check_all_types_core<check_local_accessor_api_type,
                            extension_tag>::run(queue, log);
 
-      queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
