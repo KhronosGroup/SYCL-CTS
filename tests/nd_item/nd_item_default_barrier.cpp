@@ -14,8 +14,18 @@
 namespace nd_item_default_barrier__ {
 using namespace sycl_cts;
 
+template <int dim>
 class default_barrier_kernel_local;
+template <int dim>
 class default_barrier_kernel_global;
+
+template<int dim>
+struct barrierCall {
+    void operator()(cl::sycl::nd_item<dim> item) const {
+      item.barrier();
+    }
+};
+
 
 /** test cl::sycl::nd_item barrier functions
 */
@@ -35,30 +45,25 @@ class TEST_NAME : public util::test_base {
     try {
       auto cmdQueue = util::get_cts_object::queue();
 
-      const auto barrierCall = [](cl::sycl::nd_item<1> item) {
-          item.barrier();
-        };
-
       // Verify default barrier works as fence for local address space
-      {
-        const bool passed =
-            test_barrier_local_space<default_barrier_kernel_local>(
-                log, cmdQueue, barrierCall);
+      cl::sycl::string_class errorMsg =
+          "default barrier failed for local address space";
+      test_barrier_local_space<1, default_barrier_kernel_local<1>>(
+          log, cmdQueue, barrierCall<1>(), errorMsg);
+      test_barrier_local_space<2, default_barrier_kernel_local<2>>(
+          log, cmdQueue, barrierCall<2>(), errorMsg);
+      test_barrier_local_space<3, default_barrier_kernel_local<3>>(
+          log, cmdQueue, barrierCall<3>(), errorMsg);
 
-        if (!passed) {
-          FAIL(log, "default barrier failed for local address space");
-        }
-      }
       // Verify default barrier works as fence for global address space
-      {
-        const bool passed =
-            test_barrier_global_space<default_barrier_kernel_global>(
-                log, cmdQueue, barrierCall);
-
-        if (!passed) {
-          FAIL(log, "default barrier failed for global address space");
-        }
-      }
+      errorMsg =
+          "default barrier failed for global address space";
+      test_barrier_global_space<1, default_barrier_kernel_global<1>>(
+          log, cmdQueue, barrierCall<1>(), errorMsg);
+      test_barrier_global_space<2, default_barrier_kernel_global<2>>(
+          log, cmdQueue, barrierCall<2>(), errorMsg);
+      test_barrier_global_space<3, default_barrier_kernel_global<3>>(
+          log, cmdQueue, barrierCall<3>(), errorMsg);
 
       cmdQueue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
