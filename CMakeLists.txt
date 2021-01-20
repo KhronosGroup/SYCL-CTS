@@ -27,8 +27,8 @@ include(AddSYCLExecutable)
 
 # ------------------
 # Double and Half variables
-option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." OFF)
-option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." OFF)
+option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
+option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)
 if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
     add_definitions(-DSYCL_CTS_TEST_DOUBLE)
 endif()
