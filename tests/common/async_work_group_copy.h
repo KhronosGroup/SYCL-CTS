@@ -13,6 +13,7 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/type_coverage.h"
+#include "../../util/array.h"
 #include "../../util/variadic.h"
 
 /**
@@ -25,10 +26,10 @@
  */
 template <size_t bufferSize, typename T,
           cl::sycl::access::address_space addressSpace>
-std::array<T, bufferSize> create_async_wg_copy_input(
+sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
     cl::sycl::multi_ptr<T, addressSpace> ptr) {
 
-  std::array<T, bufferSize> result;
+  sycl_cts::util::array<T, bufferSize> result;
 
   /** We use bool values because bool can be converted to the integral
    *  and to the floating point types
@@ -56,9 +57,12 @@ std::array<T, bufferSize> create_async_wg_copy_input(
  * @tparam addressSpace Deduced address space
  * @param ptr Pointer to the start of buffer to initialize
  */
-template <size_t bufferSize, bool value, typename T, cl::sycl::access::address_space addressSpace>
-std::array<T, bufferSize> create_async_wg_copy_fixed(cl::sycl::multi_ptr<T, addressSpace> ptr) {
-  std::array<T, bufferSize> result;
+template <size_t bufferSize, bool value, typename T,
+          cl::sycl::access::address_space addressSpace>
+sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
+    cl::sycl::multi_ptr<T, addressSpace> ptr) {
+
+  sycl_cts::util::array<T, bufferSize> result;
 
   auto iteratorPtr = ptr;
   for (size_t i = 0; i < bufferSize; ++i, ++iteratorPtr) {
