@@ -1,4 +1,5 @@
 from . import sycl_functions
+from . import sycl_types
 import random
 
 test_case_templates = { "private" : ("\n\n{\n"
@@ -81,11 +82,11 @@ def generate_arguments(types, sig, memory):
     for arg in sig.arg_types:
         # Get argument type.
         arg_type = extract_type(types[arg])
-        
+
         # Create argument name.
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
-        
+
         # Identify whether aegument is a pointer.
         is_pointer = False
         # Value 0 in pntr_indx is reserved for the return type.
@@ -97,7 +98,7 @@ def generate_arguments(types, sig, memory):
             current_arg = generate_multi_ptr(arg_name, arg_type, arg_index, memory)
         else:
             current_arg = generate_variable(arg_name, arg_type, arg_index)
-        
+
         arg_src += current_arg
         arg_index += 1
     return (arg_names, arg_src)
@@ -153,22 +154,26 @@ def generate_test_cases(test_id, types, sig_list):
 # We attempt to find a combination that is part of the current generic type (e.g. floatn)
 
 def attempt_match(runner, var_type, base_type, dim, unsigned, current_type):
+    ct_part_keys = []
+    for t in current_type.keys():
+        # Matching by all keys except name
+        ct_part_keys.append(t[:-1])
     # Change sign.
-    if (var_type, base_type, dim, not unsigned) in list(current_type.keys()):
+    if (var_type, base_type, dim, not unsigned) in ct_part_keys:
         return (var_type, base_type, dim, not unsigned)
     # Change type and sign, same dimensionality.
     for new_sign in [unsigned, not unsigned]:
         for new_type in runner.base_types:
-            if (var_type, new_type, dim, new_sign) in list(current_type.keys()):
+            if (var_type, new_type, dim, new_sign) in ct_part_keys:
                 return (var_type, new_type, dim, new_sign)
     # Change to base type (for scalars).
     for new_sign in [unsigned, not unsigned]:
-        if ("scalar", base_type, 1, new_sign) in list(current_type.keys()):
+        if ("scalar", base_type, 1, new_sign) in ct_part_keys:
             return ("scalar", base_type, 1, new_sign)
     # See if any other scalar type match.
     for new_sign in [unsigned, not unsigned]:
         for new_type in runner.base_types:
-            if ("scalar", new_type, 1, new_sign) in list(current_type.keys()):
+            if ("scalar", new_type, 1, new_sign) in ct_part_keys:
                 return ("scalar", new_type, 1, new_sign)
     return None
 
@@ -177,56 +182,97 @@ def attempt_match(runner, var_type, base_type, dim, unsigned, current_type):
 def expand_signature(runner, types, signature):
     current_types = [types[signature.ret_type]]
 
+    # to control cases when some arg types are base type of ret type
+    sgeninteger = False
     exp_sig = []
     for arg in signature.arg_types:
         current_types.extend([types[arg]])
+        if arg == "sgeninteger":
+            sgeninteger = True
 
-    # Itterate over all possible combinations of namespace, base type, dimension and sign flag.
+    name_key_index = 4
+
+    # Iterate over all basic types
     # Try to match all function types (return type and argument types).
-    for var_type in runner.var_types:
-        for base_type in runner.base_types:
-            for dim in runner.dimensions:
-                for unsigned in runner.unsigned:
-                    match = False
-                    nomatch = []
-                    index = 0
-                    for ct in current_types:
-                        if (var_type, base_type, dim, unsigned) in list(ct.keys()):
-                            match = True
-                        else:
-                            nomatch.append(index)
-                        index += 1
-                    if match is True:
-                        # Return value and all arguments are of the same type.
-                        if len(nomatch) == 0:
-                            common_type = current_types[0][(
-                                var_type, base_type, dim, unsigned)]
-                            new_sig = sycl_functions.funsig(signature.namespace, common_type.name, signature.name, [
-                                                            common_type.name for i in range(len(signature.arg_types))], signature.pntr_indx[:])
-                            exp_sig.append(new_sig)
-                        else:
-                            function_types = []
-                            all_matched = True
-                            for ct in current_types:
-                                # Current function type already matches - no need for mutation.
-                                if (var_type, base_type, dim, unsigned) in list(ct.keys()):
-                                    function_types.append(
-                                        ct[(var_type, base_type, dim, unsigned)].name)
+    all_types = sycl_types.create_basic_types()
+    for name in all_types.keys():
+        match = False
+        nomatch = []
+        index = 0
+        for ct in current_types:
+            ct_keys = ct.keys()
+            name_keys = []
+            for t in ct_keys:
+                # Matching by name
+                name_keys.append(t[name_key_index])
+            if name in name_keys:
+                match = True
+            else:
+                nomatch.append(index)
+            index += 1
+        if match:
+            # Return value and all arguments are of the same type.
+            if len(nomatch) == 0:
+                new_sig = sycl_functions.funsig(signature.namespace, name, signature.name, [
+                                                name for i in range(len(signature.arg_types))], signature.pntr_indx[:])
+                exp_sig.append(new_sig)
+            else:
+                function_types = []
+                function_types_extra = []
+                all_matched = True
+                extra = False
+                for ct in current_types:
+                    ct_keys = ct.keys()
+                    name_keys = []
+                    for t in ct_keys:
+                        name_keys.append(t[name_key_index])
+                    # Current function type already matches - no need for mutation.
+                    if name in name_keys:
+                        function_types.append(name)
+                        function_types_extra.append(name)
+                    else:
+                        # Return value and all arguments are of the same base type.
+                        # Types are selected by scalar/vector, size, dim and unsigned/signed
+                        # but these parameters are the same for signed char and char.
+                        # It works well when we need to select corresponding signed type for unsigned char
+                        # but in cases of functions such as clamp where we have parameters like (vec<T,N>, T..)
+                        # we shouldn't test it with paramenters (scharN, char..) or (charN, signed char) and we need special case for it
+                        if sgeninteger:
+                            part_keys = ('scalar', all_types[name].base_type, 1, all_types[name].unsigned)
+                            arg_types = [ct[key] for key in ct.keys() if key[:-1] == part_keys]
+                            if len(arg_types) > 0:
+                                if len(arg_types) > 1 and 'schar' in name:
+                                    function_types.append(arg_types[1].name)
                                 else:
-                                    mutation = attempt_match(
-                                        runner, var_type, base_type, dim, unsigned, ct)
-                                    if mutation is not None:
-                                        function_types.append(
-                                            ct[mutation].name)
-                                    else:
-                                        all_matched = False
-                            if all_matched is True:
-                                new_sig = sycl_functions.funsig(
-                                    signature.namespace, function_types[0], signature.name, function_types[1:], signature.pntr_indx[:])
-                                exp_sig.append(new_sig)
-                            else:
-                                print("[WARNING] Unable to fully match function " + signature.name + " for: " +
-                                      var_type + ", " + base_type + ", " + str(dim) + ", " + str(unsigned))
+                                    function_types.append(arg_types[0].name)
+                                continue
+                        var_type = all_types[name].var_type
+                        base_type = all_types[name].base_type
+                        dim = all_types[name].dim
+                        unsigned = all_types[name].unsigned
+
+                        # Get var_type, base_type, dim, unsigned of suitable type
+                        mutation = attempt_match(runner, var_type, base_type, dim, unsigned, ct)
+                        if mutation:
+                            # Find suitable type by all key members except name
+                            new_types = [ct[key] for key in ct.keys() if key[:-1] == mutation]
+                            function_types.append(new_types[0].name)
+                            if len(new_types) > 1:
+                                function_types_extra.append(new_types[1].name)
+                                extra = True
+                        else:
+                            all_matched = False
+                if all_matched:
+                    new_sig = sycl_functions.funsig(
+                        signature.namespace, function_types[0], signature.name, function_types[1:], signature.pntr_indx[:])
+                    exp_sig.append(new_sig)
+                    if extra:
+                        new_sig = sycl_functions.funsig(
+                        signature.namespace, function_types_extra[0], signature.name, function_types_extra[1:], signature.pntr_indx[:])
+                        exp_sig.append(new_sig)
+                else:
+                    print("[WARNING] Unable to fully match function " + signature.name + " for: " +
+                            var_type + ", " + base_type + ", " + str(dim) + ", " + str(unsigned))
     return exp_sig
 
 def get_unique_signatures(signatures):
@@ -252,7 +298,8 @@ def expand_signatures(runner, types, signatures):
 def expand_type(types, current):
     # If this is a basic type, stop.
     if types[current].dim > 0:
-        return {(types[current].var_type, types[current].base_type, types[current].dim, types[current].unsigned): types[current]}
+        # Name should be in the key too or we'll lose char or signed char - they both have the same var_type, base_type, dim, unsigned
+        return {(types[current].var_type, types[current].base_type, types[current].dim, types[current].unsigned, types[current].name) : types[current]}
 
     base_types = {}
     for ct in types[current].child_types:

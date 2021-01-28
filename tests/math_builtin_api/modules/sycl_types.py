@@ -15,7 +15,7 @@ class argtype:
     def __hash__(self):
         return hash(name)
 
-def create_types():
+def create_basic_types():
     type_dic = {}
     
     # Basic Types
@@ -439,8 +439,12 @@ def create_types():
     t_uint64t_16 = argtype("cl::sycl::vec<uint64_t, 16>", "vector", "int64_t", 16, [], True)
     type_dic["cl::sycl::vec<uint64_t, 16>"] = t_uint64t_16
 
+    return type_dic
+    
 
     # Generic Types
+def create_types():
+    type_dic = create_basic_types()
     
     t_float_n = argtype("floatn", "NULL", "NULL", 0, ["cl::sycl::float2","cl::sycl::float3","cl::sycl::float4","cl::sycl::float8","cl::sycl::float16"])
     type_dic["floatn"] = t_float_n
