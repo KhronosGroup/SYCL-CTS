@@ -307,7 +307,6 @@ T clamp_t(T v, T minv, T maxv) {
   return (v < minv) ? minv : ((v > maxv) ? maxv : v);
 }
 
-
 uint8_t clamp(const uint8_t a, const uint8_t b, const uint8_t c) {
   return clamp_t(a, b, c);
 }

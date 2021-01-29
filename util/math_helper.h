@@ -40,30 +40,12 @@ void fill(cl::sycl::float16 &e, float v);
 
 /* return number of elements in a type */
 int numElements(const float &);
-int numElements(const cl::sycl::float2 &);
-int numElements(const cl::sycl::float3 &);
-int numElements(const cl::sycl::float4 &);
-int numElements(const cl::sycl::float8 &);
-int numElements(const cl::sycl::float16 &);
 
 /* return number of elements in a type */
 int numElements(const int &);
-int numElements(const cl::sycl::int2 &);
-int numElements(const cl::sycl::int3 &);
-int numElements(const cl::sycl::int4 &);
-int numElements(const cl::sycl::int8 &);
-int numElements(const cl::sycl::int16 &);
 
-template <typename T>
-int numElements(const cl::sycl::vec<T, 2> &) { return 2; }
-template <typename T>
-int numElements(const cl::sycl::vec<T, 3> &) { return 3; }
-template <typename T>
-int numElements(const cl::sycl::vec<T, 4> &) { return 4; }
-template <typename T>
-int numElements(const cl::sycl::vec<T, 8> &) { return 8; }
-template <typename T>
-int numElements(const cl::sycl::vec<T, 16> &) { return 16; }
+template <typename T, int numElems>
+int numElements(const cl::sycl::vec<T, numElems> &) { return numElems; }
 
 /* extract an individual elements */
 float getElement(const float &f, int ix);

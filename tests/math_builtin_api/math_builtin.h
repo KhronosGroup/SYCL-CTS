@@ -60,7 +60,7 @@ typename std::enable_if<std::is_integral<T>::value, bool>::type
 template <typename T, int N>
 bool verify(sycl_cts::util::logger &log,cl::sycl::vec<T, N> a,
                                         cl::sycl::vec<T, N> b) {
-  for (int i = 0; i < sycl_cts::math::numElements(a); i++)
+  for (int i = 0; i < N; i++)
     if (!verify(log, getElement(a, i), getElement(b, i)))
       return false;
   return true;

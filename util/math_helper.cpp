@@ -44,19 +44,9 @@ void fill(cl::sycl::float16 &e, float v) {
 
 /* return number of elements in a type */
 int numElements(const float &) { return 1; }
-int numElements(const cl::sycl::float2 &) { return 2; }
-int numElements(const cl::sycl::float3 &) { return 3; }
-int numElements(const cl::sycl::float4 &) { return 4; }
-int numElements(const cl::sycl::float8 &) { return 8; }
-int numElements(const cl::sycl::float16 &) { return 16; }
 
 /* return number of elements in a type */
 int numElements(const int &) { return 1; }
-int numElements(const cl::sycl::int2 &) { return 2; }
-int numElements(const cl::sycl::int3 &) { return 3; }
-int numElements(const cl::sycl::int4 &) { return 4; }
-int numElements(const cl::sycl::int8 &) { return 8; }
-int numElements(const cl::sycl::int16 &) { return 16; }
 
 /* extract an individual elements of a float type */
 float getElement(const float &f, int ix) { return f; }
