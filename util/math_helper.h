@@ -19,8 +19,8 @@ namespace sycl_cts {
  */
 namespace math {
 
-template <typename R, typename T, int N, typename funT, typename ... Args>
-cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args ... args) {
+template <typename R, typename T, int N, typename funT, typename... Args>
+cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
   cl::sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
     setElement<R, N>(res, i, fun(getElement<T, N>(args, i)...));
@@ -45,7 +45,9 @@ int numElements(const float &);
 int numElements(const int &);
 
 template <typename T, int numElems>
-int numElements(const cl::sycl::vec<T, numElems> &) { return numElems; }
+int numElements(const cl::sycl::vec<T, numElems> &) {
+  return numElems;
+}
 
 /* extract an individual elements */
 float getElement(const float &f, int ix);
@@ -79,4 +81,4 @@ void rand(MTdata &rng, uint8_t *buf, int size);
 } /* namespace math     */
 } /* namespace sycl_cts */
 
-#endif  // __SYCLCTS_UTIL_MATH_HELPER_H
+#endif // __SYCLCTS_UTIL_MATH_HELPER_H

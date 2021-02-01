@@ -342,60 +342,40 @@ float clamp(const float a, const float b, const float c) {
  *
  */
 
-template <typename T>
-T degrees_t(T a) {
-  return a * (180.0L/M_PI);
-}
+template <typename T> T degrees_t(T a) { return a * (180.0L / M_PI); }
 
-float degrees(float a) {
-  return degrees_t(a);
-}
+float degrees(float a) { return degrees_t(a); }
 
-double degrees(double a){
-  return degrees_t(a);
-}
+double degrees(double a) { return degrees_t(a); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- RADIANS
  *
  */
 
-template <typename T>
-T radians_t(T a) {
-  return a * (M_PI/180.0L);
-}
+template <typename T> T radians_t(T a) { return a * (M_PI / 180.0L); }
 
-float radians(float a) {
-  return radians_t(a);
-}
+float radians(float a) { return radians_t(a); }
 
-double radians(double a){
-  return radians_t(a);
-}
+double radians(double a) { return radians_t(a); }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- STEP
  *
  */
 
-template <typename T>
-T step_t(T a, T b) {
+template <typename T> T step_t(T a, T b) {
   if (b < a)
     return 0.0;
   return 1.0;
 }
 
-float step(float a, float b) {
-  return step_t(a, b);
-}
+float step(float a, float b) { return step_t(a, b); }
 
-double step(double a, double b) {
-  return step_t(a, b);
-}
+double step(double a, double b) { return step_t(a, b); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- SMOOTHSTEP
  *
  */
 
-template <typename T>
-T smoothstep_t(T a, T b, T c) {
+template <typename T> T smoothstep_t(T a, T b, T c) {
   if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
     return NAN;
   if (c <= a)
@@ -406,9 +386,7 @@ T smoothstep_t(T a, T b, T c) {
   return t * t * (3 - 2 * t);
 }
 
-float smoothstep(float a, float b, float c) {
-  return smoothstep_t(a, b, c);
-}
+float smoothstep(float a, float b, float c) { return smoothstep_t(a, b, c); }
 double smoothstep(double a, double b, double c) {
   return smoothstep_t(a, b, c);
 }
@@ -417,8 +395,7 @@ double smoothstep(double a, double b, double c) {
  *
  */
 
-template <typename T>
-T sign_t(T a) {
+template <typename T> T sign_t(T a) {
   if (std::isnan(a))
     return 0.0;
   if (a > 0)
@@ -430,13 +407,9 @@ T sign_t(T a) {
   return +0.0;
 }
 
-float sign(float a) {
-  return sign_t(a);
-}
+float sign(float a) { return sign_t(a); }
 
-double sign(double a) {
-  return sign_t(a);
-}
+double sign(double a) { return sign_t(a); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- CLZ
  * Returns the number of leading zero bits
@@ -574,8 +547,7 @@ double min(const double a, const double b) { return (a < b) ? a : b; }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MIX
  *
  */
-template <typename T>
-T mix_t(T x, T y, T a) {
+template <typename T> T mix_t(T x, T y, T a) {
   if (a >= 0.0 && a <= 1.0)
     return x + (y - x) * a;
   return NAN;

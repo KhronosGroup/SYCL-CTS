@@ -96,11 +96,11 @@ float clamp(const float a, const float b, const float c);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> clamp(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
-                            cl::sycl::vec<T, N> c) {
+                          cl::sycl::vec<T, N> c) {
   cl::sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, clamp(getElement(a, i), getElement(b, i),
-                                                    getElement(c, i)));
+    setElement<T, N>(
+        res, i, clamp(getElement(a, i), getElement(b, i), getElement(c, i)));
   }
   return res;
 }
@@ -121,9 +121,8 @@ double degrees(double a);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> degrees(cl::sycl::vec<T, N> a) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x){
-      return degrees(x);
-    }, a);
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x) { return degrees(x); }, a);
 }
 
 /* radians */
@@ -132,9 +131,8 @@ double radians(double a);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> radians(cl::sycl::vec<T, N> a) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x){
-      return radians(x);
-    }, a);
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x) { return radians(x); }, a);
 }
 
 /* step */
@@ -169,7 +167,7 @@ cl::sycl::vec<T, N> smoothstep(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
   cl::sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
     setElement<T, N>(res, i, smoothstep(getElement(a, i), getElement(b, i),
-                  getElement(c, i)));
+                                        getElement(c, i)));
   }
   return res;
 }
@@ -178,7 +176,7 @@ template <typename T, int N>
 cl::sycl::vec<T, N> smoothstep(T a, T b, cl::sycl::vec<T, N> c) {
   cl::sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, smoothstep(a, b,  getElement(c, i)));
+    setElement<T, N>(res, i, smoothstep(a, b, getElement(c, i)));
   }
   return res;
 }
@@ -187,8 +185,7 @@ cl::sycl::vec<T, N> smoothstep(T a, T b, cl::sycl::vec<T, N> c) {
 float sign(float a);
 double sign(double a);
 
-template <typename T, int N>
-cl::sycl::vec<T, N> sign(cl::sycl::vec<T, N> a) {
+template <typename T, int N> cl::sycl::vec<T, N> sign(cl::sycl::vec<T, N> a) {
   cl::sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
     setElement<T, N>(res, i, sign(getElement(a, i)));
@@ -240,9 +237,8 @@ double max(const double a, const double b);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x, T y){
-      return max(x, y);
-    }, a, b);
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return max(x, y); }, a, b);
 }
 
 template <typename T, int N>
@@ -268,9 +264,8 @@ double min(const double a, const double b);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
-  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x, T y){
-      return min(x, y);
-    }, a, b);
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return min(x, y); }, a, b);
 }
 
 template <typename T, int N>
@@ -288,11 +283,11 @@ double mix(const double a, const double b, const double c);
 
 template <typename T, int N>
 cl::sycl::vec<T, N> mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
-                            cl::sycl::vec<T, N> c) {
+                        cl::sycl::vec<T, N> c) {
   cl::sycl::vec<T, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, mix(getElement(a, i), getElement(b, i),
-                                                    getElement(c, i)));
+    setElement<T, N>(res, i,
+                     mix(getElement(a, i), getElement(b, i), getElement(c, i)));
   }
   return res;
 }
