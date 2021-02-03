@@ -6,21 +6,16 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
+#include "group_async_work_group_copy_common.h"
 
-#define TEST_NAME group_async_work_group_copy
+#define TEST_NAME group_async_work_group_copy_core
 
 namespace TEST_NAMESPACE {
-using namespace sycl_cts;
 
 static constexpr size_t GROUP_RANGE_1D = 2;
 static constexpr size_t GROUP_RANGE_2D = 4;
 static constexpr size_t GROUP_RANGE_3D = 8;
 static constexpr size_t BUFFER_SIZE = 128;
-
-class group_async_work_group_copy_1d;
-class group_async_work_group_copy_2d;
-class group_async_work_group_copy_3d;
 
 class TEST_NAME : public util::test_base {
  public:
@@ -33,112 +28,65 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    check_type<size_t>(log);
+    check_type_and_vec<bool>(log);
+    check_type_and_vec<char>(log);
+    check_type_and_vec<signed char>(log);
+    check_type_and_vec<unsigned char>(log);
+    check_type_and_vec<short int>(log);
+    check_type_and_vec<unsigned short int>(log);
+    check_type_and_vec<int>(log);
+    check_type_and_vec<unsigned int>(log);
+    check_type_and_vec<long int>(log);
+    check_type_and_vec<unsigned long int>(log);
+    check_type_and_vec<long long int>(log);
+    check_type_and_vec<unsigned long long int>(log);
+    check_type_and_vec<float>(log);
 
-      {
-        auto buf = cl::sycl::buffer<size_t, 1>(cl::sycl::range<1>(BUFFER_SIZE));
+    check_type_and_vec<cl::sycl::byte>(log);
+    check_type_and_vec<cl::sycl::cl_bool>(log);
+    check_type_and_vec<cl::sycl::cl_char>(log);
+    check_type_and_vec<cl::sycl::cl_uchar>(log);
+    check_type_and_vec<cl::sycl::cl_short>(log);
+    check_type_and_vec<cl::sycl::cl_ushort>(log);
+    check_type_and_vec<cl::sycl::cl_int>(log);
+    check_type_and_vec<cl::sycl::cl_uint>(log);
+    check_type_and_vec<cl::sycl::cl_long>(log);
+    check_type_and_vec<cl::sycl::cl_ulong>(log);
+    check_type_and_vec<cl::sycl::cl_float>(log);
 
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accGlobal =
-              buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-
-          auto accLocal =
-              cl::sycl::accessor<size_t, 1, cl::sycl::access::mode::read_write,
-                                 cl::sycl::access::target::local>(
-                  cl::sycl::range<1>(BUFFER_SIZE), cgh);
-
-          // Test 1D
-          cgh.parallel_for_work_group<class group_async_work_group_copy_1d>(
-              cl::sycl::range<1>(GROUP_RANGE_1D),
-              [=](cl::sycl::group<1> my_group) {
-                auto ptrGlobal = accGlobal.get_pointer();
-                auto ptrLocal = accLocal.get_pointer();
-
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal,
-                                               BUFFER_SIZE);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal,
-                                               BUFFER_SIZE);
-
-                constexpr size_t stride = 2;
-                constexpr size_t numElements = BUFFER_SIZE / stride;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
-                                               stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
-                                               stride);
-              });
-        });
-
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accGlobal =
-              buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-
-          auto accLocal =
-              cl::sycl::accessor<size_t, 1, cl::sycl::access::mode::read_write,
-                                 cl::sycl::access::target::local>(
-                  cl::sycl::range<1>(BUFFER_SIZE), cgh);
-
-          // Test 2D
-          cgh.parallel_for_work_group<class group_async_work_group_copy_2d>(
-              cl::sycl::range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D),
-              [=](cl::sycl::group<2> my_group) {
-                auto ptrGlobal = accGlobal.get_pointer();
-                auto ptrLocal = accLocal.get_pointer();
-
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal,
-                                               BUFFER_SIZE);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal,
-                                               BUFFER_SIZE);
-
-                constexpr size_t stride = 2;
-                constexpr size_t numElements = BUFFER_SIZE / stride;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
-                                               stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
-                                               stride);
-              });
-        });
-
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto accGlobal =
-              buf.get_access<cl::sycl::access::mode::read_write>(cgh);
-
-          auto accLocal =
-              cl::sycl::accessor<size_t, 1, cl::sycl::access::mode::read_write,
-                                 cl::sycl::access::target::local>(
-                  cl::sycl::range<1>(BUFFER_SIZE), cgh);
-
-          // Test 3D
-          cgh.parallel_for_work_group<class group_async_work_group_copy_3d>(
-              cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D,
-                                 GROUP_RANGE_3D),
-              [=](cl::sycl::group<3> my_group) {
-                auto ptrGlobal = accGlobal.get_pointer();
-                auto ptrLocal = accLocal.get_pointer();
-
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal,
-                                               BUFFER_SIZE);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal,
-                                               BUFFER_SIZE);
-
-                constexpr size_t stride = 2;
-                constexpr size_t numElements = BUFFER_SIZE / stride;
-                my_group.async_work_group_copy(ptrLocal, ptrGlobal, numElements,
-                                               stride);
-                my_group.async_work_group_copy(ptrGlobal, ptrLocal, numElements,
-                                               stride);
-              });
-        });
-      }
-
-      queue.wait_and_throw();
-
-    } catch (const cl::sycl::exception &e) {
-      log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
+#ifdef INT8_MAX
+    if (!std::is_same<cl::sycl::cl_char, std::int8_t>::value)
+      check_type_and_vec<std::int8_t>(log);
+#endif
+#ifdef INT16_MAX
+    if (!std::is_same<cl::sycl::cl_short, std::int16_t>::value)
+      check_type_and_vec<std::int16_t>(log);
+#endif
+#ifdef INT32_MAX
+    if (!std::is_same<cl::sycl::cl_int, std::int32_t>::value)
+      check_type_and_vec<std::int32_t>(log);
+#endif
+#ifdef INT64_MAX
+    if (!std::is_same<cl::sycl::cl_long, std::int64_t>::value)
+      check_type_and_vec<std::int64_t>(log);
+#endif
+#ifdef UINT8_MAX
+    if (!std::is_same<cl::sycl::cl_uchar, std::uint8_t>::value)
+      check_type_and_vec<std::uint8_t>(log);
+#endif
+#ifdef UINT16_MAX
+    if (!std::is_same<cl::sycl::cl_ushort, std::uint16_t>::value)
+      check_type_and_vec<std::uint16_t>(log);
+#endif
+#ifdef UINT32_MAX
+    if (!std::is_same<cl::sycl::cl_uint, std::uint32_t>::value)
+      check_type_and_vec<std::uint32_t>(log);
+#endif
+#ifdef UINT64_MAX
+    if (!std::is_same<cl::sycl::cl_ulong, std::uint64_t>::value)
+      check_type_and_vec<std::uint64_t>(log);
+#endif
   }
 };
 
