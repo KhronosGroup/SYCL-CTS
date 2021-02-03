@@ -9,6 +9,13 @@
 #include "math_reference.h"
 #include "stl.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 namespace {
 
 template <typename A, typename B>
@@ -295,6 +302,8 @@ int64_t rhadd(const int64_t a, const int64_t b) {
  */
 template <typename T>
 T clamp_t(T v, T minv, T maxv) {
+  if (minv > maxv && std::is_floating_point<T>::value)
+    return NAN;
   return (v < minv) ? minv : ((v > maxv) ? maxv : v);
 }
 
@@ -328,6 +337,79 @@ double clamp(const double a, const double b, const double c) {
 float clamp(const float a, const float b, const float c) {
   return clamp_t(a, b, c);
 }
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- DEGREES
+ *
+ */
+
+template <typename T> T degrees_t(T a) { return a * (180.0L / M_PI); }
+
+float degrees(float a) { return degrees_t(a); }
+
+double degrees(double a) { return degrees_t(a); }
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- RADIANS
+ *
+ */
+
+template <typename T> T radians_t(T a) { return a * (M_PI / 180.0L); }
+
+float radians(float a) { return radians_t(a); }
+
+double radians(double a) { return radians_t(a); }
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- STEP
+ *
+ */
+
+template <typename T> T step_t(T a, T b) {
+  if (b < a)
+    return 0.0;
+  return 1.0;
+}
+
+float step(float a, float b) { return step_t(a, b); }
+
+double step(double a, double b) { return step_t(a, b); }
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- SMOOTHSTEP
+ *
+ */
+
+template <typename T> T smoothstep_t(T a, T b, T c) {
+  if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
+    return NAN;
+  if (c <= a)
+    return 0.0;
+  if (c >= b)
+    return 1.0;
+  auto t = clamp_t<T>((c - a) / (b - a), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+float smoothstep(float a, float b, float c) { return smoothstep_t(a, b, c); }
+double smoothstep(double a, double b, double c) {
+  return smoothstep_t(a, b, c);
+}
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- SIGN
+ *
+ */
+
+template <typename T> T sign_t(T a) {
+  if (std::isnan(a))
+    return 0.0;
+  if (a > 0)
+    return 1.0;
+  if (a < 0)
+    return -1.0;
+  if (signbit(a))
+    return -0.0;
+  return +0.0;
+}
+
+float sign(float a) { return sign_t(a); }
+
+double sign(double a) { return sign_t(a); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- CLZ
  * Returns the number of leading zero bits
@@ -445,6 +527,8 @@ int8_t max(const int8_t a, const int8_t b) { return (a > b) ? a : b; }
 int16_t max(const int16_t a, const int16_t b) { return (a > b) ? a : b; }
 int32_t max(const int32_t a, const int32_t b) { return (a > b) ? a : b; }
 int64_t max(const int64_t a, const int64_t b) { return (a > b) ? a : b; }
+float max(const float a, const float b) { return (a > b) ? a : b; }
+double max(const double a, const double b) { return (a > b) ? a : b; }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MIN
  * Returns a if a < b otherwise b
@@ -457,6 +541,25 @@ int8_t min(const int8_t a, const int8_t b) { return (a < b) ? a : b; }
 int16_t min(const int16_t a, const int16_t b) { return (a < b) ? a : b; }
 int32_t min(const int32_t a, const int32_t b) { return (a < b) ? a : b; }
 int64_t min(const int64_t a, const int64_t b) { return (a < b) ? a : b; }
+float min(const float a, const float b) { return (a < b) ? a : b; }
+double min(const double a, const double b) { return (a < b) ? a : b; }
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MIX
+ *
+ */
+template <typename T> T mix_t(T x, T y, T a) {
+  if (a >= 0.0 && a <= 1.0)
+    return x + (y - x) * a;
+  return NAN;
+}
+
+float mix(const float a, const float b, const float c) {
+  return mix_t(a, b, c);
+}
+
+double mix(const double a, const double b, const double c) {
+  return mix_t(a, b, c);
+}
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MUL_HI
  *

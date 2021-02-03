@@ -19,6 +19,15 @@ namespace sycl_cts {
  */
 namespace math {
 
+template <typename R, typename T, int N, typename funT, typename... Args>
+cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
+  cl::sycl::vec<R, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<R, N>(res, i, fun(getElement<T, N>(args, i)...));
+  }
+  return res;
+}
+
 /* cast an integer to a float */
 float int_to_float(uint32_t x);
 
@@ -31,19 +40,14 @@ void fill(cl::sycl::float16 &e, float v);
 
 /* return number of elements in a type */
 int numElements(const float &);
-int numElements(const cl::sycl::float2 &);
-int numElements(const cl::sycl::float3 &);
-int numElements(const cl::sycl::float4 &);
-int numElements(const cl::sycl::float8 &);
-int numElements(const cl::sycl::float16 &);
 
 /* return number of elements in a type */
 int numElements(const int &);
-int numElements(const cl::sycl::int2 &);
-int numElements(const cl::sycl::int3 &);
-int numElements(const cl::sycl::int4 &);
-int numElements(const cl::sycl::int8 &);
-int numElements(const cl::sycl::int16 &);
+
+template <typename T, int numElems>
+int numElements(const cl::sycl::vec<T, numElems> &) {
+  return numElems;
+}
 
 /* extract an individual elements */
 float getElement(const float &f, int ix);
@@ -77,4 +81,4 @@ void rand(MTdata &rng, uint8_t *buf, int size);
 } /* namespace math     */
 } /* namespace sycl_cts */
 
-#endif  // __SYCLCTS_UTIL_MATH_HELPER_H
+#endif // __SYCLCTS_UTIL_MATH_HELPER_H

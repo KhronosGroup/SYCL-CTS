@@ -11,7 +11,7 @@
 
 #include "./stl.h"
 #include "../tests/common/sycl.h"
-#include "./math_vector.h"
+#include "./math_helper.h"
 
 namespace reference {
 /* two argument relational reference */
@@ -94,6 +94,105 @@ int64_t clamp(const int64_t a, const int64_t b, const uint8_t c);
 double clamp(const double a, const double b, const double c);
 float clamp(const float a, const float b, const float c);
 
+template <typename T, int N>
+cl::sycl::vec<T, N> clamp(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                          cl::sycl::vec<T, N> c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(
+        res, i, clamp(getElement(a, i), getElement(b, i), getElement(c, i)));
+  }
+  return res;
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> clamp(cl::sycl::vec<T, N> a, T b, T c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, clamp(getElement(a, i), b, c));
+  }
+  return res;
+}
+
+/* degrees */
+
+float degrees(float a);
+double degrees(double a);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> degrees(cl::sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x) { return degrees(x); }, a);
+}
+
+/* radians */
+float radians(float a);
+double radians(double a);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> radians(cl::sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x) { return radians(x); }, a);
+}
+
+/* step */
+float step(float a, float b);
+double step(double a, double b);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> step(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, step(getElement(a, i), getElement(b, i)));
+  }
+  return res;
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> step(T a, cl::sycl::vec<T, N> b) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, step(a, getElement(b, i)));
+  }
+  return res;
+}
+
+/* smoothstep */
+float smoothstep(float a, float b, float c);
+double smoothstep(double a, double b, double c);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> smoothstep(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                               cl::sycl::vec<T, N> c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, smoothstep(getElement(a, i), getElement(b, i),
+                                        getElement(c, i)));
+  }
+  return res;
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> smoothstep(T a, T b, cl::sycl::vec<T, N> c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, smoothstep(a, b, getElement(c, i)));
+  }
+  return res;
+}
+
+/* sign */
+float sign(float a);
+double sign(double a);
+
+template <typename T, int N> cl::sycl::vec<T, N> sign(cl::sycl::vec<T, N> a) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, sign(getElement(a, i)));
+  }
+  return res;
+}
+
 /* count leading zeros */
 uint8_t clz(const uint8_t);
 uint16_t clz(const uint16_t);
@@ -133,6 +232,23 @@ int8_t max(const int8_t a, const int8_t b);
 int16_t max(const int16_t a, const int16_t b);
 int32_t max(const int32_t a, const int32_t b);
 int64_t max(const int64_t a, const int64_t b);
+float max(const float a, const float b);
+double max(const double a, const double b);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return max(x, y); }, a, b);
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, T b) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, max(getElement(a, i), b));
+  }
+  return res;
+}
 
 /* minimum value */
 uint8_t min(const uint8_t a, const uint8_t b);
@@ -143,6 +259,47 @@ int8_t min(const int8_t a, const int8_t b);
 int16_t min(const int16_t a, const int16_t b);
 int32_t min(const int32_t a, const int32_t b);
 int64_t min(const int64_t a, const int64_t b);
+float min(const float a, const float b);
+double min(const double a, const double b);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return min(x, y); }, a, b);
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, T b) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, min(getElement(a, i), b));
+  }
+  return res;
+}
+
+/* mix */
+float mix(const float a, const float b, const float c);
+double mix(const double a, const double b, const double c);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                        cl::sycl::vec<T, N> c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i,
+                     mix(getElement(a, i), getElement(b, i), getElement(c, i)));
+  }
+  return res;
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b, T c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    setElement<T, N>(res, i, mix(getElement(a, i), getElement(b, i), c));
+  }
+  return res;
+}
 
 /* multiply and return high part */
 uint8_t mul_hi(const uint8_t a, const uint8_t b);

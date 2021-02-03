@@ -36,7 +36,7 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     # Load the template from the input file
     with open(inputFile, 'r') as input:
         source = input.read()
-    
+
     # Execute the tests if the extensions are supported by target device.
     if extension:
         checkPoint = "\n\nif(makeQueueOnce().get_device().has_extension(\"" + extension + "\")){\n"
@@ -49,14 +49,14 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     else:
         extension = "#ifdef __SYCL_DEVICE_ONLY__\n#ifdef $s\n#pragma OPENCL EXTENSION %s : enable\n#endif\n#endif" % extension
     newSource = newSource.replace("$pragma_ext", extension)
-    
+
     # Write the source to the output file
     with open(outputFile, 'w+') as output:
         output.write(newSource)
 
-def create_tests(test_id, run, types, signatures, kind, template, file_name):
+def create_tests(test_id, run, types, signatures, kind, template, file_name, check = False):
     expanded_signatures =  test_generator.expand_signatures(run, types, signatures)
-    
+
     # Extensions should be placed on separate files.
     base_signatures = []
     half_signatures = []
@@ -71,13 +71,13 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name):
         base_signatures.append(sig)
 
     if base_signatures and kind == 'base':
-        generated_base_test_cases = test_generator.generate_test_cases(test_id, types, base_signatures)
+        generated_base_test_cases = test_generator.generate_test_cases(test_id, types, base_signatures, check)
         write_cases_to_file(generated_base_test_cases, template, file_name)
     elif half_signatures and kind == 'half':
-        generated_half_test_cases = test_generator.generate_test_cases(test_id + 300000, types, half_signatures)
+        generated_half_test_cases = test_generator.generate_test_cases(test_id + 300000, types, half_signatures, check)
         write_cases_to_file(generated_half_test_cases, template, file_name, "cl_khr_fp16")
     elif double_signatures and kind == 'double':
-        generated_double_test_cases = test_generator.generate_test_cases(test_id + 600000, types, double_signatures)
+        generated_double_test_cases = test_generator.generate_test_cases(test_id + 600000, types, double_signatures, check)
         write_cases_to_file(generated_double_test_cases, template, file_name, "cl_khr_fp64")
     else:
         print("No %s overloads to generate for the test category" % kind)
@@ -121,7 +121,7 @@ def main():
 
     if args.test == 'common':
         common_signatures = sycl_functions.create_common_signatures()
-        create_tests(1000000, run, expanded_types, common_signatures, args.variante, args.template, args.output)
+        create_tests(1000000, run, expanded_types, common_signatures, args.variante, args.template, args.output, True)
 
     if args.test == 'geometric':
         geomteric_signatures = sycl_functions.create_geometric_signatures()
