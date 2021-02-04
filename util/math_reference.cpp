@@ -31,6 +31,14 @@ int32_t num_bits(T) {
   return int32_t(sizeof(T) * 8u);
 }
 
+template <typename T> bool if_bit_set(T num, int bit) {
+  return (num >> bit) & 1;
+}
+
+template <typename T> bool if_msb_set(T x) {
+  return if_bit_set(x, num_bits(x) - 1);
+}
+
 const uint64_t max_uint64_t = (~0x0ull);
 const uint32_t max_uint32_t = 0xffffffff;
 const uint16_t max_uint16_t = 0xffff;
@@ -53,49 +61,188 @@ const int8_t min_int8_t = int8_t(0x80);
 
 namespace reference {
 
-int isequal(float x, float y) { return x == y; }
+int32_t isequal(float x, float y) { return x == y; }
+int64_t isequal(double x, double y) { return x == y; }
 
-int isnotequal(float x, float y) { return x != y; }
+int32_t isnotequal(float x, float y) { return x != y; }
+int64_t isnotequal(double x, double y) { return x != y; }
 
-int isgreater(float x, float y) { return x > y; }
+int32_t isgreater(float x, float y) { return x > y; }
+int64_t isgreater(double x, double y) { return x > y; }
 
-int isgreaterequal(float x, float y) { return x >= y; }
+int32_t isgreaterequal(float x, float y) { return x >= y; }
+int64_t isgreaterequal(double x, double y) { return x >= y; }
 
-int isless(float x, float y) { return x < y; }
+int32_t isless(float x, float y) { return x < y; }
+int64_t isless(double x, double y) { return x < y; }
 
-int islessequal(float x, float y) { return x <= y; }
+int32_t islessequal(float x, float y) { return x <= y; }
+int64_t islessequal(double x, double y) { return x <= y; }
 
-int islessgreater(float x, float y) { return (x < y) || (x > y); }
+int32_t islessgreater(float x, float y) { return (x < y) || (x > y); }
+int64_t islessgreater(double x, double y) { return (x < y) || (x > y); }
 
-int isordered(float x, float y) { return (x == x) && (y == y); }
+int32_t isordered(float x, float y) { return (x == x) && (y == y); }
+int64_t isordered(double x, double y) { return (x == x) && (y == y); }
 
-int isunordered(float x, float y) { return !((x == x) && (y == y)); }
+int32_t isunordered(float x, float y) { return !((x == x) && (y == y)); }
+int64_t isunordered(double x, double y) { return !((x == x) && (y == y)); }
 
-int isfinite(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x7f800000u) != 0x7f800000u;
+int32_t isfinite(float x) { return std::isfinite(x); }
+int64_t isfinite(double x) { return std::isfinite(x); }
+
+int32_t isinf(float x) { return std::isinf(x); }
+int64_t isinf(double x) { return std::isinf(x); }
+
+int32_t isnan(float x) { return std::isnan(x); }
+int64_t isnan(double x) { return std::isnan(x); }
+
+int32_t isnormal(float x) { return std::isnormal(x); }
+int64_t isnormal(double x) { return std::isnormal(x); }
+
+int32_t signbit(float x) { return std::signbit(x); }
+int64_t signbit(double x) { return std::signbit(x); }
+
+auto constexpr any = [] (auto x) { return if_msb_set(x); };
+
+int all(signed char x) { return if_msb_set(x); }
+int all(int x) { return if_msb_set(x); }
+int all(long int x) { return if_msb_set(x); }
+int all(long long int x) { return if_msb_set(x); }
+
+template <typename T> T bitselect_t(T x, T y, T z) {
+  T res;
+  for (int i = 0; i < num_bits(x); i++) {
+    T bit;
+    if (if_bit_set(z, i))
+      bit = if_bit_set(y, i);
+    else
+      bit = if_bit_set(x, i);
+    res = (res & (~(T(1) << i))) | (bit << i);
+  }
+  return res;
 }
 
-int isinf(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x7fffffffu) == 0x7f800000u;
+char bitselect(char a, char b, char c) { return bitselect_t(a, b, c); }
+signed char bitselect(signed char a, signed char b, signed char c) {
+  return bitselect_t(a, b, c);
+}
+unsigned char bitselect(unsigned char a, unsigned char b, unsigned char c) {
+  return bitselect_t(a, b, c);
+}
+short bitselect(short a, short b, short c) { return bitselect_t(a, b, c); }
+unsigned short bitselect(unsigned short a, unsigned short b, unsigned short c) {
+  return bitselect_t(a, b, c);
+}
+int bitselect(int a, int b, int c) { return bitselect_t(a, b, c); }
+unsigned int bitselect(unsigned int a, unsigned int b, unsigned int c) {
+  return bitselect_t(a, b, c);
+}
+long int bitselect(long int a, long int b, long int c) {
+  return bitselect_t(a, b, c);
+}
+long long int bitselect(long long int a, long long int b, long long int c) {
+  return bitselect_t(a, b, c);
+}
+unsigned long int bitselect(unsigned long int a, unsigned long int b,
+                            unsigned long int c) {
+  return bitselect_t(a, b, c);
+}
+unsigned long long int bitselect(unsigned long long int a,
+                                 unsigned long long int b,
+                                 unsigned long long int c) {
+  return bitselect_t(a, b, c);
+}
+template <typename I, typename T> T bitselect_f_t(T x, T y, T z) {
+  I a, b, c;
+  type_punn(x, a);
+  type_punn(y, b);
+  type_punn(z, c);
+  I res_t = bitselect_t(a, b, c);
+  T res;
+  type_punn(res_t, res);
+  return res;
+}
+float bitselect(float a, float b, float c) {
+  return bitselect_f_t<int32_t>(a, b, c);
+}
+double bitselect(double a, double b, double c) {
+  return bitselect_f_t<int64_t>(a, b, c);
+}
+cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
+  return bitselect_f_t<int16_t>(a, b, c);
 }
 
-int isnan(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return ((i & 0x7f800000u) == 0x7f800000u) && (i & 0x007fffffu);
+template <typename T, typename K> T select_t(T x, T y, K z) {
+  return z ? y : x;
 }
 
-int isnormal(float x) { return !isnan(x); }
-
-int signbit(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x80000000u) != 0;
+char select(char a, char b, signed char c) { return select_t(a, b, c); }
+signed char select(signed char a, signed char b, signed char c) {
+  return select_t(a, b, c);
 }
+unsigned char select(unsigned char a, unsigned char b, signed char c) {
+  return select_t(a, b, c);
+}
+short select(short a, short b, short c) { return select_t(a, b, c); }
+unsigned short select(unsigned short a, unsigned short b, short c) {
+  return select_t(a, b, c);
+}
+int select(int a, int b, int c) { return select_t(a, b, c); }
+unsigned int select(unsigned int a, unsigned int b, int c) {
+  return select_t(a, b, c);
+}
+long int select(long int a, long int b, long int c) {
+  return select_t(a, b, c);
+}
+long long int select(long long int a, long long int b, long long int c) {
+  return select_t(a, b, c);
+}
+unsigned long int select(unsigned long int a, unsigned long int b, long int c) {
+  return select_t(a, b, c);
+}
+unsigned long long int select(unsigned long long int a,
+                              unsigned long long int b, long long int c) {
+  return select_t(a, b, c);
+}
+
+char select(char a, char b, unsigned char c) { return select_t(a, b, c); }
+signed char select(signed char a, signed char b, unsigned char c) {
+  return select_t(a, b, c);
+}
+unsigned char select(unsigned char a, unsigned char b, unsigned char c) {
+  return select_t(a, b, c);
+}
+short select(short a, short b, unsigned short c) { return select_t(a, b, c); }
+unsigned short select(unsigned short a, unsigned short b, unsigned short c) {
+  return select_t(a, b, c);
+}
+int select(int a, int b, unsigned int c) { return select_t(a, b, c); }
+unsigned int select(unsigned int a, unsigned int b, unsigned int c) {
+  return select_t(a, b, c);
+}
+long int select(long int a, long int b, unsigned long int c) {
+  return select_t(a, b, c);
+}
+long long int select(long long int a, long long int b,
+                     unsigned long long int c) {
+  return select_t(a, b, c);
+}
+unsigned long int select(unsigned long int a, unsigned long int b,
+                         unsigned long int c) {
+  return select_t(a, b, c);
+}
+unsigned long long int select(unsigned long long int a,
+                              unsigned long long int b,
+                              unsigned long long int c) {
+  return select_t(a, b, c);
+}
+
+float select(float a, float b, unsigned int c) { return select_t(a, b, c); }
+float select(float a, float b, int c) { return select_t(a, b, c); }
+
+double select(double a, double b, uint64_t c) { return select_t(a, b, c); }
+double select(double a, double b, int64_t c) { return select_t(a, b, c); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ABS
  * Returns |x|

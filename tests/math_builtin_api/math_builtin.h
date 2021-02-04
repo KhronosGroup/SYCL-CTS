@@ -40,14 +40,23 @@ typename std::enable_if<std::is_floating_point<T>::value ||
 verify(sycl_cts::util::logger &log, T a, T b) {
   // if result is undefined according to spec,
   // reference function for float numbers returns NAN
-  return std::isnan(b) || std::fabs(a - b) <= eps<T>() * std::fabs(a + b) ||
-         std::fabs(a - b) < min_t<T>();
+  bool result = std::isnan(b) ||
+                std::fabs(a - b) <= eps<T>() * std::fabs(a + b) ||
+                std::fabs(a - b) < min_t<T>();
+  if (!result)
+    log.note("value: " + std::to_string(a) + ", reference: " +
+             std::to_string(b));
+  return result;
 }
 
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, bool>::type
 verify(sycl_cts::util::logger &log, T a, T b) {
-  return a == b;
+  bool result = a == b;
+  if (!result)
+    log.note("value: " + std::to_string(a) + ", reference: " +
+             std::to_string(b));
+  return result;
 }
 
 template <typename T, int N>

@@ -28,6 +28,20 @@ cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
   return res;
 }
 
+/* helper for relational functions where true result gives 1 for scalar
+    and -1 for vector argument types */
+template <typename R, typename T, int N, typename funT, typename... Args>
+cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
+  cl::sycl::vec<R, N> res;
+  for (int i = 0; i < N; i++) {
+    if (fun(getElement<T, N>(args, i)...) == 1)
+      setElement<R, N>(res, i, -1);
+    else
+      setElement<R, N>(res, i, 0);
+  }
+  return res;
+}
+
 /* cast an integer to a float */
 float int_to_float(uint32_t x);
 
