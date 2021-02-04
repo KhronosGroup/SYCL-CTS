@@ -1,6 +1,6 @@
 /*******************************************************************************
 //
-//  SYCL 1.2.1 Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -159,7 +159,7 @@ bool test_manager::run() {
  */
 void test_manager::print_usage() {
   const char *usage = R"(
-SYCL 1.2.1 CONFORMANCE TEST SUITE
+SYCL 2020 CONFORMANCE TEST SUITE
 Usage:
     --help      -h         Show this help message
     --json      -j         Print test results in JSON format
