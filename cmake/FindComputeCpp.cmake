@@ -35,16 +35,11 @@ set_target_properties(ComputeCpp::Runtime PROPERTIES
     IMPORTED_LOCATION                    "${ComputeCpp_LIBRARIES}"
     INTERFACE_INCLUDE_DIRECTORIES        "${ComputeCpp_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES             "OpenCL::OpenCL;Threads::Threads"
-    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl")
+    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl;-DSYCL_LANGUAGE_VERSION=2020")
 if (WIN32)
     set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
                  INTERFACE_DEVICE_COMPILE_DEFINITIONS
                  "_SIZE_T_DEFINED;_NO_CRT_STDIO_INLINE")
-    set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
-                 INTERFACE_DEVICE_COMPILE_OPTIONS "-std=c++14")
-else()
-    set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
-                 INTERFACE_DEVICE_COMPILE_OPTIONS "-std=c++11")
 endif()
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
@@ -80,6 +75,7 @@ function(build_spir exe_name spir_target_name source_file output_path)
             -O2
             -mllvm -inline-threshold=1000
             -intelspirmetadata
+            -DSYCL_LANGUAGE_VERSION=2020
             ${COMPUTECPP_USER_FLAGS}
             ${platform_specific_args}
             $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">
