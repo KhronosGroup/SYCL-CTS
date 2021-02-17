@@ -35,16 +35,14 @@ set_target_properties(ComputeCpp::Runtime PROPERTIES
     IMPORTED_LOCATION                    "${ComputeCpp_LIBRARIES}"
     INTERFACE_INCLUDE_DIRECTORIES        "${ComputeCpp_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES             "OpenCL::OpenCL;Threads::Threads"
-    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl")
+    INTERFACE_COMPILE_DEFINITIONS        "-DSYCL_LANGUAGE_VERSION=2020"
+    INTERFACE_DEVICE_COMPILE_DEFINITIONS "-DSYCL_LANGUAGE_VERSION=2020"
+    INTERFACE_DEVICE_COMPILE_OPTIONS     "-sycl;-std=c++17"
+  )
 if (WIN32)
     set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
                  INTERFACE_DEVICE_COMPILE_DEFINITIONS
                  "_SIZE_T_DEFINED;_NO_CRT_STDIO_INLINE")
-    set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
-                 INTERFACE_DEVICE_COMPILE_OPTIONS "-std=c++14")
-else()
-    set_property(TARGET ComputeCpp::Runtime APPEND PROPERTY
-                 INTERFACE_DEVICE_COMPILE_OPTIONS "-std=c++11")
 endif()
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)

@@ -11,7 +11,7 @@ if(NOT DEFINED INTEL_SYCL_TRIPLE)
 endif()
 message("Intel SYCL target triple: ${INTEL_SYCL_TRIPLE}")
 
-set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;-ffp-model=precise;${INTEL_SYCL_FLAGS}")
+set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=2020;-ffp-model=precise;${INTEL_SYCL_FLAGS}")
 message("Intel SYCL compiler flags: `${INTEL_SYCL_FLAGS}`")
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)

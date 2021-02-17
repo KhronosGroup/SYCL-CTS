@@ -7,7 +7,6 @@ endif()
 
 set(CMAKE_C_COMPILER    ${SYCLCC_EXECUTABLE})
 set(CMAKE_CXX_COMPILER  ${SYCLCC_EXECUTABLE})
-set(CMAKE_CXX_STANDARD 14)
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
 # add_sycl_executable_implementation function
