@@ -26,13 +26,13 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-/** checks that CL_SYCL_LANGUAGE_VERSION is defined
+/** checks that SYCL_LANGUAGE_VERSION is defined
 */
-#if !defined(CL_SYCL_LANGUAGE_VERSION)
+#if !defined(SYCL_LANGUAGE_VERSION)
 #define TEST_FAIL
-    log.note("CL_SYCL_LANGUAGE_VERSION not present");
+    log.note("SYCL_LANGUAGE_VERSION not present");
 #else
-    log.note("CL_SYCL_LANGUAGE_VERSION = %d", (int)CL_SYCL_LANGUAGE_VERSION);
+    log.note("SYCL_LANGUAGE_VERSION = %d", (int)SYCL_LANGUAGE_VERSION);
 #endif
 
 /** checks that __FAST_RELAXED_MATH__ is defined
