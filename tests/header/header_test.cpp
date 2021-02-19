@@ -32,7 +32,7 @@ class TEST_NAME : public util::test_base {
 #define TEST_FAIL
     log.note("SYCL_LANGUAGE_VERSION not present");
 #else
-    log.note("SYCL_LANGUAGE_VERSION = %d", (int)SYCL_LANGUAGE_VERSION);
+    log.note("SYCL_LANGUAGE_VERSION = %d", static_cast<int>(SYCL_LANGUAGE_VERSION));
 #endif
 
 /** checks that __FAST_RELAXED_MATH__ is defined
