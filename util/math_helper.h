@@ -42,6 +42,42 @@ cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
   return res;
 }
 
+template <typename T>
+struct rel_funcs_return;
+template <>
+struct rel_funcs_return<float> {
+  using type = int32_t;
+};
+template <>
+struct rel_funcs_return<double> {
+  using type = int64_t;
+};
+
+
+template<template<class> class funT, typename T, typename... Args>
+typename rel_funcs_return<T>::type rel_func_dispatcher(T a, Args... args) {
+  return funT<T>()(a, args...);
+}
+
+template<template<class> class funT, typename T, int N, typename... Args>
+typename cl::sycl::vec<typename rel_funcs_return<T>::type, N> rel_func_dispatcher(cl::sycl::vec<T, N> a, Args... args) {
+  return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
+      funT<T> {}, a, args...);
+}
+
+template <typename T>
+int32_t num_bits(T) {
+  return int32_t(sizeof(T) * 8u);
+}
+
+template <typename T> bool if_bit_set(T num, int bit) {
+  return (num >> bit) & 1;
+}
+
+template <typename T> bool if_msb_set(T x) {
+  return if_bit_set(x, num_bits(x) - 1);
+}
+
 /* cast an integer to a float */
 float int_to_float(uint32_t x);
 

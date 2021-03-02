@@ -15,198 +15,129 @@
 
 namespace reference {
 /* two argument relational reference */
-int32_t isequal(float x, float y);
-int64_t isequal(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isequal(cl::sycl::vec<float, N> a,
-                                  cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isequal(x, y); }, a, b);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> isequal(cl::sycl::vec<double, N> a,
-                                  cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isequal(x, y); }, a, b);
+template <typename T>
+auto isequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::equal_to>(a, b);
 }
 
-int32_t isnotequal(float x, float y);
-int64_t isnotequal(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isnotequal(cl::sycl::vec<float, N> a,
-                                     cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isnotequal(x, y); }, a, b);
+template <typename T>
+auto isnotequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::not_equal_to>(a, b);
 }
-template <int N>
-cl::sycl::vec<int64_t, N> isnotequal(cl::sycl::vec<double, N> a,
-                                     cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isnotequal(x, y); }, a, b);
+
+template <typename T>
+auto isgreater(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::greater>(a, b);
 }
-int32_t isgreater(float x, float y);
-int64_t isgreater(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isgreater(cl::sycl::vec<float, N> a,
-                                    cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isgreater(x, y); }, a, b);
+
+template <typename T>
+auto isgreaterequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::greater_equal>(a, b);
 }
-template <int N>
-cl::sycl::vec<int64_t, N> isgreater(cl::sycl::vec<double, N> a,
-                                    cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isgreater(x, y); }, a, b);
+
+template <typename T>
+auto isless(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::less>(a, b);
 }
-int32_t isgreaterequal(float x, float y);
-int64_t isgreaterequal(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isgreaterequal(cl::sycl::vec<float, N> a,
-                                         cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isgreaterequal(x, y); }, a, b);
+
+template <typename T>
+auto islessequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::less_equal>(a, b);
 }
-template <int N>
-cl::sycl::vec<int64_t, N> isgreaterequal(cl::sycl::vec<double, N> a,
-                                         cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isgreaterequal(x, y); }, a, b);
+
+template<typename T>
+struct islessgreater_func{
+  constexpr bool operator()(const T& x, const T& y) const {
+    return (x < y) || (x > y);
+  }
+};
+template <typename T>
+auto islessgreater(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<islessgreater_func>(a, b);
 }
-int32_t isless(float x, float y);
-int64_t isless(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isless(cl::sycl::vec<float, N> a,
-                                 cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isless(x, y); }, a, b);
+
+template<typename T>
+struct isordered_func{
+  constexpr bool operator()(const T& x, const T& y) const {
+   return (x == x) && (y == y);
+  }
+};
+template <typename T>
+auto isordered(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<isordered_func>(a, b);
 }
-template <int N>
-cl::sycl::vec<int64_t, N> isless(cl::sycl::vec<double, N> a,
-                                 cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isless(x, y); }, a, b);
-}
-int32_t islessequal(float x, float y);
-int64_t islessequal(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> islessequal(cl::sycl::vec<float, N> a,
-                                      cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return islessequal(x, y); }, a, b);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> islessequal(cl::sycl::vec<double, N> a,
-                                      cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return islessequal(x, y); }, a, b);
-}
-int32_t islessgreater(float x, float y);
-int64_t islessgreater(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> islessgreater(cl::sycl::vec<float, N> a,
-                                        cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return islessgreater(x, y); }, a, b);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> islessgreater(cl::sycl::vec<double, N> a,
-                                        cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return islessgreater(x, y); }, a, b);
-}
-int32_t isordered(float x, float y);
-int64_t isordered(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isordered(cl::sycl::vec<float, N> a,
-                                    cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isordered(x, y); }, a, b);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> isordered(cl::sycl::vec<double, N> a,
-                                    cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isordered(x, y); }, a, b);
-}
-int32_t isunordered(float x, float y);
-int64_t isunordered(double x, double y);
-template <int N>
-cl::sycl::vec<int32_t, N> isunordered(cl::sycl::vec<float, N> a,
-                                      cl::sycl::vec<float, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x, float y) { return isunordered(x, y); }, a, b);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> isunordered(cl::sycl::vec<double, N> a,
-                                      cl::sycl::vec<double, N> b) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x, double y) { return isunordered(x, y); }, a, b);
+
+template<typename T>
+struct isunordered_func{
+  constexpr bool operator()(const T& x, const T& y) const {
+   return !((x == x) && (y == y));
+  }
+};
+template <typename T>
+auto isunordered(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<isunordered_func>(a, b);
 }
 
 /* one argument relational reference */
-int32_t isfinite(float x);
-int64_t isfinite(double x);
-template <int N> cl::sycl::vec<int32_t, N> isfinite(cl::sycl::vec<float, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x) { return isfinite(x); }, a);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> isfinite(cl::sycl::vec<double, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x) { return isfinite(x); }, a);
-}
-int32_t isinf(float x);
-int64_t isinf(double x);
-template <int N> cl::sycl::vec<int32_t, N> isinf(cl::sycl::vec<float, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x) { return isinf(x); }, a);
-}
-template <int N> cl::sycl::vec<int64_t, N> isinf(cl::sycl::vec<double, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x) { return isinf(x); }, a);
-}
-int32_t isnan(float x);
-int64_t isnan(double x);
-template <int N> cl::sycl::vec<int32_t, N> isnan(cl::sycl::vec<float, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x) { return isnan(x); }, a);
-}
-template <int N> cl::sycl::vec<int64_t, N> isnan(cl::sycl::vec<double, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x) { return isnan(x); }, a);
-}
-int32_t isnormal(float x);
-int64_t isnormal(double x);
-template <int N> cl::sycl::vec<int32_t, N> isnormal(cl::sycl::vec<float, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x) { return isnormal(x); }, a);
-}
-template <int N>
-cl::sycl::vec<int64_t, N> isnormal(cl::sycl::vec<double, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x) { return isnormal(x); }, a);
-}
-int32_t signbit(float x);
-int64_t signbit(double x);
-template <int N> cl::sycl::vec<int32_t, N> signbit(cl::sycl::vec<float, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int32_t, float, N>(
-      [](float x) { return signbit(x); }, a);
-}
-template <int N> cl::sycl::vec<int64_t, N> signbit(cl::sycl::vec<double, N> a) {
-  return sycl_cts::math::run_rel_func_on_vector<int64_t, double, N>(
-      [](double x) { return signbit(x); }, a);
+template<typename T>
+struct isfinite_func{
+  constexpr bool operator()(const T& x) const {
+   return std::isfinite(x);
+  }
+};
+template <typename T>
+auto isfinite(T a) {
+  return sycl_cts::math::rel_func_dispatcher<isfinite_func>(a);
 }
 
-int any(signed char);
-int any(short int);
-int any(int);
-int any(long int);
-int any(long long int);
-int any(unsigned char);
-int any(unsigned short int);
-int any(unsigned int);
-int any(unsigned long int);
-int any(unsigned long long int);
+template<typename T>
+struct isinf_func{
+  constexpr bool operator()(const T& x) const {
+   return std::isinf(x);
+  }
+};
+template <typename T>
+auto isinf(T a) {
+  return sycl_cts::math::rel_func_dispatcher<isinf_func>(a);
+}
+
+template<typename T>
+struct isnan_func{
+  constexpr bool operator()(const T& x) const {
+   return std::isnan(x);
+  }
+};
+template <typename T>
+auto isnan(T a) {
+  return sycl_cts::math::rel_func_dispatcher<isnan_func>(a);
+}
+
+template<typename T>
+struct isnormal_func{
+  constexpr bool operator()(const T& x) const {
+   return std::isnormal(x);
+  }
+};
+template <typename T>
+auto isnormal(T a) {
+  return sycl_cts::math::rel_func_dispatcher<isnormal_func>(a);
+}
+
+template<typename T>
+struct signbit_func{
+  constexpr bool operator()(const T& x) const {
+   return std::signbit(x);
+  }
+};
+template <typename T>
+auto signbit(T a) {
+  return sycl_cts::math::rel_func_dispatcher<signbit_func>(a);
+}
+
+template <typename T>
+int any(T x) {
+   return sycl_cts::math::if_msb_set(x);
+}
 template <typename T, int N> int any(cl::sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
     if (any(getElement(a, i)) == 1)
@@ -215,10 +146,10 @@ template <typename T, int N> int any(cl::sycl::vec<T, N> a) {
   return 0;
 }
 
-int all(signed char);
-int all(int);
-int all(long int);
-int all(long long int);
+template <typename T>
+int all(T x) {
+   return sycl_cts::math::if_msb_set(x);
+}
 template <typename T, int N> int all(cl::sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
     if (all(getElement(a, i)) == 0)
@@ -227,20 +158,10 @@ template <typename T, int N> int all(cl::sycl::vec<T, N> a) {
   return 1;
 }
 
-char bitselect(char a, char b, char c);
-signed char bitselect(signed char a, signed char b, signed char c);
-unsigned char bitselect(unsigned char a, unsigned char b, unsigned char c);
-short bitselect(short a, short b, short c);
-unsigned short bitselect(unsigned short a, unsigned short b, unsigned short c);
-int bitselect(int a, int b, int c);
-unsigned int bitselect(unsigned int a, unsigned int b, unsigned int c);
-long int bitselect(long int a, long int b, long int c);
-long long int bitselect(long long int a, long long int b, long long int c);
-unsigned long int bitselect(unsigned long int a, unsigned long int b,
-                            unsigned long int c);
-unsigned long long int bitselect(unsigned long long int a,
-                                 unsigned long long int b,
-                                 unsigned long long int c);
+template <typename T>
+T bitselect(T a, T b, T c) {
+  return (c & b) | (~c & a);
+}
 float bitselect(float a, float b, float c);
 double bitselect(double a, double b, double c);
 cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c);
@@ -251,40 +172,8 @@ cl::sycl::vec<T, N> bitselect(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
       [](T x, T y, T z) { return bitselect(x, y, z); }, a, b, c);
 }
 
-char select(char a, char b, signed char c);
-signed char select(signed char a, signed char b, signed char c);
-unsigned char select(unsigned char a, unsigned char b, signed char c);
-short select(short a, short b, short c);
-unsigned short select(unsigned short a, unsigned short b, short c);
-int select(int a, int b, int c);
-unsigned int select(unsigned int a, unsigned int b, int c);
-long int select(long int a, long int b, long int c);
-long long int select(long long int a, long long int b, long long int c);
-unsigned long int select(unsigned long int a, unsigned long int b, long int c);
-unsigned long long int select(unsigned long long int a,
-                              unsigned long long int b, long long int c);
-
-char select(char a, char b, unsigned char c);
-signed char select(signed char a, signed char b, unsigned char c);
-unsigned char select(unsigned char a, unsigned char b, unsigned char c);
-short select(short a, short b, unsigned short c);
-unsigned short select(unsigned short a, unsigned short b, unsigned short c);
-int select(int a, int b, unsigned int c);
-unsigned int select(unsigned int a, unsigned int b, unsigned int c);
-long int select(long int a, long int b, unsigned long int c);
-long long int select(long long int a, long long int b,
-                     unsigned long long int c);
-unsigned long int select(unsigned long int a, unsigned long int b,
-                         unsigned long int c);
-unsigned long long int select(unsigned long long int a,
-                              unsigned long long int b,
-                              unsigned long long int c);
-
-float select(float a, float b, unsigned int c);
-float select(float a, float b, int c);
-
-double select(double a, double b, uint64_t c);
-double select(double a, double b, int64_t c);
+template <typename T, typename U>
+T select(T a, T b, U c) { return c ? b : a; }
 
 template <typename T, typename K, int N>
 cl::sycl::vec<T, N> select(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,

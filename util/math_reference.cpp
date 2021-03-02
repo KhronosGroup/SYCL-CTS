@@ -26,19 +26,6 @@ void type_punn(const A &from, B &to) {
               reinterpret_cast<const void *>(&from), sizeof(A));
 }
 
-template <typename T>
-int32_t num_bits(T) {
-  return int32_t(sizeof(T) * 8u);
-}
-
-template <typename T> bool if_bit_set(T num, int bit) {
-  return (num >> bit) & 1;
-}
-
-template <typename T> bool if_msb_set(T x) {
-  return if_bit_set(x, num_bits(x) - 1);
-}
-
 const uint64_t max_uint64_t = (~0x0ull);
 const uint32_t max_uint32_t = 0xffffffff;
 const uint16_t max_uint16_t = 0xffff;
@@ -61,98 +48,10 @@ const int8_t min_int8_t = int8_t(0x80);
 
 namespace reference {
 
-int32_t isequal(float x, float y) { return x == y; }
-int64_t isequal(double x, double y) { return x == y; }
-
-int32_t isnotequal(float x, float y) { return x != y; }
-int64_t isnotequal(double x, double y) { return x != y; }
-
-int32_t isgreater(float x, float y) { return x > y; }
-int64_t isgreater(double x, double y) { return x > y; }
-
-int32_t isgreaterequal(float x, float y) { return x >= y; }
-int64_t isgreaterequal(double x, double y) { return x >= y; }
-
-int32_t isless(float x, float y) { return x < y; }
-int64_t isless(double x, double y) { return x < y; }
-
-int32_t islessequal(float x, float y) { return x <= y; }
-int64_t islessequal(double x, double y) { return x <= y; }
-
-int32_t islessgreater(float x, float y) { return (x < y) || (x > y); }
-int64_t islessgreater(double x, double y) { return (x < y) || (x > y); }
-
-int32_t isordered(float x, float y) { return (x == x) && (y == y); }
-int64_t isordered(double x, double y) { return (x == x) && (y == y); }
-
-int32_t isunordered(float x, float y) { return !((x == x) && (y == y)); }
-int64_t isunordered(double x, double y) { return !((x == x) && (y == y)); }
-
-int32_t isfinite(float x) { return std::isfinite(x); }
-int64_t isfinite(double x) { return std::isfinite(x); }
-
-int32_t isinf(float x) { return std::isinf(x); }
-int64_t isinf(double x) { return std::isinf(x); }
-
-int32_t isnan(float x) { return std::isnan(x); }
-int64_t isnan(double x) { return std::isnan(x); }
-
-int32_t isnormal(float x) { return std::isnormal(x); }
-int64_t isnormal(double x) { return std::isnormal(x); }
-
-int32_t signbit(float x) { return std::signbit(x); }
-int64_t signbit(double x) { return std::signbit(x); }
-
-auto constexpr any = [] (auto x) { return if_msb_set(x); };
-
-int all(signed char x) { return if_msb_set(x); }
-int all(int x) { return if_msb_set(x); }
-int all(long int x) { return if_msb_set(x); }
-int all(long long int x) { return if_msb_set(x); }
-
 template <typename T> T bitselect_t(T x, T y, T z) {
-  T res;
-  for (int i = 0; i < num_bits(x); i++) {
-    T bit;
-    if (if_bit_set(z, i))
-      bit = if_bit_set(y, i);
-    else
-      bit = if_bit_set(x, i);
-    res = (res & (~(T(1) << i))) | (bit << i);
-  }
-  return res;
+  return (z & y) | (~z & x);
 }
 
-char bitselect(char a, char b, char c) { return bitselect_t(a, b, c); }
-signed char bitselect(signed char a, signed char b, signed char c) {
-  return bitselect_t(a, b, c);
-}
-unsigned char bitselect(unsigned char a, unsigned char b, unsigned char c) {
-  return bitselect_t(a, b, c);
-}
-short bitselect(short a, short b, short c) { return bitselect_t(a, b, c); }
-unsigned short bitselect(unsigned short a, unsigned short b, unsigned short c) {
-  return bitselect_t(a, b, c);
-}
-int bitselect(int a, int b, int c) { return bitselect_t(a, b, c); }
-unsigned int bitselect(unsigned int a, unsigned int b, unsigned int c) {
-  return bitselect_t(a, b, c);
-}
-long int bitselect(long int a, long int b, long int c) {
-  return bitselect_t(a, b, c);
-}
-long long int bitselect(long long int a, long long int b, long long int c) {
-  return bitselect_t(a, b, c);
-}
-unsigned long int bitselect(unsigned long int a, unsigned long int b,
-                            unsigned long int c) {
-  return bitselect_t(a, b, c);
-}
-unsigned long long int bitselect(unsigned long long int a,
-                                 unsigned long long int b,
-                                 unsigned long long int c) {
-  return bitselect_t(a, b, c);
-}
 template <typename I, typename T> T bitselect_f_t(T x, T y, T z) {
   I a, b, c;
   type_punn(x, a);
@@ -172,77 +71,6 @@ double bitselect(double a, double b, double c) {
 cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
   return bitselect_f_t<int16_t>(a, b, c);
 }
-
-template <typename T, typename K> T select_t(T x, T y, K z) {
-  return z ? y : x;
-}
-
-char select(char a, char b, signed char c) { return select_t(a, b, c); }
-signed char select(signed char a, signed char b, signed char c) {
-  return select_t(a, b, c);
-}
-unsigned char select(unsigned char a, unsigned char b, signed char c) {
-  return select_t(a, b, c);
-}
-short select(short a, short b, short c) { return select_t(a, b, c); }
-unsigned short select(unsigned short a, unsigned short b, short c) {
-  return select_t(a, b, c);
-}
-int select(int a, int b, int c) { return select_t(a, b, c); }
-unsigned int select(unsigned int a, unsigned int b, int c) {
-  return select_t(a, b, c);
-}
-long int select(long int a, long int b, long int c) {
-  return select_t(a, b, c);
-}
-long long int select(long long int a, long long int b, long long int c) {
-  return select_t(a, b, c);
-}
-unsigned long int select(unsigned long int a, unsigned long int b, long int c) {
-  return select_t(a, b, c);
-}
-unsigned long long int select(unsigned long long int a,
-                              unsigned long long int b, long long int c) {
-  return select_t(a, b, c);
-}
-
-char select(char a, char b, unsigned char c) { return select_t(a, b, c); }
-signed char select(signed char a, signed char b, unsigned char c) {
-  return select_t(a, b, c);
-}
-unsigned char select(unsigned char a, unsigned char b, unsigned char c) {
-  return select_t(a, b, c);
-}
-short select(short a, short b, unsigned short c) { return select_t(a, b, c); }
-unsigned short select(unsigned short a, unsigned short b, unsigned short c) {
-  return select_t(a, b, c);
-}
-int select(int a, int b, unsigned int c) { return select_t(a, b, c); }
-unsigned int select(unsigned int a, unsigned int b, unsigned int c) {
-  return select_t(a, b, c);
-}
-long int select(long int a, long int b, unsigned long int c) {
-  return select_t(a, b, c);
-}
-long long int select(long long int a, long long int b,
-                     unsigned long long int c) {
-  return select_t(a, b, c);
-}
-unsigned long int select(unsigned long int a, unsigned long int b,
-                         unsigned long int c) {
-  return select_t(a, b, c);
-}
-unsigned long long int select(unsigned long long int a,
-                              unsigned long long int b,
-                              unsigned long long int c) {
-  return select_t(a, b, c);
-}
-
-float select(float a, float b, unsigned int c) { return select_t(a, b, c); }
-float select(float a, float b, int c) { return select_t(a, b, c); }
-
-double select(double a, double b, uint64_t c) { return select_t(a, b, c); }
-double select(double a, double b, int64_t c) { return select_t(a, b, c); }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ABS
  * Returns |x|
@@ -563,7 +391,7 @@ double sign(double a) { return sign_t(a); }
  */
 uint8_t clz(const uint8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -573,7 +401,7 @@ uint8_t clz(const uint8_t x) {
 
 uint16_t clz(const uint16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -583,7 +411,7 @@ uint16_t clz(const uint16_t x) {
 
 uint32_t clz(const uint32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -593,7 +421,7 @@ uint32_t clz(const uint32_t x) {
 
 uint64_t clz(const uint64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i))
       lz = 0;
     else
@@ -603,7 +431,7 @@ uint64_t clz(const uint64_t x) {
 
 int8_t clz(const int8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -613,7 +441,7 @@ int8_t clz(const int8_t x) {
 
 int16_t clz(const int16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -623,7 +451,7 @@ int16_t clz(const int16_t x) {
 
 int32_t clz(const int32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -633,7 +461,7 @@ int32_t clz(const int32_t x) {
 
 int64_t clz(const int64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i))
       lz = 0;
     else
@@ -800,46 +628,46 @@ int64_t mul_hi(int64_t a, int64_t b) {
  * left side are shifted back in from the right.
  */
 uint8_t rotate(const uint8_t v, const uint8_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint8_t((v << i) | ((v >> nBits)));
 }
 
 uint16_t rotate(const uint16_t v, const uint16_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint16_t((v << i) | ((v >> nBits)));
 }
 
 uint32_t rotate(const uint32_t v, const uint32_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint32_t((v << i) | ((v >> nBits)));
 }
 
 uint64_t rotate(const uint64_t v, const uint64_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint64_t((v << i) | ((v >> nBits)));
 }
 
 int8_t rotate(const int8_t v, const int8_t i) {
   int8_t mask = int8_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int8_t((v << i) | ((v >> nBits) & mask));
 }
 
 int16_t rotate(const int16_t v, const int16_t i) {
   int16_t mask = int16_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int16_t((v << i) | ((v >> nBits) & mask));
 }
 
 int32_t rotate(const int32_t v, const int32_t i) {
   int32_t mask = int32_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int32_t((v << i) | ((v >> nBits) & mask));
 }
 
 int64_t rotate(const int64_t v, const int64_t i) {
   int64_t mask = int64_t((1ull << i) - 1ull);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int64_t((v << i) | ((v >> nBits) & mask));
 }
 
@@ -972,56 +800,56 @@ int64_t upsample(int32_t h, uint32_t l) {
  */
 uint8_t popcount(const uint8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint16_t popcount(const uint16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint32_t popcount(const uint32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint64_t popcount(const uint64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i)) lz++;
   return lz;
 }
 
 int8_t popcount(const int8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int16_t popcount(const int16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int32_t popcount(const int32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int64_t popcount(const int64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i)) lz++;
   return lz;
 }
