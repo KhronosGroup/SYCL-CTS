@@ -45,93 +45,59 @@ auto islessequal(T a, T b) {
   return sycl_cts::math::rel_func_dispatcher<std::less_equal>(a, b);
 }
 
-template<typename T>
-struct islessgreater_func{
-  constexpr bool operator()(const T& x, const T& y) const {
-    return (x < y) || (x > y);
-  }
+auto constexpr islessgreater_func = [](const auto &x, const auto &y) {
+  return (x < y) || (x > y);
 };
 template <typename T>
 auto islessgreater(T a, T b) {
-  return sycl_cts::math::rel_func_dispatcher<islessgreater_func>(a, b);
+  return sycl_cts::math::rel_func_dispatcher(islessgreater_func, a, b);
 }
 
-template<typename T>
-struct isordered_func{
-  constexpr bool operator()(const T& x, const T& y) const {
-   return (x == x) && (y == y);
-  }
+auto constexpr isordered_func = [](const auto &x, const auto &y) {
+  return (x == x) && (y == y);
 };
 template <typename T>
 auto isordered(T a, T b) {
-  return sycl_cts::math::rel_func_dispatcher<isordered_func>(a, b);
+  return sycl_cts::math::rel_func_dispatcher(isordered_func, a, b);
 }
 
-template<typename T>
-struct isunordered_func{
-  constexpr bool operator()(const T& x, const T& y) const {
-   return !((x == x) && (y == y));
-  }
+auto constexpr isunordered_func = [](const auto &x, const auto &y) {
+  return !((x == x) && (y == y));
 };
 template <typename T>
 auto isunordered(T a, T b) {
-  return sycl_cts::math::rel_func_dispatcher<isunordered_func>(a, b);
+  return sycl_cts::math::rel_func_dispatcher(isunordered_func, a, b);
 }
 
 /* one argument relational reference */
-template<typename T>
-struct isfinite_func{
-  constexpr bool operator()(const T& x) const {
-   return std::isfinite(x);
-  }
-};
+auto constexpr isfinite_func = [](const auto &x) { return std::isfinite(x); };
 template <typename T>
 auto isfinite(T a) {
-  return sycl_cts::math::rel_func_dispatcher<isfinite_func>(a);
+  return sycl_cts::math::rel_func_dispatcher(isfinite_func, a);
 }
 
-template<typename T>
-struct isinf_func{
-  constexpr bool operator()(const T& x) const {
-   return std::isinf(x);
-  }
-};
+auto constexpr isinf_func = [](const auto &x) { return std::isinf(x); };
 template <typename T>
 auto isinf(T a) {
-  return sycl_cts::math::rel_func_dispatcher<isinf_func>(a);
+  return sycl_cts::math::rel_func_dispatcher(isinf_func, a);
 }
 
-template<typename T>
-struct isnan_func{
-  constexpr bool operator()(const T& x) const {
-   return std::isnan(x);
-  }
-};
+auto constexpr isnan_func = [](const auto &x) { return std::isnan(x); };
 template <typename T>
 auto isnan(T a) {
-  return sycl_cts::math::rel_func_dispatcher<isnan_func>(a);
+  return sycl_cts::math::rel_func_dispatcher(isnan_func, a);
 }
 
-template<typename T>
-struct isnormal_func{
-  constexpr bool operator()(const T& x) const {
-   return std::isnormal(x);
-  }
-};
+auto constexpr isnormal_func = [](const auto &x) { return std::isnormal(x); };
 template <typename T>
 auto isnormal(T a) {
-  return sycl_cts::math::rel_func_dispatcher<isnormal_func>(a);
+  return sycl_cts::math::rel_func_dispatcher(isnormal_func, a);
 }
 
-template<typename T>
-struct signbit_func{
-  constexpr bool operator()(const T& x) const {
-   return std::signbit(x);
-  }
-};
+auto constexpr signbit_func = [](const auto &x) { return std::signbit(x); };
 template <typename T>
 auto signbit(T a) {
-  return sycl_cts::math::rel_func_dispatcher<signbit_func>(a);
+  return sycl_cts::math::rel_func_dispatcher(signbit_func, a);
 }
 
 template <typename T>

@@ -34,7 +34,7 @@ template <typename R, typename T, int N, typename funT, typename... Args>
 cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
   cl::sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
-    if (fun(getElement<T, N>(args, i)...) == 1)
+    if (fun(getElement<T, N>(args, i)...))
       setElement<R, N>(res, i, -1);
     else
       setElement<R, N>(res, i, 0);
@@ -59,10 +59,24 @@ typename rel_funcs_return<T>::type rel_func_dispatcher(T a, Args... args) {
   return funT<T>()(a, args...);
 }
 
-template<template<class> class funT, typename T, int N, typename... Args>
-typename cl::sycl::vec<typename rel_funcs_return<T>::type, N> rel_func_dispatcher(cl::sycl::vec<T, N> a, Args... args) {
+template <template <class> class funT, typename T, int N, typename... Args>
+typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(cl::sycl::vec<T, N> a, Args... args) {
   return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
-      funT<T> {}, a, args...);
+      funT<T>{}, a, args...);
+}
+
+template <typename funT, typename T, typename... Args>
+typename rel_funcs_return<T>::type rel_func_dispatcher(funT fun, T a,
+                                                       Args... args) {
+  return fun(a, args...);
+}
+
+template <typename funT, typename T, int N, typename... Args>
+typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(funT fun, cl::sycl::vec<T, N> a, Args... args) {
+  return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
+      fun, a, args...);
 }
 
 template <typename T>
