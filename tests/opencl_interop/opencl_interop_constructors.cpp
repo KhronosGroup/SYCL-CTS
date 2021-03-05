@@ -6,9 +6,9 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
 #include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
+#include "../common/common.h"
 
 #define TEST_NAME opencl_interop_constructors
 

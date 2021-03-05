@@ -9,9 +9,9 @@
 #ifndef __SYCLCTS_UTIL_MATH_REFERENCE_H
 #define __SYCLCTS_UTIL_MATH_REFERENCE_H
 
-#include "./stl.h"
 #include "../tests/common/sycl.h"
 #include "./math_helper.h"
+#include "./stl.h"
 
 namespace reference {
 /* two argument relational reference */

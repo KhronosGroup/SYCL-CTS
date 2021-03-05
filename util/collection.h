@@ -9,9 +9,9 @@
 #ifndef __SYCLCTS_UTIL_COLLECTION_H
 #define __SYCLCTS_UTIL_COLLECTION_H
 
+#include "singleton.h"
 #include "stl.h"
 #include "test_base.h"
-#include "singleton.h"
 
 namespace sycl_cts {
 namespace util {

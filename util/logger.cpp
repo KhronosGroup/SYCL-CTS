@@ -10,9 +10,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <stdarg.h>
 #include <assert.h>
 #include <cstdio>
+#include <stdarg.h>
 
 #include "logger.h"
 #include "printer.h"

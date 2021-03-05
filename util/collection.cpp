@@ -7,8 +7,8 @@
 *******************************************************************************/
 
 #include "collection.h"
-#include "printer.h"
 #include "csv.h"
+#include "printer.h"
 
 // conformance test suite namespace
 namespace sycl_cts {

@@ -12,8 +12,8 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_UTILITY_H
 
 #include "../common/common.h"
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
