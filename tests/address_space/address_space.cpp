@@ -8,8 +8,8 @@
 
 #include "../common/common.h"
 
-#include <cassert>
 #include <array>
+#include <cassert>
 #include <type_traits>
 
 #define EXPECT_EQUALS(lhs, rhs) \

@@ -11,8 +11,8 @@
 
 #include <CL/cl.h>
 
-#include "singleton.h"
 #include "logger.h"
+#include "singleton.h"
 
 namespace sycl_cts {
 namespace util {

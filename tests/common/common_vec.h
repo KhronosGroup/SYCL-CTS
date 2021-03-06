@@ -12,16 +12,14 @@
 // include our proxy to the real sycl header
 #include "sycl.h"
 
-// test framework specific device selector
-#include "../common/common.h"
-#include "../common/cts_selector.h"
-#include "../common/cts_async_handler.h"
-#include "../common/get_cts_object.h"
-#include "../../util/proxy.h"
-#include "macros.h"
-
-#include "../../util/test_base.h"
 #include "../../util/math_vector.h"
+#include "../../util/proxy.h"
+#include "../../util/test_base.h"
+#include "../common/common.h"
+#include "../common/cts_async_handler.h"
+#include "../common/cts_selector.h"
+#include "../common/get_cts_object.h"
+#include "macros.h"
 
 #include <string>
 #include <type_traits>
