@@ -96,6 +96,13 @@ def handle_args(argv):
             args.additional_cmake_args, host_names, opencl_names,
             args.additional_ctest_args, args.build_only)
 
+def split_additional_args(additional_args):
+    if additional_args is None:
+        return []
+    if os.path.sep is '\\':
+        return shlex.split(additional_args.replace('\\','\\\\'))
+    else:
+        return shlex.split(additional_args)
 
 def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
                         additional_cmake_args, host_names, opencl_names):
@@ -112,7 +119,7 @@ def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
         '-Dhost_device_name=' + host_names[1],
         '-Dopencl_platform_name=' + opencl_names[0],
         '-Dopencl_device_name=' + opencl_names[1],
-    ] + shlex.split(additional_cmake_args)
+    ] + split_additional_args(additional_cmake_args)
 
 
 def generate_ctest_call(additional_ctest_args):
@@ -123,7 +130,7 @@ def generate_ctest_call(additional_ctest_args):
     return [
         'ctest', '.', '-T', 'Test', '--no-compress-output',
         '--test-output-size-passed', '0', '--test-output-size-failed', '0'
-    ] + shlex.split(additional_ctest_args)
+    ] + split_additional_args(additional_ctest_args)
 
 
 def subprocess_call(parameter_list):
