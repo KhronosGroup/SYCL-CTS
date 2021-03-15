@@ -8,13 +8,13 @@
 
 #include <stdlib.h>
 
-#include "test_manager.h"
+#include "../tests/common/cts_selector.h"
 #include "cmdarg.h"
 #include "collection.h"
+#include "executor.h"
 #include "printer.h"
 #include "selector.h"
-#include "executor.h"
-#include "../tests/common/cts_selector.h"
+#include "test_manager.h"
 
 #if defined(_MSC_VER)
 extern "C" extern long __stdcall IsDebuggerPresent();

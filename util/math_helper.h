@@ -9,12 +9,12 @@
 #ifndef __SYCLCTS_UTIL_MATH_HELPER_H
 #define __SYCLCTS_UTIL_MATH_HELPER_H
 
-#include <climits>
-
-#include "../util/stl.h"
 #include "../tests/common/sycl.h"
+#include "../util/stl.h"
 #include "./../oclmath/mt19937.h"
 #include "./math_vector.h"
+
+#include <climits>
 
 namespace sycl_cts {
 /** math utility functions

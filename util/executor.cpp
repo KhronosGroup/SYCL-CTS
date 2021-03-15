@@ -7,10 +7,10 @@
 *******************************************************************************/
 
 #include "executor.h"
-#include "singleton.h"
-#include "printer.h"
 #include "collection.h"
 #include "logger.h"
+#include "printer.h"
+#include "singleton.h"
 
 namespace sycl_cts {
 namespace util {
