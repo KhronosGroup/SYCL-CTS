@@ -115,13 +115,15 @@ def main():
 
     expanded_types =  test_generator.expand_types(created_types)
 
+    verifyResults = True
+
     if args.test == 'integer':
         integer_signatures = sycl_functions.create_integer_signatures()
         create_tests(0, run, expanded_types, integer_signatures, args.variante, args.template, args.output)
 
     if args.test == 'common':
         common_signatures = sycl_functions.create_common_signatures()
-        create_tests(1000000, run, expanded_types, common_signatures, args.variante, args.template, args.output, True)
+        create_tests(1000000, run, expanded_types, common_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'geometric':
         geomteric_signatures = sycl_functions.create_geometric_signatures()
@@ -129,7 +131,7 @@ def main():
 
     if args.test == 'relational':
         relational_signatures = sycl_functions.create_relational_signatures()
-        create_tests(3000000, run, expanded_types, relational_signatures, args.variante, args.template, args.output)
+        create_tests(3000000, run, expanded_types, relational_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'float':
         float_signatures = sycl_functions.create_float_signatures()

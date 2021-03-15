@@ -14,6 +14,8 @@
 #include "./../oclmath/mt19937.h"
 #include "./math_vector.h"
 
+#include <climits>
+
 namespace sycl_cts {
 /** math utility functions
  */
@@ -26,6 +28,70 @@ cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
     setElement<R, N>(res, i, fun(getElement<T, N>(args, i)...));
   }
   return res;
+}
+
+/* helper for relational functions where true result gives 1 for scalar
+    and -1 for vector argument types */
+template <typename R, typename T, int N, typename funT, typename... Args>
+cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
+  cl::sycl::vec<R, N> res;
+  for (int i = 0; i < N; i++) {
+    if (fun(getElement<T, N>(args, i)...))
+      setElement<R, N>(res, i, -1);
+    else
+      setElement<R, N>(res, i, 0);
+  }
+  return res;
+}
+
+template <typename T>
+struct rel_funcs_return;
+template <>
+struct rel_funcs_return<float> {
+  using type = int32_t;
+};
+template <>
+struct rel_funcs_return<double> {
+  using type = int64_t;
+};
+
+
+template<template<class> class funT, typename T, typename... Args>
+typename rel_funcs_return<T>::type rel_func_dispatcher(T a, Args... args) {
+  return funT<T>()(a, args...);
+}
+
+template <template <class> class funT, typename T, int N, typename... Args>
+typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(cl::sycl::vec<T, N> a, Args... args) {
+  return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
+      funT<T>{}, a, args...);
+}
+
+template <typename funT, typename T, typename... Args>
+typename rel_funcs_return<T>::type rel_func_dispatcher(funT fun, T a,
+                                                       Args... args) {
+  return fun(a, args...);
+}
+
+template <typename funT, typename T, int N, typename... Args>
+typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(funT fun, cl::sycl::vec<T, N> a, Args... args) {
+  return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
+      fun, a, args...);
+}
+
+template <typename T>
+int32_t num_bits(T) {
+  return int32_t(sizeof(T) * CHAR_BIT);
+}
+
+template <typename T> bool if_bit_set(T num, int bit) {
+  return (num >> bit) & 1;
+}
+
+template <typename T> bool if_msb_set(T x) {
+  return if_bit_set(x, num_bits(x) - 1);
 }
 
 /* cast an integer to a float */

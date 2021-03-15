@@ -26,11 +26,6 @@ void type_punn(const A &from, B &to) {
               reinterpret_cast<const void *>(&from), sizeof(A));
 }
 
-template <typename T>
-int32_t num_bits(T) {
-  return int32_t(sizeof(T) * 8u);
-}
-
 const uint64_t max_uint64_t = (~0x0ull);
 const uint32_t max_uint32_t = 0xffffffff;
 const uint16_t max_uint16_t = 0xffff;
@@ -53,48 +48,28 @@ const int8_t min_int8_t = int8_t(0x80);
 
 namespace reference {
 
-int isequal(float x, float y) { return x == y; }
-
-int isnotequal(float x, float y) { return x != y; }
-
-int isgreater(float x, float y) { return x > y; }
-
-int isgreaterequal(float x, float y) { return x >= y; }
-
-int isless(float x, float y) { return x < y; }
-
-int islessequal(float x, float y) { return x <= y; }
-
-int islessgreater(float x, float y) { return (x < y) || (x > y); }
-
-int isordered(float x, float y) { return (x == x) && (y == y); }
-
-int isunordered(float x, float y) { return !((x == x) && (y == y)); }
-
-int isfinite(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x7f800000u) != 0x7f800000u;
+template <typename T> T bitselect_t(T x, T y, T z) {
+  return (z & y) | (~z & x);
 }
 
-int isinf(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x7fffffffu) == 0x7f800000u;
+template <typename I, typename T> T bitselect_f_t(T x, T y, T z) {
+  I a, b, c;
+  type_punn(x, a);
+  type_punn(y, b);
+  type_punn(z, c);
+  I res_t = bitselect_t(a, b, c);
+  T res;
+  type_punn(res_t, res);
+  return res;
 }
-
-int isnan(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return ((i & 0x7f800000u) == 0x7f800000u) && (i & 0x007fffffu);
+float bitselect(float a, float b, float c) {
+  return bitselect_f_t<int32_t>(a, b, c);
 }
-
-int isnormal(float x) { return !isnan(x); }
-
-int signbit(float x) {
-  int i = 0;
-  type_punn(x, i);
-  return (i & 0x80000000u) != 0;
+double bitselect(double a, double b, double c) {
+  return bitselect_f_t<int64_t>(a, b, c);
+}
+cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
+  return bitselect_f_t<int16_t>(a, b, c);
 }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ABS
@@ -416,7 +391,7 @@ double sign(double a) { return sign_t(a); }
  */
 uint8_t clz(const uint8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -426,7 +401,7 @@ uint8_t clz(const uint8_t x) {
 
 uint16_t clz(const uint16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -436,7 +411,7 @@ uint16_t clz(const uint16_t x) {
 
 uint32_t clz(const uint32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -446,7 +421,7 @@ uint32_t clz(const uint32_t x) {
 
 uint64_t clz(const uint64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i))
       lz = 0;
     else
@@ -456,7 +431,7 @@ uint64_t clz(const uint64_t x) {
 
 int8_t clz(const int8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -466,7 +441,7 @@ int8_t clz(const int8_t x) {
 
 int16_t clz(const int16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -476,7 +451,7 @@ int16_t clz(const int16_t x) {
 
 int32_t clz(const int32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i))
       lz = 0;
     else
@@ -486,7 +461,7 @@ int32_t clz(const int32_t x) {
 
 int64_t clz(const int64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i))
       lz = 0;
     else
@@ -653,46 +628,46 @@ int64_t mul_hi(int64_t a, int64_t b) {
  * left side are shifted back in from the right.
  */
 uint8_t rotate(const uint8_t v, const uint8_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint8_t((v << i) | ((v >> nBits)));
 }
 
 uint16_t rotate(const uint16_t v, const uint16_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint16_t((v << i) | ((v >> nBits)));
 }
 
 uint32_t rotate(const uint32_t v, const uint32_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint32_t((v << i) | ((v >> nBits)));
 }
 
 uint64_t rotate(const uint64_t v, const uint64_t i) {
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return uint64_t((v << i) | ((v >> nBits)));
 }
 
 int8_t rotate(const int8_t v, const int8_t i) {
   int8_t mask = int8_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int8_t((v << i) | ((v >> nBits) & mask));
 }
 
 int16_t rotate(const int16_t v, const int16_t i) {
   int16_t mask = int16_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int16_t((v << i) | ((v >> nBits) & mask));
 }
 
 int32_t rotate(const int32_t v, const int32_t i) {
   int32_t mask = int32_t((1u << i) - 1u);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int32_t((v << i) | ((v >> nBits) & mask));
 }
 
 int64_t rotate(const int64_t v, const int64_t i) {
   int64_t mask = int64_t((1ull << i) - 1ull);
-  int32_t nBits = num_bits(v) - int32_t(i);
+  int32_t nBits = sycl_cts::math::num_bits(v) - int32_t(i);
   return int64_t((v << i) | ((v >> nBits) & mask));
 }
 
@@ -825,56 +800,56 @@ int64_t upsample(int32_t h, uint32_t l) {
  */
 uint8_t popcount(const uint8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint16_t popcount(const uint16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint32_t popcount(const uint32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 uint64_t popcount(const uint64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i)) lz++;
   return lz;
 }
 
 int8_t popcount(const int8_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int16_t popcount(const int16_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int32_t popcount(const int32_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1 << i)) lz++;
   return lz;
 }
 
 int64_t popcount(const int64_t x) {
   int lz = 0;
-  for (int i = 0; i < num_bits(x); i++)
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
     if (x & (1ull << i)) lz++;
   return lz;
 }

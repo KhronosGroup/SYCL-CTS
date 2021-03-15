@@ -15,22 +15,144 @@
 
 namespace reference {
 /* two argument relational reference */
-int isequal(float x, float y);
-int isnotequal(float x, float y);
-int isgreater(float x, float y);
-int isgreaterequal(float x, float y);
-int isless(float x, float y);
-int islessequal(float x, float y);
-int islessgreater(float x, float y);
-int isordered(float x, float y);
-int isunordered(float x, float y);
+template <typename T>
+auto isequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::equal_to>(a, b);
+}
+
+template <typename T>
+auto isnotequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::not_equal_to>(a, b);
+}
+
+template <typename T>
+auto isgreater(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::greater>(a, b);
+}
+
+template <typename T>
+auto isgreaterequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::greater_equal>(a, b);
+}
+
+template <typename T>
+auto isless(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::less>(a, b);
+}
+
+template <typename T>
+auto islessequal(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher<std::less_equal>(a, b);
+}
+
+auto constexpr islessgreater_func = [](const auto &x, const auto &y) {
+  return (x < y) || (x > y);
+};
+template <typename T>
+auto islessgreater(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher(islessgreater_func, a, b);
+}
+
+auto constexpr isordered_func = [](const auto &x, const auto &y) {
+  return (x == x) && (y == y);
+};
+template <typename T>
+auto isordered(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher(isordered_func, a, b);
+}
+
+auto constexpr isunordered_func = [](const auto &x, const auto &y) {
+  return !((x == x) && (y == y));
+};
+template <typename T>
+auto isunordered(T a, T b) {
+  return sycl_cts::math::rel_func_dispatcher(isunordered_func, a, b);
+}
 
 /* one argument relational reference */
-int isfinite(float x);
-int isinf(float x);
-int isnan(float x);
-int isnormal(float x);
-int signbit(float x);
+auto constexpr isfinite_func = [](const auto &x) { return std::isfinite(x); };
+template <typename T>
+auto isfinite(T a) {
+  return sycl_cts::math::rel_func_dispatcher(isfinite_func, a);
+}
+
+auto constexpr isinf_func = [](const auto &x) { return std::isinf(x); };
+template <typename T>
+auto isinf(T a) {
+  return sycl_cts::math::rel_func_dispatcher(isinf_func, a);
+}
+
+auto constexpr isnan_func = [](const auto &x) { return std::isnan(x); };
+template <typename T>
+auto isnan(T a) {
+  return sycl_cts::math::rel_func_dispatcher(isnan_func, a);
+}
+
+auto constexpr isnormal_func = [](const auto &x) { return std::isnormal(x); };
+template <typename T>
+auto isnormal(T a) {
+  return sycl_cts::math::rel_func_dispatcher(isnormal_func, a);
+}
+
+auto constexpr signbit_func = [](const auto &x) { return std::signbit(x); };
+template <typename T>
+auto signbit(T a) {
+  return sycl_cts::math::rel_func_dispatcher(signbit_func, a);
+}
+
+template <typename T>
+int any(T x) {
+   return sycl_cts::math::if_msb_set(x);
+}
+template <typename T, int N> int any(cl::sycl::vec<T, N> a) {
+  for (int i = 0; i < N; i++) {
+    if (any(getElement(a, i)) == 1)
+      return 1;
+  }
+  return 0;
+}
+
+template <typename T>
+int all(T x) {
+   return sycl_cts::math::if_msb_set(x);
+}
+template <typename T, int N> int all(cl::sycl::vec<T, N> a) {
+  for (int i = 0; i < N; i++) {
+    if (all(getElement(a, i)) == 0)
+      return 0;
+  }
+  return 1;
+}
+
+template <typename T>
+T bitselect(T a, T b, T c) {
+  return (c & b) | (~c & a);
+}
+float bitselect(float a, float b, float c);
+double bitselect(double a, double b, double c);
+cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c);
+template <typename T, int N>
+cl::sycl::vec<T, N> bitselect(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                              cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y, T z) { return bitselect(x, y, z); }, a, b, c);
+}
+
+template <typename T, typename U>
+T select(T a, T b, U c) { return c ? b : a; }
+
+template <typename T, typename K, int N>
+cl::sycl::vec<T, N> select(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                           cl::sycl::vec<K, N> c) {
+  cl::sycl::vec<T, N> res;
+  for (int i = 0; i < N; i++) {
+    if (any(getElement<K, N>(c, i)) == 1)
+      setElement<T, N>(res, i, getElement(b, i));
+    else
+      setElement<T, N>(res, i, getElement(a, i));
+  }
+  return res;
+}
 
 /* absolute value */
 uint8_t abs(const uint8_t);
