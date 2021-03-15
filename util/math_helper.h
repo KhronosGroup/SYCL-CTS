@@ -9,6 +9,8 @@
 #ifndef __SYCLCTS_UTIL_MATH_HELPER_H
 #define __SYCLCTS_UTIL_MATH_HELPER_H
 
+#include <climits>
+
 #include "../util/stl.h"
 #include "../tests/common/sycl.h"
 #include "./../oclmath/mt19937.h"
@@ -81,7 +83,7 @@ rel_func_dispatcher(funT fun, cl::sycl::vec<T, N> a, Args... args) {
 
 template <typename T>
 int32_t num_bits(T) {
-  return int32_t(sizeof(T) * 8u);
+  return int32_t(sizeof(T) * CHAR_BIT);
 }
 
 template <typename T> bool if_bit_set(T num, int bit) {
