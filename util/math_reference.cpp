@@ -8,12 +8,15 @@
 
 #include "math_reference.h"
 #include "stl.h"
+#include "../oclmath/reference_math.h"
+
+#include <cfloat>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
 
 #ifndef M_PI
-#define M_PI (3.14159265358979323846)
+#define M_PI (3.14159265358979323846264338327950288)
 #endif
 
 namespace {
@@ -276,40 +279,41 @@ int64_t rhadd(const int64_t a, const int64_t b) {
  *
  */
 template <typename T>
-T clamp_t(T v, T minv, T maxv) {
-  if (minv > maxv && std::is_floating_point<T>::value)
-    return NAN;
+resultRef<T> clamp_t(T v, T minv, T maxv) {
+  if (minv > maxv)
+    return resultRef<T>(T(), true);
   return (v < minv) ? minv : ((v > maxv) ? maxv : v);
 }
 
-uint8_t clamp(const uint8_t a, const uint8_t b, const uint8_t c) {
+
+resultRef<uint8_t> clamp(const uint8_t a, const uint8_t b, const uint8_t c) {
   return clamp_t(a, b, c);
 }
-uint16_t clamp(const uint16_t a, const uint16_t b, const uint16_t c) {
+resultRef<uint16_t> clamp(const uint16_t a, const uint16_t b, const uint16_t c) {
   return clamp_t(a, b, c);
 }
-uint32_t clamp(const uint32_t a, const uint32_t b, const uint32_t c) {
+resultRef<uint32_t> clamp(const uint32_t a, const uint32_t b, const uint32_t c) {
   return clamp_t(a, b, c);
 }
-uint64_t clamp(const uint64_t a, const uint64_t b, const uint64_t c) {
+resultRef<uint64_t> clamp(const uint64_t a, const uint64_t b, const uint64_t c) {
   return clamp_t(a, b, c);
 }
-int8_t clamp(const int8_t a, const int8_t b, const int8_t c) {
+resultRef<int8_t> clamp(const int8_t a, const int8_t b, const int8_t c) {
   return clamp_t(a, b, c);
 }
-int16_t clamp(const int16_t a, const int16_t b, const int16_t c) {
+resultRef<int16_t> clamp(const int16_t a, const int16_t b, const int16_t c) {
   return clamp_t(a, b, c);
 }
-int32_t clamp(const int32_t a, const int32_t b, const int32_t c) {
+resultRef<int32_t> clamp(const int32_t a, const int32_t b, const int32_t c) {
   return clamp_t(a, b, c);
 }
-int64_t clamp(const int64_t a, const int64_t b, const int64_t c) {
+resultRef<int64_t> clamp(const int64_t a, const int64_t b, const int64_t c) {
   return clamp_t(a, b, c);
 }
-double clamp(const double a, const double b, const double c) {
+resultRef<double> clamp(const double a, const double b, const double c) {
   return clamp_t(a, b, c);
 }
-float clamp(const float a, const float b, const float c) {
+resultRef<float>  clamp(const float a, const float b, const float c) {
   return clamp_t(a, b, c);
 }
 
@@ -350,19 +354,22 @@ double step(double a, double b) { return step_t(a, b); }
  *
  */
 
-template <typename T> T smoothstep_t(T a, T b, T c) {
+template <typename T>
+resultRef<T> smoothstep_t(T a, T b, T c) {
   if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
-    return NAN;
+    return resultRef<T>(T(), true);
   if (c <= a)
     return 0.0;
   if (c >= b)
     return 1.0;
-  auto t = clamp_t<T>((c - a) / (b - a), 0, 1);
+  auto t = clamp_t<T>((c - a) / (b - a), 0, 1).res;
   return t * t * (3 - 2 * t);
 }
 
-float smoothstep(float a, float b, float c) { return smoothstep_t(a, b, c); }
-double smoothstep(double a, double b, double c) {
+resultRef<float> smoothstep(float a, float b, float c) {
+  return smoothstep_t(a, b, c);
+}
+resultRef<double> smoothstep(double a, double b, double c) {
   return smoothstep_t(a, b, c);
 }
 
@@ -522,17 +529,18 @@ double min(const double a, const double b) { return (a < b) ? a : b; }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MIX
  *
  */
-template <typename T> T mix_t(T x, T y, T a) {
+template <typename T>
+resultRef<T> mix_t(T x, T y, T a) {
   if (a >= 0.0 && a <= 1.0)
     return x + (y - x) * a;
-  return NAN;
+  return resultRef<T>(T(), true);
 }
 
-float mix(const float a, const float b, const float c) {
+resultRef<float> mix(const float a, const float b, const float c) {
   return mix_t(a, b, c);
 }
 
-double mix(const double a, const double b, const double c) {
+resultRef<double> mix(const double a, const double b, const double c) {
   return mix_t(a, b, c);
 }
 
@@ -1024,5 +1032,400 @@ cl::sycl::uint8 mul24(cl::sycl::uint8 x, cl::sycl::uint8 y) {
 cl::sycl::uint16 mul24(cl::sycl::uint16 x, cl::sycl::uint16 y) {
   return mul24_tmp(x, y);
 }
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MATH
+ *
+ */
+cl::sycl::half acos(cl::sycl::half a) {
+  return std::acos(static_cast<float>(a));
+}
+float acos(float a) { return std::acos(static_cast<double>(a)); }
+double acos(double a) { return std::acos(static_cast<long double>(a)); }
+
+cl::sycl::half acosh(cl::sycl::half a) {
+  return std::acosh(static_cast<float>(a));
+}
+float acosh(float a) { return std::acosh(static_cast<double>(a)); }
+double acosh(double a) { return std::acosh(static_cast<long double>(a)); }
+
+cl::sycl::half acospi(cl::sycl::half a) { return reference_acospi(a); }
+float acospi(float a) { return reference_acospi(a); }
+double acospi(double a) { return reference_acospil(a); }
+
+cl::sycl::half asin(cl::sycl::half a) {
+  return std::asin(static_cast<float>(a));
+}
+float asin(float a) { return std::asin(static_cast<double>(a)); }
+double asin(double a) { return std::asin(static_cast<long double>(a)); }
+
+cl::sycl::half asinh(cl::sycl::half a) {
+  return std::asinh(static_cast<float>(a));
+}
+float asinh(float a) { return std::asinh(static_cast<double>(a)); }
+double asinh(double a) { return std::asinh(static_cast<long double>(a)); }
+
+cl::sycl::half asinpi(cl::sycl::half a) {
+  return reference_asinpi(a);
+}
+float asinpi(float a) { return reference_asinpi(a); }
+double asinpi(double a) { return reference_asinpil(a); }
+
+cl::sycl::half atan(cl::sycl::half a) {
+  return std::atan(static_cast<float>(a));
+}
+float atan(float a) { return std::atan(static_cast<double>(a)); }
+double atan(double a) { return std::atan(static_cast<long double>(a)); }
+
+cl::sycl::half atan2(cl::sycl::half a, cl::sycl::half b) {
+  return std::atan2(static_cast<float>(a), b);
+}
+float atan2(float a, float b) { return std::atan2(static_cast<double>(a), b); }
+double atan2(double a, double b) { return std::atan2(static_cast<long double>(a), b); }
+
+cl::sycl::half atanh(cl::sycl::half a) {
+  return std::atanh(static_cast<float>(a));
+}
+float atanh(float a) { return std::atanh(static_cast<double>(a)); }
+double atanh(double a) { return std::atanh(static_cast<long double>(a)); }
+
+cl::sycl::half atanpi(cl::sycl::half a) { return reference_atanpi(a); }
+float atanpi(float a) { return reference_atanpi(a); }
+double atanpi(double a) { return reference_atanpil(a); }
+
+cl::sycl::half atan2pi(cl::sycl::half a, cl::sycl::half b) {
+  return reference_atan2pi(a, b);
+}
+float atan2pi(float a, float b) { return reference_atan2pi(a, b); }
+double atan2pi(double a, double b) { return reference_atan2pil(a, b); }
+
+cl::sycl::half cbrt(cl::sycl::half a) {
+  return std::cbrt(static_cast<float>(a));
+}
+float cbrt(float a) { return std::cbrt(static_cast<double>(a)); }
+double cbrt(double a) { return std::cbrt(static_cast<long double>(a)); }
+
+cl::sycl::half cos(cl::sycl::half a) {
+  return std::cos(static_cast<float>(a));
+}
+float cos(float a) { return std::cos(static_cast<double>(a)); }
+double cos(double a) { return std::cos(static_cast<long double>(a)); }
+
+cl::sycl::half cosh(cl::sycl::half a) {
+  return std::cosh(static_cast<float>(a));
+}
+float cosh(float a) { return std::cosh(static_cast<double>(a)); }
+double cosh(double a) { return std::cosh(static_cast<long double>(a)); }
+
+cl::sycl::half cospi(cl::sycl::half a) { return reference_cospi(a); }
+float cospi(float a) { return reference_cospi(a); }
+double cospi(double a) { return reference_cospil(a); }
+
+cl::sycl::half erfc(cl::sycl::half a) {
+  return std::erfc(static_cast<float>(a));
+}
+float erfc(float a) { return std::erfc(static_cast<double>(a)); }
+double erfc(double a) { return std::erfc(static_cast<long double>(a)); }
+
+cl::sycl::half erf(cl::sycl::half a) {
+  return std::erf(static_cast<float>(a));
+}
+float erf(float a) { return std::erf(static_cast<double>(a)); }
+double erf(double a) { return std::erf(static_cast<long double>(a)); }
+
+cl::sycl::half exp(cl::sycl::half a) {
+  return std::exp(static_cast<float>(a));
+}
+float exp(float a) { return std::exp(static_cast<double>(a)); }
+double exp(double a) { return std::exp(static_cast<long double>(a)); }
+
+cl::sycl::half exp2(cl::sycl::half a) {
+  return std::exp2(static_cast<float>(a));
+}
+float exp2(float a) { return std::exp2(static_cast<double>(a)); }
+double exp2(double a) { return std::exp2(static_cast<long double>(a)); }
+
+template <typename T>
+T exp10_t(T a) {
+    return std::pow(static_cast<T>(10), a);
+}
+cl::sycl::half exp10(cl::sycl::half a) { return exp10_t<float>(a); }
+float exp10(float a) { return exp10_t<double>(a); }
+double exp10(double a) { return exp10_t<long double>(a); }
+
+cl::sycl::half expm1(cl::sycl::half a) {
+  return std::expm1(static_cast<float>(a));
+}
+float expm1(float a) { return std::expm1(static_cast<double>(a)); }
+double expm1(double a) { return std::expm1(static_cast<long double>(a)); }
+
+cl::sycl::half fma(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
+  return reference_fma(a, b, c, 0);
+}
+float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
+double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
+
+cl::sycl::half fdim(cl::sycl::half a, cl::sycl::half b) {
+  if (a > b) {
+    // to get rounding to nearest even
+    double resd = static_cast<double>(a) - static_cast<double>(b);
+    cl::sycl::half res = static_cast<cl::sycl::half>(resd);
+    double diff = resd - static_cast<double>(res);
+    cl::sycl::half next =  nextafter(res,
+                                  static_cast<cl::sycl::half>(DBL_MAX * diff));
+    if (static_cast<double>(next) - resd == diff) {
+        int16_t rep;
+        type_punn(next, rep);
+        if (rep % 2 == 0)
+            return next;
+    }
+    return res;
+  }
+  return +0;
+}
+
+template <typename T>
+T fract_t(T a, T* b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(T(1.0), T(0.0)));
+}
+cl::sycl::half fract(cl::sycl::half a, cl::sycl::half* b) {
+  return fract_t(a, b);
+}
+float fract(float a, float* b) { return fract_t(a, b); }
+double fract(double a, double* b) { return fract_t(a, b); }
+
+cl::sycl::half hypot(cl::sycl::half a, cl::sycl::half b) {
+  return std::hypot(static_cast<float>(a), b);
+}
+float hypot(float a, float b) { return std::hypot(static_cast<double>(a), b); }
+double hypot(double a, double b) {
+  return std::hypot(static_cast<long double>(a), b);
+}
+
+template <typename T>
+T lgamma_r_t(T a, int* b) {
+  *b = (std::tgamma(a) > 0) ? 1 : -1;
+  return std::lgamma(a);
+}
+cl::sycl::half lgamma_r(cl::sycl::half a, int* b) { return lgamma_r_t(a, b); }
+float lgamma_r(float a, int* b) { return lgamma_r_t(a, b); }
+double lgamma_r(double a, int* b) { return lgamma_r_t(a, b); }
+
+cl::sycl::half log(cl::sycl::half a) {
+  return std::log(static_cast<float>(a));
+}
+float log(float a) { return std::log(static_cast<double>(a)); }
+double log(double a) { return std::log(static_cast<long double>(a)); }
+
+cl::sycl::half log2(cl::sycl::half a) {
+  return std::log2(static_cast<float>(a));
+}
+float log2(float a) { return std::log2(static_cast<double>(a)); }
+double log2(double a) { return std::log2(static_cast<long double>(a)); }
+
+cl::sycl::half log10(cl::sycl::half a) {
+  return std::log10(static_cast<float>(a));
+}
+float log10(float a) { return std::log10(static_cast<double>(a)); }
+double log10(double a) { return std::log10(static_cast<long double>(a)); }
+
+cl::sycl::half log1p(cl::sycl::half a) {
+  return std::log1p(static_cast<float>(a));
+}
+float log1p(float a) { return std::log1p(static_cast<double>(a)); }
+double log1p(double a) { return std::log1p(static_cast<long double>(a)); }
+
+template <typename T>
+T mad_t(T a, T b, T c) {
+  return a * b + c;
+}
+cl::sycl::half mad(cl::sycl::half a, cl::sycl::half b,cl::sycl::half c) {
+  return mad_t(a, b, c); }
+float mad(float a, float b, float c) { return mad_t(a, b, c); }
+double mad(double a, double b, double c) { return mad_t(a, b, c); }
+
+template <typename T>
+T maxmag_t(T a, T b) {
+  if (fabs(a) > fabs(b))
+    return a;
+  else if (fabs(b) > fabs(a))
+    return b;
+  return fmax(a, b);
+}
+cl::sycl::half maxmag(cl::sycl::half a, cl::sycl::half b) {
+  return maxmag_t(a, b); }
+float maxmag(float a, float b) { return maxmag_t(a, b); }
+double maxmag(double a, double b) { return maxmag_t(a, b); }
+
+template <typename T>
+T minmag_t(T a, T b) {
+  if (fabs(a) < fabs(b))
+    return a;
+  else if (fabs(b) < fabs(a))
+    return b;
+  return fmin(a, b);
+}
+cl::sycl::half minmag(cl::sycl::half a, cl::sycl::half b) {
+  return minmag_t(a, b); }
+float minmag(float a, float b) { return minmag_t(a, b); }
+double minmag(double a, double b) { return minmag_t(a, b); }
+
+float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
+double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
+double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }
+
+cl::sycl::half modf(cl::sycl::half a, cl::sycl::half* b) {
+  float resPtr;
+  float res = modf(static_cast<float>(a), &resPtr);
+  *b = static_cast<cl::sycl::half>(resPtr);
+  return res;
+}
+
+cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
+  if (std::isnan(x))
+    return x;
+
+  if (std::isnan(y))
+    return y;
+
+  if (x == y)
+    return y;
+
+  union { int16_t i; cl::sycl::half f; } a, b;
+
+  a.f  = x;
+  b.f  = y;
+
+  if( a.i & 0x8000 )
+    a.i = 0x8000 - a.i;
+  if(b.i & 0x8000 )
+    b.i = 0x8000 - b.i;
+
+  a.i += (a.i < b.i) ? 1 : -1;
+  a.i = (a.i < 0) ? (int16_t) 0x8000 - a.i : a.i;
+
+  return a.f;
+}
+
+cl::sycl::half pow(cl::sycl::half a, cl::sycl::half b) {
+  return std::pow(static_cast<float>(a), b);
+}
+float pow(float a, float b) { return std::pow(static_cast<double>(a), b); }
+double pow(double a, double b) {
+  return std::pow(static_cast<long double>(a), b);
+}
+
+template <typename T>
+T pown_t(T a, int b) {
+    return std::pow(a, b);
+}
+cl::sycl::half pown(cl::sycl::half a, int b) {
+  return pown_t<float>(a, b); }
+float pown(float a, int b) { return pown_t<double>(a, b); }
+double pown(double a, int b) { return pown_t<long double>(a, b); }
+
+template <typename T>
+resultRef<T> powr_t(T a, T b) {
+  if (a < 0)
+    return resultRef<T>(T(), true);
+  return std::pow(a, b);
+}
+resultRef<cl::sycl::half> powr(cl::sycl::half a, cl::sycl::half b) {
+  return powr_t<float>(a, b); }
+resultRef<float> powr(float a, float b) { return powr_t<double>(a, b); }
+resultRef<double> powr(double a, double b) {
+  return powr_t<long double>(a, b);
+}
+
+template <typename T>
+T rootn_t(T a, int b) {
+    return std::pow(a, static_cast<T>(1.0/b));
+}
+cl::sycl::half rootn(cl::sycl::half a, int b) {
+  return rootn_t<float>(a, b); }
+float rootn(float a, int b) { return rootn_t<double>(a, b); }
+double rootn(double a, int b) { return rootn_t<long double>(a, b); }
+
+template <typename T>
+T rsqrt_t(T a) {
+    return 1 / std::sqrt(a);
+}
+cl::sycl::half rsqrt(cl::sycl::half a) {
+  return rsqrt_t<float>(a); }
+float rsqrt(float a) { return rsqrt_t<double>(a); }
+double rsqrt(double a) { return rsqrt_t<long double>(a); }
+
+template <typename T>
+T sincos_t(T a, T* b) {
+  *b = cos(a);
+  return sin(a);
+}
+cl::sycl::half sincos(cl::sycl::half a, cl::sycl::half* b) {
+  return sincos_t(a, b);
+}
+float sincos(float a, float* b) { return sincos_t(a, b); }
+double sincos(double a, double* b) { return sincos_t(a, b); }
+
+cl::sycl::half sin(cl::sycl::half a) {
+  return std::sin(static_cast<float>(a));
+}
+float sin(float a) { return std::sin(static_cast<double>(a)); }
+double sin(double a) { return std::sin(static_cast<long double>(a)); }
+
+cl::sycl::half sinh(cl::sycl::half a) {
+  return std::sinh(static_cast<float>(a));
+}
+float sinh(float a) { return std::sinh(static_cast<double>(a)); }
+double sinh(double a) { return std::sinh(static_cast<long double>(a)); }
+
+cl::sycl::half sinpi(cl::sycl::half a) { return reference_sinpi(a); }
+float sinpi(float a) { return reference_sinpi(a); }
+double sinpi(double a) { return reference_sinpil(a); }
+
+cl::sycl::half sqrt(cl::sycl::half a) {
+  return std::sqrt(static_cast<float>(a));
+}
+float sqrt(float a) { return std::sqrt(static_cast<double>(a)); }
+double sqrt(double a) { return std::sqrt(static_cast<long double>(a)); }
+
+cl::sycl::half tan(cl::sycl::half a) {
+  return std::tan(static_cast<float>(a));
+}
+float tan(float a) { return std::tan(static_cast<double>(a)); }
+double tan(double a) { return std::tan(static_cast<long double>(a)); }
+
+cl::sycl::half tanh(cl::sycl::half a) {
+  return std::tanh(static_cast<float>(a));
+}
+float tanh(float a) { return std::tanh(static_cast<double>(a)); }
+double tanh(double a) { return std::tanh(static_cast<long double>(a)); }
+
+cl::sycl::half tanpi(cl::sycl::half a) { return reference_tanpi(a); }
+float tanpi(float a) { return reference_tanpi(a); }
+double tanpi(double a) { return reference_tanpil(a); }
+
+cl::sycl::half tgamma(cl::sycl::half a) {
+  return std::tgamma(static_cast<float>(a));
+}
+float tgamma(float a) { return std::tgamma(static_cast<double>(a)); }
+double tgamma(double a) { return std::tgamma(static_cast<long double>(a)); }
+
+template <typename T>
+T recip_t(T a) {
+    return 1.0 / a;
+}
+cl::sycl::half recip(cl::sycl::half a) {
+  return recip_t(a); }
+float recip(float a) { return recip_t(a); }
+double recip(double a) { return recip_t(a); }
+
+template <typename T>
+T divide_t(T a, T b) {
+  return a / b;
+}
+cl::sycl::half divide(cl::sycl::half a, cl::sycl::half b) {
+  return divide_t(a, b); }
+float divide(float a, float b) { return divide_t(a, b); }
+double divide(double a, double b) { return divide_t(a, b); }
 
 } /* namespace reference */

@@ -1,10 +1,11 @@
 """Represents a function signature."""
 class funsig:
-    def __init__(self, namespace, ret_type, name, arg_types=[], pntr_indx=[]):
+    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", pntr_indx=[]):
         self.namespace = namespace # Namespace of function.
         self.ret_type = ret_type # Function return type.
         self.name = name # Function name.
         self.arg_types = arg_types # List containing the function argument types.
+        self.accuracy = accuracy # List containing the function maximum relative error defined as ulp.
         self.pntr_indx = pntr_indx # List containing the indexes of the arguments which are pointers.
     def __eq__(self, other):
         if isinstance(other, funsig):
@@ -12,26 +13,27 @@ class funsig:
                     (self.ret_type == other.ret_type) and
                     (self.name == other.name) and
                     (self.arg_types == other.arg_types) and
+                    (self.accuracy == other.accuracy) and
                     (self.pntr_indx == other.pntr_indx))
         else:
             return False
     def __ne__(self, other):
         return (not self.__eq__(other))
     def __hash__(self):
-        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), str(self.pntr_indx)))
+        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, str(self.pntr_indx)))
 
 def create_integer_signatures():
     sig_list = []
 
     f_abs = funsig("cl::sycl", "ugeninteger", "abs", ["geninteger"])
     sig_list.append(f_abs)
-    
+
     f_abs_diff = funsig("cl::sycl", "ugeninteger", "abs_diff", ["geninteger", "geninteger"])
     sig_list.append(f_abs_diff)
-    
+
     f_add_sat = funsig("cl::sycl", "geninteger", "add_sat", ["geninteger", "geninteger"])
     sig_list.append(f_add_sat)
-    
+
     f_hadd = funsig("cl::sycl", "geninteger", "hadd", ["geninteger", "geninteger"])
     sig_list.append(f_hadd)
 
@@ -40,7 +42,7 @@ def create_integer_signatures():
 
     f_clamp = funsig("cl::sycl", "geninteger", "clamp", ["geninteger", "sgeninteger", "sgeninteger"])
     sig_list.append(f_clamp)
-    
+
     f_clamp_2 = funsig("cl::sycl", "geninteger", "clamp", ["geninteger", "geninteger", "geninteger"])
     sig_list.append(f_clamp_2)
 
@@ -85,7 +87,7 @@ def create_integer_signatures():
 
     f_upsample_4 = funsig("cl::sycl", "igeninteger32bit", "upsample", ["igeninteger16bit", "ugeninteger16bit"])
     sig_list.append(f_upsample_4)
-    
+
     f_upsample_5 = funsig("cl::sycl", "ugeninteger64bit", "upsample", ["ugeninteger32bit", "ugeninteger32bit"])
     sig_list.append(f_upsample_5)
 
@@ -94,13 +96,13 @@ def create_integer_signatures():
 
     f_popcount = funsig("cl::sycl", "geninteger", "popcount", ["geninteger"])
     sig_list.append(f_popcount)
-    
+
     f_mad24 = funsig("cl::sycl", "geninteger32bit", "mad24", ["geninteger32bit","geninteger32bit","geninteger32bit"])
     sig_list.append(f_mad24)
-    
+
     f_mul24 = funsig("cl::sycl", "geninteger32bit", "mul24", ["geninteger32bit","geninteger32bit"])
     sig_list.append(f_mul24)
-    
+
     return sig_list
 
 def create_common_signatures():
@@ -108,19 +110,19 @@ def create_common_signatures():
 
     f_clamp = funsig("cl::sycl", "genfloat", "clamp", ["genfloat", "genfloat", "genfloat"])
     sig_list.append(f_clamp)
-    
+
     f_clamp_2 = funsig("cl::sycl", "genfloatf", "clamp", ["genfloatf", "float", "float"])
     sig_list.append(f_clamp_2)
 
     f_clamp_3 = funsig("cl::sycl", "genfloatd", "clamp", ["genfloatd", "double", "double"])
     sig_list.append(f_clamp_3)
-    
-    f_degrees = funsig("cl::sycl", "genfloat", "degrees", ["genfloat"])
+
+    f_degrees = funsig("cl::sycl", "genfloat", "degrees", ["genfloat"], "3")
     sig_list.append(f_degrees)
 
     f_max = funsig("cl::sycl", "genfloat", "max", ["genfloat", "genfloat"])
     sig_list.append(f_max)
-    
+
     f_max_2 = funsig("cl::sycl", "genfloatf", "max", ["genfloatf", "float"])
     sig_list.append(f_max_2)
 
@@ -129,28 +131,28 @@ def create_common_signatures():
 
     f_min = funsig("cl::sycl", "genfloat", "min", ["genfloat", "genfloat"])
     sig_list.append(f_min)
-    
+
     f_min_2 = funsig("cl::sycl", "genfloatf", "min", ["genfloatf", "float"])
     sig_list.append(f_min_2)
 
     f_min_3 = funsig("cl::sycl", "genfloatd", "min", ["genfloatd", "double"])
     sig_list.append(f_min_3)
-    
-    f_mix = funsig("cl::sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"])
+
+    f_mix = funsig("cl::sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"], "1")
     sig_list.append(f_mix)
-    
-    f_mix_2 = funsig("cl::sycl", "genfloatf", "mix", ["genfloatf", "genfloatf", "float"])
+
+    f_mix_2 = funsig("cl::sycl", "genfloatf", "mix", ["genfloatf", "genfloatf", "float"], "1")
     sig_list.append(f_mix_2)
 
-    f_mix_3 = funsig("cl::sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"])
+    f_mix_3 = funsig("cl::sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"], "1")
     sig_list.append(f_mix_3)
 
-    f_radians = funsig("cl::sycl", "genfloat", "radians", ["genfloat"])
+    f_radians = funsig("cl::sycl", "genfloat", "radians", ["genfloat"], "3")
     sig_list.append(f_radians)
 
     f_step = funsig("cl::sycl", "genfloat", "step", ["genfloat", "genfloat"])
     sig_list.append(f_step)
-    
+
     f_step_2 = funsig("cl::sycl", "genfloatf", "step", ["float", "genfloatf"])
     sig_list.append(f_step_2)
 
@@ -159,7 +161,7 @@ def create_common_signatures():
 
     f_smoothstep = funsig("cl::sycl", "genfloat", "smoothstep", ["genfloat", "genfloat", "genfloat"])
     sig_list.append(f_step)
-    
+
     f_smoothstep_2 = funsig("cl::sycl", "genfloatf", "smoothstep", ["float", "float", "genfloatf"])
     sig_list.append(f_smoothstep_2)
 
@@ -340,264 +342,264 @@ def create_relational_signatures():
 def create_float_signatures():
     sig_list = []
 
-    f_acos = funsig("cl::sycl", "genfloat", "acos", ["genfloat"])
+    f_acos = funsig("cl::sycl", "genfloat", "acos", ["genfloat"], "4")
     sig_list.append(f_acos)
 
-    f_acosh = funsig("cl::sycl", "genfloat", "acosh", ["genfloat"])
+    f_acosh = funsig("cl::sycl", "genfloat", "acosh", ["genfloat"], "4")
     sig_list.append(f_acosh)
 
-    f_acospi = funsig("cl::sycl", "genfloat", "acospi", ["genfloat"])
+    f_acospi = funsig("cl::sycl", "genfloat", "acospi", ["genfloat"], "5")
     sig_list.append(f_acospi)
 
-    f_asin = funsig("cl::sycl", "genfloat", "asin", ["genfloat"])
+    f_asin = funsig("cl::sycl", "genfloat", "asin", ["genfloat"], "4")
     sig_list.append(f_asin)
 
-    f_asinh = funsig("cl::sycl", "genfloat", "asinh", ["genfloat"])
+    f_asinh = funsig("cl::sycl", "genfloat", "asinh", ["genfloat"], "4")
     sig_list.append(f_asinh)
 
-    f_asinpi = funsig("cl::sycl", "genfloat", "asinpi", ["genfloat"])
+    f_asinpi = funsig("cl::sycl", "genfloat", "asinpi", ["genfloat"], "5")
     sig_list.append(f_asinpi)
 
-    f_atan = funsig("cl::sycl", "genfloat", "atan", ["genfloat"])
+    f_atan = funsig("cl::sycl", "genfloat", "atan", ["genfloat"], "5")
     sig_list.append(f_atan)
 
-    f_atan2 = funsig("cl::sycl", "genfloat", "atan2", ["genfloat", "genfloat"])
+    f_atan2 = funsig("cl::sycl", "genfloat", "atan2", ["genfloat", "genfloat"], "6")
     sig_list.append(f_atan2)
 
-    f_atanh = funsig("cl::sycl", "genfloat", "atanh", ["genfloat"])
+    f_atanh = funsig("cl::sycl", "genfloat", "atanh", ["genfloat"], "5")
     sig_list.append(f_atanh)
 
-    f_atanpi = funsig("cl::sycl", "genfloat", "atanpi", ["genfloat"])
+    f_atanpi = funsig("cl::sycl", "genfloat", "atanpi", ["genfloat"], "5")
     sig_list.append(f_atanpi)
 
-    f_atan2pi = funsig("cl::sycl", "genfloat", "atan2pi", ["genfloat", "genfloat"])
+    f_atan2pi = funsig("cl::sycl", "genfloat", "atan2pi", ["genfloat", "genfloat"], "6")
     sig_list.append(f_atan2pi)
 
-    f_cbrt = funsig("cl::sycl", "genfloat", "cbrt", ["genfloat"])
+    f_cbrt = funsig("cl::sycl", "genfloat", "cbrt", ["genfloat"], "2")
     sig_list.append(f_cbrt)
 
-    f_ceil = funsig("cl::sycl", "genfloat", "ceil", ["genfloat"])
+    f_ceil = funsig("cl::sycl", "genfloat", "ceil", ["genfloat"], "0")
     sig_list.append(f_ceil)
 
-    f_copysign = funsig("cl::sycl", "genfloat", "copysign", ["genfloat", "genfloat"])
+    f_copysign = funsig("cl::sycl", "genfloat", "copysign", ["genfloat", "genfloat"], "0")
     sig_list.append(f_copysign)
 
-    f_cos = funsig("cl::sycl", "genfloat", "cos", ["genfloat"])
+    f_cos = funsig("cl::sycl", "genfloat", "cos", ["genfloat"], "4")
     sig_list.append(f_cos)
 
-    f_cosh = funsig("cl::sycl", "genfloat", "cosh", ["genfloat"])
+    f_cosh = funsig("cl::sycl", "genfloat", "cosh", ["genfloat"], "4")
     sig_list.append(f_cosh)
 
-    f_cospi = funsig("cl::sycl", "genfloat", "cospi", ["genfloat"])
+    f_cospi = funsig("cl::sycl", "genfloat", "cospi", ["genfloat"], "4")
     sig_list.append(f_cospi)
 
-    f_erfc = funsig("cl::sycl", "genfloat", "erfc", ["genfloat"])
+    f_erfc = funsig("cl::sycl", "genfloat", "erfc", ["genfloat"], "16")
     sig_list.append(f_erfc)
 
-    f_erf = funsig("cl::sycl", "genfloat", "erf", ["genfloat"])
+    f_erf = funsig("cl::sycl", "genfloat", "erf", ["genfloat"], "16")
     sig_list.append(f_erf)
 
-    f_exp = funsig("cl::sycl", "genfloat", "exp", ["genfloat"])
+    f_exp = funsig("cl::sycl", "genfloat", "exp", ["genfloat"], "3")
     sig_list.append(f_exp)
 
-    f_exp2 = funsig("cl::sycl", "genfloat", "exp2", ["genfloat"])
+    f_exp2 = funsig("cl::sycl", "genfloat", "exp2", ["genfloat"], "3")
     sig_list.append(f_exp2)
 
-    f_exp10 = funsig("cl::sycl", "genfloat", "exp10", ["genfloat"])
+    f_exp10 = funsig("cl::sycl", "genfloat", "exp10", ["genfloat"], "3")
     sig_list.append(f_exp10)
 
-    f_expm1 = funsig("cl::sycl", "genfloat", "expm1", ["genfloat"])
+    f_expm1 = funsig("cl::sycl", "genfloat", "expm1", ["genfloat"], "3")
     sig_list.append(f_expm1)
 
-    f_fabs = funsig("cl::sycl", "genfloat", "fabs", ["genfloat"])
+    f_fabs = funsig("cl::sycl", "genfloat", "fabs", ["genfloat"], "0")
     sig_list.append(f_fabs)
 
-    f_fdim = funsig("cl::sycl", "genfloat", "fdim", ["genfloat", "genfloat"])
+    f_fdim = funsig("cl::sycl", "genfloat", "fdim", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fdim)
 
-    f_floor = funsig("cl::sycl", "genfloat", "floor", ["genfloat"])
+    f_floor = funsig("cl::sycl", "genfloat", "floor", ["genfloat"], "0")
     sig_list.append(f_floor)
 
-    f_fma = funsig("cl::sycl", "genfloat", "fma", ["genfloat", "genfloat", "genfloat"])
+    f_fma = funsig("cl::sycl", "genfloat", "fma", ["genfloat", "genfloat", "genfloat"], "0")
     sig_list.append(f_fma)
 
-    f_fmax = funsig("cl::sycl", "genfloat", "fmax", ["genfloat", "genfloat"])
+    f_fmax = funsig("cl::sycl", "genfloat", "fmax", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmax)
 
-    f_fmax_2 = funsig("cl::sycl", "genfloat", "fmax", ["genfloat", "sgenfloat"])
+    f_fmax_2 = funsig("cl::sycl", "genfloat", "fmax", ["genfloat", "sgenfloat"], "0")
     sig_list.append(f_fmax_2)
 
-    f_fmin = funsig("cl::sycl", "genfloat", "fmin", ["genfloat", "genfloat"])
+    f_fmin = funsig("cl::sycl", "genfloat", "fmin", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmin)
 
-    f_fmin_2 = funsig("cl::sycl", "genfloat", "fmin", ["genfloat", "sgenfloat"])
+    f_fmin_2 = funsig("cl::sycl", "genfloat", "fmin", ["genfloat", "sgenfloat"], "0")
     sig_list.append(f_fmin_2)
 
-    f_fmod = funsig("cl::sycl", "genfloat", "fmod", ["genfloat", "genfloat"])
+    f_fmod = funsig("cl::sycl", "genfloat", "fmod", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmod)
 
-    f_fract = funsig("cl::sycl", "genfloat", "fract", ["genfloat", "genfloat"], [2])
+    f_fract = funsig("cl::sycl", "genfloat", "fract", ["genfloat", "genfloat"], "0", [2])
     sig_list.append(f_fract)
 
-    f_frexp = funsig("cl::sycl", "genfloat", "frexp", ["genfloat", "genint"], [2])
+    f_frexp = funsig("cl::sycl", "genfloat", "frexp", ["genfloat", "genint"], "0", [2])
     sig_list.append(f_frexp)
 
-    f_hypot = funsig("cl::sycl", "genfloat", "hypot", ["genfloat", "genfloat"])
+    f_hypot = funsig("cl::sycl", "genfloat", "hypot", ["genfloat", "genfloat"], "4")
     sig_list.append(f_hypot)
 
-    f_ilogb = funsig("cl::sycl", "genint", "ilogb", ["genfloat"])
+    f_ilogb = funsig("cl::sycl", "genint", "ilogb", ["genfloat"], "0")
     sig_list.append(f_ilogb)
 
-    f_ldexp = funsig("cl::sycl", "genfloat", "ldexp", ["genfloat", "genint"])
+    f_ldexp = funsig("cl::sycl", "genfloat", "ldexp", ["genfloat", "genint"], "0")
     sig_list.append(f_ldexp)
 
-    f_ldexp_2 = funsig("cl::sycl", "genfloat", "ldexp", ["genfloat", "int"])
+    f_ldexp_2 = funsig("cl::sycl", "genfloat", "ldexp", ["genfloat", "int"], "0")
     sig_list.append(f_ldexp_2)
 
-    f_lgamma = funsig("cl::sycl", "genfloat", "lgamma", ["genfloat"])
+    f_lgamma = funsig("cl::sycl", "genfloat", "lgamma", ["genfloat"], "-1")
     sig_list.append(f_lgamma)
 
-    f_lgamma_r = funsig("cl::sycl", "genfloat", "lgamma_r", ["genfloat", "genint"],[2])
+    f_lgamma_r = funsig("cl::sycl", "genfloat", "lgamma_r", ["genfloat", "genint"], "-1",[2])
     sig_list.append(f_lgamma_r)
 
-    f_log = funsig("cl::sycl", "genfloat", "log", ["genfloat"])
+    f_log = funsig("cl::sycl", "genfloat", "log", ["genfloat"], "3")
     sig_list.append(f_log)
 
-    f_log2 = funsig("cl::sycl", "genfloat", "log2", ["genfloat"])
+    f_log2 = funsig("cl::sycl", "genfloat", "log2", ["genfloat"], "3")
     sig_list.append(f_log2)
 
-    f_log10 = funsig("cl::sycl", "genfloat", "log10", ["genfloat"])
+    f_log10 = funsig("cl::sycl", "genfloat", "log10", ["genfloat"], "3")
     sig_list.append(f_log10)
 
-    f_log1p = funsig("cl::sycl", "genfloat", "log1p", ["genfloat"])
+    f_log1p = funsig("cl::sycl", "genfloat", "log1p", ["genfloat"], "2")
     sig_list.append(f_log1p)
 
-    f_logb = funsig("cl::sycl", "genfloat", "logb", ["genfloat"])
+    f_logb = funsig("cl::sycl", "genfloat", "logb", ["genfloat"], "0")
     sig_list.append(f_logb)
-    
-    f_mad = funsig("cl::sycl", "genfloat", "mad", ["genfloat","genfloat","genfloat"])
+
+    f_mad = funsig("cl::sycl", "genfloat", "mad", ["genfloat","genfloat","genfloat"], "-1")
     sig_list.append(f_mad)
-    
-    f_maxmag = funsig("cl::sycl", "genfloat", "maxmag", ["genfloat","genfloat"])
+
+    f_maxmag = funsig("cl::sycl", "genfloat", "maxmag", ["genfloat","genfloat"], "0")
     sig_list.append(f_maxmag)
 
-    f_minmag = funsig("cl::sycl", "genfloat", "minmag", ["genfloat","genfloat"])
+    f_minmag = funsig("cl::sycl", "genfloat", "minmag", ["genfloat","genfloat"], "0")
     sig_list.append(f_minmag)
 
-    f_modf = funsig("cl::sycl", "genfloat", "modf", ["genfloat", "genfloat"],[2])
+    f_modf = funsig("cl::sycl", "genfloat", "modf", ["genfloat", "genfloat"], "0",[2])
     sig_list.append(f_modf)
 
-    f_nan = funsig("cl::sycl", "genfloatf", "nan", ["ugenint"])
+    f_nan = funsig("cl::sycl", "genfloatf", "nan", ["ugenint"], "0")
     sig_list.append(f_nan)
 
-    f_nan_2 = funsig("cl::sycl", "genfloatd", "nan", ["ugenlonginteger"])
+    f_nan_2 = funsig("cl::sycl", "genfloatd", "nan", ["ugenlonginteger"], "0")
     sig_list.append(f_nan_2)
 
-    f_nextafter = funsig("cl::sycl", "genfloat", "nextafter", ["genfloat", "genfloat"])
+    f_nextafter = funsig("cl::sycl", "genfloat", "nextafter", ["genfloat", "genfloat"], "0")
     sig_list.append(f_nextafter)
 
-    f_pow = funsig("cl::sycl", "genfloat", "pow", ["genfloat", "genfloat"])
+    f_pow = funsig("cl::sycl", "genfloat", "pow", ["genfloat", "genfloat"], "16")
     sig_list.append(f_pow)
 
-    f_pown = funsig("cl::sycl", "genfloat", "pown", ["genfloat", "genint"])
+    f_pown = funsig("cl::sycl", "genfloat", "pown", ["genfloat", "genint"], "16")
     sig_list.append(f_pown)
 
-    f_powr = funsig("cl::sycl", "genfloat", "powr", ["genfloat", "genfloat"])
+    f_powr = funsig("cl::sycl", "genfloat", "powr", ["genfloat", "genfloat"], "16")
     sig_list.append(f_powr)
 
-    f_remainder = funsig("cl::sycl", "genfloat", "remainder", ["genfloat", "genfloat"])
+    f_remainder = funsig("cl::sycl", "genfloat", "remainder", ["genfloat", "genfloat"], "0")
     sig_list.append(f_remainder)
 
-    f_remquo = funsig("cl::sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"],[3])
+    f_remquo = funsig("cl::sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"], "0",[3])
     sig_list.append(f_remquo)
 
-    f_rint = funsig("cl::sycl", "genfloat", "rint", ["genfloat"])
+    f_rint = funsig("cl::sycl", "genfloat", "rint", ["genfloat"], "0")
     sig_list.append(f_rint)
 
-    f_rootn = funsig("cl::sycl", "genfloat", "rootn", ["genfloat", "genint"])
+    f_rootn = funsig("cl::sycl", "genfloat", "rootn", ["genfloat", "genint"], "16")
     sig_list.append(f_rootn)
 
-    f_round = funsig("cl::sycl", "genfloat", "round", ["genfloat"])
+    f_round = funsig("cl::sycl", "genfloat", "round", ["genfloat"], "0")
     sig_list.append(f_round)
 
-    f_rsqrt = funsig("cl::sycl", "genfloat", "rsqrt", ["genfloat"])
+    f_rsqrt = funsig("cl::sycl", "genfloat", "rsqrt", ["genfloat"], "2")
     sig_list.append(f_rsqrt)
 
-    f_sin = funsig("cl::sycl", "genfloat", "sin", ["genfloat"])
+    f_sin = funsig("cl::sycl", "genfloat", "sin", ["genfloat"], "4")
     sig_list.append(f_sin)
 
-    f_sincos = funsig("cl::sycl", "genfloat", "sincos", ["genfloat", "genfloat"],[2])
+    f_sincos = funsig("cl::sycl", "genfloat", "sincos", ["genfloat", "genfloat"], "4",[2])
     sig_list.append(f_sincos)
 
-    f_sinh = funsig("cl::sycl", "genfloat", "sinh", ["genfloat"])
+    f_sinh = funsig("cl::sycl", "genfloat", "sinh", ["genfloat"], "4")
     sig_list.append(f_sinh)
 
-    f_sinpi = funsig("cl::sycl", "genfloat", "sinpi", ["genfloat"])
+    f_sinpi = funsig("cl::sycl", "genfloat", "sinpi", ["genfloat"], "4")
     sig_list.append(f_sinpi)
 
-    f_sqrt = funsig("cl::sycl", "genfloat", "sqrt", ["genfloat"])
+    f_sqrt = funsig("cl::sycl", "genfloat", "sqrt", ["genfloat"], "3")
     sig_list.append(f_sqrt)
 
-    f_tan = funsig("cl::sycl", "genfloat", "tan", ["genfloat"])
+    f_tan = funsig("cl::sycl", "genfloat", "tan", ["genfloat"], "5")
     sig_list.append(f_tan)
 
-    f_tanh = funsig("cl::sycl", "genfloat", "tanh", ["genfloat"])
+    f_tanh = funsig("cl::sycl", "genfloat", "tanh", ["genfloat"], "5")
     sig_list.append(f_tanh)
 
-    f_tanpi = funsig("cl::sycl", "genfloat", "tanpi", ["genfloat"])
+    f_tanpi = funsig("cl::sycl", "genfloat", "tanpi", ["genfloat"], "6")
     sig_list.append(f_tanpi)
 
-    f_tgamma = funsig("cl::sycl", "genfloat", "tgamma", ["genfloat"])
+    f_tgamma = funsig("cl::sycl", "genfloat", "tgamma", ["genfloat"], "16")
     sig_list.append(f_tgamma)
 
-    f_trunc = funsig("cl::sycl", "genfloat", "trunc", ["genfloat"])
+    f_trunc = funsig("cl::sycl", "genfloat", "trunc", ["genfloat"], "0")
     sig_list.append(f_trunc)
-    
+
     return sig_list
 
 def create_native_signatures():
     sig_list = []
 
-    f_cos = funsig("cl::sycl::native", "genfloatf", "cos", ["genfloatf"])
+    f_cos = funsig("cl::sycl::native", "genfloatf", "cos", ["genfloatf"], "-1")
     sig_list.append(f_cos)
 
-    f_divide = funsig("cl::sycl::native", "genfloatf", "divide", ["genfloatf", "genfloatf"])
+    f_divide = funsig("cl::sycl::native", "genfloatf", "divide", ["genfloatf", "genfloatf"], "-1")
     sig_list.append(f_divide)
 
-    f_exp = funsig("cl::sycl::native", "genfloatf", "exp", ["genfloatf"])
+    f_exp = funsig("cl::sycl::native", "genfloatf", "exp", ["genfloatf"], "-1")
     sig_list.append(f_exp)
 
-    f_exp2 = funsig("cl::sycl::native", "genfloatf", "exp2", ["genfloatf"])
+    f_exp2 = funsig("cl::sycl::native", "genfloatf", "exp2", ["genfloatf"], "-1")
     sig_list.append(f_exp2)
 
-    f_exp10 = funsig("cl::sycl::native", "genfloatf", "exp10", ["genfloatf"])
+    f_exp10 = funsig("cl::sycl::native", "genfloatf", "exp10", ["genfloatf"], "-1")
     sig_list.append(f_exp10)
 
-    f_log = funsig("cl::sycl::native", "genfloatf", "log", ["genfloatf"])
+    f_log = funsig("cl::sycl::native", "genfloatf", "log", ["genfloatf"], "-1")
     sig_list.append(f_log)
 
-    f_log2 = funsig("cl::sycl::native", "genfloatf", "log2", ["genfloatf"])
+    f_log2 = funsig("cl::sycl::native", "genfloatf", "log2", ["genfloatf"], "-1")
     sig_list.append(f_log2)
 
-    f_log10 = funsig("cl::sycl::native", "genfloatf", "log10", ["genfloatf"])
+    f_log10 = funsig("cl::sycl::native", "genfloatf", "log10", ["genfloatf"], "-1")
     sig_list.append(f_log10)
 
-    f_powr = funsig("cl::sycl::native", "genfloatf", "powr", ["genfloatf", "genfloatf"])
+    f_powr = funsig("cl::sycl::native", "genfloatf", "powr", ["genfloatf", "genfloatf"], "-1")
     sig_list.append(f_powr)
 
-    f_recip = funsig("cl::sycl::native", "genfloatf", "recip", ["genfloatf"])
+    f_recip = funsig("cl::sycl::native", "genfloatf", "recip", ["genfloatf"], "-1")
     sig_list.append(f_recip)
 
-    f_rsqrt = funsig("cl::sycl::native", "genfloatf", "rsqrt", ["genfloatf"])
+    f_rsqrt = funsig("cl::sycl::native", "genfloatf", "rsqrt", ["genfloatf"], "-1")
     sig_list.append(f_rsqrt)
 
-    f_sin = funsig("cl::sycl::native", "genfloatf", "sin", ["genfloatf"])
+    f_sin = funsig("cl::sycl::native", "genfloatf", "sin", ["genfloatf"], "-1")
     sig_list.append(f_sin)
 
-    f_sqrt = funsig("cl::sycl::native", "genfloatf", "sqrt", ["genfloatf"])
+    f_sqrt = funsig("cl::sycl::native", "genfloatf", "sqrt", ["genfloatf"], "-1")
     sig_list.append(f_sqrt)
 
-    f_tan = funsig("cl::sycl::native", "genfloatf", "tan", ["genfloatf"])
+    f_tan = funsig("cl::sycl::native", "genfloatf", "tan", ["genfloatf"], "-1")
     sig_list.append(f_tan)
 
     return sig_list
@@ -605,46 +607,46 @@ def create_native_signatures():
 def create_half_signatures():
     sig_list = []
 
-    f_cos = funsig("cl::sycl::half_precision", "genfloatf", "cos", ["genfloatf"])
+    f_cos = funsig("cl::sycl::half_precision", "genfloatf", "cos", ["genfloatf"], "8192")
     sig_list.append(f_cos)
-    
-    f_divide = funsig("cl::sycl::half_precision", "genfloatf", "divide", ["genfloatf", "genfloatf"])
+
+    f_divide = funsig("cl::sycl::half_precision", "genfloatf", "divide", ["genfloatf", "genfloatf"], "8192")
     sig_list.append(f_divide)
 
-    f_exp = funsig("cl::sycl::half_precision", "genfloatf", "exp", ["genfloatf"])
+    f_exp = funsig("cl::sycl::half_precision", "genfloatf", "exp", ["genfloatf"], "8192")
     sig_list.append(f_exp)
 
-    f_exp2 = funsig("cl::sycl::half_precision", "genfloatf", "exp2", ["genfloatf"])
+    f_exp2 = funsig("cl::sycl::half_precision", "genfloatf", "exp2", ["genfloatf"], "8192")
     sig_list.append(f_exp2)
 
-    f_exp10 = funsig("cl::sycl::half_precision", "genfloatf", "exp10", ["genfloatf"])
+    f_exp10 = funsig("cl::sycl::half_precision", "genfloatf", "exp10", ["genfloatf"], "8192")
     sig_list.append(f_exp10)
 
-    f_log = funsig("cl::sycl::half_precision", "genfloatf", "log", ["genfloatf"])
+    f_log = funsig("cl::sycl::half_precision", "genfloatf", "log", ["genfloatf"], "8192")
     sig_list.append(f_log)
 
-    f_log2 = funsig("cl::sycl::half_precision", "genfloatf", "log2", ["genfloatf"])
+    f_log2 = funsig("cl::sycl::half_precision", "genfloatf", "log2", ["genfloatf"], "8192")
     sig_list.append(f_log2)
 
-    f_log10 = funsig("cl::sycl::half_precision", "genfloatf", "log10", ["genfloatf"])
+    f_log10 = funsig("cl::sycl::half_precision", "genfloatf", "log10", ["genfloatf"], "8192")
     sig_list.append(f_log10)
 
-    f_powr = funsig("cl::sycl::half_precision", "genfloatf", "powr", ["genfloatf", "genfloatf"])
+    f_powr = funsig("cl::sycl::half_precision", "genfloatf", "powr", ["genfloatf", "genfloatf"], "8192")
     sig_list.append(f_powr)
 
-    f_recip = funsig("cl::sycl::half_precision", "genfloatf", "recip", ["genfloatf"])
+    f_recip = funsig("cl::sycl::half_precision", "genfloatf", "recip", ["genfloatf"], "8192")
     sig_list.append(f_recip)
 
-    f_rsqrt = funsig("cl::sycl::half_precision", "genfloatf", "rsqrt", ["genfloatf"])
+    f_rsqrt = funsig("cl::sycl::half_precision", "genfloatf", "rsqrt", ["genfloatf"], "8192")
     sig_list.append(f_rsqrt)
 
-    f_sin = funsig("cl::sycl::half_precision", "genfloatf", "sin", ["genfloatf"])
+    f_sin = funsig("cl::sycl::half_precision", "genfloatf", "sin", ["genfloatf"], "8192")
     sig_list.append(f_sin)
 
-    f_sqrt = funsig("cl::sycl::half_precision", "genfloatf", "sqrt", ["genfloatf"])
+    f_sqrt = funsig("cl::sycl::half_precision", "genfloatf", "sqrt", ["genfloatf"], "8192")
     sig_list.append(f_sqrt)
 
-    f_tan = funsig("cl::sycl::half_precision", "genfloatf", "tan", ["genfloatf"])
+    f_tan = funsig("cl::sycl::half_precision", "genfloatf", "tan", ["genfloatf"], "8192")
     sig_list.append(f_tan)
 
     return sig_list
