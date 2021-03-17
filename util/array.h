@@ -1,6 +1,6 @@
 /*******************************************************************************
 //
-//  SYCL 1.2.1 Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Provide fixed-width array implementation for usage in kernel functions
 //  because std::array methods are not required to be noexcept by C++ spec,
