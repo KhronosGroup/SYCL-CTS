@@ -43,7 +43,7 @@ struct array {
     return values[pos];
   }
 
-  inline constexpr size_type size() const noexcept {
+  constexpr size_type size() const noexcept {
     return N;
   }
 
