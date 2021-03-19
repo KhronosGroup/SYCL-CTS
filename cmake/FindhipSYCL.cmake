@@ -5,7 +5,6 @@ if(NOT SYCLCC_EXECUTABLE)
   message(SEND_ERROR "Could not find hipSYCL syclcc-clang compiler")
 endif()
 
-set(CMAKE_C_COMPILER    ${SYCLCC_EXECUTABLE})
 set(CMAKE_CXX_COMPILER  ${SYCLCC_EXECUTABLE})
 set(CMAKE_CXX_STANDARD 14)
 
