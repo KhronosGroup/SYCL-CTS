@@ -39,7 +39,7 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
 
     # Execute the tests if the extensions are supported by target device.
     if extension:
-        checkPoint = "\n\nif(makeQueueOnce().get_device().has_extension(\"" + extension + "\")){\n"
+        checkPoint = "\n\nif(once_per_unit::get_queue().get_device().has_extension(\"" + extension + "\")){\n"
         generated_test_cases = checkPoint + generated_test_cases + "\n\n}"
 
     newSource = source.replace("$TEST_CASES", generated_test_cases)

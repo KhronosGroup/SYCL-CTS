@@ -11,6 +11,7 @@
 
 #include "../../util/math_reference.h"
 #include "../../util/accuracy.h"
+#include "../common/once_per_unit.h"
 #include <cfloat>
 #include <limits>
 
@@ -118,7 +119,7 @@ void check_function(sycl_cts::util::logger &log, funT fun,
                     resultRef<returnT> ref, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   try {
     cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     testQueue.submit([&](cl::sycl::handler &h) {
@@ -146,7 +147,7 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   try {
     cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     cl::sycl::buffer<argT, 1> bufferArg(&kernelResultArg, ndRng);
@@ -183,7 +184,7 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
                                      argT ptrRef, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   try {
     cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     cl::sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
@@ -217,7 +218,7 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
                                     argT ptrRef, int accuracy = 0) {
   cl::sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   try {
     cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     cl::sycl::buffer<argT, 1> bufferArg(&arg, ndRng);
@@ -255,7 +256,7 @@ template <int T, typename returnT, typename funT>
 void test_function(funT fun) {
   cl::sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   {
     cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     testQueue.submit([&](cl::sycl::handler &h) {
@@ -273,7 +274,7 @@ template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_global(funT fun, argT arg) {
   cl::sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   {
     cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     cl::sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
@@ -293,7 +294,7 @@ template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_local(funT fun, argT arg) {
   cl::sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto testQueue = makeQueueOnce();
+  auto&& testQueue = once_per_unit::get_queue();
   {
     cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     testQueue.submit([&](cl::sycl::handler &h) {
