@@ -42,7 +42,13 @@ types as the underlying type of a `specialization_id` variable.
    for `bool` and `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
 * `marray<T, size_t dim>` where `T` is each of the scalar types listed above
   and `dim` is `2`, `5`, and `10`.
-* A user-defined struct with several scalar fields.
+* A user-defined struct with several scalar member variables, no constructor,
+  destructor or member functions.
+* A user-defined class with several scalar member variables, a user-defined
+  default constructor, and some member functions that modify the member
+  variables.
+* A user-defined class with several scalar member variables, a deleted default
+  constructor, and a user-defined (non-default) constructor.
 
 In addition, if the device has `aspect::fp64`, the following types are tested:
 
@@ -115,6 +121,46 @@ All of the following basic tests have these initial steps:
 * Read the value of the spec constant via
   `kernel_handler::get_specialization_constant()` and make sure we get the second
    value back.
+
+#### Write the value from a handler and read it twice from a kernel
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant twice via
+  `kernel_handler::get_specialization_constant()` and make sure that each time
+  we get that value that was written.
+
+#### Pass kernel handler object by reference to another function
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Call some helper function in the same translation unit, passing the
+  `kernel_handler` object by reference.
+* From the helper function, read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the same
+   value back.
+
+#### Pass kernel handler object by value to another function
+
+* Same test as above, except pass the `kernel_handler` object by value.
+
+#### Pass kernel handler object by reference to a `SYCL_EXTERNAL` function
+
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
+* Same test as above except:
+  - The helper function is defined in a separate translation unit via
+    `SYCL_EXTERNAL`.
+  - The separate translation unit has an external declaration for the
+    `specialization_id` variable, which is defined in the first translation
+    unit.
+  - The `kernel_handler` object is passed by reference.
+
+#### Pass kernel handler object by value to a `SYCL_EXTERNAL` function
+
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
+* Same test as above, except pass the `kernel_handler` object by value.
 
 ### Multiple spec constants
 
@@ -199,21 +245,3 @@ The test that is performed is:
   - Read the value of the spec constant via
     `kernel_handler::get_specialization_constant()` and make sure we get the
     same value back.
-
-### Spec constant defined and set in another translation unit
-
-* This test runs only if the implementation defines `SYCL_EXTERNAL`.
-* In one translation unit:
-  - Define a `specialization_id` variable in the global namespace for the
-    tested type.  The variable's default value has some non-zero value.
-  - Create a `queue` from the tested device and call `queue::submit()`.
-  - Set the value of the spec constant via
-    `handler::set_specialization_constant()`.
-  - Submit a kernel via `handler::single_task()`.  The kernel is declared
-    `SYCL_EXTERNAL`.
-* In a second translation unit:
-  - Declare an external reference to the `specialization_id` variable.
-  - Define the kernel which is declared `SYCL_EXTERNAL` above.
-  - Read the value of the spec constant via
-    `kernel_handler::get_specialization_constant()` and make sure we get the
-    value we set in the first translation unit.
