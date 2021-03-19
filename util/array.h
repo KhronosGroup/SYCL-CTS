@@ -29,7 +29,7 @@ struct array {
   /** @brief Iterator type; is safe to use on host or device side only
    */
   using iterator = value_type*;
-  using const_iterator = const iterator;
+  using const_iterator = const value_type*;
 
   /** @brief Internal data storage;
    *         public for aggregate initialization availability
