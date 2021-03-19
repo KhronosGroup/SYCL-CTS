@@ -36,7 +36,7 @@ struct array {
    */
   value_type values[N];
 
-  reference operator[](size_type pos) {
+  constexpr reference operator[](size_type pos) {
     return values[pos];
   }
   constexpr const_reference operator[](size_type pos) const {
@@ -47,13 +47,13 @@ struct array {
     return N;
   }
 
-  reference front() {
+  constexpr reference front() {
     return values[0];
   }
   constexpr const_reference front() const {
     return values[0];
   }
-  reference back() {
+  constexpr reference back() {
     return values[N-1];
   }
   constexpr const_reference back() const {
@@ -62,13 +62,13 @@ struct array {
 
   /** @brief Support for C++ ranged-for syntax
    */
-  iterator begin() noexcept {
+  constexpr iterator begin() noexcept {
     return &front();
   }
   constexpr const_iterator begin() const noexcept {
     return &front();
   }
-  iterator end() noexcept {
+  constexpr iterator end() noexcept {
     return &back();
   }
   constexpr const_iterator end() const noexcept {
