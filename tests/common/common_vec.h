@@ -21,6 +21,11 @@
 #include "../common/get_cts_object.h"
 #include "macros.h"
 
+#include "../../util/accuracy.h"
+#include "../../util/math_vector.h"
+#include "../../util/test_base.h"
+#include "../../util/type_traits.h"
+
 #include <string>
 #include <type_traits>
 
