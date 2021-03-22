@@ -1,6 +1,6 @@
 /*******************************************************************************
 //
-//  SYCL 1.2.1 Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Common checks for async_work_group_copy and wait_for calls
 //  for nd_item and group tests
