@@ -211,7 +211,7 @@ struct check_wait_for {
    */
   template <typename instanceT, typename T, typename ... eventsT>
   returnT operator()(instanceT&& instance, cl::sycl::local_ptr<T> srcPtr,
-                     cl::sycl::global_ptr<T> dstPtr, eventsT ... events) {
+                     cl::sycl::global_ptr<T> dstPtr, eventsT ... events) const {
     constexpr size_t nEvents = sizeof...(eventsT);
     constexpr size_t stride = nEvents;
     constexpr size_t numElements = bufferSize / stride;
