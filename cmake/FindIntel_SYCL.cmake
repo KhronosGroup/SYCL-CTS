@@ -11,7 +11,13 @@ if(NOT DEFINED INTEL_SYCL_TRIPLE)
 endif()
 message("Intel SYCL target triple: ${INTEL_SYCL_TRIPLE}")
 
-set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;-ffp-model=precise;${INTEL_SYCL_FLAGS}")
+if(WIN32)
+    set(INTEL_FP_FLAG "/fp:precise") # clang-cl fp flag for windows
+else()
+    set(INTEL_FP_FLAG "-ffp-model=precise")
+endif()
+
+set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=121;${INTEL_FP_FLAG};${INTEL_SYCL_FLAGS}")
 message("Intel SYCL compiler flags: `${INTEL_SYCL_FLAGS}`")
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
