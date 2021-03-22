@@ -26,11 +26,16 @@ endif()
 include(AddSYCLExecutable)
 
 # ------------------
-# Extensive mode for improved coverage
-option(SYCL_CTS_ENABLE_EXTENSIVE_MODE
-       "Enable extensive mode with extended type coverage" OFF)
-if(SYCL_CTS_ENABLE_EXTENSIVE_MODE)
-    add_definitions(-DSYCL_CTS_EXTENSIVE_MODE)
+# Extensive mode for full coverage
+option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
+       "Enable full conformance mode with extensive tests" OFF)
+if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+    message(STATUS "Full conformance mode: ON")
+    add_definitions(-DSYCL_CTS_FULL_CONFORMANCE)
+else()
+    message(STATUS "Full conformance mode: OFF")
+    message(WARNING
+            "Full conformance mode should be used for conformance submission")
 endif()
 # ------------------
 
