@@ -5,7 +5,7 @@ get_std_type(TYPE_LIST)
 get_opencl_type(TYPE_LIST)
 get_no_vec_alias_type(TYPE_LIST)
 
-if(SYCL_CTS_ENABLE_EXTENSIVE_MODE)
+if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
     set(ENABLE_AS_CONVERT_TYPES "16_64")
     get_fixed_width_type(TYPE_LIST)
 else()
