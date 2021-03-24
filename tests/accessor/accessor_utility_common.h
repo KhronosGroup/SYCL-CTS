@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  This file is a common utility for the implementation of
 //  accessor_constructors.cpp and accessor_api.cpp.
