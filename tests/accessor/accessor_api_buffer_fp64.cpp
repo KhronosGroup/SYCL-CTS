@@ -40,7 +40,7 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
-#ifndef SYCL_CTS_EXTENSIVE_MODE
+#ifndef SYCL_CTS_FULL_CONFORMANCE
       // Specific set of types to cover during ordinary compilation
 
       /** check buffer accessor api for double
@@ -57,7 +57,7 @@ class TEST_NAME : public util::test_base {
       for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::cl_double>(
           log, queue, "cl::sycl::double");
 
-#endif // SYCL_CTS_EXTENSIVE_MODE
+#endif // SYCL_CTS_FULL_CONFORMANCE
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

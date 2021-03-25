@@ -34,7 +34,7 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-#ifndef SYCL_CTS_EXTENSIVE_MODE
+#ifndef SYCL_CTS_FULL_CONFORMANCE
       // Specific set of types to cover during ordinary compilation
 
       const auto vector_types = named_type_pack<int>({"int"});
@@ -128,7 +128,7 @@ class TEST_NAME : public util::test_base {
       }
 #endif
 
-#endif // SYCL_CTS_EXTENSIVE_MODE
+#endif // SYCL_CTS_FULL_CONFORMANCE
 
       for_all_types_and_vectors<check_buffer_accessor_api_type>(
            vector_types, log, queue);
