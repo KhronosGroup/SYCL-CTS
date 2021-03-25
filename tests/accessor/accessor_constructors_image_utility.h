@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -18,77 +18,107 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget>
-class check_accessor_constructor_image;
-
-/** Creates a image accessor and checks all its members for correctness.
-*/
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_constructor_image<T, dims, kMode,
-                                       cl::sycl::access::target::image> {
- public:
-  static void check(cl::sycl::image<dims> &image, cl::sycl::handler &h,
-                    cl::sycl::range<dims> range, util::logger &log) {
+/** Creates an image accessor and checks all its members for correctness.
+ */
+template <typename accTag>
+class check_accessor_constructor_image {
+  static constexpr size_t imageDims =
+      accTag::dims + (accTag::target == cl::sycl::access::target::image_array);
+public:
+  template <typename ... handlerArgsT>
+  static void check(cl::sycl::image<imageDims> &image,
+                    cl::sycl::range<imageDims> range,
+                    sycl_cts::util::logger &log,
+                    const std::string& constructorName,
+                    const std::string& typeName,
+                    handlerArgsT&& ... handler) {
     // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::image,
-                       cl::sycl::access::placeholder::false_t>
-        a(image, h);
-
-    int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
+    typename accTag::type accessor(image,
+                                   std::forward<handlerArgsT>(handler)...);
 
     // check the accessor
-    check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
-                           cl::sycl::access::placeholder::false_t>::
-        check(a, range, getElementsCount<dims>(range),
-              "constructor(image, handler)", log);
+    check_accessor_members<accTag>::check(
+        log, accessor, constructorName, typeName,
+        accessor_members::count{getElementsCount<imageDims>(range)},
+        accessor_members::range<imageDims>{range});
   }
 };
 
-/** Creates a host_image accessor and checks all its members for correctness.
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_constructor_image<T, dims, kMode,
-                                       cl::sycl::access::target::host_image> {
- public:
-  static void check(cl::sycl::image<dims> &image, cl::sycl::range<dims> range,
-                    util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::host_image,
-                       cl::sycl::access::placeholder::false_t>
-        a(image);
+/** check accessor is Copy Constructible
+  */
+template <typename accTag>
+class check_image_accessor_copy_constructable {
+  static constexpr size_t imageDims =
+      accTag::dims + (accTag::target == cl::sycl::access::target::image_array);
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{a};
 
-    int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
-
-    // check the accessor
-    check_accessor_members<T, dims, kMode, cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>::
-        check(a, range, getElementsCount<dims>(range), "constructor(image)",
-              log);
+    check_accessor_members<accTag>::check(
+        log, b, "copy construction", typeName,
+        accessor_members::count{a.get_count()},
+        accessor_members::range<imageDims>{a.get_range()});
   }
 };
 
-/** Creates a image_array accessor and checks all its members for correctness.
+/** check accessor is Copy Assignable
  */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_constructor_image<T, dims, kMode,
-                                       cl::sycl::access::target::image_array> {
- public:
-  static void check(cl::sycl::image<dims + 1> &image, cl::sycl::handler &h,
-                    cl::sycl::range<dims + 1> range, util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::image_array,
-                       cl::sycl::access::placeholder::false_t>
-        a(image, h);
+template <typename accTag>
+class check_image_accessor_copy_assignable {
+  static constexpr size_t imageDims =
+      accTag::dims + (accTag::target == cl::sycl::access::target::image_array);
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = a;
 
-    int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
+    check_accessor_members<accTag>::check(
+        log, b, "copy assignment", typeName,
+        accessor_members::count{a.get_count()},
+        accessor_members::range<imageDims>{a.get_range()});
+  }
+};
 
-    // check the accessor
-    check_accessor_members<T, dims, kMode,
-                           cl::sycl::access::target::image_array,
-                           cl::sycl::access::placeholder::false_t>::
-        check(a, range, getElementsCount<dims + 1>(range),
-              "constructor(image, handler)", log);
+/** check accessor is Move Constructible
+ */
+template <typename accTag>
+class check_image_accessor_move_constructable {
+  static constexpr size_t imageDims =
+      accTag::dims + (accTag::target == cl::sycl::access::target::image_array);
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{std::move(a)};
+
+    check_accessor_members<accTag>::check(
+        log, b, "move construction", typeName,
+        accessor_members::count{a.get_count()},
+        accessor_members::range<imageDims>{a.get_range()});
+  }
+};
+
+/** check accessor is Move Assignable
+ */
+template <typename accTag>
+class check_image_accessor_move_assignable {
+  static constexpr size_t imageDims =
+      accTag::dims + (accTag::target == cl::sycl::access::target::image_array);
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = std::move(a);
+
+    check_accessor_members<accTag>::check(
+        log, b, "move assignment", typeName,
+        accessor_members::count{a.get_count()},
+        accessor_members::range<imageDims>{a.get_range()});
   }
 };
 
@@ -97,7 +127,8 @@ class check_accessor_constructor_image<T, dims, kMode,
 template <typename T, size_t dims>
 class image_accessor_dims {
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     int size = 32;
     cl::sycl::range<dims> range = getRange<dims>(size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
@@ -109,104 +140,83 @@ class image_accessor_dims {
                                  cl::sycl::image_channel_order::rgba,
                                  cl::sycl::image_channel_type::fp32, range);
 
-    int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
-
     /** check image accessor constructors for image
      */
     {
+      constexpr auto target = cl::sycl::access::target::image;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (image, handler) constructor for reading image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::image>::check(image, h, range, log);
-
-        /** check (image, handler) constructor for writing image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::write,
-            cl::sycl::access::target::image>::check(image, h, range, log);
-
-        /** check (image, handler) constructor for discard_write image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::discard_write,
-            cl::sycl::access::target::image>::check(image, h, range, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructor for reading image
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::image,
-                                 cl::sycl::access::placeholder::false_t>::
-              check(b, a.get_range(), a.get_count(), "copy construction", log);
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
+        }
+        /** check constructor for writing image
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::write;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
+
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
+        }
+        /** check constructor for discard_write image
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
+
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
         }
 
-        /** check accessor is Copy Assignable
+         /** check common-by-reference semantics
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              b(image, h);
-          b = a;
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          {
+            using verifier = check_image_accessor_copy_constructable<accTag>;
 
-          check_accessor_members<
-              T, dims, cl::sycl::access::mode::read,
-              cl::sycl::access::target::image,
-              cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
-                                                             a.get_count(),
-                                                             "copy assignment",
-                                                             log);
-        }
+            typename accTag::type srcAccessor(image, h);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_copy_assignable<accTag>;
 
-        /** check accessor is Move Constructible
-         */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          auto b{std::move(a)};
+            typename accTag::type srcAccessor(image, h);
+            typename accTag::type dstAccessor(image, h);
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::image,
-                                 cl::sycl::access::placeholder::false_t>::
-              check(b, image.get_range(), image.get_count(),
-                    "move construction", log);
-        }
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_move_constructable<accTag>;
 
-        /** check accessor is Move Assignable
-         */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t>
-              b(image, h);
-          b = std::move(a);
+            typename accTag::type srcAccessor(image, h);
 
-          check_accessor_members<
-              T, dims, cl::sycl::access::mode::read,
-              cl::sycl::access::target::image,
-              cl::sycl::access::placeholder::false_t>::check(b,
-                                                             image.get_range(),
-                                                             image.get_count(),
-                                                             "move assignment",
-                                                             log);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(image, h);
+            typename accTag::type dstAccessor(image, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
         }
 
         /** dummy kernel as no kernel is required for these checks
@@ -219,102 +229,76 @@ class image_accessor_dims {
     /** check host_image accessor constructors for host_image
      */
     {
-      /** check (image) constructor for reading host_image
-       */
-      check_accessor_constructor_image<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::host_image>::check(image, range, log);
+      constexpr auto target = cl::sycl::access::target::host_image;
 
-      /** check (image) constructor for writing host_image
-       */
-      check_accessor_constructor_image<
-          T, dims, cl::sycl::access::mode::write,
-          cl::sycl::access::target::host_image>::check(image, range, log);
-
-      /** check (image) constructor for discard_write host_image
-       */
-      check_accessor_constructor_image<
-          T, dims, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::host_image>::check(image, range, log);
-
-      /** check accessor is Copy Constructible
+      /** check constructor for reading image
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            a(image);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target>;
+        using verifier = check_accessor_constructor_image<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
-                                                           a.get_count(),
-                                                           "copy construction",
-                                                           log);
+        verifier::check(image, range,
+                        log, "constructor(image)",
+                        typeName);
+      }
+      /** check constructor for writing image
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::write;
+        using accTag = accessor_type_info<T, dims, mode, target>;
+        using verifier = check_accessor_constructor_image<accTag>;
+
+        verifier::check(image, range,
+                        log, "constructor(image)",
+                        typeName);
+      }
+      /** check constructor for discard_write image
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        using accTag = accessor_type_info<T, dims, mode, target>;
+        using verifier = check_accessor_constructor_image<accTag>;
+
+        verifier::check(image, range,
+                        log, "constructor(image)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check common-by-reference semantics
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            a(image);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            b(image2);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target>;
+        {
+          using verifier = check_image_accessor_copy_constructable<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
-                                                           a.get_count(),
-                                                           "copy assignment",
-                                                           log);
-      }
+          typename accTag::type srcAccessor(image);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_image_accessor_copy_assignable<accTag>;
 
-      /** check accessor is Move Constructible
-       */
-      {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            a(image);
-        auto b{std::move(a)};
+          typename accTag::type srcAccessor(image);
+          typename accTag::type dstAccessor(image);
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, image.get_range(),
-                                                           image.get_count(),
-                                                           "move construction",
-                                                           log);
-      }
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_image_accessor_move_constructable<accTag>;
 
-      /** check accessor is Move Assignable
-       */
-      {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            a(image);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_image,
-                           cl::sycl::access::placeholder::false_t>
-            b(image2);
-        b = std::move(a);
+          typename accTag::type srcAccessor(image);
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::host_image,
-            cl::sycl::access::placeholder::false_t>::check(b, image.get_range(),
-                                                           image.get_count(),
-                                                           "move assignment",
-                                                           log);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_image_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(image);
+          typename accTag::type dstAccessor(image);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
     }
   }
@@ -325,111 +309,92 @@ class image_accessor_dims {
 template <typename T, size_t dims>
 class image_array_accessor_dims {
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     int size = 32;
     cl::sycl::range<dims + 1> range = getRange<dims + 1>(size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
     cl::sycl::image<dims + 1> image(data.data(),
                                     cl::sycl::image_channel_order::rgba,
                                     cl::sycl::image_channel_type::fp32, range);
-    int elementSize = sizeof(cl_float) * 4;  // each element contains 4 channels
 
     /** check image array accessor constructors for image
      */
     {
+      constexpr auto target = cl::sycl::access::target::image_array;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (image, handler) constructor for reading image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::image_array>::check(image, h, range, log);
-
-        /** check (image, handler) constructor for writing image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::write,
-            cl::sycl::access::target::image_array>::check(image, h, range, log);
-
-        /** check (image, handler) constructor for discard_write image
-         */
-        check_accessor_constructor_image<
-            T, dims, cl::sycl::access::mode::discard_write,
-            cl::sycl::access::target::image_array>::check(image, h, range, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructor for reading image
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::image_array,
-                                 cl::sycl::access::placeholder::false_t>::
-              check(a, b.get_range(), b.get_count(), "copy construction", log);
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
+        }
+        /** check constructor for writing image
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::write;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
+
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
+        }
+        /** check constructor for discard_write image
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          using verifier = check_accessor_constructor_image<accTag>;
+
+          verifier::check(image, range,
+                          log, "constructor(image, handler)",
+                          typeName,
+                          h);
         }
 
-        /** check accessor is Copy Assignable
+         /** check common-by-reference semantics
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              b(image, h);
-          b = a;
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target>;
+          {
+            using verifier = check_image_accessor_copy_constructable<accTag>;
 
-          check_accessor_members<
-              T, dims, cl::sycl::access::mode::read,
-              cl::sycl::access::target::image_array,
-              cl::sycl::access::placeholder::false_t>::check(b, a.get_range(),
-                                                             a.get_count(),
-                                                             "copy assignment",
-                                                             log);
-        }
+            typename accTag::type srcAccessor(image, h);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_copy_assignable<accTag>;
 
-        /** check accessor is Move Constructible
-         */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          auto b{std::move(a)};
+            typename accTag::type srcAccessor(image, h);
+            typename accTag::type dstAccessor(image, h);
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::image_array,
-                                 cl::sycl::access::placeholder::false_t>::
-              check(b, image.get_range(), image.get_count(),
-                    "move construction", log);
-        }
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_move_constructable<accTag>;
 
-        /** check accessor is Move Assignable
-         */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              a(image, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t>
-              b(image, h);
-          b = std::move(a);
+            typename accTag::type srcAccessor(image, h);
 
-          check_accessor_members<
-              T, dims, cl::sycl::access::mode::read,
-              cl::sycl::access::target::image_array,
-              cl::sycl::access::placeholder::false_t>::check(b,
-                                                             image.get_range(),
-                                                             image.get_count(),
-                                                             "move assignmnet",
-                                                             log);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_image_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(image, h);
+            typename accTag::type dstAccessor(image, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
         }
 
         /** dummy kernel as no kernel is required for these checks

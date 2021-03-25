@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -12,7 +12,7 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_COMMON_ALL_H
 
 #include "../common/common.h"
-#include "accessor_utility.h"
+#include "accessor_api_utility.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tests
@@ -26,10 +26,13 @@ template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder =
               cl::sycl::access::placeholder::false_t>
-void check_accessor_members(sycl_cts::util::logger &log) {
+void check_accessor_members(sycl_cts::util::logger &log,
+                            const std::string& typeName) {
 #ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target, placeholder>("check_accessor_members",
-                                                   log);
+                                                   typeName, log);
+#else
+  static_cast<void>(typeName);
 #endif  // VERBOSE_LOG
 
   using acc_t = cl::sycl::accessor<T, dims, mode, target, placeholder>;
