@@ -9,7 +9,6 @@
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
 #include "accessor_api_buffer_common.h"
-#include "accessor_utility.h"
 
 #define TEST_NAME accessor_api_buffer_fp16
 
@@ -40,13 +39,25 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
+#ifndef SYCL_CTS_FULL_CONFORMANCE
+      // Specific set of types to cover during ordinary compilation
+
       /** check buffer accessor api for half
        */
-      check_buffer_accessor_api_type<cl::sycl::half>()(log, queue);
-
+      check_buffer_accessor_api_type<cl::sycl::half>()(log, queue,
+                                                       "cl::sycl::half");
       /** check buffer accessor api for vec
        */
-      check_buffer_accessor_api_type<cl::sycl::half8>()(log, queue);
+      check_buffer_accessor_api_type<cl::sycl::half3>()(log, queue,
+                                                        "cl::sycl::half");
+#else
+      // Extended type coverage
+      for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::half>(
+          log, queue, "cl::sycl::half");
+      for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::cl_half>(
+          log, queue, "cl::sycl::cl_half");
+
+#endif // SYCL_CTS_FULL_CONFORMANCE
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
