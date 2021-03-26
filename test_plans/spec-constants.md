@@ -1,7 +1,10 @@
 # Test plan for specialization constants
 
 This is a test plan for the APIs described in SYCL 2020 section 4.9.5.
-"Specialization constants".
+"Specialization constants" and for the
+`kernel_bundle::set_specialization_constant()` and
+`kernel_bundle::get_specialization_constant()` APIs that are described
+in section 4.11.12.2. "Specialization constant support".
 
 ## Testing scope
 
@@ -436,12 +439,9 @@ All of the following basic tests have these initial steps:
   `kernel_bundle::set_specialization_constant()`.
 * Build a kernel_bundle, register the bundle with a handler via `use_kernel_bundle()`.
 * Submit a kernel via `handler::single_task()`.
-* Read the value of the spec constant via
-  `kernel_handler::get_specialization_constant()` and make sure we get the
-   default value back.
 * Read the value of the spec constant twice via
   `kernel_handler::get_specialization_constant()` and make sure that each time
-  we get that value that was written.
+  we get the value that was written.
 
 ### Check expected exceptions
 
@@ -451,7 +451,7 @@ All of the following basic tests have these initial steps:
 * Create and build a kernel_bundle, register the bundle with a handler
   via `use_kernel_bundle()`.
 * Try to call `handler::get_specialization_constant()`
-* Catch exception and make sure it's with the errc::invalid error code.
+* Catch exception and make sure it's with the `errc::invalid` error code.
 
 #### Try to set specialization constant via handler that bound to a kernel_bundle
 
@@ -459,4 +459,4 @@ All of the following basic tests have these initial steps:
 * Create and build a kernel_bundle, register the bundle with a handler
   via `use_kernel_bundle()`.
 * Try to call `handler::set_specialization_constant()`.
-* Catch exception and make sure it's with the errc::invalid error code.
+* Catch exception and make sure it's with the `errc::invalid` error code.
