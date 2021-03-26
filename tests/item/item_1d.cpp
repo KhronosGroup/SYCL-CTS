@@ -28,7 +28,7 @@ class kernel_item_1d {
  public:
   kernel_item_1d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
 
-  void operator()(cl::sycl::item<1> item) {
+  void operator()(cl::sycl::item<1> item) const {
     cl::sycl::id<1> gid = item.get_id();
 
     size_t dim_a = item.get_id(0);
