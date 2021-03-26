@@ -15,8 +15,9 @@ is selected on the CTS command line.
 
 ### Specialization constant types
 
-All of tests described below are performed using each of the following
-types as the underlying type of a `specialization_id` variable.
+All of tests described below (with the exception of those tests described under
+"Tests which are not run for all types") are performed using each of the
+following types as the underlying type of a `specialization_id` variable.
 
 * `char`
 * `signed char`
@@ -47,9 +48,8 @@ types as the underlying type of a `specialization_id` variable.
   and `dim` is `2`, `5`, and `10`.
 * A user-defined struct with several scalar member variables, no constructor,
   destructor or member functions.
-* A user-defined class with several scalar member variables, a user-defined
-  default constructor, and some member functions that modify the member
-  variables.
+* A user-defined class with several scalar member variables and a user-defined
+  default constructor.
 * A user-defined class with several scalar member variables, a deleted default
   constructor, and a user-defined (non-default) constructor.
 
@@ -460,3 +460,35 @@ All of the following basic tests have these initial steps:
   via `use_kernel_bundle()`.
 * Try to call `handler::set_specialization_constant()`.
 * Catch exception and make sure it's with the `errc::invalid` error code.
+
+### Tests which are not run for all types
+
+The following tests are not run for each of the types defined above under
+"Specialization constant types".  Instead, each of these tests specifies the
+type of the specialization constant.
+
+#### Class with a member function that accesses members
+
+* Declare a type that is a class with at least one member variable and a member
+  function which accesses that member variable.  For example:
+
+```
+struct myType {
+  int a, b;
+  constexpr myType(int a, int b) : a(a), b(b) {}
+  int calculate(int c) const { return a * b * c; }
+};
+```
+
+* Declare a `specialization_id` variable templated on that type in the global
+  namespace.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()`.  This will return an object
+  of the tested type (i.e. `myType`).
+* Call the member function on that object (i.e. `myType::calculate()`).
+* Verify the return value of the member function to make sure it executed
+  correctly.
