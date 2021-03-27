@@ -1,6 +1,6 @@
 /*******************************************************************************
 //
-//  SYCL 1.2.1 Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Provide common code for accessor API verification with core types
 //  with or without atomic64 extension
