@@ -264,14 +264,15 @@ The test that is performed is:
 * Same test as above, except set spec constants in a kernel_bundle,
   build the bundle and register the bundle with a handler.
 
-### Basic tests with kernel_bundle
+### Basic tests with kernel_bundle for all kernel bundle states
 
 All of the following basic tests have these initial steps:
 
 * Declare a `specialization_id` variable in the global namespace for the
   tested type.  The variable's default value has some non-zero value.
 * Create a `queue` from the tested device and call `queue::submit()`.
-* Create `kernel_bundle` with `State` == `bundle_state::input`.
+* Create `kernel_bundle` using all kernel bundle states
+  `State` == (`bundle_state::input`, `bundle_state::object`, `bundle_state::executable`)
 
 #### Read a spec constant from a kernel_bundle without writing its value
 
@@ -279,7 +280,23 @@ All of the following basic tests have these initial steps:
   default value.
 * No kernel is submitted.
 
-#### Set the value in a kernel_bundle and then read it from the same bundle.
+#### Read a spec constant from a joined kernel_bundle without writing its value
+
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+### Tests for with kernel_bundle specific to bundle_state::input
+
+All of the following basic tests have these initial steps:
+
+* Declare a `specialization_id` variable in the global namespace for the
+  tested type.  The variable's default value has some non-zero value.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Create `kernel_bundle` with`State` == `bundle_state::input`.
+
+#### Set the value in a kernel_bundle and then read it from the same bundle
 
 * Set the value of the spec constant via
   `kernel_bundle::set_specialization_constant()`.
@@ -287,7 +304,7 @@ All of the following basic tests have these initial steps:
   value back.
 * No kernel is submitted.
 
-#### Set the value in a kernel_bundle twice and then read it from the same bundle.
+#### Set the value in a kernel_bundle twice and then read it from the same bundle
 
 * Set the value of the spec constant via
   `kernel_bundle::set_specialization_constant()`.
@@ -374,13 +391,6 @@ All of the following basic tests have these initial steps:
    value back.
 * No kernel is submitted.
 
-#### Read a spec constant from a joined kernel_bundle without writing its value
-
-* Join bundle with another bundle.
-* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
-  default value.
-* No kernel is submitted.
-
 #### Set the value in a kernel_bundle and read it from the joined bundle
 
 * Set the value of the spec constant via
@@ -400,6 +410,48 @@ All of the following basic tests have these initial steps:
    value back.
 * No kernel is submitted.
 
+#### Set the value in a kernel_bundle, compile and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Compile kernel_bundle.
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+#### Set the value in a kernel_bundle twice, compile and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Compile kernel_bundle.
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+  value back.
+* No kernel is submitted.
+
+#### Set the value in a kernel_bundle, build and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Build kernel_bundle.
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+#### Set the value in a kernel_bundle twice, build and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Build kernel_bundle.
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+  value back.
+* No kernel is submitted.
+
 #### Read a spec constant from a kernel without writing its value
 
 * Build a kernel_bundle, register the bundle with a handler via `use_kernel_bundle()`.
@@ -414,9 +466,6 @@ All of the following basic tests have these initial steps:
   `kernel_bundle::set_specialization_constant()`.
 * Build a kernel_bundle, register the bundle with a handler via `use_kernel_bundle()`.
 * Submit a kernel via `handler::single_task()`.
-* Read the value of the spec constant via
-  `kernel_handler::get_specialization_constant()` and make sure we get the
-   default value back.
 * Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
   value back.
 
@@ -427,9 +476,6 @@ All of the following basic tests have these initial steps:
 * Set the value again to a different value.
 * Build a kernel_bundle, register the bundle with a handler via `use_kernel_bundle()`
 * Submit a kernel via `handler::single_task()`.
-* Read the value of the spec constant via
-  `kernel_handler::get_specialization_constant()` and make sure we get the
-   default value back.
 * Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
    value back.
 
