@@ -71,8 +71,8 @@ class test_buffer_reinterpret {
 
   template <size_t dims>
   void check(TIn* data, util::logger& log) {
-    cl::sycl::range<dims> rangeIn = getRange<dims>(1);
-    cl::sycl::range<dims> rangeOut = getRange<dims>(1);
+    auto rangeIn = util::get_cts_object::range<dims>::get(1, 1, 1);
+    auto rangeOut = util::get_cts_object::range<dims>::get(1, 1, 1);
     size_t elementsCount = 0;
     precalculate<dims>(rangeIn, rangeOut, elementsCount, elementsIn,
                        elementsOut);
