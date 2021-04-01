@@ -193,6 +193,6 @@ conformance submission.
 Conformance submission
 ----------------------
 
-The conformance submission requires the use of the core.csv filter alongside
-with the run_conformance_tests.py script. Please, note that this script will
-switch on the SYCL_CTS_ENABLE_FULL_CONFORMANCE option.
+The conformance submission requires the use of the ``core.csv`` filter alongside
+with the ``run_conformance_tests.py`` script. Please, note that this script will
+switch the ``SYCL_CTS_ENABLE_FULL_CONFORMANCE`` option on.
