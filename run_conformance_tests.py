@@ -103,12 +103,14 @@ def handle_args(argv):
             args.additional_ctest_args, args.build_only)
 
 def split_additional_args(additional_args):
+    """
+    Split any 'additional argument' parameter passed to the script into the list
+    """
+
+    # shlex doesn't support None
     if additional_args is None:
         return []
-    if os.path.sep is '\\':
-        return shlex.split(additional_args.replace('\\','\\\\'))
-    else:
-        return shlex.split(additional_args)
+    return shlex.split(shlex.quote(additional_args))
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
                         conformance_filter, additional_cmake_args, host_names,
