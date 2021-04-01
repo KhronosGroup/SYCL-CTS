@@ -19,7 +19,7 @@
  */
 template <typename T> T get_ulp_std(T x) {
   const T inf = std::numeric_limits<T>::infinity();
-  const T negative = std::fabs(std::nextafter(x, -1.0f * inf) - x);
+  const T negative = std::fabs(std::nextafter(x, -inf) - x);
   const T positive = std::fabs(std::nextafter(x, inf) - x);
   return std::fmin(negative, positive);
 }
