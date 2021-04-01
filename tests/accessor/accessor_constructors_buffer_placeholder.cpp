@@ -10,15 +10,10 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_buffer_utility.h"
-#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 
-struct user_struct {
-  float a;
-  int b;
-  char c;
-};
+using namespace accessor_utility;
 
 /** tests the constructors for cl::sycl::accessor
  */
@@ -30,20 +25,30 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T>
-  void check_all_dims(util::logger &log, cl::sycl::queue &queue) {
+  template <typename T, typename ... allocatorT>
+  void check_all_dims_impl(util::logger &log, cl::sycl::queue &queue,
+                           const std::string& type) {
     buffer_accessor_dims<T, 0, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 1, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 2, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 3, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+  }
+
+  template <typename T, typename ... argsT>
+  void check_all_dims(argsT&& ... args) {
+    check_all_dims_impl<T>(std::forward<argsT>(args)...);
+    check_all_dims_impl<T, std::allocator<T>>(std::forward<argsT>(args)...);
   }
 
   /** execute this test
@@ -54,31 +59,31 @@ class TEST_NAME : public util::test_base {
 
       /** check accessor constructors for int
        */
-      check_all_dims<int>(log, queue);
+      check_all_dims<int>(log, queue, "int");
 
       /** check accessor constructors for float
        */
-      check_all_dims<float>(log, queue);
+      check_all_dims<float>(log, queue, "float");
 
       /** check accessor constructors for char
        */
-      check_all_dims<char>(log, queue);
+      check_all_dims<char>(log, queue, "char");
 
       /** check accessor constructors for vec
        */
-      check_all_dims<cl::sycl::int2>(log, queue);
+      check_all_dims<cl::sycl::int2>(log, queue, "int");
 
       /** check accessor constructors for vec
        */
-      check_all_dims<cl::sycl::int3>(log, queue);
+      check_all_dims<cl::sycl::int3>(log, queue, "int");
 
       /** check accessor constructors for vec
        */
-      check_all_dims<cl::sycl::float4>(log, queue);
+      check_all_dims<cl::sycl::float4>(log, queue, "float");
 
       /** check accessor constructors for user_struct
        */
-      check_all_dims<user_struct>(log, queue);
+      check_all_dims<user_struct>(log, queue, "user_struct");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

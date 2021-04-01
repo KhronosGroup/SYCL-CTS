@@ -12,7 +12,6 @@
 #include "accessor_constructors_buffer_utility.h"
 #include "accessor_constructors_image_utility.h"
 #include "accessor_constructors_local_utility.h"
-#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 
@@ -24,6 +23,70 @@ class TEST_NAME : public util::test_base {
    */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  template <typename T, typename ... allocatorT>
+  void checkBuffer(util::logger &log, cl::sycl::queue &queue,
+                   const std::string& type) {
+    buffer_accessor_dims<T, 0, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 1, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 2, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 3, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 0, is_host_buffer::true_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 1, is_host_buffer::true_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 2, is_host_buffer::true_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 3, is_host_buffer::true_t,
+                         cl::sycl::access::placeholder::false_t,
+                         allocatorT...>::check(log, queue, type);
+
+
+    buffer_accessor_dims<T, 0, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 1, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 2, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
+    buffer_accessor_dims<T, 3, is_host_buffer::false_t,
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+  }
+
+  template <typename T, typename ... argsT>
+  void checkBufferAndLocal(argsT&& ... args) {
+    checkBuffer<T>(std::forward<argsT>(args)...);
+    checkBuffer<T, std::allocator<T>>(std::forward<argsT>(args)...);
+
+    local_accessor_dims<T, 0>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, 1>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, 2>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, 3>::check(std::forward<argsT>(args)...);
   }
 
   /** execute this test
@@ -41,48 +104,8 @@ class TEST_NAME : public util::test_base {
 
       /** check accessor constructors for double (fp64)
        */
-      buffer_accessor_dims<
-          double, 0, is_host_buffer::false_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 1, is_host_buffer::false_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 2, is_host_buffer::false_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 3, is_host_buffer::false_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 0, is_host_buffer::true_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 1, is_host_buffer::true_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 2, is_host_buffer::true_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-      buffer_accessor_dims<
-          double, 3, is_host_buffer::true_t,
-          cl::sycl::access::placeholder::false_t>::check(log, queue);
-
-      buffer_accessor_dims<double, 0, is_host_buffer::false_t,
-                           cl::sycl::access::placeholder::true_t>::check(log,
-                                                                         queue);
-      buffer_accessor_dims<double, 1, is_host_buffer::false_t,
-                           cl::sycl::access::placeholder::true_t>::check(log,
-                                                                         queue);
-      buffer_accessor_dims<double, 2, is_host_buffer::false_t,
-                           cl::sycl::access::placeholder::true_t>::check(log,
-                                                                         queue);
-      buffer_accessor_dims<double, 3, is_host_buffer::false_t,
-                           cl::sycl::access::placeholder::true_t>::check(log,
-                                                                         queue);
-
-      local_accessor_dims<double, 0>::check(log, queue);
-      local_accessor_dims<double, 1>::check(log, queue);
-      local_accessor_dims<double, 2>::check(log, queue);
-      local_accessor_dims<double, 3>::check(log, queue);
+      const std::string type = "double";
+      checkBufferAndLocal<double>(log, queue, type);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
