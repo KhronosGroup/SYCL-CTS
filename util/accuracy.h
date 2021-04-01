@@ -19,7 +19,7 @@
  */
 template <typename T> T get_ulp_sycl(T x) {
   const T inf = std::numeric_limits<T>::infinity();
-  const T negative = cl::sycl::fabs(cl::sycl::nextafter(x, -1.0f * inf) - x);
+  const T negative = cl::sycl::fabs(cl::sycl::nextafter(x, -inf) - x);
   const T positive = cl::sycl::fabs(cl::sycl::nextafter(x, inf) - x);
   return cl::sycl::fmin(negative, positive);
 }
