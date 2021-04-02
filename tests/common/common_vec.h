@@ -50,6 +50,40 @@ bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
 }
 
 /**
+ * @brief Helper function to check that vector floating-point values
+ *        for division result are accurate enough
+ */
+template <typename vecType, int numOfElems>
+typename std::enable_if<is_cl_float_type<vecType>::value, bool>::type
+check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+                        vecType *vals) {
+  for (int i = 0; i < numOfElems; i++) {
+    vecType vectorValue = getElement(vector, i);
+    if (vals[i] == vectorValue)
+      continue;
+    const vecType ulpsExpected = 2.5; // Min Accuracy for x / y
+    const vecType difference = cl::sycl::fabs(vectorValue - vals[i]);
+    // using sycl functions to get ulp because it used in kernel
+    const vecType differenceExpected = ulpsExpected * get_ulp_sycl(vals[i]);
+
+    if (difference > differenceExpected) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Helper function to check that vector values for division are correct
+ */
+template <typename vecType, int numOfElems>
+typename std::enable_if<!is_cl_float_type<vecType>::value, bool>::type
+check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+                        vecType *vals) {
+  return check_vector_values(vector, vals);
+}
+
+/**
  *  @brief Helper function to test a single vector operator.
  */
 template <int vecSize, typename vectorType, typename lambdaFunc>

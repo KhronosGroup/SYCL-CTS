@@ -9,14 +9,13 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_LOCAL_COMMON_H
 
 #include "../common/common.h"
+#include "./../../util/extensions.h"
 #include "./../../util/math_helper.h"
 #include "accessor_api_common_all.h"
 #include "accessor_api_common_buffer_local.h"
 #include "accessor_api_utility.h"
-
-#include <array>
-#include <numeric>
-#include <sstream>
+ 
+#include <utility>
 
 namespace {
 
@@ -30,33 +29,15 @@ class dummy_accessor_api_local {};
 template <typename T>
 using dummy_functor = ::dummy_functor<dummy_accessor_api_local<T>>;
 
-/** explicit pointer type
-*/
-template <typename T, cl::sycl::access::target target>
-struct explicit_pointer;
-
-/** explicit pointer type (specialization for local)
-*/
-template <typename T>
-struct explicit_pointer<T, cl::sycl::access::target::local> {
-  using type = cl::sycl::local_ptr<T>;
-};
-
-/** explicit pointer alias
- */
-template <typename T, cl::sycl::access::target target>
-using explicit_pointer_t = typename explicit_pointer<T, target>::type;
-
 ////////////////////////////////////////////////////////////////////////////////
 // Tests
 ////////////////////////////////////////////////////////////////////////////////
 
-static constexpr auto mode = cl::sycl::access::mode::read_write;
 static constexpr auto target = cl::sycl::access::target::local;
 
 /** tests local accessor methods
 */
-template <typename T, int dims>
+template <typename T, int dims, cl::sycl::access::mode mode>
 class check_local_accessor_api_methods {
  public:
   size_t count;
@@ -71,42 +52,76 @@ class check_local_accessor_api_methods {
     log_accessor<T, dims, mode, target>("check_local_accessor_api_methods",
                                         typeName, log);
 #endif  // VERBOSE_LOG
+    static constexpr auto errorTarget = cl::sycl::access::target::global_buffer;
 
-    queue.submit([&](cl::sycl::handler &h) {
-      auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
-      {
-        /** check get_count() method
-        */
-        auto accessorCount = acc.get_count();
-        check_return_type<size_t>(log, accessorCount, "get_count()");
-        const auto expectedCount = ((dims == 0) ? 1 : count);
-        if (accessorCount != expectedCount) {
-          fail_for_accessor<T, dims, mode, target>(log, typeName,
-              "accessor does not return the correct count");
+    auto errors = get_error_data(2);
+    {
+      auto kernelRange =
+          util::get_cts_object::range<data_dim<dims>::value>::get(1, 1, 1);
+      error_buffer_t errorBuffer(errors.data(),
+                                 cl::sycl::range<1>(errors.size()));
+
+      queue.submit([&](cl::sycl::handler &h) {
+        auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
+        {
+          /** check get_count() method
+          */
+          auto accessorCount = acc.get_count();
+          check_return_type<size_t>(log, accessorCount, "get_count()");
+          const auto expectedCount = ((dims == 0) ? 1 : count);
+          if (accessorCount != expectedCount) {
+            fail_for_accessor<T, dims, mode, target>(log, typeName,
+                "accessor does not return the correct count");
+          }
         }
-      }
-      {
-        /** check get_size() method
-        */
-        auto accessorSize = acc.get_size();
-        check_return_type<size_t>(log, accessorSize, "get_size()");
-        const auto expectedSize = ((dims == 0) ? sizeof(T) : size);
-        if (accessorSize != expectedSize) {
-          fail_for_accessor<T, dims, mode, target>(log, typeName,
-              "accessor does not return the correct size");
+        {
+          /** check get_size() method
+          */
+          auto accessorSize = acc.get_size();
+          check_return_type<size_t>(log, accessorSize, "get_size()");
+          const auto expectedSize = ((dims == 0) ? sizeof(T) : size);
+          if (accessorSize != expectedSize) {
+            fail_for_accessor<T, dims, mode, target>(log, typeName,
+                "accessor does not return the correct size");
+          }
         }
-      }
-      check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
-      {
-        /** check get_pointer() method
+        check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
+        {
+          /** check get_pointer() method
+          */
+          auto pointer = acc.get_pointer();
+          check_return_type<explicit_pointer_t<T, target>>(log, pointer,
+                                                           "get_pointer()");
+          if (pointer == nullptr) {
+            fail_for_accessor<T, dims, mode, target>(log, typeName,
+                "accessor does not return the correct pointer");
+          }
+        }
+        /** dummy kernel, as no kernel is required for these checks
         */
-        check_return_type<explicit_pointer_t<T, target>>(log, acc.get_pointer(),
-                                                         "get_pointer()");
-      }
-      /** dummy kernel, as no kernel is required for these checks
-      */
-      h.single_task(dummy_functor<T>());
-    });
+        auto errorAccessor = make_accessor<int, 1, errorMode, errorTarget,
+                                           acc_placeholder::error>(
+            errorBuffer, h);
+        constexpr auto dataDims = data_dim<dims>::value;
+        auto accessOffset =
+            sycl_cts::util::get_cts_object::id<dataDims>::get(0, 0, 0);
+        auto verifier =
+            buffer_accessor_get_pointer<T, dims, mode, target, errorTarget,
+                                        acc_placeholder::local>(
+                acc, errorAccessor, accessOffset);
+        h.parallel_for(kernelRange, verifier);
+      });
+    }
+
+    using error_code_t = buffer_accessor_api_pointer_error_code;
+    if (errors[error_code_t::pointer_read_access] != 0) {
+      fail_for_accessor<T, dims, mode, target>(log, typeName,
+          "accessor did not read from the correct pointer");
+    }
+    if (errors[error_code_t::pointer_write_access] != 0) {
+      fail_for_accessor<T, dims, mode, target>(log, typeName,
+          "accessor did not write to the correct pointer");
+    }
   }
 
 private:
@@ -129,7 +144,7 @@ private:
 
 /** tests local accessor reads and writes
 */
-template <typename T, int dims>
+template <typename T, int dims, cl::sycl::access::mode mode>
 class check_local_accessor_api_reads_and_writes {
  public:
   size_t count;
@@ -151,42 +166,47 @@ class check_local_accessor_api_reads_and_writes {
                                  cl::sycl::range<1>(errors.size()));
       queue.submit([&](cl::sycl::handler &handler) {
         auto accIdSyntax =
-            make_local_accessor_generic<T, dims, mode>(range, handler);
+            make_local_accessor_generic<T, dims, mode>(
+                range, handler);
         auto accMultiDimSyntax =
-            make_local_accessor_generic<T, dims, mode>(range, handler);
-        auto errorAccessor =
-            make_accessor<int, 1, errorMode, errorTarget>(errorBuffer, handler);
+            make_local_accessor_generic<T, dims, mode>(
+                range, handler);
+        auto errorAccessor = make_accessor<int, 1, errorMode, errorTarget,
+                                           acc_placeholder::error>(
+            errorBuffer, handler);
         /** check buffer accessor subscript operators for reads and writes
         */
         handler.parallel_for(
             range,
-            buffer_accessor_api_rw<T, dims, mode, target, errorTarget>(
-                size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
+            buffer_accessor_api_rw<
+                T, dims, mode, target, errorTarget, acc_placeholder::local>(
+                    size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
       });
     }
 
+    using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
       // Cannot check for read data
-      if (errors[0] != 0) {
+      if (errors[error_code_t::zero_dim_access] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator dataT&() did not write to the correct index");
       }
     } else {
-      if (errors[0] != 0) {
+      if (errors[error_code_t::multi_dim_read_id] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[id<N>] did not read from the correct index");
       }
-      if (errors[1] != 0) {
+      if (errors[error_code_t::multi_dim_read_size_t] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[size_t][size_t][size_t] did not read from the "
             "correct index");
       }
 
-      if (errors[2] != 0) {
+      if (errors[error_code_t::multi_dim_write_id] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[id<N>] did not write to the correct index");
       }
-      if (errors[3] != 0) {
+      if (errors[error_code_t::multi_dim_write_size_t] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[size_t][size_t][size_t] did not write to the correct "
             "index");
@@ -199,13 +219,14 @@ class check_local_accessor_api_reads_and_writes {
 // Enable tests for all combinations
 ////////////////////////////////////////////////////////////////////////////////
 
-/** tests local accessors with different dimensions
+/** @brief tests local accessors with different dimensions
 */
-template <typename T, int dims>
-void check_local_accessor_api_dim(util::logger &log, size_t count, size_t size,
-                                  cl::sycl::queue &queue,
-                                  sycl_range_t<dims> range,
-                                  const std::string& typeName) {
+template <typename T, int dims, cl::sycl::access::mode mode>
+void check_local_accessor_api_mode(util::logger &log,
+                                   const std::string& typeName,
+                                   size_t count, size_t size,
+                                   cl::sycl::queue &queue,
+                                   sycl_range_t<dims> range) {
 #ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target>("", typeName, log);
 #endif
@@ -216,19 +237,129 @@ void check_local_accessor_api_dim(util::logger &log, size_t count, size_t size,
 
   /** check local accessor methods
    */
-  check_local_accessor_api_methods<T, dims>{count, size}(log, queue, range,
-                                                         typeName);
+  check_local_accessor_api_methods<T, dims, mode>{count, size}(
+      log, queue, range, typeName);
 
   /** check local accessor subscript operators
    */
-  check_local_accessor_api_reads_and_writes<T, dims>{count, size}(log, queue,
-                                                                  range,
-                                                                  typeName);
+  check_local_accessor_api_reads_and_writes<T, dims, mode>{count, size}(
+      log, queue, range, typeName);
 }
 
 /**
+ *  @brief Run checks with different access modes for different dims and
+ *         for atomic64 or generic code path
+ */
+template <typename codePathT>
+struct check_local_accessor_api_dim;
+
+using generic_path_t = sycl_cts::util::extensions::tag::generic;
+using atomic64_path_t = sycl_cts::util::extensions::tag::atomic64;
+
+/**
+ *  @brief Run checks with different access modes for different dims
+ *         for generic code path
+ */
+template <>
+struct check_local_accessor_api_dim<generic_path_t> {
+
+  /**
+   *  @brief check local buffer accessor api for different modes except atomic
+   */
+  template <typename T, int dims, typename ... argsT>
+  static void run(acc_target_tag::local,
+                  argsT&& ... args) {
+    // Run verification for read_write access mode
+    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::read_write>(
+        std::forward<argsT>(args)...);
+  }
+
+  /**
+   *  @brief Check global buffer accessor api for all modes except atomic64 ones
+   */
+  template <typename T, int dims, typename accTagT, typename ... argsT>
+  static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
+    // Run verification for read_write access mode
+    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::read_write>(
+        std::forward<argsT>(args)...);
+    // Run verification for atomic access mode
+    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::atomic>(
+        std::forward<argsT>(args)...);
+  }
+
+  /**
+   *  @brief Switch off local buffer accessor api check of atomic64 modes for
+   *         generic code path
+   */
+  template <typename T, int dims, typename accTagT, typename ... argsT>
+  static void run(acc_target_tag::atomic64<accTagT>,
+                  util::logger &log, const std::string& typeName, argsT&& ...) {
+    // Do not run atomic64 checks
+#ifdef VERBOSE_LOG
+    constexpr auto mode = cl::sycl::access::mode::atomic;
+    log_accessor<T, dims, mode, target>("skip_local_accessor_atomic64",
+                                        typeName, log);
+#else
+    static_cast<void>(log);
+    static_cast<void>(typeName);
+#endif  // VERBOSE_LOG
+  }
+};
+
+/**
+ *  @brief Run checks with different access modes for different dims
+ *         for atomic64 code path
+ */
+template <>
+struct check_local_accessor_api_dim<atomic64_path_t> {
+  /**
+   *  @brief Switch off accessor api check of any modes except the atomic64 ones
+   */
+  template <typename T, int dims, typename ... argsT>
+  static void run(acc_target_tag::generic, argsT&& ...) {
+    // Run atomic64 checks only
+  }
+  /**
+   *  @brief Run accessor verification for atomic64 modes only
+   */
+  template <typename T, int dims, typename accTagT, typename ... argsT>
+  static void run(acc_target_tag::atomic64<accTagT>,
+                  argsT&& ... args) {
+    // Run atomic64 checks only
+    {
+      constexpr auto mode = cl::sycl::access::mode::atomic;
+      check_buffer_accessor_api_mode<T, dims, mode, target, placeholder>(
+          std::forward<argsT>(args)...);
+    }
+  }
+};
+
+/** @brief Tests local accessors with different dims for all types
+ *         which do not require atomic64 extension
+ */
+template <typename T, int dims, typename ... argsT>
+void check_local_accessor_api_dim_wrapper(generic_path_t, argsT&& ... args) {
+
+  using verifier = check_local_accessor_api_dim<generic_path_t>;
+
+  verifier::run<T, dims>(acc_target_tag::get<T, target>(),
+                         std::forward<argsT>(args)...);
+}
+/** @brief Tests local accessors with different targets for all types
+ *         which do require atomic64 extension
+ */
+template <typename T, int dims, typename ... argsT>
+void check_local_accessor_api_dim_wrapper(atomic64_path_t, argsT&& ... args) {
+
+  using verifier = check_local_accessor_api_dim<atomic64_path_t>;
+
+  verifier::run<T, dims>(acc_target_tag::get<T, target>(),
+                         std::forward<argsT>(args)...);
+}
+
+/** @brief tests local accessors for different types
 */
-template <typename T>
+template <typename T, typename extensionTagT>
 class check_local_accessor_api_type {
   static constexpr auto count = 8;
   static constexpr auto size = count * sizeof(T);
@@ -236,29 +367,32 @@ class check_local_accessor_api_type {
  public:
   void operator()(util::logger &log, cl::sycl::queue &queue,
                   const std::string& typeName) {
+
+    static const extensionTagT extensionTag;
+
     /** check buffer accessor api for 0 dimension
      */
     cl::sycl::range<1> range0d(count);
-    check_local_accessor_api_dim<T, 0>(log, count, size, queue, range0d,
-                                       typeName);
+    check_local_accessor_api_dim_wrapper<T, 0>(extensionTag, log, typeName,
+                                               count, size, queue, range0d);
 
     /** check local accessor api for 1 dimension
      */
     cl::sycl::range<1> range1d(range0d);
-    check_local_accessor_api_dim<T, 1>(log, count, size, queue, range1d,
-                                       typeName);
+    check_local_accessor_api_dim_wrapper<T, 1>(extensionTag, log, typeName,
+                                               count, size, queue, range1d);
 
     /** check local accessor api for 2 dimensions
      */
     cl::sycl::range<2> range2d(count / 4, 4);
-    check_local_accessor_api_dim<T, 2>(log, count, size, queue, range2d,
-                                       typeName);
+    check_local_accessor_api_dim_wrapper<T, 2>(extensionTag, log, typeName,
+                                               count, size, queue, range2d);
 
     /** check local accessor api for 3 dimensions
      */
     cl::sycl::range<3> range3d(count / 8, 4, 2);
-    check_local_accessor_api_dim<T, 3>(log, count, size, queue, range3d,
-                                       typeName);
+    check_local_accessor_api_dim_wrapper<T, 3>(extensionTag, log, typeName,
+                                               count, size, queue, range3d);
   }
 };
 
