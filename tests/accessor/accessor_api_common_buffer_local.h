@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -12,7 +12,8 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_COMMON_BUFFER_LOCAL_H
 
 #include "../common/common.h"
-#include "accessor_utility.h"
+#include "accessor_api_utility.h"
+
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -20,23 +21,43 @@
 
 namespace {
 
-/** computes the linear id for 1 dimension
+/** explicit pointer type
 */
-size_t compute_linear_id(cl::sycl::id<1> id, cl::sycl::range<1> r) {
-  return id[0];
-}
+template <typename T, cl::sycl::access::target target>
+struct explicit_pointer;
 
-/** computes the linear id for 2 dimension
+/** explicit pointer type (specialization for local)
 */
-size_t compute_linear_id(cl::sycl::id<2> id, cl::sycl::range<2> r) {
-  return id[1] + (id[0] * r[1]);
-}
+template <typename T>
+struct explicit_pointer<T, cl::sycl::access::target::local> {
+  using type = cl::sycl::local_ptr<T>;
+};
 
-/** computes the linear id for 3 dimension
+/** explicit pointer type (specialization for global_buffer)
 */
-size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
-  return id[2] + (id[1] * r[2]) + (id[0] * r[2] * r[1]);
-}
+template <typename T>
+struct explicit_pointer<T, cl::sycl::access::target::global_buffer> {
+  using type = cl::sycl::global_ptr<T>;
+};
+
+/** explicit pointer type (specialization for constant_buffer)
+*/
+template <typename T>
+struct explicit_pointer<T, cl::sycl::access::target::constant_buffer> {
+  using type = cl::sycl::constant_ptr<T>;
+};
+
+/** explicit pointer type (specialization for host_buffer)
+*/
+template <typename T>
+struct explicit_pointer<T, cl::sycl::access::target::host_buffer> {
+  using type = T *;
+};
+
+/** explicit pointer alias
+ */
+template <typename T, cl::sycl::access::target target>
+using explicit_pointer_t = typename explicit_pointer<T, target>::type;
 
 }  // namespace
 
@@ -46,69 +67,301 @@ size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
 
 namespace accessor_utility {
 
+template <typename T, cl::sycl::target target, cl::sycl::access::mode mode>
+struct buffer_accessor_value {
+  using dataT = T;
+  using elemT = T;
+  using elemRefT = T&;
+
+  static inline dataT& get(elemRefT value) {
+    return std::forward<dataT&>(value);
+  }
+  static inline void set(elemRefT dst, const dataT& value) {
+    dst = value;
+  }
+};
+
+template <typename T, cl::sycl::target target>
+struct buffer_accessor_value<T, target, cl::sycl::access::mode::read> {
+  using dataT = T;
+  using elemT = T;
+
+  static inline dataT get(elemT value) {
+    return std::forward<dataT>(value);
+  }
+};
+
+template <typename T, cl::sycl::target target>
+struct buffer_accessor_value<T, target, cl::sycl::access::mode::atomic> {
+  static constexpr auto addressSpace =
+      (target == cl::sycl::target::local) ?
+      cl::sycl::access::address_space::local_space :
+      cl::sycl::access::address_space::global_space;
+  using dataT = T;
+  using elemT = cl::sycl::atomic<T, addressSpace>;
+  using elemRefT = elemT;
+
+  static inline dataT get(elemRefT value) {
+    return value.load();
+  }
+  static inline void set(elemRefT dst, const dataT& value) {
+    dst.store(value);
+  }
+};
+
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
     cl::sycl::id<1> idx) {
-  return acc[idx[0]];
+  return buffer_accessor_value<T, target, mode>::get(acc[idx[0]]);
 }
 
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
     cl::sycl::id<2> idx) {
-  return acc[idx[0]][idx[1]];
+  return buffer_accessor_value<T, target, mode>::get(acc[idx[0]][idx[1]]);
 }
 
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
     cl::sycl::id<3> idx) {
-  return acc[idx[0]][idx[1]][idx[2]];
+  return
+      buffer_accessor_value<T, target, mode>::get(acc[idx[0]][idx[1]][idx[2]]);
 }
 
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
     cl::sycl::id<1> idx, T value) {
-  acc[idx[0]] = value;
+  buffer_accessor_value<T, target, mode>::set(acc[idx[0]], value);
 }
 
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
     cl::sycl::id<2> idx, T value) {
-  acc[idx[0]][idx[1]] = value;
+  buffer_accessor_value<T, target, mode>::set(acc[idx[0]][idx[1]], value);
 }
 
 template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
     cl::sycl::id<3> idx, T value) {
-  acc[idx[0]][idx[1]][idx[2]] = value;
+  buffer_accessor_value<T, target, mode>::set(acc[idx[0]][idx[1]][idx[2]],
+                                              value);
 }
+
+struct buffer_accessor_api_pointer_error_code {
+  static constexpr size_t pointer_read_access = 0;
+  static constexpr size_t pointer_write_access = 1;
+};
+struct buffer_accessor_api_subscripts_error_code {
+  static constexpr size_t zero_dim_access = 0;
+  static constexpr size_t multi_dim_read_id = 0;
+  static constexpr size_t multi_dim_read_size_t = 1;
+  static constexpr size_t multi_dim_write_id = 2;
+  static constexpr size_t multi_dim_write_size_t = 3;
+};
+
+template <typename T, int dim>
+struct buffer_accessor_expected_value {
+  static constexpr size_t write_mul = 2;
+  static constexpr size_t write_offset = 1;
+
+  static inline size_t expected_read_data(sycl_id_t<dim> idx,
+                                          sycl_range_t<dim> range) {
+    return compute_linear_id(idx, range);
+  }
+  static inline constexpr sycl_id_t<dim> default_id() {
+    return sycl_cts::util::get_cts_object::id<dim>::get(0, 0, 0);
+  }
+  static inline constexpr sycl_range_t<dim> default_range() {
+    return sycl_cts::util::get_cts_object::range<dim>::get(1, 1, 1);
+  }
+  static inline T expected_read(sycl_id_t<dim> idx = default_id(),
+                                sycl_range_t<dim> range = default_range()) {
+    return static_cast<T>(expected_read_data(idx, range));
+  }
+  static inline T expected_write(sycl_id_t<dim> idx = default_id(),
+                                 sycl_range_t<dim> range = default_range()) {
+    const auto value = expected_read_data(idx, range);
+    return static_cast<T>(value * write_mul + write_offset);
+  }
+};
+
+template <typename T>
+struct buffer_accessor_expected_value<T, 0> {
+  static constexpr size_t write_mul = 2;
+  static constexpr size_t write_offset = 1;
+
+  template <typename ... argsT>
+  static inline T expected_read(argsT ...) {
+    return get_zero_dim_buffer_value<T>();
+  }
+
+  template <typename ... argsT>
+  static inline T expected_write(argsT ...){
+    const auto value = get_zero_dim_buffer_value<size_t>();
+    return static_cast<T>(value * write_mul + write_offset);
+  }
+};
+
+/**
+ *  @brief Tests buffer accessors pointer value with read-only data access
+ */
+template <typename T, int dim>
+struct buffer_accessor_get_pointer_r {
+  using error_code_t = buffer_accessor_api_pointer_error_code;
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
+
+  template <typename accT, typename errorAccT>
+  static void check(const accT& acc, const errorAccT& errorAccessor,
+                    const sycl_id_t<dim>& offset) {
+    const auto expectedRead = expected_value_t::expected_read(offset);
+    auto ptr = acc.get_pointer();
+
+    T elem = *ptr;
+    if (!check_elems_equal(elem, expectedRead)) {
+      errorAccessor[error_code_t::pointer_read_access] = 1;
+    }
+  }
+};
+/**
+ *  @brief Tests buffer accessors pointer value with write-only data access
+ */
+template <typename T, int dim>
+struct buffer_accessor_get_pointer_w {
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
+
+  template <typename accT, typename errorAccT>
+  static void check(const accT& acc, const errorAccT&,
+                    const sycl_id_t<dim>& offset) {
+    const auto value = expected_value_t::expected_write(offset);
+    auto ptr = acc.get_pointer();
+
+    *ptr = value;
+  }
+};
+/**
+ *  @brief Tests buffer accessors pointer value with read-write data access
+ */
+template <typename T, int dim, cl::sycl::access::target target>
+struct buffer_accessor_get_pointer_rw {
+  using error_code_t = buffer_accessor_api_pointer_error_code;
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
+
+  template <typename accT, typename errorAccT>
+  static void check(const accT& acc, const errorAccT& errorAccessor,
+                    const sycl_id_t<dim>& offset) {
+    const auto expectedRead = expected_value_t::expected_read(offset);
+    const auto expectedWrite = expected_value_t::expected_write(offset);
+
+    auto ptr = acc.get_pointer();
+    T elem;
+
+    if (target != cl::sycl::access::target::local) {
+      /** check read syntax
+      */
+      elem = *ptr;
+      if (!check_elems_equal(elem, expectedRead)) {
+        errorAccessor[error_code_t::pointer_read_access] = 1;
+      }
+    }
+    /** check write syntax
+    */
+    *ptr = expectedWrite;
+
+    /** validate write syntax
+    */
+    elem = *ptr;
+    if (!check_elems_equal(elem, expectedWrite)) {
+      errorAccessor[error_code_t::pointer_write_access] = 1;
+    }
+  }
+};
+/**
+ *  @brief Kernel name for buffer_accessor_get_pointer functor
+ */
+template <typename kernelName, int dim, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder>
+struct buffer_accessor_get_pointer_kernel {};
+/**
+ *  @brief Tests buffer accessors pointer value with any data access
+ */
+template <typename T, int dim, cl::sycl::access::mode mode,
+          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
+          cl::sycl::access::placeholder placeholder>
+class buffer_accessor_get_pointer {
+  using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
+  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  acc_t m_acc;
+  error_acc_t m_errorAccessor;
+  sycl_id_t<dim> m_offset;
+
+ public:
+  buffer_accessor_get_pointer(acc_t acc, error_acc_t errorAccessor,
+                              sycl_id_t<dim> offset)
+      : m_acc(acc),
+        m_errorAccessor(errorAccessor),
+        m_offset(offset) {}
+
+  void operator()() const {
+    check_get_pointer(acc_mode_tag::get<mode>());
+  }
+  void operator()(sycl_id_t<dim>) const {
+    operator()();
+  }
+
+ private:
+  void check_get_pointer(acc_mode_tag::generic) const {
+    buffer_accessor_get_pointer_rw<T, dim, target>::check(m_acc,
+                                                          m_errorAccessor,
+                                                          m_offset);
+  }
+  void check_get_pointer(acc_mode_tag::write_only) const {
+    buffer_accessor_get_pointer_w<T, dim>::check(m_acc, m_errorAccessor,
+                                                 m_offset);
+  }
+  void check_get_pointer(acc_mode_tag::read_only) const {
+    buffer_accessor_get_pointer_r<T, dim>::check(m_acc, m_errorAccessor,
+                                                 m_offset);
+  }
+};
+
+/**
+ *  @brief Kernel name for buffer_accessor_api_* functors
+ */
+template <typename kernelName, int dim, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder>
+struct buffer_accessor_api_kernel {};
 
 /** tests buffer accessors reads
 */
 template <typename T, int dim, cl::sycl::access::mode mode,
           cl::sycl::access::target target, cl::sycl::access::target errorTarget,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+          cl::sycl::access::placeholder placeholder>
 class buffer_accessor_api_r {
   using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
   using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  using elem_acc_t = buffer_accessor_value<T, target, mode>;
+  using error_code_t = buffer_accessor_api_subscripts_error_code;
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
 
   acc_t m_accIdSyntax;
   acc_t m_accMultiDimSyntax;
@@ -126,7 +379,7 @@ class buffer_accessor_api_r {
         m_range(rng),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -136,22 +389,21 @@ class buffer_accessor_api_r {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
-    size_t linearID = compute_linear_id(idx, m_range);
-    const auto expectedRead = static_cast<T>(linearID);
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
+    const auto expectedRead = expected_value_t::expected_read(idx, m_range);
 
     /** check id read syntax
     */
-    T elem = m_accIdSyntax[idx];
+    T elem = elem_acc_t::get(m_accIdSyntax[idx]);
     if (!check_elems_equal(elem, expectedRead)) {
-      m_errorAccessor[0] = 1;
+      m_errorAccessor[error_code_t::multi_dim_read_id] = 1;
     }
 
     /** check size_t read syntax
     */
     elem = multidim_subscript_read(m_accMultiDimSyntax, idx);
     if (!check_elems_equal(elem, expectedRead)) {
-      m_errorAccessor[1] = 1;
+      m_errorAccessor[error_code_t::multi_dim_read_size_t] = 1;
     }
   };
 
@@ -159,14 +411,14 @@ class buffer_accessor_api_r {
    * @brief Checks reading from an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
-    const auto expectedRead = get_zero_dim_buffer_value<T>();
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
+    const auto expectedRead = expected_value_t::expected_read();
 
     /** check operator dataT&() read syntax
      */
-    T elem = m_accIdSyntax;
+    T elem = elem_acc_t::get(m_accIdSyntax);
     if (!check_elems_equal(elem, expectedRead)) {
-      m_errorAccessor[0] = 1;
+      m_errorAccessor[error_code_t::zero_dim_access] = 1;
     }
   };
 };
@@ -175,10 +427,11 @@ class buffer_accessor_api_r {
 */
 template <typename T, int dim, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+          cl::sycl::access::placeholder placeholder>
 class buffer_accessor_api_w {
   using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
+  using elem_acc_t = buffer_accessor_value<T, target, mode>;
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
 
   acc_t m_accIdSyntax;
   acc_t m_accMultiDimSyntax;
@@ -193,7 +446,7 @@ class buffer_accessor_api_w {
         m_range(r),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -203,29 +456,28 @@ class buffer_accessor_api_w {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
-    size_t linearID = compute_linear_id(idx, m_range);
-    const auto expected = static_cast<T>(linearID);
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
+    const auto expectedWrite = expected_value_t::expected_write(idx, m_range);
 
     /** check id write syntax
     */
-    m_accIdSyntax[idx] = expected;
+    elem_acc_t::set(m_accIdSyntax[idx], expectedWrite);
 
     /** check size_t write syntax
     */
-    multidim_subscript_write<T>(m_accMultiDimSyntax, idx, expected);
+    multidim_subscript_write<T>(m_accMultiDimSyntax, idx, expectedWrite);
   };
 
   /**
    * @brief Checks writing to an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
-    const auto expected = get_zero_dim_buffer_value<T>();
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
+    const auto expectedWrite = expected_value_t::expected_write();
 
     /** check operator dataT&() write syntax
      */
-    static_cast<T&>(m_accMultiDimSyntax) = expected;
+    elem_acc_t::set(m_accIdSyntax, expectedWrite);
   };
 };
 
@@ -233,11 +485,13 @@ class buffer_accessor_api_w {
 */
 template <typename T, int dim, cl::sycl::access::mode mode,
           cl::sycl::access::target target, cl::sycl::access::target errorTarget,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+          cl::sycl::access::placeholder placeholder>
 class buffer_accessor_api_rw {
   using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
   using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  using elem_acc_t = buffer_accessor_value<T, target, mode>;
+  using error_code_t = buffer_accessor_api_subscripts_error_code;
+  using expected_value_t = buffer_accessor_expected_value<T, dim>;
 
   acc_t m_accIdSyntax;
   acc_t m_accMultiDimSyntax;
@@ -255,7 +509,10 @@ class buffer_accessor_api_rw {
         m_range(rng),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
+    // We do not need work-item synchronization for atomic mode because of:
+    // - load-store consistency within single work-item
+    // - access to the different elements from different work-items
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -265,41 +522,39 @@ class buffer_accessor_api_rw {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
-    size_t linearID = compute_linear_id(idx, m_range);
-
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
     T elem;
 
     // A local accessor doesn't have any valid information at this point
     if (target != cl::sycl::access::target::local) {
-      const auto expectedRead = static_cast<T>(linearID);
+      const auto expectedRead = expected_value_t::expected_read(idx, m_range);
 
       /** check id read syntax
       */
-      elem = m_accIdSyntax[idx];
+      elem = elem_acc_t::get(m_accIdSyntax[idx]);
       if (!check_elems_equal(elem, expectedRead)) {
-        m_errorAccessor[0] = 1;
+        m_errorAccessor[error_code_t::multi_dim_read_id] = 1;
       }
 
       /** check size_t read syntax
       */
       elem = multidim_subscript_read(m_accMultiDimSyntax, idx);
       if (!check_elems_equal(elem, expectedRead)) {
-        m_errorAccessor[1] = 1;
+        m_errorAccessor[error_code_t::multi_dim_read_size_t] = 1;
       }
     }
 
-    const auto expectedWrite = static_cast<T>(linearID * 2);
+    const auto expectedWrite = expected_value_t::expected_write(idx, m_range);
 
     /** check id write syntax
     */
-    m_accIdSyntax[idx] = expectedWrite;
+    elem_acc_t::set(m_accIdSyntax[idx], expectedWrite);
 
     /** validate id write syntax
     */
-    elem = m_accIdSyntax[idx];
+    elem = elem_acc_t::get(m_accIdSyntax[idx]);
     if (!check_elems_equal(elem, expectedWrite)) {
-      m_errorAccessor[2] = 1;
+      m_errorAccessor[error_code_t::multi_dim_write_id] = 1;
     }
 
     /** check size_t write syntax
@@ -310,7 +565,7 @@ class buffer_accessor_api_rw {
     */
     elem = multidim_subscript_read(m_accMultiDimSyntax, idx);
     if (!check_elems_equal(elem, expectedWrite)) {
-      m_errorAccessor[3] = 1;
+      m_errorAccessor[error_code_t::multi_dim_write_size_t] = 1;
     }
   };
 
@@ -318,19 +573,22 @@ class buffer_accessor_api_rw {
    * @brief Checks writing to an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
     /** check operator dataT&() read syntax, only the interface
      */
-    T elem = m_accIdSyntax;
+    T elem = elem_acc_t::get(m_accIdSyntax);
     (void)elem;
 
     /** check operator dataT&() write syntax
      */
-    const auto expected = get_zero_dim_buffer_value<T>();
-    static_cast<T&>(m_accMultiDimSyntax) = expected;
+    const auto expectedWrite = expected_value_t::expected_write();
+    elem_acc_t::set(
+        static_cast<typename elem_acc_t::elemRefT>(m_accIdSyntax),
+        expectedWrite);
 
-    if (!check_elems_equal(static_cast<T>(m_accMultiDimSyntax), expected)) {
-      m_errorAccessor[0] = 1;
+    elem = elem_acc_t::get(m_accIdSyntax);
+    if (!check_elems_equal(elem, expectedWrite)) {
+      m_errorAccessor[error_code_t::zero_dim_access] = 1;
     }
   }
 };

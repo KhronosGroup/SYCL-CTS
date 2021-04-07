@@ -50,7 +50,7 @@ struct test_kernel {
 
   void set(uint32_t i, int32_t v) { inner.int_array[i] = v; }
 
-  void operator()() {
+  void operator()() const {
     uint32_t pass = 1;
     pass &= (var_a == ref_a);
     pass &= (var_b.a == ref_b_a);

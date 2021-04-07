@@ -43,7 +43,7 @@ class kernel_nd_item {
   kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_writeAccess out_)
       : m_globalID(inG_), m_localID(inL_), m_o(out_) {}
 
-  void operator()(cl::sycl::nd_item<dimensions> myitem) {
+  void operator()(cl::sycl::nd_item<dimensions> myitem) const {
     bool failed = false;
 
     /* test global ID*/

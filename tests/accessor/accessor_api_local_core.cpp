@@ -6,21 +6,15 @@
 //
 *******************************************************************************/
 
+#define TEST_NAME accessor_api_local_core
+
 #include "../common/common.h"
-#include "./../../util/math_helper.h"
-#include "accessor_api_image_common.h"
-#include "accessor_utility.h"
-
-#include <array>
-#include <numeric>
-#include <sstream>
-
-#define TEST_NAME accessor_api_image
+#include "accessor_api_local_common.h"
+#include "accessor_types_core.h"
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-using namespace accessor_utility;
 
 /** tests the api for cl::sycl::accessor
 */
@@ -37,25 +31,12 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
-      if (!queue.get_device()
-               .get_info<cl::sycl::info::device::image_support>()) {
-        log.note("Device does not support images -- skipping check");
-        return;
-      }
 
-      /** check image accessor api for cl_int4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_int4>(log, queue);
+      using extension_tag = sycl_cts::util::extensions::tag::core;
 
-      /** check image accessor api for cl_uint4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_uint4>(log, queue);
+      check_all_types_core<check_local_accessor_api_type,
+                           extension_tag>::run(queue, log);
 
-      /** check image accessor api for cl_float4
-       */
-      check_image_accessor_api_type<cl::sycl::cl_float4>(log, queue);
-
-      queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

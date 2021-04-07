@@ -6,16 +6,16 @@
 //
 *******************************************************************************/
 
+#define TEST_NAME accessor_api_image_core
+
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_api_local_common.h"
-#include "accessor_utility.h"
+#include "accessor_api_image_common.h"
+#include "accessor_types_image_core.h"
 
 #include <array>
 #include <numeric>
 #include <sstream>
-
-#define TEST_NAME accessor_api_local
 
 namespace TEST_NAMESPACE {
 
@@ -38,25 +38,10 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check buffer accessor api for int
-       */
-      check_local_accessor_api_type<int>()(log, queue);
+      using extension_tag = sycl_cts::util::extensions::tag::core;
 
-      /** check buffer accessor api for float
-       */
-      check_local_accessor_api_type<float>()(log, queue);
-
-      /** check buffer accessor api for char
-       */
-      check_local_accessor_api_type<char>()(log, queue);
-
-      /** check buffer accessor api for vec
-       */
-      check_local_accessor_api_type<cl::sycl::int2>()(log, queue);
-
-      /** check buffer accessor api for user_struct
-       */
-      check_local_accessor_api_type<user_struct>()(log, queue);
+      check_all_types_image_core<check_image_accessor_api_type,
+                                 extension_tag>::run(queue, log);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

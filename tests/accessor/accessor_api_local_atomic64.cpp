@@ -2,21 +2,19 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
+//  Provide tests only for core types which require atomic64 extension
 //
 *******************************************************************************/
 
-#include "../common/common.h"
-#include "./../../util/math_helper.h"
-#include "accessor_api_buffer_common.h"
-#include "accessor_utility.h"
+#define TEST_NAME accessor_api_local_atomic64
 
-#define TEST_NAME accessor_api_buffer
+#include "../common/common.h"
+#include "accessor_api_local_common.h"
+#include "accessor_types_core.h"
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-using namespace accessor_utility;
 
 /** tests the api for cl::sycl::accessor
 */
@@ -34,27 +32,11 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      /** check buffer accessor api for int
-       */
-      check_buffer_accessor_api_type<int>()(log, queue);
+      using extension_tag = sycl_cts::util::extensions::tag::atomic64;
 
-      /** check buffer accessor api for float
-       */
-      check_buffer_accessor_api_type<float>()(log, queue);
+      check_all_types_core<check_local_accessor_api_type,
+                           extension_tag>::run(queue, log);
 
-      /** check buffer accessor api for char
-       */
-      check_buffer_accessor_api_type<char>()(log, queue);
-
-      /** check buffer accessor api for vec
-       */
-      check_buffer_accessor_api_type<cl::sycl::int2>()(log, queue);
-
-      /** check buffer accessor api for user_struct
-       */
-      check_buffer_accessor_api_type<user_struct>()(log, queue);
-
-      queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
