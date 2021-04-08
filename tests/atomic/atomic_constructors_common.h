@@ -25,7 +25,7 @@ class check_atomic_constructors {
       cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write, target> acc)
       : m_acc(acc) {}
 
-  void operator()() {
+  void operator()() const {
     /** Check atomic constructor
     */
     cl::sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
