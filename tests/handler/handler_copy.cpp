@@ -21,6 +21,8 @@ using namespace sycl_cts;
 using mode_t = cl::sycl::access::mode;
 using target_t = cl::sycl::access::target;
 
+namespace {
+
 /**
  * @brief Helper class designed to construct useful failure messages for all
  * test case permutations.
@@ -711,7 +713,8 @@ class copy_test_context {
  */
 template <typename dataT, int dim, mode_t mode_src, target_t target,
           bool strided, bool transposed>
-void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
+static void test_read_acc_copy_functions(log_helper lh,
+                                         cl::sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_target(target);
   {
     // Check copy(accessor, shared_ptr_class)
@@ -759,7 +762,8 @@ void test_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
  */
 template <typename dataT, int dim_src, int dim_dst, mode_t mode_src,
           mode_t mode_dst, target_t target, bool strided, bool transposed>
-void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
+static void test_write_acc_copy_functions(log_helper lh,
+                                          cl::sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_mode_dst(mode_dst).set_target(target);
   {
     // Check copy(shared_ptr_class, accessor)
@@ -821,7 +825,8 @@ void test_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
  * @brief Tests all valid combinations of access modes and buffer targets.
  */
 template <typename dataT, int dim_src, bool strided, bool transposed>
-void test_all_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_read_acc_copy_functions(log_helper lh,
+                                             cl::sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src);
   {
     constexpr auto target = target_t::global_buffer;
@@ -842,7 +847,8 @@ void test_all_read_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
  */
 template <typename dataT, int dim_src, int dim_dst, bool strided,
           bool transposed>
-void test_all_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_write_acc_copy_functions(log_helper lh,
+                                              cl::sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src).set_dim_dst(dim_dst);
   constexpr auto target = target_t::global_buffer;
 
@@ -876,7 +882,7 @@ void test_all_write_acc_copy_functions(log_helper lh, cl::sycl::queue& queue) {
  * @brief Tests all valid combinations of source and destination dimensions.
  */
 template <typename dataT, bool strided, bool transposed>
-void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
   const std::string strided_note = strided ? "strided" : "";
   const std::string transposed_note = transposed ? "transposed" : "";
   lh = lh.set_extra_info(strided_note + (strided && transposed ? ", " : "") +
@@ -906,7 +912,7 @@ void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
  *        non-transposed explicit memory operations.
  */
 template <typename dataT>
-void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
   lh = lh.set_data_type<dataT>();
 
   test_all_dimensions<dataT, false, false>(lh, queue);
@@ -914,6 +920,8 @@ void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
   test_all_dimensions<dataT, false, true>(lh, queue);
   test_all_dimensions<dataT, true, true>(lh, queue);
 }
+
+}  // namespace
 
 /** tests the API for cl::sycl::handler
  * TODO: Also test image accessors
@@ -935,19 +943,22 @@ class TEST_NAME : public util::test_base {
 
       log_helper lh(&log);
 
+      test_all_variants<int>(lh, queue);
+      test_all_variants<double>(lh, queue);
+      test_all_variants<cl::sycl::double16>(lh, queue);
+
+#if defined(SYCL_CTS_FULL_CONFORMANCE)
       test_all_variants<char>(lh, queue);
       test_all_variants<short>(lh, queue);
-      test_all_variants<int>(lh, queue);
       test_all_variants<long>(lh, queue);
       test_all_variants<float>(lh, queue);
-      test_all_variants<double>(lh, queue);
 
       test_all_variants<cl::sycl::char2>(lh, queue);
       test_all_variants<cl::sycl::short3>(lh, queue);
       test_all_variants<cl::sycl::int4>(lh, queue);
       test_all_variants<cl::sycl::long8>(lh, queue);
       test_all_variants<cl::sycl::float8>(lh, queue);
-      test_all_variants<cl::sycl::double16>(lh, queue);
+#endif
 
     } catch (const cl::sycl::exception& e) {
       log_exception(log, e);
