@@ -84,6 +84,10 @@ When configuring CMake, it is possible to use these flags:
 ``SYCL_CTS_TEST_FILTER``
   Specify which filter to use when building tests.
 
+``SYCL_CTS_ENABLE_FULL_CONFORMANCE``
+  Enable extensive coverage with huge compilation and execution time.
+  This mode is switched off by default. Should be swithed on for conformance.
+
 ``HOST_COMPILER_FLAGS``
   Flags that will be passed to the host compiler.
 
@@ -186,4 +190,9 @@ quickly identify failures and conformance rate::
 This report should be packaged with the run tests and sent to Khronos for
 conformance submission.
 
-The conformance submission requires the use of the core.csv filter.
+Conformance submission
+----------------------
+
+The conformance submission requires the use of the ``core.csv`` filter alongside
+with the ``run_conformance_tests.py`` script. Please, note that this script will
+switch the ``SYCL_CTS_ENABLE_FULL_CONFORMANCE`` option on.

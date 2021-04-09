@@ -10,8 +10,8 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
 #include "accessor_api_common_all.h"
+#include "accessor_utility.h"
 
 #include <array>
 #include <numeric>
@@ -317,13 +317,13 @@ cl::sycl::vector_class<cl::sycl::byte> get_image_input_data(
 
 template <typename T, int dims, cl::sycl::access::target target,
           cl::sycl::access::mode mode>
-T read_image_acc(cl::sycl::accessor<T, dims, mode, target> &acc,
+T read_image_acc(const cl::sycl::accessor<T, dims, mode, target> &acc,
                  cl::sycl::id<dims> idx) {
   return acc.read(image_access<dims>::get_int(idx));
 }
 
 template <typename T, int dims, cl::sycl::access::mode mode>
-T read_image_acc(cl::sycl::accessor<T, dims, mode,
+T read_image_acc(const cl::sycl::accessor<T, dims, mode,
                                     cl::sycl::access::target::image_array> &acc,
                  image_array_id_t<dims> idx) {
   const auto coords = image_array_coords<dims>::get(idx);
@@ -332,14 +332,14 @@ T read_image_acc(cl::sycl::accessor<T, dims, mode,
 
 template <typename T, int dims, cl::sycl::access::target target,
           cl::sycl::access::mode mode>
-T read_image_acc_sampled(cl::sycl::accessor<T, dims, mode, target> &acc,
+T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode, target> &acc,
                          cl::sycl::sampler smpl, cl::sycl::id<dims> idx) {
   return acc.read(image_access<dims>::get_int(idx), smpl);
 }
 
 template <typename T, int dims, cl::sycl::access::mode mode>
 T read_image_acc_sampled(
-    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
+    const cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
         &acc,
     cl::sycl::sampler smpl, image_array_id_t<dims> idx) {
   const auto coords = image_array_coords<dims>::get(idx);
@@ -348,7 +348,7 @@ T read_image_acc_sampled(
 
 template <typename T, int dims, cl::sycl::access::target target,
           cl::sycl::access::mode mode>
-void write_image_acc(cl::sycl::accessor<T, dims, mode, target> &acc,
+void write_image_acc(const cl::sycl::accessor<T, dims, mode, target> &acc,
                      cl::sycl::id<dims> idx, T value) {
   const auto coords = image_access<dims>::get_int(idx);
   acc.write(coords, value);
@@ -356,7 +356,7 @@ void write_image_acc(cl::sycl::accessor<T, dims, mode, target> &acc,
 
 template <typename T, int dims, cl::sycl::access::mode mode>
 void write_image_acc(
-    cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
+    const cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
         &acc,
     image_array_id_t<dims> idx, T value) {
   const auto coords = image_array_coords<dims>::get(idx);
@@ -395,7 +395,7 @@ class image_accessor_api_r {
         m_range(rng),
         size(size_) {}
 
-  void operator()(image_id_t<dim, target> idx) {
+  void operator()(image_id_t<dim, target> idx) const {
     const auto expected = get_expected_image_elem<T>();
     T elem;
 
@@ -433,7 +433,7 @@ class image_accessor_api_w {
                        image_range_t<dim, target> rng)
       : m_accCoordsSyntax(accCoordsSyntax), m_range(rng), size(size_) {}
 
-  void operator()(image_id_t<dim, target> idx) {
+  void operator()(image_id_t<dim, target> idx) const {
     const auto elem = get_expected_image_elem<T>();
 
     /** check coords write syntax

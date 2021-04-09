@@ -9,8 +9,8 @@
 #ifndef __SYCLCTS_UTIL_SELECTOR_H
 #define __SYCLCTS_UTIL_SELECTOR_H
 
-#include "stl.h"
 #include "singleton.h"
+#include "stl.h"
 
 namespace sycl_cts {
 namespace util {

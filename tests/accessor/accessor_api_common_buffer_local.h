@@ -13,8 +13,8 @@
 
 #include "../common/common.h"
 #include "accessor_utility.h"
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -50,7 +50,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
     cl::sycl::id<1> idx) {
   return acc[idx[0]];
 }
@@ -59,7 +59,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
     cl::sycl::id<2> idx) {
   return acc[idx[0]][idx[1]];
 }
@@ -68,7 +68,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
     cl::sycl::id<3> idx) {
   return acc[idx[0]][idx[1]][idx[2]];
 }
@@ -77,7 +77,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
     cl::sycl::id<1> idx, T value) {
   acc[idx[0]] = value;
 }
@@ -86,7 +86,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
     cl::sycl::id<2> idx, T value) {
   acc[idx[0]][idx[1]] = value;
 }
@@ -95,7 +95,7 @@ template <typename T, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
     cl::sycl::id<3> idx, T value) {
   acc[idx[0]][idx[1]][idx[2]] = value;
 }
@@ -126,7 +126,7 @@ class buffer_accessor_api_r {
         m_range(rng),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -136,7 +136,7 @@ class buffer_accessor_api_r {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
     size_t linearID = compute_linear_id(idx, m_range);
     const auto expectedRead = static_cast<T>(linearID);
 
@@ -159,7 +159,7 @@ class buffer_accessor_api_r {
    * @brief Checks reading from an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
     const auto expectedRead = get_zero_dim_buffer_value<T>();
 
     /** check operator dataT&() read syntax
@@ -193,7 +193,7 @@ class buffer_accessor_api_w {
         m_range(r),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -203,7 +203,7 @@ class buffer_accessor_api_w {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
     size_t linearID = compute_linear_id(idx, m_range);
     const auto expected = static_cast<T>(linearID);
 
@@ -220,7 +220,7 @@ class buffer_accessor_api_w {
    * @brief Checks writing to an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
     const auto expected = get_zero_dim_buffer_value<T>();
 
     /** check operator dataT&() write syntax
@@ -255,7 +255,7 @@ class buffer_accessor_api_rw {
         m_range(rng),
         size(size_) {}
 
-  void operator()(sycl_id_t<dim> idx) {
+  void operator()(sycl_id_t<dim> idx) const {
     return check_subscripts(idx, is_zero_dim<dim>{});
   }
 
@@ -265,7 +265,7 @@ class buffer_accessor_api_rw {
    *        Only executed when (dim != 0).
    * @param idx Work-item ID
    */
-  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
     size_t linearID = compute_linear_id(idx, m_range);
 
     T elem;
@@ -318,7 +318,7 @@ class buffer_accessor_api_rw {
    * @brief Checks writing to an accessor using the subscript operators.
    *        Only executed when (dim == 0).
    */
-  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) {
+  void check_subscripts(sycl_id_t<dim> /*idx*/, zero_dim_tag) const {
     /** check operator dataT&() read syntax, only the interface
      */
     T elem = m_accIdSyntax;

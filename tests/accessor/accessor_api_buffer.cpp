@@ -8,8 +8,8 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
 #include "accessor_api_buffer_common.h"
+#include "accessor_utility.h"
 
 #define TEST_NAME accessor_api_buffer
 
