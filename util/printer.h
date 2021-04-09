@@ -9,8 +9,8 @@
 #ifndef __SYCLCTS_UTIL_PRINTER_H
 #define __SYCLCTS_UTIL_PRINTER_H
 
-#include "stl.h"
 #include "singleton.h"
+#include "stl.h"
 #include "test_base.h"
 
 namespace sycl_cts {

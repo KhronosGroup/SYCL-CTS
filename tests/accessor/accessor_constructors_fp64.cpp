@@ -9,10 +9,9 @@
 #define TEST_NAME accessor_constructors_fp64
 
 #include "../common/common.h"
-#include "accessor_constructors_utility.h"
 #include "accessor_constructors_buffer_utility.h"
-#include "accessor_constructors_local_utility.h"
 #include "accessor_constructors_image_utility.h"
+#include "accessor_constructors_local_utility.h"
 
 namespace TEST_NAMESPACE {
 

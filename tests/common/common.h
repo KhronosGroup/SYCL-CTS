@@ -12,20 +12,19 @@
 // include our proxy to the real sycl header
 #include "sycl.h"
 
-// test framework specific device selector
-#include "../common/cts_selector.h"
-#include "../common/cts_async_handler.h"
-#include "../common/get_cts_object.h"
+#include "../../util/math_vector.h"
 #include "../../util/proxy.h"
+#include "../../util/test_base.h"
+#include "../common/cts_async_handler.h"
+#include "../common/cts_selector.h"
+#include "../common/get_cts_object.h"
 #include "macros.h"
 
-#include "../../util/test_base.h"
-#include "../../util/math_vector.h"
-
-#include <string>
-#include <sstream>
-#include <type_traits>
+#include <cinttypes>
 #include <numeric>
+#include <sstream>
+#include <string>
+#include <type_traits>
 
 namespace {
 
@@ -430,48 +429,6 @@ struct image_access<3> {
 };
 
 /**
- * @brief Display the name of the type
- * @tparam T Type to inspect
- * @param Dummy parameter used only for type deduction
- * @return String representing the type
- */
-template <typename T>
-cl::sycl::string_class type_to_string(T) {
-  using no_cv_t = typename std::remove_cv<T>::type;
-  if (std::is_integral<no_cv_t>::value) {
-    cl::sycl::string_class intStr;
-    if (std::is_signed<no_cv_t>::value) {
-      intStr = "int";
-    } else {
-      intStr = "uint";
-    }
-    const auto typeSizeBits = sizeof(T) * 8;
-    return intStr + std::to_string(typeSizeBits) + "_t";
-  } else if (std::is_same<no_cv_t, float>::value) {
-    return "float";
-  } else if (std::is_same<no_cv_t, double>::value) {
-    return "double";
-  } else if (std::is_same<no_cv_t, cl::sycl::half>::value) {
-    return "half";
-  }
-  return "unknown";
-}
-
-/**
- * @brief Display the name of the vec type
- * @tparam dataT Underlying type of the vector
- * @tparam numElems Number of elements of the vector
- * @param Dummy parameter used only for type deduction
- * @return String representing the vec type
- */
-template <typename dataT, int numElems>
-cl::sycl::string_class type_to_string(cl::sycl::vec<dataT, numElems>) {
-  std::stringstream stream;
-  stream << "vec<" << type_to_string(dataT{}) << ", " << numElems << ">";
-  return stream.str();
-}
-
-/**
  * @brief Dummy template to check type existence without generating warnings.
  */
 template <typename T>
@@ -529,6 +486,68 @@ inline bool is_linker_available(
     }
   }
   return linker_available;
+}
+
+/**
+ * @brief Helper function to check work-group size device limit
+ * @param log Logger to use
+ * @param queue Queue to verify against
+ * @param wgSize Work-group size to verify for support
+ */
+inline bool device_supports_wg_size(sycl_cts::util::logger& log,
+                                    cl::sycl::queue &queue,
+                                    size_t wgSize)
+{
+  auto device = queue.get_device();
+  const auto maxDeviceWorkGroupSize =
+      device.template get_info<cl::sycl::info::device::max_work_group_size>();
+
+  const bool supports = maxDeviceWorkGroupSize >= wgSize;
+  if (!supports)
+    log.note("Device does not support work group size %" PRIu64,
+             static_cast<std::uint64_t>(wgSize));
+  return supports;
+}
+
+/**
+ * @brief Helper function to check work-group size kernel limit
+ * @tparam kernelT Kernel to run onto
+ * @param log Logger to use
+ * @param queue Queue to verify against
+ * @param wgSize Work-group size to verify for support
+ */
+template <class kernelT>
+inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
+                                    cl::sycl::queue &queue,
+                                    size_t wgSize)
+{
+  // Verify only for device in use
+  auto device = queue.get_device();
+  const auto& context = queue.get_context();
+  const cl::sycl::vector_class<cl::sycl::device> devicesToCheck{device};
+
+  /* To query info::kernel_work_group::work_group_size property, we need to
+   * obtain test kernel handler, which requires online compilation
+   * */
+  if (!is_compiler_available(devicesToCheck) ||
+      !is_linker_available(devicesToCheck)) {
+    log.note("Device does not support online compilation");
+    return false;
+  }
+
+  cl::sycl::program program(context, devicesToCheck);
+  program.build_with_kernel_type<kernelT>("");
+  auto kernel = program.get_kernel<kernelT>();
+  auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
+      cl::sycl::info::kernel_work_group::work_group_size>(device);
+
+  const bool supports = maxKernelWorkGroupSize >= wgSize;
+  if (!supports) {
+    // We cannot use %zu in C++11; see P0330R8 proposal
+    log.note("Kernel does not support work group size %" PRIu64,
+             static_cast<std::uint64_t>(wgSize));
+  }
+  return supports;
 }
 
 }  // namespace

@@ -8,7 +8,6 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
 #include "accessor_api_image_common.h"
 
 #include <array>
@@ -46,7 +45,8 @@ class TEST_NAME : public util::test_base {
 
       /** check image accessor api for cl_half4
        */
-      check_image_accessor_api_type<cl::sycl::cl_half4>(log, queue);
+      check_image_accessor_api_type<cl::sycl::cl_half4>(log, queue,
+          "cl::sycl::cl_half");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

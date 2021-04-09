@@ -1,6 +1,6 @@
 /*******************************************************************************
 //
-//  SYCL 1.2.1 Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Provide fixed-width array implementation for usage in kernel functions
 //  because std::array methods are not required to be noexcept by C++ spec,
@@ -29,49 +29,49 @@ struct array {
   /** @brief Iterator type; is safe to use on host or device side only
    */
   using iterator = value_type*;
-  using const_iterator = const iterator;
+  using const_iterator = const value_type*;
 
   /** @brief Internal data storage;
    *         public for aggregate initialization availability
    */
   value_type values[N];
 
-  reference operator[](size_type pos) {
+  constexpr reference operator[](size_type pos) noexcept {
     return values[pos];
   }
-  const_reference operator[](size_type pos) const {
+  constexpr const_reference operator[](size_type pos) const noexcept {
     return values[pos];
   }
 
-  inline constexpr size_type size() const noexcept {
+  constexpr size_type size() const noexcept {
     return N;
   }
 
-  reference front() {
+  constexpr reference front() noexcept {
     return values[0];
   }
-  const_reference front() const {
+  constexpr const_reference front() const noexcept {
     return values[0];
   }
-  reference back() {
+  constexpr reference back() noexcept {
     return values[N-1];
   }
-  const_reference back() const {
+  constexpr const_reference back() const noexcept {
     return values[N-1];
   }
 
   /** @brief Support for C++ ranged-for syntax
    */
-  iterator begin() noexcept {
+  constexpr iterator begin() noexcept {
     return &front();
   }
-  const_iterator begin() const noexcept {
+  constexpr const_iterator begin() const noexcept {
     return &front();
   }
-  iterator end() noexcept {
+  constexpr iterator end() noexcept {
     return &back();
   }
-  const_iterator end() const noexcept {
+  constexpr const_iterator end() const noexcept {
     return &back();
   }
 };

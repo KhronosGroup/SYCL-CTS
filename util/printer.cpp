@@ -10,13 +10,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <stdarg.h>
-#include <iostream>
 #include <assert.h>
 #include <cstdio>
+#include <iostream>
+#include <stdarg.h>
 
-#include "printer.h"
 #include "logger.h"
+#include "printer.h"
 
 namespace sycl_cts {
 namespace util {

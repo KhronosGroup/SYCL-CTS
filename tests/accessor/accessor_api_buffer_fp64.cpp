@@ -8,7 +8,6 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
 #include "accessor_api_buffer_common.h"
 
 #define TEST_NAME accessor_api_buffer_fp64
@@ -41,13 +40,24 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
+#ifndef SYCL_CTS_FULL_CONFORMANCE
+      // Specific set of types to cover during ordinary compilation
+
       /** check buffer accessor api for double
        */
-      check_buffer_accessor_api_type<double>()(log, queue);
+      check_buffer_accessor_api_type<double>()(log, queue, "double");
 
       /** check buffer accessor api for vec
        */
-      check_buffer_accessor_api_type<cl::sycl::double4>()(log, queue);
+      check_buffer_accessor_api_type<cl::sycl::double3>()(log, queue, "double");
+#else
+      // Extended type coverage
+      for_type_and_vectors<check_buffer_accessor_api_type, double>(
+          log, queue, "double");
+      for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::cl_double>(
+          log, queue, "cl::sycl::double");
+
+#endif // SYCL_CTS_FULL_CONFORMANCE
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

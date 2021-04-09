@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "./../../util/test_manager.h"
 #include "./../../util/collection.h"
+#include "./../../util/test_manager.h"
 
 using namespace sycl_cts::util;
 

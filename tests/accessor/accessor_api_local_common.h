@@ -10,9 +10,9 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
-#include "accessor_api_common_buffer_local.h"
 #include "accessor_api_common_all.h"
+#include "accessor_api_common_buffer_local.h"
+#include "accessor_api_utility.h"
 
 #include <array>
 #include <numeric>
@@ -65,26 +65,11 @@ class check_local_accessor_api_methods {
   using acc_t = decltype(make_local_accessor_generic<T, dims, mode>(
       std::declval<sycl_range_t<dims>>(), std::declval<cl::sycl::handler &>()));
 
-  static void check_get_range(util::logger &, acc_t, sycl_range_t<dims>,
-                              zero_dim_tag) {
-    // Not available with 0 dimensions
-  }
-
-  static void check_get_range(util::logger &log, acc_t acc,
-                              sycl_range_t<dims> range, generic_dim_tag) {
-    // check get_range() method
-    auto accessorRange = acc.get_range();
-    check_return_type<sycl_range_t<dims>>(log, accessorRange, "get_range()");
-    if (accessorRange != range) {
-      FAIL(log, "accessor does not return the correct range");
-    }
-  }
-
   void operator()(util::logger &log, cl::sycl::queue &queue,
-                  sycl_range_t<dims> range) {
+                  sycl_range_t<dims> range, const std::string& typeName) {
 #ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_local_accessor_api_methods",
-                                        log);
+                                        typeName, log);
 #endif  // VERBOSE_LOG
 
     queue.submit([&](cl::sycl::handler &h) {
@@ -96,7 +81,8 @@ class check_local_accessor_api_methods {
         check_return_type<size_t>(log, accessorCount, "get_count()");
         const auto expectedCount = ((dims == 0) ? 1 : count);
         if (accessorCount != expectedCount) {
-          FAIL(log, "accessor does not return the correct count");
+          fail_for_accessor<T, dims, mode, target>(log, typeName,
+              "accessor does not return the correct count");
         }
       }
       {
@@ -106,10 +92,11 @@ class check_local_accessor_api_methods {
         check_return_type<size_t>(log, accessorSize, "get_size()");
         const auto expectedSize = ((dims == 0) ? sizeof(T) : size);
         if (accessorSize != expectedSize) {
-          FAIL(log, "accessor does not return the correct size");
+          fail_for_accessor<T, dims, mode, target>(log, typeName,
+              "accessor does not return the correct size");
         }
       }
-      check_get_range(log, acc, range, is_zero_dim<dims>{});
+      check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
       {
         /** check get_pointer() method
         */
@@ -120,6 +107,23 @@ class check_local_accessor_api_methods {
       */
       h.single_task(dummy_functor<T>());
     });
+  }
+
+private:
+  void check_get_range(util::logger &, acc_t, sycl_range_t<dims>,
+                       const std::string&, zero_dim_tag) {
+    // Not available with 0 dimensions
+  }
+
+  void check_get_range(util::logger &log, acc_t acc, sycl_range_t<dims> range,
+                       const std::string& typeName, generic_dim_tag) {
+    // check get_range() method
+    auto accessorRange = acc.get_range();
+    check_return_type<sycl_range_t<dims>>(log, accessorRange, "get_range()");
+    if (accessorRange != range) {
+      fail_for_accessor<T, dims, mode, target>(log, typeName,
+          "accessor does not return the correct range");
+    }
   }
 };
 
@@ -132,10 +136,10 @@ class check_local_accessor_api_reads_and_writes {
   size_t size;
 
   void operator()(util::logger &log, cl::sycl::queue &queue,
-                  sycl_range_t<dims> range) {
+                  sycl_range_t<dims> range, const std::string& typeName) {
 #ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>(
-        "check_local_accessor_api_reads_and_writes", log);
+        "check_local_accessor_api_reads_and_writes", typeName, log);
 #endif  // VERBOSE_LOG
 
     auto errors = get_error_data(4);
@@ -164,25 +168,28 @@ class check_local_accessor_api_reads_and_writes {
     if (dims == 0) {
       // Cannot check for read data
       if (errors[0] != 0) {
-        FAIL(log, "operator dataT&() did not write to the correct index");
+        fail_for_accessor<T, dims, mode, target>(log, typeName,
+            "operator dataT&() did not write to the correct index");
       }
     } else {
       if (errors[0] != 0) {
-        FAIL(log, "operator[id<N>] did not read from the correct index");
+        fail_for_accessor<T, dims, mode, target>(log, typeName,
+            "operator[id<N>] did not read from the correct index");
       }
       if (errors[1] != 0) {
-        FAIL(log,
-             "operator[size_t][size_t][size_t] did not read from the "
-             "correct index");
+        fail_for_accessor<T, dims, mode, target>(log, typeName,
+            "operator[size_t][size_t][size_t] did not read from the "
+            "correct index");
       }
 
       if (errors[2] != 0) {
-        FAIL(log, "operator[id<N>] did not write to the correct index");
+        fail_for_accessor<T, dims, mode, target>(log, typeName,
+            "operator[id<N>] did not write to the correct index");
       }
       if (errors[3] != 0) {
-        FAIL(log,
-             "operator[size_t][size_t][size_t] did not write to the correct "
-             "index");
+        fail_for_accessor<T, dims, mode, target>(log, typeName,
+            "operator[size_t][size_t][size_t] did not write to the correct "
+            "index");
       }
     }
   }
@@ -197,21 +204,26 @@ class check_local_accessor_api_reads_and_writes {
 template <typename T, int dims>
 void check_local_accessor_api_dim(util::logger &log, size_t count, size_t size,
                                   cl::sycl::queue &queue,
-                                  sycl_range_t<dims> range) {
-  log_accessor<T, dims, mode, target>("", log);
+                                  sycl_range_t<dims> range,
+                                  const std::string& typeName) {
+#ifdef VERBOSE_LOG
+  log_accessor<T, dims, mode, target>("", typeName, log);
+#endif
 
   /** check local accessor members
    */
-  check_accessor_members<T, dims, mode, target>(log);
+  check_accessor_members<T, dims, mode, target>(log, typeName);
 
   /** check local accessor methods
    */
-  check_local_accessor_api_methods<T, dims>{count, size}(log, queue, range);
+  check_local_accessor_api_methods<T, dims>{count, size}(log, queue, range,
+                                                         typeName);
 
   /** check local accessor subscript operators
    */
   check_local_accessor_api_reads_and_writes<T, dims>{count, size}(log, queue,
-                                                                  range);
+                                                                  range,
+                                                                  typeName);
 }
 
 /**
@@ -222,26 +234,31 @@ class check_local_accessor_api_type {
   static constexpr auto size = count * sizeof(T);
 
  public:
-  void operator()(util::logger &log, cl::sycl::queue &queue) {
+  void operator()(util::logger &log, cl::sycl::queue &queue,
+                  const std::string& typeName) {
     /** check buffer accessor api for 0 dimension
      */
     cl::sycl::range<1> range0d(count);
-    check_local_accessor_api_dim<T, 0>(log, count, size, queue, range0d);
+    check_local_accessor_api_dim<T, 0>(log, count, size, queue, range0d,
+                                       typeName);
 
     /** check local accessor api for 1 dimension
      */
     cl::sycl::range<1> range1d(range0d);
-    check_local_accessor_api_dim<T, 1>(log, count, size, queue, range1d);
+    check_local_accessor_api_dim<T, 1>(log, count, size, queue, range1d,
+                                       typeName);
 
     /** check local accessor api for 2 dimensions
      */
     cl::sycl::range<2> range2d(count / 4, 4);
-    check_local_accessor_api_dim<T, 2>(log, count, size, queue, range2d);
+    check_local_accessor_api_dim<T, 2>(log, count, size, queue, range2d,
+                                       typeName);
 
     /** check local accessor api for 3 dimensions
      */
     cl::sycl::range<3> range3d(count / 8, 4, 2);
-    check_local_accessor_api_dim<T, 3>(log, count, size, queue, range3d);
+    check_local_accessor_api_dim<T, 3>(log, count, size, queue, range3d,
+                                       typeName);
   }
 };
 

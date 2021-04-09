@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
-#include "image_common.h"
 #include "../common/common.h"
+#include "image_common.h"
 
 #define TEST_NAME image_api_fp16
 

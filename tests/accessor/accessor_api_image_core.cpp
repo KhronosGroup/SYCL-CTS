@@ -8,14 +8,13 @@
 
 #include "../common/common.h"
 #include "./../../util/math_helper.h"
-#include "accessor_utility.h"
 #include "accessor_api_image_common.h"
 
 #include <array>
 #include <numeric>
 #include <sstream>
 
-#define TEST_NAME accessor_api_image
+#define TEST_NAME accessor_api_image_core
 
 namespace TEST_NAMESPACE {
 
@@ -45,15 +44,18 @@ class TEST_NAME : public util::test_base {
 
       /** check image accessor api for cl_int4
        */
-      check_image_accessor_api_type<cl::sycl::cl_int4>(log, queue);
+      check_image_accessor_api_type<cl::sycl::cl_int4>(log, queue,
+          "cl::sycl::cl_int");
 
       /** check image accessor api for cl_uint4
        */
-      check_image_accessor_api_type<cl::sycl::cl_uint4>(log, queue);
+      check_image_accessor_api_type<cl::sycl::cl_uint4>(log, queue,
+          "cl::sycl::cl_uint");
 
       /** check image accessor api for cl_float4
        */
-      check_image_accessor_api_type<cl::sycl::cl_float4>(log, queue);
+      check_image_accessor_api_type<cl::sycl::cl_float4>(log, queue,
+          "cl::sycl::cl_float");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

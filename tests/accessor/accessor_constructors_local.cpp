@@ -9,7 +9,6 @@
 #define TEST_NAME accessor_constructors_local
 
 #include "../common/common.h"
-#include "accessor_constructors_utility.h"
 #include "accessor_constructors_local_utility.h"
 
 namespace TEST_NAMESPACE {
