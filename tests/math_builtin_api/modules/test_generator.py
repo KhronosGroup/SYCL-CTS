@@ -2,55 +2,79 @@ from . import sycl_functions
 from . import sycl_types
 import random
 
-test_case_templates = { "private" : ("\n\n{\n"
-                    "test_function<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=](){\n"
-                    "$FUNCTION_CALL"
-                    "});\n}\n"),
+test_case_templates = { "private" : ("""
+{
+  test_function<$TEST_ID, $RETURN_TYPE>(
+      [=](){
+        $FUNCTION_CALL
+      });
+}
+"""),
 
-                    "local" : ("\n\n{\n"
-                    "$DECL"
-                    "test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA);\n}\n"),
+                    "local" : ("""
+{
+  $DECL
+  test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL"
+      }, $DATA);
+}
+"""),
 
-                    "global" : ("\n\n{\n"
-                    "$DECL"
-                    "test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA);\n}\n") }
+                    "global" : ("""
+{
+  $DECL
+  test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA);
+}
+""")
+}
 
-test_case_templates_check = { "no_ptr" : ("\n\n{\n"
-                    "$REFERENCE"
-                    "check_function<$TEST_ID, $RETURN_TYPE>(log, \n"
-                    "[=](){\n"
-                    "$FUNCTION_CALL"
-                    "}, ref$ACCURACY);\n}\n"),
+test_case_templates_check = {
+    "no_ptr" : ("""
+{
+  $REFERENCE
+  check_function<$TEST_ID, $RETURN_TYPE>(log,
+      [=](){
+        $FUNCTION_CALL
+      }, ref$ACCURACY);
+}
+"""),
 
-                    "private" : ("\n\n{\n"
-                    "$PTR_REF"
-                    "check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log, \n"
-                    "[=](){\n"
-                    "$FUNCTION_PRIVATE_CALL"
-                    "}, ref, refPtr$ACCURACY);\n}\n"),
+    "private" : ("""
+{
+  $PTR_REF
+  check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
+      [=](){
+        $FUNCTION_PRIVATE_CALL
+      }, ref, refPtr$ACCURACY);
+}
+"""),
 
-                    "local" : ("\n\n{\n"
-                    "$DECL"
-                    "$PTR_REF"
-                    "check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log, \n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA, ref, refPtr$ACCURACY);\n}\n"),
+    "local" : ("""
+{
+  $DECL
+  $PTR_REF
+  check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA, ref, refPtr$ACCURACY);
+}
+"""),
 
-                    "global" : ("\n\n{\n"
-                    "$DECL"
-                    "$PTR_REF"
-                    "check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log, \n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA, ref, refPtr$ACCURACY);\n}\n") }
+    "global" : ("""
+{
+  $DECL
+  $PTR_REF
+  check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA, ref, refPtr$ACCURACY);
+}
+""")
+}
 
 def generate_value(base_type, dim, unsigned):
     val = ""

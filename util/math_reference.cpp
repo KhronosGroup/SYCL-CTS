@@ -1275,23 +1275,20 @@ cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
   if (x == y)
     return y;
 
-  union {
-    int16_t i;
-    cl::sycl::half f;
-  } a, b;
+  // choosing int16_t representation because sycl::half is 16-bit floating-point
+  int16_t a = sycl::bit_cast<int16_t>(x);
+  int16_t b = sycl::bit_cast<int16_t>(y);
 
-  a.f = x;
-  b.f = y;
+  // 0x8000 for leading 1 check
+  if (a & 0x8000)
+    a = 0x8000 - a;
+  if (b & 0x8000)
+    b = 0x8000 - b;
 
-  if (a.i & 0x8000)
-    a.i = 0x8000 - a.i;
-  if (b.i & 0x8000)
-    b.i = 0x8000 - b.i;
+  a += (a < b) ? 1 : -1;
+  a = (a < 0) ? (int16_t)0x8000 - a : a;
 
-  a.i += (a.i < b.i) ? 1 : -1;
-  a.i = (a.i < 0) ? (int16_t)0x8000 - a.i : a.i;
-
-  return a.f;
+  return sycl::bit_cast<cl::sycl::half>(a);
 }
 
 cl::sycl::half pow(cl::sycl::half a, cl::sycl::half b) {
