@@ -57,6 +57,11 @@ def handle_args(argv):
         type=str,
         required=True)
     parser.add_argument(
+        '--fast',
+        help='Disable full conformance mode to avoid extensive tests.',
+        required=False,
+        action='store_true')
+    parser.add_argument(
         '--host-platform-name',
         help='The name of the host platform to test on.',
         type=str,
@@ -90,15 +95,26 @@ def handle_args(argv):
 
     host_names = (args.host_platform_name, args.host_device_name)
     opencl_names = (args.opencl_platform_name, args.opencl_device_name)
+    full_conformance = 'OFF' if args.fast else 'ON'
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
-            args.conformance_filter, args.implementation_name,
+            full_conformance, args.conformance_filter, args.implementation_name,
             args.additional_cmake_args, host_names, opencl_names,
             args.additional_ctest_args, args.build_only)
 
+def split_additional_args(additional_args):
+    """
+    Split any 'additional argument' parameter passed to the script into the list
+    """
 
-def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
-                        additional_cmake_args, host_names, opencl_names):
+    # shlex doesn't support None
+    if additional_args is None:
+        return []
+    return shlex.split(shlex.quote(additional_args))
+
+def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
+                        conformance_filter, additional_cmake_args, host_names,
+                        opencl_names):
     """
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
@@ -107,12 +123,13 @@ def generate_cmake_call(cmake_exe, build_system_name, conformance_filter,
         cmake_exe,
         '..',
         '-G' + build_system_name,
+        '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
         '-DSYCL_CTS_TEST_FILTER=' + conformance_filter,
         '-Dhost_platform_name=' + host_names[0],
         '-Dhost_device_name=' + host_names[1],
         '-Dopencl_platform_name=' + opencl_names[0],
         '-Dopencl_device_name=' + opencl_names[1],
-    ] + shlex.split(additional_cmake_args)
+    ] + split_additional_args(additional_cmake_args)
 
 
 def generate_ctest_call(additional_ctest_args):
@@ -123,7 +140,7 @@ def generate_ctest_call(additional_ctest_args):
     return [
         'ctest', '.', '-T', 'Test', '--no-compress-output',
         '--test-output-size-passed', '0', '--test-output-size-failed', '0'
-    ] + shlex.split(additional_ctest_args)
+    ] + split_additional_args(additional_ctest_args)
 
 
 def subprocess_call(parameter_list):
@@ -230,8 +247,8 @@ def get_xml_test_results():
 
 
 def update_xml_attribs(host_info_json, opencl_info_json, implementation_name,
-                       test_xml_root, cmake_call, build_system_name,
-                       build_system_call, ctest_call):
+                       test_xml_root, full_conformance, cmake_call,
+                       build_system_name, build_system_call, ctest_call):
     """
     Adds attributes to the root of the xml trees json required by the
     conformance report.
@@ -287,6 +304,7 @@ def update_xml_attribs(host_info_json, opencl_info_json, implementation_name,
         'device-3d-writes']
 
     # Set Build Information attribs
+    test_xml_root.attrib["FullConformanceMode"] = full_conformance
     test_xml_root.attrib["CMakeInput"] = ' '.join(cmake_call)
     test_xml_root.attrib["BuildSystemGenerator"] = build_system_name
     test_xml_root.attrib["BuildSystemCall"] = build_system_call
@@ -298,14 +316,15 @@ def update_xml_attribs(host_info_json, opencl_info_json, implementation_name,
 def main(argv=sys.argv[1:]):
 
     # Parse and gather all the script args
-    (cmake_exe, build_system_name, build_system_call, conformance_filter,
-     implementation_name, additional_cmake_args, host_names, opencl_names,
-     additional_ctest_args, build_only) = handle_args(argv)
+    (cmake_exe, build_system_name, build_system_call, full_conformance,
+     conformance_filter, implementation_name, additional_cmake_args, host_names,
+     opencl_names, additional_ctest_args, build_only) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
-                                     conformance_filter, additional_cmake_args,
-                                     host_names, opencl_names)
+                                     full_conformance, conformance_filter,
+                                     additional_cmake_args, host_names,
+                                     opencl_names)
 
     # Generate a CTest call in a form accepted by subprocess.call()
     ctest_call = generate_ctest_call(additional_ctest_args)
@@ -331,8 +350,9 @@ def main(argv=sys.argv[1:]):
     result_xml_root = get_xml_test_results()
     result_xml_root = update_xml_attribs(host_info_json, opencl_info_json,
                                          implementation_name, result_xml_root,
-                                         cmake_call, build_system_name,
-                                         build_system_call, ctest_call)
+                                         full_conformance, cmake_call,
+                                         build_system_name, build_system_call,
+                                         ctest_call)
 
     # Get the xml report stylesheet and add it to the results.
     stylesheet_xml_file = os.path.join("..", "tools", "stylesheet.xml")
