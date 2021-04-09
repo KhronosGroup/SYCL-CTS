@@ -20,7 +20,15 @@ if(NOT DEFINED INTEL_SYCL_TRIPLE)
 endif()
 message("Intel SYCL target triple: ${INTEL_SYCL_TRIPLE}")
 
-set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=2020;-ffp-model=precise;${INTEL_SYCL_FLAGS}")
+# Set precise fp-model for Intel Compiler
+if(WIN32)
+    set(INTEL_FP_FLAG "/fp:precise")
+else()
+    set(INTEL_FP_FLAG "-ffp-model=precise")
+endif()
+set(CMAKE_CXX_FLAGS "${INTEL_FP_FLAG} ${CMAKE_CXX_FLAGS}")
+
+set(INTEL_SYCL_FLAGS "-fsycl;-fsycl-targets=${INTEL_SYCL_TRIPLE};-sycl-std=2020;${INTEL_SYCL_FLAGS}")
 message("Intel SYCL compiler flags: `${INTEL_SYCL_FLAGS}`")
 
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)

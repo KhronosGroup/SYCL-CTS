@@ -28,7 +28,7 @@ class test_functor_1 {
           acc)
       : m_acc(acc) {}
 
-  void operator()() { m_acc[0] *= 2.0f; };
+  void operator()() const { m_acc[0] *= 2.0f; };
 };
 
 namespace program_constructors__ {

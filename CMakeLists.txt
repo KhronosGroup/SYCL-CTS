@@ -26,6 +26,20 @@ endif()
 include(AddSYCLExecutable)
 
 # ------------------
+# Extensive mode for full coverage
+option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
+       "Enable full conformance mode with extensive tests" OFF)
+if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+    message(STATUS "Full conformance mode: ON")
+    add_definitions(-DSYCL_CTS_FULL_CONFORMANCE)
+else()
+    message(STATUS "Full conformance mode: OFF")
+    message(WARNING
+            "Full conformance mode should be used for conformance submission")
+endif()
+# ------------------
+
+# ------------------
 # Double and Half variables
 option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
 option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)

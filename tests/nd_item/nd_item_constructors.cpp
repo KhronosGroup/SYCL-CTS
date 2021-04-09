@@ -9,6 +9,7 @@
 #include "../common/common.h"
 #include "../common/common_by_value.h"
 #include "../common/invoke.h"
+#include "../../util/array.h"
 
 #include <array>
 
@@ -50,13 +51,13 @@ private:
   size_t m_globalLinearId;
   size_t m_groupLinearId;
   size_t m_localLinearId;
-  std::array<size_t, numDims> m_globalId;
-  std::array<size_t, numDims> m_groupId;
-  std::array<size_t, numDims> m_localId;
-  std::array<size_t, numDims> m_globalRange;
-  std::array<size_t, numDims> m_groupRange;
-  std::array<size_t, numDims> m_localRange;
-  std::array<size_t, numDims> m_offset;
+  sycl_cts::util::array<size_t, numDims> m_globalId;
+  sycl_cts::util::array<size_t, numDims> m_groupId;
+  sycl_cts::util::array<size_t, numDims> m_localId;
+  sycl_cts::util::array<size_t, numDims> m_globalRange;
+  sycl_cts::util::array<size_t, numDims> m_groupRange;
+  sycl_cts::util::array<size_t, numDims> m_localRange;
+  sycl_cts::util::array<size_t, numDims> m_offset;
 public:
   state_storage(const cl::sycl::nd_item<numDims>& state)
   {
