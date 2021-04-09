@@ -79,8 +79,7 @@ sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
  *        Stride is always 1 for the local_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(cl::sycl::local_ptr<T> ptr) {
-  static_cast<void>(ptr);
+inline size_t get_async_wg_copy_stride(cl::sycl::local_ptr<T>) {
   return 1;
 }
 /**
@@ -88,8 +87,7 @@ inline size_t get_async_wg_copy_stride(cl::sycl::local_ptr<T> ptr) {
  *        Stride is always the given one for the global_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(cl::sycl::global_ptr<T> ptr) {
-  static_cast<void>(ptr);
+inline size_t get_async_wg_copy_stride(cl::sycl::global_ptr<T>) {
   return stride;
 }
 
