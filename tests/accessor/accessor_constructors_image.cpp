@@ -10,7 +10,6 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_image_utility.h"
-#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 

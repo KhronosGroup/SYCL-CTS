@@ -39,7 +39,7 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
 
     # Execute the tests if the extensions are supported by target device.
     if extension:
-        checkPoint = "\n\nif(makeQueueOnce().get_device().has_extension(\"" + extension + "\")){\n"
+        checkPoint = "\n\nif(once_per_unit::get_queue().get_device().has_extension(\"" + extension + "\")){\n"
         generated_test_cases = checkPoint + generated_test_cases + "\n\n}"
 
     newSource = source.replace("$TEST_CASES", generated_test_cases)
@@ -135,15 +135,15 @@ def main():
 
     if args.test == 'float':
         float_signatures = sycl_functions.create_float_signatures()
-        create_tests(4000000, run, expanded_types, float_signatures, args.variante, args.template, args.output)
+        create_tests(4000000, run, expanded_types, float_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'native':
         native_signatures = sycl_functions.create_native_signatures()
-        create_tests(5000000,run, expanded_types, native_signatures, args.variante, args.template, args.output)
+        create_tests(5000000,run, expanded_types, native_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'half':
         half_signatures = sycl_functions.create_half_signatures()
-        create_tests(6000000, run, expanded_types, half_signatures, args.variante, args.template, args.output)
+        create_tests(6000000, run, expanded_types, half_signatures, args.variante, args.template, args.output, verifyResults)
 
 if __name__ == "__main__":
     main()
