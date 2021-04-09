@@ -19,8 +19,8 @@
  */
 template <class kernel_name = void>
 struct dummy_functor {
-  void operator()() {}
-  void operator()(cl::sycl::group<3> g) {}
+  void operator()() const {}
+  void operator()(cl::sycl::group<3> g) const {}
 };
 
 namespace sycl_cts {
@@ -176,6 +176,15 @@ struct get_cts_object::range<1> {
   static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
     return cl::sycl::range<1>(r0);
   }
+  /**
+   * @brief Constructs a range<1> by only using total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @return range<1>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<1> get_fixed_size(size_t, size_t) {
+    return cl::sycl::range<1>(totalSize);
+  }
 };
 
 /**
@@ -191,6 +200,17 @@ struct get_cts_object::range<2> {
    */
   static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
     return cl::sycl::range<2>(r0, r1);
+  }
+  /**
+   * @brief Constructs a range<2> by only using first component and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @return range<2>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<2> get_fixed_size(size_t r0, size_t) {
+    return cl::sycl::range<2>(r0, totalSize / r0);
   }
 };
 
@@ -208,6 +228,18 @@ struct get_cts_object::range<3> {
    */
   static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
     return cl::sycl::range<3>(r0, r1, r2);
+  }
+  /**
+   * @brief Constructs a range<3> by only using two components and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @param r0 Value of the second component of the range
+   * @return range<3>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
+    return cl::sycl::range<3>(r0, r1, totalSize / r0 / r1);
   }
 };
 
