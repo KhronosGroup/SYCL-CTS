@@ -39,7 +39,7 @@ test_case_templates_check = {
   check_function<$TEST_ID, $RETURN_TYPE>(log,
       [=](){
         $FUNCTION_CALL
-      }, ref$ACCURACY);
+      }, ref$ACCURACY$COMMENT);
 }
 """),
 
@@ -49,7 +49,7 @@ test_case_templates_check = {
   check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
       [=](){
         $FUNCTION_PRIVATE_CALL
-      }, ref, refPtr$ACCURACY);
+      }, ref, refPtr$ACCURACY$COMMENT);
 }
 """),
 
@@ -60,7 +60,7 @@ test_case_templates_check = {
   check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
         $FUNCTION_CALL
-      }, $DATA, ref, refPtr$ACCURACY);
+      }, $DATA, ref, refPtr$ACCURACY$COMMENT);
 }
 """),
 
@@ -71,7 +71,7 @@ test_case_templates_check = {
   check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
         $FUNCTION_CALL
-      }, $DATA, ref, refPtr$ACCURACY);
+      }, $DATA, ref, refPtr$ACCURACY$COMMENT);
 }
 """)
 }
@@ -213,6 +213,10 @@ def generate_test_case(test_id, types, sig, memory, check):
         testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy)
     else:
         testCaseSource = testCaseSource.replace("$ACCURACY", "")
+    if sig.comment:##If the signature contains comment for accuracy
+        testCaseSource = testCaseSource.replace("$COMMENT", ', "' + sig.comment +'"')
+    else:
+        testCaseSource = testCaseSource.replace("$COMMENT", "")
 
     if memory != "private" and memory !="no_ptr":
         # We rely on the fact that all SYCL math builtins have at most one arguments as pointer.
@@ -318,7 +322,8 @@ def expand_signature(runner, types, signature):
             # Return value and all arguments are of the same type.
             if len(nomatch) == 0:
                 new_sig = sycl_functions.funsig(signature.namespace, name, signature.name, [
-                                                name for i in range(len(signature.arg_types))], signature.accuracy, signature.pntr_indx[:])
+                                                name for i in range(len(signature.arg_types))], signature.accuracy,
+                                                signature.comment, signature.pntr_indx[:])
                 exp_sig.append(new_sig)
             else:
                 function_types = []
@@ -368,11 +373,13 @@ def expand_signature(runner, types, signature):
                             all_matched = False
                 if all_matched:
                     new_sig = sycl_functions.funsig(
-                        signature.namespace, function_types[0], signature.name, function_types[1:], signature.accuracy, signature.pntr_indx[:])
+                        signature.namespace, function_types[0], signature.name, function_types[1:], signature.accuracy,
+                        signature.comment, signature.pntr_indx[:])
                     exp_sig.append(new_sig)
                     if extra:
                         new_sig = sycl_functions.funsig(
-                        signature.namespace, function_types_extra[0], signature.name, function_types_extra[1:], signature.accuracy, signature.pntr_indx[:])
+                        signature.namespace, function_types_extra[0], signature.name, function_types_extra[1:],
+                        signature.accuracy, signature.comment, signature.pntr_indx[:])
                         exp_sig.append(new_sig)
                 else:
                     print("[WARNING] Unable to fully match function " + signature.name + " for: " +
