@@ -28,7 +28,7 @@ class templated_functor {
  public:
   templated_functor(read_t in, write_t out) : m_in(in), m_out(out) {}
 
-  void operator()() { m_out[0] = m_in[0]; }
+  void operator()() const { m_out[0] = m_in[0]; }
 };
 
 template <typename T>
