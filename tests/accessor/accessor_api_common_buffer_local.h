@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -12,7 +12,8 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_COMMON_BUFFER_LOCAL_H
 
 #include "../common/common.h"
-#include "accessor_utility.h"
+#include "accessor_api_utility.h"
+
 #include <sstream>
 #include <stdexcept>
 #include <utility>
