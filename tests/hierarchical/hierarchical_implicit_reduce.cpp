@@ -20,7 +20,6 @@ static constexpr int localItems2d = 3;
 static constexpr int localItems3d = 5;
 static constexpr int groupItems1d = (globalItems1d / localItems1d);
 static constexpr int groupItems2d = (globalItems2d / localItems2d);
-static constexpr int groupItems3d = (globalItems3d / localItems3d);
 static constexpr int globalItemsTotal =
     (globalItems1d * globalItems2d * globalItems3d);
 static constexpr int localItemsTotal =
@@ -31,14 +30,12 @@ static constexpr int inputSize = 59;
 
 using namespace sycl_cts;
 
-template <typename T>
-class sth {};
+template <typename T, int dim> class sth {};
 
-template <typename T>
-class sth_else {};
+template <typename T, int dim> class sth_else {};
 
-template <typename T>
-T reduce(T input[inputSize], cl::sycl::device_selector* selector) {
+template <typename T, int dim>
+T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
   T mGroupSums[numGroups];
 
   auto myQueue = util::get_cts_object::queue(*selector);
@@ -53,35 +50,40 @@ T reduce(T input[inputSize], cl::sycl::device_selector* selector) {
     cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
                        cl::sycl::access::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
-        cgh.parallel_for_work_group<class sth<T>>(
-                    cl::sycl::range<3>( groupItems1d, groupItems2d, groupItems3d ),
-                    cl::sycl::range<3>( localItems1d, localItems2d, localItems3d ),
-                    [=]( cl::sycl::group<3> group )
+    auto groupRange = sycl_cts::util::get_cts_object::range<
+        dim>::template get_fixed_size<numGroups>(groupItems1d, groupItems2d);
+    auto localRange =
+        sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
+            localItemsTotal>(localItems1d, localItems2d);
+        cgh.parallel_for_work_group<class sth<T, dim>>(
+                    groupRange, localRange,
+                    [=]( cl::sycl::group<dim> group )
         {
           T localSums[localItemsTotal];
 
           // process items in each work item
-          group.parallel_for_work_item([=,
-                                        &localSums](cl::sycl::h_item<3> item) {
-            int globalId = item.get_global().get_linear_id();
-            int localId = item.get_local().get_linear_id();
-            /* Split the array into work-group-size different arrays */
-            int valuesPerItem = (inputSize / globalItemsTotal);
-            valuesPerItem = (valuesPerItem == 0) ? 1 : valuesPerItem;
-            int idStart = valuesPerItem * globalId;
-            int idEnd = valuesPerItem * (globalId + 1);
+          group.parallel_for_work_item(
+              [=, &localSums](cl::sycl::h_item<dim> item) {
+                int globalId = item.get_global().get_linear_id();
+                int localId = item.get_local().get_linear_id();
+                /* Split the array into work-group-size different arrays */
+                int valuesPerItem = (inputSize / globalItemsTotal);
+                valuesPerItem = (valuesPerItem == 0) ? 1 : valuesPerItem;
+                int idStart = valuesPerItem * globalId;
+                int idEnd = valuesPerItem * (globalId + 1);
 
-            /* Handle the case where the number of input values is not divisible
-             * by the number of items. */
-            if (idEnd > inputSize - 1) {
-              idEnd = inputSize;
-            }
+                /* Handle the case where the number of input values is not
+                 * divisible
+                 * by the number of items. */
+                if (idEnd > inputSize - 1) {
+                  idEnd = inputSize;
+                }
 
-            localSums[localId] = T{};
-            for (int i = idStart; i < idEnd; i++) {
-              localSums[localId].increment(input_ptr[i]);
-            }
-          });
+                localSums[localId] = T{};
+                for (int i = idStart; i < idEnd; i++) {
+                  localSums[localId].increment(input_ptr[i]);
+                }
+              });
 
           /* Sum items in each work group */
           int groupId = group.get_linear_id();
@@ -103,7 +105,7 @@ T reduce(T input[inputSize], cl::sycl::device_selector* selector) {
                          cl::sycl::access::target::global_buffer>
           totalPtr(total_buf, cgh);
 
-        cgh.single_task<class sth_else<T> >([=]() {
+        cgh.single_task<class sth_else<T, dim> >([=]() {
           /* Sum items in all work groups */
           totalPtr[0] = T{};
           for (int i = 0; i < numGroups; i++) {
@@ -144,26 +146,14 @@ class Multiplier {
   type value;
 };
 
-/** test cl::sycl::range::get(int index) return size_t
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    try {
+template <int dim> void check_dim(util::logger &log) {
+  try {
       cts_selector sel;
       {
         Adder data[inputSize];
         for (int i = 0; i < inputSize; i++) data[i] = Adder(2);
 
-        Adder result = reduce<Adder>(data, &sel);
+        Adder result = reduce<Adder, dim>(data, &sel);
 
         int expectedResult = inputSize * 2;
 
@@ -179,7 +169,7 @@ class TEST_NAME : public util::test_base {
         Multiplier data[inputSize];
         for (int i = 0; i < inputSize; i++) data[i] = Multiplier(2);
 
-        Multiplier result = reduce<Multiplier>(data, &sel);
+        Multiplier result = reduce<Multiplier, dim>(data, &sel);
 
         auto expectedResult = std::int64_t{1} << inputSize;
 
@@ -196,6 +186,24 @@ class TEST_NAME : public util::test_base {
           "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
+}
+
+/** test cl::sycl::range::get(int index) return size_t
+ */
+class TEST_NAME : public util::test_base {
+public:
+  /** return information about this test
+   */
+  void get_info(test_base::info &out) const override {
+    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  }
+
+  /** execute the test
+   */
+  void run(util::logger &log) override {
+    check_dim<1>(log);
+    check_dim<2>(log);
+    check_dim<3>(log);
   }
 };
 

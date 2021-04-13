@@ -37,7 +37,7 @@ template <> struct base<cl::sycl::half> { using type = std::uint16_t; };
 
 template <typename T> std::string printable(T value) {
   const auto representation =
-      *reinterpret_cast<typename base<T>::type *>(&value);
+      sycl::bit_cast<typename base<T>::type>(value);
   std::ostringstream out;
   out.precision(64);
   out << value << " [" << std::hex << representation << "]";

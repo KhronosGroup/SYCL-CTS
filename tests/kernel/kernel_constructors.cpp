@@ -13,7 +13,7 @@
 template <int a>
 class test_kernel {
  public:
-  void operator()() {}
+  void operator()() const {}
 };
 
 class kernel0;
