@@ -119,6 +119,7 @@
 		<tr><td>Int64 Extended Atomics</td><td><xsl:value-of select="./@OpenCLDeviceInt64Extended" /></td></tr>
 		<tr><td>3D Image Write</td><td><xsl:value-of select="./@OpenCLDevice3DWrites" /></td></tr>
 		<tr><td class="site-header" colspan="2">Build Information</td></tr>
+		<tr><td>Full Conformance Mode</td><td><xsl:value-of select="./@FullConformanceMode" /></td></tr>
   	<tr><td>CMake Input</td><td><xsl:value-of select="./@CMakeInput" /></td></tr>
   	<tr><td>Build System Generator</td><td><xsl:value-of select="./@BuildSystemGenerator" /></td></tr>
   	<tr><td>Build System Call</td><td><xsl:value-of select="./@BuildSystemCall" /></td></tr>

@@ -10,7 +10,6 @@
 
 #include "../common/common.h"
 #include "accessor_constructors_image_utility.h"
-#include "accessor_constructors_utility.h"
 
 namespace TEST_NAMESPACE {
 
@@ -25,12 +24,13 @@ class TEST_NAME : public util::test_base {
   }
 
   template <typename T>
-  void check_all_dims(util::logger &log, cl::sycl::queue &queue) {
-    image_accessor_dims<T, 1>::check(log, queue);
-    image_accessor_dims<T, 2>::check(log, queue);
-    image_accessor_dims<T, 3>::check(log, queue);
-    image_array_accessor_dims<T, 1>::check(log, queue);
-    image_array_accessor_dims<T, 2>::check(log, queue);
+  void check_all_dims(util::logger &log, cl::sycl::queue &queue,
+                      const std::string& typeName) {
+    image_accessor_dims<T, 1>::check(log, queue, typeName);
+    image_accessor_dims<T, 2>::check(log, queue, typeName);
+    image_accessor_dims<T, 3>::check(log, queue, typeName);
+    image_array_accessor_dims<T, 1>::check(log, queue, typeName);
+    image_array_accessor_dims<T, 2>::check(log, queue, typeName);
   }
 
   /** execute this test
@@ -46,15 +46,15 @@ class TEST_NAME : public util::test_base {
 
       /** check accessor constructors for cl_int4
        */
-      check_all_dims<cl::sycl::cl_int4>(log, queue);
+      check_all_dims<cl::sycl::cl_int4>(log, queue, "cl::sycl::cl_int");
 
       /** check accessor constructors for cl_uint4
        */
-      check_all_dims<cl::sycl::cl_uint4>(log, queue);
+      check_all_dims<cl::sycl::cl_uint4>(log, queue, "cl::sycl::cl_uint");
 
       /** check accessor constructors for cl_float4
        */
-      check_all_dims<cl::sycl::cl_float4>(log, queue);
+      check_all_dims<cl::sycl::cl_float4>(log, queue, "cl::sycl::cl_float");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

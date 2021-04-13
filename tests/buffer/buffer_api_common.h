@@ -6,11 +6,12 @@
 //
 *******************************************************************************/
 
+#ifndef __SYCLCTS_TESTS_BUFFER_API_COMMON_H
+#define __SYCLCTS_TESTS_BUFFER_API_COMMON_H
+
 #include "../common/common.h"
 
-#define TEST_NAME buffer_api
-
-namespace TEST_NAMESPACE {
+namespace {
 using namespace sycl_cts;
 
 /** empty_kernel.
@@ -26,32 +27,32 @@ class empty_kernel {
 @brief used to calculate the ranges based on the dimensionality of the buffer
 */
 template <size_t dims>
-void precalculate(cl::sycl::range<dims>& rangeIn,
-                  cl::sycl::range<dims>& rangeOut, size_t& elementsCount,
-                  unsigned elementsIn, unsigned elementsOut);
+inline void precalculate(cl::sycl::range<dims> &rangeIn,
+                         cl::sycl::range<dims> &rangeOut, size_t &elementsCount,
+                         unsigned elementsIn, unsigned elementsOut);
 
 template <>
-void precalculate<1>(cl::sycl::range<1>& rangeIn, cl::sycl::range<1>& rangeOut,
-                     size_t& elementsCount, unsigned elementsIn,
-                     unsigned elementsOut) {
+inline void precalculate<1>(cl::sycl::range<1> &rangeIn,
+                            cl::sycl::range<1> &rangeOut, size_t &elementsCount,
+                            unsigned elementsIn, unsigned elementsOut) {
   rangeIn = cl::sycl::range<1>(elementsIn);
   rangeOut = cl::sycl::range<1>(elementsOut);
   elementsCount = elementsOut;
 }
 
 template <>
-void precalculate<2>(cl::sycl::range<2>& rangeIn, cl::sycl::range<2>& rangeOut,
-                     size_t& elementsCount, unsigned elementsIn,
-                     unsigned elementsOut) {
+inline void precalculate<2>(cl::sycl::range<2> &rangeIn,
+                            cl::sycl::range<2> &rangeOut, size_t &elementsCount,
+                            unsigned elementsIn, unsigned elementsOut) {
   rangeIn = cl::sycl::range<2>(elementsIn, elementsIn);
   rangeOut = cl::sycl::range<2>(elementsOut, elementsIn);
   elementsCount = (elementsOut * elementsIn);
 }
 
 template <>
-void precalculate<3>(cl::sycl::range<3>& rangeIn, cl::sycl::range<3>& rangeOut,
-                     size_t& elementsCount, unsigned elementsIn,
-                     unsigned elementsOut) {
+inline void precalculate<3>(cl::sycl::range<3> &rangeIn,
+                            cl::sycl::range<3> &rangeOut, size_t &elementsCount,
+                            unsigned elementsIn, unsigned elementsOut) {
   rangeIn = cl::sycl::range<3>(elementsIn, elementsIn, elementsIn);
   rangeOut = cl::sycl::range<3>(elementsOut, elementsIn, elementsIn);
   elementsCount = (elementsOut * elementsIn * elementsIn);
@@ -205,9 +206,9 @@ using flip_signedness_t =
 /**
  * Generic buffer API test function
  */
-template <typename T, int size, int dims>
-void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
-                 cl::sycl::id<dims>& i) {
+template <typename T, int size, int dims, typename alloc>
+void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
+                 cl::sycl::id<dims> &i) {
   try {
     cl::sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
@@ -216,7 +217,7 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
     cl::sycl::id<dims> offset;
 
     /* create a SYCL buffer from the host buffer */
-    cl::sycl::buffer<T, dims> buf(data.get(), r);
+    cl::sycl::buffer<T, dims, alloc> buf(data.get(), r);
 
     /* check the buffer returns a range */
     auto ret_range = buf.get_range();
@@ -228,20 +229,24 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
       {
         check_type_existence<typename cl::sycl::buffer<T, dims>::value_type>
             typeCheck;
+        (void)typeCheck;
       }
       {
         check_type_existence<typename cl::sycl::buffer<T, dims>::reference>
             typeCheck;
+        (void)typeCheck;
       }
       {
         check_type_existence<
             typename cl::sycl::buffer<T, dims>::const_reference>
             typeCheck;
+        (void)typeCheck;
       }
       {
         check_type_existence<typename cl::sycl::buffer<
             T, dims, cl::sycl::buffer_allocator>::allocator_type>
             typeCheck;
+        (void)typeCheck;
       }
     }
 
@@ -337,14 +342,11 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
 
     /* check get_allocator() */
     {
-      using AllocatorT = std::allocator<T>;
-
-      /* create another buffer with a custom allocator */
-      cl::sycl::buffer<T, dims, AllocatorT> bufAlloc(data.get(), r);
+      cl::sycl::buffer<T, dims, alloc> bufAlloc(data.get(), r);
 
       auto allocator = bufAlloc.get_allocator();
 
-      check_return_type<AllocatorT>(log, allocator, "get_allocator()");
+      check_return_type<alloc>(log, allocator, "get_allocator()");
 
       auto ptr = allocator.allocate(1);
       if (ptr == nullptr) {
@@ -413,46 +415,36 @@ void test_buffer(util::logger& log, cl::sycl::range<dims>& r,
   }
 }
 
-/** test cl::sycl::buffer API
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
+/**
+* @brief Tests reinterpreting a buffer
+* @tparam T Underlying data type of the input buffer
+* @tparam numDims Number of input dimensions
+* @param log Logger object
+*/
+template <typename T, int numDims>
+void test_type_reinterpret(util::logger &log) {
+  static constexpr size_t inputElemsPerDim = 4;
+  std::vector<uint8_t> reinterpretInputData(sizeof(T) * inputElemsPerDim *
+                                            numDims);
+  using ReinterpretT = flip_signedness_t<T>;
 
-  /**
-   * @brief Tests reinterpreting a buffer
-   * @tparam T Underlying data type of the input buffer
-   * @tparam numDims Number of input dimensions
-   * @param log Logger object
-   */
-  template <typename T, int numDims>
-  void test_type_reinterpret(util::logger& log) {
-    static constexpr size_t inputElemsPerDim = 4;
-    std::vector<uint8_t> reinterpretInputData(sizeof(T) * inputElemsPerDim *
-                                              numDims);
-    using ReinterpretT = flip_signedness_t<T>;
+  // Check reinterpreting with a range
+  static constexpr auto numElems = inputElemsPerDim * numDims;
+  test_buffer_reinterpret<uint8_t, T>{sizeof(T) * numElems, numElems}
+      .template check<numDims>(reinterpretInputData.data(), log);
 
-    // Check reinterpreting with a range
-    static constexpr auto numElems = inputElemsPerDim * numDims;
-    test_buffer_reinterpret<uint8_t, T>{sizeof(T) * numElems, numElems}
-        .template check<numDims>(reinterpretInputData.data(), log);
+  // Check reinterpreting without a range to 1D
+  test_buffer_reinterpret_no_range<uint8_t, T, numDims, 1>::check(
+      reinterpretInputData.data(), inputElemsPerDim, log);
 
-    // Check reinterpreting without a range to 1D
-    test_buffer_reinterpret_no_range<uint8_t, T, numDims, 1>::check(
-        reinterpretInputData.data(), inputElemsPerDim, log);
+  // Check reinterpreting without a range to the same dimension
+  test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
+      reinterpret_cast<T *>(reinterpretInputData.data()), inputElemsPerDim,
+      log);
+}
 
-    // Check reinterpreting without a range to the same dimension
-    test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
-        reinterpret_cast<T*>(reinterpretInputData.data()), inputElemsPerDim,
-        log);
-  }
-
-  template <typename T>
-  void test_type(util::logger& log) {
+template <typename T> class check_buffer_api_for_type {
+  template <typename alloc> void check_with_alloc(util::logger &log) {
     const int size = 8;
     cl::sycl::range<1> range1d(size);
     cl::sycl::range<2> range2d(size, size);
@@ -462,9 +454,9 @@ class TEST_NAME : public util::test_base {
     cl::sycl::id<2> id2d(2, 0);
     cl::sycl::id<3> id3d(2, 0, 0);
 
-    test_buffer<T, size, 1>(log, range1d, id1d);
-    test_buffer<T, size * size, 2>(log, range2d, id2d);
-    test_buffer<T, size * size * size, 3>(log, range3d, id3d);
+    test_buffer<T, size, 1, alloc>(log, range1d, id1d);
+    test_buffer<T, size * size, 2, alloc>(log, range2d, id2d);
+    test_buffer<T, size * size * size, 3, alloc>(log, range3d, id3d);
 
     /* check reinterpret() */
     test_type_reinterpret<T, 1>(log);
@@ -472,149 +464,13 @@ class TEST_NAME : public util::test_base {
     test_type_reinterpret<T, 3>(log);
   }
 
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    /* test signed types */
-    log.note("testing: int8_t");
-    test_type<int8_t>(log);
-    log.note("testing: int16_t");
-    test_type<int16_t>(log);
-    log.note("testing: int32_t");
-    test_type<int32_t>(log);
-    log.note("testing: int64_t");
-    test_type<int64_t>(log);
-
-    /* test unsigned types */
-    log.note("testing: uint8_t");
-    test_type<uint8_t>(log);
-    log.note("testing: uint16_t");
-    test_type<uint16_t>(log);
-    log.note("testing: uint32_t");
-    test_type<uint32_t>(log);
-    log.note("testing: uint64_t");
-    test_type<uint64_t>(log);
-
-    /* test float types */
-    log.note("testing: float");
-    test_type<float>(log);
-    log.note("testing: double");
-    test_type<double>(log);
-
-    /* test vector types */
-    log.note("testing: float3");
-    test_type<cl::sycl::float3>(log);
-    log.note("testing: float2");
-    test_type<cl::sycl::float2>(log);
-    log.note("testing: float4");
-    test_type<cl::sycl::float4>(log);
-    log.note("testing: float8");
-    test_type<cl::sycl::float8>(log);
-    log.note("testing: float16");
-    test_type<cl::sycl::float16>(log);
-
-    log.note("testing: double2");
-    test_type<cl::sycl::double2>(log);
-    log.note("testing: double3");
-    test_type<cl::sycl::double3>(log);
-    log.note("testing: double4");
-    test_type<cl::sycl::double4>(log);
-    log.note("testing: double8");
-    test_type<cl::sycl::double8>(log);
-    log.note("testing: double16");
-    test_type<cl::sycl::double16>(log);
-
-    log.note("testing: char2");
-    test_type<cl::sycl::char2>(log);
-    log.note("testing: char3");
-    test_type<cl::sycl::char3>(log);
-    log.note("testing: char4");
-    test_type<cl::sycl::char4>(log);
-    log.note("testing: char8");
-    test_type<cl::sycl::char8>(log);
-    log.note("testing: char16");
-    test_type<cl::sycl::char16>(log);
-
-    log.note("testing: int2");
-    test_type<cl::sycl::int2>(log);
-    log.note("testing: int3");
-    test_type<cl::sycl::int3>(log);
-    log.note("testing: int4");
-    test_type<cl::sycl::int4>(log);
-    log.note("testing: int8");
-    test_type<cl::sycl::int8>(log);
-    log.note("testing: int16");
-    test_type<cl::sycl::int16>(log);
-
-    log.note("testing: short2");
-    test_type<cl::sycl::short2>(log);
-    log.note("testing: short3");
-    test_type<cl::sycl::short3>(log);
-    log.note("testing: short4");
-    test_type<cl::sycl::short4>(log);
-    log.note("testing: short8");
-    test_type<cl::sycl::short8>(log);
-    log.note("testing: short16");
-    test_type<cl::sycl::short16>(log);
-
-    log.note("testing: long2");
-    test_type<cl::sycl::long2>(log);
-    log.note("testing: long3");
-    test_type<cl::sycl::long3>(log);
-    log.note("testing: long4");
-    test_type<cl::sycl::long4>(log);
-    log.note("testing: long8");
-    test_type<cl::sycl::long8>(log);
-    log.note("testing: long16");
-    test_type<cl::sycl::long16>(log);
-
-    log.note("testing: uchar2");
-    test_type<cl::sycl::uchar2>(log);
-    log.note("testing: uchar3");
-    test_type<cl::sycl::uchar3>(log);
-    log.note("testing: uchar4");
-    test_type<cl::sycl::uchar4>(log);
-    log.note("testing: uchar8");
-    test_type<cl::sycl::uchar8>(log);
-    log.note("testing: uchar16");
-    test_type<cl::sycl::uchar16>(log);
-
-    log.note("testing: uint2");
-    test_type<cl::sycl::uint2>(log);
-    log.note("testing: uint3");
-    test_type<cl::sycl::uint3>(log);
-    log.note("testing: uint4");
-    test_type<cl::sycl::uint4>(log);
-    log.note("testing: uint8");
-    test_type<cl::sycl::uint8>(log);
-    log.note("testing: uint16");
-    test_type<cl::sycl::uint16>(log);
-
-    log.note("testing: ushort2");
-    test_type<cl::sycl::ushort2>(log);
-    log.note("testing: ushort3");
-    test_type<cl::sycl::ushort3>(log);
-    log.note("testing: ushort4");
-    test_type<cl::sycl::ushort4>(log);
-    log.note("testing: ushort8");
-    test_type<cl::sycl::ushort8>(log);
-    log.note("testing: ushort16");
-    test_type<cl::sycl::ushort16>(log);
-
-    log.note("testing: ulong2");
-    test_type<cl::sycl::ulong2>(log);
-    log.note("testing: ulong3");
-    test_type<cl::sycl::ulong3>(log);
-    log.note("testing: ulong4");
-    test_type<cl::sycl::ulong4>(log);
-    log.note("testing: ulong8");
-    test_type<cl::sycl::ulong8>(log);
-    log.note("testing: ulong16");
-    test_type<cl::sycl::ulong16>(log);
+public:
+  void operator()(util::logger &log, const std::string &typeName) {
+    log.note("testing: " + typeName);
+    check_with_alloc<cl::sycl::buffer_allocator>(log);
+    check_with_alloc<std::allocator<T>>(log);
   }
 };
 
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-
-}  // namespace TEST_NAMESPACE
+} // namespace
+#endif // __SYCLCTS_TESTS_BUFFER_API_COMMON_H

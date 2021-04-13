@@ -1,6 +1,6 @@
 /*************************************************************************
 //
-//  SYCL Conformance Test Suite
+//  SYCL 2020 Conformance Test Suite
 //
 //  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
 //
@@ -20,201 +20,189 @@ using namespace sycl_cts;
 
 /** Creates a buffer accessor and checks all its members for correctness.
  */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder isPlaceholder>
+template <typename accTag>
 class check_accessor_constructor_buffer {
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer, cl::sycl::handler &h,
-                    util::logger &log) {
+  static constexpr size_t bufferDims = ((accTag::dims == 0) ? 1 : accTag::dims);
+public:
+  template <typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, bufferDims> &buffer,
+                    sycl_cts::util::logger &log,
+                    const std::string& constructorName,
+                    const std::string& typeName,
+                    handlerArgsT&& ... handler) {
     // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, kTarget, isPlaceholder> a(buffer, h);
+    typename accTag::type accessor(buffer,
+                                   std::forward<handlerArgsT>(handler)...);
 
     // check the accessor
-    check_accessor_members<T, dims, kMode, kTarget, isPlaceholder>::check(
-        a, buffer.get_size(), buffer.get_count(), getId<dims>(0),
-        buffer.get_range(), "constructor(buffer, handler)", log);
+    check_accessor_members<accTag>::check(
+        log, accessor, constructorName, typeName,
+        accessor_members::size{buffer.get_size()},
+        accessor_members::count{buffer.get_count()},
+        accessor_members::offset<bufferDims>{getId<bufferDims>(0)},
+        accessor_members::range<bufferDims>{buffer.get_range()},
+        accessor_members::placeholder{accTag::placeholder});
+  }
+  template <typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, bufferDims> &buffer,
+                    cl::sycl::range<bufferDims> range,
+                    sycl_cts::util::logger &log,
+                    const std::string& constructorName,
+                    const std::string& typeName,
+                    handlerArgsT&& ... handler) {
+    // construct the accessor
+    typename accTag::type accessor(buffer,
+                                   std::forward<handlerArgsT>(handler)...,
+                                   range);
+
+    // check the accessor
+    check_accessor_members<accTag>::check(
+        log, accessor, constructorName, typeName,
+        accessor_members::size{range.size() * sizeof(typename accTag::dataT)},
+        accessor_members::count{range.size()},
+        accessor_members::offset<bufferDims>{getId<bufferDims>(0)},
+        accessor_members::range<bufferDims>{range},
+        accessor_members::placeholder{accTag::placeholder});
+  }
+  template <typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, bufferDims> &buffer,
+                    cl::sycl::range<bufferDims> range,
+                    cl::sycl::id<bufferDims> offset,
+                    sycl_cts::util::logger &log,
+                    const std::string& constructorName,
+                    const std::string& typeName,
+                    handlerArgsT&& ... handler) {
+    // construct the accessor
+    typename accTag::type accessor(buffer,
+                                   std::forward<handlerArgsT>(handler)...,
+                                   range, offset);
+
+    // check the accessor
+    check_accessor_members<accTag>::check(
+        log, accessor, constructorName, typeName,
+        accessor_members::size{range.size() * sizeof(typename accTag::dataT)},
+        accessor_members::count{range.size()},
+        accessor_members::offset<bufferDims>{offset},
+        accessor_members::range<bufferDims>{range},
+        accessor_members::placeholder{accTag::placeholder});
   }
 };
 
-/** Creates a 0 dimensional buffer accessor and checks all its members for
- * correctness.
- */
-template <typename T, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_accessor_constructor_buffer<T, 0, kMode, kTarget, isPlaceholder> {
- public:
-  static void check(cl::sycl::buffer<T, 1> &buffer, cl::sycl::handler &h,
-                    util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, 0, kMode, kTarget, isPlaceholder> a(buffer, h);
 
-    // check the accessor
-    check_accessor_members<T, 0, kMode, kTarget, isPlaceholder>::check(
-        a, buffer.get_size(), buffer.get_count(),
-        "constructor(buffer, handler)", log);
+ /** check accessor is Copy Constructible
+  */
+template <typename accTag>
+class check_accessor_copy_constructable {
+  static constexpr size_t bufferDims = ((accTag::dims == 0) ? 1 : accTag::dims);
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{a};
+
+    check_accessor_members<accTag>::check(
+        log, b, "copy construction", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<bufferDims>::template from<accTag>(a),
+        accessor_members::range<bufferDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
+
+    // check operator ==
+    if (!(a == b)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator==)");
+    }
+    if (!(b == a)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator== symmetry failed)");
+    }
+    if (a != b) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator!=)");
+    }
+    if (b != a) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator!= symmetry failed)");
+    }
+
+    // check std::hash<accessor<>>
+    std::hash<typename accTag::type> hasher;
+
+    if (hasher(a) != hasher(b)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor hashing of equal failed");
+    }
   }
 };
 
-/** Creates a buffer host accessor and checks all its members for correctness.
+/** check accessor is Copy Assignable
  */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_accessor_constructor_buffer<
-    T, dims, kMode, cl::sycl::access::target::host_buffer, isPlaceholder> {
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer, util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::host_buffer,
-                       isPlaceholder>
-        a(buffer);
+template <typename accTag>
+class check_accessor_copy_assignable {
+  static constexpr size_t bufferDims = ((accTag::dims == 0) ? 1 : accTag::dims);
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = a;
 
-    // check the accessor
-    check_accessor_members<
-        T, dims, kMode, cl::sycl::access::target::host_buffer,
-        isPlaceholder>::check(a, buffer.get_size(), buffer.get_count(),
-                              getId<dims>(0), buffer.get_range(),
-                              "constructor(buffer, handler)", log);
+    check_accessor_members<accTag>::check(
+        log, b, "copy assignment", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<bufferDims>::template from<accTag>(a),
+        accessor_members::range<bufferDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 
-/** Creates a 0 dimensional buffer host accessor and checks all its members for
- * correctness.
+/** check accessor is Move Constructible
  */
-template <typename T, cl::sycl::access::mode kMode,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_accessor_constructor_buffer<
-    T, 0, kMode, cl::sycl::access::target::host_buffer, isPlaceholder> {
- public:
-  static void check(cl::sycl::buffer<T, 1> &buffer, util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, 0, kMode, cl::sycl::access::target::host_buffer,
-                       isPlaceholder>
-        a(buffer);
+template <typename accTag>
+class check_accessor_move_constructable {
+  static constexpr size_t bufferDims = ((accTag::dims == 0) ? 1 : accTag::dims);
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{std::move(a)};
 
-    // check the accessor
-    check_accessor_members<T, 0, kMode, cl::sycl::access::target::host_buffer,
-                           isPlaceholder>::check(a, buffer.get_size(),
-                                                 buffer.get_count(),
-                                                 "constructor(buffer, handler)",
-                                                 log);
+    check_accessor_members<accTag>::check(
+        log, b, "move construction", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<bufferDims>::template from<accTag>(a),
+        accessor_members::range<bufferDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 
-/** Creates a placeholder buffer accessor and checks all its members
- *  for correctness.
+/** check accessor is Move Assignable
  */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget>
-class check_accessor_constructor_buffer<
-    T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t> {
+template <typename accTag>
+class check_accessor_move_assignable {
+  static constexpr size_t bufferDims = ((accTag::dims == 0) ? 1 : accTag::dims);
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = std::move(a);
 
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer, util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<
-        T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t>
-            a(buffer);
-
-    // check the accessor
-    check_accessor_members<
-        T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t>::check(
-            a, buffer.get_size(), buffer.get_count(), getId<dims>(0),
-            buffer.get_range(), "constructor(buffer)", log);
-  }
-};
-
-/** Creates a 0 dimensional placeholder buffer accessor and checks
- *  all its members for correctness.
- */
-template <typename T, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget>
-class check_accessor_constructor_buffer<
-    T, 0, kMode, kTarget, cl::sycl::access::placeholder::true_t> {
- public:
-  static void check(cl::sycl::buffer<T, 1> &buffer, util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<
-        T, 0, kMode, kTarget, cl::sycl::access::placeholder::true_t>
-            a(buffer);
-
-    // check the accessor
-    check_accessor_members<
-        T, 0, kMode, kTarget, cl::sycl::access::placeholder::true_t>::check(
-            a, buffer.get_size(), buffer.get_count(),
-            "constructor(buffer)", log);
-  }
-};
-
-/** Creates a ranged buffer accessor and checks all its members for correctness.
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_ranged_accessor_constructor_buffer {
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer, cl::sycl::handler &h,
-                    cl::sycl::range<dims> range, cl::sycl::id<dims> offset,
-                    util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, kTarget, isPlaceholder> a(buffer, h,
-                                                                 range, offset);
-
-    // check the accessor
-    check_accessor_members<T, dims, kMode, kTarget, isPlaceholder>::check(
-        a, range.size() * sizeof(T), range.size(), offset, range,
-        "constructor(buffer, handler, range, offset)", log);
-  }
-};
-
-/** Creates a ranged buffer host accessor and checks all its members for
- * correctness.
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_ranged_accessor_constructor_buffer<
-    T, dims, kMode, cl::sycl::access::target::host_buffer, isPlaceholder> {
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer,
-                    cl::sycl::range<dims> range, cl::sycl::id<dims> offset,
-                    util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::host_buffer,
-                       isPlaceholder>
-        a(buffer, range, offset);
-
-    // check the accessor
-    check_accessor_members<
-        T, dims, kMode, cl::sycl::access::target::host_buffer,
-        isPlaceholder>::check(a, range.size() * sizeof(T), range.size(), offset,
-                              range,
-                              "constructor(buffer, handler, range, offset)",
-                              log);
-  }
-};
-
-/** Creates a ranged placeholder buffer accessor and checks all
- *  its members for correctness.
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget>
-class check_ranged_accessor_constructor_buffer<
-    T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t> {
- public:
-  static void check(cl::sycl::buffer<T, dims> &buffer,
-                    cl::sycl::range<dims> range, cl::sycl::id<dims> offset,
-                    util::logger &log) {
-    // construct the accessor
-    cl::sycl::accessor<
-        T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t>
-            a(buffer, range, offset);
-
-    // check the accessor
-    check_accessor_members<
-        T, dims, kMode, kTarget, cl::sycl::access::placeholder::true_t>::check(
-            a, range.size() * sizeof(T), range.size(), offset, range,
-            "constructor(buffer, handler, range, offset)", log);
+    check_accessor_members<accTag>::check(
+        log, b, "move assignment", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<bufferDims>::template from<accTag>(a),
+        accessor_members::range<bufferDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 
@@ -227,11 +215,12 @@ enum is_host_buffer : bool { false_t = false, true_t = true };
  * constant_buffer
  */
 template <typename T, size_t dims, is_host_buffer isHostBuffer = false_t,
-          cl::sycl::access::placeholder isPlaceholder =
+          cl::sycl::access::placeholder placeholder =
               cl::sycl::access::placeholder::false_t>
 class buffer_accessor_dims {
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     int size = 32;
 
     /** check buffer accessor constructors for n > 0 dimensions
@@ -247,207 +236,152 @@ class buffer_accessor_dims {
     /** check buffer accessor constructors for global_buffer
      */
     {
+      constexpr auto target = cl::sycl::access::target::global_buffer;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (buffer, handler) constructor for reading
-         * global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for reading
-         * global_buffer
-         */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check (buffer, handler) constructor for writing global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for writing
-                 * global_buffer
-                 */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check (buffer, handler) constructor for read_write global_buffer
-        */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for read_write
-         * global_buffer
-                 */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check (buffer, handler) constructor for discard_write global_buffer
-        */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::discard_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for discard_write
-         * global_buffer
-         */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::discard_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check (buffer, handler) constructor for discard_read_write
-        * global_buffer
-        */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::discard_read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for
-         * discard_read_write global_buffer
-         */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::discard_read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check (buffer, handler) global_buffer accessor constructors for
-        *  atomic
-        */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::atomic,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) global_buffer constructor for
-         *  atomic
-         */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::atomic,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructors for reading global_buffer
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h, r, offset);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       a.get_offset(),
-                                                       a.get_range(),
-                                                       "copy construction",
-                                                       log);
-
-          // check operator ==
-          if (!(a == b)) {
-            FAIL(log, "accessor is not equality-comparable (operator==)");
-          }
-          if (!(b == a)) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator== symmetry "
-                 "failed)");
-          }
-          if (a != b) {
-            FAIL(log, "accessor is not equality-comparable (operator!=)");
-          }
-          if (b != a) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator!= symmetry "
-                 "failed)");
-          }
-
-          // check std::hash<accessor<>>
-          std::hash<decltype(a)> hasher;
-
-          if (hasher(a) != hasher(b)) {
-            FAIL(log, "accessor hashing of equal failed");
-          }
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
         }
 
-        /** check accessor is Copy Assignable
+        /** check constructors for writing global_buffer
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h, r, offset);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              b(buffer, h);
-          b = a;
+          constexpr auto mode = cl::sycl::access::mode::write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       a.get_offset(),
-                                                       a.get_range(),
-                                                       "copy assignment", log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
         }
 
-        /** check accessor is Move Constructible
+        /** check constructors for read_write global_buffer
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{std::move(a)};
+          constexpr auto mode = cl::sycl::access::mode::read_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       getId<dims>(0),
-                                                       buffer.get_range(),
-                                                       "move construction",
-                                                       log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
         }
 
-        /** check accessor is Move Assignable
+        /** check constructors for discard_write global_buffer
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              b(buffer, h, r, offset);
-          b = std::move(a);
+          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       getId<dims>(0),
-                                                       buffer.get_range(),
-                                                       "move assignment", log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
         }
 
+        /** check constructors for discard_read_write global_buffer
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
+
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
+        }
+
+        /** check constructors for atomic global_buffer
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::atomic;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
+
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
+        }
+
+        /** check common-by-reference semantics
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          {
+            using verifier = check_accessor_copy_constructable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h, r, offset);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_copy_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h, r, offset);
+            typename accTag::type dstAccessor(buffer, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_constructable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h, r, offset);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+        }
         /** dummy kernel as no kernel is required for these checks
          */
         h.single_task(
@@ -459,129 +393,62 @@ class buffer_accessor_dims {
     /** check buffer accessor constructors for constant_buffer
      */
     {
+      constexpr auto target = cl::sycl::access::target::constant_buffer;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (buffer, handler) constructor for reading constant_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler, range, offset) constructor for reading
-         * constant_buffer
-         */
-        check_ranged_accessor_constructor_buffer<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            isPlaceholder>::check(buffer, h, r, offset, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructors for reading constant_buffer
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       a.get_offset(),
-                                                       a.get_range(),
-                                                       "copy construction",
-                                                       log);
-
-          // check operator ==
-          if (!(a == b)) {
-            FAIL(log, "accessor is not equality-comparable (operator==)");
-          }
-          if (!(b == a)) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator== symmetry "
-                 "failed)");
-          }
-          if (a != b) {
-            FAIL(log, "accessor is not equality-comparable (operator!=)");
-          }
-          if (b != a) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator!= symmetry "
-                 "failed)");
-          }
-
-          // check std::hash<accessor<>>
-          std::hash<decltype(a)> hasher;
-
-          if (hasher(a) != hasher(b)) {
-            FAIL(log, "accessor hashing of equal failed");
-          }
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+          verifier::check(buffer, r,
+                          log, "constructor(buffer, handler, range)",
+                          typeName, h);
+          verifier::check(buffer, r, offset,
+                          log, "constructor(buffer, handler, range, offset)",
+                          typeName, h);
         }
 
-        /** check accessor is Copy Assignable
-        */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              b(buffer, h, r, offset);
-          b = a;
-
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       a.get_offset(),
-                                                       a.get_range(),
-                                                       "copy assignment", log);
-        }
-
-        /** check accessor is Move Constructible
+        /** check common-by-reference semantics
          */
         {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{std::move(a)};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          {
+            using verifier = check_accessor_copy_constructable<accTag>;
 
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       getId<dims>(0),
-                                                       buffer.get_range(),
-                                                       "move construction",
-                                                       log);
+            typename accTag::type srcAccessor(buffer, h);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_copy_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h, r, offset);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_constructable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h, r, offset);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
         }
-
-        /** check accessor is Move Assignable
-         */
-        {
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              b(buffer, h, r, offset);
-          b = std::move(a);
-
-          check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       getId<dims>(0),
-                                                       buffer.get_range(),
-                                                       "move assignment", log);
-        }
-
         /** dummy kernel as no kernel is required for these checks
          */
         h.single_task(
@@ -595,10 +462,11 @@ class buffer_accessor_dims {
 
 /** Specialization of buffer_accessor_dims for host_buffer
  */
-template <typename T, size_t dims, cl::sycl::access::placeholder isPlaceholder>
-class buffer_accessor_dims<T, dims, is_host_buffer::true_t, isPlaceholder> {
+template <typename T, size_t dims, cl::sycl::access::placeholder placeholder>
+class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder> {
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     int size = 32;
 
     /** check buffer accessor constructors for n > 0 dimensions
@@ -613,186 +481,132 @@ class buffer_accessor_dims<T, dims, is_host_buffer::true_t, isPlaceholder> {
     /** check buffer accessor constructors for host_buffer
      */
     {
-      /** check (buffer) constructor for reading host_buffer
-       */
-      check_accessor_constructor_buffer<T, dims, cl::sycl::access::mode::read,
-                                        cl::sycl::access::target::host_buffer,
-                                        isPlaceholder>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::host_buffer;
 
-      /** check (buffer, range, offset) constructor for reading
-       * host_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       r,
-                                                                       offset,
-                                                                       log);
-
-      /** check (buffer) constructor for writing host_buffer
-       */
-      check_accessor_constructor_buffer<T, dims, cl::sycl::access::mode::write,
-                                        cl::sycl::access::target::host_buffer,
-                                        isPlaceholder>::check(buffer, log);
-
-      /** check (buffer, range, offset) constructor for writing
-       * host_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       r,
-                                                                       offset,
-                                                                       log);
-
-      /** check (buffer) constructor for read_write host_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check (buffer, range, offset) constructor for read_write
-       * host_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       r,
-                                                                       offset,
-                                                                       log);
-
-      /** check (buffer) constructor for discard_write host_buffer
-      */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check (buffer, range, offset) constructor for discard_write
-       * host_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       r,
-                                                                       offset,
-                                                                       log);
-
-      /** check (buffer) constructor for discard_read_write host_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check (buffer, range, offset) constructor for
-       * discard_read_write host_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       r,
-                                                                       offset,
-                                                                       log);
-
-      /** check accessor is Copy Constructible
+      /** check constructors for reading host_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, a.get_size(),
-                                                     a.get_count(),
-                                                     a.get_offset(),
-                                                     a.get_range(),
-                                                     "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check constructors for writing host_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer, r, offset);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            b(buffer);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, a.get_size(),
-                                                     a.get_count(),
-                                                     a.get_offset(),
-                                                     a.get_range(),
-                                                     "copy assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Move Constructible
+      /** check constructors for read_write host_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        auto b{std::move(a)};
+        constexpr auto mode = cl::sycl::access::mode::read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, buffer.get_size(),
-                                                     buffer.get_count(),
-                                                     getId<dims>(0),
-                                                     buffer.get_range(),
-                                                     "move construction", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Move Assignable
+      /** check constructors for discard_write host_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            b(buffer, r, offset);
-        b = std::move(a);
+        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, dims, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, buffer.get_size(),
-                                                     buffer.get_count(),
-                                                     getId<dims>(0),
-                                                     buffer.get_range(),
-                                                     "move assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
+      }
+
+      /** check constructors for discard_read_write host_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
+      }
+
+      /** check common-by-reference semantics
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer, r, offset);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer, r, offset);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
     }
   }
@@ -804,8 +618,10 @@ class buffer_accessor_dims<T, dims, is_host_buffer::true_t, isPlaceholder> {
 template <typename T, size_t dims>
 class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
                            cl::sycl::access::placeholder::true_t> {
- public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static constexpr auto placeholder = cl::sycl::access::placeholder::true_t;
+public:
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     int size = 32;
 
     /** check buffer accessor constructors for n > 0 dimensions
@@ -821,197 +637,151 @@ class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
     /** check buffer accessor constructors for global_buffer
      */
     {
-      /** check (buffer) constructor for reading global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::global_buffer;
 
-      /** check (buffer, range, offset) constructor for reading global_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(
-              buffer, r, offset, log);
-
-      /** check (buffer) constructor for writing global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer, range, offset) constructor for writing global_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(
-              buffer, r, offset, log);
-
-      /** check (buffer) constructor for read_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer, handler, range, offset) constructor for read_write
-       * global_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(
-              buffer, r, offset, log);
-
-      /** check (buffer) constructor for discard_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer, range, offset) constructor for discard_write
-       *  global_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(
-              buffer, r, offset, log);
-
-      /** check (buffer) constructor for discard_read_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer, range, offset) constructor for
-       *  discard_read_write global_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(
-              buffer, r, offset, log);
-
-      /** check (buffer) global_buffer accessor constructors for atomic
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::atomic,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer, range, offset) global_buffer constructor for atomic
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::atomic,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, r, offset, log);
-
-      /** check accessor is Copy Constructible
+      /** check constructors for reading global_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer, r, offset);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(),
-                a.get_offset(), a.get_range(), "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check constructors for writing global_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer, r, offset);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(),
-                a.get_offset(), a.get_range(), "copy assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Move Constructible
+      /** check constructors for read_write global_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{std::move(a)};
+        constexpr auto mode = cl::sycl::access::mode::read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(), getId<dims>(0),
-                buffer.get_range(), "move construction", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Move Assignable
+      /** check constructors for discard_write global_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer, r, offset);
-        b = std::move(a);
+        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                getId<dims>(0), buffer.get_range(), "move assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
+      }
+
+      /** check constructors for discard_read_write global_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
+      }
+
+      /** check constructors for atomic global_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::atomic;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
+      }
+
+
+      /** check common-by-reference semantics
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer, r, offset);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer, r, offset);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer, r, offset);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
 
       queue.submit([&](cl::sycl::handler &h) {
@@ -1026,121 +796,61 @@ class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
     /** check buffer accessor constructors for constant_buffer
      */
     {
-      /** check (buffer) constructor for reading constant_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::constant_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::constant_buffer;
 
-      /** check (buffer, range, offset) constructor for reading constant_buffer
-       */
-      check_ranged_accessor_constructor_buffer<
-          T, dims, cl::sycl::access::mode::read,
-          cl::sycl::access::target::constant_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, r, offset, log);
-
-      /** check accessor is Copy Constructible
+      /** check constructors for reading constant_buffer
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(), a.get_offset(),
-                a.get_range(), "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+        verifier::check(buffer, r,
+                        log, "constructor(buffer, range)",
+                        typeName);
+        verifier::check(buffer, r, offset,
+                        log, "constructor(buffer, range, offset)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
-      */
-      {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer, r, offset);
-        b = a;
-
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(),
-                a.get_offset(), a.get_range(), "copy assignment", log);
-      }
-
-      /** check accessor is Move Constructible
+      /** check common-by-reference semantics
        */
       {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{std::move(a)};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
 
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                getId<dims>(0), buffer.get_range(), "move construction", log);
+          typename accTag::type srcAccessor(buffer);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer, r, offset);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer, r, offset);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
-
-      /** check accessor is Move Assignable
-       */
-      {
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, dims, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer, r, offset);
-        b = std::move(a);
-
-        check_accessor_members<
-            T, dims, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                getId<dims>(0), buffer.get_range(), "move assignment", log);
-      }
-
       queue.submit([&](cl::sycl::handler &h) {
         /** dummy kernel as no kernel is required for these checks
          */
@@ -1156,10 +866,12 @@ class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
 /** Specialization of buffer_accessor_dims for the combinations of 0 dimentional
  * global_buffer and constant_buffer
  */
-template <typename T, cl::sycl::access::placeholder isPlaceholder>
-class buffer_accessor_dims<T, 0, is_host_buffer::false_t, isPlaceholder> {
- public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+template <typename T, cl::sycl::access::placeholder placeholder>
+class buffer_accessor_dims<T, 0, is_host_buffer::false_t, placeholder> {
+  static constexpr size_t dims = 0;
+public:
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     cl::sycl::range<1> range = getRange<1>(1);
     std::vector<uint8_t> data(sizeof(T), 0);
     cl::sycl::buffer<T, 1> buffer(reinterpret_cast<T *>(data.data()), range);
@@ -1167,150 +879,115 @@ class buffer_accessor_dims<T, 0, is_host_buffer::false_t, isPlaceholder> {
     /** check buffer accessor constructors for global_buffer
      */
     {
+      constexpr auto target = cl::sycl::access::target::global_buffer;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (buffer, handler) constructor for reading
-         * global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler) constructor for writing global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler) constructor for read_write global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler) constructor for discard_write global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::discard_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler) constructor for discard_read_write
-         * global_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::discard_read_write,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check (buffer, handler) global_buffer accessor constructors for
-         *  atomic
-         */
-
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::atomic,
-            cl::sycl::access::target::global_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructors for reading global_buffer
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       "copy construction",
-                                                       log);
-
-          // check operator ==
-          if (!(a == b)) {
-            FAIL(log, "accessor is not equality-comparable (operator==)");
-          }
-          if (!(b == a)) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator== symmetry "
-                 "failed)");
-          }
-          if (a != b) {
-            FAIL(log, "accessor is not equality-comparable (operator!=)");
-          }
-          if (b != a) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator!= symmetry "
-                 "failed)");
-          }
-
-          // check std::hash<accessor<>>
-          std::hash<decltype(a)> hasher;
-
-          if (hasher(a) != hasher(b)) {
-            FAIL(log, "accessor hashing of equal failed");
-          }
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
         }
 
-        /** check accessor is Copy Assignable
+        /** check constructors for writing global_buffer
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              b(buffer, h);
-          b = a;
+          constexpr auto mode = cl::sycl::access::mode::write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       "copy assignment", log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
         }
 
-        /** check accessor is Move Constructible
+        /** check constructors for read_write global_buffer
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{std::move(a)};
+          constexpr auto mode = cl::sycl::access::mode::read_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       "move construction",
-                                                       log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
         }
 
-        /** check accessor is Move Assignable
+        /** check constructors for discard_write global_buffer
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer,
-                             isPlaceholder>
-              b(buffer, h);
-          b = std::move(a);
+          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::global_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       "move assignment", log);
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+        }
+
+        /** check constructors for discard_read_write global_buffer
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
+
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+        }
+
+        /** check constructors for atomic global_buffer
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::atomic;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
+
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
+        }
+
+        /** check common-by-reference semantics
+         */
+        {
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          {
+            using verifier = check_accessor_copy_constructable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_copy_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_constructable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
         }
 
         /** dummy kernel as no kernel is required for these checks
@@ -1324,111 +1001,55 @@ class buffer_accessor_dims<T, 0, is_host_buffer::false_t, isPlaceholder> {
     /** check buffer accessor constructors for constant_buffer
      */
     {
+      constexpr auto target = cl::sycl::access::target::constant_buffer;
+
       queue.submit([&](cl::sycl::handler &h) {
-        /** check (buffer, handler) constructor for reading constant_buffer
-         */
-        check_accessor_constructor_buffer<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            isPlaceholder>::check(buffer, h, log);
-
-        /** check accessor is Copy Constructible
+        /** check constructors for reading constant_buffer
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{a};
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          using verifier = check_accessor_constructor_buffer<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       "copy construction",
-                                                       log);
-
-          // check operator ==
-          if (!(a == b)) {
-            FAIL(log, "accessor is not equality-comparable (operator==)");
-          }
-          if (!(b == a)) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator== symmetry "
-                 "failed)");
-          }
-          if (a != b) {
-            FAIL(log, "accessor is not equality-comparable (operator!=)");
-          }
-          if (b != a) {
-            FAIL(log,
-                 "accessor is not equality-comparable (operator!= symmetry "
-                 "failed)");
-          }
-
-          // check std::hash<accessor<>>
-          std::hash<decltype(a)> hasher;
-
-          if (hasher(a) != hasher(b)) {
-            FAIL(log, "accessor hashing of equal failed");
-          }
+          verifier::check(buffer,
+                          log, "constructor(buffer, handler)",
+                          typeName, h);
         }
 
-        /** check accessor is Copy Assignable
+        /** check common-by-reference semantics
          */
         {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              b(buffer, h);
-          b = a;
+          constexpr auto mode = cl::sycl::access::mode::read;
+          using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+          {
+            using verifier = check_accessor_copy_constructable<accTag>;
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, a.get_size(),
-                                                       a.get_count(),
-                                                       "copy assignment", log);
-        }
+            typename accTag::type srcAccessor(buffer, h);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_copy_assignable<accTag>;
 
-        /** check accessor is Move Constructible
-         */
-        {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          auto b{std::move(a)};
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h);
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       "move construction",
-                                                       log);
-        }
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_constructable<accTag>;
 
-        /** check accessor is Move Assignable
-         */
-        {
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              a(buffer, h);
-          cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::constant_buffer,
-                             isPlaceholder>
-              b(buffer, h);
-          b = std::move(a);
+            typename accTag::type srcAccessor(buffer, h);
 
-          check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                                 cl::sycl::access::target::constant_buffer,
-                                 isPlaceholder>::check(b, buffer.get_size(),
-                                                       buffer.get_count(),
-                                                       "move assignment", log);
+            verifier::check(srcAccessor, log, typeName);
+          }
+          {
+            using verifier = check_accessor_move_assignable<accTag>;
+
+            typename accTag::type srcAccessor(buffer, h);
+            typename accTag::type dstAccessor(buffer, h);
+
+            verifier::check(srcAccessor, dstAccessor, log, typeName);
+          }
         }
 
         /** dummy kernel as no kernel is required for these checks
@@ -1444,10 +1065,12 @@ class buffer_accessor_dims<T, 0, is_host_buffer::false_t, isPlaceholder> {
 
 /** Specialization of buffer_accessor_dims for 0 dimentional host_buffer
  */
-template <typename T, cl::sycl::access::placeholder isPlaceholder>
-class buffer_accessor_dims<T, 0, is_host_buffer::true_t, isPlaceholder> {
- public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+template <typename T, cl::sycl::access::placeholder placeholder>
+class buffer_accessor_dims<T, 0, is_host_buffer::true_t, placeholder> {
+  static constexpr size_t dims = 0;
+public:
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     cl::sycl::range<1> range = getRange<1>(1);
     std::vector<uint8_t> data(sizeof(T), 0);
     cl::sycl::buffer<T, 1> buffer(reinterpret_cast<T *>(data.data()), range);
@@ -1455,128 +1078,102 @@ class buffer_accessor_dims<T, 0, is_host_buffer::true_t, isPlaceholder> {
     /** check buffer accessor constructors for host_buffer
      */
     {
-      /** check (buffer) constructor for reading host_buffer
-       */
-      check_accessor_constructor_buffer<T, 0, cl::sycl::access::mode::read,
-                                        cl::sycl::access::target::host_buffer,
-                                        isPlaceholder>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::host_buffer;
 
-      /** check (buffer) constructor for writing host_buffer
-       */
-      check_accessor_constructor_buffer<T, 0, cl::sycl::access::mode::write,
-                                        cl::sycl::access::target::host_buffer,
-                                        isPlaceholder>::check(buffer, log);
-
-      /** check (buffer) constructor for read_write host_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check (buffer) constructor for discard_write host_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check (buffer) constructor for discard_read_write host_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::host_buffer, isPlaceholder>::check(buffer,
-                                                                       log);
-
-      /** check accessor is Copy Constructible
+      /** check constructors for reading host_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, a.get_size(),
-                                                     a.get_count(),
-                                                     "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check constructors for writing host_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            b(buffer);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, a.get_size(),
-                                                     a.get_count(),
-                                                     "copy assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Move Constructible
+      /** check constructors for read_write host_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        auto b{std::move(a)};
+        constexpr auto mode = cl::sycl::access::mode::read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, buffer.get_size(),
-                                                     buffer.get_count(),
-                                                     "move construction", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Move Assignable
+      /** check constructors for discard_write host_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::host_buffer, isPlaceholder>
-            b(buffer);
-        b = std::move(a);
+        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<T, 0, cl::sycl::access::mode::read,
-                               cl::sycl::access::target::host_buffer,
-                               isPlaceholder>::check(b, buffer.get_size(),
-                                                     buffer.get_count(),
-                                                     "move assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+      }
+
+      /** check constructors for discard_read_write host_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+      }
+
+      /** check common-by-reference semantics
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
     }
   }
@@ -1588,8 +1185,11 @@ class buffer_accessor_dims<T, 0, is_host_buffer::true_t, isPlaceholder> {
 template <typename T>
 class buffer_accessor_dims<T, 0, is_host_buffer::false_t,
                            cl::sycl::access::placeholder::true_t> {
- public:
-  static void check(util::logger &log, cl::sycl::queue &queue) {
+  static constexpr size_t dims = 0;
+  static constexpr auto placeholder = cl::sycl::access::placeholder::true_t;
+public:
+  static void check(util::logger &log, cl::sycl::queue &queue,
+                    const std::string& typeName) {
     cl::sycl::range<1> range = getRange<1>(1);
     std::vector<uint8_t> data(sizeof(T), 0);
     cl::sycl::buffer<T, 1> buffer(reinterpret_cast<T *>(data.data()), range);
@@ -1597,145 +1197,114 @@ class buffer_accessor_dims<T, 0, is_host_buffer::false_t,
     /** check buffer accessor constructors for global_buffer
      */
     {
-      /** check (buffer) constructor for reading global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::read,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::global_buffer;
 
-      /** check (buffer) constructor for writing global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer) constructor for read_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer) constructor for discard_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::discard_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer) constructor for discard_read_write global_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::discard_read_write,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check (buffer) global_buffer accessor constructors for atomic
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::atomic,
-          cl::sycl::access::target::global_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
-
-      /** check accessor is Copy Constructible
+      /** check constructors for reading global_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(), "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check constructors for writing global_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(), "copy assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Move Constructible
+      /** check constructors for read_write global_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{std::move(a)};
+        constexpr auto mode = cl::sycl::access::mode::read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                "move construction", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Move Assignable
+      /** check constructors for discard_write global_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::global_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer);
-        b = std::move(a);
+        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::global_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                "move assignment", log);
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+      }
+
+      /** check constructors for discard_read_write global_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::discard_read_write;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+      }
+
+      /** check constructors for atomic global_buffer
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::atomic;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
+
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
+      }
+
+      /** check common-by-reference semantics
+       */
+      {
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
 
       queue.submit([&](cl::sycl::handler &h) {//xxyy - TODO: try using those placeholder accessors here
@@ -1750,110 +1319,54 @@ class buffer_accessor_dims<T, 0, is_host_buffer::false_t,
     /** check buffer accessor constructors for constant_buffer
      */
     {
-      /** check (buffer) constructor for reading constant_buffer
-       */
-      check_accessor_constructor_buffer<
-          T, 0, cl::sycl::access::mode::read,
-          cl::sycl::access::target::constant_buffer,
-          cl::sycl::access::placeholder::true_t>::check(buffer, log);
+      constexpr auto target = cl::sycl::access::target::constant_buffer;
 
-      /** check accessor is Copy Constructible
+      /** check constructors for reading constant_buffer
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{a};
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        using verifier = check_accessor_constructor_buffer<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(), "copy construction", log);
-
-        // check operator ==
-        if (!(a == b)) {
-          FAIL(log, "accessor is not equality-comparable (operator==)");
-        }
-        if (!(b == a)) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator== symmetry "
-               "failed)");
-        }
-        if (a != b) {
-          FAIL(log, "accessor is not equality-comparable (operator!=)");
-        }
-        if (b != a) {
-          FAIL(log,
-               "accessor is not equality-comparable (operator!= symmetry "
-               "failed)");
-        }
-
-        // check std::hash<accessor<>>
-        std::hash<decltype(a)> hasher;
-
-        if (hasher(a) != hasher(b)) {
-          FAIL(log, "accessor hashing of equal failed");
-        }
+        verifier::check(buffer,
+                        log, "constructor(buffer)",
+                        typeName);
       }
 
-      /** check accessor is Copy Assignable
+      /** check common-by-reference semantics
        */
       {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer);
-        b = a;
+        constexpr auto mode = cl::sycl::access::mode::read;
+        using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
+        {
+          using verifier = check_accessor_copy_constructable<accTag>;
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, a.get_size(), a.get_count(), "copy assignment", log);
-      }
+          typename accTag::type srcAccessor(buffer);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_copy_assignable<accTag>;
 
-      /** check accessor is Move Constructible
-       */
-      {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        auto b{std::move(a)};
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                "move construction", log);
-      }
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_constructable<accTag>;
 
-      /** check accessor is Move Assignable
-       */
-      {
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            a(buffer);
-        cl::sycl::accessor<T, 0, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer,
-                           cl::sycl::access::placeholder::true_t>
-            b(buffer);
-        b = std::move(a);
+          typename accTag::type srcAccessor(buffer);
 
-        check_accessor_members<
-            T, 0, cl::sycl::access::mode::read,
-            cl::sycl::access::target::constant_buffer,
-            cl::sycl::access::placeholder::true_t>::check(
-                b, buffer.get_size(), buffer.get_count(),
-                "move assignment", log);
+          verifier::check(srcAccessor, log, typeName);
+        }
+        {
+          using verifier = check_accessor_move_assignable<accTag>;
+
+          typename accTag::type srcAccessor(buffer);
+          typename accTag::type dstAccessor(buffer);
+
+          verifier::check(srcAccessor, dstAccessor, log, typeName);
+        }
       }
 
       queue.submit([&](cl::sycl::handler &h) {
