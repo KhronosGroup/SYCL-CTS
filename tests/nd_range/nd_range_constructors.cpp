@@ -20,7 +20,8 @@ using namespace sycl_cts;
  */
 template <int dim>
 inline cl::sycl::nd_range<dim> get_default_nd_range() {
-  return cl::sycl::nd_range<dim>(getRange<dim>(1), getRange<dim>(1));
+  const auto range = util::get_cts_object::range<dim>::get(1, 1, 1);
+  return cl::sycl::nd_range<dim>(range, range);
 }
 
 template <int dim>
