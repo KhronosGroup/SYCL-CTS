@@ -24,7 +24,7 @@ class type_size_kernel {
  public:
   type_size_kernel(write_t out_accessor) : m_out(out_accessor) {}
 
-  void operator()() { m_out[0] = sizeof(T); }
+  void operator()() const { m_out[0] = sizeof(T); }
 };
 
 template <typename T>

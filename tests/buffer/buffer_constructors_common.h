@@ -6,11 +6,12 @@
 //
 *******************************************************************************/
 
+#ifndef __SYCLCTS_TESTS_BUFFER_CONSTRUCTORS_COMMON_H
+#define __SYCLCTS_TESTS_BUFFER_CONSTRUCTORS_COMMON_H
+
 #include "../common/common.h"
 
-#define TEST_NAME buffer_constructors
-
-namespace buffer_constructors__ {
+namespace {
 using namespace sycl_cts;
 
 template <typename T, int size, int dims>
@@ -64,6 +65,54 @@ class buffer_ctors {
       cl::sycl::range<dims> sub_r = r;
       sub_r[0] = r[0] - i[0];
       cl::sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
+      if (!buf_sub.is_sub_buffer()) {
+        FAIL(log, "buffer was not identified as a sub-buffer. (is_sub_buffer)");
+      }
+    }
+    /* Check range constructor */
+    {
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf(r, propList);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf1(r);
+    }
+
+    /* check (data pointer, range) constructor*/
+    {
+      T data[size];
+      std::fill(data, (data + size), 0);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
+    }
+
+    /* check (const data pointer, range) constructor*/
+    {
+      const T data[size] = {static_cast<T>(0)};
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
+    }
+
+    /* check (shared pointer, range) constructor*/
+    {
+      cl::sycl::shared_ptr_class<T> data(new T[size]);
+      std::fill(data.get(), (data.get() + size), 0);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
+    }
+
+    /* Check buffer iterator constructor */
+    if (dims == 1) {
+      T data[size];
+      std::fill(data, (data + size), 0);
+      cl::sycl::buffer<T, 1, std::allocator<T>> buf_iter(data, data + size,
+                                                         propList);
+      cl::sycl::buffer<T, 1, std::allocator<T>> buf_iter1(data, data + size);
+    }
+
+    /* Check subBuffer (buffer, id, range) constructor*/
+    {
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf(r);
+      cl::sycl::range<dims> sub_r = r;
+      sub_r[0] = r[0] - i[0];
+      cl::sycl::buffer<T, dims, std::allocator<T>> buf_sub(buf, i, sub_r);
       if (!buf_sub.is_sub_buffer()) {
         FAIL(log, "buffer was not identified as a sub-buffer. (is_sub_buffer)");
       }
@@ -285,19 +334,14 @@ class buffer_ctors {
   }
 };
 
-/**
- * test cl::sycl::buffer initialization
- */
-class TEST_NAME : public sycl_cts::util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
+/** tests buffer accessors with different types
+*/
+template <typename T> class check_buffer_ctors_for_type {
 
-  template <typename T>
-  void test_buffers(util::logger &log) {
+ public:
+   void operator()(util::logger &log, const std::string &typeName) {
+     log.note("testing: " + typeName);
+
     const int size = 8;
     cl::sycl::range<1> range1d(size);
     cl::sycl::range<2> range2d(size, size);
@@ -336,41 +380,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     buf2d_with_properties(range2d, id2d, pl, log);
     buf3d_with_properties(range3d, id3d, pl, log);
   }
-
-  /** execute the test
-   */
-  void run(util::logger &log) override {
-    try {
-      test_buffers<int>(log);
-      test_buffers<int8_t>(log);
-      test_buffers<int16_t>(log);
-      test_buffers<int32_t>(log);
-      test_buffers<int64_t>(log);
-
-      test_buffers<float>(log);
-      test_buffers<double>(log);
-
-      test_buffers<cl::sycl::float2>(log);
-      test_buffers<cl::sycl::float3>(log);
-      test_buffers<cl::sycl::float4>(log);
-      test_buffers<cl::sycl::float8>(log);
-      test_buffers<cl::sycl::float16>(log);
-
-      test_buffers<cl::sycl::double2>(log);
-      test_buffers<cl::sycl::double3>(log);
-      test_buffers<cl::sycl::double4>(log);
-      test_buffers<cl::sycl::double8>(log);
-      test_buffers<cl::sycl::double16>(log);
-    } catch (cl::sycl::exception e) {
-      log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
-  }
 };
 
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-
-} /* namespace buffer_constructors__ */
+} /* namespace */
+#endif // __SYCLCTS_TESTS_BUFFER_CONSTRUCTORS_COMMON_H

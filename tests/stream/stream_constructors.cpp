@@ -15,7 +15,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 struct stream_kernel {
-  void operator()() {}
+  void operator()() const {}
 };
 
 /** tests the constructors for cl::sycl::stream

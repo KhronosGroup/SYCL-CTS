@@ -12,9 +12,12 @@
 // include our proxy to the real sycl header
 #include "sycl.h"
 
+#include "../../util/accuracy.h"
+#include "../../util/math_vector.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
+#include "../../util/type_traits.h"
 #include "../common/common.h"
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
@@ -48,6 +51,40 @@ bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
     }
   }
   return true;
+}
+
+/**
+ * @brief Helper function to check that vector floating-point values
+ *        for division result are accurate enough
+ */
+template <typename vecType, int numOfElems>
+typename std::enable_if<is_cl_float_type<vecType>::value, bool>::type
+check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+                        vecType *vals) {
+  for (int i = 0; i < numOfElems; i++) {
+    vecType vectorValue = getElement(vector, i);
+    if (vals[i] == vectorValue)
+      continue;
+    const vecType ulpsExpected = 2.5; // Min Accuracy for x / y
+    const vecType difference = cl::sycl::fabs(vectorValue - vals[i]);
+    // using sycl functions to get ulp because it used in kernel
+    const vecType differenceExpected = ulpsExpected * get_ulp_sycl(vals[i]);
+
+    if (difference > differenceExpected) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Helper function to check that vector values for division are correct
+ */
+template <typename vecType, int numOfElems>
+typename std::enable_if<!is_cl_float_type<vecType>::value, bool>::type
+check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+                        vecType *vals) {
+  return check_vector_values(vector, vals);
 }
 
 /**

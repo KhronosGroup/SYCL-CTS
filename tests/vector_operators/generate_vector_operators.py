@@ -138,35 +138,35 @@ all_type_test_template = Template("""
     resArr[i] = static_cast<${type}>(${test_value_1}) / static_cast<${type}>(${test_value_2});
   }
   resVec = testVec1 / testVec2;
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1 / testVec2.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1 / static_cast<${type}>(${test_value_2});
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1.${swizzle} / testVec2;
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1.${swizzle} / testVec2.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1.${swizzle} / static_cast<${type}>(${test_value_2});
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = static_cast<${type}>(${test_value_1}) / testVec2;
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = static_cast<${type}>(${test_value_1}) / testVec2.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
 
@@ -359,32 +359,32 @@ all_type_test_template = Template("""
   }
   resVec = testVec1;
   resVec /= testVec2;
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1;
   resVec /= testVec2.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1;
   resVec /= static_cast<${type}>(${test_value_2});
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1;
   resVec.${swizzle} /= testVec2;
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1;
   resVec.${swizzle} /= testVec2.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
   resVec = testVec1;
   resVec.${swizzle} /= static_cast<${type}>(${test_value_2});
-  if (!check_vector_values(resVec, resArr)) {
+  if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
 """)

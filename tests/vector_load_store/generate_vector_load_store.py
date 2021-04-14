@@ -14,7 +14,7 @@ sys.path.append('../common/')
 from common_python_vec import (Data, append_fp_postfix, make_func_call,
                                wrap_with_test_func, write_source_file,
                                wrap_with_extension_checks, get_types,
-                               clear_type_str)
+                               remove_namespaces_whitespaces)
 
 TEST_NAME = 'LOAD_STORE'
 
@@ -71,11 +71,11 @@ load_store_test_template = Template(
 
 
 def gen_kernel_name(type_str, size):
-    return 'KERNEL_load_store_' + clear_type_str(type_str) + str(size)
+    return 'KERNEL_load_store_' + remove_namespaces_whitespaces(type_str) + str(size)
 
 
 def gen_load_store_test(type_str, size):
-    no_whitespace_type_str = clear_type_str(type_str)
+    no_whitespace_type_str = remove_namespaces_whitespaces(type_str)
     test_string = load_store_test_template.substitute(
         type=type_str,
         type_as_str=no_whitespace_type_str,

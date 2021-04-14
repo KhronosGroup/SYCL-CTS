@@ -19,8 +19,8 @@
  */
 template <class kernel_name = void>
 struct dummy_functor {
-  void operator()() {}
-  void operator()(cl::sycl::group<3> g) {}
+  void operator()() const {}
+  void operator()(cl::sycl::group<3> g) const {}
 };
 
 namespace sycl_cts {
@@ -161,6 +161,11 @@ struct get_cts_object {
    */
   template <int dimensions>
   struct range;
+  /**
+   * @brief Uniform way to retrieve an id of different dimensions
+   */
+  template <int dimensions>
+  struct id;
 };
 
 /**
@@ -175,6 +180,15 @@ struct get_cts_object::range<1> {
    */
   static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
     return cl::sycl::range<1>(r0);
+  }
+  /**
+   * @brief Constructs a range<1> by only using total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @return range<1>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<1> get_fixed_size(size_t, size_t) {
+    return cl::sycl::range<1>(totalSize);
   }
 };
 
@@ -192,6 +206,17 @@ struct get_cts_object::range<2> {
   static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
     return cl::sycl::range<2>(r0, r1);
   }
+  /**
+   * @brief Constructs a range<2> by only using first component and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @return range<2>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<2> get_fixed_size(size_t r0, size_t) {
+    return cl::sycl::range<2>(r0, totalSize / r0);
+  }
 };
 
 /**
@@ -208,6 +233,64 @@ struct get_cts_object::range<3> {
    */
   static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
     return cl::sycl::range<3>(r0, r1, r2);
+  }
+  /**
+   * @brief Constructs a range<3> by only using two components and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @param r0 Value of the second component of the range
+   * @return range<3>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
+    return cl::sycl::range<3>(r0, r1, totalSize / r0 / r1);
+  }
+};
+
+/**
+ * @brief Specialization that returns an id<1> from three components
+ */
+template <>
+struct get_cts_object::id<1> {
+  /**
+   * @brief Constructs an id<1> by only using one component out of three
+   * @param v0 Value of the first component of the id
+   * @return id<1>
+   */
+  static cl::sycl::id<1> get(size_t v0, size_t, size_t) {
+    return cl::sycl::id<1>(v0);
+  }
+};
+/**
+ * @brief Specialization that returns an id<2> from three components
+ */
+template <>
+struct get_cts_object::id<2> {
+  /**
+   * @brief Constructs an id<2> by only using two components out of three
+   * @param v0 Value of the first component of the id
+   * @param v1 Value of the second component of the id
+   * @return id<2>
+   */
+  static cl::sycl::id<2> get(size_t v0, size_t v1, size_t) {
+    return cl::sycl::id<2>(v0, v1);
+  }
+};
+/**
+ * @brief Specialization that returns an id<3> from three components
+ */
+template <>
+struct get_cts_object::id<3> {
+  /**
+   * @brief Constructs an id<3>
+   * @param v0 Value of the first component of the id
+   * @param v1 Value of the second component of the id
+   * @param v2 Value of the third component of the id
+   * @return id<3>
+   */
+  static cl::sycl::id<3> get(size_t v0, size_t v1, size_t v2) {
+    return cl::sycl::id<3>(v0, v1, v2);
   }
 };
 
