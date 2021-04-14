@@ -54,28 +54,6 @@ test_case_templates_check = { "no_ptr" : ("\n\n{\n"
                     "$FUNCTION_CALL"
                     "}, $DATA, ref, refPtr$ACCURACY);\n}\n") }
 
-function_call_template = Template("""
-        ${arg_src}
-        return ${namespace}::${func_name}(${arg_names});
-""")
-
-function_private_call_template = Template("""
-        ${arg_src}
-        ${ret_type} res = ${namespace}::${func_name}(${arg_names});
-        return privatePtrCheck<${ret_type}, ${arg_type}>(res, multiPtrSourceData);
-""")
-
-reference_template = Template("""
-        ${arg_src}
-        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names});
-""")
-
-reference_ptr_template = Template("""
-        ${arg_src}
-        ${arg_type} refPtr = multiPtrSourceData;
-        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names}, &refPtr);
-""")
-
 def generate_value(base_type, dim, unsigned):
     val = ""
     for i in range(dim):
@@ -157,6 +135,10 @@ def generate_arguments(types, sig, memory):
         arg_index += 1
     return (arg_names, arg_src)
 
+function_call_template = Template("""
+        ${arg_src}
+        return ${namespace}::${func_name}(${arg_names});
+""")
 def generate_function_call(sig, arg_names, arg_src):
     fc = function_call_template.substitute(
         arg_src=arg_src,
@@ -165,6 +147,11 @@ def generate_function_call(sig, arg_names, arg_src):
         arg_names=",".join(arg_names))
     return fc
 
+function_private_call_template = Template("""
+        ${arg_src}
+        ${ret_type} res = ${namespace}::${func_name}(${arg_names});
+        return privatePtrCheck<${ret_type}, ${arg_type}>(res, multiPtrSourceData);
+""")
 def generate_function_private_call(sig, arg_names, arg_src, types):
     fc = function_private_call_template.substitute(
         arg_src=arg_src,
@@ -175,6 +162,10 @@ def generate_function_private_call(sig, arg_names, arg_src, types):
         arg_type=extract_type(types[sig.arg_types[-1]]).name)
     return fc
 
+reference_template = Template("""
+        ${arg_src}
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names});
+""")
 def generate_reference(sig, arg_names, arg_src):
     fc = reference_template.substitute(
         arg_src=arg_src,
@@ -183,6 +174,11 @@ def generate_reference(sig, arg_names, arg_src):
         arg_names=",".join(arg_names))
     return fc
 
+reference_ptr_template = Template("""
+        ${arg_src}
+        ${arg_type} refPtr = multiPtrSourceData;
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names}, &refPtr);
+""")
 def generate_reference_ptr(types, sig, arg_names, arg_src):
     fc = reference_ptr_template.substitute(
         arg_src=re.sub(r'^cl::sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
