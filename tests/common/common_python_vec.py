@@ -219,7 +219,7 @@ void ${func_name}(util::logger &log) {
 }
 """)
 
-def remove_namespaces_whitespaces (type_str):
+def remove_namespaces_whitespaces(type_str):
     """
     Clear type name from namespaces and whitespaces
     """
