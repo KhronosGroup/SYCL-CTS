@@ -219,9 +219,9 @@ void ${func_name}(util::logger &log) {
 }
 """)
 
-def remove_namespaces_whitspaces(type_str):
+def remove_namespaces_whitespaces (type_str):
     """
-    Clear type name from namespaces and whitspaces
+    Clear type name from namespaces and whitespaces
     """
     return type_str.replace('cl::sycl::', '').replace(
             ' ', '_').replace('std::', '')
@@ -236,9 +236,9 @@ def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
 
     return wrap_with_extension_checks(type_str,
                                       kernel_template.substitute(
-                                          kernelName=remove_namespaces_whitspaces(kernel_name),
-                                          testName=test_name,
-                                          test=test_string))
+                                      kernelName=remove_namespaces_whitespaces(kernel_name),
+                                      testName=test_name,
+                                      test=test_string))
 
 
 def wrap_with_test_func(test_name, type_str, test, additional=''):
@@ -377,7 +377,7 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
         source = source_file.read()
 
     source = replace_string_in_source_string(source,
-                                             remove_namespaces_whitspaces(type_str),
+                                             remove_namespaces_whitespaces(type_str),
                                             '$TYPE_NAME')
     source = replace_string_in_source_string(source, test_name, '$CATEGORY')
     source = replace_string_in_source_string(source, test_str, '$TEST_FUNCS')
@@ -646,7 +646,7 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
     is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
 
     source = replace_string_in_source_string(source,
-                                            remove_namespaces_whitspaces(type_str),
+                                            remove_namespaces_whitespaces(type_str),
                                             '$TYPE_NAME')
     if is_opencl_type:
         source = source.replace('$OPENCL', 'opencl_')
