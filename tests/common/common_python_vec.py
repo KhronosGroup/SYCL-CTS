@@ -389,9 +389,7 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
         output.write(source)
 
 def get_standard_and_fixed_width_types():
-    types = list()
-    types.append('char')
-    types.append('cl::sycl::byte')
+    types = ['char', 'cl::sycl::byte']
     for base_type in Data.standard_types:
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double'
