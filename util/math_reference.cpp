@@ -1275,7 +1275,8 @@ cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
   if (x == y)
     return y;
 
-  // choosing int16_t representation because sycl::half is 16-bit floating-point
+  // Transform the signed binary numbers represented as a leading sign bit
+  // and 15 bit unsigned value into a 2-complement 16 bit signed integer
   int16_t a = sycl::bit_cast<int16_t>(x);
   int16_t b = sycl::bit_cast<int16_t>(y);
 
@@ -1285,7 +1286,11 @@ cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
   if (b & 0x8000)
     b = 0x8000 - b;
 
+  // Increment a towards the direction of b
   a += (a < b) ? 1 : -1;
+
+  // Convert again a from 2-complement signed value
+  // into sign bit + unsigned value
   a = (a < 0) ? (int16_t)0x8000 - a : a;
 
   return sycl::bit_cast<cl::sycl::half>(a);

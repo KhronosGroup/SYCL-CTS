@@ -139,8 +139,7 @@ void check_function(sycl_cts::util::logger &log, funT fun,
   } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
-                                      " a SYCL exception was caught: " +
-                                      std::string(e.what());
+                           " a SYCL exception was caught: " + e.what();
     FAIL(log, errorMsg.c_str());
   }
 
@@ -175,8 +174,7 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
   } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
-                                      " a SYCL exception was caught: " +
-                                      std::string(e.what());
+                           " a SYCL exception was caught: " + e.what();
     FAIL(log, errorMsg.c_str());
   }
 
@@ -210,8 +208,7 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
   } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
-                                      " a SYCL exception was caught: " +
-                                      std::string(e.what());
+                           " a SYCL exception was caught: " + e.what();
     FAIL(log, errorMsg.c_str());
   }
 
@@ -251,8 +248,7 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
   } catch (const cl::sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
-                                      " a SYCL exception was caught: " +
-                                      std::string(e.what());
+                           " a SYCL exception was caught: " + e.what();
     FAIL(log, errorMsg.c_str());
   }
 

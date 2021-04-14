@@ -5,7 +5,7 @@ import random
 test_case_templates = { "private" : ("""
 {
   test_function<$TEST_ID, $RETURN_TYPE>(
-      [=](){
+      [=]{
         $FUNCTION_CALL
       });
 }
@@ -37,7 +37,7 @@ test_case_templates_check = {
 {
   $REFERENCE
   check_function<$TEST_ID, $RETURN_TYPE>(log,
-      [=](){
+      [=]{
         $FUNCTION_CALL
       }, ref$ACCURACY$COMMENT);
 }
@@ -47,7 +47,7 @@ test_case_templates_check = {
 {
   $PTR_REF
   check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
-      [=](){
+      [=]{
         $FUNCTION_PRIVATE_CALL
       }, ref, refPtr$ACCURACY$COMMENT);
 }
