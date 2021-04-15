@@ -3,6 +3,10 @@ set(TEST_CASES_LIST "")
 set(TYPE_LIST "")
 get_std_type(TYPE_LIST)
 get_opencl_type(TYPE_LIST)
+get_no_vec_alias_type(TYPE_LIST)
+get_fixed_width_type(TYPE_LIST)
+
+half_double_filter(TYPE_LIST)
 
 foreach(TY IN LISTS TYPE_LIST)
   set(OUT_FILE "vector_swizzle_assignment_${TY}.cpp")

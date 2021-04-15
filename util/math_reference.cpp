@@ -643,23 +643,25 @@ cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
   if (x == y)
     return y;
 
-  union {
-    int16_t i;
-    cl::sycl::half f;
-  } a, b;
+  // Transform the signed binary numbers represented as a leading sign bit
+  // and 15 bit unsigned value into a 2-complement 16 bit signed integer
+  int16_t a = sycl::bit_cast<int16_t>(x);
+  int16_t b = sycl::bit_cast<int16_t>(y);
 
-  a.f = x;
-  b.f = y;
+  // 0x8000 for leading 1 check
+  if (a & 0x8000)
+    a = 0x8000 - a;
+  if (b & 0x8000)
+    b = 0x8000 - b;
 
-  if (a.i & 0x8000)
-    a.i = 0x8000 - a.i;
-  if (b.i & 0x8000)
-    b.i = 0x8000 - b.i;
+  // Increment a towards the direction of b
+  a += (a < b) ? 1 : -1;
 
-  a.i += (a.i < b.i) ? 1 : -1;
-  a.i = (a.i < 0) ? (int16_t)0x8000 - a.i : a.i;
+  // Convert again a from 2-complement signed value
+  // into sign bit + unsigned value
+  a = (a < 0) ? (int16_t)0x8000 - a : a;
 
-  return a.f;
+  return sycl::bit_cast<cl::sycl::half>(a);
 }
 
 cl::sycl::half pow(cl::sycl::half a, cl::sycl::half b) {
@@ -763,5 +765,123 @@ cl::sycl::half divide(cl::sycl::half a, cl::sycl::half b) {
 }
 float divide(float a, float b) { return divide_t(a, b); }
 double divide(double a, double b) { return divide_t(a, b); }
+
+// Geometric functions
+
+template <typename T, int N>
+cl::sycl::vec<T, N> cross_t(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  cl::sycl::vec<T, N> res;
+  std::vector<T> temp_res(4);
+  std::vector<T> av({a.x(), a.y(), a.z()});
+  std::vector<T> bv({b.x(), b.y(), b.z()});
+  temp_res[0] = av[1] * bv[2] - av[2] * bv[1];
+  temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
+  temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
+  temp_res[3] = 0.0;
+  for (int i = 0; i < N; i++)
+    setElement<T, N>(res, i, temp_res[i]);
+  return res;
+}
+
+cl::sycl::float4 cross(cl::sycl::float4 p0, cl::sycl::float4 p1) {
+  return cross_t(p0, p1);
+}
+cl::sycl::float3 cross(cl::sycl::float3 p0, cl::sycl::float3 p1) {
+  return cross_t(p0, p1);
+}
+cl::sycl::double4 cross(cl::sycl::double4 p0, cl::sycl::double4 p1) {
+  return cross_t(p0, p1);
+}
+cl::sycl::double3 cross(cl::sycl::double3 p0, cl::sycl::double3 p1) {
+  return cross_t(p0, p1);
+}
+
+template <typename T, int N>
+T dot_t(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  T res = 0;
+  for (int i = 0; i < N; i++)
+    res += getElement<T, N>(a, i) * getElement<T, N>(b, i);
+  return res;
+}
+
+float dot(float p0, float p1) { return p0 * p1; }
+float dot(cl::sycl::float2 p0, cl::sycl::float2 p1) { return dot_t(p0, p1); }
+float dot(cl::sycl::float3 p0, cl::sycl::float3 p1) { return dot_t(p0, p1); }
+float dot(cl::sycl::float4 p0, cl::sycl::float4 p1) { return dot_t(p0, p1); }
+double dot(double p0, double p1) { return p0 * p1; }
+double dot(cl::sycl::double2 p0, cl::sycl::double2 p1) { return dot_t(p0, p1); }
+double dot(cl::sycl::double3 p0, cl::sycl::double3 p1) { return dot_t(p0, p1); }
+double dot(cl::sycl::double4 p0, cl::sycl::double4 p1) { return dot_t(p0, p1); }
+
+float distance(float p0, float p1) { return fabs(p0 - p1); }
+float distance(cl::sycl::float2 p0, cl::sycl::float2 p1) {
+  return length(p0 - p1);
+}
+float distance(cl::sycl::float3 p0, cl::sycl::float3 p1) {
+  return length(p0 - p1);
+}
+float distance(cl::sycl::float4 p0, cl::sycl::float4 p1) {
+  return length(p0 - p1);
+}
+double distance(double p0, double p1) { return fabs(p0 - p1); }
+double distance(cl::sycl::double2 p0, cl::sycl::double2 p1) {
+  return length(p0 - p1);
+}
+double distance(cl::sycl::double3 p0, cl::sycl::double3 p1) {
+  return length(p0 - p1);
+}
+double distance(cl::sycl::double4 p0, cl::sycl::double4 p1) {
+  return length(p0 - p1);
+}
+
+float length(float p) { return p; }
+float length(cl::sycl::float2 p) { return sqrt(dot(p, p)); }
+float length(cl::sycl::float3 p) { return sqrt(dot(p, p)); }
+float length(cl::sycl::float4 p) { return sqrt(dot(p, p)); }
+double length(double p) { return p; }
+double length(cl::sycl::double2 p) { return sqrt(dot(p, p)); }
+double length(cl::sycl::double3 p) { return sqrt(dot(p, p)); }
+double length(cl::sycl::double4 p) { return sqrt(dot(p, p)); }
+
+template <typename T, int N>
+cl::sycl::vec<T, N> normalize_t(cl::sycl::vec<T, N> a) {
+  cl::sycl::vec<T, N> res;
+  T dot_a = length(a);
+  if (dot_a == 0)
+    return cl::sycl::vec<T, N>(0);
+  for (int i = 0; i < N; i++)
+    setElement<T, N>(res, i, getElement<T, N>(a, i) / dot_a);
+  return res;
+}
+
+float normalize(float p) { return 1; }
+cl::sycl::float2 normalize(cl::sycl::float2 p) { return normalize_t(p); }
+cl::sycl::float3 normalize(cl::sycl::float3 p) { return normalize_t(p); }
+cl::sycl::float4 normalize(cl::sycl::float4 p) { return normalize_t(p); }
+double normalize(double p) { return 1; }
+cl::sycl::double2 normalize(cl::sycl::double2 p) { return normalize_t(p); }
+cl::sycl::double3 normalize(cl::sycl::double3 p) { return normalize_t(p); }
+cl::sycl::double4 normalize(cl::sycl::double4 p) { return normalize_t(p); }
+
+float fast_distance(float p0, float p1) { return distance(p0, p1); }
+float fast_distance(cl::sycl::float2 p0, cl::sycl::float2 p1) {
+  return distance(p0, p1);
+}
+float fast_distance(cl::sycl::float3 p0, cl::sycl::float3 p1) {
+  return distance(p0, p1);
+}
+float fast_distance(cl::sycl::float4 p0, cl::sycl::float4 p1) {
+  return distance(p0, p1);
+}
+
+float fast_length(float p) { return length(p); }
+float fast_length(cl::sycl::float2 p) { return length(p); }
+float fast_length(cl::sycl::float3 p) { return length(p); }
+float fast_length(cl::sycl::float4 p) { return length(p); }
+
+float fast_normalize(float p) { return normalize(p); }
+cl::sycl::float2 fast_normalize(cl::sycl::float2 p) { return normalize(p); }
+cl::sycl::float3 fast_normalize(cl::sycl::float3 p) { return normalize(p); }
+cl::sycl::float4 fast_normalize(cl::sycl::float4 p) { return normalize(p); }
 
 } /* namespace reference */

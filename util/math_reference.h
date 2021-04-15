@@ -1222,6 +1222,64 @@ cl::sycl::vec<T, N> divide(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
       [](T x, T y) { return divide(x, y); }, a, b);
 }
 
+// Geometric funcs
+
+cl::sycl::float4 cross(cl::sycl::float4 p0, cl::sycl::float4 p1);
+cl::sycl::float3 cross(cl::sycl::float3 p0, cl::sycl::float3 p1);
+cl::sycl::double4 cross(cl::sycl::double4 p0, cl::sycl::double4 p1);
+cl::sycl::double3 cross(cl::sycl::double3 p0, cl::sycl::double3 p1);
+
+float dot(float p0, float p1);
+float dot(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float dot(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float dot(cl::sycl::float4 p0, cl::sycl::float4 p1);
+double dot(double p0, double p1);
+double dot(cl::sycl::double2 p0, cl::sycl::double2 p1);
+double dot(cl::sycl::double3 p0, cl::sycl::double3 p1);
+double dot(cl::sycl::double4 p0, cl::sycl::double4 p1);
+
+float distance(float p0, float p1);
+float distance(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float distance(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float distance(cl::sycl::float4 p0, cl::sycl::float4 p1);
+double distance(double p0, double p1);
+double distance(cl::sycl::double2 p0, cl::sycl::double2 p1);
+double distance(cl::sycl::double3 p0, cl::sycl::double3 p1);
+double distance(cl::sycl::double4 p0, cl::sycl::double4 p1);
+
+float length(float p);
+float length(cl::sycl::float2 p);
+float length(cl::sycl::float3 p);
+float length(cl::sycl::float4 p);
+double length(double p);
+double length(cl::sycl::double2 p);
+double length(cl::sycl::double3 p);
+double length(cl::sycl::double4 p);
+
+float normalize(float p);
+cl::sycl::float2 normalize(cl::sycl::float2 p);
+cl::sycl::float3 normalize(cl::sycl::float3 p);
+cl::sycl::float4 normalize(cl::sycl::float4 p);
+double normalize(double p);
+cl::sycl::double2 normalize(cl::sycl::double2 p);
+cl::sycl::double3 normalize(cl::sycl::double3 p);
+cl::sycl::double4 normalize(cl::sycl::double4 p);
+
+float fast_distance(float p0, float p1);
+float fast_distance(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float fast_distance(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float fast_distance(cl::sycl::float4 p0, cl::sycl::float4 p1);
+
+float fast_length(float p);
+float fast_length(cl::sycl::float2 p);
+float fast_length(cl::sycl::float3 p);
+float fast_length(cl::sycl::float4 p);
+
+float fast_normalize(float p);
+cl::sycl::float2 fast_normalize(cl::sycl::float2 p);
+cl::sycl::float3 fast_normalize(cl::sycl::float3 p);
+cl::sycl::float4 fast_normalize(cl::sycl::float4 p);
+
 } // reference
 
 #endif // __SYCLCTS_UTIL_MATH_REFERENCE_H
