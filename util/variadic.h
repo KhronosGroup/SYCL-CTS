@@ -10,7 +10,7 @@
 #define __SYCLCTS_UTIL_VARIADIC_H
 
 #include <cstddef>
-#include <type_traits>
+#include <utility>
 
 /**
  * @brief Can be used to run functors with parameter pack and custom parameters
@@ -44,51 +44,48 @@
  *          we can use
  *
  *              run_variadic<run_wait_for<args>>::with<32>(events, a, b)
+ *
+ *          Also we are able to use a selected subset of events
+ *
+ *              run_wait_for{}(events[1], events[3], events[7])
+ *
+ *          by using std::integer_sequence like
+ *
+ *              std::integer_sequence<std::size_t, 1, 3, 7> selected;
+ *              run_variadic<run_wait_for>::with(selected, events);
  */
 template <class functorT>
 struct run_variadic {
   /**
-   * @brief Call functor with all parameters accumulated.
-   * @tparam nParams Number of params to use as parameter pack, should be 0
+   * @brief Extract specific parameters from storage into the parameter pack and
+   *        call functor with custom parameters followed by parameter pack.
    * @tparam T Type of params storage
    * @tparam argsT Type of arguments to forward into the functor call
-   * @param params Parameters storage used for recursion
-   * @param args Arguments to forward into the functor call
+   * @tparam Is Index sequence to use over params storage
+   * @param params Storage to extract parameters from
+   * @param args Custom arguments to forward into the functor call
    */
-  template <size_t nParams, typename T, typename ... argsT>
-  typename std::enable_if<(nParams == 0), typename functorT::returnT>::type
-    static inline with(const T& params, argsT ... args) {
-      static_cast<void>(params);
-      return functorT{}(args...);
+  template <typename T, typename ... argsT, size_t ... Is>
+  static inline auto with(std::index_sequence<Is...>, const T& params,
+                          argsT&&... args) {
+      return functorT{}(std::forward<argsT>(args)..., params[Is]...);
   }
 
   /**
    * @brief Extract strict number of parameters from storage into the parameter
    *        pack and call functor with custom parameters followed by parameter
    *        pack.
-   * @tparam nParams Number of params to use as parameter pack
+   * @tparam nParams Number of params from the beginning of the storage to use
+   *                 as parameter pack
    * @tparam T Type of params storage
    * @tparam argsT Type of arguments to forward into the next call
    * @param params Storage to extract parameters from
-   * @param args Arguments to forward into the next call
+   * @param args Custom arguments to forward into the functor call
    */
   template <size_t nParams, typename T, typename ... argsT>
-  typename std::enable_if<(nParams > 0), typename functorT::returnT>::type
-    static inline with(T&& params, argsT ... args) {
-      return with<nParams-1>(params, args..., params[nParams-1]);
-  }
-
-  /**
-   * @brief Extract strict number of parameters from storage into the parameter
-   *        pack and call functor with parameter pack.
-   * @tparam nParams Number of params to use as parameter pack
-   * @tparam T Type of params storage
-   * @param params Storage to extract parameters from
-   */
-  template <size_t nParams, typename T>
-  typename std::enable_if<(nParams > 0), typename functorT::returnT>::type
-    static inline with(T&& params) {
-      return with<nParams-1>(params, params[nParams-1]);
+  static inline auto with(const T& params, argsT&& ... args) {
+      return with(std::make_index_sequence<nParams>{}, params,
+                  std::forward<argsT>(args)...);
   }
 };
 
