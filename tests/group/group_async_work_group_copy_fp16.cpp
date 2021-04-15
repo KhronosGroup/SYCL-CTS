@@ -42,9 +42,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
+      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
   }
 };
