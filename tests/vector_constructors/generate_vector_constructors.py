@@ -13,7 +13,7 @@ import itertools
 from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel, wrap_with_test_func,
-                               make_func_call, write_source_file)
+                               make_func_call, write_source_file, get_types)
 
 TEST_NAME = 'CONSTRUCTORS'
 
@@ -67,8 +67,7 @@ def generate_default(type_str, size):
     test_string = default_constructor_vec_template.substitute(
         type=type_str, size=size)
     return wrap_with_kernel(
-        type_str, 'VEC_DEFAULT_CONSTRUCTOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+        type_str, 'VEC_DEFAULT_CONSTRUCTOR_KERNEL_' + type_str + str(size),
         'Default constructor, cl::sycl::vec<' + type_str + ', ' + str(size) +
         '>', test_string)
 
@@ -84,8 +83,7 @@ def generate_explicit(type_str, size):
         val=Data.value_default_dict[type_str],
         vals=', '.join(val_list))
     return wrap_with_kernel(
-        type_str, 'VEC_EXPLICIT_CONSTRUCTOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+        type_str, 'VEC_EXPLICIT_CONSTRUCTOR_KERNEL_' + type_str + str(size),
         'Explicit constructor, cl::sycl::vec<' + type_str + ', ' + str(size) +
         '>', test_string)
 
@@ -101,8 +99,7 @@ def generate_vec(type_str, size):
         val=Data.value_default_dict[type_str],
         vals=', '.join(val_list))
     return wrap_with_kernel(type_str,
-                            'VEC_VEC_CONSTRUCTOR_KERNEL_' + type_str.replace(
-                                'cl::sycl::', '').replace(' ', '') + str(size),
+                            'VEC_VEC_CONSTRUCTOR_KERNEL_' + type_str + str(size),
                             'const &vec constructor, cl::sycl::vec<' + type_str
                             + ', ' + str(size) + '>', test_string)
 
@@ -112,8 +109,7 @@ def generate_opencl(type_str, size):
     test_string = opencl_constructor_vec_template.substitute(
         type=type_str, size=size)
     return '#ifdef __SYCL_DEVICE_ONLY__\n' + wrap_with_kernel(
-        type_str, 'VEC_OPENCL_CONSTRUCTOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+        type_str, 'VEC_OPENCL_CONSTRUCTOR_KERNEL_' + type_str + str(size),
         'vec(vector_t openclVector), cl::sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string) + '#endif  // __SYCL_DEVICE_ONLY__\n'
 
@@ -142,25 +138,6 @@ def generate_constructor_tests(type_str, input_file, output_file):
 
         write_source_file(test_func_str, func_calls, TEST_NAME, input_file,
                           output_file, type_str)
-def get_types():
-    types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
-        for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
-
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
-
 
 def main():
     argparser = argparse.ArgumentParser(

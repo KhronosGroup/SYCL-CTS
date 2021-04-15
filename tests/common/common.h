@@ -20,6 +20,7 @@
 #include "../common/get_cts_object.h"
 #include "macros.h"
 
+#include <cinttypes>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -413,28 +414,6 @@ struct check_type_existence {
   check_type_existence() = default;
 };
 
-/** Helper function that calculates a range from a size so
- *  that each dimension equals size
- */
-template <size_t dims>
-cl::sycl::range<dims> getRange(const size_t &size);
-
-/** Specializations of for getRange each supported
- *  dimensionality
- */
-template <>
-inline cl::sycl::range<1> getRange<1>(const size_t &size) {
-  return cl::sycl::range<1>(size);
-}
-template <>
-inline cl::sycl::range<2> getRange<2>(const size_t &size) {
-  return cl::sycl::range<2>(size, size);
-}
-template <>
-inline cl::sycl::range<3> getRange<3>(const size_t &size) {
-  return cl::sycl::range<3>(size, size, size);
-}
-
 /**
  * @brief Helper function to check if all devices support online compiler.
  */
@@ -463,6 +442,68 @@ inline bool is_linker_available(
     }
   }
   return linker_available;
+}
+
+/**
+ * @brief Helper function to check work-group size device limit
+ * @param log Logger to use
+ * @param queue Queue to verify against
+ * @param wgSize Work-group size to verify for support
+ */
+inline bool device_supports_wg_size(sycl_cts::util::logger& log,
+                                    cl::sycl::queue &queue,
+                                    size_t wgSize)
+{
+  auto device = queue.get_device();
+  const auto maxDeviceWorkGroupSize =
+      device.template get_info<cl::sycl::info::device::max_work_group_size>();
+
+  const bool supports = maxDeviceWorkGroupSize >= wgSize;
+  if (!supports)
+    log.note("Device does not support work group size %" PRIu64,
+             static_cast<std::uint64_t>(wgSize));
+  return supports;
+}
+
+/**
+ * @brief Helper function to check work-group size kernel limit
+ * @tparam kernelT Kernel to run onto
+ * @param log Logger to use
+ * @param queue Queue to verify against
+ * @param wgSize Work-group size to verify for support
+ */
+template <class kernelT>
+inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
+                                    cl::sycl::queue &queue,
+                                    size_t wgSize)
+{
+  // Verify only for device in use
+  auto device = queue.get_device();
+  const auto& context = queue.get_context();
+  const cl::sycl::vector_class<cl::sycl::device> devicesToCheck{device};
+
+  /* To query info::kernel_work_group::work_group_size property, we need to
+   * obtain test kernel handler, which requires online compilation
+   * */
+  if (!is_compiler_available(devicesToCheck) ||
+      !is_linker_available(devicesToCheck)) {
+    log.note("Device does not support online compilation");
+    return false;
+  }
+
+  cl::sycl::program program(context, devicesToCheck);
+  program.build_with_kernel_type<kernelT>("");
+  auto kernel = program.get_kernel<kernelT>();
+  auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
+      cl::sycl::info::kernel_work_group::work_group_size>(device);
+
+  const bool supports = maxKernelWorkGroupSize >= wgSize;
+  if (!supports) {
+    // We cannot use %zu in C++11; see P0330R8 proposal
+    log.note("Kernel does not support work group size %" PRIu64,
+             static_cast<std::uint64_t>(wgSize));
+  }
+  return supports;
 }
 
 }  // namespace

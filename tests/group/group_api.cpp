@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../../util/array.h"
 
 #define TEST_NAME group_api
 
@@ -16,54 +17,383 @@ using namespace sycl_cts;
 static const size_t GROUP_RANGE_1D = 2;
 static const size_t GROUP_RANGE_2D = 4;
 static const size_t GROUP_RANGE_3D = 8;
-static const size_t DEFAULT_LOCAL_RANGE_1D = 4;
-static const size_t DEFAULT_LOCAL_RANGE_2D = 3;
-static const size_t DEFAULT_LOCAL_RANGE_3D = 2;
-static const size_t NUM_DIMENSIONS = 3;
+static const size_t DEFAULT_LOCAL_RANGE[3] = {4, 3, 2};
 static const size_t NUM_GROUPS =
     GROUP_RANGE_1D * GROUP_RANGE_2D * GROUP_RANGE_3D;
 static const size_t NUM_METHODS = 9;
 
-enum class getter : size_t {
-  get = 0,
-  get_dims = 1,
-  local_range = 2,
-  local_range_dims = 3,
-  global_range = 4,
-  global_range_dims = 5,
-  group_range = 6,
-  group_range_dims = 7,
-  subscript = 8,
+class getter
+{
+public:
+  enum class method : size_t {
+    get = 0,
+    get_dims = 1,
+    local_range = 2,
+    local_range_dims = 3,
+    global_range = 4,
+    global_range_dims = 5,
+    group_range = 6,
+    group_range_dims = 7,
+    subscript = 8,
+  };
+
+  static inline size_t get_index(size_t groupLinearID,
+                                 getter::method getterMethod) {
+    const auto offset = to_integral(getterMethod);
+    return (groupLinearID * NUM_METHODS) + offset;
+  }
+
+  static const char *name(getter::method getterMethod) {
+    switch (getterMethod) {
+      case method::get:
+        return "get()";
+      case method::get_dims:
+        return "get(int)";
+      case method::local_range:
+        return "get_local_range()";
+      case method::local_range_dims:
+        return "get_local_range(int)";
+      case method::global_range:
+        return "get_global_range()";
+      case method::global_range_dims:
+        return "get_global_range(int)";
+      case method::group_range:
+        return "get_group_range()";
+      case method::group_range_dims:
+        return "get_group_range(int)";
+      case method::subscript:
+        return "operator[](int)";
+      default:
+        return "__unknown__";
+    }
+  }
 };
 
-inline size_t get_index(size_t groupLinearID, getter getterMethod) {
-  return ((groupLinearID * NUM_METHODS * NUM_DIMENSIONS) +
-          (static_cast<size_t>(getterMethod) * NUM_DIMENSIONS));
-}
+template<int dimensions>
+class test_kernel;
 
-const char *getter_name(getter getterMethod) {
-  switch (getterMethod) {
-    case getter::get:
-      return "get()";
-    case getter::get_dims:
-      return "get(int)";
-    case getter::local_range:
-      return "get_local_range()";
-    case getter::local_range_dims:
-      return "get_local_range(int)";
-    case getter::global_range:
-      return "get_global_range()";
-    case getter::global_range_dims:
-      return "get_global_range(int)";
-    case getter::group_range:
-      return "get_group_range()";
-    case getter::group_range_dims:
-      return "get_group_range(int)";
-    case getter::subscript:
-      return "operator[](int)";
-    default:
-      return "__unknown__";
+template <int dimensions>
+class test_helper {
+public:
+  using range_t = cl::sycl::range<dimensions>;
+
+private:
+  static constexpr int NUM_RESULTS = NUM_GROUPS * NUM_METHODS;
+  struct call_result_t
+  {
+    bool hasValidType;
+    sycl_cts::util::array<size_t, dimensions> values;
+  };
+  cl::sycl::vector_class<call_result_t> m_callResults;
+  cl::sycl::range<dimensions>           m_globalRange;
+  cl::sycl::range<dimensions>           m_localRange;
+
+public:
+  test_helper(cl::sycl::range<dimensions> globalRange,
+              cl::sycl::range<dimensions> localRange):
+    m_callResults(NUM_RESULTS),
+    m_globalRange(globalRange),
+    m_localRange(localRange) {
+      for (size_t i = 0; i < NUM_RESULTS; i++) {
+        auto& callResult = m_callResults.data()[i];
+        callResult.hasValidType = false;
+        for (auto& value: callResult.values)
+          value = 0;
+      }
   }
+
+  void collect_group_indicies(cl::sycl::queue& queue) {
+    cl::sycl::buffer<call_result_t, 1> buf(m_callResults.data(),
+                                           cl::sycl::range<1>(NUM_RESULTS));
+
+    queue.submit([&](cl::sycl::handler &cgh) {
+      auto a_dev =
+          buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
+
+      cgh.parallel_for_work_group<test_kernel<dimensions>>(
+                m_globalRange,
+                m_localRange,
+                [=](cl::sycl::group<dimensions> my_group) {
+
+          const size_t groupLinearID = my_group.get_linear_id();
+
+          // get()
+          {
+            call_result_t& callResult =
+                a_dev[getter::get_index(groupLinearID, getter::method::get)];
+
+            auto m_get_group = my_group.get_id();
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = m_get_group.get(i);
+
+            using expected_t = cl::sycl::id<dimensions>;
+            callResult.hasValidType =
+                std::is_same<expected_t, decltype(my_group.get_id())>::value;
+          }
+
+          // get(int)
+          {
+            call_result_t& callResult =
+                a_dev[getter::get_index(groupLinearID, getter::method::get_dims)];
+
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = my_group.get_id(i);
+
+            using expected_t = size_t;
+            callResult.hasValidType =
+                std::is_same<expected_t, decltype(my_group.get_id(0))>::value;
+          }
+
+          // get_local_range()
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::local_range)];
+
+            auto m_get_local_range = my_group.get_local_range();
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = m_get_local_range.get(i);
+
+            using expected_t = cl::sycl::range<dimensions>;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_local_range())>::value;
+          }
+
+          // get_local_range(int)
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::local_range_dims)];
+
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = my_group.get_local_range(i);
+
+            using expected_t = size_t;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_local_range(0))>::value;
+          }
+
+          // get_global_range()
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::global_range)];
+
+            auto m_get_global_range = my_group.get_global_range();
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = m_get_global_range.get(i);
+
+            using expected_t = cl::sycl::range<dimensions>;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_global_range())>::value;
+          }
+
+          // get_global_range(int)
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::global_range_dims)];
+
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = my_group.get_global_range(i);
+
+            using expected_t = size_t;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_global_range(0))>::value;
+          }
+
+          // get_group_range()
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::group_range)];
+
+            auto m_get_group_range = my_group.get_group_range();
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = m_get_group_range.get(i);
+
+            using expected_t = cl::sycl::range<dimensions>;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_group_range())>::value;
+          }
+
+          // get_group_range(int)
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::group_range_dims)];
+
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = my_group.get_group_range(i);
+
+            using expected_t = size_t;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group.get_group_range(0))>::value;
+          }
+
+          // operator[]
+          {
+            call_result_t& callResult = a_dev[getter::get_index(groupLinearID, getter::method::subscript)];
+
+            for (size_t i = 0; i < dimensions; ++i)
+              callResult.values[i] = my_group[i];
+
+            using expected_t = size_t;
+            callResult.hasValidType =
+                std::is_same<expected_t,
+                             decltype(my_group[0])>::value;
+          }
+      });
+    });
+  }
+
+  void validate_group_indicies(util::logger &log) const
+  {
+    // For each work item
+    validate_group_indicies(log, std::integral_constant<int, dimensions>{});
+  }
+
+private:
+  void validate_group_indicies(
+      util::logger &log, std::integral_constant<int, 1> loopSelector) const
+  {
+    static_cast<void>(loopSelector);
+    for (size_t groupID0 = 0; groupID0 < m_globalRange[0]; ++groupID0) {
+      validate_group_indicies(log, groupID0, std::array<size_t, 1>{groupID0});
+    }
+  }
+
+  void validate_group_indicies(
+      util::logger &log, std::integral_constant<int, 2> loopSelector) const
+  {
+    static_cast<void>(loopSelector);
+    for (size_t groupID0 = 0; groupID0 < m_globalRange[0]; ++groupID0) {
+      for (size_t groupID1 = 0; groupID1 < m_globalRange[1]; ++groupID1) {
+        const size_t groupLinearID = groupID1 + (groupID0 * GROUP_RANGE_2D);
+        validate_group_indicies(
+            log, groupLinearID, std::array<size_t, 2>{groupID0, groupID1});
+      }
+    }
+  }
+
+  void validate_group_indicies(
+      util::logger &log, std::integral_constant<int, 3> loopSelector) const
+  {
+    static_cast<void>(loopSelector);
+    for (size_t groupID0 = 0; groupID0 <  m_globalRange[0]; ++groupID0) {
+      for (size_t groupID1 = 0; groupID1 <  m_globalRange[1]; ++groupID1) {
+        for (size_t groupID2 = 0; groupID2 <  m_globalRange[2]; ++groupID2) {
+          const size_t groupLinearID =
+            (groupID2 + (groupID1 * GROUP_RANGE_3D) +
+             (groupID0 * GROUP_RANGE_3D * GROUP_RANGE_2D));
+          validate_group_indicies(
+              log,
+              groupLinearID,
+              std::array<size_t, 3>{groupID0, groupID1, groupID2});
+        }
+      }
+    }
+  }
+
+  void validate_group_indicies(util::logger &log, size_t groupLinearId,
+                               std::array<size_t, dimensions> groupId) const
+  {
+    // get(), get(int), operator[]
+    {
+      const auto& expected = groupId;
+      check_indices(log, groupLinearId, getter::method::get, expected);
+      check_indices(log, groupLinearId, getter::method::get_dims, expected);
+      check_indices(log, groupLinearId, getter::method::subscript, expected);
+    }
+
+    // get_local_range(), get_local_range(int)
+    {
+      const auto& expected = get_local_range_values();
+      check_indices(log, groupLinearId, getter::method::local_range, expected);
+      check_indices(log, groupLinearId, getter::method::local_range_dims,
+                    expected);
+    }
+
+    // get_global_range(), get_global_range(int)
+    {
+      const auto& expected = get_global_range_values();
+      check_indices(log, groupLinearId, getter::method::global_range, expected);
+      check_indices(log, groupLinearId, getter::method::global_range_dims,
+                    expected);
+    }
+
+    // get_group_range(), get_group_range(int)
+    {
+      const std::array<size_t, 3> expected {GROUP_RANGE_1D, GROUP_RANGE_2D,
+                                            GROUP_RANGE_3D};
+      check_indices(log, groupLinearId, getter::method::group_range, expected);
+      check_indices(log, groupLinearId, getter::method::group_range_dims,
+                    expected);
+    }
+  }
+
+  template <size_t expectedDimensions>
+  void check_indices(
+      util::logger &log, size_t groupLinearId,
+      getter::method getterMethod,
+      const std::array<size_t, expectedDimensions>& expected) const
+  {
+    static_assert(expectedDimensions >= dimensions,
+                  "Invalid call for check_indices");
+
+    const auto& callResult = m_callResults[getter::get_index(groupLinearId,
+                                                             getterMethod)];
+    for (size_t dim = 0; dim < dimensions; ++dim)
+    {
+      if (!CHECK_VALUE(log, callResult.values[dim], expected[dim],
+                       static_cast<int>(dim))) {
+        log.note("  -> group %d: %s", groupLinearId,
+                 getter::name(getterMethod));
+      };
+    }
+    if (!callResult.hasValidType) {
+      FAIL(log, "Invalid return value type");
+      log.note("  -> group %d: %s", groupLinearId,
+               getter::name(getterMethod));
+    }
+  }
+
+  std::array<size_t, dimensions> get_local_range_values() const
+  {
+    std::array<size_t, dimensions> result{};
+    int i = 0;
+    std::generate(result.begin(), result.end(), [this, &i] () mutable {
+        return m_localRange.get(i++);
+      });
+    return result;
+  }
+  std::array<size_t, dimensions> get_global_range_values() const
+  {
+    std::array<size_t, dimensions> result{};
+    int i = 0;
+    std::generate(result.begin(), result.end(), [this, &i] () mutable {
+        const auto index = i++;
+        return m_globalRange.get(index) * m_localRange.get(index);
+      });
+    return result;
+  }
+};
+
+template <int dimensions>
+bool reduce_size(cl::sycl::queue& queue) {
+  bool res = true;
+  // Check if default work group size is supported
+  cl::sycl::program program(queue.get_context());
+  if (is_compiler_available(program.get_devices()) &&
+      is_linker_available(program.get_devices())) {
+    program.build_with_kernel_type<test_kernel<dimensions>>();
+    auto kernel = program.get_kernel<test_kernel<dimensions>>();
+    auto device = queue.get_device();
+
+    auto work_group_size_limit = kernel.template get_work_group_info<
+        cl::sycl::info::kernel_work_group::work_group_size>(device);
+
+    size_t default_wg_size = 1;
+    for (size_t dim = 0; dim < dimensions; ++dim) {
+      default_wg_size *= DEFAULT_LOCAL_RANGE[dim];
+    }
+    res = default_wg_size > work_group_size_limit;
+  }
+  return res;
 }
 
 class TEST_NAME : public util::test_base {
@@ -80,231 +410,42 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      bool reduce_wg_size = true;
-      // Check if default work group size is supported
-      cl::sycl::program program(queue.get_context());
-      if (is_compiler_available(program.get_devices()) &&
-          is_linker_available(program.get_devices())) {
-        program.build_with_kernel_type<TEST_NAME>();
-        auto kernel = program.get_kernel<TEST_NAME>();
-        auto device = queue.get_device();
-
-        auto work_group_size_limit = kernel.get_work_group_info<
-            cl::sycl::info::kernel_work_group::work_group_size>(device);
-
-        auto default_wg_size = DEFAULT_LOCAL_RANGE_1D * DEFAULT_LOCAL_RANGE_2D *
-                               DEFAULT_LOCAL_RANGE_3D;
-        reduce_wg_size = default_wg_size > work_group_size_limit;
-      }
-
-      // Adjust work-group size
-      size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_1D;
-      size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_2D;
-      size_t LOCAL_RANGE_3D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE_3D;
-
-      size_t resultSize = NUM_GROUPS * NUM_METHODS * NUM_DIMENSIONS;
-      cl::sycl::vector_class<size_t> result(resultSize);
-
-      for (size_t i = 0; i < resultSize; i++) {
-        result.data()[i] = 0;
-      }
-
-      // Collect the group indices
+      // Validate for each dimension possible
       {
-        cl::sycl::buffer<size_t, 1> buf(result.data(),
-                                        cl::sycl::range<1>(resultSize));
-        queue.submit([&](cl::sycl::handler &cgh) {
-          auto a_dev = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
+        bool reduce_wg_size = reduce_size<1>(queue);
+        size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[0];
+        auto validator = test_helper<1>(
+            cl::sycl::range<1>(GROUP_RANGE_1D),
+            cl::sycl::range<1>(LOCAL_RANGE_1D));
 
-          cgh.parallel_for_work_group<class TEST_NAME>(
-              cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D,
-                                 GROUP_RANGE_3D),
-              cl::sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D,
-                                 LOCAL_RANGE_3D),
-              [=](cl::sycl::group<3> my_group) {
-                const size_t groupLinearID = my_group.get_linear_id();
-
-                // get()
-                {
-                  auto m_get_group = my_group.get_id();
-                  auto indexBase = get_index(groupLinearID, getter::get);
-                  a_dev[indexBase + 0] = m_get_group.get(0);
-                  a_dev[indexBase + 1] = m_get_group.get(1);
-                  a_dev[indexBase + 2] = m_get_group.get(2);
-                }
-
-                // get(int)
-                {
-                  auto indexBase = get_index(groupLinearID, getter::get_dims);
-                  a_dev[indexBase + 0] = my_group.get_id(0);
-                  a_dev[indexBase + 1] = my_group.get_id(1);
-                  a_dev[indexBase + 2] = my_group.get_id(2);
-                }
-
-                // get_local_range()
-                {
-                  cl::sycl::range<3> m_get_local_range =
-                      my_group.get_local_range();
-                  auto indexBase =
-                      get_index(groupLinearID, getter::local_range);
-                  a_dev[indexBase + 0] = m_get_local_range.get(0);
-                  a_dev[indexBase + 1] = m_get_local_range.get(1);
-                  a_dev[indexBase + 2] = m_get_local_range.get(2);
-                }
-
-                // get_local_range(int)
-                {
-                  auto indexBase =
-                      get_index(groupLinearID, getter::local_range_dims);
-                  a_dev[indexBase + 0] = my_group.get_local_range(0);
-                  a_dev[indexBase + 1] = my_group.get_local_range(1);
-                  a_dev[indexBase + 2] = my_group.get_local_range(2);
-                }
-
-                // get_global_range()
-                {
-                  cl::sycl::range<3> m_get_global_range =
-                      my_group.get_global_range();
-                  auto indexBase =
-                      get_index(groupLinearID, getter::global_range);
-                  a_dev[indexBase + 0] = m_get_global_range.get(0);
-                  a_dev[indexBase + 1] = m_get_global_range.get(1);
-                  a_dev[indexBase + 2] = m_get_global_range.get(2);
-                }
-
-                // get_global_range(int)
-                {
-                  auto indexBase =
-                      get_index(groupLinearID, getter::global_range_dims);
-                  a_dev[indexBase + 0] = my_group.get_global_range(0);
-                  a_dev[indexBase + 1] = my_group.get_global_range(1);
-                  a_dev[indexBase + 2] = my_group.get_global_range(2);
-                }
-
-                // get_group_range()
-                {
-                  cl::sycl::range<3> m_get_group_range =
-                      my_group.get_group_range();
-                  auto indexBase =
-                      get_index(groupLinearID, getter::group_range);
-                  a_dev[indexBase + 0] = m_get_group_range.get(0);
-                  a_dev[indexBase + 1] = m_get_group_range.get(1);
-                  a_dev[indexBase + 2] = m_get_group_range.get(2);
-                }
-
-                // get_group_range(int)
-                {
-                  auto indexBase =
-                      get_index(groupLinearID, getter::group_range_dims);
-                  a_dev[indexBase + 0] = my_group.get_group_range(0);
-                  a_dev[indexBase + 1] = my_group.get_group_range(1);
-                  a_dev[indexBase + 2] = my_group.get_group_range(2);
-                }
-
-                // operator[]
-                {
-                  auto indexBase = get_index(groupLinearID, getter::subscript);
-                  a_dev[indexBase + 0] = my_group[0];
-                  a_dev[indexBase + 1] = my_group[1];
-                  a_dev[indexBase + 2] = my_group[2];
-                }
-              });
-        });
+        validator.collect_group_indicies(queue);
+        validator.validate_group_indicies(log);
       }
+      {
+        // Adjust work-group size
+        bool reduce_wg_size = reduce_size<2>(queue);
+        size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[0];
+        size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[1];
+        auto validator = test_helper<2>(
+            cl::sycl::range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D),
+            cl::sycl::range<2>(LOCAL_RANGE_1D, LOCAL_RANGE_2D));
 
-      queue.wait_and_throw();
-
-      // Check the group indices
-      for (size_t groupID0 = 0; groupID0 < GROUP_RANGE_1D; ++groupID0) {
-        for (size_t groupID1 = 0; groupID1 < GROUP_RANGE_2D; ++groupID1) {
-          for (size_t groupID2 = 0; groupID2 < GROUP_RANGE_3D; ++groupID2) {
-            // Calculate the row-major linear ID
-            const size_t groupLinearID =
-                (groupID2 + (groupID1 * GROUP_RANGE_3D) +
-                 (groupID0 * GROUP_RANGE_3D * GROUP_RANGE_2D));
-
-            auto check_indices = [&](getter getterMethod, size_t offset,
-                                     size_t expected) {
-              auto indexBase = get_index(groupLinearID, getterMethod);
-              if (!CHECK_VALUE(log, result[indexBase + offset], expected,
-                               static_cast<int>(offset))) {
-                log.note("  -> group %d: %s", groupLinearID,
-                         getter_name(getterMethod));
-              };
-            };
-
-            // get()
-            {
-              check_indices(getter::get, 0, groupID0);
-              check_indices(getter::get, 1, groupID1);
-              check_indices(getter::get, 2, groupID2);
-            }
-
-            // get(int)
-            {
-              check_indices(getter::get_dims, 0, groupID0);
-              check_indices(getter::get_dims, 1, groupID1);
-              check_indices(getter::get_dims, 2, groupID2);
-            }
-
-            // get_local_range()
-            {
-              check_indices(getter::local_range, 0, LOCAL_RANGE_1D);
-              check_indices(getter::local_range, 1, LOCAL_RANGE_2D);
-              check_indices(getter::local_range, 2, LOCAL_RANGE_3D);
-            }
-
-            // get_local_range(int)
-            {
-              check_indices(getter::local_range_dims, 0, LOCAL_RANGE_1D);
-              check_indices(getter::local_range_dims, 1, LOCAL_RANGE_2D);
-              check_indices(getter::local_range_dims, 2, LOCAL_RANGE_3D);
-            }
-
-            // get_global_range()
-            {
-              check_indices(getter::global_range, 0,
-                            GROUP_RANGE_1D * LOCAL_RANGE_1D);
-              check_indices(getter::global_range, 1,
-                            GROUP_RANGE_2D * LOCAL_RANGE_2D);
-              check_indices(getter::global_range, 2,
-                            GROUP_RANGE_3D * LOCAL_RANGE_3D);
-            }
-
-            // get_global_range(int)
-            {
-              check_indices(getter::global_range_dims, 0,
-                            GROUP_RANGE_1D * LOCAL_RANGE_1D);
-              check_indices(getter::global_range_dims, 1,
-                            GROUP_RANGE_2D * LOCAL_RANGE_2D);
-              check_indices(getter::global_range_dims, 2,
-                            GROUP_RANGE_3D * LOCAL_RANGE_3D);
-            }
-
-            // get_group_range()
-            {
-              check_indices(getter::group_range, 0, GROUP_RANGE_1D);
-              check_indices(getter::group_range, 1, GROUP_RANGE_2D);
-              check_indices(getter::group_range, 2, GROUP_RANGE_3D);
-            }
-
-            // get_group_range(int)
-            {
-              check_indices(getter::group_range_dims, 0, GROUP_RANGE_1D);
-              check_indices(getter::group_range_dims, 1, GROUP_RANGE_2D);
-              check_indices(getter::group_range_dims, 2, GROUP_RANGE_3D);
-            }
-
-            // operator[]
-            {
-              check_indices(getter::subscript, 0, groupID0);
-              check_indices(getter::subscript, 1, groupID1);
-              check_indices(getter::subscript, 2, groupID2);
-            }
-          }
-        }
+        validator.collect_group_indicies(queue);
+        validator.validate_group_indicies(log);
       }
+      {
+        // Adjust work-group size
+        bool reduce_wg_size = reduce_size<3>(queue);
+        size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[0];
+        size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[1];
+        size_t LOCAL_RANGE_3D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[2];
+        auto validator = test_helper<3>(
+            cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D, GROUP_RANGE_3D),
+            cl::sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D, LOCAL_RANGE_3D));
 
+        validator.collect_group_indicies(queue);
+        validator.validate_group_indicies(log);
+      }
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =

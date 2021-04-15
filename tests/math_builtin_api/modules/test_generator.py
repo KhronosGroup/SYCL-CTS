@@ -1,33 +1,82 @@
 from . import sycl_functions
 from . import sycl_types
 import random
+from string import Template
+import re
 
-test_case_templates = { "private" : ("\n\n{\n"
-                    "test_function<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=](){\n"
-                    "$FUNCTION_CALL"
-                    "});\n}\n"),
+test_case_templates = { "private" : ("""
+{
+  test_function<$TEST_ID, $RETURN_TYPE>(
+      [=]{
+        $FUNCTION_CALL
+      });
+}
+"""),
 
-                    "local" : ("\n\n{\n"
-                    "$DECL"
-                    "test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA);\n}\n"),
+                    "local" : ("""
+{
+  $DECL
+  test_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL"
+      }, $DATA);
+}
+"""),
 
-                    "global" : ("\n\n{\n"
-                    "$DECL"
-                    "test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(\n"
-                    "[=]($ACCESSOR acc){\n"
-                    "$FUNCTION_CALL"
-                    "}, $DATA);\n}\n") }
+                    "global" : ("""
+{
+  $DECL
+  test_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA);
+}
+""")
+}
 
-test_case_templates_check = { "private" : ("\n\n{\n"
-                    "$REFERENCE"
-                    "check_function<$TEST_ID, $RETURN_TYPE>(log, \n"
-                    "[=](){\n"
-                    "$FUNCTION_CALL"
-                    "}, ref);\n}\n")}
+test_case_templates_check = {
+    "no_ptr" : ("""
+{
+  $REFERENCE
+  check_function<$TEST_ID, $RETURN_TYPE>(log,
+      [=]{
+        $FUNCTION_CALL
+      }, ref$ACCURACY$COMMENT);
+}
+"""),
+
+    "private" : ("""
+{
+  $PTR_REF
+  check_function_multi_ptr_private<$TEST_ID, $RETURN_TYPE>(log,
+      [=]{
+        $FUNCTION_PRIVATE_CALL
+      }, ref, refPtr$ACCURACY$COMMENT);
+}
+"""),
+
+    "local" : ("""
+{
+  $DECL
+  $PTR_REF
+  check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA, ref, refPtr$ACCURACY$COMMENT);
+}
+"""),
+
+    "global" : ("""
+{
+  $DECL
+  $PTR_REF
+  check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
+      [=]($ACCESSOR acc){
+        $FUNCTION_CALL
+      }, $DATA, ref, refPtr$ACCURACY$COMMENT);
+}
+""")
+}
 
 def generate_value(base_type, dim, unsigned):
     val = ""
@@ -62,14 +111,14 @@ def generate_value(base_type, dim, unsigned):
                                           9223372036854775807)) + "LL" + ","
     return val[:-1]
 
-def generate_multi_ptr(var_name, var_type, var_index, memory):
+def generate_multi_ptr(var_name, var_type, memory):
     decl = ""
     if memory == "global":
         decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::global_space> " + var_name + "(acc);\n"
     if memory == "local":
         decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::local_space> " + var_name + "(acc);\n"
     if memory == "private":
-        source_name = "multiPtrSource_" + str(var_index)
+        source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim, var_type.unsigned) + ");\n"
         decl += "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
     return decl
@@ -102,7 +151,7 @@ def generate_arguments(types, sig, memory):
 
         current_arg = ""
         if is_pointer:
-            current_arg = generate_multi_ptr(arg_name, arg_type, arg_index, memory)
+            current_arg = generate_multi_ptr(arg_name, arg_type, memory)
         else:
             current_arg = generate_variable(arg_name, arg_type, arg_index)
 
@@ -110,20 +159,57 @@ def generate_arguments(types, sig, memory):
         arg_index += 1
     return (arg_names, arg_src)
 
+function_call_template = Template("""
+        ${arg_src}
+        return ${namespace}::${func_name}(${arg_names});
+""")
 def generate_function_call(sig, arg_names, arg_src):
-    fc = arg_src
-    fc += "return " + sig.namespace + "::" + sig.name + "("
-    for arg_n in arg_names:
-        fc += arg_n + ","
-    fc = fc[:-1] + ");\n"
+    fc = function_call_template.substitute(
+        arg_src=arg_src,
+        namespace=sig.namespace,
+        func_name=sig.name,
+        arg_names=",".join(arg_names))
     return fc
 
+function_private_call_template = Template("""
+        ${arg_src}
+        ${ret_type} res = ${namespace}::${func_name}(${arg_names});
+        return privatePtrCheck<${ret_type}, ${arg_type}>(res, multiPtrSourceData);
+""")
+def generate_function_private_call(sig, arg_names, arg_src, types):
+    fc = function_private_call_template.substitute(
+        arg_src=arg_src,
+        namespace=sig.namespace,
+        func_name=sig.name,
+        arg_names=",".join(arg_names),
+        ret_type=sig.ret_type,
+        arg_type=extract_type(types[sig.arg_types[-1]]).name)
+    return fc
+
+reference_template = Template("""
+        ${arg_src}
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names});
+""")
 def generate_reference(sig, arg_names, arg_src):
-    fc = arg_src
-    fc += "$RETURN_TYPE ref = reference::" + sig.name + "("
-    for arg_n in arg_names:
-        fc += arg_n + ","
-    fc = fc[:-1] + ");\n"
+    fc = reference_template.substitute(
+        arg_src=arg_src,
+        func_name=sig.name,
+        ret_type=sig.ret_type,
+        arg_names=",".join(arg_names))
+    return fc
+
+reference_ptr_template = Template("""
+        ${arg_src}
+        ${arg_type} refPtr = multiPtrSourceData;
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names}, &refPtr);
+""")
+def generate_reference_ptr(types, sig, arg_names, arg_src):
+    fc = reference_ptr_template.substitute(
+        arg_src=re.sub(r'^cl::sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
+        func_name=sig.name,
+        ret_type=sig.ret_type,
+        arg_names=",".join(arg_names[:-1]),
+        arg_type=extract_type(types[sig.arg_types[-1]]).name)
     return fc
 
 def generate_test_case(test_id, types, sig, memory, check):
@@ -131,9 +217,25 @@ def generate_test_case(test_id, types, sig, memory, check):
     testCaseId = str(test_id)
     (arg_names, arg_src) = generate_arguments(types, sig, memory)
     testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
+    testCaseSource = testCaseSource.replace("$PTR_REF", generate_reference_ptr(types, sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
+    testCaseSource = testCaseSource.replace("$FUNCTION_PRIVATE_CALL", generate_function_private_call(sig, arg_names, arg_src, types))
     testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type)
-    if memory != "private":
+    if sig.accuracy:##If the signature contains an accuracy value
+        accuracy = sig.accuracy
+        # if accuracy depends on vecSize
+        if "vecSize" in accuracy:
+            vecSize = str(extract_type(types[sig.arg_types[0]]).dim)
+            accuracy = accuracy.replace("vecSize", vecSize)
+        testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy)
+    else:
+        testCaseSource = testCaseSource.replace("$ACCURACY", "")
+    if sig.comment:##If the signature contains comment for accuracy
+        testCaseSource = testCaseSource.replace("$COMMENT", ', "' + sig.comment +'"')
+    else:
+        testCaseSource = testCaseSource.replace("$COMMENT", "")
+
+    if memory != "private" and memory !="no_ptr":
         # We rely on the fact that all SYCL math builtins have at most one arguments as pointer.
         pointerType = sig.arg_types[sig.pntr_indx[0] - 1]
         sourcePtrDataName = "multiPtrSourceData"
@@ -153,13 +255,20 @@ def generate_test_cases(test_id, types, sig_list, check):
     random.seed(0)
     test_source = ""
     for sig in sig_list:
-        test_source += generate_test_case(test_id, types, sig, "private", check)
-        test_id += 1
         if sig.pntr_indx:#If the signature contains a pointer argument.
+            test_source += generate_test_case(test_id, types, sig, "private", check)
+            test_id += 1
             test_source += generate_test_case(test_id, types, sig, "local", check)
             test_id += 1
             test_source += generate_test_case(test_id, types, sig, "global", check)
             test_id += 1
+        else:
+            if check:
+                test_source += generate_test_case(test_id, types, sig, "no_ptr", check)
+                test_id += 1
+            else:
+                test_source += generate_test_case(test_id, types, sig, "private", check)
+                test_id += 1
     return test_source
 
 # Given the current combination of:
@@ -201,6 +310,8 @@ def expand_signature(runner, types, signature):
     # to control cases when some arg types are base type of ret type
     sgeninteger = False
     exp_sig = []
+    # to control cases when arg types are base type of ret type
+    sgeninteger = False
     for arg in signature.arg_types:
         current_types.extend([types[arg]])
         if arg == "sgeninteger":
@@ -230,7 +341,8 @@ def expand_signature(runner, types, signature):
             # Return value and all arguments are of the same type.
             if len(nomatch) == 0:
                 new_sig = sycl_functions.funsig(signature.namespace, name, signature.name, [
-                                                name for i in range(len(signature.arg_types))], signature.pntr_indx[:])
+                                                name for i in range(len(signature.arg_types))], signature.accuracy,
+                                                signature.comment, signature.pntr_indx[:])
                 exp_sig.append(new_sig)
             else:
                 function_types = []
@@ -280,11 +392,13 @@ def expand_signature(runner, types, signature):
                             all_matched = False
                 if all_matched:
                     new_sig = sycl_functions.funsig(
-                        signature.namespace, function_types[0], signature.name, function_types[1:], signature.pntr_indx[:])
+                        signature.namespace, function_types[0], signature.name, function_types[1:], signature.accuracy,
+                        signature.comment, signature.pntr_indx[:])
                     exp_sig.append(new_sig)
                     if extra:
                         new_sig = sycl_functions.funsig(
-                        signature.namespace, function_types_extra[0], signature.name, function_types_extra[1:], signature.pntr_indx[:])
+                        signature.namespace, function_types_extra[0], signature.name, function_types_extra[1:],
+                        signature.accuracy, signature.comment, signature.pntr_indx[:])
                         exp_sig.append(new_sig)
                 else:
                     print("[WARNING] Unable to fully match function " + signature.name + " for: " +

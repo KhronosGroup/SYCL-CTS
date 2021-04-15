@@ -12,8 +12,15 @@
 #define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_UTILITY_H
 
 #include "../common/common.h"
+#include "accessor_utility_common.h"
+
 #include <array>
 #include <sstream>
+#include <type_traits>
+
+#ifndef TEST_NAME
+#error Invalid test namespace
+#endif
 
 namespace TEST_NAMESPACE {
 
@@ -28,311 +35,480 @@ using dummy_functor = ::dummy_functor<dummy_accessor_api_buffer<T, kTarget>>;
 
 using namespace sycl_cts;
 
-/** Helper function that calculates the amount of elements
- *  of a range
+/** @brief Helper functor to retrieve underlying data dimensionality
+ *         for buffer and local accessors
+ */
+template <cl::sycl::access::target target, size_t dims>
+struct acc_data_dims {
+  static constexpr size_t get() {
+    return (dims == 0) ? 1 : dims;
+  }
+};
+/** @brief Helper functor specialization to retrieve image dimensionality
+ *         for image accessors
  */
 template <size_t dims>
-size_t getElementsCount(const cl::sycl::range<dims> &range);
-
-/** Specializations of for getElementsCount each supported
- *  dimensionality
- */
-template <>
-size_t getElementsCount<1>(const cl::sycl::range<1> &range) {
-  return range[0];
-}
-
-template <>
-size_t getElementsCount<2>(const cl::sycl::range<2> &range) {
-  return range[0] * range[1];
-}
-
-template <>
-size_t getElementsCount<3>(const cl::sycl::range<3> &range) {
-  return range[0] * range[1] * range[2];
-}
-
-/** Helper function that calculates an id from a size so
- *  that each dimension equals size
+struct acc_data_dims<cl::sycl::access::target::image, dims> {
+  static constexpr size_t get() {
+    return dims;
+  }
+};
+/** @brief Helper functor specialization to retrieve image dimensionality
+ *         for host_image accessors
  */
 template <size_t dims>
-cl::sycl::id<dims> getId(const size_t &size);
-
-/** Specializations of for getId each supported
- *  dimensionality
- */
-template <>
-cl::sycl::id<1> getId<1>(const size_t &size) {
-  return cl::sycl::id<1>(size);
-}
-template <>
-cl::sycl::id<2> getId<2>(const size_t &size) {
-  return cl::sycl::id<2>(size, size);
-}
-template <>
-cl::sycl::id<3> getId<3>(const size_t &size) {
-  return cl::sycl::id<3>(size, size, size);
-}
-
-/** Returns the string representation of a SYCL access mode
- */
-std::string access_mode_to_string(cl::sycl::access::mode kMode) {
-  switch (kMode) {
-    case cl::sycl::access::mode::read:
-      return "read";
-    case cl::sycl::access::mode::write:
-      return "write";
-    case cl::sycl::access::mode::read_write:
-      return "read_write";
-    case cl::sycl::access::mode::discard_write:
-      return "discard_write";
-    case cl::sycl::access::mode::discard_read_write:
-      return "discard_read_write";
-    case cl::sycl::access::mode::atomic:
-      return "atomic";
-    default:
-      return "";  // or throw an exception here
+struct acc_data_dims<cl::sycl::access::target::host_image, dims> {
+  static constexpr size_t get() {
+    return dims;
   }
-}
-
-/** Returns the string representation of a SYCL access target
+};
+/** @brief Helper functor specialization to retrieve image dimensionality
+ *         for image_array accessors
  */
-std::string access_target_to_string(cl::sycl::access::target kTarget) {
-  switch (kTarget) {
-    case cl::sycl::access::target::global_buffer:
-      return "global_buffer";
-    case cl::sycl::access::target::constant_buffer:
-      return "constant_buffer";
-    case cl::sycl::access::target::local:
-      return "local";
-    case cl::sycl::access::target::image:
-      return "image";
-    case cl::sycl::access::target::host_buffer:
-      return "host_buffer";
-    case cl::sycl::access::target::host_image:
-      return "host_image";
-    case cl::sycl::access::target::image_array:
-      return "image_array";
-    default:
-      return "";  // or throw an exception here
+template <size_t dims>
+struct acc_data_dims<cl::sycl::access::target::image_array, dims> {
+  static constexpr size_t get() {
+    return dims + 1;
   }
+};
+
+/** @brief Helper type trait for buffer accessors
+ */
+template <cl::sycl::access::target target>
+constexpr bool is_buffer_accessor() {
+  return
+      (target == cl::sycl::access::target::global_buffer) ||
+      (target == cl::sycl::access::target::constant_buffer) ||
+      (target == cl::sycl::access::target::host_buffer);
+}
+/** @brief Helper type trait for local accessors
+ */
+template <cl::sycl::access::target target>
+constexpr bool is_local_accessor() {
+  return
+      (target == cl::sycl::access::target::local);
+}
+/** @brief Helper type trait for image accessors
+ */
+template <cl::sycl::access::target target>
+constexpr bool is_image_accessor() {
+  return
+      (target == cl::sycl::access::target::image) ||
+      (target == cl::sycl::access::target::host_image) ||
+      (target == cl::sycl::access::target::image_array);
 }
 
-/** generates an error message containing all required information to trace a
- * failure
+/** @brief Helper tag to store accessor type information
  */
-std::string get_error_message(size_t dims, cl::sycl::access::mode kMode,
-                              cl::sycl::access::target kTarget,
-                              cl::sycl::access::placeholder isPlaceholder,
-                              std::string operation) {
-  std::stringstream ss;
-  if (isPlaceholder == cl::sycl::access::placeholder::true_t) {
-    ss << "placeholder accessor ";
-  } else {
-    ss << "accessor ";
-  }
-  ss << access_target_to_string(kTarget) << " for "
-     << access_mode_to_string(kMode) << " " << dims << "d failed in "
-     << operation;
-  return ss.str();
-}
-
-/** checks all available accessor members to ensure no failure occured
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode,
+template <typename T, size_t kDims, cl::sycl::access::mode kMode,
           cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder isPlaceholder>
+          cl::sycl::access::placeholder kPlaceholder =
+              cl::sycl::access::placeholder::false_t>
+struct accessor_type_info {
+  using type = cl::sycl::accessor<T, kDims, kMode, kTarget, kPlaceholder>;
+
+  using dataT = T;
+  static constexpr size_t dims = kDims;
+  static constexpr cl::sycl::access::mode mode = kMode;
+  static constexpr cl::sycl::access::target target = kTarget;
+  static constexpr cl::sycl::access::placeholder placeholder = kPlaceholder;
+
+  static constexpr size_t dataDims = acc_data_dims<target, dims>::get();
+};
+
+/** @brief Syntax sugar use accessor type info tags for failure messages
+ */
+template <typename accTag>
+inline void fail_for_accessor(sycl_cts::util::logger& log,
+                              const std::string& dataType,
+                              const std::string& message) {
+  accessor_utility::fail_for_accessor<typename accTag::dataT, accTag::dims,
+                                      accTag::mode, accTag::target,
+                                      accTag::placeholder>(
+      log, dataType, message);
+}
+
+/** @brief Namespace to store accessor member tags
+ */
+namespace accessor_members {
+  /** @brief Helper struct to verify get_size() call for appropriate accessors
+   */
+  class size {
+  public:
+    using type = size_t;
+    const type value;
+
+    /** @brief Type trait to disable verification for image accessors
+     */
+    template <typename accTag>
+    static inline bool constexpr enabled() {
+      return is_buffer_accessor<accTag::target>() ||
+             is_local_accessor<accTag::target>();
+    }
+
+    /** @brief Factory method to generate member tag in case accessor has
+     *         get_size() method
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), size>::type
+        static from(const typename accTag::type& a) {
+      return size{a.get_size()};
+    }
+    /** @brief Factory method to generate member tag in case accessor has no
+     *         get_size() method
+     */
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), size>::type
+        static from(const typename accTag::type& a) {
+      return size{0U};
+    }
+
+    /** @brief Test for get_size() call
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), void>::type
+        check(const typename accTag::type& a, sycl_cts::util::logger &log,
+              const std::string& operation, const std::string& typeName) {
+
+      if (a.get_size() != value) {
+        fail_for_accessor<accTag>(log, typeName,
+                                  operation + " check(get_size)");
+      }
+    }
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), void>::type
+        check(const typename accTag::type&, sycl_cts::util::logger &,
+              const std::string&, const std::string&) {
+      // do nothing: accessor has no get_size()
+    }
+  };
+
+  /** @brief Helper struct to verify get_count() call for all accessors
+   */
+  class count {
+  public:
+    using type = size_t;
+    const type value;
+
+    /** @brief Factory method to generate member tag
+     */
+    template <typename accTag>
+    static count from(const typename accTag::type& a) {
+      return count{a.get_count()};
+    }
+
+    /** @brief Test for get_count() call
+     */
+    template <typename accTag>
+    void check(const typename accTag::type& a, sycl_cts::util::logger &log,
+               const std::string& operation, const std::string& typeName) {
+      if (a.get_count() != value) {
+        fail_for_accessor<accTag>(log, typeName,
+                                  operation + " check(get_count)");
+      }
+    }
+  };
+
+  /** @brief Helper struct to verify get_offset() call for appropriate accessors
+   */
+  template <size_t dims>
+  class offset {
+  public:
+    using type = cl::sycl::id<dims>;
+    const type value;
+
+    /** @brief Type trait to enable verification only if accessor has
+     *         get_offset() method
+     */
+    template <typename accTag>
+    static inline bool constexpr enabled() {
+      return is_buffer_accessor<accTag::target>() && (accTag::dims != 0);
+    }
+
+    /** @brief Factory method to generate member tag in case accessor has
+     *         get_offset() method
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), offset<dims>>::type
+        static from(const typename accTag::type& a) {
+      return offset<dims>{a.get_offset()};
+    }
+    /** @brief Factory method to generate member tag in case accessor has no
+     *         get_offset() method
+     */
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), offset>::type
+        static from(const typename accTag::type& a) {
+      const auto zero =
+          sycl_cts::util::get_cts_object::id<dims>::get(0, 0, 0);
+      return offset<dims>{zero};
+    }
+
+    /** @brief Test for get_offset() call
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), void>::type
+        check(const typename accTag::type& a, sycl_cts::util::logger &log,
+              const std::string& operation, const std::string& typeName) {
+
+      if (a.get_offset() != value) {
+        fail_for_accessor<accTag>(log, typeName,
+                                  operation + " check(get_offset)");
+      }
+    }
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), void>::type
+        check(const typename accTag::type&, sycl_cts::util::logger &,
+              const std::string&, const std::string&) {
+      // do nothing: accessor has no get_offset()
+    }
+  };
+
+  /** @brief Helper struct to verify get_range() call for appropriate accessors
+   */
+  template <size_t dims>
+  class range {
+  public:
+    using type = cl::sycl::range<dims>;
+    const type value;
+
+    /** @brief Type trait to enable verification only if accessor has
+     *         get_range() method
+     */
+    template <typename accTag>
+    static inline bool constexpr enabled() {
+      return is_image_accessor<accTag::target>();
+    }
+
+    /** @brief Factory method to generate member tag in case accessor has
+     *         get_range() method
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), range<dims>>::type
+        static from(const typename accTag::type& a) {
+      return range<dims>{a.get_range()};
+    }
+    /** @brief Factory method to generate member tag in case accessor has no
+     *         get_range() method
+     */
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), range<dims>>::type
+        static from(const typename accTag::type& a) {
+      auto zero = sycl_cts::util::get_cts_object::range<dims>::get(0, 0, 0);
+      return range<dims>{zero};
+    }
+
+    /** @brief Test for get_range() call
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), void>::type
+        check(const typename accTag::type& a, sycl_cts::util::logger &log,
+              const std::string& operation, const std::string& typeName) {
+
+      if (a.get_range() != value) {
+        fail_for_accessor<accTag>(log, typeName,
+                                  operation + " check(get_range)");
+      }
+    }
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), void>::type
+        check(const typename accTag::type&, sycl_cts::util::logger &,
+              const std::string&, const std::string&) {
+      // do nothing: accessor has no get_range()
+    }
+  };
+
+  /** @brief Helper struct to verify is_placeholder() call for buffer accessors
+   */
+  class placeholder {
+  public:
+    using type = cl::sycl::access::placeholder;
+    const type value;
+
+    /** @brief Type trait to enable verification only if accessor has
+     *         is_placeholder() method
+     */
+    template <typename accTag>
+    static inline bool constexpr enabled() {
+      return is_buffer_accessor<accTag::target>();
+    }
+
+    /** @brief Factory method to generate member tag in case accessor has
+     *         is_placeholder() method
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), placeholder>::type
+        static from(const typename accTag::type& a) {
+      const auto v = a.is_placeholder() ?
+                     cl::sycl::access::placeholder::true_t :
+                     cl::sycl::access::placeholder::false_t;
+      return placeholder{v};
+    }
+    /** @brief Factory method to generate member tag in case accessor has no
+     *         is_placeholder() method
+     */
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), placeholder>::type
+        static from(const typename accTag::type& a) {
+      return placeholder{};
+    }
+
+    /** @brief Test for is_placeholder() call
+     */
+    template <typename accTag>
+    typename std::enable_if<enabled<accTag>(), void>::type
+        check(const typename accTag::type& a, sycl_cts::util::logger &log,
+              const std::string& operation, const std::string& typeName) {
+
+      const bool expectedValue =
+        (value == cl::sycl::access::placeholder::true_t);
+
+      if (a.is_placeholder() != expectedValue) {
+        fail_for_accessor<accTag>(log, typeName,
+                                  operation + " check(is_placeholder)");
+      }
+    }
+    template <typename accTag>
+    typename std::enable_if<!enabled<accTag>(), void>::type
+        check(const typename accTag::type&, sycl_cts::util::logger &,
+              const std::string&, const std::string&) {
+      // do nothing: accessor has no is_placeholder()
+    }
+  };
+};
+
+/** @brief Check all available accessor members to ensure no failure occured
+ */
+template <typename accTag>
 class check_accessor_members {
- public:
-  static void check(
-      const cl::sycl::accessor<T, dims, kMode, kTarget, isPlaceholder> a,
-      size_t size, size_t count, cl::sycl::id<dims> offset,
-      cl::sycl::range<dims> range, std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(dims, kMode, kTarget, isPlaceholder, operation);
+  using acc_t = typename accTag::type;
+public:
+  /** @brief Run verification for each member tag passed
+   *  @tparam membersT Deduced parameter pack type with tags
+   *                   from accessor_members namespace
+   */
+  template <typename ... membersT>
+  static void check(sycl_cts::util::logger &log, const acc_t& accessor,
+                    const std::string& operation, const std::string& typeName,
+                    membersT ... members) {
+    int packExpansion[] = {(
+      members.template check<accTag>(accessor, log, operation, typeName),
+      0 // Dummy initialization value
+    )...};
+    static_cast<void>(packExpansion);
+  }
+};
 
-    bool placeholderValue =
-        (isPlaceholder == cl::sycl::access::placeholder::true_t);
+/** @brief Check accessor is Copy Constructible
+ */
+template <typename accTag>
+class check_accessor_copy_constructable {
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{a};
 
-    if (a.get_size() != size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
+    check_accessor_members<accTag>::check(
+        log, b, "copy construction", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::range<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
+
+    // check operator ==
+    if (!(a == b)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator==)");
+    }
+    if (!(b == a)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator== symmetry failed)");
+    }
+    if (a != b) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator!=)");
+    }
+    if (b != a) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor is not equality-comparable (operator!= symmetry failed)");
     }
 
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
+    // check std::hash<accessor<>>
+    std::hash<typename accTag::type> hasher;
 
-    if (a.get_offset() != offset) {
-      FAIL(log, (error_message + " check(get_offset)").c_str());
-    }
-
-    if (a.get_range() != range) {
-      FAIL(log, (error_message + " check(get_range)").c_str());
-    }
-
-    if (a.is_placeholder() != placeholderValue) {
-      FAIL(log, (error_message + " check(is_placeholder)").c_str());
+    if (hasher(a) != hasher(b)) {
+      fail_for_accessor<accTag>(
+          log, typeName,
+          "accessor hashing of equal failed");
     }
   }
 };
 
-/** specialization of check_accessor_members for 0 dimensional buffer accessors
+/** @brief Check accessor is Copy Assignable
  */
-template <typename T, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder isPlaceholder>
-class check_accessor_members<T, 0, kMode, kTarget, isPlaceholder> {
- public:
-  static void check(
-      const cl::sycl::accessor<T, 0, kMode, kTarget, isPlaceholder> a,
-      size_t size, size_t count, std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(0, kMode, kTarget, isPlaceholder, operation);
+template <typename accTag>
+class check_accessor_copy_assignable {
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = a;
 
-    bool placeholderValue =
-        (isPlaceholder == cl::sycl::access::placeholder::true_t);
-
-    if (a.get_size() != size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
-    }
-
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
-
-    if (a.is_placeholder() != placeholderValue) {
-      FAIL(log, (error_message + " check(is_placeholder)").c_str());
-    }
+    check_accessor_members<accTag>::check(
+        log, b, "copy assignment", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::range<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 
-/** specialization of check_accessor_members for n dimensional local accessors
+/** @brief Check accessor is Move Constructible
  */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_members<T, dims, kMode, cl::sycl::access::target::local,
-                             cl::sycl::access::placeholder::false_t> {
- public:
-  static void check(
-      const cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::local,
-                               cl::sycl::access::placeholder::false_t>
-          a,
-      size_t size, size_t count, std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(dims, kMode, cl::sycl::access::target::local,
-                          cl::sycl::access::placeholder::false_t, operation);
+template <typename accTag>
+class check_accessor_move_constructable {
+public:
+  static void check(const typename accTag::type& a,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    auto b{std::move(a)};
 
-    if (a.get_size() != size) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
-    }
-
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
+    check_accessor_members<accTag>::check(
+        log, b, "move construction", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::range<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 
-/** specialization of check_accessor_members for 0 dimensional local accessors
+/** @brief Check accessor is Move Assignable
  */
-template <typename T, cl::sycl::access::mode kMode>
-class check_accessor_members<T, 0, kMode, cl::sycl::access::target::local,
-                             cl::sycl::access::placeholder::false_t> {
- public:
-  static void check(
-      const cl::sycl::accessor<T, 0, kMode, cl::sycl::access::target::local,
-                               cl::sycl::access::placeholder::false_t>
-          a,
-      std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(0, kMode, cl::sycl::access::target::local,
-                          cl::sycl::access::placeholder::false_t, operation);
+template <typename accTag>
+class check_accessor_move_assignable {
+public:
+  static void check(const typename accTag::type& a,
+                    typename accTag::type& b,
+                    sycl_cts::util::logger &log,
+                    const std::string& typeName) {
+    b = std::move(a);
 
-    if (a.get_size() != sizeof(T)) {
-      FAIL(log, (error_message + " check(get_size)").c_str());
-    }
-
-    if (a.get_count() != 1) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
-  }
-};
-
-/** specialization of check_accessor_members for image accessors
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_members<T, dims, kMode, cl::sycl::access::target::image,
-                             cl::sycl::access::placeholder::false_t> {
- public:
-  static void check(
-      const cl::sycl::accessor<T, dims, kMode, cl::sycl::access::target::image,
-                               cl::sycl::access::placeholder::false_t>
-          a,
-      cl::sycl::range<dims> range, size_t count, std::string operation,
-      util::logger &log) {
-    std::string error_message =
-        get_error_message(dims, kMode, cl::sycl::access::target::image,
-                          cl::sycl::access::placeholder::false_t, operation);
-
-    if (a.get_range() != range) {
-      FAIL(log, (error_message + " check(get_range)").c_str());
-    }
-
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
-  }
-};
-
-/** specialization of check_accessor_members for host_images accessors
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_members<T, dims, kMode,
-                             cl::sycl::access::target::host_image,
-                             cl::sycl::access::placeholder::false_t> {
- public:
-  static void check(const cl::sycl::accessor<
-                        T, dims, kMode, cl::sycl::access::target::host_image,
-                        cl::sycl::access::placeholder::false_t>
-                        a,
-                    cl::sycl::range<dims> range, size_t count,
-                    std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(dims, kMode, cl::sycl::access::target::host_image,
-                          cl::sycl::access::placeholder::false_t, operation);
-
-    if (a.get_range() != range) {
-      FAIL(log, (error_message + " check(get_range)").c_str());
-    }
-
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
-  }
-};
-
-/** specialization of check_accessor_members for image_array accessors
- */
-template <typename T, size_t dims, cl::sycl::access::mode kMode>
-class check_accessor_members<T, dims, kMode,
-                             cl::sycl::access::target::image_array,
-                             cl::sycl::access::placeholder::false_t> {
- public:
-  static void check(const cl::sycl::accessor<
-                        T, dims, kMode, cl::sycl::access::target::image_array,
-                        cl::sycl::access::placeholder::false_t>
-                        a,
-                    cl::sycl::range<dims + 1> range, size_t count,
-                    std::string operation, util::logger &log) {
-    std::string error_message =
-        get_error_message(dims, kMode, cl::sycl::access::target::image_array,
-                          cl::sycl::access::placeholder::false_t, operation);
-
-    if (a.get_range() != range) {
-      FAIL(log, (error_message + " check(get_range)").c_str());
-    }
-
-    if (a.get_count() != count) {
-      FAIL(log, (error_message + " check(get_count)").c_str());
-    }
+    check_accessor_members<accTag>::check(
+        log, b, "move assignment", typeName,
+        accessor_members::size::from<accTag>(a),
+        accessor_members::count::from<accTag>(a),
+        accessor_members::offset<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::range<accTag::dataDims>::template from<accTag>(a),
+        accessor_members::placeholder::from<accTag>(a));
   }
 };
 

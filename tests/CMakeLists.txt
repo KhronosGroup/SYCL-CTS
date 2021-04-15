@@ -78,6 +78,38 @@ function(get_opencl_type OUT_LIST)
   set(${OUT_LIST} ${${OUT_LIST}} ${OPENCL_TYPE_LIST} PARENT_SCOPE)
 endfunction()
 
+function(get_no_vec_alias_type OUT_LIST)
+  set(NO_VEC_ALIAS_LIST "")
+  list(APPEND NO_VEC_ALIAS_LIST cl::sycl::byte)
+
+  set(${OUT_LIST} ${${OUT_LIST}} ${NO_VEC_ALIAS_LIST} PARENT_SCOPE)
+endfunction()
+
+function(get_fixed_width_type OUT_LIST)
+  set(FIXED_WIDTH_LIST "")
+  list(APPEND FIXED_WIDTH_LIST std::int8_t
+    std::int16_t
+    std::int32_t
+    std::int64_t
+    std::uint8_t
+    std::uint16_t
+    std::uint32_t
+    std::uint64_t)
+
+  set(${OUT_LIST} ${${OUT_LIST}} ${FIXED_WIDTH_LIST} PARENT_SCOPE)
+endfunction()
+
+macro(half_double_filter list)
+  if(NOT SYCL_CTS_ENABLE_DOUBLE_TESTS)
+    list(REMOVE_ITEM ${list} double cl::sycl::cl_double)
+  endif()
+
+  if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
+    list(REMOVE_ITEM ${list} cl::sycl::half cl::sycl::cl_half)
+  endif()
+
+endmacro()
+
 # Create a target to trigger the generation of CTS test
 add_custom_target(generate_test_sources)
 
