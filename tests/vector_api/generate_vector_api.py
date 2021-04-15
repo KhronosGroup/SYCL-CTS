@@ -13,15 +13,14 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file, get_reverse_type)
+                               write_source_file, get_types)
 
 TEST_NAME = 'API'
 
 vector_api_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
-        ${type} vals[] = {${vals}};
         ${type} reversed_vals[] = {${reversed_vals}};
-        if (!check_vector_member_functions<${type}, ${convertType}, ${asType}>(inputVec, vals)) {
+        if (!check_vector_get_count_get_size<${type}>(inputVec)) {
           resAcc[0] = false;
         }
         cl::sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};
@@ -32,102 +31,95 @@ vector_api_template = Template("""
             sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
           resAcc[0] = false;
         }
+        check_convert_as_all_types<${type}, ${size}>(inputVec);
 """)
 
 lo_hi_odd_even_template = Template("""
+        ${type} vals[] = {${vals}};
         if (!check_lo_hi_odd_even<${type}>(inputVec, vals)) {
           resAcc[0] = false;
         }
 """)
 
-
-def make_host_kernel_name(type_str, size):
-    return 'KERNEL_API_HOST_T' + type_str.replace('cl::sycl::', '').replace(
-        ' ', '') + str(size)
-
-
-def make_interop_kernel_name(type_str, size):
-    return 'KERNEL_APIINTEROP_T_' + type_str.replace('cl::sycl::', '').replace(
-        ' ', '') + str(size)
+as_convert_call_template = Template("""
+        auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
+        check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec);
+        check_convert_as_all_dims<${type}, ${size}, ${dest_type2}>(inputVec);
+""")
 
 
-def gen_host_checks(type_str, reverse_type_str, size):
-    """Uses the above string templates to generate tests for each vec api function except load and store.
-    Load and store are handled separately.
-    lo() hi() odd() and even() are handled with a separate function and template to other api functions
-    as they can only be performed on vectors of size 2 or greater."""
+def gen_checks(type_str, size):
     vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
     reverse_vals_list = vals_list[::-1]
-    kernel_name = make_host_kernel_name(type_str, size)
+    kernel_name = 'KERNEL_API_' + type_str + str(size)
     test_string = vector_api_template.substitute(
         type=type_str,
         size=size,
         vals=', '.join(vals_list),
         reversed_vals=', '.join(reverse_vals_list),
-        convertType=reverse_type_str,
-        asType=reverse_type_str,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
+    if 'double' in type_str:
+        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
+                size) + ', double>(inputVec);\n'
+        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
+                size) + ', cl::sycl::cl_double>(inputVec);\n'
+    if 'half' in type_str:
+        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
+                size) + ', cl::sycl::half>(inputVec);\n'
+        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
+                size) + ', cl::sycl::cl_half>(inputVec);\n'
     if size != 1:
-        test_string += lo_hi_odd_even_template.substitute(type=type_str)
+        test_string += lo_hi_odd_even_template.substitute(
+        type=type_str,
+        vals=', '.join(vals_list))
     string = wrap_with_kernel(
         type_str, kernel_name,
         'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
         test_string)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
-
-def gen_interop_checks(type_str, reverse_type_str, size):
-    vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
-    reverse_vals_list = vals_list[::-1]
-    kernel_name = make_interop_kernel_name(type_str, size)
-    test_string = vector_api_template.substitute(
+def gen_optional_checks(type_str, size, dest, dest_types, TEST_NAME_OP):
+    kernel_name = 'KERNEL_CONVERT_AS_' + type_str + str(size) + dest
+    test_string = as_convert_call_template.substitute(
         type=type_str,
         size=size,
-        vals=', '.join(vals_list),
-        reversed_vals=', '.join(reverse_vals_list),
-        convertType=reverse_type_str,
-        asType=reverse_type_str,
-        swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
-    if size != 1:
-        test_string += lo_hi_odd_even_template.substitute(type=type_str)
-    string = wrap_with_kernel(
-        type_str, kernel_name,
-        'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
-        test_string)
-    return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
+        vals=', '.join(append_fp_postfix(type_str, Data.vals_list_dict[size])),
+        dest_type1=dest_types[0],
+        dest_type2=dest_types[1])
 
-def make_tests(type_str, input_file, output_file):
-    reverse_type_str = get_reverse_type(type_str)
-    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
+    string = wrap_with_kernel(
+        dest_types[0], kernel_name,
+        'convert() as() test for cl::sycl::vec<' + type_str + ', ' + str(size) + '> to '+ dest,
+        test_string)
+    return wrap_with_test_func(TEST_NAME_OP, type_str, string, str(size))
+
+def make_optional_tests(type_str, input_file, output_file, dest, dest_types):
+    api_checks = ''
+    func_calls = ''
+    TEST_NAME_OP = TEST_NAME + '_as_convert_to_' + dest
+    for size in Data.standard_sizes:
+        api_checks += gen_optional_checks(type_str, size, dest, dest_types, TEST_NAME_OP)
+        func_calls += make_func_call(TEST_NAME_OP, type_str, str(size))
+    write_source_file(api_checks, func_calls, TEST_NAME_OP, input_file,
+                    output_file.replace('.cpp','_as_convert_to_'+dest+'.cpp'), type_str)
+
+def make_tests(type_str, input_file, output_file, target_enable):
     api_checks = ''
     func_calls = ''
     for size in Data.standard_sizes:
-        if is_opencl_type:
-            api_checks += gen_interop_checks(type_str, reverse_type_str, size)
-        else:
-            api_checks += gen_host_checks(type_str, reverse_type_str, size)
+        api_checks += gen_checks(type_str, size)
         func_calls += make_func_call(TEST_NAME, type_str, str(size))
     write_source_file(api_checks, func_calls, TEST_NAME, input_file,
                       output_file, type_str)
 
-def get_types():
-    types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
-        for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
+    if '64' in target_enable and  not('double' in type_str):
+        make_optional_tests(type_str, input_file, output_file, 'fp64',
+                            ['double', 'cl::sycl::cl_double'])
 
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
+    if '16' in target_enable and not('half' in type_str):
+        make_optional_tests(type_str, input_file, output_file, 'fp16',
+                            ['cl::sycl::half', 'cl::sycl::cl_half'])
+
 
 def main():
     argparser = argparse.ArgumentParser(
@@ -149,9 +141,14 @@ def main():
         dest="output",
         metavar='<out file>',
         help='CTS test output')
+    argparser.add_argument(
+        '-target-enable',
+        required=True,
+        dest="target_enable",
+        help='Option to generate tests for convert() and as() with double and half as target types')
     args = argparser.parse_args()
 
-    make_tests(args.ty, args.template, args.output)
+    make_tests(args.ty, args.template, args.output, args.target_enable)
 
 if __name__ == '__main__':
     main()

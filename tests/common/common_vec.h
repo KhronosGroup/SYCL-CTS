@@ -12,20 +12,19 @@
 // include our proxy to the real sycl header
 #include "sycl.h"
 
+#include "../../util/accuracy.h"
+#include "../../util/math_vector.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
+#include "../../util/type_traits.h"
 #include "../common/common.h"
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
 #include "../common/get_cts_object.h"
 #include "macros.h"
 
-#include "../../util/accuracy.h"
-#include "../../util/math_vector.h"
-#include "../../util/test_base.h"
-#include "../../util/type_traits.h"
-
+#include <cstdint>
 #include <string>
 #include <type_traits>
 
@@ -112,13 +111,9 @@ bool check_single_vector_op(vectorType vector1, lambdaFunc lambda) {
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 1> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 1> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 1) {
@@ -138,7 +133,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 1> inputVec,
   if (size != sizeof(vecType) * 1) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 1> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 1> convertedVec =
       inputVec
@@ -146,26 +148,25 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 1> inputVec,
   convertedVec =
       inputVec.template swizzle<cl::sycl::elem::s0>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
-  // as()
-  cl::sycl::vec<asType, 1> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 1>>();
-  asVec = inputVec.template swizzle<cl::sycl::elem::s0>()
-              .template as<cl::sycl::vec<asType, 1>>();
-  return true;
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 1> inputVec) {
+  asType asVec = inputVec.template as<asType>();
+  asVec = inputVec.template swizzle<cl::sycl::elem::s0>().template as<asType>();
 }
 
 /**
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 2> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 2> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 2) {
@@ -187,7 +188,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 2> inputVec,
   if (size != sizeof(vecType) * 2) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 2> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 2> convertedVec =
       inputVec
@@ -195,26 +203,27 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 2> inputVec,
   convertedVec =
       inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 2> inputVec) {
   // as()
-  cl::sycl::vec<asType, 2> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 2>>();
+  asType asVec = inputVec.template as<asType>();
   asVec = inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
-              .template as<cl::sycl::vec<asType, 2>>();
-  return true;
+              .template as<asType>();
 }
 
 /**
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 3> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 3> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 3) {
@@ -240,7 +249,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 3> inputVec,
   if (size != sizeof(vecType) * 4) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 3> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 3> convertedVec =
       inputVec
@@ -250,28 +266,28 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 3> inputVec,
           .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
                             cl::sycl::elem::s2>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 3> inputVec) {
   // as()
-  cl::sycl::vec<asType, 3> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 3>>();
-  asVec = inputVec
-              .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2>()
-              .template as<cl::sycl::vec<asType, 3>>();
-  return true;
+  asType asVec = inputVec.template as<asType>();
+  asVec = inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                                    cl::sycl::elem::s2>()
+              .template as<asType>();
 }
 
 /**
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 4> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 4> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 4) {
@@ -297,7 +313,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 4> inputVec,
   if (size != sizeof(vecType) * 4) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 4> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 4> convertedVec =
       inputVec
@@ -307,28 +330,28 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 4> inputVec,
           .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
                             cl::sycl::elem::s2, cl::sycl::elem::s3>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 4> inputVec) {
   // as()
-  cl::sycl::vec<asType, 4> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 4>>();
-  asVec = inputVec
-              .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2, cl::sycl::elem::s3>()
-              .template as<cl::sycl::vec<asType, 4>>();
-  return true;
+  asType asVec = inputVec.template as<asType>();
+  asVec = inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                                    cl::sycl::elem::s2, cl::sycl::elem::s3>()
+              .template as<asType>();
 }
 
 /**
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 8> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 8> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 8) {
@@ -358,7 +381,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 8> inputVec,
   if (size != sizeof(vecType) * 8) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 8> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 8> convertedVec =
       inputVec
@@ -370,30 +400,30 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 8> inputVec,
                             cl::sycl::elem::s4, cl::sycl::elem::s5,
                             cl::sycl::elem::s6, cl::sycl::elem::s7>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 8> inputVec) {
   // as()
-  cl::sycl::vec<asType, 8> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 8>>();
-  asVec = inputVec
-              .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2, cl::sycl::elem::s3,
-                                cl::sycl::elem::s4, cl::sycl::elem::s5,
-                                cl::sycl::elem::s6, cl::sycl::elem::s7>()
-              .template as<cl::sycl::vec<asType, 8>>();
-  return true;
+  asType asVec = inputVec.template as<asType>();
+  asVec = inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                                    cl::sycl::elem::s2, cl::sycl::elem::s3,
+                                    cl::sycl::elem::s4, cl::sycl::elem::s5,
+                                    cl::sycl::elem::s6, cl::sycl::elem::s7>()
+              .template as<asType>();
 }
 
 /**
  * @brief Helper function to test the following functions of a vec
  * get_count()
  * get_size()
- * convert()
- * as()
- * vec<dataT, numElement>(genvector clVector)
  */
-template <typename vecType, typename convertType, typename asType>
-bool check_vector_member_functions(cl::sycl::vec<vecType, 16> inputVec,
-                                   vecType* vals) {
+template <typename vecType>
+bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 16> inputVec) {
   // get_count()
   int count = inputVec.get_count();
   if (count != 16) {
@@ -429,7 +459,14 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 16> inputVec,
   if (size != sizeof(vecType) * 16) {
     return false;
   }
+  return true;
+}
 
+/**
+ * @brief Helper function to test the convert() function of a vec
+ */
+template <typename vecType, typename convertType>
+void check_vector_convert(cl::sycl::vec<vecType, 16> inputVec) {
   // convert()
   cl::sycl::vec<convertType, 16> convertedVec =
       inputVec
@@ -444,20 +481,119 @@ bool check_vector_member_functions(cl::sycl::vec<vecType, 16> inputVec,
               cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
               cl::sycl::elem::sF>()
           .template convert<convertType, cl::sycl::rounding_mode::automatic>();
+}
 
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, typename asType>
+void check_vector_as(cl::sycl::vec<vecType, 16> inputVec) {
   // as()
-  cl::sycl::vec<asType, 16> asVec =
-      inputVec.template as<cl::sycl::vec<asType, 16>>();
-  asVec = inputVec
-              .template swizzle<
+  asType asVec = inputVec.template as<asType>();
+  asVec =
+      inputVec.template swizzle<
                   cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
                   cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
                   cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
                   cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
                   cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
                   cl::sycl::elem::sF>()
-              .template as<cl::sycl::vec<asType, 16>>();
-  return true;
+          .template as<asType>();
+}
+
+/**
+ * @brief Helper function to test as() function of a vec for asType
+ * as()
+ */
+template <typename vecType, int N, typename asType>
+typename std::enable_if<sizeof(cl::sycl::vec<vecType, N>) == sizeof(asType),
+                        void>::type
+check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
+  check_vector_as<vecType, asType>(inputVec);
+}
+
+/**
+ * @brief Helper function to exclude types that with different storage size for
+ * as() tests
+ * as()
+ */
+template <typename vecType, int N, typename asType>
+typename std::enable_if<sizeof(cl::sycl::vec<vecType, N>) != sizeof(asType),
+                        void>::type
+    check_vectorN_as(cl::sycl::vec<vecType, N>) {}
+
+/**
+ * @brief Helper function to test as() and convert() functions for all vector
+ * sizes
+ */
+template <typename vecType, int N, typename newVecType>
+void check_convert_as_all_dims(cl::sycl::vec<vecType, N> inputVec) {
+  check_vector_convert<vecType, newVecType>(inputVec);
+
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 1>>(inputVec);
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 2>>(inputVec);
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 3>>(inputVec);
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 4>>(inputVec);
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 8>>(inputVec);
+  check_vectorN_as<vecType, N, cl::sycl::vec<newVecType, 16>>(inputVec);
+}
+
+/**
+ * @brief Helper function to test as() and convert() functions for all types
+ */
+template <typename vecType, int N>
+void check_convert_as_all_types(cl::sycl::vec<vecType, N> inputVec) {
+  check_convert_as_all_dims<vecType, N, char>(inputVec);
+  check_convert_as_all_dims<vecType, N, signed char>(inputVec);
+  check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
+  check_convert_as_all_dims<vecType, N, short int>(inputVec);
+  check_convert_as_all_dims<vecType, N, unsigned short int>(inputVec);
+  check_convert_as_all_dims<vecType, N, int>(inputVec);
+  check_convert_as_all_dims<vecType, N, unsigned int>(inputVec);
+  check_convert_as_all_dims<vecType, N, long int>(inputVec);
+  check_convert_as_all_dims<vecType, N, unsigned long int>(inputVec);
+  check_convert_as_all_dims<vecType, N, long long int>(inputVec);
+  check_convert_as_all_dims<vecType, N, unsigned long long int>(inputVec);
+  check_convert_as_all_dims<vecType, N, float>(inputVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+  check_convert_as_all_dims<vecType, N, cl::sycl::byte>(inputVec);
+
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_char>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_uchar>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_short>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_ushort>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_int>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_uint>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_long>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_ulong>(inputVec);
+  check_convert_as_all_dims<vecType, N, cl::sycl::cl_float>(inputVec);
+
+#ifdef INT8_MAX
+  check_convert_as_all_dims<vecType, N, std::int8_t>(inputVec);
+#endif
+#ifdef INT16_MAX
+  check_convert_as_all_dims<vecType, N, std::int16_t>(inputVec);
+#endif
+#ifdef INT32_MAX
+  check_convert_as_all_dims<vecType, N, std::int32_t>(inputVec);
+#endif
+#ifdef INT64_MAX
+  check_convert_as_all_dims<vecType, N, std::int64_t>(inputVec);
+#endif
+#ifdef UINT8_MAX
+  check_convert_as_all_dims<vecType, N, std::uint8_t>(inputVec);
+#endif
+#ifdef UINT16_MAX
+  check_convert_as_all_dims<vecType, N, std::uint16_t>(inputVec);
+#endif
+#ifdef UINT32_MAX
+  check_convert_as_all_dims<vecType, N, std::uint32_t>(inputVec);
+#endif
+#ifdef UINT64_MAX
+  check_convert_as_all_dims<vecType, N, std::uint64_t>(inputVec);
+#endif
+#endif // ifdef SYCL_CTS_EXTENSIVE_MODE
 }
 
 /**
