@@ -1,6 +1,8 @@
 from . import sycl_functions
 from . import sycl_types
 import random
+from string import Template
+import re
 
 test_case_templates = { "private" : ("""
 {
@@ -157,42 +159,57 @@ def generate_arguments(types, sig, memory):
         arg_index += 1
     return (arg_names, arg_src)
 
+function_call_template = Template("""
+        ${arg_src}
+        return ${namespace}::${func_name}(${arg_names});
+""")
 def generate_function_call(sig, arg_names, arg_src):
-    fc = arg_src
-    fc += "return " + sig.namespace + "::" + sig.name + "("
-    for arg_n in arg_names:
-        fc += arg_n + ","
-    fc = fc[:-1] + ");\n"
+    fc = function_call_template.substitute(
+        arg_src=arg_src,
+        namespace=sig.namespace,
+        func_name=sig.name,
+        arg_names=",".join(arg_names))
     return fc
 
+function_private_call_template = Template("""
+        ${arg_src}
+        ${ret_type} res = ${namespace}::${func_name}(${arg_names});
+        return privatePtrCheck<${ret_type}, ${arg_type}>(res, multiPtrSourceData);
+""")
 def generate_function_private_call(sig, arg_names, arg_src, types):
-    fc = arg_src
-    fc += "$RETURN_TYPE res = " + sig.namespace + "::" + sig.name + "("
-    for arg_n in arg_names:
-        fc += arg_n + ","
-    fc = fc[:-1] + ");\n"
-    fc += "return privatePtrCheck<" + sig.ret_type + ","
-    fc += extract_type(types[sig.arg_types[-1]]).name + ">("
-    fc += "res, multiPtrSourceData);\n"
+    fc = function_private_call_template.substitute(
+        arg_src=arg_src,
+        namespace=sig.namespace,
+        func_name=sig.name,
+        arg_names=",".join(arg_names),
+        ret_type=sig.ret_type,
+        arg_type=extract_type(types[sig.arg_types[-1]]).name)
     return fc
 
+reference_template = Template("""
+        ${arg_src}
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names});
+""")
 def generate_reference(sig, arg_names, arg_src):
-    fc = arg_src
-    fc += "resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
-    for arg_n in arg_names:
-        fc += arg_n + ","
-    fc = fc[:-1] + ");\n"
+    fc = reference_template.substitute(
+        arg_src=arg_src,
+        func_name=sig.name,
+        ret_type=sig.ret_type,
+        arg_names=",".join(arg_names))
     return fc
 
+reference_ptr_template = Template("""
+        ${arg_src}
+        ${arg_type} refPtr = multiPtrSourceData;
+        sycl_cts::resultRef<${ret_type}> ref = reference::${func_name}(${arg_names}, &refPtr);
+""")
 def generate_reference_ptr(types, sig, arg_names, arg_src):
-    fc = arg_src[:arg_src.rfind('\n', 0, -1)] + "\n"
-    fc += extract_type(types[sig.arg_types[-1]]).name
-    fc += " refPtr = multiPtrSourceData;\n"
-    fc += "resultRef<$RETURN_TYPE> ref = reference::" + sig.name + "("
-    for arg_n in arg_names[:-1]:
-        fc += arg_n + ","
-    fc += "&refPtr"
-    fc = fc + ");\n"
+    fc = reference_ptr_template.substitute(
+        arg_src=re.sub(r'^cl::sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
+        func_name=sig.name,
+        ret_type=sig.ret_type,
+        arg_names=",".join(arg_names[:-1]),
+        arg_type=extract_type(types[sig.arg_types[-1]]).name)
     return fc
 
 def generate_test_case(test_id, types, sig, memory, check):
@@ -293,6 +310,8 @@ def expand_signature(runner, types, signature):
     # to control cases when some arg types are base type of ret type
     sgeninteger = False
     exp_sig = []
+    # to control cases when arg types are base type of ret type
+    sgeninteger = False
     for arg in signature.arg_types:
         current_types.extend([types[arg]])
         if arg == "sgeninteger":
