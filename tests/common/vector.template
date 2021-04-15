@@ -6,6 +6,7 @@
 //
 **************************************************************************/
 
+$IFDEF
 #define SYCL_SIMPLE_SWIZZLES
 
 #include "../common/common.h"
@@ -38,3 +39,4 @@ class TEST_NAME : public util::test_base {
 util::test_proxy<TEST_NAME> proxy;
 
 } /* namespace vector_$CATEGORY_$TYPE_NAME__ */
+$ENDIF

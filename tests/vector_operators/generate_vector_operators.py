@@ -13,7 +13,7 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file)
+                               write_source_file, get_types)
 
 TEST_NAME = 'OPERATORS'
 
@@ -1162,8 +1162,7 @@ def generate_all_type_test(type_str, size):
         test_value_1=1,
         test_value_2=2)
     return wrap_with_kernel(type_str,
-                            'VEC_ALL_TYPE_OPERATOR_KERNEL_' + type_str.replace(
-                                'cl::sycl::', '').replace(' ', '') + str(size),
+                            'VEC_ALL_TYPE_OPERATOR_KERNEL_' + type_str + str(size),
                             'All types operator test, cl::sycl::vec<' +
                             type_str + ', ' + str(size) + '>', test_string)
 
@@ -1178,7 +1177,7 @@ def generate_all_types_specific_return_type_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_SPECIFIC_RETURN_TYPE_OPERATOR_KERNEL_' +
-        type_str.replace('cl::sycl::', '').replace(' ', '') + str(size),
+        type_str + str(size),
         'Specific return type operator test, cl::sycl::vec<' + type_str +
         ', ' + str(size) + '>', test_string)
 
@@ -1192,7 +1191,7 @@ def generate_non_fp_bitwise_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_BITWISE_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
         'Non FP bitwise operator test, cl::sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
@@ -1206,7 +1205,7 @@ def generate_non_fp_assignment_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_ASSIGNMENT_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
         'Non FP assignment operator test, cl::sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
@@ -1220,7 +1219,7 @@ def generate_non_fp_arithmetic_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_ARITHMETIC_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '') + str(size),
+            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
         'Non FP arithmetic operator test, cl::sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
@@ -1267,26 +1266,6 @@ def generate_operator_tests(type_str, input_file, output_file):
                                          type_str, str(size))
     write_source_file(test_func_str, func_calls, TEST_NAME, input_file,
                       output_file, type_str)
-
-def get_types():
-    types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
-        for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                    or base_type == 'cl::sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
-
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
-
 
 def main():
     argparser = argparse.ArgumentParser(
