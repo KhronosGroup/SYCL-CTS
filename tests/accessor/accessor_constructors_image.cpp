@@ -23,14 +23,20 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T>
-  void check_all_dims(util::logger &log, cl::sycl::queue &queue,
-                      const std::string& typeName) {
+  template <typename T, typename ... allocatorT>
+  void check_all_dims_impl(util::logger &log, cl::sycl::queue &queue,
+                           const std::string& typeName) {
     image_accessor_dims<T, 1>::check(log, queue, typeName);
     image_accessor_dims<T, 2>::check(log, queue, typeName);
     image_accessor_dims<T, 3>::check(log, queue, typeName);
     image_array_accessor_dims<T, 1>::check(log, queue, typeName);
     image_array_accessor_dims<T, 2>::check(log, queue, typeName);
+  }
+
+  template <typename T, typename ... argsT>
+  void check_all_dims(argsT&& ... args) {
+    check_all_dims_impl<T>(std::forward<argsT>(args)...);
+    check_all_dims_impl<T, std::allocator<T>>(std::forward<argsT>(args)...);
   }
 
   /** execute this test

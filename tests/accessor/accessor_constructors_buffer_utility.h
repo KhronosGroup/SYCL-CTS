@@ -24,21 +24,23 @@ using namespace sycl_cts;
 
 /** @brief Creates a buffer accessor and checks all its members for correctness
  */
-template <typename accTag>
+template <typename accTag, typename ... propertyListT>
 class check_accessor_constructor_buffer {
 public:
   /** @brief Overload to verify all constructors w/o range and offset
    */
-  template <typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims>
-                        &buffer,
+  template <typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims,
+                                     allocatorT> &buffer,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
+                    const propertyListT& ... properties,
                     handlerArgsT&& ... handler) {
     // construct the accessor
     typename accTag::type accessor(buffer,
-                                   std::forward<handlerArgsT>(handler)...);
+                                   std::forward<handlerArgsT>(handler)...,
+                                   properties...);
     const auto offset =
         sycl_cts::util::get_cts_object::id<accTag::dataDims>::get(0, 0, 0);
 
@@ -53,18 +55,20 @@ public:
   }
   /** @brief Overload to verify all constructors with range only
    */
-  template <typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims>
-                        &buffer,
+  template <typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims,
+                                     allocatorT> &buffer,
                     cl::sycl::range<accTag::dataDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
+                    const propertyListT& ... properties,
                     handlerArgsT&& ... handler) {
     // construct the accessor
     typename accTag::type accessor(buffer,
                                    std::forward<handlerArgsT>(handler)...,
-                                   range);
+                                   range,
+                                   properties...);
     const auto offset =
         sycl_cts::util::get_cts_object::id<accTag::dataDims>::get(0, 0, 0);
 
@@ -79,19 +83,21 @@ public:
   }
   /** @brief Overload to verify all constructors with range and offset
    */
-  template <typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims>
-                        &buffer,
+  template <typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<typename accTag::dataT, accTag::dataDims,
+                                     allocatorT> &buffer,
                     cl::sycl::range<accTag::dataDims> range,
                     cl::sycl::id<accTag::dataDims> offset,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
+                    const propertyListT& ... properties,
                     handlerArgsT&& ... handler) {
     // construct the accessor
     typename accTag::type accessor(buffer,
                                    std::forward<handlerArgsT>(handler)...,
-                                   range, offset);
+                                   range, offset,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
@@ -110,8 +116,9 @@ template <typename T, size_t dims, cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 class check_all_accessor_constructors_buffer {
 public:
-  template <cl::sycl::access::mode mode, typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<T, dims> &buffer,
+  template <cl::sycl::access::mode mode, typename allocatorT,
+            typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<T, dims, allocatorT> &buffer,
                     cl::sycl::range<dims> range,
                     cl::sycl::id<dims> offset,
                     sycl_cts::util::logger &log,
@@ -119,29 +126,61 @@ public:
                     handlerArgsT&& ... handler) {
     // Run verification for accessors with dim > 0
     using accTag = accessor_type_info<T, dims, mode, target, placeholder>;
-    using verifier = check_accessor_constructor_buffer<accTag>;
 
     constexpr bool usesHander = sizeof...(handlerArgsT) != 0;
     {
+      using verifier = check_accessor_constructor_buffer<accTag>;
+      {
       const auto constructorName = usesHander ?
           "constructor(buffer, handler)" :
           "constructor(buffer)";
       verifier::check(buffer,
                       log, constructorName, typeName, handler...);
+      }
+      {
+        const auto constructorName = usesHander ?
+            "constructor(buffer, handler, range)" :
+            "constructor(buffer, range)";
+        verifier::check(buffer, range,
+                        log, constructorName, typeName, handler...);
+      }
+      {
+        const auto constructorName = usesHander ?
+            "constructor(buffer, handler, range, offset)" :
+            "constructor(buffer, range, offset)";
+        verifier::check(buffer, range, offset,
+                        log, constructorName, typeName, handler...);
+      }
     }
     {
-      const auto constructorName = usesHander ?
-          "constructor(buffer, handler, range)" :
-          "constructor(buffer, range)";
-      verifier::check(buffer, range,
-                      log, constructorName, typeName, handler...);
-    }
-    {
-      const auto constructorName = usesHander ?
-          "constructor(buffer, handler, range, offset)" :
-          "constructor(buffer, range, offset)";
-      verifier::check(buffer, range, offset,
-                      log, constructorName, typeName, handler...);
+      using property_list = cl::sycl::property_list;
+      using verifier = check_accessor_constructor_buffer<accTag, property_list>;
+
+      auto context = util::get_cts_object::context();
+      property_list properties {
+          cl::sycl::property::buffer::context_bound(context)};
+
+      {
+        const auto constructorName = usesHander ?
+            "constructor(buffer, handler, property_list)" :
+            "constructor(buffer, property_list)";
+        verifier::check(buffer,
+                        log, constructorName, typeName, properties, handler...);
+      }
+      {
+        const auto constructorName = usesHander ?
+            "constructor(buffer, handler, range, property_list)" :
+            "constructor(buffer, range, property_list)";
+        verifier::check(buffer, range,
+                        log, constructorName, typeName, properties, handler...);
+      }
+      {
+        const auto constructorName = usesHander ?
+            "constructor(buffer, handler, range, offset, property_list)" :
+            "constructor(buffer, range, offset, property_list)";
+        verifier::check(buffer, range, offset,
+                        log, constructorName, typeName, properties, handler...);
+      }
     }
   }
 };
@@ -152,8 +191,9 @@ template <typename T, cl::sycl::access::target target,
 class check_all_accessor_constructors_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
 public:
-  template <cl::sycl::access::mode mode, typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<T, 1> &buffer,
+  template <cl::sycl::access::mode mode, typename allocatorT,
+            typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<T, 1, allocatorT> &buffer,
                     cl::sycl::range<1> range,
                     cl::sycl::id<1> offset,
                     sycl_cts::util::logger &log,
@@ -179,8 +219,9 @@ template <typename T, size_t dims, cl::sycl::access::target target,
           cl::sycl::access::placeholder placeholder>
 class check_accessor_common_by_reference_buffer {
 public:
-  template <cl::sycl::access::mode mode, typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<T, dims> &buffer,
+  template <cl::sycl::access::mode mode, typename allocatorT,
+            typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<T, dims, allocatorT> &buffer,
                     cl::sycl::range<dims> range,
                     cl::sycl::id<dims> offset,
                     sycl_cts::util::logger &log,
@@ -227,8 +268,9 @@ template <typename T, cl::sycl::access::target target,
 class check_accessor_common_by_reference_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
 public:
-  template <cl::sycl::access::mode mode, typename ... handlerArgsT>
-  static void check(cl::sycl::buffer<T, 1> &buffer,
+  template <cl::sycl::access::mode mode, typename allocatorT,
+            typename ... handlerArgsT>
+  static void check(cl::sycl::buffer<T, 1, allocatorT> &buffer,
                     cl::sycl::range<1> range,
                     cl::sycl::id<1> offset,
                     sycl_cts::util::logger &log,
@@ -278,7 +320,7 @@ enum is_host_buffer : bool { false_t = false, true_t = true };
 
 /** @brief Provide uniform way to initialize input data for different accessors
  */
-template <typename T, size_t dims>
+template <typename T, size_t dims, typename ... allocatorT>
 class buffer_accesor_input_data {
 public:
   static constexpr size_t dataDims = dims;
@@ -287,7 +329,7 @@ public:
   using range_t = cl::sycl::range<dataDims>;
   using offset_t = cl::sycl::id<dataDims>;
   using data_t = std::vector<cl::sycl::cl_uchar>;
-  using buffer_t = cl::sycl::buffer<T, dataDims>;
+  using buffer_t = cl::sycl::buffer<T, dataDims, allocatorT...>;
 
 public:
   buffer_accesor_input_data():
@@ -321,8 +363,8 @@ private:
 /** @brief Specialization to implement input data initialization for 0 dimension
  *         in an uniform way with the non-zero dimensions
  */
-template <typename T>
-class buffer_accesor_input_data<T, 0> {
+template <typename T, typename ... allocatorT>
+class buffer_accesor_input_data<T, 0, allocatorT...> {
 public:
   static constexpr size_t dataDims = 1;
   static constexpr int rangeSize = 1;
@@ -330,7 +372,7 @@ public:
   using range_t = cl::sycl::range<dataDims>;
   using offset_t = cl::sycl::id<dataDims>;
   using data_t = std::vector<cl::sycl::cl_uchar>;
-  using buffer_t = cl::sycl::buffer<T, dataDims>;
+  using buffer_t = cl::sycl::buffer<T, dataDims, allocatorT...>;
 
 public:
   buffer_accesor_input_data():
@@ -364,7 +406,8 @@ private:
  */
 template <typename T, size_t dims, is_host_buffer isHostBuffer = false_t,
           cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+              cl::sycl::access::placeholder::false_t,
+          typename ... allocatorT>
 class buffer_accessor_dims {
 public:
   static void check(util::logger &log, cl::sycl::queue &queue,
@@ -463,8 +506,10 @@ public:
 
 /** @brief Specialization of buffer_accessor_dims for host_buffer
  */
-template <typename T, size_t dims, cl::sycl::access::placeholder placeholder>
-class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder> {
+template <typename T, size_t dims, cl::sycl::access::placeholder placeholder,
+          typename ... allocatorT>
+class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder,
+                           allocatorT...> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
@@ -521,9 +566,10 @@ class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder> {
 /** @brief Used to test the buffer accessor combinations for placeholder
  *         global_buffer and placeholder constant_buffer
  */
-template <typename T, size_t dims>
+template <typename T, size_t dims, typename ... allocatorT>
 class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
-                           cl::sycl::access::placeholder::true_t> {
+                           cl::sycl::access::placeholder::true_t,
+                           allocatorT...> {
   static constexpr auto placeholder = cl::sycl::access::placeholder::true_t;
 public:
   static void check(util::logger &log, cl::sycl::queue &queue,

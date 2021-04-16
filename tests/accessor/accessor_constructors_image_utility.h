@@ -24,19 +24,21 @@ using namespace sycl_cts;
 
 /** @brief Creates an image accessor and checks all its members for correctness
  */
-template <typename accTag>
+template <typename accTag, typename ... propertyListT>
 class check_accessor_constructor_image {
 public:
-  template <typename ... handlerArgsT>
-  static void check(cl::sycl::image<accTag::dataDims> &image,
+  template <typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::image<accTag::dataDims, allocatorT> &image,
                     cl::sycl::range<accTag::dataDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
+                    const propertyListT& ... properties,
                     handlerArgsT&& ... handler) {
     // construct the accessor
     typename accTag::type accessor(image,
-                                   std::forward<handlerArgsT>(handler)...);
+                                   std::forward<handlerArgsT>(handler)...,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
@@ -52,22 +54,37 @@ template <typename T, size_t dims, cl::sycl::access::target target>
 class check_all_accessor_constructors_image {
 public:
   template <cl::sycl::access::mode mode,
-            int imageDims, typename ... handlerArgsT>
-  static void check(cl::sycl::image<imageDims> &image,
+            int imageDims, typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::image<imageDims, allocatorT> &image,
                     cl::sycl::range<imageDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     handlerArgsT&& ... handler) {
     using accTag = accessor_type_info<T, dims, mode, target>;
-    using verifier = check_accessor_constructor_image<accTag>;
 
     constexpr bool usesHander = sizeof...(handlerArgsT) != 0;
     {
+      using verifier = check_accessor_constructor_image<accTag>;
+
       const auto constructorName = usesHander ?
           "constructor(image, handler)" :
           "constructor(image)";
       verifier::check(image, range,
                       log, constructorName, typeName, handler...);
+    }
+    {
+      using property_list = cl::sycl::property_list;
+      using verifier = check_accessor_constructor_image<accTag, property_list>;
+
+      auto context = util::get_cts_object::context();
+      property_list properties {
+          cl::sycl::property::buffer::context_bound(context)};
+
+      const auto constructorName = usesHander ?
+          "constructor(image, handler, property_list)" :
+          "constructor(image, property_list)";
+      verifier::check(image, range,
+                      log, constructorName, typeName, properties, handler...);
     }
   }
 };
@@ -78,9 +95,9 @@ template <typename T, size_t dims, cl::sycl::access::target target>
 class check_accessor_common_by_reference_image {
 public:
   template <cl::sycl::access::mode mode,
-            int imageDims, typename ... handlerArgsT>
-  static void check(cl::sycl::image<imageDims> &image,
-                    cl::sycl::image<imageDims> &image2,
+            int imageDims, typename allocatorT, typename ... handlerArgsT>
+  static void check(cl::sycl::image<imageDims, allocatorT> &image,
+                    cl::sycl::image<imageDims, allocatorT> &image2,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     handlerArgsT&& ... handler) {
@@ -120,8 +137,9 @@ public:
 
 /** @brief Used to test the image accessor combinations for image and host_image
  */
-template <typename T, size_t dims>
+template <typename T, size_t dims, typename ... allocatorT>
 class image_accessor_dims {
+  using image_t = cl::sycl::image<dims, allocatorT...>;
  public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
@@ -129,13 +147,13 @@ class image_accessor_dims {
     auto range =
         sycl_cts::util::get_cts_object::range<dims>::get(size, size,size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
-    cl::sycl::image<dims> image(data.data(),
-                                cl::sycl::image_channel_order::rgba,
-                                cl::sycl::image_channel_type::fp32, range);
+    image_t image(data.data(),
+                  cl::sycl::image_channel_order::rgba,
+                  cl::sycl::image_channel_type::fp32, range);
     std::vector<cl_float> data2(range.size() * 4, 0.0f);
-    cl::sycl::image<dims> image2(data2.data(),
-                                 cl::sycl::image_channel_order::rgba,
-                                 cl::sycl::image_channel_type::fp32, range);
+    image_t image2(data2.data(),
+                   cl::sycl::image_channel_order::rgba,
+                   cl::sycl::image_channel_type::fp32, range);
 
     /** check image accessor constructors for image
      */
@@ -212,10 +230,11 @@ class image_accessor_dims {
 
 /** @brief Used to test the image array accessor combinations
  */
-template <typename T, size_t dims>
+template <typename T, size_t dims, typename ... allocatorT>
 class image_array_accessor_dims {
   static constexpr auto target = cl::sycl::access::target::image_array;
   static constexpr size_t dataDims = acc_data_dims<target, dims>::get();
+  using image_t = cl::sycl::image<dataDims, allocatorT...>;
 public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
@@ -223,13 +242,13 @@ public:
     auto range =
         sycl_cts::util::get_cts_object::range<dataDims>::get(size, size, size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
-    cl::sycl::image<dataDims> image(data.data(),
-                                    cl::sycl::image_channel_order::rgba,
-                                    cl::sycl::image_channel_type::fp32, range);
+    image_t image(data.data(),
+                  cl::sycl::image_channel_order::rgba,
+                  cl::sycl::image_channel_type::fp32, range);
     std::vector<cl_float> data2(range.size() * 4, 0.0f);
-    cl::sycl::image<dataDims> image2(data2.data(),
-                                     cl::sycl::image_channel_order::rgba,
-                                     cl::sycl::image_channel_type::fp32, range);
+    image_t image2(data2.data(),
+                   cl::sycl::image_channel_order::rgba,
+                   cl::sycl::image_channel_type::fp32, range);
 
     /** check image array accessor constructors for image
      */

@@ -25,25 +25,30 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T>
-  void check_all_dims(util::logger &log, cl::sycl::queue &queue,
-                      const std::string& type) {
+  template <typename T, typename ... allocatorT>
+  void check_all_dims_impl(util::logger &log, cl::sycl::queue &queue,
+                           const std::string& type) {
     buffer_accessor_dims<T, 0, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue,
-                                                                       type);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 1, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue,
-                                                                       type);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 2, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue,
-                                                                       type);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+
     buffer_accessor_dims<T, 3, is_host_buffer::false_t,
-                         cl::sycl::access::placeholder::true_t>::check(log,
-                                                                       queue,
-                                                                       type);
+                         cl::sycl::access::placeholder::true_t,
+                         allocatorT...>::check(log, queue, type);
+  }
+
+  template <typename T, typename ... argsT>
+  void check_all_dims(argsT&& ... args) {
+    check_all_dims_impl<T>(std::forward<argsT>(args)...);
+    check_all_dims_impl<T, std::allocator<T>>(std::forward<argsT>(args)...);
   }
 
   /** execute this test
