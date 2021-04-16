@@ -1,6 +1,6 @@
 # check CMake Version
 cmake_minimum_required(VERSION 3.13)
-project(sycl_cts)
+project(sycl_cts LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
