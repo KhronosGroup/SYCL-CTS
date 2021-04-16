@@ -13,6 +13,7 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../../util/type_traits.h"
 #include "accessor_utility_common.h"
 
 #include <sstream>
@@ -84,7 +85,8 @@ static constexpr auto errorMode = cl::sycl::access::mode::write;
 using error_buffer_t = cl::sycl::buffer<int, 1>;
 
 /**
- * @brief Namespace that defines access target tags
+ * @brief Namespace that defines access target tags for buffer and local
+ *        accessors
  */
 namespace acc_target_tag {
 struct generic {};
@@ -92,38 +94,60 @@ struct host : generic {};
 struct local : generic {};
 struct constant : generic {};
 
-template <cl::sycl::access::target target>
+/** @brief For accessor with atomic types
+ */
+template <typename baseT>
+struct atomic : baseT {};
+
+/** @brief For accessor with types which require 64-bit atomic extension support
+ */
+template <typename baseT>
+struct atomic64 : baseT {};
+
+template <typename T, typename baseT>
+using tag_atomic64_support_t =
+    typename std::conditional<bits_eq<T,64>::value,
+                              atomic64<atomic<baseT>>,
+                              atomic<baseT>>::type;
+
+template <typename T, typename baseT>
+using tag_atomic_support_t =
+    typename std::conditional<has_atomic_support<T>::value,
+                              tag_atomic64_support_t<T, baseT>,
+                              baseT>::type;
+
+template <typename T, cl::sycl::access::target target>
 struct get_helper {
-  using type = generic;
+  using type = tag_atomic_support_t<T, generic>;
 };
-template <>
-struct get_helper<cl::sycl::access::target::host_buffer> {
+template <typename T>
+struct get_helper<T, cl::sycl::access::target::host_buffer> {
   using type = host;
 };
-template <>
-struct get_helper<cl::sycl::access::target::host_image> {
+template <typename T>
+struct get_helper<T, cl::sycl::access::target::host_image> {
   using type = host;
 };
-template <>
-struct get_helper<cl::sycl::access::target::local> {
-  using type = local;
+template <typename T>
+struct get_helper<T, cl::sycl::access::target::local> {
+  using type = tag_atomic_support_t<T, local>;
 };
-template <>
-struct get_helper<cl::sycl::access::target::constant_buffer> {
+template <typename T>
+struct get_helper<T, cl::sycl::access::target::constant_buffer> {
   using type = constant;
 };
 
-template <cl::sycl::access::target target>
-using get_helper_t = typename get_helper<target>::type;
+template <typename T, cl::sycl::access::target target>
+using get_helper_t = typename get_helper<T, target>::type;
 
 /**
  * @brief Retrieves the tag associated with the access target
  * @tparam target The SYCL access target to get the tag for
  * @return Instance of the tag
  */
-template <cl::sycl::access::target target>
-auto get() -> decltype(get_helper_t<target>{}) {
-  return get_helper_t<target>{};
+template <typename T, cl::sycl::access::target target>
+auto get() -> decltype(get_helper_t<T, target>{}) {
+  return get_helper_t<T, target>{};
 }
 
 }  // namespace acc_target_tag
@@ -135,6 +159,7 @@ namespace acc_mode_tag {
 struct generic {};
 struct write_only : generic {};
 struct read_only : generic {};
+struct atomic : generic {};
 
 template <cl::sycl::access::mode mode>
 struct get_helper {
@@ -151,6 +176,10 @@ struct get_helper<cl::sycl::access::mode::write> {
 template <>
 struct get_helper<cl::sycl::access::mode::discard_write> {
   using type = write_only;
+};
+template <>
+struct get_helper<cl::sycl::access::mode::atomic> {
+  using type = atomic;
 };
 
 template <cl::sycl::access::mode mode>
@@ -250,8 +279,7 @@ using get_helper_t = typename get_helper<target, placeholder>::type;
  * @return Instance of the tag
  */
 template <cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+          cl::sycl::access::placeholder placeholder>
 auto get() -> decltype(get_helper_t<target, placeholder>{}) {
   return get_helper_t<target, placeholder>{};
 };
@@ -283,8 +311,22 @@ template <int dims>
 num_dims<dims> get() {
   return {};
 }
-
 }  // namespace acc_dims_tag
+
+/**
+ * @brief Single definition point for fixed placeholder values
+ */
+struct acc_placeholder {
+  /** @brief Placholder value for image accessor tests
+   */
+  static constexpr auto image = cl::sycl::access::placeholder::false_t;
+  /** @brief Placholder value for local accessor tests
+   */
+  static constexpr auto local = cl::sycl::access::placeholder::false_t;
+  /** @brief Placholder value for error storage
+   */
+  static constexpr auto error = cl::sycl::access::placeholder::false_t;
+};
 
 namespace detail {
 namespace sycl = cl::sycl;
@@ -418,8 +460,7 @@ struct accessor_factory {
  */
 template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t,
+          cl::sycl::access::placeholder placeholder,
           typename... Args>
 cl::sycl::accessor<T, dims, mode, target, placeholder> make_accessor(
     Args&&... args) {
@@ -463,8 +504,7 @@ make_local_accessor_generic(const sycl_range_t<dims>& rng,
  */
 template <int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t,
+          cl::sycl::access::placeholder placeholder,
           typename T>
 cl::sycl::accessor<T, dims, mode, target, placeholder> make_accessor_generic(
     buffer_t<T, dims>& buf,
@@ -630,9 +670,10 @@ bool check_elems_equal(const cl::sycl::vec<T1, N>& actual, const T1& expected) {
 */
 template <typename T>
 bool check_linear_index(sycl_cts::util::logger& log, T* data, size_t size,
-                        int mul = 1) {
+                        int mul = 1, int offset = 0) {
   for (size_t i = 0; i < size; i++) {
-    if (!CHECK_VALUE(log, check_elems_equal(data[i], static_cast<T>(i * mul)),
+    const auto expected = static_cast<T>(i * mul + offset);
+    if (!CHECK_VALUE(log, check_elems_equal(data[i], expected),
                      true, i)) {
       return false;
     }

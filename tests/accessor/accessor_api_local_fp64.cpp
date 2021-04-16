@@ -6,21 +6,15 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
-#include "../common/type_coverage.h"
-#include "./../../util/math_helper.h"
-#include "accessor_api_local_common.h"
-
-#include <array>
-#include <numeric>
-#include <sstream>
-
 #define TEST_NAME accessor_api_local_fp64
+
+#include "../common/common.h"
+#include "accessor_api_local_common.h"
+#include "accessor_api_types_fp64.h"
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-using namespace accessor_utility;
 
 /** tests the api for cl::sycl::accessor
 */
@@ -38,33 +32,8 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp64")) {
-        log.note(
-            "Device does not support double precision floating point "
-            "operations");
-        return;
-      }
+      check_all_types_fp64<check_local_accessor_api_type>::run(queue, log);
 
-#ifndef SYCL_CTS_FULL_CONFORMANCE
-      // Specific set of types to cover during ordinary compilation
-
-      /** check local accessor api for double
-       */
-      check_local_accessor_api_type<double>()(log, queue, "double");
-
-      /** check local accessor api for vec
-       */
-      check_local_accessor_api_type<cl::sycl::double3>()(log, queue, "double");
-#else
-      // Extended type coverage
-      for_type_and_vectors<check_local_accessor_api_type, double>(
-          log, queue);
-      for_type_and_vectors<check_local_accessor_api_type, cl::sycl::cl_double>(
-          log, queue);
-
-#endif // SYCL_CTS_FULL_CONFORMANCE
-
-      queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       cl::sycl::string_class errorMsg =
