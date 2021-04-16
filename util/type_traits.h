@@ -34,10 +34,7 @@ struct contains<T, headT, tailT...> :
  * @brief Verify type has the given number of bits
  */
 template <typename T, size_t bits>
-struct bits_eq :
-    std::conditional<(sizeof(T) * CHAR_BIT) == bits,
-                     std::true_type,
-                     std::false_type>::type {};
+using bits_eq = std::bool_constant<(sizeof(T) * CHAR_BIT) == bits>;
 
 // Specific type traits functions
 /**
@@ -56,13 +53,13 @@ using has_atomic_support =
 /**
  * @brief Checks whether T is a floating-point sycl type
  */
-template <typename T> struct is_cl_float_type {
-  static constexpr bool value = std::is_floating_point<T>::value ||
-                                std::is_same<cl::sycl::half, T>::value ||
-                                std::is_same<cl::sycl::cl_float, T>::value ||
-                                std::is_same<cl::sycl::cl_double, T>::value ||
-                                std::is_same<cl::sycl::cl_half, T>::value;
-};
+template <typename T>
+using is_cl_float_type =
+    std::bool_constant<std::is_floating_point<T>::value ||
+                       std::is_same<cl::sycl::half, T>::value ||
+                       std::is_same<cl::sycl::cl_float, T>::value ||
+                       std::is_same<cl::sycl::cl_double, T>::value ||
+                       std::is_same<cl::sycl::cl_half, T>::value>;
 
 } // namespace
 

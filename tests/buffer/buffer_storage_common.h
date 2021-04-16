@@ -6,11 +6,12 @@
 //
 *******************************************************************************/
 
+#ifndef __SYCLCTS_TESTS_BUFFER_STORAGE_COMMON_H
+#define __SYCLCTS_TESTS_BUFFER_STORAGE_COMMON_H
+
 #include "../common/common.h"
 
-#define TEST_NAME buffer_storage
-
-namespace buffer_storage__ {
+namespace {
 using namespace sycl_cts;
 
 template <typename T>
@@ -88,19 +89,8 @@ class buffer_storage_test {
   }
 };
 
-/**
- * test cl::sycl::buffer initialization
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  template <typename alloc, typename T>
-  void test_buffers(util::logger &log) {
+template <typename T> class check_buffer_storage_for_type {
+  template <typename alloc> void check_with_alloc(util::logger &log) {
     const int size = 32;
     cl::sycl::range<1> range1d(size);
     cl::sycl::range<2> range2d(size, size);
@@ -115,23 +105,13 @@ class TEST_NAME : public util::test_base {
     buf3d(log, range3d);
   }
 
-  /** execute the test
-   */
-  void run(util::logger &log) override {
-    try {
-      test_buffers<custom_alloc<int>, int>(log);
-      test_buffers<custom_alloc<float>, float>(log);
-      test_buffers<custom_alloc<double>, double>(log);
-    } catch (cl::sycl::exception e) {
-      log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
+public:
+  void operator()(util::logger &log, const std::string &typeName) {
+    log.note("testing: " + typeName);
+    check_with_alloc<custom_alloc<T>>(log);
+    check_with_alloc<cl::sycl::buffer_allocator>(log);
   }
 };
 
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-
-}  // namespace buffer_storage__
+} // namespace
+#endif // __SYCLCTS_TESTS_BUFFER_STORAGE_COMMON_H
