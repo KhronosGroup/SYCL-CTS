@@ -15,6 +15,8 @@
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
 
+#include <cassert>
+
 /** @brief dummy kernel functor for checks that don't require a kernel
  */
 template <class kernel_name = void>
@@ -215,6 +217,8 @@ struct get_cts_object::range<2> {
    */
   template <size_t totalSize>
   static cl::sycl::range<2> get_fixed_size(size_t r0, size_t) {
+    assert("Parameters passed for fixed size range are not supported" &&
+           (totalSize % r0 == 0))
     return cl::sycl::range<2>(r0, totalSize / r0);
   }
 };
@@ -244,6 +248,8 @@ struct get_cts_object::range<3> {
    */
   template <size_t totalSize>
   static cl::sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
+    assert("Parameters passed for fixed size range are not supported" &&
+           (totalSize % (r0 * r1) == 0))
     return cl::sycl::range<3>(r0, r1, totalSize / r0 / r1);
   }
 };

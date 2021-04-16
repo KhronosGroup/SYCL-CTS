@@ -10,6 +10,9 @@
 
 #define TEST_NAME group_async_work_group_copy_fp16
 
+using namespace sycl_cts;
+using namespace group_async_work_group_copy;
+
 namespace TEST_NAMESPACE {
 
 class TEST_NAME : public util::test_base {
@@ -23,17 +26,25 @@ class TEST_NAME : public util::test_base {
   /** execute the test
   */
   void run(util::logger &log) override {
+    try {
+      auto queue = util::get_cts_object::queue();
 
-    auto queue = util::get_cts_object::queue();
+      if (!queue.get_device().has_extension("cl_khr_fp16")) {
+        log.note(
+            "Device does not support half precision floating point operations");
+        return;
+      }
+      // Test using queue constructed already
+      for_type_and_vectors<check_type, cl::sycl::half>(queue, log,
+          "cl::sycl::half");
+      for_type_and_vectors<check_type, cl::sycl::cl_half>(queue, log,
+          "cl::sycl::cl_half");
 
-    if (!queue.get_device().has_extension("cl_khr_fp16")) {
-      log.note(
-          "Device does not support half precision floating point operations");
-      return;
+    } catch (const cl::sycl::exception &e) {
+      log_exception(log, e);
+      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
-
-    check_type_and_vec<cl::sycl::half>(log);
-    check_type_and_vec<cl::sycl::cl_half>(log);
   }
 };
 
