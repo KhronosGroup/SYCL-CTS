@@ -104,8 +104,9 @@ class test_buffer_reinterpret_no_range {
 
   static void check(TIn* data, const size_t inputElemsPerDim,
                     util::logger& log) {
+    size_t size = sizeof(TOut) * inputElemsPerDim / sizeof(TIn);
     cl::sycl::range<inputDim> rangeIn =
-        getRange<inputDim>(sizeof(TOut) * inputElemsPerDim / sizeof(TIn));
+        sycl_cts::util::get_cts_object::range<inputDim>::get(size, size, size);
     cl::sycl::buffer<TIn, inputDim> buf1(data, rangeIn);
 
     auto buf2 = buf1.template reinterpret<TOut>();
@@ -140,8 +141,9 @@ class test_buffer_reinterpret_no_range<TIn, TOut, inputDim, 1> {
  public:
   static void check(TIn* data, const size_t inputElemsPerDim,
                     util::logger& log) {
+    size_t size = sizeof(TOut) * inputElemsPerDim / sizeof(TIn);
     cl::sycl::range<inputDim> rangeIn =
-        getRange<inputDim>(sizeof(TOut) * inputElemsPerDim / sizeof(TIn));
+        sycl_cts::util::get_cts_object::range<inputDim>::get(size, size, size);
     cl::sycl::buffer<TIn, inputDim> buf1{data, rangeIn};
     const auto expectedOutputCount = buf1.get_size() / sizeof(TOut);
 
@@ -362,7 +364,11 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
       sub_r[0] = r[0] - i[0];
       cl::sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
       auto isSubBuffer = buf_sub.is_sub_buffer();
+      auto notSubBuffer = buf.is_sub_buffer();
       check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
+      if (!isSubBuffer && notSubBuffer) {
+        FAIL(log, "is_sub_buffer() return a wrong result");
+      }
     }
 
     /* check buffer properties */
@@ -381,11 +387,17 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
           buf.template has_property<cl::sycl::property::buffer::use_mutex>();
       check_return_type<bool>(log, hasUseMutexProperty,
                               "has_property<use_mutex>()");
+      if (!hasUseMutexProperty) {
+        FAIL(log, "has_property<use_mutex> return a wrong result ");
+      }
 
       auto hasContentBoundProperty = buf.template has_property<
           cl::sycl::property::buffer::context_bound>();
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
+      if (!hasContentBoundProperty) {
+        FAIL(log, "has_property<context_bound> return a wrong result ");
+      }
 
       /* check get_property() */
 
