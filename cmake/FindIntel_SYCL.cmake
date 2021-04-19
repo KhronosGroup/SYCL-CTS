@@ -1,7 +1,5 @@
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    find_program(INTEL_SYCL_C_EXECUTABLE NAMES dpcpp clang HINTS ${INTEL_SYCL_ROOT}
-        PATH_SUFFIXES bin)
     find_program(INTEL_SYCL_CXX_EXECUTABLE NAMES dpcpp clang++ HINTS ${INTEL_SYCL_ROOT}
         PATH_SUFFIXES bin)
 else()
@@ -9,8 +7,6 @@ else()
     string(REPLACE "/machine:x64" "" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
     # Remove /subsystem option which is not supported by clang-cl
     string(REPLACE "/subsystem:console" "" CMAKE_CREATE_CONSOLE_EXE ${CMAKE_CREATE_CONSOLE_EXE})
-    find_program(INTEL_SYCL_C_EXECUTABLE NAMES dpcpp clang-cl HINTS ${INTEL_SYCL_ROOT}
-        PATH_SUFFIXES bin)
     find_program(INTEL_SYCL_CXX_EXECUTABLE NAMES dpcpp clang-cl HINTS ${INTEL_SYCL_ROOT}
         PATH_SUFFIXES bin)
 endif()
@@ -47,10 +43,8 @@ else()
         INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS};-fsycl-device-code-split=per_source")
 endif()
 
-set(CMAKE_C_COMPILER            ${INTEL_SYCL_C_EXECUTABLE})
 set(CMAKE_CXX_COMPILER          ${INTEL_SYCL_CXX_EXECUTABLE})
 # Use SYCL compiler instead of default linker for building SYCL application
-set(CMAKE_C_LINK_EXECUTABLE     "${INTEL_SYCL_CXX_EXECUTABLE} <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 set(CMAKE_CXX_LINK_EXECUTABLE   "${INTEL_SYCL_CXX_EXECUTABLE} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)

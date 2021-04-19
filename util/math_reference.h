@@ -11,28 +11,6 @@
 
 #include "../tests/common/sycl.h"
 #include "./math_helper.h"
-#include "./stl.h"
-#include <map>
-
-/* for functions that can have undefined results */
-template <typename returnT> struct resultRef {
-  returnT res;
-  std::map<int, bool> undefined;
-
-  template <typename U>
-  resultRef(U res_t, std::map<int, bool> und_t)
-      : res(res_t), undefined(und_t) {}
-
-  template <typename U>
-  resultRef(U res_t, bool und_t)
-      : res(res_t), undefined({{0, und_t}}) {}
-
-  template <typename U> resultRef(U res_t) : res(res_t) {}
-
-  template <class U>
-  resultRef(const resultRef<U> &other)
-      : res(other.res), undefined(other.undefined) {}
-};
 
 namespace reference {
 /* two argument relational reference */
@@ -176,95 +154,105 @@ cl::sycl::vec<T, N> select(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
 }
 
 /* absolute value */
-uint8_t abs(const uint8_t);
-uint16_t abs(const uint16_t);
-uint32_t abs(const uint32_t);
-uint64_t abs(const uint64_t);
-int8_t abs(const int8_t);
-int16_t abs(const int16_t);
-int32_t abs(const int32_t);
-int64_t abs(const int64_t);
+template <typename T> auto abs(T x) { return x < 0 ? -x : x; }
+
+template <typename T, int N, typename R = typename std::make_unsigned<T>::type>
+cl::sycl::vec<R, N> abs(cl::sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<R, T, N>([](T x) { return abs(x); },
+                                                     a);
+}
 
 /* absolute difference */
-uint8_t abs_diff(const uint8_t a, const uint8_t b);
-uint16_t abs_diff(const uint16_t a, const uint16_t b);
-uint32_t abs_diff(const uint32_t a, const uint32_t b);
-uint64_t abs_diff(const uint64_t a, const uint64_t b);
-int8_t abs_diff(const int8_t a, const int8_t b);
-int16_t abs_diff(const int16_t a, const int16_t b);
-int32_t abs_diff(const int32_t a, const int32_t b);
-int64_t abs_diff(const int64_t a, const int64_t b);
+template <typename T> T abs_diff(T a, T b) {
+  T h = (a > b) ? a : b;
+  T l = (a <= b) ? a : b;
+  return h - l;
+}
+template <typename T, int N, typename R = typename std::make_unsigned<T>::type>
+cl::sycl::vec<typename std::make_unsigned<T>::type, N>
+abs_diff(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<R, T, N>(
+      [](T x, T y) { return abs_diff(x, y); }, a, b);
+}
 
 /* add with saturation */
-uint8_t add_sat(const uint8_t a, const uint8_t b);
-uint16_t add_sat(const uint16_t a, const uint16_t b);
-uint32_t add_sat(const uint32_t a, const uint32_t b);
-uint64_t add_sat(const uint64_t a, const uint64_t b);
-int8_t add_sat(const int8_t a, const int8_t b);
-int16_t add_sat(const int16_t a, const int16_t b);
-int32_t add_sat(const int32_t a, const int32_t b);
-int64_t add_sat(const int64_t a, const int64_t b);
-
-/* half add */
-uint8_t hadd(const uint8_t a, const uint8_t b);
-uint16_t hadd(const uint16_t a, const uint16_t b);
-uint32_t hadd(const uint32_t a, const uint32_t b);
-uint64_t hadd(const uint64_t a, const uint64_t b);
-int8_t hadd(const int8_t a, const int8_t b);
-int16_t hadd(const int16_t a, const int16_t b);
-int32_t hadd(const int32_t a, const int32_t b);
-int64_t hadd(const int64_t a, const int64_t b);
-
-/* round up half add */
-uint8_t rhadd(const uint8_t a, const uint8_t b);
-uint16_t rhadd(const uint16_t a, const uint16_t b);
-uint32_t rhadd(const uint32_t a, const uint32_t b);
-uint64_t rhadd(const uint64_t a, const uint64_t b);
-int8_t rhadd(const int8_t a, const int8_t b);
-int16_t rhadd(const int16_t a, const int16_t b);
-int32_t rhadd(const int32_t a, const int32_t b);
-int64_t rhadd(const int64_t a, const int64_t b);
-
-/* clamp */
-resultRef<uint8_t> clamp(const uint8_t a, const uint8_t b, const uint8_t c);
-resultRef<uint16_t> clamp(const uint16_t a, const uint16_t b, const uint8_t c);
-resultRef<uint32_t> clamp(const uint32_t a, const uint32_t b, const uint8_t c);
-resultRef<uint64_t> clamp(const uint64_t a, const uint64_t b, const uint8_t c);
-resultRef<int8_t> clamp(const int8_t a, const int8_t b, const uint8_t c);
-resultRef<int16_t> clamp(const int16_t a, const int16_t b, const uint8_t c);
-resultRef<int32_t> clamp(const int32_t a, const int32_t b, const uint8_t c);
-resultRef<int64_t> clamp(const int64_t a, const int64_t b, const uint8_t c);
-resultRef<double> clamp(const double a, const double b, const double c);
-resultRef<float> clamp(const float a, const float b, const float c);
-
-template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>>
-clamp(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b, cl::sycl::vec<T, N> c) {
-  cl::sycl::vec<T, N> res;
-  std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
-    resultRef<T> element =
-        clamp(getElement(a, i), getElement(b, i), getElement(c, i));
-    if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
-    else
-      undefined[i] = true;
+template <typename T> T add_sat(T a, T b) {
+  if (std::is_unsigned<T>::value) {
+    T res = a + b;
+    if (res < a)
+      res = -1;
+    return res;
+  } else {
+    typedef typename std::make_unsigned<T>::type U;
+    T r = T(U(a) + U(b));
+    if (b > 0) {
+      if (r < a)
+        return std::numeric_limits<T>::max();
+    } else {
+      if (r > a)
+        return std::numeric_limits<T>::min();
+    }
+    return r;
   }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
 }
 
 template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> clamp(cl::sycl::vec<T, N> a, T b, T c) {
+cl::sycl::vec<T, N> add_sat(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return add_sat(x, y); }, a, b);
+}
+
+/* half add */
+template <typename T> T hadd(T a, T b) {
+  if (std::is_unsigned<T>::value)
+    return (a >> 1) + (b >> 1) + ((a & b) & 0x1);
+  return (a >> 1) + (b >> 1) + (a & b & 1);
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> hadd(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return hadd(x, y); }, a, b);
+}
+
+/* round up half add */
+template <typename T> T rhadd(T a, T b) {
+  return (a >> 1) + (b >> 1) + ((a & 1) | (b & 1));
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> rhadd(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return rhadd(x, y); }, a, b);
+}
+
+/* clamp */
+template <typename T> sycl_cts::resultRef<T> clamp(T v, T minv, T maxv) {
+  if (minv > maxv)
+    return sycl_cts::resultRef<T>(T(), true);
+  return (v < minv) ? minv : ((v > maxv) ? maxv : v);
+}
+
+template <typename T, int N>
+sycl_cts::resultRef<cl::sycl::vec<T, N>>
+clamp(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b, cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y, T z) { return clamp(x, y, z); }, a, b, c);
+}
+
+template <typename T, int N>
+sycl_cts::resultRef<cl::sycl::vec<T, N>> clamp(cl::sycl::vec<T, N> a, T b,
+                                               T c) {
   cl::sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    resultRef<T> element = clamp(getElement(a, i), b, c);
+    sycl_cts::resultRef<T> element = clamp(getElement(a, i), b, c);
     if (element.undefined.empty())
       setElement<T, N>(res, i, element.res);
     else
       undefined[i] = true;
   }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
+  return sycl_cts::resultRef<cl::sycl::vec<T, N>>(res, undefined);
 }
 
 /* degrees */
@@ -311,38 +299,30 @@ cl::sycl::vec<T, N> step(T a, cl::sycl::vec<T, N> b) {
 }
 
 /* smoothstep */
-resultRef<float> smoothstep(float a, float b, float c);
-resultRef<double> smoothstep(double a, double b, double c);
+sycl_cts::resultRef<float> smoothstep(float a, float b, float c);
+sycl_cts::resultRef<double> smoothstep(double a, double b, double c);
 
 template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> smoothstep(cl::sycl::vec<T, N> a,
-                                          cl::sycl::vec<T, N> b,
-                                          cl::sycl::vec<T, N> c) {
-  cl::sycl::vec<T, N> res;
-  std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
-    resultRef<T> element =
-        smoothstep(getElement(a, i), getElement(b, i), getElement(c, i));
-    if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
-    else
-      undefined[i] = true;
-  }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
+sycl_cts::resultRef<cl::sycl::vec<T, N>> smoothstep(cl::sycl::vec<T, N> a,
+                                                    cl::sycl::vec<T, N> b,
+                                                    cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y, T z) { return smoothstep(x, y, z); }, a, b, c);
 }
 
 template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> smoothstep(T a, T b, cl::sycl::vec<T, N> c) {
+sycl_cts::resultRef<cl::sycl::vec<T, N>> smoothstep(T a, T b,
+                                                    cl::sycl::vec<T, N> c) {
   cl::sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    resultRef<T> element = smoothstep(a, b, getElement(c, i));
+    sycl_cts::resultRef<T> element = smoothstep(a, b, getElement(c, i));
     if (element.undefined.empty())
       setElement<T, N>(res, i, element.res);
     else
       undefined[i] = true;
   }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
+  return sycl_cts::resultRef<cl::sycl::vec<T, N>>(res, undefined);
 }
 
 /* sign */
@@ -358,46 +338,73 @@ template <typename T, int N> cl::sycl::vec<T, N> sign(cl::sycl::vec<T, N> a) {
 }
 
 /* count leading zeros */
-uint8_t clz(const uint8_t);
-uint16_t clz(const uint16_t);
-uint32_t clz(const uint32_t);
-uint64_t clz(const uint64_t);
-int8_t clz(const int8_t);
-int16_t clz(const int16_t);
-int32_t clz(const int32_t);
-int64_t clz(const int64_t);
+template <typename T> T clz(T x) {
+  int lz = 0;
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
+    if (x & (1ull << i))
+      lz = 0;
+    else
+      lz++;
+  return static_cast<T>(lz);
+}
+
+template <typename T, int N> cl::sycl::vec<T, N> clz(cl::sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>([](T x) { return clz(x); },
+                                                     a);
+}
+
+/* multiply and return high part */
+unsigned char mul_hi(unsigned char, unsigned char);
+unsigned short mul_hi(unsigned short, unsigned short);
+unsigned int mul_hi(unsigned int, unsigned int);
+unsigned long mul_hi(unsigned long, unsigned long);
+unsigned long long mul_hi(unsigned long long, unsigned long long);
+char mul_hi(char, char);
+signed char mul_hi(signed char, signed char);
+short mul_hi(short, short);
+int mul_hi(int, int);
+long mul_hi(long, long);
+long long mul_hi(long long, long long);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> mul_hi(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return mul_hi(x, y); }, a, b);
+}
 
 /* multiply add, get high part */
-uint8_t mad_hi(const uint8_t a, const uint8_t b, const uint8_t c);
-uint16_t mad_hi(const uint16_t a, const uint16_t b, const uint16_t c);
-uint32_t mad_hi(const uint32_t a, const uint32_t b, const uint32_t c);
-uint64_t mad_hi(const uint64_t a, const uint64_t b, const uint64_t c);
-int8_t mad_hi(const int8_t a, const int8_t b, const int8_t c);
-int16_t mad_hi(const int16_t a, const int16_t b, const int16_t c);
-int32_t mad_hi(const int32_t a, const int32_t b, const int32_t c);
-int64_t mad_hi(const int64_t a, const int64_t b, const int64_t c);
+template <typename T> T mad_hi(T x, T y, T z) { return mul_hi(x, y) + z; }
+
+template <typename T, int N>
+cl::sycl::vec<T, N> mad_hi(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                           cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y, T z) { return mad_hi(x, y, z); }, a, b, c);
+}
 
 /* multiply add saturate */
-uint8_t mad_sat(const uint8_t a, const uint8_t b, const uint8_t c);
-uint16_t mad_sat(const uint16_t a, const uint16_t b, const uint8_t c);
-uint32_t mad_sat(const uint32_t a, const uint32_t b, const uint8_t c);
-uint64_t mad_sat(const uint64_t a, const uint64_t b, const uint8_t c);
-int8_t mad_sat(const int8_t a, const int8_t b, const uint8_t c);
-int16_t mad_sat(const int16_t a, const int16_t b, const uint8_t c);
-int32_t mad_sat(const int32_t a, const int32_t b, const uint8_t c);
-int64_t mad_sat(const int64_t a, const int64_t b, const uint8_t c);
+unsigned char mad_sat(unsigned char, unsigned char, unsigned char);
+unsigned short mad_sat(unsigned short, unsigned short, unsigned short);
+unsigned int mad_sat(unsigned int, unsigned int, unsigned int);
+unsigned long mad_sat(unsigned long, unsigned long, unsigned long);
+unsigned long long mad_sat(unsigned long long, unsigned long long,
+                           unsigned long long);
+char mad_sat(char, char, char);
+signed char mad_sat(signed char, signed char, signed char);
+short mad_sat(short, short, short);
+int mad_sat(int, int, int);
+long mad_sat(long, long, long);
+long long mad_sat(long long, long long, long long);
+
+template <typename T, int N>
+cl::sycl::vec<T, N> mad_sat(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
+                            cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y, T z) { return mad_sat(x, y, z); }, a, b, c);
+}
 
 /* maximum value */
-uint8_t max(const uint8_t a, const uint8_t b);
-uint16_t max(const uint16_t a, const uint16_t b);
-uint32_t max(const uint32_t a, const uint32_t b);
-uint64_t max(const uint64_t a, const uint64_t b);
-int8_t max(const int8_t a, const int8_t b);
-int16_t max(const int16_t a, const int16_t b);
-int32_t max(const int32_t a, const int32_t b);
-int64_t max(const int64_t a, const int64_t b);
-float max(const float a, const float b);
-double max(const double a, const double b);
+template <typename T> T max(T a, T b) { return (a > b) ? a : b; }
 
 template <typename T, int N>
 cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
@@ -415,16 +422,7 @@ cl::sycl::vec<T, N> max(cl::sycl::vec<T, N> a, T b) {
 }
 
 /* minimum value */
-uint8_t min(const uint8_t a, const uint8_t b);
-uint16_t min(const uint16_t a, const uint16_t b);
-uint32_t min(const uint32_t a, const uint32_t b);
-uint64_t min(const uint64_t a, const uint64_t b);
-int8_t min(const int8_t a, const int8_t b);
-int16_t min(const int16_t a, const int16_t b);
-int32_t min(const int32_t a, const int32_t b);
-int64_t min(const int64_t a, const int64_t b);
-float min(const float a, const float b);
-double min(const double a, const double b);
+template <typename T> T min(T a, T b) { return (a < b) ? a : b; }
 
 template <typename T, int N>
 cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
@@ -442,109 +440,148 @@ cl::sycl::vec<T, N> min(cl::sycl::vec<T, N> a, T b) {
 }
 
 /* mix */
-resultRef<float> mix(const float a, const float b, const float c);
-resultRef<double> mix(const double a, const double b, const double c);
+sycl_cts::resultRef<float> mix(const float a, const float b, const float c);
+sycl_cts::resultRef<double> mix(const double a, const double b, const double c);
 
 template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
-                                   cl::sycl::vec<T, N> c) {
+sycl_cts::resultRef<cl::sycl::vec<T, N>>
+mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b, cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y, T z) { return mix(x, y, z); }, a, b, c);
+}
+
+template <typename T, int N>
+sycl_cts::resultRef<cl::sycl::vec<T, N>> mix(cl::sycl::vec<T, N> a,
+                                             cl::sycl::vec<T, N> b, T c) {
   cl::sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    resultRef<T> element =
-        mix(getElement(a, i), getElement(b, i), getElement(c, i));
+    sycl_cts::resultRef<T> element = mix(getElement(a, i), getElement(b, i), c);
     if (element.undefined.empty())
       setElement<T, N>(res, i, element.res);
     else
       undefined[i] = true;
   }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
+  return sycl_cts::resultRef<cl::sycl::vec<T, N>>(res, undefined);
 }
-
-template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> mix(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b,
-                                   T c) {
-  cl::sycl::vec<T, N> res;
-  std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
-    resultRef<T> element = mix(getElement(a, i), getElement(b, i), c);
-    if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
-    else
-      undefined[i] = true;
-  }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
-}
-
-/* multiply and return high part */
-uint8_t mul_hi(const uint8_t a, const uint8_t b);
-uint16_t mul_hi(const uint16_t a, const uint16_t b);
-uint32_t mul_hi(const uint32_t a, const uint32_t b);
-uint64_t mul_hi(const uint64_t a, const uint64_t b);
-int8_t mul_hi(const int8_t a, const int8_t b);
-int16_t mul_hi(const int16_t a, const int16_t b);
-int32_t mul_hi(const int32_t a, const int32_t b);
-int64_t mul_hi(const int64_t a, const int64_t b);
 
 /* bitwise rotate */
-uint8_t rotate(const uint8_t a, const uint8_t b);
-uint16_t rotate(const uint16_t a, const uint16_t b);
-uint32_t rotate(const uint32_t a, const uint32_t b);
-uint64_t rotate(const uint64_t a, const uint64_t b);
-int8_t rotate(const int8_t a, const int8_t b);
-int16_t rotate(const int16_t a, const int16_t b);
-int32_t rotate(const int32_t a, const int32_t b);
-int64_t rotate(const int64_t a, const int64_t b);
+template <typename T> T rotate(T v, T i) {
+  if (std::is_unsigned<T>::value) {
+    i = i % sycl_cts::math::num_bits(v);
+    size_t nBits = sycl_cts::math::num_bits(v) - size_t(i);
+    return T((v << i) | ((v >> nBits)));
+  }
+  typedef typename std::make_unsigned<T>::type R;
+  R i_mod = R(i) % sycl_cts::math::num_bits(v);
+  T mask = T((T(1) << i_mod) - T(1));
+  size_t nBits = sycl_cts::math::num_bits(v) - size_t(i_mod);
+  return T((v << i_mod) | ((v >> nBits) & mask));
+}
 
-/* multiply and return high part */
-uint8_t rotate(const uint8_t a, const uint8_t b);
-uint16_t rotate(const uint16_t a, const uint16_t b);
-uint32_t rotate(const uint32_t a, const uint32_t b);
-uint64_t rotate(const uint64_t a, const uint64_t b);
-int8_t rotate(const int8_t a, const int8_t b);
-int16_t rotate(const int16_t a, const int16_t b);
-int32_t rotate(const int32_t a, const int32_t b);
-int64_t rotate(const int64_t a, const int64_t b);
+template <typename T, int N>
+cl::sycl::vec<T, N> rotate(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return rotate(x, y); }, a, b);
+}
 
 /* return number of non zero bits in x */
-uint8_t popcount(const uint8_t);
-uint16_t popcount(const uint16_t);
-uint32_t popcount(const uint32_t);
-uint64_t popcount(const uint64_t);
-int8_t popcount(const int8_t);
-int16_t popcount(const int16_t);
-int32_t popcount(const int32_t);
-int64_t popcount(const int64_t);
+template <typename T> T popcount(T x) {
+  int lz = 0;
+  for (int i = 0; i < sycl_cts::math::num_bits(x); i++)
+    if (x & (1ull << i))
+      lz++;
+  return lz;
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> popcount(cl::sycl::vec<T, N> a) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x) { return popcount(x); }, a);
+}
+
+/* substract with saturation */
+template <typename T> T sub_sat(T x, T y) {
+  if (std::is_unsigned<T>::value)
+    return x <= y ? 0 : x - y;
+
+  const T max_val = std::numeric_limits<T>::max();
+  const T min_val = std::numeric_limits<T>::min();
+  if (x > 0) {
+    if (y > 0) {
+      return x - y;
+    } else // x > 0, y <= 0
+    {
+      return (x - max_val) > y ? max_val : x - y;
+    }
+  } else // x <= 0
+  {
+    if (y > 0) {
+      return (x - min_val) < y ? min_val : x - y;
+    } else // x <= 0, y <= 0
+    {
+      return x - y;
+    }
+  }
+}
+
+template <typename T, int N>
+cl::sycl::vec<T, N> sub_sat(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector<T, T, N>(
+      [](T x, T y) { return sub_sat(x, y); }, a, b);
+}
+
+/* upsample */
+uint16_t upsample(uint8_t h, uint8_t l);
+uint32_t upsample(uint16_t h, uint16_t l);
+uint64_t upsample(uint32_t h, uint32_t l);
+int16_t upsample(int8_t h, uint8_t l);
+int32_t upsample(int16_t h, uint16_t l);
+int64_t upsample(int32_t h, uint32_t l);
+
+template <typename T> struct upsample_t;
+
+template <> struct upsample_t<uint8_t> { using type = uint16_t; };
+
+template <> struct upsample_t<uint16_t> { using type = uint32_t; };
+
+template <> struct upsample_t<uint32_t> { using type = uint64_t; };
+
+template <> struct upsample_t<int8_t> { using type = int16_t; };
+
+template <> struct upsample_t<int16_t> { using type = int32_t; };
+
+template <> struct upsample_t<int32_t> { using type = int64_t; };
+
+template <typename T, int N>
+cl::sycl::vec<typename upsample_t<T>::type, N>
+upsample(cl::sycl::vec<T, N> a,
+         cl::sycl::vec<typename std::make_unsigned<T>::type, N> b) {
+  return sycl_cts::math::run_func_on_vector<typename upsample_t<T>::type, T, N>(
+      [](T x, T y) { return upsample(x, y); }, a, b);
+}
 
 /* fast multiply add 24bits */
-int32_t mad24(int32_t x, int32_t y, int32_t z);
-uint32_t mad24(uint32_t x, uint32_t y, uint32_t z);
-cl::sycl::int2 mad24(cl::sycl::int2 x, cl::sycl::int2 y, cl::sycl::int2 z);
-cl::sycl::int3 mad24(cl::sycl::int3 x, cl::sycl::int3 y, cl::sycl::int3 z);
-cl::sycl::int4 mad24(cl::sycl::int4 x, cl::sycl::int4 y, cl::sycl::int4 z);
-cl::sycl::int8 mad24(cl::sycl::int8 x, cl::sycl::int8 y, cl::sycl::int8 z);
-cl::sycl::int16 mad24(cl::sycl::int16 x, cl::sycl::int16 y, cl::sycl::int16 z);
-cl::sycl::uint2 mad24(cl::sycl::uint2 x, cl::sycl::uint2 y, cl::sycl::uint2 z);
-cl::sycl::uint3 mad24(cl::sycl::uint3 x, cl::sycl::uint3 y, cl::sycl::uint3 z);
-cl::sycl::uint4 mad24(cl::sycl::uint4 x, cl::sycl::uint4 y, cl::sycl::uint4 z);
-cl::sycl::uint8 mad24(cl::sycl::uint8 x, cl::sycl::uint8 y, cl::sycl::uint8 z);
-cl::sycl::uint16 mad24(cl::sycl::uint16 x, cl::sycl::uint16 y,
-                       cl::sycl::uint16 z);
+sycl_cts::resultRef<int32_t> mad24(int32_t x, int32_t y, int32_t z);
+sycl_cts::resultRef<uint32_t> mad24(uint32_t x, uint32_t y, uint32_t z);
+
+template <typename T, int N>
+sycl_cts::resultRef<cl::sycl::vec<T, N>>
+mad24(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b, cl::sycl::vec<T, N> c) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y, T z) { return mad24(x, y, z); }, a, b, c);
+}
 
 /* fast multiply 24bits */
-int32_t mul24(int32_t x, int32_t y);
-uint32_t mul24(uint32_t x, uint32_t y);
-cl::sycl::int2 mul24(cl::sycl::int2 x, cl::sycl::int2 y);
-cl::sycl::int3 mul24(cl::sycl::int3 x, cl::sycl::int3 y);
-cl::sycl::int4 mul24(cl::sycl::int4 x, cl::sycl::int4 y);
-cl::sycl::int8 mul24(cl::sycl::int8 x, cl::sycl::int8 y);
-cl::sycl::int16 mul24(cl::sycl::int16 x, cl::sycl::int16 y);
-cl::sycl::uint2 mul24(cl::sycl::uint2 x, cl::sycl::uint2 y);
-cl::sycl::uint3 mul24(cl::sycl::uint3 x, cl::sycl::uint3 y);
-cl::sycl::uint4 mul24(cl::sycl::uint4 x, cl::sycl::uint4 y);
-cl::sycl::uint8 mul24(cl::sycl::uint8 x, cl::sycl::uint8 y);
-cl::sycl::uint16 mul24(cl::sycl::uint16 x, cl::sycl::uint16 y);
+sycl_cts::resultRef<int32_t> mul24(int32_t x, int32_t y);
+sycl_cts::resultRef<uint32_t> mul24(uint32_t x, uint32_t y);
 
+template <typename T, int N>
+sycl_cts::resultRef<cl::sycl::vec<T, N>> mul24(cl::sycl::vec<T, N> a,
+                                               cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y) { return mul24(x, y); }, a, b);
+}
 // Math Functions
 
 cl::sycl::half acos(cl::sycl::half a);
@@ -1016,22 +1053,14 @@ cl::sycl::vec<T, N> pown(cl::sycl::vec<T, N> a, cl::sycl::vec<int, N> b) {
   return res;
 }
 
-resultRef<cl::sycl::half> powr(cl::sycl::half a, cl::sycl::half b);
-resultRef<float> powr(float a, float b);
-resultRef<double> powr(double a, double b);
+sycl_cts::resultRef<cl::sycl::half> powr(cl::sycl::half a, cl::sycl::half b);
+sycl_cts::resultRef<float> powr(float a, float b);
+sycl_cts::resultRef<double> powr(double a, double b);
 template <typename T, int N>
-resultRef<cl::sycl::vec<T, N>> powr(cl::sycl::vec<T, N> a,
-                                    cl::sycl::vec<T, N> b) {
-  cl::sycl::vec<T, N> res;
-  std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
-    resultRef<T> element = powr(getElement(a, i), getElement(b, i));
-    if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
-    else
-      undefined[i] = true;
-  }
-  return resultRef<cl::sycl::vec<T, N>>(res, undefined);
+sycl_cts::resultRef<cl::sycl::vec<T, N>> powr(cl::sycl::vec<T, N> a,
+                                              cl::sycl::vec<T, N> b) {
+  return sycl_cts::math::run_func_on_vector_result_ref<T, N>(
+      [](T x, T y) { return powr(x, y); }, a, b);
 }
 
 using std::remainder;
@@ -1192,6 +1221,64 @@ cl::sycl::vec<T, N> divide(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
   return sycl_cts::math::run_func_on_vector<T, T, N>(
       [](T x, T y) { return divide(x, y); }, a, b);
 }
+
+// Geometric funcs
+
+cl::sycl::float4 cross(cl::sycl::float4 p0, cl::sycl::float4 p1);
+cl::sycl::float3 cross(cl::sycl::float3 p0, cl::sycl::float3 p1);
+cl::sycl::double4 cross(cl::sycl::double4 p0, cl::sycl::double4 p1);
+cl::sycl::double3 cross(cl::sycl::double3 p0, cl::sycl::double3 p1);
+
+float dot(float p0, float p1);
+float dot(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float dot(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float dot(cl::sycl::float4 p0, cl::sycl::float4 p1);
+double dot(double p0, double p1);
+double dot(cl::sycl::double2 p0, cl::sycl::double2 p1);
+double dot(cl::sycl::double3 p0, cl::sycl::double3 p1);
+double dot(cl::sycl::double4 p0, cl::sycl::double4 p1);
+
+float distance(float p0, float p1);
+float distance(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float distance(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float distance(cl::sycl::float4 p0, cl::sycl::float4 p1);
+double distance(double p0, double p1);
+double distance(cl::sycl::double2 p0, cl::sycl::double2 p1);
+double distance(cl::sycl::double3 p0, cl::sycl::double3 p1);
+double distance(cl::sycl::double4 p0, cl::sycl::double4 p1);
+
+float length(float p);
+float length(cl::sycl::float2 p);
+float length(cl::sycl::float3 p);
+float length(cl::sycl::float4 p);
+double length(double p);
+double length(cl::sycl::double2 p);
+double length(cl::sycl::double3 p);
+double length(cl::sycl::double4 p);
+
+float normalize(float p);
+cl::sycl::float2 normalize(cl::sycl::float2 p);
+cl::sycl::float3 normalize(cl::sycl::float3 p);
+cl::sycl::float4 normalize(cl::sycl::float4 p);
+double normalize(double p);
+cl::sycl::double2 normalize(cl::sycl::double2 p);
+cl::sycl::double3 normalize(cl::sycl::double3 p);
+cl::sycl::double4 normalize(cl::sycl::double4 p);
+
+float fast_distance(float p0, float p1);
+float fast_distance(cl::sycl::float2 p0, cl::sycl::float2 p1);
+float fast_distance(cl::sycl::float3 p0, cl::sycl::float3 p1);
+float fast_distance(cl::sycl::float4 p0, cl::sycl::float4 p1);
+
+float fast_length(float p);
+float fast_length(cl::sycl::float2 p);
+float fast_length(cl::sycl::float3 p);
+float fast_length(cl::sycl::float4 p);
+
+float fast_normalize(float p);
+cl::sycl::float2 fast_normalize(cl::sycl::float2 p);
+cl::sycl::float3 fast_normalize(cl::sycl::float3 p);
+cl::sycl::float4 fast_normalize(cl::sycl::float4 p);
 
 } // reference
 

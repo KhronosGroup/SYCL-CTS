@@ -467,7 +467,7 @@ class check_image_accessor_api_methods {
     auto image = image_t(data.data(), image_format_channel<T>::order,
                          image_format_channel<T>::type, range);
     check_methods_helper(log, queue, image, range, typeName,
-                         acc_type_tag::get<target>());
+                         acc_type_tag::get<target, acc_placeholder::image>());
   }
 
  private:
@@ -518,8 +518,9 @@ class check_image_accessor_api_methods {
                             image_t &image, image_range_t<dims, target> range,
                             const std::string& typeName,
                             acc_type_tag::host) const {
-    check_methods(
-        log, make_accessor<T, dims, mode, target>(image), range, typeName);
+    auto acc =
+        make_accessor<T, dims, mode, target, acc_placeholder::image>(image);
+    check_methods(log, acc, range, typeName);
   }
 
   /**
@@ -533,8 +534,10 @@ class check_image_accessor_api_methods {
                             const std::string& typeName,
                             acc_type_tag::generic) const {
     queue.submit([&](cl::sycl::handler &handler) {
-      check_methods(log, make_accessor<T, dims, mode, target>(image, handler),
-                    range, typeName);
+      auto acc =
+          make_accessor<T, dims, mode, target, acc_placeholder::image>(
+              image, handler);
+      check_methods(log, acc, range, typeName);
       handler.single_task(dummy_functor<T>());
     });
   }
@@ -577,7 +580,8 @@ class check_image_accessor_api_reads {
 
       check_command_group_reads(queue, range, imgCoordsSyntax,
                                 imgCoordsSamplerSyntax, errorBuffer,
-                                acc_type_tag::get<target>());
+                                acc_type_tag::get<target,
+                                                  acc_placeholder::image>());
     }
 
     if (errors[0] != 0) {
@@ -608,11 +612,14 @@ class check_image_accessor_api_reads {
                                  acc_type_tag::host) {
     static constexpr auto errorTarget = cl::sycl::access::target::host_buffer;
     auto accCoordsSyntax =
-        make_accessor<T, dims, mode, target>(imgCoordsSyntax);
+        make_accessor<T, dims, mode, target, acc_placeholder::image>(
+            imgCoordsSyntax);
     auto accCoordsSamplerSyntax =
-        make_accessor<T, dims, mode, target>(imgCoordsSamplerSyntax);
+        make_accessor<T, dims, mode, target, acc_placeholder::image>(
+            imgCoordsSamplerSyntax);
     auto errorAccessor =
-        make_accessor<int, 1, errorMode, errorTarget>(errorBuffer);
+        make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
+            errorBuffer);
     auto sampler = cl::sycl::sampler(
         cl::sycl::coordinate_normalization_mode::unnormalized,
         cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
@@ -646,11 +653,14 @@ class check_image_accessor_api_reads {
       static constexpr auto errorTarget =
           cl::sycl::access::target::global_buffer;
       auto accCoordsSyntax =
-          make_accessor<T, dims, mode, target>(imgCoordsSyntax, handler);
+          make_accessor<T, dims, mode, target, acc_placeholder::image>(
+              imgCoordsSyntax, handler);
       auto accCoordsSamplerSyntax =
-          make_accessor<T, dims, mode, target>(imgCoordsSamplerSyntax, handler);
+          make_accessor<T, dims, mode, target, acc_placeholder::image>(
+              imgCoordsSamplerSyntax, handler);
       auto errorAccessor =
-          make_accessor<int, 1, errorMode, errorTarget>(errorBuffer, handler);
+          make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
+              errorBuffer, handler);
       auto sampler = cl::sycl::sampler(
           cl::sycl::coordinate_normalization_mode::unnormalized,
           cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
@@ -695,7 +705,8 @@ class check_image_accessor_api_writes {
                   image_format_channel<T>::type, range);
 
       check_command_group_writes(queue, range, imgCoordsSyntax, typeName,
-                                 acc_type_tag::get<target>());
+                                 acc_type_tag::get<target,
+                                                   acc_placeholder::image>());
     }
 
     const auto storageData = convert_image_bytes_to_data<T>(dataCoordsSyntax);
@@ -726,7 +737,8 @@ class check_image_accessor_api_writes {
                                   const std::string typeName,
                                   acc_type_tag::host) {
     auto accCoordsSyntax =
-        make_accessor<T, dims, mode, target>(imgCoordsSyntax);
+        make_accessor<T, dims, mode, target, acc_placeholder::image>(
+            imgCoordsSyntax);
 
     static_cast<void>(typeName); //no failure log here currently
 
@@ -755,7 +767,8 @@ class check_image_accessor_api_writes {
 
     queue.submit([&](cl::sycl::handler &handler) {
       auto accCoordsSyntax =
-          make_accessor<T, dims, mode, target>(imgCoordsSyntax, handler);
+          make_accessor<T, dims, mode, target, acc_placeholder::image>(
+              imgCoordsSyntax, handler);
 
       /** check image accessor for writes
       */
@@ -774,21 +787,37 @@ class check_image_accessor_api_writes {
 
 template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target>
-void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
+void check_image_accessor_api_mode(util::logger &log,
+                                   const std::string typeName,
+                                   size_t count, size_t size,
                                    cl::sycl::queue &queue,
                                    image_range_t<dims, target> range,
-                                   const std::string typeName,
                                    acc_mode_tag::generic) {
+  check_image_accessor_api_reads<T, dims, mode, target>{count, size}(
+      log, queue, range, typeName);
   check_image_accessor_api_writes<T, dims, mode, target>{count, size}(
       log, queue, range, typeName);
 }
 
 template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target>
-void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
+void check_image_accessor_api_mode(util::logger &log,
+                                   const std::string typeName,
+                                   size_t count, size_t size,
                                    cl::sycl::queue &queue,
                                    image_range_t<dims, target> range,
+                                   acc_mode_tag::write_only) {
+  check_image_accessor_api_writes<T, dims, mode, target>{count, size}(
+      log, queue, range, typeName);
+}
+
+template <typename T, int dims, cl::sycl::access::mode mode,
+          cl::sycl::access::target target>
+void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
+                                   size_t count, size_t size,
+                                   cl::sycl::queue &queue,
+                                   image_range_t<dims, target> range,
                                    acc_mode_tag::read_only) {
   check_image_accessor_api_reads<T, dims, mode, target>{count, size}(
       log, queue, range, typeName);
@@ -796,10 +825,11 @@ void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
 
 template <typename T, int dims, cl::sycl::access::mode mode,
           cl::sycl::access::target target>
-void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
+void check_image_accessor_api_mode(util::logger &log,
+                                   const std::string typeName,
+                                   size_t count, size_t size,
                                    cl::sycl::queue &queue,
-                                   image_range_t<dims, target> range,
-                                   const std::string typeName) {
+                                   image_range_t<dims, target> range) {
 #ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target>("", typeName, log);
 #endif
@@ -814,44 +844,96 @@ void check_image_accessor_api_mode(util::logger &log, size_t count, size_t size,
       log, queue, range, typeName);
 
   check_image_accessor_api_mode<T, dims, mode, target>(
-      log, count, size, queue, range, typeName, acc_mode_tag::get<mode>());
+      log, typeName, count, size, queue, range, acc_mode_tag::get<mode>());
 }
 
-/** tests image accessors with different targets
-*/
-template <typename T, int dims, cl::sycl::access::target target>
-void check_image_accessor_api_target(util::logger &log, size_t count,
-                                     size_t size, cl::sycl::queue &queue,
-                                     image_range_t<dims, target> range,
-                                     const std::string typeName) {
-  /** check image accessor api for read
-  */
-  check_image_accessor_api_mode<T, dims, cl::sycl::access::mode::read, target>(
-      log, count, size, queue, range, typeName);
-
-  /** check image accessor api for write
-  */
-  check_image_accessor_api_mode<T, dims, cl::sycl::access::mode::write, target>(
-      log, count, size, queue, range, typeName);
+/**
+ *  @brief Test image and image array accessors for all modes
+ */
+template <typename T, int dims, cl::sycl::access::target target,
+          typename ... argsT>
+void check_image_accessor_api_target(acc_target_tag::generic,
+                                     argsT&& ... args) {
+  {
+    constexpr auto mode = cl::sycl::access::mode::read;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+  {
+    constexpr auto mode = cl::sycl::access::mode::write;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+  {
+    constexpr auto mode = cl::sycl::access::mode::discard_write;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
 }
 
-template <typename T, int dims>
-void check_image_accessor_api_dim(util::logger &log, size_t count, size_t size,
-                                  cl::sycl::queue &queue,
+/**
+ *  @brief Test host image accessors for all modes
+ */
+template <typename T, int dims, cl::sycl::access::target target,
+          typename ... argsT>
+void check_image_accessor_api_target(acc_target_tag::host,
+                                     argsT&& ... args) {
+  {
+    constexpr auto mode = cl::sycl::access::mode::read;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+  {
+    constexpr auto mode = cl::sycl::access::mode::write;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+  {
+    constexpr auto mode = cl::sycl::access::mode::read_write;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+  {
+    constexpr auto mode = cl::sycl::access::mode::discard_write;
+    check_image_accessor_api_mode<T, dims, mode, target>(
+        std::forward<argsT>(args)...);
+  }
+}
+
+/**
+ *  @brief Tests image accessors with different targets for all modes
+ */
+template <typename T, int dims, cl::sycl::access::target target,
+          typename ... argsT>
+void check_image_accessor_api_target_wrapper(argsT&& ... args) {
+
+  static const auto tagretTag = acc_target_tag::get<T, target>();
+
+  check_image_accessor_api_target<T, dims, target>(
+      tagretTag, std::forward<argsT>(args)...);
+}
+
+/**
+ *  @brief Run tests for 1 and 2 dimensions
+ */
+template <typename T, int dims, typename ... argsT>
+void check_image_accessor_api_dim(acc_dims_tag::generic, util::logger &log,
                                   const std::string typeName,
-                                  acc_dims_tag::generic) {
+                                  size_t count, argsT&& ... args) {
+
   const auto imageRange = make_test_range<dims>(count);
 
   /** check image accessor api for image
    */
-  check_image_accessor_api_target<T, dims, cl::sycl::access::target::image>(
-      log, count, size, queue, imageRange, typeName);
+  check_image_accessor_api_target_wrapper<T, dims,
+                                          cl::sycl::access::target::image>(
+      log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
-  check_image_accessor_api_target<T, dims,
-                                  cl::sycl::access::target::host_image>(
-      log, count, size, queue, imageRange, typeName);
+  check_image_accessor_api_target_wrapper<T, dims,
+                                          cl::sycl::access::target::host_image>(
+      log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for image_array
    */
@@ -863,28 +945,32 @@ void check_image_accessor_api_dim(util::logger &log, size_t count, size_t size,
         make_test_range<image_dims<dims, imageArrayTarget>::value>(
             count, isImageArray);
 
-    check_image_accessor_api_target<T, dims, imageArrayTarget>(
-        log, count, size, queue, imageArrayRange, typeName);
+    check_image_accessor_api_target_wrapper<T, dims, imageArrayTarget>(
+        log, typeName, count, std::forward<argsT>(args)..., imageArrayRange);
   }
 }
 
-template <typename T, int dims>
-void check_image_accessor_api_dim(util::logger &log, size_t count, size_t size,
-                                  cl::sycl::queue &queue,
+/**
+ *  @brief Run tests for 3 dimensions
+ */
+template <typename T, int dims, typename ... argsT>
+void check_image_accessor_api_dim(acc_dims_tag::num_dims<3>, util::logger &log,
                                   const std::string typeName,
-                                  acc_dims_tag::num_dims<3>) {
+                                  size_t count, argsT&& ... args) {
+
   const auto imageRange = make_test_range<dims>(count);
 
   /** check image accessor api for image
    */
-  check_image_accessor_api_target<T, dims, cl::sycl::access::target::image>(
-      log, count, size, queue, imageRange, typeName);
+  check_image_accessor_api_target_wrapper<T, dims,
+                                          cl::sycl::access::target::image>(
+      log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
-  check_image_accessor_api_target<T, dims,
-                                  cl::sycl::access::target::host_image>(
-      log, count, size, queue, imageRange, typeName);
+  check_image_accessor_api_target_wrapper<T, dims,
+                                          cl::sycl::access::target::host_image>(
+      log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** image_array accessors only exist for 1D and 2D
    */
@@ -892,12 +978,10 @@ void check_image_accessor_api_dim(util::logger &log, size_t count, size_t size,
 
 /** tests image accessors with different dimensions
 */
-template <typename T, int dims>
-void check_image_accessor_api_dim(util::logger &log, size_t count, size_t size,
-                                  cl::sycl::queue &queue,
-                                  const std::string typeName) {
-  check_image_accessor_api_dim<T, dims>(log, count, size, queue, typeName,
-                                        acc_dims_tag::get<dims>());
+template <typename T, int dims, typename ... argsT>
+void check_image_accessor_api_dim(util::logger &log, argsT&& ... args) {
+  check_image_accessor_api_dim<T, dims>(acc_dims_tag::get<dims>(),
+                                        log, std::forward<argsT>(args)...);
 }
 
 /** tests image accessors with different types
@@ -910,15 +994,15 @@ void check_image_accessor_api_type(util::logger &log, cl::sycl::queue &queue,
 
   /** check image accessor api for 1 dimension
    */
-  check_image_accessor_api_dim<T, 1>(log, count, size, queue, typeName);
+  check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
 
   /** check image accessor api for 2 dimension
    */
-  check_image_accessor_api_dim<T, 2>(log, count, size, queue, typeName);
+  check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
 
   /** check image accessor api for 3 dimension
    */
-  check_image_accessor_api_dim<T, 3>(log, count, size, queue, typeName);
+  check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
 }
 
 }  // namespace

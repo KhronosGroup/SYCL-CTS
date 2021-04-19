@@ -227,6 +227,28 @@ void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
   }
 }
 
+/**
+ * @brief Verify two values are equal
+ */
+template <typename T>
+bool check_equal_values(const T& lhs, const T& rhs) {
+  return lhs == rhs;
+}
+
+/**
+ * @brief Instantiation for vectors with the same API as for scalar values
+ */
+template <typename T, int numElements>
+bool check_equal_values(const cl::sycl::vec<T, numElements>& lhs,
+                        const cl::sycl::vec<T, numElements>& rhs) {
+  bool result = true;
+  auto perElement = lhs == rhs;
+  for (int i = 0; i < numElements; ++i) {
+    result &= perElement[i] != 0;
+  }
+  return result;
+}
+
 /** helper function for retrieving an event from a submitted kernel
  */
 template <typename kernelT>
@@ -413,28 +435,6 @@ template <typename T>
 struct check_type_existence {
   check_type_existence() = default;
 };
-
-/** Helper function that calculates a range from a size so
- *  that each dimension equals size
- */
-template <size_t dims>
-cl::sycl::range<dims> getRange(const size_t &size);
-
-/** Specializations of for getRange each supported
- *  dimensionality
- */
-template <>
-inline cl::sycl::range<1> getRange<1>(const size_t &size) {
-  return cl::sycl::range<1>(size);
-}
-template <>
-inline cl::sycl::range<2> getRange<2>(const size_t &size) {
-  return cl::sycl::range<2>(size, size);
-}
-template <>
-inline cl::sycl::range<3> getRange<3>(const size_t &size) {
-  return cl::sycl::range<3>(size, size, size);
-}
 
 /**
  * @brief Helper function to check if all devices support online compiler.

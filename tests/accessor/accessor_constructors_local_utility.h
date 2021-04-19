@@ -14,22 +14,29 @@
 #include "../common/common.h"
 #include "accessor_constructors_utility.h"
 
+#ifndef TEST_NAME
+#error Invalid test namespace
+#endif
+
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** Creates a local accessor and checks all its members for correctness.
+/** @brief Creates a local accessor and checks all its members for correctness
  */
-template <typename accTag>
+template <typename accTag, typename ... propertyListT>
 class check_accessor_constructor_local {
-  static constexpr size_t rangeDims = ((accTag::dims == 0) ? 1 : accTag::dims);
 public:
+  /** @brief Overload to verify all constructors w/o range
+   */
   static void check(sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler) {
+                    cl::sycl::handler& handler,
+                    const propertyListT& ... properties) {
     // construct the accessor
-    typename accTag::type accessor(handler);
+    typename accTag::type accessor(handler,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
@@ -37,125 +44,110 @@ public:
         accessor_members::size{sizeof(typename accTag::dataT)},
         accessor_members::count{1});
   }
-  static void check(cl::sycl::range<rangeDims> range,
+  /** @brief Overload to verify all constructors with range
+   */
+  static void check(cl::sycl::range<accTag::dataDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler) {
+                    cl::sycl::handler& handler,
+                    const propertyListT& ... properties) {
     // construct the accessor
-    typename accTag::type accessor(range, handler);
+    typename accTag::type accessor(range, handler,
+                                   properties...);
 
     // check the accessor
     check_accessor_members<accTag>::check(
         log, accessor, constructorName, typeName,
         accessor_members::size{range.size() * sizeof(typename accTag::dataT)},
         accessor_members::count{range.size()},
-        accessor_members::range<rangeDims>{range});
+        accessor_members::range<accTag::dataDims>{range});
   }
 };
 
- /** check accessor is Copy Constructible
-  */
-template <typename accTag>
-class check_local_accessor_copy_constructable {
-public:
-  static void check(const typename accTag::type& a,
-                    sycl_cts::util::logger &log,
-                    const std::string& typeName) {
-    auto b{a};
-
-    check_accessor_members<accTag>::check(
-        log, b, "copy construction", typeName,
-        accessor_members::size::from<accTag>(a),
-        accessor_members::count::from<accTag>(a));
-
-    // check operator ==
-    if (!(a == b)) {
-      fail_for_accessor<accTag>(
-          log, typeName,
-          "accessor is not equality-comparable (operator==)");
-    }
-    if (!(b == a)) {
-      fail_for_accessor<accTag>(
-          log, typeName,
-          "accessor is not equality-comparable (operator== symmetry failed)");
-    }
-    if (a != b) {
-      fail_for_accessor<accTag>(
-          log, typeName,
-          "accessor is not equality-comparable (operator!=)");
-    }
-    if (b != a) {
-      fail_for_accessor<accTag>(
-          log, typeName,
-          "accessor is not equality-comparable (operator!= symmetry failed)");
-    }
-
-    // check std::hash<accessor<>>
-    std::hash<typename accTag::type> hasher;
-
-    if (hasher(a) != hasher(b)) {
-      fail_for_accessor<accTag>(
-          log, typeName,
-          "accessor hashing of equal failed");
-    }
-  }
-};
-
-/** check accessor is Copy Assignable
+/** @brief Checks all constructors available
  */
-template <typename accTag>
-class check_local_accessor_copy_assignable {
+template <typename T, size_t dims, cl::sycl::access::target target>
+class check_all_accessor_constructors_local {
 public:
-  static void check(const typename accTag::type& a,
-                    typename accTag::type& b,
+  template <cl::sycl::access::mode mode, typename ... rangeArgsT>
+  static void check(cl::sycl::handler &handler,
                     sycl_cts::util::logger &log,
-                    const std::string& typeName) {
-    b = a;
+                    const std::string& typeName,
+                    rangeArgsT&& ... range) {
+    using accTag = accessor_type_info<T, dims, mode, target>;
 
-    check_accessor_members<accTag>::check(
-        log, b, "copy assignment", typeName,
-        accessor_members::size::from<accTag>(a),
-        accessor_members::count::from<accTag>(a));
+    constexpr bool usesRange = sizeof...(rangeArgsT) != 0;
+    {
+      using verifier = check_accessor_constructor_local<accTag>;
+
+      const auto constructorName = usesRange ?
+          "constructor(range, handler)" :
+          "constructor(handler)";
+      verifier::check(range...,
+                      log, constructorName, typeName, handler);
+    }
+    {
+      using property_list = cl::sycl::property_list;
+      using verifier = check_accessor_constructor_local<accTag, property_list>;
+
+      property_list properties {};
+      // no specific properties for local accessor in spec
+
+      const auto constructorName = usesRange ?
+          "constructor(range, handler, property_list)" :
+          "constructor(handler, property_list)";
+      verifier::check(range...,
+                      log, constructorName, typeName, handler, properties);
+    }
   }
 };
 
-/** check accessor is Move Constructible
+/** @brief Check common-by-reference semantics
  */
-template <typename accTag>
-class check_local_accessor_move_constructable {
+template <typename T, size_t dims, cl::sycl::access::target target>
+class check_accessor_common_by_reference_local {
 public:
-  static void check(const typename accTag::type& a,
+  template <cl::sycl::access::mode mode, typename ... rangeArgsT>
+  static void check(cl::sycl::handler &handler,
                     sycl_cts::util::logger &log,
-                    const std::string& typeName) {
-    auto b{std::move(a)};
+                    const std::string& typeName,
+                    rangeArgsT&& ... range) {
+    using accTag = accessor_type_info<T, dims, mode, target>;
+    {
+      using verifier = check_accessor_copy_constructable<accTag>;
 
-    check_accessor_members<accTag>::check(
-        log, b, "move construction", typeName,
-        accessor_members::size::from<accTag>(a),
-        accessor_members::count::from<accTag>(a));
+      typename accTag::type srcAccessor(range..., handler);
+
+      verifier::check(srcAccessor, log, typeName);
+    }
+    {
+      using verifier = check_accessor_copy_assignable<accTag>;
+
+      typename accTag::type srcAccessor(range..., handler);
+      typename accTag::type dstAccessor(range..., handler);
+
+      verifier::check(srcAccessor, dstAccessor, log, typeName);
+    }
+    {
+      using verifier = check_accessor_move_constructable<accTag>;
+
+      typename accTag::type srcAccessor(range..., handler);
+
+      verifier::check(srcAccessor, log, typeName);
+    }
+    {
+      using verifier = check_accessor_move_assignable<accTag>;
+
+      typename accTag::type srcAccessor(range..., handler);
+      typename accTag::type dstAccessor(range..., handler);
+
+      verifier::check(srcAccessor, dstAccessor, log, typeName);
+    }
   }
 };
 
-/** check accessor is Move Assignable
- */
-template <typename accTag>
-class check_local_accessor_move_assignable {
-public:
-  static void check(const typename accTag::type& a,
-                    typename accTag::type& b,
-                    sycl_cts::util::logger &log,
-                    const std::string& typeName) {
-    b = std::move(a);
-
-    check_accessor_members<accTag>::check(
-        log, b, "move assignment", typeName,
-        accessor_members::size::from<accTag>(a),
-        accessor_members::count::from<accTag>(a));
-  }
-};
-
-/** Used to test the local accessor combinations for n > 0 dimensions
+/** @brief Used to test the local accessor combinations for n > 0 dimensions
  */
 template <typename T, size_t dims>
 class local_accessor_dims {
@@ -163,71 +155,34 @@ public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
     int size = 32;
-    cl::sycl::range<dims> range = getRange<dims>(size);
+    auto range =
+        sycl_cts::util::get_cts_object::range<dims>::get(size, size, size);
 
     /** check buffer accessor constructors for local
      */
     {
       constexpr auto target = cl::sycl::access::target::local;
+      using verifier =
+          check_all_accessor_constructors_local<T, dims, target>;
+      using semantics_verifier =
+          check_accessor_common_by_reference_local<T, dims, target>;
 
       queue.submit([&](cl::sycl::handler &h) {
-        /** check constructor for reading local buffer
+        /** check local accessor constructor for different modes
          */
         {
           constexpr auto mode = cl::sycl::access::mode::read;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          using verifier = check_accessor_constructor_local<accTag>;
-
-          verifier::check(range,
-                          log, "constructor(range, handler)",
-                          typeName, h);
+          verifier::template check<mode>(h, log, typeName, range);
         }
-        /** check constructor for atomic local buffer
-         */
         {
           constexpr auto mode = cl::sycl::access::mode::atomic;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          using verifier = check_accessor_constructor_local<accTag>;
-
-          verifier::check(range,
-                          log, "constructor(range, handler)",
-                          typeName, h);
+          verifier::template check<mode>(h, log, typeName, range);
         }
-
         /** check common-by-reference semantics
          */
         {
           constexpr auto mode = cl::sycl::access::mode::read_write;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          {
-            using verifier = check_local_accessor_copy_constructable<accTag>;
-
-            typename accTag::type srcAccessor(range, h);
-            verifier::check(srcAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_copy_assignable<accTag>;
-
-            typename accTag::type srcAccessor(range, h);
-            typename accTag::type dstAccessor(range, h);
-
-            verifier::check(srcAccessor, dstAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_move_constructable<accTag>;
-
-            typename accTag::type srcAccessor(range, h);
-
-            verifier::check(srcAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_move_assignable<accTag>;
-
-            typename accTag::type srcAccessor(range, h);
-            typename accTag::type dstAccessor(range, h);
-
-            verifier::check(srcAccessor, dstAccessor, log, typeName);
-          }
+          semantics_verifier::template check<mode>(h, log, typeName, range);
         }
 
         /** dummy kernel as no kernel is required for these checks
@@ -239,7 +194,7 @@ public:
   }
 };
 
-/** Used to test the 0 dimensional local accessor combinations
+/** @brief Used to test the 0 dimensional local accessor combinations
 */
 template <typename T>
 class local_accessor_dims<T, 0> {
@@ -251,63 +206,27 @@ class local_accessor_dims<T, 0> {
     {
       constexpr auto target = cl::sycl::access::target::local;
       constexpr size_t dims = 0;
+      using verifier =
+          check_all_accessor_constructors_local<T, dims, target>;
+      using semantics_verifier =
+          check_accessor_common_by_reference_local<T, dims, target>;
 
       queue.submit([&](cl::sycl::handler &h) {
-        /** check constructor for reading local buffer
+        /** check local accessor constructor for different modes
          */
         {
           constexpr auto mode = cl::sycl::access::mode::read;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          using verifier = check_accessor_constructor_local<accTag>;
-
-          verifier::check(log, "constructor(handler)",
-                          typeName, h);
+          verifier::template check<mode>(h, log, typeName);
         }
-        /** check constructor for atomic local buffer
-         */
         {
           constexpr auto mode = cl::sycl::access::mode::atomic;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          using verifier = check_accessor_constructor_local<accTag>;
-
-          verifier::check(log, "constructor(handler)",
-                          typeName, h);
+          verifier::template check<mode>(h, log, typeName);
         }
-
         /** check common-by-reference semantics
          */
         {
           constexpr auto mode = cl::sycl::access::mode::read_write;
-          using accTag = accessor_type_info<T, dims, mode, target>;
-          {
-            using verifier = check_local_accessor_copy_constructable<accTag>;
-
-            typename accTag::type srcAccessor(h);
-            verifier::check(srcAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_copy_assignable<accTag>;
-
-            typename accTag::type srcAccessor(h);
-            typename accTag::type dstAccessor(h);
-
-            verifier::check(srcAccessor, dstAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_move_constructable<accTag>;
-
-            typename accTag::type srcAccessor(h);
-
-            verifier::check(srcAccessor, log, typeName);
-          }
-          {
-            using verifier = check_local_accessor_move_assignable<accTag>;
-
-            typename accTag::type srcAccessor(h);
-            typename accTag::type dstAccessor(h);
-
-            verifier::check(srcAccessor, dstAccessor, log, typeName);
-          }
+          semantics_verifier::template check<mode>(h, log, typeName);
         }
 
         /** dummy kernel as no kernel is required for these checks

@@ -88,7 +88,8 @@ class TEST_NAME : public util::test_base {
       {
         auto testQueue = util::get_cts_object::queue();
 
-        const auto simpleRange = getRange<numDims>(1);
+        const auto simpleRange =
+            util::get_cts_object::range<numDims>::get(1, 1, 1);
 
         cl::sycl::buffer<bool> successBuf(success.data(),
                                           cl::sycl::range<1>(success.size()));

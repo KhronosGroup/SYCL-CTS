@@ -6,16 +6,15 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
-#include "./../../util/math_helper.h"
-#include "accessor_api_buffer_common.h"
-
 #define TEST_NAME accessor_api_buffer_fp16
+
+#include "../common/common.h"
+#include "accessor_api_buffer_common.h"
+#include "accessor_api_types_fp16.h"
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-using namespace accessor_utility;
 
 /** tests the api for cl::sycl::accessor
 */
@@ -33,31 +32,7 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp16")) {
-        log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
-
-#ifndef SYCL_CTS_FULL_CONFORMANCE
-      // Specific set of types to cover during ordinary compilation
-
-      /** check buffer accessor api for half
-       */
-      check_buffer_accessor_api_type<cl::sycl::half>()(log, queue,
-                                                       "cl::sycl::half");
-      /** check buffer accessor api for vec
-       */
-      check_buffer_accessor_api_type<cl::sycl::half3>()(log, queue,
-                                                        "cl::sycl::half");
-#else
-      // Extended type coverage
-      for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::half>(
-          log, queue, "cl::sycl::half");
-      for_type_and_vectors<check_buffer_accessor_api_type, cl::sycl::cl_half>(
-          log, queue, "cl::sycl::cl_half");
-
-#endif // SYCL_CTS_FULL_CONFORMANCE
+      check_all_types_fp16<check_buffer_accessor_api_type>::run(queue, log);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

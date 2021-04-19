@@ -13,19 +13,40 @@
 #include "../util/stl.h"
 #include "./../oclmath/mt19937.h"
 #include "./math_vector.h"
+#include <map>
 
 #include <climits>
 
 namespace sycl_cts {
 /** math utility functions
  */
+
+template <typename returnT> struct resultRef {
+  returnT res;
+  std::map<int, bool> undefined;
+
+  template <typename U>
+  resultRef(U res_t, std::map<int, bool> und_t)
+      : res(res_t), undefined(und_t) {}
+
+  template <typename U>
+  resultRef(U res_t, bool und_t)
+      : res(res_t), undefined({{0, und_t}}) {}
+
+  template <typename U> resultRef(U res_t) : res(res_t) {}
+
+  template <class U>
+  resultRef(const resultRef<U> &other)
+      : res(other.res), undefined(other.undefined) {}
+};
+
 namespace math {
 
 template <typename R, typename T, int N, typename funT, typename... Args>
 cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
   cl::sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<R, N>(res, i, fun(getElement<T, N>(args, i)...));
+    setElement<R, N>(res, i, fun(getElement(args, i)...));
   }
   return res;
 }
@@ -42,6 +63,21 @@ cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
       setElement<R, N>(res, i, 0);
   }
   return res;
+}
+
+template <typename T, int N, typename funT, typename... Args>
+sycl_cts::resultRef<cl::sycl::vec<T, N>>
+run_func_on_vector_result_ref(funT fun, Args... args) {
+  cl::sycl::vec<T, N> res;
+  std::map<int, bool> undefined;
+  for (int i = 0; i < N; i++) {
+    resultRef<T> element = fun(getElement(args, i)...);
+    if (element.undefined.empty())
+      setElement<T, N>(res, i, element.res);
+    else
+      undefined[i] = true;
+  }
+  return sycl_cts::resultRef<cl::sycl::vec<T, N>>(res, undefined);
 }
 
 template <typename T>

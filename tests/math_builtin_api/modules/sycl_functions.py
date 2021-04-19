@@ -1,11 +1,12 @@
 """Represents a function signature."""
 class funsig:
-    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", pntr_indx=[]):
+    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[]):
         self.namespace = namespace # Namespace of function.
         self.ret_type = ret_type # Function return type.
         self.name = name # Function name.
         self.arg_types = arg_types # List containing the function argument types.
-        self.accuracy = accuracy # List containing the function maximum relative error defined as ulp.
+        self.accuracy = accuracy # The function maximum relative error defined as ulp.
+        self.comment = comment # The comment for function maximum relative error.
         self.pntr_indx = pntr_indx # List containing the indexes of the arguments which are pointers.
     def __eq__(self, other):
         if isinstance(other, funsig):
@@ -14,13 +15,14 @@ class funsig:
                     (self.name == other.name) and
                     (self.arg_types == other.arg_types) and
                     (self.accuracy == other.accuracy) and
+                    (self.comment == other.comment) and
                     (self.pntr_indx == other.pntr_indx))
         else:
             return False
     def __ne__(self, other):
         return (not self.__eq__(other))
     def __hash__(self):
-        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, str(self.pntr_indx)))
+        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, self.comment, str(self.pntr_indx)))
 
 def create_integer_signatures():
     sig_list = []
@@ -176,49 +178,61 @@ def create_common_signatures():
 def create_geometric_signatures():
     sig_list = []
 
-    f_cross = funsig("cl::sycl", "cl::sycl::float3", "cross", ["cl::sycl::float3", "cl::sycl::float3"])
+    f_cross = funsig("cl::sycl", "cl::sycl::float3", "cross", ["cl::sycl::float3", "cl::sycl::float3"], "3",
+            "cumulative error for multiplications and substruction for each component")
     sig_list.append(f_cross)
 
-    f_cross_2 = funsig("cl::sycl", "cl::sycl::float4", "cross", ["cl::sycl::float4", "cl::sycl::float4"])
+    f_cross_2 = funsig("cl::sycl", "cl::sycl::float4", "cross", ["cl::sycl::float4", "cl::sycl::float4"], "3",
+            "cumulative error for multiplications and substruction for each component")
     sig_list.append(f_cross_2)
 
-    f_cross_3 = funsig("cl::sycl", "cl::sycl::double3", "cross", ["cl::sycl::double3", "cl::sycl::double3"])
+    f_cross_3 = funsig("cl::sycl", "cl::sycl::double3", "cross", ["cl::sycl::double3", "cl::sycl::double3"], "3",
+            "cumulative error for multiplications and substruction for each component")
     sig_list.append(f_cross_3)
 
-    f_cross_4 = funsig("cl::sycl", "cl::sycl::double4", "cross", ["cl::sycl::double4", "cl::sycl::double4"])
+    f_cross_4 = funsig("cl::sycl", "cl::sycl::double4", "cross", ["cl::sycl::double4", "cl::sycl::double4"], "3",
+            "cumulative error for multiplications and substruction for each component")
     sig_list.append(f_cross_4)
 
-    f_dot = funsig("cl::sycl", "float", "dot", ["gengeofloat", "gengeofloat"])
+    f_dot = funsig("cl::sycl", "float", "dot", ["gengeofloat", "gengeofloat"], "2*vecSize - 1",
+            "cumulative error for multiplications and additions 'vecSize + vecSize-1'")
     sig_list.append(f_dot)
 
-    f_dot_2 = funsig("cl::sycl", "double", "dot", ["gengeodouble", "gengeodouble"])
+    f_dot_2 = funsig("cl::sycl", "double", "dot", ["gengeodouble", "gengeodouble"], "2*vecSize - 1",
+            "cumulative error for multiplications and additions 'vecSize + vecSize-1'")
     sig_list.append(f_dot_2)
 
-    f_distance = funsig("cl::sycl", "float", "distance", ["gengeofloat", "gengeofloat"])
+    f_distance = funsig("cl::sycl", "float", "distance", ["gengeofloat", "gengeofloat"], "2*vecSize + 2",
+            "cumulative error for multiplications, additions and sqrt 'vecSize + vecSize-1 + 3'")
     sig_list.append(f_distance)
 
-    f_distance_2 = funsig("cl::sycl", "double", "distance", ["gengeodouble", "gengeodouble"])
+    f_distance_2 = funsig("cl::sycl", "double", "distance", ["gengeodouble", "gengeodouble"], "2*vecSize + 2",
+            "cumulative error for multiplications, additions and sqrt 'vecSize + vecSize-1 + 3'")
     sig_list.append(f_distance_2)
 
-    f_length = funsig("cl::sycl", "float", "length", ["gengeofloat"])
+    f_length = funsig("cl::sycl", "float", "length", ["gengeofloat"], "2*vecSize + 2",
+            "cumulative error for multiplications, additions and sqrt 'vecSize + vecSize-1 + 3'")
     sig_list.append(f_length)
 
-    f_length_2 = funsig("cl::sycl", "double", "length", ["gengeodouble"])
+    f_length_2 = funsig("cl::sycl", "double", "length", ["gengeodouble"], "2*vecSize + 2",
+            "cumulative error for multiplications, additions and sqrt 'vecSize + vecSize-1 + 3'")
     sig_list.append(f_length_2)
 
-    f_normalize = funsig("cl::sycl", "gengeofloat", "normalize", ["gengeofloat"])
+    f_normalize = funsig("cl::sycl", "gengeofloat", "normalize", ["gengeofloat"], "2*vecSize + 1",
+            "cumulative error for multiplications, additions and rsqrt 'vecSize + vecSize-1 + 2'")
     sig_list.append(f_length)
 
-    f_normalize_2 = funsig("cl::sycl", "gengeodouble", "normalize", ["gengeodouble"])
+    f_normalize_2 = funsig("cl::sycl", "gengeodouble", "normalize", ["gengeodouble"], "2*vecSize + 1",
+            "cumulative error for multiplications, additions and rsqrt 'vecSize + vecSize-1 + 2'")
     sig_list.append(f_normalize_2)
 
-    f_fast_distance = funsig("cl::sycl", "float", "fast_distance", ["gengeofloat", "gengeofloat"])
+    f_fast_distance = funsig("cl::sycl", "float", "fast_distance", ["gengeofloat", "gengeofloat"], "8192")
     sig_list.append(f_fast_distance)
 
-    f_fast_length = funsig("cl::sycl", "float", "fast_length", ["gengeofloat"])
+    f_fast_length = funsig("cl::sycl", "float", "fast_length", ["gengeofloat"], "8192")
     sig_list.append(f_fast_length)
 
-    f_fast_normalize = funsig("cl::sycl", "gengeofloat", "fast_normalize", ["gengeofloat"])
+    f_fast_normalize = funsig("cl::sycl", "gengeofloat", "fast_normalize", ["gengeofloat"], "8192")
     sig_list.append(f_fast_normalize)
 
     return sig_list
@@ -438,10 +452,10 @@ def create_float_signatures():
     f_fmod = funsig("cl::sycl", "genfloat", "fmod", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmod)
 
-    f_fract = funsig("cl::sycl", "genfloat", "fract", ["genfloat", "genfloat"], "0", [2])
+    f_fract = funsig("cl::sycl", "genfloat", "fract", ["genfloat", "genfloat"], "0", "", [2])
     sig_list.append(f_fract)
 
-    f_frexp = funsig("cl::sycl", "genfloat", "frexp", ["genfloat", "genint"], "0", [2])
+    f_frexp = funsig("cl::sycl", "genfloat", "frexp", ["genfloat", "genint"], "0", "", [2])
     sig_list.append(f_frexp)
 
     f_hypot = funsig("cl::sycl", "genfloat", "hypot", ["genfloat", "genfloat"], "4")
@@ -459,7 +473,7 @@ def create_float_signatures():
     f_lgamma = funsig("cl::sycl", "genfloat", "lgamma", ["genfloat"], "-1")
     sig_list.append(f_lgamma)
 
-    f_lgamma_r = funsig("cl::sycl", "genfloat", "lgamma_r", ["genfloat", "genint"], "-1",[2])
+    f_lgamma_r = funsig("cl::sycl", "genfloat", "lgamma_r", ["genfloat", "genint"], "-1", "", [2])
     sig_list.append(f_lgamma_r)
 
     f_log = funsig("cl::sycl", "genfloat", "log", ["genfloat"], "3")
@@ -486,7 +500,7 @@ def create_float_signatures():
     f_minmag = funsig("cl::sycl", "genfloat", "minmag", ["genfloat","genfloat"], "0")
     sig_list.append(f_minmag)
 
-    f_modf = funsig("cl::sycl", "genfloat", "modf", ["genfloat", "genfloat"], "0",[2])
+    f_modf = funsig("cl::sycl", "genfloat", "modf", ["genfloat", "genfloat"], "0", "", [2])
     sig_list.append(f_modf)
 
     f_nan = funsig("cl::sycl", "genfloatf", "nan", ["ugenint"], "0")
@@ -510,7 +524,7 @@ def create_float_signatures():
     f_remainder = funsig("cl::sycl", "genfloat", "remainder", ["genfloat", "genfloat"], "0")
     sig_list.append(f_remainder)
 
-    f_remquo = funsig("cl::sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"], "0",[3])
+    f_remquo = funsig("cl::sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"], "0", "", [3])
     sig_list.append(f_remquo)
 
     f_rint = funsig("cl::sycl", "genfloat", "rint", ["genfloat"], "0")
@@ -528,7 +542,7 @@ def create_float_signatures():
     f_sin = funsig("cl::sycl", "genfloat", "sin", ["genfloat"], "4")
     sig_list.append(f_sin)
 
-    f_sincos = funsig("cl::sycl", "genfloat", "sincos", ["genfloat", "genfloat"], "4",[2])
+    f_sincos = funsig("cl::sycl", "genfloat", "sincos", ["genfloat", "genfloat"], "4", "",[2])
     sig_list.append(f_sincos)
 
     f_sinh = funsig("cl::sycl", "genfloat", "sinh", ["genfloat"], "4")

@@ -1,12 +1,15 @@
 set(TEST_CASES_LIST "")
 
-set(MATH_CAT_WITH_VARIANT common float relational)
+set(MATH_CAT_WITH_VARIANT common float relational geometric)
 set(MATH_VARIANT base double half)
 
-set(MATH_CAT integer geometric native half)
+set(MATH_CAT integer native half)
 
 foreach(cat ${MATH_CAT_WITH_VARIANT})
   foreach(var ${MATH_VARIANT})
+    if ("${cat}" STREQUAL geometric AND "${var}" STREQUAL half)
+      continue()
+    endif()
     # Invoke our generator
     # the path to the generated cpp file will be added to TEST_CASES_LIST
     generate_cts_test(TESTS TEST_CASES_LIST
