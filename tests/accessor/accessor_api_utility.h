@@ -21,6 +21,26 @@
 #include <utility>
 #include <vector>
 
+namespace {
+/** computes the linear id for 1 dimension
+*/
+size_t compute_linear_id(cl::sycl::id<1> id, cl::sycl::range<1> r) {
+  return id[0];
+}
+
+/** computes the linear id for 2 dimension
+*/
+size_t compute_linear_id(cl::sycl::id<2> id, cl::sycl::range<2> r) {
+  return id[1] + (id[0] * r[1]);
+}
+
+/** computes the linear id for 3 dimension
+*/
+size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
+  return id[2] + (id[1] * r[2]) + (id[0] * r[2] * r[1]);
+}
+};
+
 namespace accessor_utility {
 
 /**

@@ -22,13 +22,6 @@ namespace {
 using namespace sycl_cts;
 using namespace accessor_utility;
 
-/** unique dummy_functor per file
- */
-template <typename T>
-class dummy_accessor_api_local {};
-template <typename T>
-using dummy_functor = ::dummy_functor<dummy_accessor_api_local<T>>;
-
 ////////////////////////////////////////////////////////////////////////////////
 // Tests
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +30,8 @@ static constexpr auto target = cl::sycl::access::target::local;
 
 /** tests local accessor methods
 */
-template <typename T, int dims, cl::sycl::access::mode mode>
+template <typename T, typename kernelName, int dims,
+          cl::sycl::access::mode mode>
 class check_local_accessor_api_methods {
  public:
   size_t count;
@@ -109,7 +103,11 @@ class check_local_accessor_api_methods {
             buffer_accessor_get_pointer<T, dims, mode, target, errorTarget,
                                         acc_placeholder::local>(
                 acc, errorAccessor, accessOffset);
-        h.parallel_for(kernelRange, verifier);
+        using kernel_name =
+            buffer_accessor_get_pointer_kernel<
+                kernelName, dims, mode, target, acc_placeholder::local>;
+
+        h.parallel_for<kernel_name>(kernelRange, verifier);
       });
     }
 
@@ -144,7 +142,8 @@ private:
 
 /** tests local accessor reads and writes
 */
-template <typename T, int dims, cl::sycl::access::mode mode>
+template <typename T, typename kernelName, int dims,
+          cl::sycl::access::mode mode>
 class check_local_accessor_api_reads_and_writes {
  public:
   size_t count;
@@ -176,7 +175,11 @@ class check_local_accessor_api_reads_and_writes {
             errorBuffer, handler);
         /** check buffer accessor subscript operators for reads and writes
         */
-        handler.parallel_for(
+        using kernel_name =
+          buffer_accessor_api_kernel<
+              kernelName, dims, mode, target, acc_placeholder::local>;
+
+        handler.parallel_for<kernel_name>(
             range,
             buffer_accessor_api_rw<
                 T, dims, mode, target, errorTarget, acc_placeholder::local>(
@@ -221,7 +224,8 @@ class check_local_accessor_api_reads_and_writes {
 
 /** @brief tests local accessors with different dimensions
 */
-template <typename T, int dims, cl::sycl::access::mode mode>
+template <typename T, typename kernelName, int dims,
+          cl::sycl::access::mode mode>
 void check_local_accessor_api_mode(util::logger &log,
                                    const std::string& typeName,
                                    size_t count, size_t size,
@@ -237,13 +241,17 @@ void check_local_accessor_api_mode(util::logger &log,
 
   /** check local accessor methods
    */
-  check_local_accessor_api_methods<T, dims, mode>{count, size}(
-      log, queue, range, typeName);
+  using verifier_methods =
+      check_local_accessor_api_methods<T, kernelName, dims, mode>;
+
+  verifier_methods{count, size}(log, queue, range, typeName);
 
   /** check local accessor subscript operators
    */
-  check_local_accessor_api_reads_and_writes<T, dims, mode>{count, size}(
-      log, queue, range, typeName);
+  using verifier_api =
+      check_local_accessor_api_reads_and_writes<T, kernelName, dims, mode>;
+
+  verifier_api{count, size}( log, queue, range, typeName);
 }
 
 /**
@@ -266,39 +274,48 @@ struct check_local_accessor_api_dim<generic_path_t> {
   /**
    *  @brief check local buffer accessor api for different modes except atomic
    */
-  template <typename T, int dims, typename ... argsT>
+  template <typename T, typename kernelName, int dims, typename ... argsT>
   static void run(acc_target_tag::local,
                   argsT&& ... args) {
     // Run verification for read_write access mode
-    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::read_write>(
+    constexpr auto mode = cl::sycl::access::mode::read_write;
+    check_local_accessor_api_mode<T, kernelName, dims, mode>(
         std::forward<argsT>(args)...);
   }
 
   /**
    *  @brief Check global buffer accessor api for all modes except atomic64 ones
    */
-  template <typename T, int dims, typename accTagT, typename ... argsT>
+  template <typename T, typename kernelName, int dims, typename accTagT,
+            typename ... argsT>
   static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
     // Run verification for read_write access mode
-    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::read_write>(
-        std::forward<argsT>(args)...);
+    {
+      constexpr auto mode = cl::sycl::access::mode::read_write;
+      check_local_accessor_api_mode<T, kernelName, dims, mode>(
+          std::forward<argsT>(args)...);
+    }
     // Run verification for atomic access mode
-    check_local_accessor_api_mode<T, dims, cl::sycl::access::mode::atomic>(
-        std::forward<argsT>(args)...);
+    {
+      constexpr auto mode = cl::sycl::access::mode::atomic;
+      check_local_accessor_api_mode<T, kernelName, dims, mode>(
+          std::forward<argsT>(args)...);
+    }
   }
 
   /**
    *  @brief Switch off local buffer accessor api check of atomic64 modes for
    *         generic code path
    */
-  template <typename T, int dims, typename accTagT, typename ... argsT>
+  template <typename T, typename kernelName, int dims, typename accTagT,
+            typename ... argsT>
   static void run(acc_target_tag::atomic64<accTagT>,
                   util::logger &log, const std::string& typeName, argsT&& ...) {
     // Do not run atomic64 checks
 #ifdef VERBOSE_LOG
     constexpr auto mode = cl::sycl::access::mode::atomic;
-    log_accessor<T, dims, mode, target>("skip_local_accessor_atomic64",
-                                        typeName, log);
+    log_accessor<T, kernelName, dims, mode, target>(
+        "skip_local_accessor_atomic64", typeName, log);
 #else
     static_cast<void>(log);
     static_cast<void>(typeName);
@@ -315,20 +332,22 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
   /**
    *  @brief Switch off accessor api check of any modes except the atomic64 ones
    */
-  template <typename T, int dims, typename ... argsT>
+  template <typename T, typename kernelName, int dims, typename ... argsT>
   static void run(acc_target_tag::generic, argsT&& ...) {
     // Run atomic64 checks only
   }
   /**
    *  @brief Run accessor verification for atomic64 modes only
    */
-  template <typename T, int dims, typename accTagT, typename ... argsT>
+  template <typename T, typename kernelName, int dims, typename accTagT,
+            typename ... argsT>
   static void run(acc_target_tag::atomic64<accTagT>,
                   argsT&& ... args) {
     // Run atomic64 checks only
     {
       constexpr auto mode = cl::sycl::access::mode::atomic;
-      check_buffer_accessor_api_mode<T, dims, mode, target, placeholder>(
+      check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
+                                     placeholder>(
           std::forward<argsT>(args)...);
     }
   }
@@ -337,29 +356,29 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
 /** @brief Tests local accessors with different dims for all types
  *         which do not require atomic64 extension
  */
-template <typename T, int dims, typename ... argsT>
+template <typename T, typename kernelName, int dims, typename ... argsT>
 void check_local_accessor_api_dim_wrapper(generic_path_t, argsT&& ... args) {
 
   using verifier = check_local_accessor_api_dim<generic_path_t>;
 
-  verifier::run<T, dims>(acc_target_tag::get<T, target>(),
-                         std::forward<argsT>(args)...);
+  verifier::run<T, kernelName, dims>(acc_target_tag::get<T, target>(),
+                                     std::forward<argsT>(args)...);
 }
 /** @brief Tests local accessors with different targets for all types
  *         which do require atomic64 extension
  */
-template <typename T, int dims, typename ... argsT>
+template <typename T, typename kernelName, int dims, typename ... argsT>
 void check_local_accessor_api_dim_wrapper(atomic64_path_t, argsT&& ... args) {
 
   using verifier = check_local_accessor_api_dim<atomic64_path_t>;
 
-  verifier::run<T, dims>(acc_target_tag::get<T, target>(),
-                         std::forward<argsT>(args)...);
+  verifier::run<T, kernelName, dims>(acc_target_tag::get<T, target>(),
+                                     std::forward<argsT>(args)...);
 }
 
 /** @brief tests local accessors for different types
 */
-template <typename T, typename extensionTagT>
+template <typename T, typename extensionTagT, typename kernelName>
 class check_local_accessor_api_type {
   static constexpr auto count = 8;
   static constexpr auto size = count * sizeof(T);
@@ -373,26 +392,26 @@ class check_local_accessor_api_type {
     /** check buffer accessor api for 0 dimension
      */
     cl::sycl::range<1> range0d(count);
-    check_local_accessor_api_dim_wrapper<T, 0>(extensionTag, log, typeName,
-                                               count, size, queue, range0d);
+    check_local_accessor_api_dim_wrapper<T, kernelName, 0>(
+        extensionTag, log, typeName, count, size, queue, range0d);
 
     /** check local accessor api for 1 dimension
      */
     cl::sycl::range<1> range1d(range0d);
-    check_local_accessor_api_dim_wrapper<T, 1>(extensionTag, log, typeName,
-                                               count, size, queue, range1d);
+    check_local_accessor_api_dim_wrapper<T, kernelName, 1>(
+        extensionTag, log, typeName, count, size, queue, range1d);
 
     /** check local accessor api for 2 dimensions
      */
     cl::sycl::range<2> range2d(count / 4, 4);
-    check_local_accessor_api_dim_wrapper<T, 2>(extensionTag, log, typeName,
-                                               count, size, queue, range2d);
+    check_local_accessor_api_dim_wrapper<T, kernelName, 2>(
+        extensionTag, log, typeName, count, size, queue, range2d);
 
     /** check local accessor api for 3 dimensions
      */
     cl::sycl::range<3> range3d(count / 8, 4, 2);
-    check_local_accessor_api_dim_wrapper<T, 3>(extensionTag, log, typeName,
-                                               count, size, queue, range3d);
+    check_local_accessor_api_dim_wrapper<T, kernelName, 3>(
+        extensionTag, log, typeName, count, size, queue, range3d);
   }
 };
 

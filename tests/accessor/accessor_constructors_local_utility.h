@@ -149,7 +149,7 @@ public:
 
 /** @brief Used to test the local accessor combinations for n > 0 dimensions
  */
-template <typename T, size_t dims>
+template <typename T, typename kernelName, size_t dims>
 class local_accessor_dims {
 public:
   static void check(util::logger &log, cl::sycl::queue &queue,
@@ -187,7 +187,9 @@ public:
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(dummy_functor<T, cl::sycl::access::target::local>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::local>;
+        h.single_task(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -196,8 +198,8 @@ public:
 
 /** @brief Used to test the 0 dimensional local accessor combinations
 */
-template <typename T>
-class local_accessor_dims<T, 0> {
+template <typename T, typename kernelName>
+class local_accessor_dims<T, kernelName, 0> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
@@ -231,13 +233,28 @@ class local_accessor_dims<T, 0> {
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(dummy_functor<T, cl::sycl::access::target::local>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::local>;
+        h.single_task(dummy{});
       });
       queue.wait_and_throw();
     }
   }
 };
 
+/** @brief Run tests for all local accessor dimensions
+ */
+template <typename T, typename /*extensionTag*/, typename kernelName>
+class local_accessor_all_dims {
+public:
+  template <typename ... argsT>
+  void operator()(argsT&& ... args) {
+    local_accessor_dims<T, kernelName, 0>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, kernelName, 1>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, kernelName, 2>::check(std::forward<argsT>(args)...);
+    local_accessor_dims<T, kernelName, 3>::check(std::forward<argsT>(args)...);
+  }
+};
 }  // namespace accessor_utility__
 
 #endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_LOCAL_UTILITY_H

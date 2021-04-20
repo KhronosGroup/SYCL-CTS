@@ -10,7 +10,7 @@
 
 #include "../common/common.h"
 #include "accessor_api_buffer_common.h"
-#include "accessor_api_types_core.h"
+#include "accessor_types_core.h"
 
 namespace TEST_NAMESPACE {
 

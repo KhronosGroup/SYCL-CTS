@@ -19,8 +19,8 @@
 
 namespace accessor_utility {
 
-/** user defined struct that is used in accessor tests
-*/
+/** User defined struct that is used in accessor tests
+ */
 struct user_struct {
   float a;
   int b;
@@ -28,18 +28,44 @@ struct user_struct {
 
   using element_type = int;
 
-  user_struct() : a(0), b(0), c(0) {};
+  user_struct() : a(1), b(2), c(3) {};
 
-  user_struct(int val) : a(0), b(val), c(0) {}
+  user_struct(int val) : a(1), b(val), c(3) {}
 
   element_type operator[](size_t index) const { return b; }
 
   friend bool operator==(const user_struct& lhs, const user_struct& rhs) {
-    static constexpr auto eps = 1e-4f;
-    return (((lhs.a + eps > rhs.a) && (lhs.a < rhs.a + eps)) &&
-            (lhs.b == rhs.b) && (lhs.c == rhs.c));
+    return (lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c);
   }
 };
+
+namespace user_namespace {
+  /** User defined type alias from different namespace that is used in accessor
+   *  tests
+   */
+  using user_alias = int;
+
+  /** User defined nested struct that is used in accessor tests
+   */
+  struct nested {
+    struct user_struct {
+      int a;
+      accessor_utility::user_struct b;
+
+      using element_type = int;
+
+      user_struct() : a(1) {};
+
+      user_struct(int val) : a(1), b(val) {}
+
+      element_type operator[](size_t index) const { return b[index]; }
+
+      friend bool operator==(const user_struct& lhs, const user_struct& rhs) {
+        return (lhs.a == rhs.a) && (lhs.b == rhs.b);
+      }
+    };
+  };
+}
 
 /** Convenient compile-time evaluation to determine if an accessor is an image
  *  accessor (of sorts)

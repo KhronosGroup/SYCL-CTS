@@ -2,13 +2,13 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide common code for accessor API verification with core types
+//  Provide common code for accessor verification with core types
 //  with or without atomic64 extension
 //
 *******************************************************************************/
 
-#ifndef SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_CORE_H
-#define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_CORE_H
+#ifndef SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_CORE_H
+#define SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_CORE_H
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
@@ -20,16 +20,27 @@
 
 namespace TEST_NAMESPACE {
 
+template <typename T>
+struct kernel_name {};
+
+// Nested struct type usage in kernel name will be deprecated in SYCL 2020
+// These tests should be able to verify accessor data types without dependency
+// on kernel name restrictions
+struct nested_struct_kernel {};
+
 /**
  *  @brief Run specific accessors' tests for core type set and
  *         for generic or atomic64 code path
  */
-template <template <typename, typename> class action,
+template <template <typename, typename, typename> class action,
           typename extensionTagT>
 class check_all_types_core {
 
+  template <typename T, typename kernelName>
+  using check_type_on_kernel = action<T, extensionTagT, kernelName>;
+
   template <typename T>
-  using check_type = action<T, extensionTagT>;
+  using check_type = check_type_on_kernel<T, kernel_name<T>>;
 
 public:
   static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
@@ -50,7 +61,7 @@ public:
                         user_struct>({
                         "float",
                         "std::size_t",
-                        "user_struct"});
+                        "user struct"});
 #else
     // Extended type coverage
 
@@ -82,8 +93,12 @@ public:
                         "cl::sycl::cl_int", "cl::sycl::cl_uint",
                         "cl::sycl::cl_long", "cl::sycl::cl_ulong"});
     const auto scalar_types =
-        named_type_pack<std::size_t, user_struct>({
-                        "std::size_t", "user_struct"});
+        named_type_pack<std::size_t,
+                        user_struct,
+                        user_namespace::user_alias>({
+                        "std::size_t",
+                        "user struct",
+                        "user alias"});
 
 #ifdef INT8_MAX
     if (!std::is_same<std::int8_t, cl::sycl::cl_char>::value) {
@@ -140,10 +155,14 @@ public:
 
     for_all_types<check_type>(scalar_types, log, queue);
 
+    check_type_on_kernel<user_namespace::nested::user_struct,
+                         nested_struct_kernel>{}(
+        log, queue, "nested user struct");
+
     queue.wait_and_throw();
   }
 };
 
 }  // namespace TEST_NAMESPACE
 
-#endif // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_API_TYPES_CORE_H
+#endif // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_TYPES_CORE_H

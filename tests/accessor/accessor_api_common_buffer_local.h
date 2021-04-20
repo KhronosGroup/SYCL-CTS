@@ -21,24 +21,6 @@
 
 namespace {
 
-/** computes the linear id for 1 dimension
-*/
-size_t compute_linear_id(cl::sycl::id<1> id, cl::sycl::range<1> r) {
-  return id[0];
-}
-
-/** computes the linear id for 2 dimension
-*/
-size_t compute_linear_id(cl::sycl::id<2> id, cl::sycl::range<2> r) {
-  return id[1] + (id[0] * r[1]);
-}
-
-/** computes the linear id for 3 dimension
-*/
-size_t compute_linear_id(cl::sycl::id<3> id, cl::sycl::range<3> r) {
-  return id[2] + (id[1] * r[2]) + (id[0] * r[2] * r[1]);
-}
-
 /** explicit pointer type
 */
 template <typename T, cl::sycl::access::target target>
@@ -312,6 +294,13 @@ struct buffer_accessor_get_pointer_rw {
   }
 };
 /**
+ *  @brief Kernel name for buffer_accessor_get_pointer functor
+ */
+template <typename kernelName, int dim, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder>
+struct buffer_accessor_get_pointer_kernel {};
+/**
  *  @brief Tests buffer accessors pointer value with any data access
  */
 template <typename T, int dim, cl::sycl::access::mode mode,
@@ -353,6 +342,14 @@ class buffer_accessor_get_pointer {
                                                  m_offset);
   }
 };
+
+/**
+ *  @brief Kernel name for buffer_accessor_api_* functors
+ */
+template <typename kernelName, int dim, cl::sycl::access::mode mode,
+          cl::sycl::access::target target,
+          cl::sycl::access::placeholder placeholder>
+struct buffer_accessor_api_kernel {};
 
 /** tests buffer accessors reads
 */

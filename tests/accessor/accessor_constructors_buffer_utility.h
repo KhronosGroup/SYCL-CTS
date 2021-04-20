@@ -404,7 +404,8 @@ private:
 /** @brief Used to test the buffer accessor combinations for global_buffer and
  *         constant_buffer
  */
-template <typename T, size_t dims, is_host_buffer isHostBuffer = false_t,
+template <typename T, typename kernelName, size_t dims,
+          is_host_buffer isHostBuffer = false_t,
           cl::sycl::access::placeholder placeholder =
               cl::sycl::access::placeholder::false_t,
           typename ... allocatorT>
@@ -465,8 +466,9 @@ public:
         }
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(
-            dummy_functor<T, cl::sycl::access::target::global_buffer>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::global_buffer>;
+        h.single_task(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -495,8 +497,9 @@ public:
         }
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(
-            dummy_functor<T, cl::sycl::access::target::constant_buffer>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::constant_buffer>;
+        h.single_task(dummy{});
 
       });
       queue.wait_and_throw();
@@ -506,10 +509,10 @@ public:
 
 /** @brief Specialization of buffer_accessor_dims for host_buffer
  */
-template <typename T, size_t dims, cl::sycl::access::placeholder placeholder,
-          typename ... allocatorT>
-class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder,
-                           allocatorT...> {
+template <typename T, typename kernelName, size_t dims,
+          cl::sycl::access::placeholder placeholder, typename ... allocatorT>
+class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::true_t,
+                           placeholder, allocatorT...> {
  public:
   static void check(util::logger &log, cl::sycl::queue &queue,
                     const std::string& typeName) {
@@ -529,7 +532,8 @@ class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder,
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
-          check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
+          check_accessor_common_by_reference_buffer<T, dims, target,
+                                                    placeholder>;
 
       /** check host_buffer constructors for different modes
        */
@@ -566,8 +570,8 @@ class buffer_accessor_dims<T, dims, is_host_buffer::true_t, placeholder,
 /** @brief Used to test the buffer accessor combinations for placeholder
  *         global_buffer and placeholder constant_buffer
  */
-template <typename T, size_t dims, typename ... allocatorT>
-class buffer_accessor_dims<T, dims, is_host_buffer::false_t,
+template <typename T, typename kernelName, size_t dims, typename ... allocatorT>
+class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::false_t,
                            cl::sycl::access::placeholder::true_t,
                            allocatorT...> {
   static constexpr auto placeholder = cl::sycl::access::placeholder::true_t;
@@ -590,7 +594,8 @@ public:
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
-          check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
+          check_accessor_common_by_reference_buffer<T, dims, target,
+                                                    placeholder>;
 
       /** check global_buffer constructors for different modes
        */
@@ -628,8 +633,9 @@ public:
       queue.submit([&](cl::sycl::handler &h) {
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(
-            dummy_functor<T, cl::sycl::access::target::global_buffer>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::global_buffer>;
+        h.single_task(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -659,14 +665,80 @@ public:
       queue.submit([&](cl::sycl::handler &h) {
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(
-            dummy_functor<T, cl::sycl::access::target::constant_buffer>{});
+        using dummy =
+            dummy_functor<kernelName, cl::sycl::access::target::constant_buffer>;
+        h.single_task(dummy{});
 
       });
       queue.wait_and_throw();
     }
   }
 };
+
+/** @brief Run tests for all buffer accessor dimensions
+ */
+template <typename T, typename kernelName, is_host_buffer isHostBuffer,
+          cl::sycl::access::placeholder placeholder,
+          typename ... allocatorT, typename ... argsT>
+void buffer_accessor_all_dims(argsT&& ... args) {
+  buffer_accessor_dims<T, kernelName, 0, isHostBuffer, placeholder,
+                       allocatorT...>::check(std::forward<argsT>(args)...);
+  buffer_accessor_dims<T, kernelName, 1, isHostBuffer, placeholder,
+                       allocatorT...>::check(std::forward<argsT>(args)...);
+  buffer_accessor_dims<T, kernelName, 2, isHostBuffer, placeholder,
+                       allocatorT...>::check(std::forward<argsT>(args)...);
+  buffer_accessor_dims<T, kernelName, 3, isHostBuffer, placeholder,
+                       allocatorT...>::check(std::forward<argsT>(args)...);
+}
+
+/** @brief Run tests for all non-placeholder buffer accessors
+ */
+template <typename T, typename /*extensionTag*/, typename kernelName>
+class buffer_accessor_type {
+public:
+  template <typename ... argsT>
+  void operator()(argsT&& ... args) {
+    constexpr auto placeholder = cl::sycl::access::placeholder::false_t;
+    using user_allocator = std::allocator<T>;
+    {
+      constexpr auto isHostBuffer = is_host_buffer::false_t;
+
+      buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder>(
+          std::forward<argsT>(args)...);
+      buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder,
+                               user_allocator>(
+          std::forward<argsT>(args)...);
+    }
+    {
+      constexpr auto isHostBuffer = is_host_buffer::true_t;
+
+      buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder>(
+          std::forward<argsT>(args)...);
+      buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder,
+                               user_allocator>(
+          std::forward<argsT>(args)...);
+    }
+  }
+};
+/** @brief Run tests for all placeholder buffer accessors
+ */
+template <typename T, typename /*extensionTag*/, typename kernelName>
+class buffer_accessor_type_placeholder {
+public:
+  template <typename ... argsT>
+  void operator()(argsT&& ... args) {
+    constexpr auto placeholder = cl::sycl::access::placeholder::true_t;
+    constexpr auto isHostBuffer = is_host_buffer::false_t;
+    using user_allocator = std::allocator<T>;
+
+    buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder>(
+        std::forward<argsT>(args)...);
+    buffer_accessor_all_dims<T, kernelName, isHostBuffer, placeholder,
+                             user_allocator>(
+        std::forward<argsT>(args)...);
+  }
+};
+
 }  // namespace accessor_utility__
 
 #endif  // SYCL_1_2_1_TESTS_ACCESSOR_ACCESSOR_CONSTRUCTORS_BUFFER_UTILITY_H

@@ -28,10 +28,12 @@ namespace TEST_NAMESPACE {
  *  this is a hack until the CMake script is fixed; kill both the alias and the
  *  dummy class once it is fixed
  */
-template <typename T, cl::sycl::access::target kTarget>
-class dummy_accessor_api_buffer {};
-template <typename T, cl::sycl::access::target kTarget>
-using dummy_functor = ::dummy_functor<dummy_accessor_api_buffer<T, kTarget>>;
+template <typename kernelName, cl::sycl::access::target kTarget>
+struct dummy_accessor_ctors {};
+
+template <typename kernelName, cl::sycl::access::target kTarget>
+using dummy_functor =
+    ::dummy_functor<dummy_accessor_ctors<kernelName, kTarget>>;
 
 using namespace sycl_cts;
 

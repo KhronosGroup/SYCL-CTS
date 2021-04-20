@@ -986,24 +986,22 @@ void check_image_accessor_api_dim(util::logger &log, argsT&& ... args) {
 
 /** tests image accessors with different types
 */
-template <typename T>
-void check_image_accessor_api_type(util::logger &log, cl::sycl::queue &queue,
-                                   const std::string& typeName) {
-  const size_t count = 8;
-  const size_t size = count * image_format_channel<T>::elementSize;
+template <typename T, typename /*extensionTag*/>
+class check_image_accessor_api_type {
+  static constexpr auto count = 8;
+  static constexpr auto size = count * image_format_channel<T>::elementSize;
 
-  /** check image accessor api for 1 dimension
-   */
-  check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
-
-  /** check image accessor api for 2 dimension
-   */
-  check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
-
-  /** check image accessor api for 3 dimension
-   */
-  check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
-}
+ public:
+  void operator()(util::logger &log, cl::sycl::queue &queue,
+                  const std::string& typeName) {
+    /**
+     *  check image accessor api for all dimensions
+     */
+    check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
+    check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
+    check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
+  }
+};
 
 }  // namespace
 
