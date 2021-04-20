@@ -185,7 +185,8 @@ struct get_cts_object::range<1> {
   }
 
   /**
-   * @brief Constructs a range<1> by using any bigger range
+   * @brief Constructs a range<1> by projecting any bigger range on its first
+   *        dimension
    */
   template <int dims>
   static cl::sycl::range<1> get(const cl::sycl::range<dims>& range) {
@@ -219,7 +220,8 @@ struct get_cts_object::range<2> {
   }
 
   /**
-   * @brief Constructs a range<2> by using any bigger range
+   * @brief Constructs a range<2> by projecting any bigger range on its 2 first
+   *        dimensions
    */
   template <int dims>
   static cl::sycl::range<2> get(const cl::sycl::range<dims>& range) {
