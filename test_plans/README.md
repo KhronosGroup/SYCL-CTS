@@ -1,7 +1,7 @@
 This directory contains test plans for new features in SYCL 2020.  A test plan
 is simply a description of the tests that we plan to add to the CTS.  Since the
 test plans are more concise than the actual test, we can review and change them
-more quickly that reviewing and changing the actual tests.  Once a plan has
+more quickly than reviewing and changing the actual tests.  Once a plan has
 been approved, we can write the tests according to the plan.
 
 Test plans do not have a strict format.  A plan should have enough information
