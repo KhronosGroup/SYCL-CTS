@@ -7,65 +7,25 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../nd_item/nd_item_barrier_common.h"
 
 #define TEST_NAME nd_item_combined_barrier
 
 namespace nd_item_combined_barrier__ {
 using namespace sycl_cts;
 
-class combined_barrier_kernel;
-void test_barrier(util::logger &log, cl::sycl::queue &queue) {
-  /* set workspace size */
-  const int globalSize = 64;
+template <int dim>
+class combined_barrier_kernel_local;
 
-  /* allocate and assign host data */
-  std::unique_ptr<int[]> data(new int[globalSize]);
+template <int dim>
+class combined_barrier_kernel_global;
 
-  for (int i = 0; i < globalSize; ++i) {
-    data.get()[i] = i;
-  }
-
-  /* run kernel to swap adjacent work item's global & local ids*/
-  {
-    cl::sycl::buffer<int, 1> buffer(data.get(), cl::sycl::range<1>(globalSize));
-
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto ptr = buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
-
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
-          tile(cl::sycl::range<1>(2), cgh);
-
-      cgh.parallel_for<class combined_barrier_kernel>(
-          cl::sycl::nd_range<1>(cl::sycl::range<1>(64), cl::sycl::range<1>(2)),
-          [=](cl::sycl::nd_item<1> item) {
-            size_t idx = item.get_global_linear_id();
-            size_t pos = idx & 1;
-            size_t opp = pos ^ 1;
-
-            tile[pos] = ptr[idx];
-
-            item.barrier(cl::sycl::access::fence_space::global_and_local);
-
-            ptr[idx] = tile[opp];
-          });
-    });
-  }
-
-  /* check correct results returned*/
-  bool passed = true;
-  for (int i = 0; i < globalSize; i += 2) {
-    int current = i;
-    int next = i + 1;
-    if ((data[current] != next) || (data[next] != current)) {
-      passed = false;
+template<int dim>
+struct barrierCall {
+    void operator()(cl::sycl::nd_item<dim> item) const {
+      item.barrier(cl::sycl::access::fence_space::global_and_local);
     }
-  }
-
-  if (!passed) {
-    FAIL(log, "global_and_local barrier failed");
-  }
-}
+};
 
 /** test cl::sycl::nd_item barrier functions
 */
@@ -85,7 +45,25 @@ class TEST_NAME : public util::test_base {
     try {
       auto cmdQueue = util::get_cts_object::queue();
 
-      test_barrier(log, cmdQueue);
+      // Verify global_and_local barrier works for local address space
+      cl::sycl::string_class errorMsg =
+          "global_and_local barrier failed for local address space";
+      test_barrier_local_space<1, combined_barrier_kernel_local<1>>(
+          log, cmdQueue, barrierCall<1>(), errorMsg);
+      test_barrier_local_space<2, combined_barrier_kernel_local<2>>(
+          log, cmdQueue, barrierCall<2>(), errorMsg);
+      test_barrier_local_space<3, combined_barrier_kernel_local<3>>(
+          log, cmdQueue, barrierCall<3>(), errorMsg);
+
+      // Verify global_and_local barrier works for global address space
+      errorMsg =
+          "global_and_local barrier failed for global address space";
+      test_barrier_global_space<1, combined_barrier_kernel_global<1>>(
+          log, cmdQueue, barrierCall<1>(), errorMsg);
+      test_barrier_global_space<2, combined_barrier_kernel_global<2>>(
+          log, cmdQueue, barrierCall<2>(), errorMsg);
+      test_barrier_global_space<3, combined_barrier_kernel_global<3>>(
+          log, cmdQueue, barrierCall<3>(), errorMsg);
 
       cmdQueue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

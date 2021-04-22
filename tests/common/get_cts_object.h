@@ -15,6 +15,8 @@
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
 
+#include <cassert>
+
 /** @brief dummy kernel functor for checks that don't require a kernel
  */
 template <class kernel_name = void>
@@ -181,12 +183,24 @@ struct get_cts_object::range<1> {
   static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
     return cl::sycl::range<1>(r0);
   }
+
   /**
-   * @brief Constructs a range<1> by using any bigger range
+   * @brief Constructs a range<1> by projecting any bigger range on its first
+   *        dimension
    */
   template <int dims>
   static cl::sycl::range<1> get(const cl::sycl::range<dims>& range) {
     return cl::sycl::range<1>(range[0]);
+  }
+
+  /**
+   * @brief Constructs a range<1> by only using total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @return range<1>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<1> get_fixed_size(size_t, size_t) {
+    return cl::sycl::range<1>(totalSize);
   }
 };
 
@@ -204,12 +218,28 @@ struct get_cts_object::range<2> {
   static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
     return cl::sycl::range<2>(r0, r1);
   }
+
   /**
-   * @brief Constructs a range<2> by using any bigger range
+   * @brief Constructs a range<2> by projecting any bigger range on its 2 first
+   *        dimensions
    */
   template <int dims>
   static cl::sycl::range<2> get(const cl::sycl::range<dims>& range) {
     return cl::sycl::range<2>(range[0], range[1]);
+  }
+
+  /**
+   * @brief Constructs a range<2> by only using first component and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @return range<2>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<2> get_fixed_size(size_t r0, size_t) {
+    assert("Parameters passed for fixed size range are not supported" &&
+           (totalSize % r0 == 0));
+    return cl::sycl::range<2>(r0, totalSize / r0);
   }
 };
 
@@ -228,11 +258,27 @@ struct get_cts_object::range<3> {
   static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
     return cl::sycl::range<3>(r0, r1, r2);
   }
+
   /**
    * @brief Common code support for bigger range usage
    */
   static cl::sycl::range<3> get(cl::sycl::range<3> range) {
     return range;
+  }
+
+  /**
+   * @brief Constructs a range<3> by only using two components and the
+   *        total size given
+   * @tparam totalSize Value the size() call should return for the range
+   * @param r0 Value of the first component of the range
+   * @param r0 Value of the second component of the range
+   * @return range<3>
+   */
+  template <size_t totalSize>
+  static cl::sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
+    assert("Parameters passed for fixed size range are not supported" &&
+           (totalSize % (r0 * r1) == 0));
+    return cl::sycl::range<3>(r0, r1, totalSize / r0 / r1);
   }
 };
 

@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME nd_item
+#define TEST_NAME nd_item_api
 
 namespace test_nd_item__ {
 using namespace sycl_cts;
@@ -80,19 +80,29 @@ class kernel_nd_item {
 
     /* test range*/
     cl::sycl::range<dimensions> globalRange = myitem.get_global_range();
+    size_t global_ranges[dimensions];
 
     size_t globalIndex = getIndex(global_id, globalRange);
+    if (m_globalID[global_id] != globalIndex) {
+      failed = true;
+    }
     for (int i = 0; i < dimensions; ++i) {
-      if (m_globalID[global_id] != globalIndex) {
+      global_ranges[i] = myitem.get_global_range(i);
+      if (global_ranges[i] != globalRange.get(i)) {
         failed = true;
       }
     }
 
     cl::sycl::range<dimensions> localRange = myitem.get_local_range();
+    size_t local_ranges[dimensions];
 
     size_t localIndex = getIndex(local_id, localRange);
+    if (m_localID[local_id] != localIndex) {
+      failed = true;
+    }
     for (int i = 0; i < dimensions; ++i) {
-      if (m_localID[local_id] != localIndex) {
+      local_ranges[i] = myitem.get_local_range(i);
+      if (local_ranges[i] != localRange.get(i)) {
         failed = true;
       }
     }
@@ -141,6 +151,14 @@ class kernel_nd_item {
     size_t glid = myitem.get_global_linear_id();
     size_t llid = myitem.get_local_linear_id();
     size_t grlid = myitem.get_group_linear_id();
+    size_t groupIndex = getIndex(group_id.get_id(), myitem.get_group_range());
+
+    if (glid != globalIndex)
+      failed = true;
+    if (llid != localIndex)
+      failed = true;
+    if (grlid != groupIndex)
+      failed = true;
 
     /* write back success or failure*/
     m_o[global_id] = failed ? 0 : 1;
