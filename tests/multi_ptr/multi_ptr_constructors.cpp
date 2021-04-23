@@ -7,157 +7,13 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "multi_ptr_constructors_common.h"
 
 #define TEST_NAME multi_ptr_constructors
 
-namespace TEST_NAME {
+namespace TEST_NAMESPACE {
+using namespace multi_ptr_constructors_common;
 using namespace sycl_cts;
-
-template <typename T, typename U>
-class kernel0;
-
-struct user_struct {
-  float a;
-  int b;
-  char c;
-};
-
-template <typename T, typename U = T>
-class pointer_ctors {
- public:
-  using data_t = typename std::remove_const<T>::type;
-
-  using multiPtrGlobal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
-  using multiPtrConstant =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
-  using multiPtrLocal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
-  using multiPtrPrivate =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
-
-  void operator()(cl::sycl::queue &queue) {
-    const int size = 64;
-    cl::sycl::range<1> range(size);
-    cl::sycl::unique_ptr_class<data_t[]> data(new data_t[size]);
-    cl::sycl::buffer<T, 1> buffer(data.get(), range);
-
-    queue.submit([&](cl::sycl::handler &handler) {
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer>
-          globalAccessor(buffer, handler);
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                         cl::sycl::access::target::constant_buffer>
-          constantAccessor(buffer, handler);
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
-          localAccessor(size, handler);
-
-      handler.single_task<class kernel0<T, U>>([=]() {
-        data_t privateData[1];
-
-        /** check default constructors
-        */
-        {
-          multiPtrGlobal globalMultiPtr;
-          multiPtrConstant constantMultiPtr;
-          multiPtrLocal localMultiPtr;
-          multiPtrPrivate privateMultiPtr;
-        }
-
-        /** check (elementType *) constructors
-        */
-        {
-          cl::sycl::global_ptr<U> globalPtr(
-              static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
-
-          multiPtrGlobal globalMultiPtr(globalPtr);
-          multiPtrConstant constantMultiPtr(constantPtr);
-          multiPtrLocal localMultiPtr(localPtr);
-          multiPtrPrivate privateMultiPtr(privatePtr);
-        }
-
-        /** check (pointer) constructors
-        */
-        {
-          cl::sycl::global_ptr<U> globalPtr(
-              static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
-
-          multiPtrGlobal globalMultiPtr(globalPtr.get());
-          multiPtrConstant constantMultiPtr(constantPtr.get());
-          multiPtrLocal localMultiPtr(localPtr.get());
-          multiPtrPrivate privateMultiPtr(privatePtr.get());
-        }
-
-        /** check (std::nullptr_t) constructors
-        */
-        {
-          multiPtrGlobal globalMultiPtr(nullptr);
-          multiPtrConstant constantMultiPtr(nullptr);
-          multiPtrLocal localMultiPtr(nullptr);
-          multiPtrPrivate privateMultiPtr(nullptr);
-        }
-
-        /** check (accessor) constructors
-        */
-        {
-          multiPtrGlobal globalMultiPtr(globalAccessor);
-          multiPtrConstant constantMultiPtr(constantAccessor);
-          multiPtrLocal localMultiPtr(localAccessor);
-        }
-
-        /** check copy constructors
-        */
-        {
-          cl::sycl::global_ptr<U> globalPtrA(
-              static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtrA(
-              constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
-
-          multiPtrGlobal globalMultiPtrA(globalPtrA);
-          multiPtrConstant constantMultiPtrA(constantPtrA);
-          multiPtrLocal localMultiPtrA(localPtrA);
-          multiPtrPrivate privateMultiPtrA(privatePtrA);
-
-          multiPtrGlobal globalMultiPtrB(globalMultiPtrA);
-          multiPtrConstant constantMultiPtrB(constantMultiPtrA);
-          multiPtrLocal localMultiPtrB(localMultiPtrA);
-          multiPtrPrivate privateMultiPtrB(privateMultiPtrA);
-        }
-
-        /** check move constructors
-        */
-        {
-          cl::sycl::global_ptr<U> globalPtrA(
-              static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtrA(
-              constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
-
-          multiPtrGlobal globalMultiPtrA(globalPtrA);
-          multiPtrConstant constantMultiPtrA(constantPtrA);
-          multiPtrLocal localMultiPtrA(localPtrA);
-          multiPtrPrivate privateMultiPtrA(privatePtrA);
-
-          multiPtrGlobal globalMultiPtrB = std::move(globalMultiPtrA);
-          multiPtrConstant constantMultiPtrB = std::move(constantMultiPtrA);
-          multiPtrLocal localMultiPtrB = std::move(localMultiPtrA);
-          multiPtrPrivate privateMultiPtrB = std::move(privateMultiPtrA);
-        }
-
-      });
-    });
-  }
-};
 
 /** tests the constructors for explicit pointers
  */
@@ -170,7 +26,7 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute this test
-  */
+   */
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
@@ -181,47 +37,119 @@ class TEST_NAME : public util::test_base {
       pointer_ctors<const int, const void> constVoidTests;
       constVoidTests(queue);
 
-      pointer_ctors<char> charTests;
-      charTests(queue);
-
-      pointer_ctors<const char> constCharTests;
-      constCharTests(queue);
-
-      pointer_ctors<short> shortTests;
-      shortTests(queue);
-
-      pointer_ctors<const short> constShortTests;
-      constShortTests(queue);
-
       pointer_ctors<int> intTests;
       intTests(queue);
 
       pointer_ctors<const int> constIntTests;
       constIntTests(queue);
 
-      pointer_ctors<long> longTests;
+      pointer_ctors<unsigned int, void> voidUintTests;
+      voidUintTests(queue);
+
+      pointer_ctors<const unsigned int, const void> constUintVoidTests;
+      constUintVoidTests(queue);
+
+      pointer_ctors<unsigned int> uintTests;
+      uintTests(queue);
+
+      pointer_ctors<const unsigned int> constUintTests;
+      constUintTests(queue);
+
+      pointer_ctors<char, void> charVoidTests;
+      charVoidTests(queue);
+
+      pointer_ctors<const char, const void> constCharVoidTests;
+      constCharVoidTests(queue);
+
+      pointer_ctors<char> charTests;
+      charTests(queue);
+
+      pointer_ctors<const char> constCharTests;
+      constCharTests(queue);
+
+      pointer_ctors<short int, void> shortVoidTests;
+      shortVoidTests(queue);
+
+      pointer_ctors<const short int, const void> constShortVoidTests;
+      constShortVoidTests(queue);
+
+      pointer_ctors<short int> shortTests;
+      shortTests(queue);
+
+      pointer_ctors<const short int> constShortTests;
+      constShortTests(queue);
+
+      pointer_ctors<long int, void> longVoidTests;
+      longVoidTests(queue);
+
+      pointer_ctors<const long int, const void> constLongVoidTests;
+      constLongVoidTests(queue);
+
+      pointer_ctors<long int> longTests;
       longTests(queue);
 
-      pointer_ctors<const long> constLongTests;
+      pointer_ctors<const long int> constLongTests;
       constLongTests(queue);
 
-      pointer_ctors<long long> longLongTests;
+      pointer_ctors<long long int, void> longLongVoidTests;
+      longLongVoidTests(queue);
+
+      pointer_ctors<const long long int, const void> constLongLongVoidTests;
+      constLongLongVoidTests(queue);
+
+      pointer_ctors<long long int> longLongTests;
       longLongTests(queue);
 
-      pointer_ctors<const long long> constLongLongTests;
+      pointer_ctors<const long long int> constLongLongTests;
       constLongLongTests(queue);
+
+      pointer_ctors<float, void> floatVoidTests;
+      floatVoidTests(queue);
+
+      pointer_ctors<const float, const void> constFloatVoidTests;
+      constFloatVoidTests(queue);
+
+      pointer_ctors<const float> constFloatTests;
+      constFloatTests(queue);
 
       pointer_ctors<float> floatTests;
       floatTests(queue);
 
-      pointer_ctors<const float> constFloatTests;
-      constFloatTests(queue);
+      pointer_ctors<double, void> doubleVoidTests;
+      doubleVoidTests(queue);
+
+      pointer_ctors<const double, const void> constDoubleVoidTests;
+      constDoubleVoidTests(queue);
 
       pointer_ctors<double> doubleTests;
       doubleTests(queue);
 
       pointer_ctors<const double> constDoubleTests;
       constDoubleTests(queue);
+
+      pointer_ctors<unsigned char, void> ucharVoidTests;
+      ucharVoidTests(queue);
+
+      pointer_ctors<const unsigned char, const void> constUcharVoidTests;
+      constUcharVoidTests(queue);
+
+      pointer_ctors<unsigned char> ucharTests;
+      ucharTests(queue);
+
+      pointer_ctors<const unsigned char> constUcharTests;
+      constUcharTests(queue);
+
+      pointer_ctors<bool, void> boolVoidTests;
+      boolVoidTests(queue);
+
+      pointer_ctors<const bool, const void> constBoolVoidTests;
+      constBoolVoidTests(queue);
+
+      pointer_ctors<bool> boolTests;
+      boolTests(queue);
+
+      pointer_ctors<const bool> constBoolTests;
+      constBoolTests(queue);
 
       pointer_ctors<user_struct> userStructTests;
       userStructTests(queue);
@@ -242,4 +170,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace TEST_NAME */
+} /* namespace TEST_NAMESPACE */
