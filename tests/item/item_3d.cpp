@@ -23,24 +23,34 @@ class kernel_item_3d {
 
   t_readAccess m_x;
   t_writeAccess m_o;
+  cl::sycl::range<3> r_exp;
+  cl::sycl::id<3> offset_exp;
 
  public:
-  kernel_item_3d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
+  kernel_item_3d(t_readAccess in_, t_writeAccess out_, cl::sycl::range<3> r)
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(cl::sycl::id<3>(0, 0, 0)) {}
 
   void operator()(cl::sycl::item<3> item) const {
+    bool result = true;
     cl::sycl::id<3> gid = item.get_id();
 
     size_t dim_a = item.get_id(0) + item.get_id(1) + item.get_id(2);
     size_t dim_b = item[0] + item[1] + item[2];
+    size_t id_exp = gid.get(0) + gid.get(1) + gid.get(2);
+    result &= id_exp == dim_a && id_exp == dim_b;
 
     cl::sycl::range<3> localRange = item.get_range();
+    result &= localRange == r_exp;
 
     cl::sycl::id<3> offset = item.get_offset();
+    result &= offset == offset_exp;
 
     /* get work item range */
     const size_t nWidth = localRange.get(0);
     const size_t nHeight = localRange.get(1);
     const size_t nDepth = localRange.get(2);
+    result &= nWidth == r_exp.get(0) && nHeight == r_exp.get(1) &&
+              nDepth == r_exp.get(2);
 
     /* find the row major array id for this work item */
     size_t index = gid.get(2) +                     /* z */
@@ -51,7 +61,8 @@ class kernel_item_3d {
     size_t linear_index = item.get_linear_id();
 
     /* compare against the precomputed index */
-    m_o[item] = (m_x[item] == static_cast<int>(index));
+    result &= m_x[item] == static_cast<int>(index);
+    m_o[item] = result;
   }
 };
 
@@ -106,9 +117,9 @@ bool test_item_3d(util::logger &log) {
       auto accOut =
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
-      kernel_item_3d kern = kernel_item_3d(accIn, accOut);
-
       auto r = cl::sycl::range<3>(dataRange);
+      kernel_item_3d kern = kernel_item_3d(accIn, accOut, r);
+
       cgh.parallel_for(r, kern);
     });
 

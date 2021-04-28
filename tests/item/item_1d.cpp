@@ -24,32 +24,42 @@ class kernel_item_1d {
 
   t_readAccess m_x;
   t_writeAccess m_o;
+  cl::sycl::range<1> r_exp;
+  cl::sycl::id<1> offset_exp;
 
  public:
-  kernel_item_1d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
+  kernel_item_1d(t_readAccess in_, t_writeAccess out_, cl::sycl::range<1> r)
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(cl::sycl::id<1>(0)) {}
 
   void operator()(cl::sycl::item<1> item) const {
+    bool result = true;
+
     cl::sycl::id<1> gid = item.get_id();
 
     size_t dim_a = item.get_id(0);
     size_t dim_b = item[0];
+    result &= gid.get(0) == dim_a && gid.get(0) == dim_b;
 
     cl::sycl::range<1> localRange = item.get_range();
+    result &= localRange == r_exp;
 
     cl::sycl::id<1> offset = item.get_offset();
     (void)offset; // silent warning
+    result &= offset == offset_exp;
 
     /* get work item range */
-    const size_t nWidth = localRange.get(0);
+    const size_t nWidth = item.get_range(0);
+    result &= nWidth == r_exp.get(0);
 
     /* find the array id for this work item */
     size_t index = gid.get(0); /* x */
 
     /* get the linear id */
     const size_t glid = item.get_linear_id();
+    result &= m_x[int(glid)] == static_cast<int>(index);
 
     /* compare against the precomputed index */
-    m_o[int(glid)] = (m_x[int(glid)] == static_cast<int>(index));
+    m_o[int(glid)] = result;
   }
 };
 
@@ -90,7 +100,7 @@ bool test_item_1d(util::logger &log) {
       auto accOut =
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
-      kernel_item_1d kern = kernel_item_1d(accIn, accOut);
+      kernel_item_1d kern = kernel_item_1d(accIn, accOut, dataRange);
       cgh.parallel_for(cl::sycl::range<1>(dataRange), kern);
     });
 
