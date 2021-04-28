@@ -219,43 +219,108 @@ constant's default value.
 [[sec:declarations]]
 === Spec constant defined in various ways
 
-Do the following test for a `specialization_id` variable defined in the
+Create an application with `specialization_id` variables defined in the
 following ways:
 
-* Defined in a non-global namespace.
-* Defined in the global namespace as `const`.
-* Defined in the global namespace as `constexpr`.
-* Defined in the global namespace as `inline`.
-* Defined in the global namespace as `inline const`.
+* Defined in a non-global named namespace.
+* Defined in an unnamed namespace.
 * Defined in the global namespace as `inline constexpr`.
+* Defined in the global namespace as `static constexpr`.
 * A static member variable of a struct in the global namespace.
 * A static member variable of a struct in a non-global namespace.
-* A static member variable declared `const` of a struct in the global namespace.
-* A static member variable declared `constexpr` of a struct in the global
-  namespace.
-* A static member variable declared `inline` of a struct in the global
-  namespace.
-* A static member variable declared `inline const` of a struct in the global
-  namespace.
+* A static member variable of a struct in an unnamed namespace.
 * A static member variable declared `inline constexpr` of a struct in the global
   namespace.
+* A static member variable of a templated struct in the global namespace.
 
-The test that is performed is:
+Perform the following test:
 
 * Create a `queue` from the tested device and call `queue::submit()`.
-* Set the value of the spec constant via
+* Set each spec constant to a different value via
   `handler::set_specialization_constant()`.
 * Submit a kernel via `handler::single_task()`.
-* Read the value of the spec constant via
-  `kernel_handler::get_specialization_constant()` and make sure we get the same
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
    value back.
 
 === Spec constant defined in various ways and set via `kernel_bundle`
 
-* Same test as in <<sec:declarations>>, except:
-  - Set spec constants in a `kernel_bundle`.
-  - Call `build()` to build the `kernel_bundle` into `executable` state.
-  - Register the bundle with a handler via `use_kernel_bundle()`.
+Define the same set of `specialization_id` variables as in <<sec:declarations>>
+and perform this test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Get a `kernel_bundle` in `input` state.
+* Set each spec constant to a different value via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
+
+[[sec:same-name]]
+=== Same name stress test
+
+Create several `specialization_id` variables, each with the same name but in
+different namespaces as shown below.
+
+```
+constexpr sycl::specialization_id<T> same_name{...};
+namespace outer {
+  constexpr sycl::specialization_id<T> same_name{...};
+  namespace inner {
+    constexpr sycl::specialization_id<T> same_name{...};
+  }
+  namespace {
+    constexpr sycl::specialization_id<T> same_name{...};
+    namespace inner {
+      constexpr sycl::specialization_id<T> same_name{...};
+      namespace {
+        constexpr sycl::specialization_id<T> same_name{...};
+      }
+    }
+  }
+}
+namespace {
+  constexpr sycl::specialization_id<T> same_name{...};
+  namespace outer {
+    constexpr sycl::specialization_id<T> same_name{...};
+    namespace {
+      constexpr sycl::specialization_id<T> same_name{...};
+      namespace inner {
+        constexpr sycl::specialization_id<T> same_name{...};
+      }
+    }
+  }
+}
+```
+
+Perform the following test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set each spec constant to a different value via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
+
+=== Same name stress test with `kernel_bundle`
+
+Define the same set of `specialization_id` variables as in <<sec:same-name>>
+and perform this test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Get a `kernel_bundle` in `input` state.
+* Set each spec constant to a different value via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
 
 [[sec:other-tu]]
 === Spec constant defined in another translation unit
