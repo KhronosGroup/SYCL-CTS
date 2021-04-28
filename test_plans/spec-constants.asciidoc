@@ -345,6 +345,33 @@ and perform this test:
   - Call `build()` to build the `kernel_bundle` into `executable` state.
   - Register the bundle with a handler via `use_kernel_bundle()`.
 
+[[sec:internal-linkage]]
+=== Spec constants with same name and internal linkage
+
+* In one translation unit:
+  - Define a `specialization_id` variable in the global namespace for the
+    tested type.  The variable must have internal linkage.
+* In a second translation unit:
+  - Define a `specialization_id` variable in the global namespace for the
+    tested type.  The variable must have internal linkage, and it's name must
+    be the same as the variable in the first translation unit.
+* In both translation units:
+  - Create a `queue` from the tested device and call `queue::submit()`.
+  - Set the spec constant to some value via
+    `handler::set_specialization_constant()`.  The value must be different in
+    each translation unit.
+  - Submit a kernel via `handler::single_task()`.
+  - Read the value of the spec constant via
+    `kernel_handler::get_specialization_constant()` and make sure we get its
+    value back.
+
+=== Spec constants with same name and internal linkage in `kernel_bundle`
+
+* Same test as in <<sec:internal-linkage>>, except:
+  - Set spec constants in a `kernel_bundle`.
+  - Call `build()` to build the `kernel_bundle` into `executable` state.
+  - Register the bundle with a handler via `use_kernel_bundle()`.
+
 === Basic tests with `kernel_bundle` for all kernel bundle states
 
 All of the following basic tests have these initial steps:
