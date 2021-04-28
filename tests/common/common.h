@@ -355,6 +355,24 @@ constexpr auto to_integral(enumT const& value)
 }
 
 /**
+ * @brief Tag to denote mapping of integer coordinates to real scale
+ *
+ * For example, if we make a one pixel wide image this pixel can have
+ * any coordinate in range [0.0 .. 1.0)
+ */
+namespace pixel_tag {
+  struct generic {};
+  /** @brief The low boundary of the pixel, equal to the integer one
+   *         if representable
+   */
+  struct lower : generic {};
+  /** @brief The upper boundary of the pixel, equal to the left limit
+   *         lim(x-) where x is the low boundary for the next pixel
+   */
+  struct upper: generic {};
+};
+
+/**
  * @brief Helps with retrieving the right access type for reading/writing
  *        an image
  * @tparam dims Number of image dimensions
@@ -381,6 +399,20 @@ struct image_access<1> {
   static float_type get_float(const cl::sycl::item<1>& i) {
     return get_float(i.get_id());
   }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const cl::sycl::id<1>& i,
+                                   const cl::sycl::range<1>& r) {
+    return get_float(i) / static_cast<int>(r.get(0));
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const cl::sycl::id<1>& i,
+                                   const cl::sycl::range<1>& r) {
+    const auto negative_inf =
+        -1.0f * std::numeric_limits<float_type>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return cl::sycl::nextafter(next, negative_inf);
+  }
 };
 
 /**
@@ -402,6 +434,22 @@ struct image_access<2> {
   }
   static float_type get_float(const cl::sycl::item<2>& i) {
     return get_float(i.get_id());
+  }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const cl::sycl::id<2>& i,
+                                   const cl::sycl::range<2>& r) {
+    return float_type(
+        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
+        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)));
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const cl::sycl::id<2>& i,
+                                   const cl::sycl::range<2>& r) {
+    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return float_type(cl::sycl::nextafter(next[0], negative_inf),
+                      cl::sycl::nextafter(next[1], negative_inf));
   }
 };
 
@@ -425,6 +473,24 @@ struct image_access<3> {
   }
   static float_type get_float(const cl::sycl::item<3>& i) {
     return get_float(i.get_id());
+  }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const cl::sycl::id<3>& i,
+                                   const cl::sycl::range<3>& r) {
+    return float_type(
+        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
+        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)),
+        static_cast<float>(i.get(2)) / static_cast<int>(r.get(2)), .0f);
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const cl::sycl::id<3>& i,
+                                   const cl::sycl::range<3>& r) {
+    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return float_type(cl::sycl::nextafter(next[0], negative_inf),
+                      cl::sycl::nextafter(next[1], negative_inf),
+                      cl::sycl::nextafter(next[2], negative_inf), .0f);
   }
 };
 
