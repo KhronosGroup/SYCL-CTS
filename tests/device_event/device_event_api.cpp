@@ -8,9 +8,13 @@
 
 #include "../common/common.h"
 
+#include <algorithm>
+#include <array>
+#include <string>
+
 #define TEST_NAME device_event_api
 
-namespace device_event_api__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 class device_event_wait;
@@ -34,37 +38,58 @@ class TEST_NAME : public util::test_base {
       {
         auto testQueue = util::get_cts_object::queue();
 
-        int data = 1234;
+        constexpr size_t bufferSize = 512;
+        constexpr size_t sensorIndex = bufferSize / 2;
+        constexpr int referenceValue = 1234;
+
+        std::array<int, bufferSize> data;
+        std::fill(data.begin(), data.end(), referenceValue);
+
+        bool error = false;
         {
-          auto buf = cl::sycl::buffer<int, 1>(&data, cl::sycl::range<1>(1));
+          auto range = cl::sycl::range<1>(1);
+          auto range_buffer = cl::sycl::range<1>(bufferSize);
+          auto buf = cl::sycl::buffer<int, 1>(data.data(), range_buffer);
+          auto errBuf = cl::sycl::buffer<bool, 1>(&error, range);
 
           testQueue.submit([&](cl::sycl::handler &cgh) {
-            auto globalAcc =
-                buf.get_access<cl::sycl::access::mode::read_write>(cgh);
+            using namespace cl::sycl::access;
+
+            auto globalAcc = buf.get_access<mode::read_write>(cgh);
+            auto errorAcc = errBuf.get_access<mode::write>(cgh);
             auto localAcc =
-                cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                                   cl::sycl::access::target::local>(
-                    cl::sycl::range<1>(1), cgh);
+                cl::sycl::accessor<int, 1, mode::read_write, target::local>(
+                    range_buffer, cgh);
 
             cgh.parallel_for<class device_event_wait>(
-                cl::sycl::nd_range<1>(cl::sycl::range<1>(1),
-                                      cl::sycl::range<1>(1)),
+                cl::sycl::nd_range<1>(range, range),
                 [=](cl::sycl::nd_item<1> ndItem) {
+                  // Run asynchronous copy for full buffer
                   cl::sycl::device_event deviceEvent =
                       ndItem.async_work_group_copy(localAcc.get_pointer(),
-                                                   globalAcc.get_pointer(), 1);
+                                                   globalAcc.get_pointer(),
+                                                   bufferSize);
 
                   deviceEvent.wait();
+
+                  // Check sensor data was updated
+                  if (localAcc[sensorIndex] != referenceValue) {
+                    errorAcc[0] = true;
+                  }
                 });
           });
+          auto errAcc = errBuf.get_access<cl::sycl::access::mode::read>();
+          if (errAcc[0]) {
+            FAIL(log, "cl::sycl::device_event async_work_group_copy failed");
+          }
         }
       }
 
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
+      const auto errorMsg =
+          std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
   }
 };
@@ -72,4 +97,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace context_api */
+}  // namespace TEST_NAMESPACE
