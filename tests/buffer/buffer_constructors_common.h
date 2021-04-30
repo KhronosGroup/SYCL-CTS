@@ -11,7 +11,7 @@
 
 #include "../common/common.h"
 
-namespace {
+namespace buffer_constructors_common {
 using namespace sycl_cts;
 
 template <typename T, int size, int dims>

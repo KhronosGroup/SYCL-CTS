@@ -11,7 +11,7 @@
 
 #include "../common/common.h"
 
-namespace {
+namespace buffer_api_common {
 using namespace sycl_cts;
 
 /** empty_kernel.

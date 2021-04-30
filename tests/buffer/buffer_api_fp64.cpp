@@ -34,9 +34,9 @@ public:
           "Device does not support double precision floating point operations");
       return;
     }
-    for_type_and_vectors<check_buffer_api_for_type, double>(log, "double");
+    for_type_and_vectors<buffer_api_common::check_buffer_api_for_type, double>(log, "double");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_and_vectors<check_buffer_api_for_type, cl::sycl::cl_double>(
+    for_type_and_vectors<buffer_api_common::check_buffer_api_for_type, cl::sycl::cl_double>(
         log, "cl::sycl::cl_double");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }

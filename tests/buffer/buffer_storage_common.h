@@ -13,7 +13,7 @@
 
 #include <memory>
 
-namespace {
+namespace buffer_storage_common {
 using namespace sycl_cts;
 
 template <typename T>
