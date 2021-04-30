@@ -134,6 +134,17 @@ struct setComponent {
   T &operator()(cl::sycl::vec<T, dim> &f, int number) const = delete;
 };
 
+template <typename T> struct setComponent<T, 1> {
+  static const unsigned dim = 1;
+  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+    switch (number) {
+      CASE_SET_ELEMENT(0, 0, value)
+      default:
+        break;
+    }
+  }
+};
+
 template <typename T>
 struct setComponent<T, 2> {
   static const unsigned dim = 2;
