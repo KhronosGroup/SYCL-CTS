@@ -35,11 +35,11 @@ public:
           "Device does not support double precision floating point operations");
       return;
     }
-    for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type, cl::sycl::half>(
-        log, "cl::sycl::half");
+    for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
+                         cl::sycl::half>(log, "cl::sycl::half");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type, cl::sycl::cl_half>(
-        log, "cl::sycl::cl_half");
+    for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
+                         cl::sycl::cl_half>(log, "cl::sycl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };
