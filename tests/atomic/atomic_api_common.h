@@ -14,6 +14,8 @@
 
 #include <cstring>
 
+namespace atomic_api_common {
+
 /**
  * @brief Helper struct for performing generic operations with regards to the
  *        access target
@@ -137,5 +139,7 @@ template <typename, template <class, cl::sycl::access::target> class,
 void generic_check_for_atomics32(atomic64_bits_tag::yes, argsT &&...) {
   // Skip non-64bit checks for 64bit types
 }
+
+}  // namespace atomic_api_common
 
 #endif  // SYCL_CTS_TESTS_ATOMIC_API_COMMON_H

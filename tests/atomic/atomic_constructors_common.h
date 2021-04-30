@@ -14,6 +14,8 @@
 
 #include <cstring>
 
+namespace atomic_constructors_common {
+
 /** Check atomic constructors
  */
 template <typename T, cl::sycl::access::target target,
@@ -83,5 +85,7 @@ class check_atomics<T, cl::sycl::access::target::local> {
     });
   }
 };
+
+}  // namespace atomic_constructors_common
 
 #endif  // SYCL_CTS_TESTS_ATOMIC_CONSTRUCTORS_COMMON_H

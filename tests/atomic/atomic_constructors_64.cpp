@@ -15,6 +15,7 @@
 
 namespace TEST_NAMESPACE {
 
+using namespace atomic_constructors_common;
 using namespace sycl_cts;
 
 /** Check the api for cl::sycl::atomic

@@ -15,6 +15,7 @@
 
 namespace TEST_NAMESPACE {
 
+using namespace atomic_api_common;
 using namespace sycl_cts;
 
 /** Check base atomic operations
