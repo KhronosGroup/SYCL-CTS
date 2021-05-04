@@ -98,8 +98,9 @@ class buffer_ctors {
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims> buf(data, r, propList);
       cl::sycl::buffer<T, dims> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(const data pointer, range) constructor fail.");
       }
     }
@@ -110,8 +111,9 @@ class buffer_ctors {
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, propList);
       cl::sycl::buffer<T, dims> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(shared pointer, range) constructor fail.");
       }
     }
@@ -123,8 +125,9 @@ class buffer_ctors {
       cl::sycl::buffer<T, 1> buf_iter(data, data + size, propList);
       cl::sycl::buffer<T, 1> buf_iter1(data, data + size);
       cl::sycl::range<1> r_exp(size);
-      if (!check_buffer_constructor(buf_iter, r_exp, true) ||
-          !check_buffer_constructor(buf_iter1, r_exp, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf_iter, r_exp, data_verify) ||
+          !check_buffer_constructor(buf_iter1, r_exp, data_verify)) {
         FAIL(log, "buffer iterator constructor constructor fail.");
       }
     }
@@ -154,8 +157,9 @@ class buffer_ctors {
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(data pointer, range) constructor fail.");
       }
     }
@@ -165,8 +169,9 @@ class buffer_ctors {
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(data pointer, range) constructor fail.");
       }
     }
@@ -177,8 +182,9 @@ class buffer_ctors {
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(data pointer, range) constructor fail.");
       }
     }
@@ -191,8 +197,9 @@ class buffer_ctors {
                                                          propList);
       cl::sycl::buffer<T, 1, std::allocator<T>> buf_iter1(data, data + size);
       cl::sycl::range<1> r_exp(size);
-      if (!check_buffer_constructor(buf_iter, r_exp, true) ||
-          !check_buffer_constructor(buf_iter1, r_exp, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf_iter, r_exp, data_verify) ||
+          !check_buffer_constructor(buf_iter1, r_exp, data_verify)) {
         FAIL(log, "buffer iterator constructor constructor fail.");
       }
     }
@@ -230,8 +237,9 @@ class buffer_ctors {
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc, propList);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log,
              "(data pointer, range, allocator) constructor constructor fail.");
       }
@@ -243,8 +251,9 @@ class buffer_ctors {
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log,
              "(const data pointer, range, allocator) constructor constructor "
              "fail.");
@@ -258,8 +267,9 @@ class buffer_ctors {
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       cl::sycl::buffer<T, dims> buf1(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(
             log,
             "(shared pointer, range, allocator) constructor constructor fail.");
@@ -274,8 +284,9 @@ class buffer_ctors {
       cl::sycl::buffer<T, 1> buf_iter(data, data + size, buf_alloc, propList);
       cl::sycl::buffer<T, 1> buf_iter1(data, data + size, buf_alloc);
       cl::sycl::range<1> r_exp(size);
-      if (!check_buffer_constructor(buf_iter, r_exp, true) ||
-          !check_buffer_constructor(buf_iter1, r_exp, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf_iter, r_exp, data_verify) ||
+          !check_buffer_constructor(buf_iter1, r_exp, data_verify)) {
         FAIL(log, "(iterator, allocator) constructor constructor fail.");
       }
     }
@@ -295,7 +306,8 @@ class buffer_ctors {
       T data[size];
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify)) {
         FAIL(log,
              "(data pointer, range, std allocator) constructor constructor "
              "fail.");
@@ -307,7 +319,8 @@ class buffer_ctors {
       std::allocator<T> buf_alloc;
       const T data[size] = {static_cast<T>(0)};
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify)) {
         FAIL(log, "(const data pointer, range, std allocator) constructor "
                   "constructor fail.");
       }
@@ -319,7 +332,8 @@ class buffer_ctors {
       cl::sycl::shared_ptr_class<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify)) {
         FAIL(log, "(shared pointer, range, std allocator) constructor "
                   "constructor fail.");
       }
@@ -332,7 +346,8 @@ class buffer_ctors {
       std::fill(data.get(), (data.get() + size), 0);
       cl::sycl::mutex_class m;
       cl::sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
-      if (!check_buffer_constructor(buf, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify)) {
         FAIL(log, "(shared pointer, range, mutex, std allocator) constructor "
                   "constructor fail.");
       }
@@ -346,7 +361,8 @@ class buffer_ctors {
       cl::sycl::buffer<T, 1, std::allocator<T>> buf_iter(data, data + size,
                                                          buf_alloc);
       cl::sycl::range<1> r_exp(size);
-      if (!check_buffer_constructor(buf_iter, r_exp, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf_iter, r_exp, data_verify)) {
         FAIL(log, "(iterator, std allocator) constructor constructor fail.");
       }
     }
