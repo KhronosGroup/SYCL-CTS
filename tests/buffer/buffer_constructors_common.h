@@ -86,8 +86,9 @@ class buffer_ctors {
       std::fill(data, (data + size), 0);
       cl::sycl::buffer<T, dims> buf(data, r, propList);
       cl::sycl::buffer<T, dims> buf1(data, r);
-      if (!check_buffer_constructor(buf, r, true) ||
-          !check_buffer_constructor(buf1, r, true)) {
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(data pointer, range) constructor fail.");
       }
     }

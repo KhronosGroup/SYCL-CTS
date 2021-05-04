@@ -41,7 +41,7 @@ template <typename alloc, typename T, int size, int dims>
 class buffer_storage_test {
  public:
   void operator()(util::logger &log, cl::sycl::range<dims> r) {
-    auto deleter = [](T *data) { delete[] data; };
+    auto deleter = std::default_delete<T[]>{};
 
     // Case 1 - Raw pointer
     auto data_final1 = std::make_unique<T[]>(size);
@@ -62,7 +62,7 @@ class buffer_storage_test {
     auto data_final5 = data_vector.begin();
 
     check_write_back(log, r, data_final1.get());
-    check_write_back(log, r, data_final2, true);
+    check_write_back(log, r, data_final2, true /*is_nullptr*/);
     check_write_back(log, r, data_final3);
     check_write_back(log, r, data_final4);
     check_write_back(log, r, data_final5);
@@ -98,7 +98,7 @@ private:
   template <typename C>
   void check_write_back(util::logger &log, cl::sycl::range<dims> r,
                         C final_data, bool is_nullptr = false) {
-    std::shared_ptr<T> data_shrd(new T[size], [](T *data) { delete[] data; });
+    std::shared_ptr<T> data_shrd(new T[size], std::default_delete<T[]>{});
 
     cl::sycl::mutex_class m;
 

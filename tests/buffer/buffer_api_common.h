@@ -364,9 +364,9 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
       sub_r[0] = r[0] - i[0];
       cl::sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
       auto isSubBuffer = buf_sub.is_sub_buffer();
-      auto notSubBuffer = buf.is_sub_buffer();
+      auto isOrigSubBuffer = buf.is_sub_buffer();
       check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
-      if (!isSubBuffer && notSubBuffer) {
+      if (!isSubBuffer || isOrigSubBuffer) {
         FAIL(log, "is_sub_buffer() return a wrong result");
       }
     }
