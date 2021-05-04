@@ -38,7 +38,7 @@ class kernel_item_1d {
 
     size_t dim_a = item.get_id(0);
     size_t dim_b = item[0];
-    result &= gid.get(0) == dim_a && gid.get(0) == dim_b;
+    result &= (gid.get(0) == dim_a) && (gid.get(0) == dim_b);
 
     cl::sycl::range<1> localRange = item.get_range();
     result &= localRange == r_exp;
