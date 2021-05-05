@@ -37,17 +37,8 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
-      pointer_ctors<half, void> halfVoidTests;
-      halfVoidTests(queue);
-
-      pointer_ctors<const half, const void> constHalfVoidTests;
-      constHalfVoidTests(queue);
-
-      pointer_ctors<half> halfTests;
-      halfTests(queue);
-
-      pointer_ctors<const half> constHalfTests;
-      constHalfTests(queue);
+      check_void_pointer_ctors<half>{}(queue);
+      check_pointer_ctors<half>{}(queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

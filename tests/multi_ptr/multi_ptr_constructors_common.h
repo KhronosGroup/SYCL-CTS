@@ -10,23 +10,14 @@
 #define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_CONSTRUCTORS_COMMON_H
 
 #include "../common/common.h"
+#include "multi_ptr_common.h"
+using namespace multi_ptr_common;
 
 namespace multi_ptr_constructors_common {
 using namespace sycl_cts;
 
 template <typename T, typename U>
 class kernel0;
-
-struct user_struct {
-  float a;
-  int b;
-  char c;
-};
-
-template <typename... argsT>
-void silence_warnings(argsT...) {
-  // Just to avoid compiler warnings on unused variables
-}
 
 template <typename T, typename U = T>
 class pointer_ctors {
@@ -184,6 +175,12 @@ class pointer_ctors {
     });
   }
 };
+
+template <typename T>
+using check_pointer_ctors = check_pointer<pointer_ctors, T>;
+
+template <typename T>
+using check_void_pointer_ctors = check_void_pointer<pointer_ctors, T>;
 
 }  // namespace multi_ptr_constructors_common
 

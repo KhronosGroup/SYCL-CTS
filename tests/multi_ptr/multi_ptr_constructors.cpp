@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/type_coverage.h"
 #include "multi_ptr_constructors_common.h"
 
 #define TEST_NAME multi_ptr_constructors
@@ -31,131 +32,15 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      pointer_ctors<int, void> voidTests;
-      voidTests(queue);
+      auto types =
+          type_pack<bool, float, double, char, signed char, unsigned char,
+                    short, unsigned short, int, unsigned int, long,
+                    unsigned long, long long, unsigned long long>{};
 
-      pointer_ctors<const int, const void> constVoidTests;
-      constVoidTests(queue);
+      for_all_types<check_void_pointer_ctors>(types, queue);
+      for_all_types<check_pointer_ctors>(types, queue);
 
-      pointer_ctors<int> intTests;
-      intTests(queue);
-
-      pointer_ctors<const int> constIntTests;
-      constIntTests(queue);
-
-      pointer_ctors<unsigned int, void> voidUintTests;
-      voidUintTests(queue);
-
-      pointer_ctors<const unsigned int, const void> constUintVoidTests;
-      constUintVoidTests(queue);
-
-      pointer_ctors<unsigned int> uintTests;
-      uintTests(queue);
-
-      pointer_ctors<const unsigned int> constUintTests;
-      constUintTests(queue);
-
-      pointer_ctors<char, void> charVoidTests;
-      charVoidTests(queue);
-
-      pointer_ctors<const char, const void> constCharVoidTests;
-      constCharVoidTests(queue);
-
-      pointer_ctors<char> charTests;
-      charTests(queue);
-
-      pointer_ctors<const char> constCharTests;
-      constCharTests(queue);
-
-      pointer_ctors<short int, void> shortVoidTests;
-      shortVoidTests(queue);
-
-      pointer_ctors<const short int, const void> constShortVoidTests;
-      constShortVoidTests(queue);
-
-      pointer_ctors<short int> shortTests;
-      shortTests(queue);
-
-      pointer_ctors<const short int> constShortTests;
-      constShortTests(queue);
-
-      pointer_ctors<long int, void> longVoidTests;
-      longVoidTests(queue);
-
-      pointer_ctors<const long int, const void> constLongVoidTests;
-      constLongVoidTests(queue);
-
-      pointer_ctors<long int> longTests;
-      longTests(queue);
-
-      pointer_ctors<const long int> constLongTests;
-      constLongTests(queue);
-
-      pointer_ctors<long long int, void> longLongVoidTests;
-      longLongVoidTests(queue);
-
-      pointer_ctors<const long long int, const void> constLongLongVoidTests;
-      constLongLongVoidTests(queue);
-
-      pointer_ctors<long long int> longLongTests;
-      longLongTests(queue);
-
-      pointer_ctors<const long long int> constLongLongTests;
-      constLongLongTests(queue);
-
-      pointer_ctors<float, void> floatVoidTests;
-      floatVoidTests(queue);
-
-      pointer_ctors<const float, const void> constFloatVoidTests;
-      constFloatVoidTests(queue);
-
-      pointer_ctors<const float> constFloatTests;
-      constFloatTests(queue);
-
-      pointer_ctors<float> floatTests;
-      floatTests(queue);
-
-      pointer_ctors<double, void> doubleVoidTests;
-      doubleVoidTests(queue);
-
-      pointer_ctors<const double, const void> constDoubleVoidTests;
-      constDoubleVoidTests(queue);
-
-      pointer_ctors<double> doubleTests;
-      doubleTests(queue);
-
-      pointer_ctors<const double> constDoubleTests;
-      constDoubleTests(queue);
-
-      pointer_ctors<unsigned char, void> ucharVoidTests;
-      ucharVoidTests(queue);
-
-      pointer_ctors<const unsigned char, const void> constUcharVoidTests;
-      constUcharVoidTests(queue);
-
-      pointer_ctors<unsigned char> ucharTests;
-      ucharTests(queue);
-
-      pointer_ctors<const unsigned char> constUcharTests;
-      constUcharTests(queue);
-
-      pointer_ctors<bool, void> boolVoidTests;
-      boolVoidTests(queue);
-
-      pointer_ctors<const bool, const void> constBoolVoidTests;
-      constBoolVoidTests(queue);
-
-      pointer_ctors<bool> boolTests;
-      boolTests(queue);
-
-      pointer_ctors<const bool> constBoolTests;
-      constBoolTests(queue);
-
-      pointer_ctors<user_struct> userStructTests;
-      userStructTests(queue);
-
-      pointer_ctors<const user_struct> constUserStructTests;
-      constUserStructTests(queue);
+      check_pointer_ctors<user_struct>{}(queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

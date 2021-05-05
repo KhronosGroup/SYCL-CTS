@@ -10,16 +10,12 @@
 #define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_API_COMMON_H
 
 #include "../common/common.h"
+#include "multi_ptr_common.h"
 #include <type_traits>
 
 namespace multi_ptr_api_common {
 using namespace sycl_cts;
-
-struct user_struct {
-  float a;
-  int b;
-  char c;
-};
+using namespace multi_ptr_common;
 
 template <typename T, typename U>
 class kernel0;
@@ -32,11 +28,6 @@ template <typename From, typename To>
 struct cast_keep_const<const From, To> {
   using type = const To;
 };
-
-template <typename ... argsT>
-void silence_warnings(argsT ...) {
-  // Just to avoid compiler warnings on unused variables
-}
 
 /** @brief Provides verification methods for generic types
  */
@@ -871,6 +862,12 @@ class pointer_apis {
     }
   }
 };
+
+template <typename T>
+using check_pointer_api = check_pointer<pointer_apis, T>;
+
+template <typename T>
+using check_void_pointer_api = check_void_pointer<pointer_apis, T>;
 
 } // namespace multi_ptr_api_common
 

@@ -36,17 +36,9 @@ class TEST_NAME : public util::test_base {
             "Device does not support half precision floating point operations");
         return;
       }
-      pointer_apis<half, void> halfVoidTests;
-      halfVoidTests(log, queue);
 
-      pointer_apis<const half, const void> constHalfVoidTests;
-      constHalfVoidTests(log, queue);
-
-      pointer_apis<half> halfTests;
-      halfTests(log, queue);
-
-      pointer_apis<const half> constHalfTests;
-      constHalfTests(log, queue);
+      check_void_pointer_api<half>{}(log, queue);
+      check_pointer_api<half>{}(log, queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
