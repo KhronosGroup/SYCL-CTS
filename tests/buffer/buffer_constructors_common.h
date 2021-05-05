@@ -19,15 +19,6 @@ class BufferInteropNoEvent;
 
 template <typename T, int dims, typename allocT> class BufferCheck;
 
-template <int dims>
-bool check_range(cl::sycl::range<dims> r1, cl::sycl::range<dims> r2) {
-  bool result = true;
-  for (size_t i = 0; i < dims; ++i) {
-    result &= (r1[i] == r2[i]);
-  }
-  return result;
-}
-
 template <typename T, int dims, typename allocT>
 bool check_data(cl::sycl::buffer<T, dims, allocT> buf,
                 cl::sycl::range<dims> r) {
@@ -42,7 +33,7 @@ bool check_data(cl::sycl::buffer<T, dims, allocT> buf,
           err_buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
       cgh.parallel_for<BufferCheck<T, dims, allocT>>(
           r, [=](cl::sycl::id<dims> idx) {
-            if (!check_equal_values(acc[idx], static_cast<T>(0))) {
+            if (!check_equal_values(acc[idx], T {0}) {
               err_acc[0] = 1;
             }
           });
@@ -55,8 +46,7 @@ template <typename T, int dims, typename allocT>
 bool check_buffer_constructor(cl::sycl::buffer<T, dims, allocT> buf,
                               cl::sycl::range<dims> r,
                               bool data_verify = false) {
-  auto buf_r = buf.get_range();
-  bool res = check_range<dims>(buf_r, r);
+  bool res = buf.get_range() == r;
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   if (data_verify) {
     res &= check_data(buf, r);

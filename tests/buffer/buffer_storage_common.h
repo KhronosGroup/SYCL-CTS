@@ -41,7 +41,6 @@ template <typename alloc, typename T, int size, int dims>
 class buffer_storage_test {
  public:
   void operator()(util::logger &log, cl::sycl::range<dims> r) {
-    auto deleter = std::default_delete<T[]>{};
 
     // Case 1 - Raw pointer
     auto data_final1 = std::make_unique<T[]>(size);
@@ -50,11 +49,11 @@ class buffer_storage_test {
     T *data_final2 = nullptr;
 
     // Case 3 - Weak pointer
-    std::shared_ptr<T> data_shared_ptr(new T[size], deleter);
-    std::weak_ptr<T> data_final3 = data_shared_ptr;
+    std::shared_ptr<T[]> data_shared_ptr(new T[size]);
+    std::weak_ptr<T[]> data_final3 = data_shared_ptr;
 
     // Case 4 - Shared pointer
-    std::shared_ptr<T> data_final4(new T[size], deleter);
+    std::shared_ptr<T[]> data_final4(new T[size]);
 
     // Case 5 - Vector data
     std::vector<T> data_vector;
@@ -69,10 +68,8 @@ class buffer_storage_test {
   }
 
 private:
-  template <template <typename T1> class C>
-  void check_write_back(util::logger &log, cl::sycl::range<dims> r,
-                        C<T> final_data) {
-    std::shared_ptr<T> data_shrd(new T[size], [](T *data) { delete[] data; });
+  template <typename C> void use_buffer(C final_data, cl::sycl::range<dims> r) {
+    std::shared_ptr<T[]> data_shrd(new T[size]);
 
     cl::sycl::mutex_class m;
 
@@ -87,32 +84,24 @@ private:
       buf_shrd.set_final_data(final_data);
       buf_shrd.set_write_back(true);
     }
-    std::shared_ptr<T> ptr_shrd(final_data);
+  }
+
+  template <template <typename T1> class C>
+  void check_write_back(util::logger &log, cl::sycl::range<dims> r,
+                        C<T[]> final_data) {
+    use_buffer(final_data, r);
+
+    std::shared_ptr<T[]> ptr_shrd(final_data);
     T *ptr = ptr_shrd.get();
-    if (ptr != nullptr) {
-      for (size_t i = 0; i < size; ++i) {
-        check_equal_values(ptr[i], (T)0xFF);
-      }
+    for (size_t i = 0; i < size; ++i) {
+      check_equal_values(ptr[i], (T)0xFF);
     }
   }
+
   template <typename C>
   void check_write_back(util::logger &log, cl::sycl::range<dims> r,
                         C final_data, bool is_nullptr = false) {
-    std::shared_ptr<T> data_shrd(new T[size], std::default_delete<T[]>{});
-
-    cl::sycl::mutex_class m;
-
-    std::fill(data_shrd.get(), (data_shrd.get() + size), 0);
-    {
-      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
-          data_shrd, r,
-          cl::sycl::property_list{cl::sycl::property::buffer::use_mutex(m)});
-      m.lock();
-      std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
-      m.unlock();
-      buf_shrd.set_final_data(final_data);
-      buf_shrd.set_write_back(true);
-    }
+    use_buffer(final_data, r);
 
     if (!is_nullptr) {
       for (size_t i = 0; i < size; ++i) {
