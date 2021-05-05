@@ -10,6 +10,8 @@
 #include "../common/type_coverage.h"
 #include "multi_ptr_constructors_common.h"
 
+#include <string>
+
 #define TEST_NAME multi_ptr_constructors
 
 namespace TEST_NAMESPACE {
@@ -45,9 +47,8 @@ class TEST_NAME : public util::test_base {
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
+      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
   }
 };
