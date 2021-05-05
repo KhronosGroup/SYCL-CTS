@@ -50,7 +50,7 @@ class pointer_ctors {
                          cl::sycl::access::target::local>
           localAccessor(size, handler);
 
-      handler.single_task<class kernel0<T, U>>([=]() {
+      handler.single_task<class kernel0<T, U>>([=] {
         data_t privateData[1];
 
         /** check default constructors
