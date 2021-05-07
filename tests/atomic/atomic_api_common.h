@@ -10,9 +10,6 @@
 #define SYCL_CTS_TESTS_ATOMIC_API_COMMON_H
 
 #include "../common/common.h"
-#include "atomic_common.h"
-
-#include <cstring>
 
 namespace atomic_api_common {
 
@@ -108,36 +105,6 @@ void generic_check_for_atomics(sycl_cts::util::logger &log,
    */
   check_atomics<T, cl::sycl::access::target::local, check_atomics_functor>{}(
       log, testQueue);
-}
-
-/**
- * @brief Generic check wrapper for tests for 64bit types
- */
-template <typename T, template <class, cl::sycl::access::target> class functor,
-          typename... argsT>
-void generic_check_for_atomics64(atomic64_bits_tag::yes, argsT &&... args) {
-  generic_check_for_atomics<T, functor>(std::forward<argsT>(args)...);
-}
-
-template <typename, template <class, cl::sycl::access::target> class,
-          typename... argsT>
-void generic_check_for_atomics64(atomic64_bits_tag::no, argsT &&...) {
-  // Skip 64bit checks for non-64bit types
-}
-
-/**
- * @brief Generic check wrapper for tests for non-64bit types
- */
-template <typename T, template <class, cl::sycl::access::target> class functor,
-          typename... argsT>
-void generic_check_for_atomics32(atomic64_bits_tag::no, argsT &&... args) {
-  generic_check_for_atomics<T, functor>(std::forward<argsT>(args)...);
-}
-
-template <typename, template <class, cl::sycl::access::target> class,
-          typename... argsT>
-void generic_check_for_atomics32(atomic64_bits_tag::yes, argsT &&...) {
-  // Skip non-64bit checks for 64bit types
 }
 
 }  // namespace atomic_api_common

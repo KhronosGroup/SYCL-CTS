@@ -10,9 +10,6 @@
 #define SYCL_CTS_TESTS_ATOMIC_CONSTRUCTORS_COMMON_H
 
 #include "../common/common.h"
-#include "atomic_common.h"
-
-#include <cstring>
 
 namespace atomic_constructors_common {
 

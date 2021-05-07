@@ -9,6 +9,7 @@
 #include "../common/common.h"
 #include "atomic_api_common.h"
 
+#include <climits>
 #include <string>
 
 #define TEST_NAME atomic_api_64_extended
@@ -85,9 +86,7 @@ class TEST_NAME : public util::test_base {
 
   template <typename T>
   void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
-    auto skip_tag = atomic64_bits_tag::get<T>();
-    return generic_check_for_atomics64<T, check_extended_atomics>(skip_tag, log,
-                                                                  testQueue);
+    return generic_check_for_atomics<T, check_extended_atomics>(log, testQueue);
   }
 
   /** Execute the test
@@ -104,9 +103,10 @@ class TEST_NAME : public util::test_base {
       /** Check atomics for supported types
        */
       if (testDevice.has_extension("cl_khr_int64_extended_atomics")) {
-        check_atomics_for_type<long>(log, testQueue);
-        check_atomics_for_type<unsigned long>(log, testQueue);
-
+        if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
+          check_atomics_for_type<long>(log, testQueue);
+          check_atomics_for_type<unsigned long>(log, testQueue);
+        }
         check_atomics_for_type<long long>(log, testQueue);
         check_atomics_for_type<unsigned long long>(log, testQueue);
       }
@@ -124,4 +124,4 @@ class TEST_NAME : public util::test_base {
 // Construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace TEST_NAMESPACE */
+}  // namespace TEST_NAMESPACE

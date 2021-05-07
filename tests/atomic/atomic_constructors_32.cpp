@@ -9,6 +9,7 @@
 #include "../common/common.h"
 #include "atomic_constructors_common.h"
 
+#include <climits>
 #include <string>
 
 #define TEST_NAME atomic_constructors_32
@@ -29,8 +30,7 @@ class TEST_NAME : public util::test_base {
   }
 
   template <typename T>
-  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue,
-                              atomic64_bits_tag::no = atomic64_bits_tag::no{}) {
+  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
     /** Check atomic constructors for cl::sycl::access::target::global_buffer
      */
     check_atomics<T, cl::sycl::access::target::global_buffer>{}(log, testQueue);
@@ -38,12 +38,6 @@ class TEST_NAME : public util::test_base {
     /** Check atomic constructors for cl::sycl::access::target::local
      */
     check_atomics<T, cl::sycl::access::target::local>{}(log, testQueue);
-  }
-
-  template <typename T>
-  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue,
-                              atomic64_bits_tag::yes) {
-    // Skip non-64bit checks for 64bit types
   }
 
   /** Execute the test
@@ -58,9 +52,10 @@ class TEST_NAME : public util::test_base {
       check_atomics_for_type<unsigned int>(log, testQueue);
       check_atomics_for_type<float>(log, testQueue);
 
-      auto skip_tag = atomic64_bits_tag::get<long>();
-      check_atomics_for_type<long>(log, testQueue, skip_tag);
-      check_atomics_for_type<unsigned long>(log, testQueue, skip_tag);
+      if constexpr (sizeof(long) * CHAR_BIT < 64 /*bits*/) {
+        check_atomics_for_type<long>(log, testQueue);
+        check_atomics_for_type<unsigned long>(log, testQueue);
+      }
 
       testQueue.wait_and_throw();
 
@@ -75,4 +70,4 @@ class TEST_NAME : public util::test_base {
 // Construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace TEST_NAMESPACE */
+}  // namespace TEST_NAMESPACE
