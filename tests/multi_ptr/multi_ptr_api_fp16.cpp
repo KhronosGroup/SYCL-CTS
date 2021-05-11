@@ -2,23 +2,22 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Provide multi_ptr API tests for fp16 types
 //
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/type_coverage.h"
-#include "multi_ptr_constructors_common.h"
+#include "multi_ptr_api_common.h"
 
 #include <string>
 
-#define TEST_NAME multi_ptr_constructors
+#define TEST_NAME multi_ptr_api_fp16
 
 namespace TEST_NAMESPACE {
-using namespace multi_ptr_constructors_common;
 using namespace sycl_cts;
+using namespace multi_ptr_api_common;
 
-/** tests the constructors for explicit pointers
+/** tests the api for explicit pointers
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -34,15 +33,14 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      auto types =
-          type_pack<bool, float, double, char, signed char, unsigned char,
-                    short, unsigned short, int, unsigned int, long,
-                    unsigned long, long long, unsigned long long>{};
+      if (!queue.get_device().has_extension("cl_khr_fp16")) {
+        log.note(
+            "Device does not support half precision floating point operations");
+        return;
+      }
 
-      for_all_types<check_void_pointer_ctors>(types, queue);
-      for_all_types<check_pointer_ctors>(types, queue);
-
-      check_pointer_ctors<user_struct>{}(queue);
+      check_void_pointer_api<half>{}(log, queue);
+      check_pointer_api<half>{}(log, queue);
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
