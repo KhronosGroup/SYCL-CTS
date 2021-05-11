@@ -14,12 +14,12 @@ namespace TEST_NAMESPACE {
 
 template <int dim> class kernel;
 
-static const int g_items_1d = 8;
-static const int g_items_2d = 4;
-static const int g_items_3d = 2;
+static const int g_items_1d = 20;
+static const int g_items_2d = 12;
+static const int g_items_3d = 6;
 static const int l_items_1d = 4;
-static const int l_items_2d = 2;
-static const int l_items_3d = 1;
+static const int l_items_2d = 3;
+static const int l_items_3d = 2;
 static const int gr_range_1d = (g_items_1d / l_items_1d);
 static const int gr_range_2d = (g_items_2d / l_items_2d);
 static const int gl_items_total = (g_items_1d * g_items_2d * g_items_3d);
@@ -44,14 +44,18 @@ template <int dim> void check_dim(util::logger &log) {
   try {
     cl::sycl::int4 localIdData[gl_items_total];
     cl::sycl::int4 localSizeData[gl_items_total];
+    cl::sycl::int4 globalIdData[gl_items_total];
+    cl::sycl::int4 globalSizeData[gl_items_total];
     for (int i = 0; i < gl_items_total; i++) {
       localIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
       localSizeData[i] = cl::sycl::int4(-1, -1, -1, -1);
+      globalIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
+      globalSizeData[i] = cl::sycl::int4(-1, -1, -1, -1);
     }
 
-    cl::sycl::int4 groupIdData[l_items_total];
-    cl::sycl::int4 groupRangeData[l_items_total];
-    for (int i = 0; i < l_items_total; i++) {
+    cl::sycl::int4 groupIdData[gr_range_total];
+    cl::sycl::int4 groupRangeData[gr_range_total];
+    for (int i = 0; i < gr_range_total; i++) {
       groupIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
       groupRangeData[i] = cl::sycl::int4(-1, -1, -1, -1);
     }
@@ -61,24 +65,27 @@ template <int dim> void check_dim(util::logger &log) {
           localIdData, cl::sycl::range<1>(gl_items_total));
       cl::sycl::buffer<cl::sycl::int4, 1> localSizeBuffer(
           localSizeData, cl::sycl::range<1>(gl_items_total));
+      cl::sycl::buffer<cl::sycl::int4, 1> globalIdBuffer(
+          globalIdData, cl::sycl::range<1>(gl_items_total));
+      cl::sycl::buffer<cl::sycl::int4, 1> globalSizeBuffer(
+          globalSizeData, cl::sycl::range<1>(gl_items_total));
       cl::sycl::buffer<cl::sycl::int4, 1> groupIdBuffer(
-          groupIdData, cl::sycl::range<1>(l_items_total));
+          groupIdData, cl::sycl::range<1>(gr_range_total));
       cl::sycl::buffer<cl::sycl::int4, 1> groupRangeBuffer(
-          groupRangeData, cl::sycl::range<1>(l_items_total));
+          groupRangeData, cl::sycl::range<1>(gr_range_total));
 
       cl::sycl::queue myQueue(util::get_cts_object::queue());
 
       myQueue.submit([&](cl::sycl::handler &cgh) {
 
-        auto localIdPtr =
-            localIdBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
-        auto localSizePtr =
-            localSizeBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
-        auto groupIdPtr =
-            groupIdBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
-        auto groupRangePtr =
-            groupRangeBuffer.get_access<cl::sycl::access::mode::read_write>(
-                cgh);
+        constexpr auto mode = cl::sycl::access::mode::read_write;
+
+        auto localIdPtr = localIdBuffer.get_access<mode>(cgh);
+        auto localSizePtr = localSizeBuffer.get_access<mode>(cgh);
+        auto globalIdPtr = globalIdBuffer.get_access<mode>(cgh);
+        auto globalSizePtr = globalSizeBuffer.get_access<mode>(cgh);
+        auto groupIdPtr = groupIdBuffer.get_access<mode>(cgh);
+        auto groupRangePtr = groupRangeBuffer.get_access<mode>(cgh);
 
         auto gr_range =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
@@ -116,28 +123,28 @@ template <int dim> void check_dim(util::logger &log) {
                 int localSize0 = itemID.get_local_range(0);
                 int localSize1 = (dim > 1) ? itemID.get_local_range(1) : 0;
                 int localSize2 = (dim > 2) ? itemID.get_local_range(2) : 0;
-                int localSizeL = itemID.get_local_range(0);
-                if (dim > 1) {
-                  localSizeL *= itemID.get_local_range(1);
-                  if (dim > 2)
-                    localSizeL *= itemID.get_local_range(2);
-                }
+                int localSizeL = itemID.get_local_range().size();
 
-                int globalId0 = group.get_id(0) * localSize0 + localId0;
-                int globalId1 =
-                    (dim > 1) ? group.get_id(1) * localSize1 + localId1 : 0;
-                int globalId2 =
-                    (dim > 2) ? group.get_id(2) * localSize2 + localId2 : 0;
-                int globalIdL =
-                    ((globalId0 * check_g_items_2d * check_g_items_3d) +
-                     (globalId1 * check_g_items_3d) + globalId2);
+                int globalId0 = itemID.get_global_id(0);
+                int globalId1 = (dim > 1) ? itemID.get_global_id(1) : 0;
+                int globalId2 = (dim > 2) ? itemID.get_global_id(2) : 0;
+                int globalIdL = itemID.get_global().get_linear_id();
+
+                int globalSize0 = itemID.get_global_range(0);
+                int globalSize1 = (dim > 1) ? itemID.get_global_range(1) : 0;
+                int globalSize2 = (dim > 2) ? itemID.get_global_range(2) : 0;
+                int globalSizeL = itemID.get_global_range().size();
 
                 // Assign local id and range size to check with corresponding
                 // global id
-                localIdPtr[globalIdL] =
-                    cl::sycl::int4(localId0, localId1, localId2, localIdL);
+                localIdPtr[globalIdL] = cl::sycl::int4(
+                    localId0, localId1, localId2, localIdL);
                 localSizePtr[globalIdL] = cl::sycl::int4(
                     localSize0, localSize1, localSize2, localSizeL);
+                globalIdPtr[globalIdL] = cl::sycl::int4(
+                    globalId0, globalId1, globalId2, globalIdL);
+                globalSizePtr[globalIdL] = cl::sycl::int4(
+                    globalSize0, globalSize1, globalSize2, globalSizeL);
               });
             });
       });
@@ -152,30 +159,45 @@ template <int dim> void check_dim(util::logger &log) {
               (((i % check_l_items_1d) * check_l_items_2d * check_l_items_3d) +
                ((j % check_l_items_2d) * check_l_items_3d) +
                k % check_l_items_3d);
+
           CHECK_VALUE(log, static_cast<int>(localIdData[gLinearIndex].x()),
                       (i % check_l_items_1d), gLinearIndex);
-
           CHECK_VALUE(log, static_cast<int>(localSizeData[gLinearIndex].x()),
                       check_l_items_1d, gLinearIndex);
+          CHECK_VALUE(log, static_cast<int>(globalIdData[gLinearIndex].x()),
+                      i, gLinearIndex);
+          CHECK_VALUE(log, static_cast<int>(globalSizeData[gLinearIndex].x()),
+                      check_g_items_1d, gLinearIndex);
 
-          if (dim > 2) {
+          if (dim > 1) {
             CHECK_VALUE(log, static_cast<int>(localIdData[gLinearIndex].y()),
-                        (j % l_items_2d), gLinearIndex);
+                        (j % check_l_items_2d), gLinearIndex);
             CHECK_VALUE(log, static_cast<int>(localSizeData[gLinearIndex].y()),
-                        l_items_2d, gLinearIndex);
-            if (dim > 3) {
-              CHECK_VALUE(log, static_cast<int>(localIdData[gLinearIndex].z()),
-                          (k % l_items_3d), gLinearIndex);
-              CHECK_VALUE(log,
-                          static_cast<int>(localSizeData[gLinearIndex].z()),
-                          l_items_3d, gLinearIndex);
-            }
+                        check_l_items_2d, gLinearIndex);
+            CHECK_VALUE(log, static_cast<int>(globalIdData[gLinearIndex].y()),
+                        j, gLinearIndex);
+            CHECK_VALUE(log, static_cast<int>(globalSizeData[gLinearIndex].y()),
+                        check_g_items_2d, gLinearIndex);
+          }
+          if (dim > 2) {
+            CHECK_VALUE(log, static_cast<int>(localIdData[gLinearIndex].z()),
+                        (k % check_l_items_3d), gLinearIndex);
+            CHECK_VALUE(log, static_cast<int>(localSizeData[gLinearIndex].z()),
+                        check_l_items_3d, gLinearIndex);
+            CHECK_VALUE(log, static_cast<int>(globalIdData[gLinearIndex].z()),
+                        k, gLinearIndex);
+            CHECK_VALUE(log, static_cast<int>(globalSizeData[gLinearIndex].z()),
+                        check_g_items_3d, gLinearIndex);
           }
 
           CHECK_VALUE(log, static_cast<int>(localIdData[gLinearIndex].w()),
                       linearIndex, gLinearIndex);
           CHECK_VALUE(log, static_cast<int>(localSizeData[gLinearIndex].w()),
                       l_items_total, gLinearIndex);
+          CHECK_VALUE(log, static_cast<int>(globalIdData[gLinearIndex].w()),
+                      gLinearIndex, gLinearIndex);
+          CHECK_VALUE(log, static_cast<int>(globalSizeData[gLinearIndex].w()),
+                      gl_items_total, gLinearIndex);
         }
       }
     }
@@ -189,18 +211,18 @@ template <int dim> void check_dim(util::logger &log) {
                       linearIndex);
           CHECK_VALUE(log, static_cast<int>(groupRangeData[linearIndex].x()),
                       check_gr_range_1d, linearIndex);
-          if (dim > 2) {
+          if (dim > 1) {
             CHECK_VALUE(log, static_cast<int>(groupIdData[linearIndex].y()), j,
                         linearIndex);
             CHECK_VALUE(log, static_cast<int>(groupRangeData[linearIndex].y()),
                         check_gr_range_2d, linearIndex);
-            if (dim > 3) {
-              CHECK_VALUE(log, static_cast<int>(groupIdData[linearIndex].z()),
-                          k, linearIndex);
-              CHECK_VALUE(log,
-                          static_cast<int>(groupRangeData[linearIndex].z()),
-                          check_gr_range_3d, linearIndex);
-            }
+          }
+          if (dim > 2) {
+            CHECK_VALUE(log, static_cast<int>(groupIdData[linearIndex].z()),
+                        k, linearIndex);
+            CHECK_VALUE(log,
+                        static_cast<int>(groupRangeData[linearIndex].z()),
+                        check_gr_range_3d, linearIndex);
           }
           CHECK_VALUE(log, static_cast<int>(groupIdData[linearIndex].w()),
                       linearIndex, linearIndex);
