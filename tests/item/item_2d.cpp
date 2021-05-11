@@ -24,23 +24,33 @@ class kernel_item_2d {
 
   t_readAccess m_x;
   t_writeAccess m_o;
+  cl::sycl::range<2> r_exp;
+  cl::sycl::id<2> offset_exp;
 
  public:
-  kernel_item_2d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
+  kernel_item_2d(t_readAccess in_, t_writeAccess out_, cl::sycl::range<2> r)
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(cl::sycl::id<2>(0, 0)) {}
 
   void operator()(cl::sycl::item<2> item) const {
+    bool result = true;
+
     cl::sycl::id<2> gid = item.get_id();
 
     size_t dim_a = item.get_id(0) + item.get_id(1);
     size_t dim_b = item[0] + item[1];
+    result &= (gid.get(0) + gid.get(1)) == dim_a &&
+              (gid.get(0) + gid.get(1)) == dim_b;
 
     cl::sycl::range<2> localRange = item.get_range();
+    result &= localRange == r_exp;
 
     cl::sycl::id<2> offset = item.get_offset();
+    result &= offset == offset_exp;
 
     /* get work item range */
-    const size_t nWidth = localRange.get(0);
-    const size_t nHeight = localRange.get(1);
+    const size_t nWidth = item.get_range(0);
+    const size_t nHeight = item.get_range(1);
+    result &= nWidth == r_exp.get(0) && nHeight == r_exp.get(1);
 
     /* find the row major array id for this work item */
     size_t index = gid.get(1) +            /* y */
@@ -50,7 +60,8 @@ class kernel_item_2d {
     const size_t glid = item.get_linear_id();
 
     /* compare against the precomputed index */
-    m_o[item] = (m_x[item] == static_cast<int>(index));
+    result &= m_x[item] == static_cast<int>(index);
+    m_o[item] = result;
   }
 };
 
@@ -102,9 +113,9 @@ bool test_item_2d(util::logger &log) {
       auto accOut =
           bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
 
-      kernel_item_2d kern = kernel_item_2d(accIn, accOut);
-
       auto r = cl::sycl::range<2>(nWidth, nHeight);
+      kernel_item_2d kern = kernel_item_2d(accIn, accOut, r);
+
       cgh.parallel_for(r, kern);
     });
 
