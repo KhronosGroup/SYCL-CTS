@@ -34,11 +34,13 @@ public:
           "Device does not support half precision floating point operations");
       return;
     }
-    for_type_and_vectors<check_buffer_ctors_for_type, cl::sycl::half>(
-        log, "cl::sycl::half");
+    for_type_and_vectors<
+        buffer_constructors_common::check_buffer_ctors_for_type,
+        cl::sycl::half>(log, "cl::sycl::half");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_and_vectors<check_buffer_ctors_for_type, cl::sycl::cl_half>(
-        log, "cl::sycl::cl_half");
+    for_type_and_vectors<
+        buffer_constructors_common::check_buffer_ctors_for_type,
+        cl::sycl::cl_half>(log, "cl::sycl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };
