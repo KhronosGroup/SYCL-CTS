@@ -10,7 +10,7 @@
 
 #define TEST_NAME nd_range_constructors
 
-namespace nd_range_constructors__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 /**
@@ -29,25 +29,53 @@ void test_nd_range_constructors(util::logger &log, cl::sycl::range<dim> gs,
                                 cl::sycl::range<dim> ls,
                                 cl::sycl::id<dim> offset) {
   cl::sycl::nd_range<dim> no_offset(gs, ls);
-  cl::sycl::nd_range<dim> deep_copy(no_offset);
   cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
-  cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
 
   {  // Copy assignment, no offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = no_offset;
+
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Copy assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = with_offset;
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, defaultRange.get_offset()[i], offset[i], i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Move assignment, no offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(no_offset);
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+
+      CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Move assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(with_offset);
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, with_offset.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, with_offset.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, with_offset.get_offset()[i], offset[i], i);
+      CHECK_VALUE(log, with_offset.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
 }
 
@@ -64,7 +92,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    const size_t sizes[] = {16, 32, 64};
+    constexpr size_t sizes[] = {16, 32, 64};
 
     try {
       // global size to be set to the size
