@@ -108,10 +108,10 @@ class TEST_NAME : public util::test_base {
             if (error & 1) {
               FAIL(log, "kernelScalar capture error");
             }
-            if (error & 2) {
+            if (error & 1 << 1) {
               FAIL(log, "kernelVec capture error");
             }
-            if (error & 4) {
+            if (error & 1 << 2) {
               FAIL(log, "outer_struct capture error");
             }
           }
