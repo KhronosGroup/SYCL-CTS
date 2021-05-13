@@ -44,7 +44,11 @@ void check_exception_api(util::logger &log) {
 
       throw custom_exception(ctx);
     });
-    q.wait_and_throw();
+    /* According to the SYCL-2020 4.9.3: host code within a command group
+     * function object is executed once, before the command group submit call
+     * returns.
+     * So exception is expected to be thrown during submit() call
+     */
   } catch (const custom_exception &e) {
     log_exception(log, e);
 
