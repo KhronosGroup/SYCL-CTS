@@ -6,12 +6,12 @@
 //
 *******************************************************************************/
 
+#ifndef SYCL_CTS_TESTS_ATOMIC_API_COMMON_H
+#define SYCL_CTS_TESTS_ATOMIC_API_COMMON_H
+
 #include "../common/common.h"
-#include <sstream>
 
-namespace {
-
-using namespace sycl_cts;
+namespace atomic_api_common {
 
 /**
  * @brief Helper struct for performing generic operations with regards to the
@@ -70,13 +70,13 @@ struct target_map<cl::sycl::access::target::local> {
 };
 
 /** Check atomic operations
-*/
+ */
 template <typename T, cl::sycl::access::target target,
           template <class, cl::sycl::access::target>
           class check_atomics_functor>
 class check_atomics {
  public:
-  void operator()(util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
 
     T data = 0;
@@ -94,16 +94,19 @@ class check_atomics {
 
 template <typename T, template <class, cl::sycl::access::target>
                       class check_atomics_functor>
-void generic_check_for_atomics(util::logger &log, cl::sycl::queue testQueue) {
+void generic_check_for_atomics(sycl_cts::util::logger &log,
+                               cl::sycl::queue testQueue) {
   /** Check atomics for cl::sycl::access::target::global_buffer
-  */
+   */
   check_atomics<T, cl::sycl::access::target::global_buffer,
                 check_atomics_functor>{}(log, testQueue);
 
   /** Check atomics for cl::sycl::access::target::local
-  */
+   */
   check_atomics<T, cl::sycl::access::target::local, check_atomics_functor>{}(
       log, testQueue);
 }
 
-}  // namespace
+}  // namespace atomic_api_common
+
+#endif  // SYCL_CTS_TESTS_ATOMIC_API_COMMON_H

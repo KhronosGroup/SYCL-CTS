@@ -6,15 +6,15 @@
 //
 *******************************************************************************/
 
+#ifndef SYCL_CTS_TESTS_ATOMIC_CONSTRUCTORS_COMMON_H
+#define SYCL_CTS_TESTS_ATOMIC_CONSTRUCTORS_COMMON_H
+
 #include "../common/common.h"
-#include <sstream>
 
-namespace {
-
-using namespace sycl_cts;
+namespace atomic_constructors_common {
 
 /** Check atomic constructors
-*/
+ */
 template <typename T, cl::sycl::access::target target,
           cl::sycl::access::address_space addressSpace>
 class check_atomic_constructors {
@@ -27,24 +27,24 @@ class check_atomic_constructors {
 
   void operator()() const {
     /** Check atomic constructor
-    */
+     */
     cl::sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
   }
 };
 
 /** Check atomic constructors
-*/
+ */
 template <typename T, cl::sycl::access::target target>
 class check_atomics {
  public:
-  void operator()(util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
     T data = 0;
     std::memset(&data, 0xFF, sizeof(T));
 
     cl::sycl::buffer<T, 1> buf(&data, cl::sycl::range<1>(1));
 
     /** Check atomic constructors
-    */
+     */
     testQueue.submit([&](cl::sycl::handler &cgh) {
       cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
                          cl::sycl::access::target::global_buffer>
@@ -60,15 +60,15 @@ class check_atomics {
 };
 
 /** Specialization for cl::sycl::access::target::local
-*/
+ */
 template <typename T>
 class check_atomics<T, cl::sycl::access::target::local> {
  public:
-  void operator()(util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
 
     /** Check atomic constructors
-    */
+     */
     testQueue.submit([&](cl::sycl::handler &cgh) {
       cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
                          cl::sycl::access::target::local>
@@ -83,4 +83,6 @@ class check_atomics<T, cl::sycl::access::target::local> {
   }
 };
 
-}  // namespace
+}  // namespace atomic_constructors_common
+
+#endif  // SYCL_CTS_TESTS_ATOMIC_CONSTRUCTORS_COMMON_H
