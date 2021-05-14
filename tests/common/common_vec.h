@@ -135,8 +135,10 @@ bool check_vector_get_count_get_size(cl::sycl::vec<vecType, 1> inputVec) {
   }
   return true;
 }
+
+// match float values to expected integer value
 template <typename T1, typename T2>
-T2 float_map_match(T1 *floats, T2 *vals, int size, T1 src) {
+T2 float_map_match(T1 floats[], T2 vals[], int size, T1 src) {
   for (int i = 0; i < size; ++i) {
     if (floats[i] == src) {
       return vals[i];
@@ -145,37 +147,16 @@ T2 float_map_match(T1 *floats, T2 *vals, int size, T1 src) {
   return T2{};
 }
 
-template <typename T> struct is_unsigned_type {
-  static constexpr bool value = std::is_unsigned_v<T> ||
-                                std::is_same_v<T, cl::sycl::cl_uchar> ||
-                                std::is_same_v<T, cl::sycl::cl_uint> ||
-                                std::is_same_v<T, cl::sycl::cl_ulong> ||
-                                std::is_same_v<T, cl::sycl::cl_ushort>;
-};
+template <typename T>
+static constexpr bool is_unsigned_type_v =  std::is_unsigned_v<T> ||
+                                            std::is_same_v<T, cl::sycl::cl_uchar> ||
+                                            std::is_same_v<T, cl::sycl::cl_uint> ||
+                                            std::is_same_v<T, cl::sycl::cl_ulong> ||
+                                            std::is_same_v<T, cl::sycl::cl_ushort>;
 
-template <typename sourceType, typename targetType, typename retType>
-using enableIfFPtoNonFPConv = typename std::enable_if<
-    is_cl_float_type<sourceType>::value &&
-        !is_cl_float_type<targetType>::value,
-    retType>::type;
-
-template <typename sourceType, typename targetType, typename retType>
-using enableIfNotFPtoNonFPConv = typename std::enable_if<
-    !(is_cl_float_type<sourceType>::value &&
-      !is_cl_float_type<targetType>::value),
-    retType>::type;
-
-template <typename sourceType, typename targetType, typename retType>
-using enableIfFPtoUnsignedConv = typename std::enable_if<
-    is_cl_float_type<sourceType>::value &&
-        is_unsigned_type<targetType>::value,
-    retType>::type;
-
-template <typename sourceType, typename targetType, typename retType>
-using enableIfNotFPtoUnsignedConv = typename std::enable_if<
-    !(is_cl_float_type<sourceType>::value &&
-      is_unsigned_type<targetType>::value),
-    retType>::type;
+template <typename sourceType, typename targetType>
+static constexpr bool if_FP_to_non_FP_conv_v =
+    is_cl_float_type<sourceType>::value && !is_cl_float_type<targetType>::value;
 
 template <typename vecType, int N, typename convertType>
 cl::sycl::vec<convertType, N> convert_vec(cl::sycl::vec<vecType, N> inputVec) {
@@ -187,123 +168,123 @@ cl::sycl::vec<convertType, N> convert_vec(cl::sycl::vec<vecType, N> inputVec) {
   return resVec;
 }
 
-// rte
 template <typename vecType, int N, typename convertType>
-enableIfFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rte(cl::sycl::vec<vecType, N> inputVec) {
-  const int size = 8;
-  vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-  convertType vals[size] = {2, 4, 2, 2,
-                            static_cast<convertType>(-2),
-                            static_cast<convertType>(-4),
-                            static_cast<convertType>(-2),
-                            static_cast<convertType>(-2)};
-  cl::sycl::vec<convertType, N> resVec;
-  for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    auto elemConvert = float_map_match(floats, vals, size, elem);
-    setElement<convertType, N>(resVec, i, elemConvert);
+cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
+  if
+    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
+      const int size = 8;
+      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
+                              -2.3f, -3.8f, -1.5f, -2.5f};
+      convertType vals[size] = {2, 4, 2, 2,
+                                static_cast<convertType>(-2),
+                                static_cast<convertType>(-4),
+                                static_cast<convertType>(-2),
+                                static_cast<convertType>(-2)};
+      cl::sycl::vec<convertType, N> resVec;
+      for (size_t i = 0; i < N; ++i) {
+        vecType elem = getElement(inputVec, i);
+        auto elemConvert = float_map_match(floats, vals, size, elem);
+        setElement<convertType, N>(resVec, i, elemConvert);
+      }
+      return resVec;
+    }
+  else {
+    return convert_vec<vecType, N, convertType>(inputVec);
   }
-  return resVec;
-}
-
-template <typename vecType, int N, typename convertType>
-enableIfNotFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rte(cl::sycl::vec<vecType, N> inputVec) {
-  return convert_vec<vecType, N, convertType>(inputVec);
-}
+  }
 
 // rtz
-template <typename vecType, int N, typename convertType>
-enableIfFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtz(cl::sycl::vec<vecType, N> inputVec) {
-  const int size = 8;
-  vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-  convertType vals[size] = {2, 3, 1, 2,
-                            static_cast<convertType>(-2),
-                            static_cast<convertType>(-3),
-                            static_cast<convertType>(-1),
-                            static_cast<convertType>(-2)};
-  cl::sycl::vec<convertType, N> resVec;
-  for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    auto elemConvert = float_map_match(floats, vals, size, elem);
-    setElement<convertType, N>(resVec, i, elemConvert);
+  template <typename vecType, int N, typename convertType>
+  cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
+    if
+      constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
+        const int size = 8;
+        vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
+                                -2.3f, -3.8f, -1.5f, -2.5f};
+        convertType vals[size] = {2, 3, 1, 2,
+                                  static_cast<convertType>(-2),
+                                  static_cast<convertType>(-3),
+                                  static_cast<convertType>(-1),
+                                  static_cast<convertType>(-2)};
+        cl::sycl::vec<convertType, N> resVec;
+        for (size_t i = 0; i < N; ++i) {
+          vecType elem = getElement(inputVec, i);
+          auto elemConvert = float_map_match(floats, vals, size, elem);
+          setElement<convertType, N>(resVec, i, elemConvert);
+        }
+        return resVec;
+      }
+    else {
+      return convert_vec<vecType, N, convertType>(inputVec);
   }
-  return resVec;
-}
-
-template <typename vecType, int N, typename convertType>
-enableIfNotFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtz(cl::sycl::vec<vecType, N> inputVec) {
-  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // rtp
 template <typename vecType, int N, typename convertType>
-enableIfFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtp(cl::sycl::vec<vecType, N> inputVec) {
-  const int size = 8;
-  vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-  convertType vals[size] = {3, 4, 2, 3,
-                            static_cast<convertType>(-2),
-                            static_cast<convertType>(-3),
-                            static_cast<convertType>(-1),
-                            static_cast<convertType>(-2)};
-  cl::sycl::vec<convertType, N> resVec;
-  for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    auto elemConvert = float_map_match(floats, vals, size, elem);
-    setElement<convertType, N>(resVec, i, elemConvert);
+cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
+  if
+    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
+      const int size = 8;
+      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
+                              -2.3f, -3.8f, -1.5f, -2.5f};
+      convertType vals[size] = {3, 4, 2, 3,
+                                static_cast<convertType>(-2),
+                                static_cast<convertType>(-3),
+                                static_cast<convertType>(-1),
+                                static_cast<convertType>(-2)};
+      cl::sycl::vec<convertType, N> resVec;
+      for (size_t i = 0; i < N; ++i) {
+        vecType elem = getElement(inputVec, i);
+        auto elemConvert = float_map_match(floats, vals, size, elem);
+        setElement<convertType, N>(resVec, i, elemConvert);
+      }
+      return resVec;
+    }
+  else {
+    return convert_vec<vecType, N, convertType>(inputVec);
   }
-  return resVec;
-}
-template <typename vecType, int N, typename convertType>
-enableIfNotFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtp(cl::sycl::vec<vecType, N> inputVec) {
-  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // rtn
 template <typename vecType, int N, typename convertType>
-enableIfFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtn(cl::sycl::vec<vecType, N> inputVec) {
-  const int size = 8;
-  vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-  convertType vals[size] = {2, 3, 1, 2,
-                            static_cast<convertType>(-3),
-                            static_cast<convertType>(-4),
-                            static_cast<convertType>(-2),
-                            static_cast<convertType>(-3)};
-  cl::sycl::vec<convertType, N> resVec;
-  for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    auto elemConvert = float_map_match(floats, vals, size, elem);
-    setElement<convertType, N>(resVec, i, elemConvert);
+cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
+  if
+    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
+      const int size = 8;
+      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
+                              -2.3f, -3.8f, -1.5f, -2.5f};
+      convertType vals[size] = {2, 3, 1, 2,
+                                static_cast<convertType>(-3),
+                                static_cast<convertType>(-4),
+                                static_cast<convertType>(-2),
+                                static_cast<convertType>(-3)};
+      cl::sycl::vec<convertType, N> resVec;
+      for (size_t i = 0; i < N; ++i) {
+        vecType elem = getElement(inputVec, i);
+        auto elemConvert = float_map_match(floats, vals, size, elem);
+        setElement<convertType, N>(resVec, i, elemConvert);
+      }
+      return resVec;
+    }
+  else {
+    return convert_vec<vecType, N, convertType>(inputVec);
   }
-  return resVec;
 }
-template <typename vecType, int N, typename convertType>
-enableIfNotFPtoNonFPConv<vecType, convertType, cl::sycl::vec<convertType, N>>
-rtn(cl::sycl::vec<vecType, N> inputVec) {
-  return convert_vec<vecType, N, convertType>(inputVec);
-}
-
-template <typename vecType, int N, typename convertType>
-enableIfNotFPtoUnsignedConv<vecType, convertType, void>
-handleFPToUnsignedConv(cl::sycl::vec<vecType, N> &inputVec) {}
 
 // Converting floating point values outside of (-1, max unsigned integer type
 // value + 1) to unsigned integer types is undefined behaviour. Since the
 // initial vectors contain negative values, check conversion of their absolute
 // values instead.
 template <typename vecType, int N, typename convertType>
-enableIfFPtoUnsignedConv<vecType, convertType, void>
-handleFPToUnsignedConv(cl::sycl::vec<vecType, N> &inputVec) {
-  for (size_t i = 0; i < N; ++i) {
-    vecType elem = getElement(inputVec, i);
-    if (elem < 0)
-      setElement<vecType, N>(inputVec, i, -elem);
+void handleFPToUnsignedConv(cl::sycl::vec<vecType, N> &inputVec) {
+  if
+    constexpr(is_cl_float_type<vecType>::value &&
+              is_unsigned_type_v<convertType>) {
+      for (size_t i = 0; i < N; ++i) {
+        vecType elem = getElement(inputVec, i);
+        if (elem < 0)
+          setElement<vecType, N>(inputVec, i, -elem);
+      }
   }
 }
 
@@ -746,24 +727,12 @@ bool check_vector_as(cl::sycl::vec<vecType, 16> inputVec) {
  * as()
  */
 template <typename vecType, int N, typename asType, int asN>
-typename std::enable_if<sizeof(cl::sycl::vec<vecType, N>) ==
-                            sizeof(cl::sycl::vec<asType, asN>),
-                        bool>::type
-check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
-  return check_vector_as<vecType, asType, asN>(inputVec);
-}
-
-/**
- * @brief Helper function to exclude types that with different storage size for
- * as() tests
- * as()
- */
-template <typename vecType, int N, typename asType, int asN>
-typename std::enable_if<sizeof(cl::sycl::vec<vecType, N>) !=
-                            sizeof(cl::sycl::vec<asType, asN>),
-                        bool>::type
-    check_vectorN_as(cl::sycl::vec<vecType, N>) {
-  return true;
+bool check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
+  if constexpr(sizeof(cl::sycl::vec<vecType, N>) ==
+                sizeof(cl::sycl::vec<asType, asN>))
+    return check_vector_as<vecType,asType, asN>(inputVec);
+  else
+    return true;
 }
 
 /**
