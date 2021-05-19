@@ -8,6 +8,7 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../common/type_list.h"
 #include "multi_ptr_api_common.h"
 
 #include <string>
@@ -34,15 +35,24 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      auto types =
-          type_pack<bool, float, double, char, signed char, unsigned char,
-                    short, unsigned short, int, unsigned int, long,
-                    unsigned long, long long, unsigned long long>{};
+      auto types = named_type_pack<bool, float, double, char,   // types grouped
+                                   signed char, unsigned char,  // by sign
+                                   short, unsigned short,       //
+                                   int, unsigned int,           //
+                                   long, unsigned long,         //
+                                   long long, unsigned long long>{
+          "bool",        "float",
+          "double",      "char",
+          "signed char", "unsigned char",
+          "short",       "unsigned short",
+          "int",         "unsigned int",
+          "long",        "unsigned long",
+          "long long",   "unsigned long long"};
 
       for_all_types<check_void_pointer_api>(types, log, queue);
       for_all_types<check_pointer_api>(types, log, queue);
 
-      check_pointer_api<user_struct>{}(log, queue);
+      check_pointer_api<user_struct>{}(log, queue, "user_struct");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {

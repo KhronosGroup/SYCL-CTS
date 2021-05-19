@@ -13,12 +13,6 @@
 
 namespace multi_ptr_common {
 
-struct user_struct {
-  float a;
-  int b;
-  char c;
-};
-
 template <typename... argsT>
 void silence_warnings(argsT...) {
   // Just to avoid compiler warnings on unused variables
@@ -32,8 +26,8 @@ struct check_void_pointer {
 
   template <typename... argsT>
   void operator()(argsT&&... args) {
-    action<data_t, void>{}(std::forward<argsT>(args)...);
-    action<const data_t, const void>{}(std::forward<argsT>(args)...);
+    action<data_t, void>{}(std::forward<argsT>(args)..., "void");
+    action<const data_t, const void>{}(std::forward<argsT>(args)..., "void");
   }
 };
 

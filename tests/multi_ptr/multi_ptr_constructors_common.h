@@ -33,7 +33,11 @@ class pointer_ctors {
   using multiPtrPrivate =
       cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
 
-  void operator()(cl::sycl::queue &queue) {
+  void operator()(cl::sycl::queue &queue, const std::string& dataTypeName) {
+    return operator() (queue, dataTypeName, dataTypeName);
+  }
+  void operator()(cl::sycl::queue &queue, const std::string&,
+                  const std::string&) {
     const int size = 64;
     cl::sycl::range<1> range(size);
     cl::sycl::unique_ptr_class<data_t[]> data(new data_t[size]);

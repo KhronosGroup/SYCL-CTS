@@ -39,8 +39,8 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
-      check_void_pointer_api<half>{}(log, queue);
-      check_pointer_api<half>{}(log, queue);
+      check_void_pointer_api<half>{}(log, queue, "half");
+      check_pointer_api<half>{}(log, queue, "half");
 
       queue.wait_and_throw();
     } catch (const cl::sycl::exception &e) {
