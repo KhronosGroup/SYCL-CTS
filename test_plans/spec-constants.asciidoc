@@ -155,23 +155,6 @@ All of the following basic tests have these initial steps:
 * Same test as in <<sec:hander-by-ref>>, except pass the `kernel_handler`
   object by value.
 
-[[sec:external-handler-by-ref]]
-==== Pass kernel handler object by reference to a `SYCL_EXTERNAL` function
-
-* This test runs only if the implementation defines `SYCL_EXTERNAL`.
-* Same test as in <<sec:hander-by-ref>> except:
-  - The helper function is defined in a separate translation unit via
-    `SYCL_EXTERNAL`.
-  - The separate translation unit has an external declaration for the
-    `specialization_id` variable, which is defined in the first translation
-    unit.
-
-==== Pass kernel handler object by value to a `SYCL_EXTERNAL` function
-
-* This test runs only if the implementation defines `SYCL_EXTERNAL`.
-* Same test as in <<sec:external-handler-by-ref>>, except pass the
-  `kernel_handler` object by value.
-
 [[sec:multiple]]
 === Multiple spec constants
 
@@ -322,28 +305,61 @@ and perform this test:
   `kernel_handler::get_specialization_constant()` and make sure we get its
   value back.
 
-[[sec:other-tu]]
-=== Spec constant defined in another translation unit
+[[sec:two-tu-by-ref]]
+=== Two translation units, `kernel_handler` by reference
 
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
 * In one translation unit:
-  - Define a `specialization_id` variable in the global namespace for the
-    tested type.  The variable's default value has some non-zero value.
-* In a second translation unit:
-  - Declare an external reference to the `specialization_id` variable.
-  - Create a `queue` from the tested device and call `queue::submit()`.
+  - Define a `specialization_id` variable as `inline` in the global namespace
+    for the tested type.  The variable's default value has some non-zero value.
   - Set the value of the spec constant via
     `handler::set_specialization_constant()`.
   - Submit a kernel via `handler::single_task()`.
-  - Read the value of the spec constant via
+  - Call a `SYCL_EXTERNAL` helper function, passing the `kernel_handler` object
+    by reference.
+* In a second translation unit:
+  - Define the same `specialization_id` variable as `inline` in the global
+    namespace.  The variable's default value is the same as in the first
+    translation unit.
+  - Define the helper function as `SYCL_EXTERNAL`.
+  - From the helper function, read the value of the spec constant via
     `kernel_handler::get_specialization_constant()` and make sure we get the
-    same value back.
+    value set from the first translation unit.
 
-=== Spec constant defined in another translation unit and set via `kernel_bundle`
+=== Two translation units, `kernel_handler` by value
 
-* Same test as in <<sec:other-tu>>, except:
-  - Set spec constants in a `kernel_bundle`.
+* Same test as in <<sec:two-tu-by-ref>>, except pass the `kernel_handler`
+  object by value.
+
+[[sec:two-tu-bundle-by-ref]]
+=== Two translation units using `kernel_bundle`, `kernel_handler` by reference
+
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
+* In one translation unit:
+  - Define a `specialization_id` variable as `inline` in the global namespace
+    for the tested type.  The variable's default value has some non-zero value.
+  - There is a named kernel defined in this translation unit that calls a
+    `SYCL_EXTERNAL` helper function.
+  - Get a `kernel_bundle` in `input` state for this kernel.
+  - Set the value of the spec constants in the `kernel_bundle`.
   - Call `build()` to build the `kernel_bundle` into `executable` state.
   - Register the bundle with a handler via `use_kernel_bundle()`.
+  - Submit a kernel via `handler::single_task()`.
+  - The kernel calls the `SYCL_EXTERNAL` helper function, passing the
+    `kernel_handler` object by reference.
+* In a second translation unit:
+  - Define the same `specialization_id` variable as `inline` in the global
+    namespace.  The variable's default value is the same as in the first
+    translation unit.
+  - Define the helper function as `SYCL_EXTERNAL`.
+  - From the helper function, read the value of the spec constant via
+    `kernel_handler::get_specialization_constant()` and make sure we get the
+    value set from the first translation unit.
+
+=== Two translation units using `kernel_bundle`, `kernel_handler` by value
+
+* Same test as in <<sec:two-tu-bundle-by-ref>>, except pass the
+  `kernel_handler` object by value.
 
 [[sec:internal-linkage]]
 === Spec constants with same name and internal linkage
