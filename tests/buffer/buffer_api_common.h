@@ -59,27 +59,6 @@ inline void precalculate<3>(cl::sycl::range<3> &rangeIn,
 }
 
 /*!
-@brief used to calculate the element count of a multi-dimensional buffer
-*/
-template <int dims>
-inline size_t calc_elem_count(size_t numElemsPerDim);
-
-template <>
-inline size_t calc_elem_count<1>(size_t numElemsPerDim) {
-  return numElemsPerDim;
-}
-
-template <>
-inline size_t calc_elem_count<2>(size_t numElemsPerDim) {
-  return numElemsPerDim * numElemsPerDim;
-}
-
-template <>
-inline size_t calc_elem_count<3>(size_t numElemsPerDim) {
-  return numElemsPerDim * numElemsPerDim * numElemsPerDim;
-}
-
-/*!
 @brief Used to produce and test the reinterpreted buffer denoted by the template
 arguments. It does so by using the provided data array as a multidimensional
 buffer
@@ -457,7 +436,9 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
 template <typename T, int numDims>
 void test_type_reinterpret(util::logger &log) {
   static constexpr size_t inputElemsPerDim = 4;
-  auto numElems = calc_elem_count<numDims>(inputElemsPerDim);
+  auto numElems = inputElemsPerDim;
+  for (int i = 1; i < numDims; ++i)
+    numElems *= inputElemsPerDim;
   std::vector<uint8_t> reinterpretInputData(sizeof(T) * numElems);
   using ReinterpretT = flip_signedness_t<T>;
 
