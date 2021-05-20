@@ -10,7 +10,7 @@
 
 #define TEST_NAME nd_range_api
 
-namespace nd_range_api__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 static const size_t sizes[] = {16, 32, 64};
@@ -96,7 +96,7 @@ class TEST_NAME : public util::test_base {
       // offset to be set to 1/8 of the sizes
       cl::sycl::range<2> range_2d(sizes[0] / 8u, sizes[1] / 8u);
       cl::sycl::id<2> offset_2d(range_2d);
-      // test_nd_range( log, gs_2d, ls_2d, offset_2d );
+      test_nd_range(log, gs_2d, ls_2d, offset_2d);
 
       // global size to be set to the size
       cl::sycl::range<3> gs_3d(sizes[0], sizes[1], sizes[2]);

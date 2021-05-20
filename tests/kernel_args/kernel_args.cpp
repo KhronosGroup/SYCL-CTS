@@ -26,6 +26,11 @@ struct outerStruct {
 class scalar_struct_kernel;
 class sampler_kernel;
 
+bool check_outer_struct_eq(int a, float b, long long c, outerStruct exp) {
+  return a == exp.a && c == exp.innerStruct.a &&
+         b == exp.b;
+}
+
 /** Test kernel args conform to the rules for parameter passing to kernels
  */
 class TEST_NAME : public util::test_base {
@@ -44,12 +49,16 @@ class TEST_NAME : public util::test_base {
       int testScalar = 1;
       auto testVec = cl::sycl::vec<int, 4>(1, 2, 3, 4);
       outerStruct testStruct{1, 2.0f, nestedStruct{3}};
+      int error = 0;
 
       auto my_queue = util::get_cts_object::queue();
 
       log.note("Testing kernel args with scalars and struct members");
       {
+        cl::sycl::buffer<int, 1> buf(&error, cl::sycl::range<1>(1));
         my_queue.submit([&](cl::sycl::handler &cgh) {
+          auto acc =
+              buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
           cgh.single_task<class scalar_struct_kernel>([=]() {
             // Test that the values outside kernel have been captured
             int kernelScalar = testScalar;
@@ -61,6 +70,18 @@ class TEST_NAME : public util::test_base {
             int a = testStruct.a;
             float b = testStruct.b;
             long long c = testStruct.innerStruct.a;
+            // check all value here. Expected value from testVec
+            outerStruct exp{1, 2.0f, nestedStruct{3}};
+            auto exp_vec = cl::sycl::vec<int, 4>(1, 2, 3, 4);
+            if (kernelScalar != 1) {
+              acc[0] += 1;
+            }
+            if (!check_equal_values(kernelVec, exp_vec)) {
+              acc[0] += 1 << 1;
+            }
+            if (!check_outer_struct_eq(a, b, c, exp)) {
+              acc[0] += 1 << 2;
+            }
           });
         });
       }
@@ -83,6 +104,17 @@ class TEST_NAME : public util::test_base {
           });
 
           my_queue.wait_and_throw();
+          if (error != 0) {
+            if (error & 1) {
+              FAIL(log, "kernelScalar capture error");
+            }
+            if (error & 1 << 1) {
+              FAIL(log, "kernelVec capture error");
+            }
+            if (error & 1 << 2) {
+              FAIL(log, "outer_struct capture error");
+            }
+          }
         } catch (const cl::sycl::feature_not_supported &fnse) {
           if (!my_queue.get_device()
                    .get_info<cl::sycl::info::device::image_support>()) {

@@ -33,7 +33,7 @@ bool check_data(cl::sycl::buffer<T, dims, allocT> buf,
           err_buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
       cgh.parallel_for<BufferCheck<T, dims, allocT>>(
           r, [=](cl::sycl::id<dims> idx) {
-            if (!check_equal_values(acc[idx], T {0}) {
+            if (!check_equal_values(acc[idx], T {0})) {
               err_acc[0] = 1;
             }
           });
