@@ -13,6 +13,7 @@
 #include "../common/common.h"
 #include "../common/type_coverage.h"
 #include "./../../util/extensions.h"
+#include "accessor_utility_common.h"
 
 #ifndef TEST_NAME
 #error Invalid test namespace
@@ -58,7 +59,7 @@ public:
     const auto scalar_types =
         named_type_pack<float,
                         std::size_t,
-                        user_struct>({
+                        accessor_utility::user_struct>({
                         "float",
                         "std::size_t",
                         "user struct"});
@@ -94,8 +95,8 @@ public:
                         "cl::sycl::cl_long", "cl::sycl::cl_ulong"});
     const auto scalar_types =
         named_type_pack<std::size_t,
-                        user_struct,
-                        user_namespace::user_alias>({
+                        accessor_utility::user_struct,
+                        accessor_utility::user_namespace::user_alias>({
                         "std::size_t",
                         "user struct",
                         "user alias"});
@@ -155,7 +156,7 @@ public:
 
     for_all_types<check_type>(scalar_types, log, queue);
 
-    check_type_on_kernel<user_namespace::nested::user_struct,
+    check_type_on_kernel<accessor_utility::user_namespace::nested::user_struct,
                          nested_struct_kernel>{}(
         log, queue, "nested user struct");
 
