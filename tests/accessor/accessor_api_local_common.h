@@ -284,7 +284,7 @@ struct check_local_accessor_api_dim<generic_path_t> {
   }
 
   /**
-   *  @brief Check global buffer accessor api for all modes except atomic64 ones
+   *  @brief Check local accessor api for all modes except atomic64 ones
    */
   template <typename T, typename kernelName, int dims, typename accTagT,
             typename ... argsT>
@@ -304,8 +304,8 @@ struct check_local_accessor_api_dim<generic_path_t> {
   }
 
   /**
-   *  @brief Switch off local buffer accessor api check of atomic64 modes for
-   *         generic code path
+   *  @brief Switch off local accessor api check of atomic64 modes for generic
+   *         code path
    */
   template <typename T, typename kernelName, int dims, typename accTagT,
             typename ... argsT>
@@ -337,7 +337,7 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
     // Run atomic64 checks only
   }
   /**
-   *  @brief Run accessor verification for atomic64 modes only
+   *  @brief Run local accessor verification for atomic64 modes only
    */
   template <typename T, typename kernelName, int dims, typename accTagT,
             typename ... argsT>
@@ -346,8 +346,7 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
     // Run atomic64 checks only
     {
       constexpr auto mode = cl::sycl::access::mode::atomic;
-      check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
+      check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
   }
