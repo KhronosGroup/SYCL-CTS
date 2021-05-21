@@ -29,12 +29,12 @@ class empty_kernel {
 template <size_t dims>
 inline void precalculate(cl::sycl::range<dims> &rangeIn,
                          cl::sycl::range<dims> &rangeOut, size_t &elementsCount,
-                         unsigned elementsIn, unsigned elementsOut);
+                         size_t elementsIn, size_t elementsOut);
 
 template <>
 inline void precalculate<1>(cl::sycl::range<1> &rangeIn,
                             cl::sycl::range<1> &rangeOut, size_t &elementsCount,
-                            unsigned elementsIn, unsigned elementsOut) {
+                            size_t elementsIn, size_t elementsOut) {
   rangeIn = cl::sycl::range<1>(elementsIn);
   rangeOut = cl::sycl::range<1>(elementsOut);
   elementsCount = elementsOut;
@@ -43,7 +43,7 @@ inline void precalculate<1>(cl::sycl::range<1> &rangeIn,
 template <>
 inline void precalculate<2>(cl::sycl::range<2> &rangeIn,
                             cl::sycl::range<2> &rangeOut, size_t &elementsCount,
-                            unsigned elementsIn, unsigned elementsOut) {
+                            size_t elementsIn, size_t elementsOut) {
   rangeIn = cl::sycl::range<2>(elementsIn, elementsIn);
   rangeOut = cl::sycl::range<2>(elementsOut, elementsIn);
   elementsCount = (elementsOut * elementsIn);
@@ -52,7 +52,7 @@ inline void precalculate<2>(cl::sycl::range<2> &rangeIn,
 template <>
 inline void precalculate<3>(cl::sycl::range<3> &rangeIn,
                             cl::sycl::range<3> &rangeOut, size_t &elementsCount,
-                            unsigned elementsIn, unsigned elementsOut) {
+                            size_t elementsIn, size_t elementsOut) {
   rangeIn = cl::sycl::range<3>(elementsIn, elementsIn, elementsIn);
   rangeOut = cl::sycl::range<3>(elementsOut, elementsIn, elementsIn);
   elementsCount = (elementsOut * elementsIn * elementsIn);
@@ -68,7 +68,7 @@ buffer
 template <typename TIn, typename TOut>
 class test_buffer_reinterpret {
  public:
-  unsigned elementsIn, elementsOut;
+  size_t elementsIn, elementsOut;
 
   template <size_t dims>
   void check(TIn* data, util::logger& log) {
@@ -436,12 +436,14 @@ void test_buffer(util::logger &log, cl::sycl::range<dims> &r,
 template <typename T, int numDims>
 void test_type_reinterpret(util::logger &log) {
   static constexpr size_t inputElemsPerDim = 4;
-  std::vector<uint8_t> reinterpretInputData(sizeof(T) * inputElemsPerDim *
-                                            numDims);
+  auto numElems = inputElemsPerDim;
+  for (int i = 1; i < numDims; ++i) {
+    numElems *= inputElemsPerDim;
+  }
+  std::vector<uint8_t> reinterpretInputData(sizeof(T) * numElems);
   using ReinterpretT = flip_signedness_t<T>;
 
   // Check reinterpreting with a range
-  static constexpr auto numElems = inputElemsPerDim * numDims;
   test_buffer_reinterpret<uint8_t, T>{sizeof(T) * numElems, numElems}
       .template check<numDims>(reinterpretInputData.data(), log);
 
