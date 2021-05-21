@@ -437,8 +437,9 @@ template <typename T, int numDims>
 void test_type_reinterpret(util::logger &log) {
   static constexpr size_t inputElemsPerDim = 4;
   auto numElems = inputElemsPerDim;
-  for (int i = 1; i < numDims; ++i)
+  for (int i = 1; i < numDims; ++i) {
     numElems *= inputElemsPerDim;
+  }
   std::vector<uint8_t> reinterpretInputData(sizeof(T) * numElems);
   using ReinterpretT = flip_signedness_t<T>;
 
