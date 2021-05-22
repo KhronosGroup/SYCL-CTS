@@ -82,27 +82,6 @@ struct kernel_single {
   }
 };
 
-/** @brief Explicit equality check to avoid usage of the common-by-value
- *         semantics in this test
- */
-template <template <int> class T, int numDims>
-bool check_equal(const T<numDims>& lhs, const T<numDims>& rhs) {
-  bool result = true;
-  for (size_t i = 0; i < numDims; ++i) {
-    result &= lhs[i] == rhs[i];
-  }
-  return result;
-}
-
-/** @brief Overload of explicit equality check for the item instances
- */
-template <int numDims>
-bool check_equal(cl::sycl::item<numDims, false> id1,
-                 cl::sycl::item<numDims, false> id2) {
-  return check_equal(id1.get_id(), id2.get_id()) &&
-         check_equal(id1.get_range(), id2.get_range());
-}
-
 /** test cl::sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
@@ -222,13 +201,10 @@ class TEST_NAME : public util::test_base {
                           item.get_physical_local_range();
 
                       // Check ranges
-                      success &=
-                          check_equal(globalItem.get_range(), globalRange);
-                      success &= check_equal(localItem.get_range(), localRange);
-                      success &= check_equal(logicalLocalItem.get_range(),
-                                             logicalLocalRange);
-                      success &= check_equal(physicalLocalItem.get_range(),
-                                             physicalLocalRange);
+                      success &= globalItem.get_range() == globalRange;
+                      success &= localItem.get_range() == localRange;
+                      success &= logicalLocalItem.get_range() == logicalLocalRange;
+                      success &= physicalLocalItem.get_range() == physicalLocalRange;
 
                       // Get IDs
                       cl::sycl::id<numDims> globalId = item.get_global_id();
@@ -239,12 +215,10 @@ class TEST_NAME : public util::test_base {
                           item.get_physical_local_id();
 
                       // Check IDs
-                      success &= check_equal(globalItem.get_id(), globalId);
-                      success &= check_equal(localItem.get_id(), localId);
-                      success &= check_equal(logicalLocalItem.get_id(),
-                                             logicalLocalId);
-                      success &= check_equal(physicalLocalItem.get_id(),
-                                             physicalLocalId);
+                      success &= globalItem.get_id() == globalId;
+                      success &= localItem.get_id() == localId;
+                      success &= logicalLocalItem.get_id() == logicalLocalId;
+                      success &= physicalLocalItem.get_id() == physicalLocalId;
 
                       if (!success) consistency_acc[0] = false;
                     });
