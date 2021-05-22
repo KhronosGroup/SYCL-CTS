@@ -75,11 +75,16 @@ struct kernel_single {
             success &= value == expected;
           }
 
+          // Each work-item updates success flag only if it is needed to avoid
+          // data race
           if (!success) success_acc[0] = false;
         });
   }
 };
 
+/** @brief Explicit equality check to avoid usage of the common-by-value
+ *         semantics in this test
+ */
 template <template <int> class T, int numDims>
 bool check_equal(const T<numDims>& lhs, const T<numDims>& rhs) {
   bool result = true;
@@ -89,6 +94,8 @@ bool check_equal(const T<numDims>& lhs, const T<numDims>& rhs) {
   return result;
 }
 
+/** @brief Overload of explicit equality check for the item instances
+ */
 template <int numDims>
 bool check_equal(cl::sycl::item<numDims, false> id1,
                  cl::sycl::item<numDims, false> id2) {
@@ -112,7 +119,7 @@ class TEST_NAME : public util::test_base {
       auto testQueue = util::get_cts_object::queue();
 
       const auto kernelGroupRange =
-          util::get_cts_object::range<numDims>::get(2, 2, 2);
+          util::get_cts_object::range<numDims>::get(3, 4, 2);
       const auto kernelPhysicalLocalRange =
           util::get_cts_object::range<numDims>::get(4, 2, 1);
       const auto kernelLogicalLocalRange =
