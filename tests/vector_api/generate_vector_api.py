@@ -31,7 +31,9 @@ vector_api_template = Template("""
             sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
           resAcc[0] = false;
         }
-        check_convert_as_all_types<${type}, ${size}>(inputVec);
+        if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
+            resAcc[0] = false;
+        }
 """)
 
 lo_hi_odd_even_template = Template("""
@@ -43,13 +45,17 @@ lo_hi_odd_even_template = Template("""
 
 as_convert_call_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
-        check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec);
-        check_convert_as_all_dims<${type}, ${size}, ${dest_type2}>(inputVec);
+        if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec) ||
+            !check_convert_as_all_dims<${type}, ${size}, ${dest_type2}>(inputVec)) {
+            resAcc[0] = false;
+        }
 """)
 
 
 def gen_checks(type_str, size):
     vals_list = append_fp_postfix(type_str, Data.vals_list_dict[size])
+    if 'double' in type_str or 'half' in type_str or 'float' in type_str:
+        vals_list =  Data.vals_list_dict_float[size]
     reverse_vals_list = vals_list[::-1]
     kernel_name = 'KERNEL_API_' + type_str + str(size)
     test_string = vector_api_template.substitute(
@@ -83,7 +89,7 @@ def gen_optional_checks(type_str, size, dest, dest_types, TEST_NAME_OP):
     test_string = as_convert_call_template.substitute(
         type=type_str,
         size=size,
-        vals=', '.join(append_fp_postfix(type_str, Data.vals_list_dict[size])),
+        vals=', '.join(type_str, Data.vals_list_dict_float[size]),
         dest_type1=dest_types[0],
         dest_type2=dest_types[1])
 
