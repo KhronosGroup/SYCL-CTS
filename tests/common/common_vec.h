@@ -188,9 +188,8 @@ cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
       setElement<convertType, N>(resVec, i, elemConvert);
     }
     return resVec;
-  } else {
-    return convert_vec<vecType, N, convertType>(inputVec);
   }
+  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // rtz
@@ -214,9 +213,8 @@ cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
       setElement<convertType, N>(resVec, i, elemConvert);
     }
     return resVec;
-  } else {
-    return convert_vec<vecType, N, convertType>(inputVec);
   }
+  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // rtp
@@ -240,9 +238,8 @@ cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
       setElement<convertType, N>(resVec, i, elemConvert);
     }
     return resVec;
-  } else {
-    return convert_vec<vecType, N, convertType>(inputVec);
   }
+  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // rtn
@@ -266,9 +263,8 @@ cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
       setElement<convertType, N>(resVec, i, elemConvert);
     }
     return resVec;
-  } else {
-    return convert_vec<vecType, N, convertType>(inputVec);
   }
+  return convert_vec<vecType, N, convertType>(inputVec);
 }
 
 // Converting floating point values outside of (-1, max unsigned integer type
