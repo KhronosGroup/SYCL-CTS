@@ -134,7 +134,8 @@ struct setComponent {
   T &operator()(cl::sycl::vec<T, dim> &f, int number) const = delete;
 };
 
-template <typename T> struct setComponent<T, 1> {
+template <typename T>
+struct setComponent<T, 1> {
   static const unsigned dim = 1;
   void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {

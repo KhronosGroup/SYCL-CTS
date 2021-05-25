@@ -148,11 +148,11 @@ T2 float_map_match(T1 floats[], T2 vals[], int size, T1 src) {
 }
 
 template <typename T>
-static constexpr bool is_unsigned_type_v =  std::is_unsigned_v<T> ||
-                                            std::is_same_v<T, cl::sycl::cl_uchar> ||
-                                            std::is_same_v<T, cl::sycl::cl_uint> ||
-                                            std::is_same_v<T, cl::sycl::cl_ulong> ||
-                                            std::is_same_v<T, cl::sycl::cl_ushort>;
+static constexpr bool is_unsigned_type_v =
+    std::is_unsigned_v<T> || std::is_same_v<T, cl::sycl::cl_uchar> ||
+    std::is_same_v<T, cl::sycl::cl_uint> ||
+    std::is_same_v<T, cl::sycl::cl_ulong> ||
+    std::is_same_v<T, cl::sycl::cl_ushort>;
 
 template <typename sourceType, typename targetType>
 static constexpr bool if_FP_to_non_FP_conv_v =
@@ -170,77 +170,77 @@ cl::sycl::vec<convertType, N> convert_vec(cl::sycl::vec<vecType, N> inputVec) {
 
 template <typename vecType, int N, typename convertType>
 cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
-  if
-    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
-      const int size = 8;
-      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
-                              -2.3f, -3.8f, -1.5f, -2.5f};
-      convertType vals[size] = {2, 4, 2, 2,
-                                static_cast<convertType>(-2),
-                                static_cast<convertType>(-4),
-                                static_cast<convertType>(-2),
-                                static_cast<convertType>(-2)};
-      cl::sycl::vec<convertType, N> resVec;
-      for (size_t i = 0; i < N; ++i) {
-        vecType elem = getElement(inputVec, i);
-        auto elemConvert = float_map_match(floats, vals, size, elem);
-        setElement<convertType, N>(resVec, i, elemConvert);
-      }
-      return resVec;
+  if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
+    const int size = 8;
+    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
+    convertType vals[size] = {2,
+                              4,
+                              2,
+                              2,
+                              static_cast<convertType>(-2),
+                              static_cast<convertType>(-4),
+                              static_cast<convertType>(-2),
+                              static_cast<convertType>(-2)};
+    cl::sycl::vec<convertType, N> resVec;
+    for (size_t i = 0; i < N; ++i) {
+      vecType elem = getElement(inputVec, i);
+      auto elemConvert = float_map_match(floats, vals, size, elem);
+      setElement<convertType, N>(resVec, i, elemConvert);
     }
-  else {
+    return resVec;
+  } else {
     return convert_vec<vecType, N, convertType>(inputVec);
   }
-  }
+}
 
 // rtz
-  template <typename vecType, int N, typename convertType>
-  cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
-    if
-      constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
-        const int size = 8;
-        vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
-                                -2.3f, -3.8f, -1.5f, -2.5f};
-        convertType vals[size] = {2, 3, 1, 2,
-                                  static_cast<convertType>(-2),
-                                  static_cast<convertType>(-3),
-                                  static_cast<convertType>(-1),
-                                  static_cast<convertType>(-2)};
-        cl::sycl::vec<convertType, N> resVec;
-        for (size_t i = 0; i < N; ++i) {
-          vecType elem = getElement(inputVec, i);
-          auto elemConvert = float_map_match(floats, vals, size, elem);
-          setElement<convertType, N>(resVec, i, elemConvert);
-        }
-        return resVec;
-      }
-    else {
-      return convert_vec<vecType, N, convertType>(inputVec);
+template <typename vecType, int N, typename convertType>
+cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
+  if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
+    const int size = 8;
+    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
+    convertType vals[size] = {2,
+                              3,
+                              1,
+                              2,
+                              static_cast<convertType>(-2),
+                              static_cast<convertType>(-3),
+                              static_cast<convertType>(-1),
+                              static_cast<convertType>(-2)};
+    cl::sycl::vec<convertType, N> resVec;
+    for (size_t i = 0; i < N; ++i) {
+      vecType elem = getElement(inputVec, i);
+      auto elemConvert = float_map_match(floats, vals, size, elem);
+      setElement<convertType, N>(resVec, i, elemConvert);
+    }
+    return resVec;
+  } else {
+    return convert_vec<vecType, N, convertType>(inputVec);
   }
 }
 
 // rtp
 template <typename vecType, int N, typename convertType>
 cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
-  if
-    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
-      const int size = 8;
-      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
-                              -2.3f, -3.8f, -1.5f, -2.5f};
-      convertType vals[size] = {3, 4, 2, 3,
-                                static_cast<convertType>(-2),
-                                static_cast<convertType>(-3),
-                                static_cast<convertType>(-1),
-                                static_cast<convertType>(-2)};
-      cl::sycl::vec<convertType, N> resVec;
-      for (size_t i = 0; i < N; ++i) {
-        vecType elem = getElement(inputVec, i);
-        auto elemConvert = float_map_match(floats, vals, size, elem);
-        setElement<convertType, N>(resVec, i, elemConvert);
-      }
-      return resVec;
+  if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
+    const int size = 8;
+    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
+    convertType vals[size] = {3,
+                              4,
+                              2,
+                              3,
+                              static_cast<convertType>(-2),
+                              static_cast<convertType>(-3),
+                              static_cast<convertType>(-1),
+                              static_cast<convertType>(-2)};
+    cl::sycl::vec<convertType, N> resVec;
+    for (size_t i = 0; i < N; ++i) {
+      vecType elem = getElement(inputVec, i);
+      auto elemConvert = float_map_match(floats, vals, size, elem);
+      setElement<convertType, N>(resVec, i, elemConvert);
     }
-  else {
+    return resVec;
+  } else {
     return convert_vec<vecType, N, convertType>(inputVec);
   }
 }
@@ -248,25 +248,25 @@ cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
 // rtn
 template <typename vecType, int N, typename convertType>
 cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
-  if
-    constexpr(if_FP_to_non_FP_conv_v<vecType, convertType>) {
-      const int size = 8;
-      vecType floats[size] = {2.3f,  3.8f,  1.5f,  2.5f,
-                              -2.3f, -3.8f, -1.5f, -2.5f};
-      convertType vals[size] = {2, 3, 1, 2,
-                                static_cast<convertType>(-3),
-                                static_cast<convertType>(-4),
-                                static_cast<convertType>(-2),
-                                static_cast<convertType>(-3)};
-      cl::sycl::vec<convertType, N> resVec;
-      for (size_t i = 0; i < N; ++i) {
-        vecType elem = getElement(inputVec, i);
-        auto elemConvert = float_map_match(floats, vals, size, elem);
-        setElement<convertType, N>(resVec, i, elemConvert);
-      }
-      return resVec;
+  if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
+    const int size = 8;
+    vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
+    convertType vals[size] = {2,
+                              3,
+                              1,
+                              2,
+                              static_cast<convertType>(-3),
+                              static_cast<convertType>(-4),
+                              static_cast<convertType>(-2),
+                              static_cast<convertType>(-3)};
+    cl::sycl::vec<convertType, N> resVec;
+    for (size_t i = 0; i < N; ++i) {
+      vecType elem = getElement(inputVec, i);
+      auto elemConvert = float_map_match(floats, vals, size, elem);
+      setElement<convertType, N>(resVec, i, elemConvert);
     }
-  else {
+    return resVec;
+  } else {
     return convert_vec<vecType, N, convertType>(inputVec);
   }
 }
@@ -276,15 +276,13 @@ cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
 // initial vectors contain negative values, check conversion of their absolute
 // values instead.
 template <typename vecType, int N, typename convertType>
-void handleFPToUnsignedConv(cl::sycl::vec<vecType, N> &inputVec) {
-  if
-    constexpr(is_cl_float_type<vecType>::value &&
-              is_unsigned_type_v<convertType>) {
-      for (size_t i = 0; i < N; ++i) {
-        vecType elem = getElement(inputVec, i);
-        if (elem < 0)
-          setElement<vecType, N>(inputVec, i, -elem);
-      }
+void handleFPToUnsignedConv(cl::sycl::vec<vecType, N>& inputVec) {
+  if constexpr (is_cl_float_type<vecType>::value &&
+                is_unsigned_type_v<convertType>) {
+    for (size_t i = 0; i < N; ++i) {
+      vecType elem = getElement(inputVec, i);
+      if (elem < 0) setElement<vecType, N>(inputVec, i, -elem);
+    }
   }
 }
 
@@ -297,21 +295,21 @@ bool check_vector_convert(cl::sycl::vec<vecType, N> inputVec) {
 
   cl::sycl::vec<convertType, N> expectedVec;
   switch (mode) {
-  case cl::sycl::rounding_mode::automatic:
-    expectedVec = convert_vec<vecType, N, convertType>(inputVec);
-    break;
-  case cl::sycl::rounding_mode::rte:
-    expectedVec = rte<vecType, N, convertType>(inputVec);
-    break;
-  case cl::sycl::rounding_mode::rtz:
-    expectedVec = rtz<vecType, N, convertType>(inputVec);
-    break;
-  case cl::sycl::rounding_mode::rtp:
-    expectedVec = rtp<vecType, N, convertType>(inputVec);
-    break;
-  case cl::sycl::rounding_mode::rtn:
-    expectedVec = rtn<vecType, N, convertType>(inputVec);
-    break;
+    case cl::sycl::rounding_mode::automatic:
+      expectedVec = convert_vec<vecType, N, convertType>(inputVec);
+      break;
+    case cl::sycl::rounding_mode::rte:
+      expectedVec = rte<vecType, N, convertType>(inputVec);
+      break;
+    case cl::sycl::rounding_mode::rtz:
+      expectedVec = rtz<vecType, N, convertType>(inputVec);
+      break;
+    case cl::sycl::rounding_mode::rtp:
+      expectedVec = rtp<vecType, N, convertType>(inputVec);
+      break;
+    case cl::sycl::rounding_mode::rtn:
+      expectedVec = rtn<vecType, N, convertType>(inputVec);
+      break;
   }
   if (!check_equal_values(convertedVec, expectedVec)) {
     return false;
@@ -333,7 +331,7 @@ bool check_vector_convert_modes(cl::sycl::vec<vecType, N> inputVec) {
                                cl::sycl::rounding_mode::rtp>(inputVec);
   flag &= check_vector_convert<vecType, N, convertType,
                                cl::sycl::rounding_mode::rtn>(inputVec);
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return flag;
 }
 
@@ -355,7 +353,7 @@ asType check_as_result(cl::sycl::vec<vecType, N> inputVec,
   for (size_t i = 0; i < N; ++i) {
     tmp_ptr[i] = getElement(inputVec, i);
   }
-  asType *exp_ptr = reinterpret_cast<asType *>(tmp_ptr);
+  asType* exp_ptr = reinterpret_cast<asType*>(tmp_ptr);
   for (size_t i = 0; i < asN; ++i) {
     if (exp_ptr[i] != getElement(asVec, i)) {
       return false;
@@ -494,8 +492,9 @@ bool check_vector_as(cl::sycl::vec<vecType, 3> inputVec) {
   using asVecType = cl::sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle =
-      inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2>()
+      inputVec
+          .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                            cl::sycl::elem::s2>()
           .template as<asVecType>();
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
@@ -559,8 +558,9 @@ bool check_vector_as(cl::sycl::vec<vecType, 4> inputVec) {
   using asVecType = cl::sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle =
-      inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2, cl::sycl::elem::s3>()
+      inputVec
+          .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                            cl::sycl::elem::s2, cl::sycl::elem::s3>()
           .template as<asVecType>();
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
@@ -629,10 +629,11 @@ bool check_vector_as(cl::sycl::vec<vecType, 8> inputVec) {
   using asVecType = cl::sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle =
-      inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                                cl::sycl::elem::s2, cl::sycl::elem::s3,
-                                cl::sycl::elem::s4, cl::sycl::elem::s5,
-                                cl::sycl::elem::s6, cl::sycl::elem::s7>()
+      inputVec
+          .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
+                            cl::sycl::elem::s2, cl::sycl::elem::s3,
+                            cl::sycl::elem::s4, cl::sycl::elem::s5,
+                            cl::sycl::elem::s6, cl::sycl::elem::s7>()
           .template as<asVecType>();
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
@@ -710,13 +711,14 @@ bool check_vector_as(cl::sycl::vec<vecType, 16> inputVec) {
   using asVecType = cl::sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle =
-      inputVec.template swizzle<
-                  cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-                  cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-                  cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-                  cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-                  cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-                  cl::sycl::elem::sF>()
+      inputVec
+          .template swizzle<
+              cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
+              cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
+              cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
+              cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
+              cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
+              cl::sycl::elem::sF>()
           .template as<asVecType>();
   return check_as_result(inputVec, asVec) &&
          check_as_result(inputVec, asVecSwizzle);
@@ -728,9 +730,9 @@ bool check_vector_as(cl::sycl::vec<vecType, 16> inputVec) {
  */
 template <typename vecType, int N, typename asType, int asN>
 bool check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
-  if constexpr(sizeof(cl::sycl::vec<vecType, N>) ==
+  if constexpr (sizeof(cl::sycl::vec<vecType, N>) ==
                 sizeof(cl::sycl::vec<asType, asN>))
-    return check_vector_as<vecType,asType, asN>(inputVec);
+    return check_vector_as<vecType, asType, asN>(inputVec);
   else
     return true;
 }
@@ -811,7 +813,7 @@ bool check_convert_as_all_types(cl::sycl::vec<vecType, N> inputVec) {
 #ifdef UINT64_MAX
   result += check_convert_as_all_dims<vecType, N, std::uint64_t>(inputVec);
 #endif
-#endif // ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#endif  // ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return result;
 }
 
