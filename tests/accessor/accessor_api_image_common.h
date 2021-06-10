@@ -1231,7 +1231,7 @@ class check_image_accessor_api_reads {
   using failure_item_t = typename failure_storage_t::item_t;
 
   static constexpr bool supportsLinearFilering =
-      is_cl_float_type<typename T::value_type>::value;
+      is_cl_float_type<typename T::element_type>::value;
 
  public:
   static constexpr auto isImageArray =
