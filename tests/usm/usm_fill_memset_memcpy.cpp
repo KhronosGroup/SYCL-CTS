@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
+#include "usm.h"
 #include <cstring>
 
 #define TEST_NAME usm_fill_memset_memcpy
@@ -41,13 +41,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       constexpr auto value_for_filling{1};
       constexpr auto value_for_first_element_overwriting{10};
 
-      auto deleter = [&q](int *data) { sycl::free(data, q.get_context()); };
-      std::unique_ptr<int, decltype(deleter)> src(
-          sycl::malloc_shared<int>(size, q.get_device(), q.get_context()),
-          deleter);
-      std::unique_ptr<int, decltype(deleter)> output(
-          sycl::malloc_shared<int>(size, q.get_device(), q.get_context()),
-          deleter);
+      auto src {usm::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
+      auto output {usm::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
 
       sycl::event init_fill = q.submit([&](sycl::handler &cgh) {
         cgh.fill(src.get(), value_for_filling, count);
