@@ -1228,24 +1228,14 @@ def generate_operator_tests(type_str, input_file, output_file):
     """"""
     test_func_str = ''
     func_calls = ''
-    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
     for size in Data.standard_sizes:
         test_str = generate_all_type_test(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME + '_ALL_TYPES',
                                              type_str, test_str, str(size))
         func_calls += make_func_call(TEST_NAME + '_ALL_TYPES', type_str,
                                      str(size))
-        if is_opencl_type:
-            test_str = generate_all_types_specific_return_type_test(
-                type_str, size)
-            test_func_str += wrap_with_test_func(
-                TEST_NAME + '_SPECIFIC_RETURN_TYPES', type_str, test_str,
-                str(size))
-            func_calls += make_func_call(TEST_NAME + '_SPECIFIC_RETURN_TYPES',
-                                         type_str, str(size))
         if not type_str in [
-                'float', 'double', 'cl::sycl::half', 'cl::sycl::cl_float',
-                'cl::sycl::cl_double', 'cl::sycl::cl_half'
+                'float', 'double', 'cl::sycl::half'
         ]:
             test_str = generate_non_fp_assignment_test(type_str, size)
             test_func_str += wrap_with_test_func(

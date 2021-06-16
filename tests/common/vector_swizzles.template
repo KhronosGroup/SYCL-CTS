@@ -11,9 +11,9 @@ $IFDEF
 #include "../common/common.h"
 #include "../common/common_vec.h"
 
-#define TEST_NAME vector_swizzles_$OPENCL$TYPE_NAME
+#define TEST_NAME vector_swizzles_$TYPE_NAME
 
-namespace vector_swizzles_$OPENCL$TYPE_NAME__ {
+namespace vector_swizzles_$TYPE_NAME__ {
 using namespace sycl_cts;
 
 /** Test each combination of vector swizzles can be generated

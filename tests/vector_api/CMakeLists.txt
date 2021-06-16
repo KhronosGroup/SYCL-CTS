@@ -2,7 +2,6 @@ set(TEST_CASES_LIST "")
 
 set(TYPE_LIST "")
 get_std_type(TYPE_LIST)
-get_opencl_type(TYPE_LIST)
 get_no_vec_alias_type(TYPE_LIST)
 
 if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
@@ -13,12 +12,12 @@ else()
 endif()
 
 if(NOT SYCL_CTS_ENABLE_DOUBLE_TESTS)
-    list(REMOVE_ITEM TYPE_LIST double cl::sycl::cl_double)
+    list(REMOVE_ITEM TYPE_LIST double)
     STRING(REGEX REPLACE "64" "" ENABLE_AS_CONVERT_TYPES ${ENABLE_AS_CONVERT_TYPES})
 endif()
 
 if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
-    list(REMOVE_ITEM TYPE_LIST cl::sycl::half cl::sycl::cl_half)
+    list(REMOVE_ITEM TYPE_LIST cl::sycl::half)
     STRING(REGEX REPLACE "16" "" ENABLE_AS_CONVERT_TYPES ${ENABLE_AS_CONVERT_TYPES})
 endif()
 

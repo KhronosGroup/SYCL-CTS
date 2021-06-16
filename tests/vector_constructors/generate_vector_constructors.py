@@ -118,19 +118,14 @@ def generate_constructor_tests(type_str, input_file, output_file):
     """Generates a string for each constructor type containing each combination of test
     Constructor types: default, explicit, vec, opencl
     A cross section of variadic constructors are provided by the template"""
-    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
     test_str = ''
     test_func_str = ''
     func_calls = ''
     vector_sizes = Data.standard_sizes
-    if is_opencl_type:
-        vector_sizes = [2, 3, 4, 8, 16]
     for size in vector_sizes:
         test_str += generate_default(type_str, size)
         test_str += generate_explicit(type_str, size)
         test_str += generate_vec(type_str, size)
-        if is_opencl_type:
-            test_str += generate_opencl(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME, type_str,
                                              test_str, str(size))
         test_str = ''

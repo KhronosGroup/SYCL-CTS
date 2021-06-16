@@ -53,13 +53,13 @@ using has_atomic_support =
 /**
  * @brief Checks whether T is a floating-point sycl type
  */
-template <typename T>
-using is_cl_float_type =
-    std::bool_constant<std::is_floating_point<T>::value ||
-                       std::is_same<cl::sycl::half, T>::value ||
-                       std::is_same<cl::sycl::cl_float, T>::value ||
-                       std::is_same<cl::sycl::cl_double, T>::value ||
-                       std::is_same<cl::sycl::cl_half, T>::value>;
+template <typename T> struct is_cl_float_type {
+  static constexpr bool value = std::is_floating_point<T>::value ||
+                                std::is_same<cl::sycl::half, T>::value ||
+                                std::is_same<cl::sycl::cl_float, T>::value ||
+                                std::is_same<cl::sycl::cl_double, T>::value ||
+                                std::is_same<cl::sycl::cl_half, T>::value;
+};
 
 } // namespace
 
