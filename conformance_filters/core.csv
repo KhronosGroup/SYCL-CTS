@@ -42,3 +42,4 @@ vector_operators
 vector_swizzle_assignment
 vector_swizzles
 vector_swizzles_opencl
+usm
