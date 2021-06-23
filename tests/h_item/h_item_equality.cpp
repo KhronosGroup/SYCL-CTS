@@ -10,6 +10,7 @@
 #include "../common/common_by_value.h"
 
 #include <array>
+#include <string>
 
 #define TEST_NAME h_item_equality
 
@@ -33,7 +34,7 @@ enum class current_check {
 
 }  // namespace
 
-namespace TEST_NAME {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 /** test cl::sycl::device initialization
@@ -140,9 +141,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const cl::sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
+      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
   }
 
@@ -158,4 +158,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-}  // namespace TEST_NAME
+}  // namespace TEST_NAMESPACE
