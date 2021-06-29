@@ -21,7 +21,7 @@ void run_check(const sycl::queue &queue, sycl_cts::util::logger &log) {
   const auto &device{queue.get_device()};
   const auto &context{queue.get_context()};
 
-  auto str_usm_alloc_type{usm::get_allocation_decription<alloc>()};
+  auto str_usm_alloc_type{usm::get_allocation_description<alloc>()};
 
   if (device.has(usm::get_aspect<alloc>())) {
     auto allocated_memory = usm::allocate_usm_memory<alloc, int>(queue);

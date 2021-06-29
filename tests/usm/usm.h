@@ -66,7 +66,7 @@ auto get_aspect() {
  *  @retval String description of allocated memory
  */
 template <sycl::usm::alloc alloc>
-std::string_view get_allocation_decription() {
+std::string_view get_allocation_description() {
   if constexpr (alloc == sycl::usm::alloc::shared) {
     return "shared";
   } else if constexpr (alloc == sycl::usm::alloc::device) {
