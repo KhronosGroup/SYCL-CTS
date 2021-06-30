@@ -14,7 +14,7 @@ endif()
 if(NOT DEFINED INTEL_SYCL_TRIPLE)
    set(INTEL_SYCL_TRIPLE spir64-unknown-unknown-sycldevice)
 endif()
-message("Intel SYCL target triple: ${INTEL_SYCL_TRIPLE}")
+message("Intel SYCL: compiling tests to ${INTEL_SYCL_TRIPLE}")
 
 # Set precise fp-model for Intel Compiler
 if(WIN32)
@@ -30,18 +30,8 @@ message("Intel SYCL compiler flags: `${INTEL_SYCL_FLAGS}`")
 add_library(INTEL_SYCL::Runtime INTERFACE IMPORTED GLOBAL)
 set_target_properties(INTEL_SYCL::Runtime PROPERTIES
   INTERFACE_LINK_LIBRARIES    OpenCL::OpenCL
-  INTERFACE_COMPILE_OPTIONS   "${INTEL_SYCL_FLAGS}")
-
-if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
-#   The DPC++ compiler currently retains a requirement for certain OpenCL definitions when using CUDA. 
-#   The INTERFACE_LINK_OPTIONS definition is required, however the '-fsycl-device-code-split=' option 
-#   is not yet supported and has been removed.
-    set_target_properties(INTEL_SYCL::Runtime PROPERTIES
-        INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS}")
-else()
-    set_target_properties(INTEL_SYCL::Runtime PROPERTIES
-        INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS};-fsycl-device-code-split=per_source")
-endif()
+  INTERFACE_COMPILE_OPTIONS   "${INTEL_SYCL_FLAGS}"
+  INTERFACE_LINK_OPTIONS      "${INTEL_SYCL_FLAGS}")
 
 set(CMAKE_CXX_COMPILER          ${INTEL_SYCL_CXX_EXECUTABLE})
 # Use SYCL compiler instead of default linker for building SYCL application
