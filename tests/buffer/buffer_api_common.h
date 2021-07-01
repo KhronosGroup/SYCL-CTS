@@ -440,20 +440,20 @@ void test_type_reinterpret(util::logger &log) {
   for (int i = 1; i < numDims; ++i) {
     numElems *= inputElemsPerDim;
   }
-  std::vector<uint8_t> reinterpretInputData(sizeof(T) * numElems);
+  alignas(alignof(T)) unsigned char reinterpretInputData[sizeof(T) * numElems];
   using ReinterpretT = flip_signedness_t<T>;
 
   // Check reinterpreting with a range
-  test_buffer_reinterpret<uint8_t, T>{sizeof(T) * numElems, numElems}
-      .template check<numDims>(reinterpretInputData.data(), log);
+  test_buffer_reinterpret<unsigned char, T>{sizeof(T) * numElems, numElems}
+      .template check<numDims>(reinterpretInputData, log);
 
   // Check reinterpreting without a range to 1D
-  test_buffer_reinterpret_no_range<uint8_t, T, numDims, 1>::check(
-      reinterpretInputData.data(), inputElemsPerDim, log);
+  test_buffer_reinterpret_no_range<unsigned char, T, numDims, 1>::check(
+      reinterpretInputData, inputElemsPerDim, log);
 
   // Check reinterpreting without a range to the same dimension
   test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
-      reinterpret_cast<T *>(reinterpretInputData.data()), inputElemsPerDim,
+      reinterpret_cast<T *>(reinterpretInputData), inputElemsPerDim,
       log);
 }
 
@@ -480,7 +480,7 @@ template <typename T> class check_buffer_api_for_type {
 
 public:
   void operator()(util::logger &log, const std::string &typeName) {
-    log.note("testing: " + typeName);
+    log.note("testing: " + type_name_string<T>::get(typeName));
     check_with_alloc<cl::sycl::buffer_allocator>(log);
     check_with_alloc<std::allocator<T>>(log);
   }
