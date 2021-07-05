@@ -49,7 +49,7 @@ auto allocate_usm_memory(const sycl::queue &queue, size_t num_elements = 1) {
  *  @retval SYCL aspect that corresponds to allocated memory
  */
 template <const sycl::usm::alloc alloc>
-auto get_aspect() {
+constexpr auto get_aspect() {
   if constexpr (alloc == sycl::usm::alloc::shared) {
     return sycl::aspect::usm_shared_allocations;
   } else if constexpr (alloc == sycl::usm::alloc::device) {
