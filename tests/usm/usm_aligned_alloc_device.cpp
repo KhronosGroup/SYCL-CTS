@@ -29,7 +29,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using TestType = int;
     using op_aligned_alloc_device =
         usm_operation<usm_op_name::malloc_device, usm_op_form::aligned>;
-    run_test<TestType, op_aligned_alloc_device>(log);
+    run_usm_test<TestType, op_aligned_alloc_device>(log);
   }
 };
 

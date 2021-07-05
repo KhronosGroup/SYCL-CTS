@@ -29,7 +29,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using TestType = int;
     using op_malloc_shared =
         usm_operation<usm_op_name::malloc_shared, usm_op_form::general>;
-    run_test<TestType, op_malloc_shared>(log);
+    run_usm_test<TestType, op_malloc_shared>(log);
   }
 };
 

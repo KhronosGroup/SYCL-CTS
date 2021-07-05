@@ -418,7 +418,7 @@ class check_usm_allocate_free {
  *  @tparam op Defines name and form of usm allocation function
  */
 template <typename T, typename op>
-static void run_test(util::logger &log) {
+static void run_usm_test(util::logger &log) {
   try {
     check_usm_allocate_free<T, op>{}(log);
   } catch (const sycl::exception &e) {

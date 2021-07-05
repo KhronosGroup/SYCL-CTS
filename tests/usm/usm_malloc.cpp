@@ -28,7 +28,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using namespace usm_allocate_free;
     using TestType = int;
     using op_malloc = usm_operation<usm_op_name::malloc, usm_op_form::general>;
-    run_test<TestType, op_malloc>(log);
+    run_usm_test<TestType, op_malloc>(log);
   }
 };
 

@@ -29,7 +29,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using TestType = int;
     using op_malloc_device =
         usm_operation<usm_op_name::malloc_device, usm_op_form::general>;
-    run_test<TestType, op_malloc_device>(log);
+    run_usm_test<TestType, op_malloc_device>(log);
   }
 };
 
