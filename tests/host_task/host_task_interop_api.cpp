@@ -9,6 +9,10 @@
 
 #include "../common/common.h"
 
+#ifdef SYCL_BACKEND_OPENCL
+#include <CL/sycl/backend/opencl.hpp>
+#endif  // SYCL_BACKEND_OPENCL
+
 #define TEST_NAME host_task_interop_api
 
 namespace TEST_NAMESPACE {
@@ -44,7 +48,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     try {
       sycl::queue q{util::get_cts_object::queue()};
       if (q.get_backend() != sycl::backend::opencl) {
-        log.note("Interop part is not supported on this backend type");
+        log.note("Interop part is not supported on OpenCL backend type");
         return;
       }
 
@@ -58,7 +62,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         });
         q.wait_and_throw();
 
-        if (cl_native_queue != q.get())
+        if (cl_native_queue != sycl::get_native<sycl::backend::opencl>(q))
           FAIL(log, "get_native_queue query has failed.");
       }
 
@@ -72,7 +76,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
         });
         q.wait_and_throw();
 
-        if (cl_native_device_id != q.get_device().get())
+        if (cl_native_device_id !=
+            sycl::get_native<sycl::backend::opencl>(q.get_device()))
           FAIL(log, "get_native_device query has failed.");
       }
 
@@ -86,7 +91,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
         });
         q.wait_and_throw();
 
-        if (cl_native_context != q.get_context().get())
+        if (cl_native_context !=
+            sycl::get_native<sycl::backend::opencl>(q.get_context()))
           FAIL(log, "get_native_context query has failed.");
       }
 
