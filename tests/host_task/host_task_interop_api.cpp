@@ -43,8 +43,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
 #ifdef SYCL_BACKEND_OPENCL
-    for_type_and_vectors<check_buffer_ctors_for_type, sycl::cl_half>(
-        log, "sycl::cl_half");
     try {
       sycl::queue q{util::get_cts_object::queue()};
       if (q.get_backend() != sycl::backend::opencl) {
