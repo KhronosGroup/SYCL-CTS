@@ -59,37 +59,6 @@ class Data:
         ('std::int64_t'): 'INT32_MAX'
     }
 
-    opencl_types = [
-        'cl::sycl::cl_char', 'cl::sycl::cl_short', 'cl::sycl::cl_int',
-        'cl::sycl::cl_long', 'cl::sycl::cl_float', 'cl::sycl::cl_double',
-        'cl::sycl::cl_half'
-    ]
-    opencl_type_dict = {
-        (False, 'cl::sycl::cl_char'): 'cl::sycl::cl_uchar',
-        (True, 'cl::sycl::cl_char'): 'cl::sycl::cl_char',
-        (False, 'cl::sycl::cl_short'): 'cl::sycl::cl_ushort',
-        (True, 'cl::sycl::cl_short'): 'cl::sycl::cl_short',
-        (False, 'cl::sycl::cl_int'): 'cl::sycl::cl_uint',
-        (True, 'cl::sycl::cl_int'): 'cl::sycl::cl_int',
-        (False, 'cl::sycl::cl_long'): 'cl::sycl::cl_ulong',
-        (True, 'cl::sycl::cl_long'): 'cl::sycl::cl_long',
-        (True, 'cl::sycl::cl_float'): 'cl::sycl::cl_float',
-        (True, 'cl::sycl::cl_double'): 'cl::sycl::cl_double',
-        (True, 'cl::sycl::cl_half'): 'cl::sycl::cl_half'
-    }
-    opencl_sized_return_type_dict = {
-        'cl::sycl::cl_char': 'cl::sycl::cl_char',
-        'cl::sycl::cl_uchar': 'cl::sycl::cl_char',
-        'cl::sycl::cl_short': 'cl::sycl::cl_short',
-        'cl::sycl::cl_ushort': 'cl::sycl::cl_short',
-        'cl::sycl::cl_half': 'cl::sycl::cl_short',
-        'cl::sycl::cl_int': 'cl::sycl::cl_int',
-        'cl::sycl::cl_uint': 'cl::sycl::cl_int',
-        'cl::sycl::cl_float': 'cl::sycl::cl_int',
-        'cl::sycl::cl_long': 'cl::sycl::cl_long',
-        'cl::sycl::cl_ulong': 'cl::sycl::cl_long',
-        'cl::sycl::cl_double': 'cl::sycl::cl_long'
-    }
     alias_dict = {
         'char': 'cl::sycl::char',
         'signed char': 'cl::sycl::schar',
@@ -104,26 +73,12 @@ class Data:
         'unsigned long long': 'cl::sycl::ulonglong',
         'float': 'cl::sycl::float',
         'double': 'cl::sycl::double',
-        'cl::sycl::half': 'cl::sycl::half',
-        'cl::sycl::cl_char': 'cl::sycl::cl_char',
-        'cl::sycl::cl_uchar': 'cl::sycl::cl_uchar',
-        'cl::sycl::cl_short': 'cl::sycl::cl_short',
-        'cl::sycl::cl_ushort': 'cl::sycl::cl_ushort',
-        'cl::sycl::cl_int': 'cl::sycl::cl_int',
-        'cl::sycl::cl_uint': 'cl::sycl::cl_uint',
-        'cl::sycl::cl_long': 'cl::sycl::cl_long',
-        'cl::sycl::cl_ulong': 'cl::sycl::cl_ulong',
-        'cl::sycl::cl_float': 'cl::sycl::cl_float',
-        'cl::sycl::cl_double': 'cl::sycl::cl_double',
-        'cl::sycl::cl_half': 'cl::sycl::cl_half'
+        'cl::sycl::half': 'cl::sycl::half'
     }
     value_default_dict = defaultdict(lambda: '0', {
         'float': '0.0f',
         'double': '0.0',
-        'cl::sycl::half': '0.0f',
-        'cl::sycl::cl_float': '0.0f',
-        'cl::sycl::cl_double': '0.0',
-        'cl::sycl::cl_half': '0.0f'
+        'cl::sycl::half': '0.0f'
     })
     vec_name_dict = {
         1: 'One',
@@ -194,7 +149,6 @@ class Data:
 
 class ReverseData:
     rev_standard_type_dict = { Data.standard_type_dict[k] : k for k in list(Data.standard_type_dict.keys()) }
-    rev_opencl_type_dict = { Data.opencl_type_dict[k] : k for k in list(Data.opencl_type_dict.keys()) }
     rev_fixed_width_type_dict = { Data.fixed_width_type_dict[k] : k for k in list(Data.fixed_width_type_dict.keys()) }
 
 
@@ -308,11 +262,10 @@ def append_fp_postfix(type_str, input_val_list):
     to each value in the list if type_str is 'float', 'double' or 'cl::sycl::half'"""
     result_val_list = []
     for val in input_val_list:
-        if (type_str == 'float' or type_str == 'cl::sycl::cl_float'
-                or type_str == 'cl::sycl::half'
-                or type_str == 'cl::sycl::cl_half'):
+        if (type_str == 'float'
+                or type_str == 'cl::sycl::half'):
             result_val_list.append(val + '.0f')
-        elif type_str == 'double' or type_str == 'cl::sycl::cl_double':
+        elif type_str == 'double':
             result_val_list.append(val + '.0')
         else:
             result_val_list.append(val)
@@ -401,7 +354,7 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
     with open(output_file, 'w+') as output:
         output.write(source)
 
-def get_standard_and_fixed_width_types():
+def get_types():
     types = ['char', 'cl::sycl::byte']
     for base_type in Data.standard_types:
         for sign in Data.signs:
@@ -413,24 +366,6 @@ def get_standard_and_fixed_width_types():
     for base_type in Data.fixed_width_types:
         for sign in Data.signs:
             types.append(Data.fixed_width_type_dict[(sign, base_type)])
-    return types
-
-def get_opencl_types():
-    types = list()
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
-
-def get_types():
-    types = list()
-    types += get_standard_and_fixed_width_types()
-    types += get_opencl_types()
-
     return types
 
 class SwizzleData:
@@ -450,7 +385,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(swizzledVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(swizzledVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -498,7 +433,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(inOrderSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -518,7 +453,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(reverseOrderSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -538,7 +473,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(inOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -558,7 +493,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -674,15 +609,9 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
     with open(input_file, 'r') as source_file:
         source = source_file.read()
 
-    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
-
     source = replace_string_in_source_string(source,
                                             remove_namespaces_whitespaces(type_str),
                                             '$TYPE_NAME')
-    if is_opencl_type:
-        source = source.replace('$OPENCL', 'opencl_')
-    else:
-        source = source.replace('$OPENCL', '')
 
     source = replace_string_in_source_string(source, swizzles[0],
                                              '$1D_SWIZZLES')
@@ -709,12 +638,8 @@ def get_reverse_type(type_str):
         type_dict =  Data.standard_type_dict
         rev_type_dict = ReverseData.rev_standard_type_dict
     else:
-        if type_str in ReverseData.rev_opencl_type_dict:
-            type_dict =  Data.opencl_type_dict
-            rev_type_dict = ReverseData.rev_opencl_type_dict
-        else:
-            type_dict =  Data.fixed_width_type_dict
-            rev_type_dict = ReverseData.rev_fixed_width_type_dict
+        type_dict =  Data.fixed_width_type_dict
+        rev_type_dict = ReverseData.rev_fixed_width_type_dict
     (sign, base_type) = rev_type_dict[type_str]
     if (not sign, base_type) in type_dict:
         reverse_type_str = type_dict[(not sign, base_type)]

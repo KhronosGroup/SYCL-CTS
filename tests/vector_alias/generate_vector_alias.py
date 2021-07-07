@@ -50,14 +50,6 @@ def get_types():
                 or base_type == 'cl::sycl::half') and sign is False:
                 continue
             types.append(Data.standard_type_dict[(sign, base_type)])
-
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
     return types
 
 def main():

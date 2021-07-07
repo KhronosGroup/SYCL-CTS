@@ -20,7 +20,7 @@ TEST_NAME = 'API'
 vector_api_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
         ${type} reversed_vals[] = {${reversed_vals}};
-        if (!check_vector_get_count_get_size<${type}>(inputVec)) {
+        if (!check_vector_get_count_get_size<${type}, ${size}>(inputVec)) {
           resAcc[0] = false;
         }
         cl::sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};
@@ -45,8 +45,7 @@ lo_hi_odd_even_template = Template("""
 
 as_convert_call_template = Template("""
         auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
-        if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec) ||
-            !check_convert_as_all_dims<${type}, ${size}, ${dest_type2}>(inputVec)) {
+        if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec)) {
             resAcc[0] = false;
         }
 """)
@@ -67,13 +66,9 @@ def gen_checks(type_str, size):
     if 'double' in type_str:
         test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
                 size) + ', double>(inputVec);\n'
-        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
-                size) + ', cl::sycl::cl_double>(inputVec);\n'
     if 'half' in type_str:
         test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
                 size) + ', cl::sycl::half>(inputVec);\n'
-        test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
-                size) + ', cl::sycl::cl_half>(inputVec);\n'
     if size != 1:
         test_string += lo_hi_odd_even_template.substitute(
         type=type_str,
@@ -84,27 +79,26 @@ def gen_checks(type_str, size):
         test_string)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
-def gen_optional_checks(type_str, size, dest, dest_types, TEST_NAME_OP):
+def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
     kernel_name = 'KERNEL_CONVERT_AS_' + type_str + str(size) + dest
     test_string = as_convert_call_template.substitute(
         type=type_str,
         size=size,
         vals=', '.join(type_str, Data.vals_list_dict_float[size]),
-        dest_type1=dest_types[0],
-        dest_type2=dest_types[1])
+        dest_type=dest_type)
 
     string = wrap_with_kernel(
-        dest_types[0], kernel_name,
+        dest_type, kernel_name,
         'convert() as() test for cl::sycl::vec<' + type_str + ', ' + str(size) + '> to '+ dest,
         test_string)
     return wrap_with_test_func(TEST_NAME_OP, type_str, string, str(size))
 
-def make_optional_tests(type_str, input_file, output_file, dest, dest_types):
+def make_optional_tests(type_str, input_file, output_file, dest, dest_type):
     api_checks = ''
     func_calls = ''
     TEST_NAME_OP = TEST_NAME + '_as_convert_to_' + dest
     for size in Data.standard_sizes:
-        api_checks += gen_optional_checks(type_str, size, dest, dest_types, TEST_NAME_OP)
+        api_checks += gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP)
         func_calls += make_func_call(TEST_NAME_OP, type_str, str(size))
     write_source_file(api_checks, func_calls, TEST_NAME_OP, input_file,
                     output_file.replace('.cpp','_as_convert_to_'+dest+'.cpp'), type_str)
@@ -118,13 +112,13 @@ def make_tests(type_str, input_file, output_file, target_enable):
     write_source_file(api_checks, func_calls, TEST_NAME, input_file,
                       output_file, type_str)
 
-    if '64' in target_enable and  not('double' in type_str):
+    if '64' in target_enable and not('double' in type_str):
         make_optional_tests(type_str, input_file, output_file, 'fp64',
-                            ['double', 'cl::sycl::cl_double'])
+                            'double')
 
     if '16' in target_enable and not('half' in type_str):
         make_optional_tests(type_str, input_file, output_file, 'fp16',
-                            ['cl::sycl::half', 'cl::sycl::cl_half'])
+                            'cl::sycl::half')
 
 
 def main():

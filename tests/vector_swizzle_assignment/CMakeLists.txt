@@ -2,7 +2,6 @@ set(TEST_CASES_LIST "")
 
 set(TYPE_LIST "")
 get_std_type(TYPE_LIST)
-get_opencl_type(TYPE_LIST)
 get_no_vec_alias_type(TYPE_LIST)
 get_fixed_width_type(TYPE_LIST)
 
