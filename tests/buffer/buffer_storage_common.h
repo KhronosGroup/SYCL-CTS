@@ -71,7 +71,7 @@ private:
   template <typename C> void use_buffer(C final_data, sycl::range<dims> r) {
     std::shared_ptr<T[]> data_shrd(new T[size]);
 
-    sycl::mutex_class m;
+    std::mutex m;
 
     std::fill(data_shrd.get(), (data_shrd.get() + size), 0);
     {

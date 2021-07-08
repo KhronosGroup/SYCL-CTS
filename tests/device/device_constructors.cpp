@@ -143,7 +143,7 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceB(deviceA);
         sycl::device deviceC = deviceA;
 
-        sycl::hash_class<sycl::device> hasher;
+        std::hash<sycl::device> hasher;
 
         if (hasher(deviceA) != hasher(deviceB)) {
           FAIL(log,
@@ -156,8 +156,8 @@ class TEST_NAME : public util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

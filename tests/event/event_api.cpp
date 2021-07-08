@@ -69,7 +69,7 @@ class TEST_NAME : public util::test_base {
         auto event = get_queue_event<class event_api_kernel_2>(queue);
 
         auto events = event.get_wait_list();
-        check_return_type<sycl::vector_class<sycl::event>>(
+        check_return_type<std::vector<sycl::event>>(
             log, events, "sycl::event::get_wait_list()");
       }
 
@@ -96,7 +96,7 @@ class TEST_NAME : public util::test_base {
       {
         auto queue = util::get_cts_object::queue();
         auto event = get_queue_event<class event_api_kernel_5>(queue);
-        sycl::vector_class<sycl::event> eventList;
+        std::vector<sycl::event> eventList;
         eventList.push_back(event);
 
         sycl::event::wait(eventList);
@@ -107,7 +107,7 @@ class TEST_NAME : public util::test_base {
       {
         auto queue = util::get_cts_object::queue();
         auto event = get_queue_event<class event_api_kernel_6>(queue);
-        sycl::vector_class<sycl::event> eventList;
+        std::vector<sycl::event> eventList;
         eventList.push_back(event);
 
         sycl::event::wait_and_throw(eventList);
@@ -115,8 +115,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

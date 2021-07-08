@@ -108,8 +108,8 @@ class TEST_NAME : public util::test_base {
       test_nd_range(log, gs_3d, ls_3d, offset_3d);
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

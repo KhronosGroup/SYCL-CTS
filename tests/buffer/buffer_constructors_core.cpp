@@ -84,8 +84,8 @@ public:
           get_buffer_types::scalar_types, log);
     } catch (sycl::exception e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

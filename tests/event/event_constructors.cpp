@@ -161,7 +161,7 @@ class TEST_NAME : public util::test_base {
 
         auto eventA = get_queue_event<class event_constructors_9>(queue);
         sycl::event eventB = eventA;
-        sycl::hash_class<sycl::event> hasher;
+        std::hash<sycl::event> hasher;
 
         if (hasher(eventA) != hasher(eventB)) {
           FAIL(log,
@@ -173,8 +173,8 @@ class TEST_NAME : public util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

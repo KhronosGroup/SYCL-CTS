@@ -550,8 +550,8 @@ template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
-void log_accessor(const sycl::string_class& functionName,
-                  const sycl::string_class& typeName,
+void log_accessor(const std::string& functionName,
+                  const std::string& typeName,
                   sycl_cts::util::logger& log) {
   std::stringstream stream;
   if (!functionName.empty()) {
@@ -596,15 +596,15 @@ using namespace accessor_utility;
 /** creates a list of ids
 */
 template <int dims>
-sycl::vector_class<sycl::id<dims>> create_id_list(
+std::vector<sycl::id<dims>> create_id_list(
     const sycl::range<dims>& r);
 
 /** creates a list of ids (specialization for 1 dimension)
 */
 template <>
-inline sycl::vector_class<sycl::id<1>> create_id_list<1>(
+inline std::vector<sycl::id<1>> create_id_list<1>(
     const sycl::range<1>& r) {
-  sycl::vector_class<sycl::id<1>> ret;
+  std::vector<sycl::id<1>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
     ret.emplace_back(i);
   }
@@ -614,9 +614,9 @@ inline sycl::vector_class<sycl::id<1>> create_id_list<1>(
 /** creates a list of ids (specialization for 2 dimension)
 */
 template <>
-inline sycl::vector_class<sycl::id<2>> create_id_list<2>(
+inline std::vector<sycl::id<2>> create_id_list<2>(
     const sycl::range<2>& r) {
-  sycl::vector_class<sycl::id<2>> ret;
+  std::vector<sycl::id<2>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
     for (size_t j = 0; j < r[1]; ++j) {
       ret.emplace_back(i, j);
@@ -628,9 +628,9 @@ inline sycl::vector_class<sycl::id<2>> create_id_list<2>(
 /** creates a list of ids (specialization for 3 dimension)
 */
 template <>
-inline sycl::vector_class<sycl::id<3>> create_id_list<3>(
+inline std::vector<sycl::id<3>> create_id_list<3>(
     const sycl::range<3>& r) {
-  sycl::vector_class<sycl::id<3>> ret;
+  std::vector<sycl::id<3>> ret;
   for (size_t i = 0; i < r[0]; ++i) {
     for (size_t j = 0; j < r[1]; ++j) {
       for (size_t k = 0; k < r[2]; ++k) {
@@ -721,9 +721,9 @@ T get_zero_dim_buffer_value() {
  * @return Initialized data container
  */
 template <typename T>
-sycl::vector_class<T> get_buffer_input_data(size_t count, int dims,
+std::vector<T> get_buffer_input_data(size_t count, int dims,
                                                 bool useIndexes = true) {
-  auto data = sycl::vector_class<T>(count);
+  auto data = std::vector<T>(count);
   if (useIndexes) {
     for (size_t i = 0; i < count; ++i) {
       data[i] = T(i);
@@ -743,7 +743,7 @@ sycl::vector_class<T> get_buffer_input_data(size_t count, int dims,
  * @param count Number of error categories
  * @return Zero-initialized data container
  */
-sycl::vector_class<int> get_error_data(size_t count) {
+std::vector<int> get_error_data(size_t count) {
   static constexpr int dims = 1;
   static constexpr bool useIndexes = false;
   return get_buffer_input_data<int>(count, dims, useIndexes);

@@ -233,7 +233,7 @@ class TEST_NAME : public util::test_base {
       /* check hashing
       */
       {
-        sycl::hash_class<sycl::sampler> hasher;
+        std::hash<sycl::sampler> hasher;
 
         sycl::sampler samplerA = defaultSampler();
         auto hashA = hasher(samplerA);
@@ -247,8 +247,8 @@ class TEST_NAME : public util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

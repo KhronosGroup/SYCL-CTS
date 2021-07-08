@@ -115,7 +115,7 @@ struct get_cts_object {
     template <class kernel_name>
     static sycl::program compiled(
         const sycl::context &ctx,
-        const sycl::string_class &compileOptions = "",
+        const std::string &compileOptions = "",
         const sycl::device_selector &selector = cts_selector()) {
       sycl::program program(ctx);
 
@@ -142,7 +142,7 @@ struct get_cts_object {
     template <class kernel_name>
     static sycl::program built(
         const sycl::context &ctx,
-        const sycl::string_class &buildOptions = "",
+        const std::string &buildOptions = "",
         const sycl::device_selector &selector = cts_selector()) {
       sycl::program program(ctx);
 

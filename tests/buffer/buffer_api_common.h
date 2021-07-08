@@ -212,7 +212,7 @@ template <typename T, int size, int dims, typename alloc>
 void test_buffer(util::logger &log, sycl::range<dims> &r,
                  sycl::id<dims> &i) {
   try {
-    sycl::unique_ptr_class<T[]> data(new T[size]);
+    std::unique_ptr<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
 
     // Create a default offset with indices 0.
@@ -373,7 +373,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check buffer properties */
     {
-      sycl::mutex_class mutex;
+      std::mutex mutex;
       auto context = util::get_cts_object::context();
       const sycl::property_list pl{
           sycl::property::buffer::use_mutex(mutex),
@@ -405,7 +405,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           buf.template get_property<sycl::property::buffer::use_mutex>();
       check_return_type<sycl::property::buffer::use_mutex>(
           log, useMutexProperty, "get_property<use_mutex>()");
-      check_return_type<sycl::mutex_class*>(
+      check_return_type<std::mutex*>(
           log, useMutexProperty.get_mutex_ptr(),
           "sycl::property::buffer::use_mutex::get_mutex_ptr()");
 
@@ -421,8 +421,8 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     q.wait_and_throw();
   } catch (const sycl::exception& e) {
     log_exception(log, e);
-    sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }

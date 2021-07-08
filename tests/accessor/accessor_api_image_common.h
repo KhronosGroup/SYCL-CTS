@@ -339,12 +339,12 @@ T get_expected_image_elem() {
  */
 template <typename T,
           typename storage_t = typename image_format_channel<T>::storage_t>
-sycl::vector_class<sycl::byte> convert_image_data_to_bytes(
-    const sycl::vector_class<storage_t> &storageData, size_t byteSize) {
+std::vector<sycl::byte> convert_image_data_to_bytes(
+    const std::vector<storage_t> &storageData, size_t byteSize) {
   using byte_t = sycl::byte;
   const auto byteDataPtr = reinterpret_cast<const byte_t *>(storageData.data());
   auto byteData =
-      sycl::vector_class<byte_t>(byteDataPtr, byteDataPtr + byteSize);
+      std::vector<byte_t>(byteDataPtr, byteDataPtr + byteSize);
   return byteData;
 }
 
@@ -357,12 +357,12 @@ sycl::vector_class<sycl::byte> convert_image_data_to_bytes(
  */
 template <typename T,
           typename storage_t = typename image_format_channel<T>::storage_t>
-sycl::vector_class<storage_t> convert_image_bytes_to_data(
-    const sycl::vector_class<sycl::byte> &byteData) {
+std::vector<storage_t> convert_image_bytes_to_data(
+    const std::vector<sycl::byte> &byteData) {
   const auto dataCount = (byteData.size() / sizeof(storage_t));
   const auto storageDataPtr =
       reinterpret_cast<const storage_t *>(byteData.data());
-  auto storageData = sycl::vector_class<storage_t>(
+  auto storageData = std::vector<storage_t>(
       storageDataPtr, storageDataPtr + dataCount);
   return storageData;
 }
@@ -377,7 +377,7 @@ sycl::vector_class<storage_t> convert_image_bytes_to_data(
  * @return Byte container ready to be passed to an image constructor
  */
 template <typename T>
-sycl::vector_class<sycl::byte> get_image_input_data(
+std::vector<sycl::byte> get_image_input_data(
     size_t byteSize, bool initialize = true) {
   using storage_t = typename image_format_channel<T>::storage_t;
   const auto dataCount = (byteSize / sizeof(storage_t));
@@ -385,7 +385,7 @@ sycl::vector_class<sycl::byte> get_image_input_data(
   if (initialize) {
     singleElem = get_expected_image_value<T>();
   }
-  const auto data = sycl::vector_class<storage_t>(dataCount, singleElem);
+  const auto data = std::vector<storage_t>(dataCount, singleElem);
   return convert_image_data_to_bytes<T>(data, byteSize);
 }
 
@@ -654,7 +654,7 @@ struct image_accessor_failure_item {
  */
 template <typename T>
 class image_accessor_failure_storage {
-  sycl::vector_class<image_accessor_failure_item<T>> m_data;
+  std::vector<image_accessor_failure_item<T>> m_data;
 
   template <typename dataT>
   struct data_type;

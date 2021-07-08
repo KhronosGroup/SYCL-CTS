@@ -37,7 +37,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         /** check types
          */
         { check_type_existence<sycl::info::program> typeCheck; }
-        using vectorDevicesInfo = sycl::vector_class<sycl::device>;
+        using vectorDevicesInfo = std::vector<sycl::device>;
 
         /** check program info parameters
          */
@@ -70,8 +70,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     } catch (sycl::exception e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

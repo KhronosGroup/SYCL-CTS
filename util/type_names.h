@@ -13,22 +13,22 @@
 #include "stl.h"
 
 template <typename T>
-sycl::string_class type_name() {
-  using sycl::string_class;
+std::string type_name() {
+  using std::string;
 
 #define MAKENAME(X)                                                \
   {                                                                \
-    if (typeid(T) == typeid(X)) return sycl::string_class(#X); \
+    if (typeid(T) == typeid(X)) return std::string(#X); \
   }
 
 #define MAKESYCLNAME(X)                                                      \
   {                                                                          \
-    if (typeid(T) == typeid(sycl::X)) return sycl::string_class(#X); \
+    if (typeid(T) == typeid(sycl::X)) return std::string(#X); \
   }
 
 #define MAKESTDNAME(X)                                               \
   {                                                                  \
-    if (typeid(T) == typeid(::X)) return sycl::string_class(#X); \
+    if (typeid(T) == typeid(::X)) return std::string(#X); \
   }
 
   /* float types */
@@ -106,7 +106,7 @@ sycl::string_class type_name() {
 
   /* fall back to the implementation defined name */
   const char *fallback_name = typeid(T).name();
-  return sycl::string_class(fallback_name);
+  return std::string(fallback_name);
 
 #undef MAKENAME
 #undef MAKESTDNAME

@@ -43,7 +43,7 @@ class TEST_NAME : public util::test_base {
       auto cmdQueue = util::get_cts_object::queue();
 
       // Verify global barrier works as fence for global address space
-      sycl::string_class errorMsg =
+      std::string errorMsg =
           "global barrier failed for global address space";
       test_barrier_global_space<1, global_barrier_kernel_fence<1>>(
           log, cmdQueue, barrierCall<1>(), errorMsg);
@@ -55,8 +55,8 @@ class TEST_NAME : public util::test_base {
       cmdQueue.wait_and_throw();
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

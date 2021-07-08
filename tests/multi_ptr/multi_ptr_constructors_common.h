@@ -40,7 +40,7 @@ class pointer_ctors {
                   const std::string&) {
     const int size = 64;
     sycl::range<1> range(size);
-    sycl::unique_ptr_class<data_t[]> data(new data_t[size]);
+    std::unique_ptr<data_t[]> data(new data_t[size]);
     sycl::buffer<T, 1> buffer(data.get(), range);
 
     queue.submit([&](sycl::handler &handler) {

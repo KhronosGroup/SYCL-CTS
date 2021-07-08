@@ -23,8 +23,8 @@ inline void check_constructed_correctly(util::logger &log,
                                         bool &combinationSuccess) {
   // Check get_size()
   if (img.get_size() < (numElems * elementSize)) {
-    sycl::string_class message =
-        sycl::string_class("Sizes are not the same: expected at least ") +
+    std::string message =
+        std::string("Sizes are not the same: expected at least ") +
         std::to_string(numElems * elementSize) + ", got " +
         std::to_string(img.get_size());
     combinationSuccess = false;
@@ -140,7 +140,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    */
   {
     auto hostPointer =
-        sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+        std::shared_ptr<void>(imageHostPtr, &no_delete);
     sycl::image<dims, AllocatorT> img =
         sycl::image<dims, AllocatorT>(hostPointer, channelOrder, channelType, r);
     check_constructed_correctly(log, img, numElems, elementSize,
@@ -152,7 +152,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
    */
   {
     auto hostPointer =
-        sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+        std::shared_ptr<void>(imageHostPtr, &no_delete);
     sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(hostPointer, channelOrder,
                                                       channelType, r, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
@@ -166,7 +166,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
   {
     AllocatorT imgAlloc;
     auto hostPointer =
-        sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+        std::shared_ptr<void>(imageHostPtr, &no_delete);
     sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(hostPointer, channelOrder,
                                                       channelType, r, imgAlloc);
     check_constructed_correctly(log, img, numElems, elementSize,
@@ -180,7 +180,7 @@ void test_constructors_no_pitch(util::logger &log, void *imageHostPtr,
   {
     AllocatorT imgAlloc;
     auto hostPointer =
-        sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+        std::shared_ptr<void>(imageHostPtr, &no_delete);
     sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(
         hostPointer, channelOrder, channelType, r, imgAlloc, propList);
     check_constructed_correctly(log, img, numElems, elementSize,
@@ -294,7 +294,7 @@ struct test_constructors_with_pitch {
      */
     {
       auto hostPointer =
-          sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+          std::shared_ptr<void>(imageHostPtr, &no_delete);
       sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch);
       check_constructed_correctly(log, img, numElems, elementSize,
@@ -307,7 +307,7 @@ struct test_constructors_with_pitch {
      */
     {
       auto hostPointer =
-          sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+          std::shared_ptr<void>(imageHostPtr, &no_delete);
       sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch, propList);
       check_constructed_correctly(log, img, numElems, elementSize,
@@ -322,7 +322,7 @@ struct test_constructors_with_pitch {
     {
       AllocatorT imgAlloc;
       auto hostPointer =
-          sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+          std::shared_ptr<void>(imageHostPtr, &no_delete);
       sycl::image<dims, AllocatorT> img = sycl::image<dims, AllocatorT>(
           hostPointer, channelOrder, channelType, r, *pitch, imgAlloc);
       check_constructed_correctly(log, img, numElems, elementSize,
@@ -336,7 +336,7 @@ struct test_constructors_with_pitch {
     {
       AllocatorT imgAlloc;
       auto hostPointer =
-          sycl::shared_ptr_class<void>(imageHostPtr, &no_delete);
+          std::shared_ptr<void>(imageHostPtr, &no_delete);
       sycl::image<dims, AllocatorT> img =
           sycl::image<dims, AllocatorT>(hostPointer, channelOrder, channelType, r,
                                 *pitch, imgAlloc, propList);
@@ -628,7 +628,7 @@ class image_ctors {
                                      r);
           sycl::image<dims> imgB = imgA;
 
-          sycl::hash_class<sycl::image<dims>> hasher;
+          std::hash<sycl::image<dims>> hasher;
 
           if (hasher(imgA) != hasher(imgB)) {
             FAIL(log, "image hashing failed. (hashing of equals)");
@@ -684,7 +684,7 @@ class TEST_NAME : public util::test_base {
 
       /* create property lists */
       const sycl::property_list emptyPropList{};
-      sycl::mutex_class mutex;
+      std::mutex mutex;
       auto context = util::get_cts_object::context();
       const sycl::property_list propList{
           sycl::property::image::use_mutex(mutex),
@@ -699,8 +699,8 @@ class TEST_NAME : public util::test_base {
       img_3d_with_properties(log, range_3d, propList, &pitch_2d);
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

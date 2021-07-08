@@ -84,7 +84,7 @@ private:
     bool hasValidType;
     sycl_cts::util::array<size_t, dimensions> values;
   };
-  sycl::vector_class<call_result_t> m_callResults;
+  std::vector<call_result_t> m_callResults;
   sycl::range<dimensions>           m_globalRange;
   sycl::range<dimensions>           m_localRange;
 
@@ -448,8 +448,8 @@ class TEST_NAME : public util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -18,7 +18,7 @@ template <typename T, int size, int dims>
 class buffer_dtors {
  public:
   void operator()(util::logger &log, sycl::range<dims> r) {
-    sycl::unique_ptr_class<T[]> data(new T[size]);
+    std::unique_ptr<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
 
     {
@@ -67,8 +67,8 @@ class TEST_NAME : public util::test_base {
       test_buffers<double>(log);
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -46,7 +46,7 @@ class TEST_NAME : public util::test_base {
       auto cmdQueue = util::get_cts_object::queue();
 
       // Verify default barrier works as fence for local address space
-      sycl::string_class errorMsg =
+      std::string errorMsg =
           "default barrier failed for local address space";
       test_barrier_local_space<1, default_barrier_kernel_local<1>>(
           log, cmdQueue, barrierCall<1>(), errorMsg);
@@ -68,8 +68,8 @@ class TEST_NAME : public util::test_base {
       cmdQueue.wait_and_throw();
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

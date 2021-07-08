@@ -407,7 +407,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
         sycl::queue queueB(queueA);
-        sycl::hash_class<sycl::queue> hasher;
+        std::hash<sycl::queue> hasher;
 
         if (hasher(queueA) != hasher(queueB)) {
           FAIL(log,
@@ -417,8 +417,8 @@ class TEST_NAME : public util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

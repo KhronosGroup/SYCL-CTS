@@ -307,7 +307,7 @@ using id_helper = range_id_helper<sycl::id, dims, 0>;
 template <typename dataT, int dim_src, int dim_dst, bool strided_copy,
           bool transposed_copy>
 class copy_test_context {
-  using host_shared_ptr = sycl::shared_ptr_class<dataT>;
+  using host_shared_ptr = std::shared_ptr<dataT>;
   using buffer_src_t = sycl::buffer<dataT, dim_src>;
   using buffer_dst_t = sycl::buffer<dataT, dim_dst>;
   using th = type_helper<dataT>;
@@ -385,7 +385,7 @@ class copy_test_context {
   void verify_update_host(test_fn fn, const log_helper& lh) const {
     run_test_function(fn, lh);
 
-    std::lock_guard<sycl::mutex_class> lock(srcBufHostMemoryMutex);
+    std::lock_guard<std::mutex> lock(srcBufHostMemoryMutex);
     for (size_t i = 0; i < numElems; ++i) {
       const auto idx = reconstruct_index(srcBufRange, i);
       if (is_within_window(srcCopyOffset, srcCopyRange, idx)) {
@@ -507,7 +507,7 @@ class copy_test_context {
   // Host memory region backing srcBuf,
   // used for testing handler::update_host().
   host_shared_ptr srcBufHostMemory = nullptr;
-  mutable sycl::mutex_class srcBufHostMemoryMutex;
+  mutable std::mutex srcBufHostMemoryMutex;
 
   template <int dim>
   static sycl::id<dim> reconstruct_index(sycl::range<dim> range,
@@ -962,8 +962,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const sycl::exception& e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

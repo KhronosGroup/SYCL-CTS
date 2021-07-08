@@ -18,7 +18,7 @@ using namespace sycl_cts;
  */
 void check_exception_list_types() {
   using value_type = sycl::exception_list::value_type;
-  static_assert(std::is_same<value_type, sycl::exception_ptr_class>::value,
+  static_assert(std::is_same<value_type, std::exception_ptr>::value,
                 "exception_list::value_type is of wrong type");
 
   { check_type_existence<sycl::exception_list::reference> typeCheck; }
@@ -55,7 +55,7 @@ class TEST_NAME_3;
 class TEST_NAME : public util::test_base {
  public:
   struct async_handler_functor {
-    sycl::vector_class<sycl::exception_ptr_class> excps;
+    std::vector<std::exception_ptr> excps;
     void operator()(sycl::exception_list l) {
       for (auto &e : l) {
         excps.push_back(e);
@@ -74,13 +74,13 @@ class TEST_NAME : public util::test_base {
    */
   void check_exceptions(
       util::logger &log,
-      sycl::vector_class<sycl::exception_ptr_class> &excps) const {
+      std::vector<std::exception_ptr> &excps) const {
     for (auto &e : excps) {
       try {
         throw e;
       } catch (const sycl::exception &e) {
         // Check methods
-        sycl::string_class sc = e.what();
+        std::string sc = e.what();
         if (e.has_context()) {
           sycl::context c = e.get_context();
         }
@@ -103,8 +103,8 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     /*test lambda async handler*/
     {
-      sycl::vector_class<sycl::exception_ptr_class> excps;
-      sycl::function_class<void(sycl::exception_list)>
+      std::vector<std::exception_ptr> excps;
+      std::function<void(sycl::exception_list)>
           asyncHandlerLambda = [&excps](sycl::exception_list l) {
             // Check the exception list interface
             check_exception_list_types();

@@ -55,17 +55,17 @@ inline const char* name<tag::fp64>() {
  * @brief Retrieve description for logs by tag
  */
 template <typename tagT>
-inline sycl::string_class description();
+inline std::string description();
 template <>
-inline sycl::string_class description<tag::atomic64>() {
+inline std::string description<tag::atomic64>() {
   return "64-bit base atomic operations";
 }
 template <>
-inline sycl::string_class description<tag::fp16>() {
+inline std::string description<tag::fp16>() {
   return "half precision floating point operations";
 }
 template <>
-inline sycl::string_class description<tag::fp64>() {
+inline std::string description<tag::fp64>() {
   return "double precision floating point operations";
 }
 

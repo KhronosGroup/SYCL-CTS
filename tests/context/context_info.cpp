@@ -53,15 +53,15 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto devs = context.get_info<sycl::info::context::devices>();
-        check_return_type<sycl::vector_class<sycl::device>>(
+        check_return_type<std::vector<sycl::device>>(
             log, devs, "get_info<sycl::info::context::devices>()");
         TEST_TYPE_TRAIT(context, devices, context);
       }
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

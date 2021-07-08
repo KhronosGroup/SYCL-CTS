@@ -88,7 +88,7 @@ template <int dim, class kernelT, typename barrierCallT>
 void test_barrier_local_space(sycl_cts::util::logger &log,
                               sycl::queue &queue,
                               const barrierCallT &barrier,
-                              const sycl::string_class &errorMsg) {
+                              const std::string &errorMsg) {
 
   const size_t globalSizeD1 = (dim == 3) ? 4 : 8;
   const size_t globalSizeD2 = 4;
@@ -161,7 +161,7 @@ template <int dim, class kernelT, typename barrierCallT>
 void test_barrier_global_space(sycl_cts::util::logger &log,
                                sycl::queue &queue,
                                const barrierCallT &barrier,
-                               const sycl::string_class &errorMsg) {
+                               const std::string &errorMsg) {
 
   const size_t globalSizeD1 = (dim == 3) ? 4 : 8;
   const size_t globalSizeD2 = 4;

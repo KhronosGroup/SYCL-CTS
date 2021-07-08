@@ -97,7 +97,7 @@ class cts_selector : public sycl::device_selector {
       }
     }
 
-    sycl::string_class vendor =
+    std::string vendor =
         dev.get_platform().get_info<sycl::info::platform::vendor>();
     sycl::info::device_type type =
         dev.get_info<sycl::info::device::device_type>();

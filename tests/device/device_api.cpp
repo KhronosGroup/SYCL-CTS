@@ -128,7 +128,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         auto platformName = dev.get_info<sycl::info::device::name>();
-        check_return_type<sycl::string_class>(log, platformName,
+        check_return_type<std::string>(log, platformName,
                                                   "device::get_info()");
       }
 
@@ -154,13 +154,13 @@ class TEST_NAME : public util::test_base {
                 dev, sycl::info::partition_property::partition_equally)) {
           auto subDevices = dev.create_sub_devices<
               sycl::info::partition_property::partition_equally>(2);
-          check_return_type<sycl::vector_class<sycl::device>>(
+          check_return_type<std::vector<sycl::device>>(
               log, subDevices, "device::create_sub_devices(size_t)");
         }
       }
 
       /** check
-       * create_sub_devices<info::partition_property::partition_by_counts>(vector_class<size_t>)
+       * create_sub_devices<info::partition_property::partition_by_counts>(std::vector<size_t>)
        * member function
       */
       {
@@ -168,15 +168,15 @@ class TEST_NAME : public util::test_base {
         auto dev = util::get_cts_object::device(selector);
         if (supports_partition_property(
                 dev, sycl::info::partition_property::partition_by_counts)) {
-          sycl::vector_class<size_t> devicePartitionCounts;
+          std::vector<size_t> devicePartitionCounts;
           devicePartitionCounts.push_back(3);
           devicePartitionCounts.push_back(1);
           auto subDevices = dev.create_sub_devices<
               sycl::info::partition_property::partition_by_counts>(
               devicePartitionCounts);
-          check_return_type<sycl::vector_class<sycl::device>>(
+          check_return_type<std::vector<sycl::device>>(
               log, subDevices,
-              "device::create_sub_devices(vector_class<size_t>)");
+              "device::create_sub_devices(std::vector<size_t>)");
         }
       }
 
@@ -198,7 +198,7 @@ class TEST_NAME : public util::test_base {
                 dev.create_sub_devices<sycl::info::partition_property::
                                            partition_by_affinity_domain>(
                     affinityDomain);
-            check_return_type<sycl::vector_class<sycl::device>>(
+            check_return_type<std::vector<sycl::device>>(
                 log, subDevices,
                 "device::create_sub_device(info::partition_affinity_domain)");
           }
@@ -209,7 +209,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         auto devs = sycl::device::get_devices();
-        check_return_type<sycl::vector_class<sycl::device>>(
+        check_return_type<std::vector<sycl::device>>(
             log, devs, "device::get_devices()");
       }
 
@@ -218,13 +218,13 @@ class TEST_NAME : public util::test_base {
       {
         auto devs =
             sycl::device::get_devices(sycl::info::device_type::all);
-        check_return_type<sycl::vector_class<sycl::device>>(
+        check_return_type<std::vector<sycl::device>>(
             log, devs, "device::get_devices(info::device_type::all)");
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

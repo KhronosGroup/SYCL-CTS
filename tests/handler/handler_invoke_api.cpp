@@ -169,7 +169,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
    * their corresponding global work item id.
    */
   template <class kernel_wrapper>
-  void check_api_call(sycl::string_class methodName, util::logger &log,
+  void check_api_call(std::string methodName, util::logger &log,
                       sycl::queue &queue, kernel_wrapper &&kernelWrapper,
                       size_t startIndex = 0,
                       size_t numModified = defaultNumModified) {

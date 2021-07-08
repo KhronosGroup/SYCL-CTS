@@ -50,7 +50,7 @@ class TEST_NAME : public util::test_base {
         try {
           auto defaultDevice = util::get_cts_object::device(defaultSelector);
           if (!defaultDevice.is_host()) {
-            sycl::string_class errorMsg =
+            std::string errorMsg =
                 "a SYCL exception occured when default_selector tried to "
                 "select a device when no opencl devices available";
             FAIL(log, errorMsg.c_str());
@@ -104,8 +104,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -126,8 +126,8 @@ bool test_item_3d(util::logger &log) {
     cmdQueue.wait_and_throw();
   } catch (const sycl::exception &e) {
     log_exception(log, e);
-    sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
     return false;
   }

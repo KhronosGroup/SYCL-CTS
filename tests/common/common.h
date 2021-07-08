@@ -32,7 +32,7 @@ namespace {
  * @brief Helper function to print an error message and fail a test
  */
 inline void fail_test(sycl_cts::util::logger& log,
-                      sycl::string_class errorMsg) {
+                      std::string errorMsg) {
   FAIL(log, errorMsg);
 }
 
@@ -41,7 +41,7 @@ inline void fail_test(sycl_cts::util::logger& log,
  */
 template <typename T>
 void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
-                        sycl::string_class functionName) {
+                        std::string functionName) {
   if (a != b) {
     FAIL(log, functionName + " returns an incorrect value");
   }
@@ -52,10 +52,10 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
  */
 template <typename expectedT, typename returnT>
 void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
-                       sycl::string_class functionName) {
+                       std::string functionName) {
   if (!std::is_same<returnT, expectedT>::value) {
     FAIL(log, functionName + " has incorrect return type -> " +
-                  sycl::string_class(typeid(returnT).name()));
+                  std::string(typeid(returnT).name()));
   }
 }
 
@@ -72,12 +72,12 @@ bool check_return_type_bool(returnT returnVal) {
  */
 template <typename expectedT, typename actualT>
 void check_equal_type(sycl_cts::util::logger& log, actualT actualVal,
-                      sycl::string_class logMsg) {
+                      std::string logMsg) {
   if (typeid(expectedT) != typeid(actualT)) {
     FAIL(log, logMsg + "\nGot type -> " +
-                  sycl::string_class(typeid(actualT).name()) +
+                  std::string(typeid(actualT).name()) +
                   "\nExpected type -> " +
-                  sycl::string_class(typeid(expectedT).name()));
+                  std::string(typeid(expectedT).name()));
   }
 }
 
@@ -104,10 +104,10 @@ template <typename enumT, typename underlyingT>
 void check_enum_underlying_type(sycl_cts::util::logger& log) {
   if (typeid(typename std::underlying_type<enumT>::type) !=
       typeid(underlyingT)) {
-    FAIL(log, sycl::string_class(
+    FAIL(log, std::string(
                   typeid(typename std::underlying_type<enumT>::type).name()) +
                   " enum underlying type is not " +
-                  sycl::string_class(typeid(underlyingT).name()));
+                  std::string(typeid(underlyingT).name()));
   }
 }
 
@@ -214,14 +214,14 @@ inline bool check_type_sign<sycl::half>(bool expected_sign) {
 template <typename T>
 void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
                                   bool expected_sign,
-                                  sycl::string_class typeName) {
+                                  std::string typeName) {
   if (!check_type_min_size<T>(minSize)) {
-    FAIL(log, sycl::string_class(
+    FAIL(log, std::string(
                   "The following host type does not have the correct size: ") +
                   typeName);
   }
   if (!check_type_sign<T>(expected_sign)) {
-    FAIL(log, sycl::string_class(
+    FAIL(log, std::string(
                   "The following host type does not have the correct sign: ") +
                   typeName);
   }
@@ -506,7 +506,7 @@ struct check_type_existence {
  * @brief Helper function to check if all devices support online compiler.
  */
 inline bool is_compiler_available(
-    const sycl::vector_class<sycl::device>& deviceList) {
+    const std::vector<sycl::device>& deviceList) {
   bool compiler_available = true;
   for (const auto& device : deviceList) {
     if (!device.get_info<sycl::info::device::is_compiler_available>()) {
@@ -521,7 +521,7 @@ inline bool is_compiler_available(
  * @brief Helper function to check if all devices support online linker.
  */
 inline bool is_linker_available(
-    const sycl::vector_class<sycl::device>& deviceList) {
+    const std::vector<sycl::device>& deviceList) {
   bool linker_available = true;
   for (const auto& device : deviceList) {
     if (!device.get_info<sycl::info::device::is_linker_available>()) {
@@ -568,7 +568,7 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   // Verify only for device in use
   auto device = queue.get_device();
   const auto& context = queue.get_context();
-  const sycl::vector_class<sycl::device> devicesToCheck{device};
+  const std::vector<sycl::device> devicesToCheck{device};
 
   /* To query info::kernel_work_group::work_group_size property, we need to
    * obtain test kernel handler, which requires online compilation

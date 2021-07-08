@@ -65,7 +65,7 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check (vector_class<device>) constructor
+      /** check (std::vector<device>) constructor
       */
       {
         cts_selector selector;
@@ -78,7 +78,7 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check (vector_class<device>, async_handler) constructor
+      /** check (std::vector<device>, async_handler) constructor
       */
       {
         cts_selector selector;
@@ -225,18 +225,18 @@ class TEST_NAME : public util::test_base {
       {
         auto contextA = util::get_cts_object::context();
         sycl::context contextB(contextA);
-        sycl::hash_class<sycl::context> hasher;
+        std::hash<sycl::context> hasher;
 
         if (hasher(contextA) != hasher(contextB)) {
           FAIL(log,
-               "context hash_class does not work correctly. (hashing of equals "
+               "context std::hash does not work correctly. (hashing of equals "
                "failed)");
         }
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

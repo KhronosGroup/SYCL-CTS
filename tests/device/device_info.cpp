@@ -294,14 +294,14 @@ class TEST_NAME : public util::test_base {
                              sycl::info::device::mem_base_addr_align>(log,
                                                                           dev);
         check_get_info_param<sycl::info::device,
-                             sycl::vector_class<sycl::info::fp_config>,
+                             std::vector<sycl::info::fp_config>,
                              sycl::info::device::half_fp_config>(log, dev);
         check_get_info_param<sycl::info::device,
-                             sycl::vector_class<sycl::info::fp_config>,
+                             std::vector<sycl::info::fp_config>,
                              sycl::info::device::single_fp_config>(log,
                                                                        dev);
         check_get_info_param<sycl::info::device,
-                             sycl::vector_class<sycl::info::fp_config>,
+                             std::vector<sycl::info::fp_config>,
                              sycl::info::device::double_fp_config>(log,
                                                                        dev);
         check_get_info_param<sycl::info::device,
@@ -349,31 +349,31 @@ class TEST_NAME : public util::test_base {
                                                                           dev);
         check_get_info_param<
             sycl::info::device,
-            sycl::vector_class<sycl::info::execution_capability>,
+            std::vector<sycl::info::execution_capability>,
             sycl::info::device::execution_capabilities>(log, dev);
         check_get_info_param<sycl::info::device, bool,
                              sycl::info::device::queue_profiling>(log, dev);
         check_get_info_param<sycl::info::device,
-                             sycl::vector_class<sycl::string_class>,
+                             std::vector<std::string>,
                              sycl::info::device::built_in_kernels>(log,
                                                                        dev);
         check_get_info_param<sycl::info::device, sycl::platform,
                              sycl::info::device::platform>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::name>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::vendor>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::driver_version>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::profile>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::version>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::string_class,
+        check_get_info_param<sycl::info::device, std::string,
                              sycl::info::device::opencl_c_version>(log,
                                                                        dev);
         check_get_info_param<sycl::info::device,
-                             sycl::vector_class<sycl::string_class>,
+                             std::vector<std::string>,
                              sycl::info::device::extensions>(log, dev);
         check_get_info_param<sycl::info::device, size_t,
                              sycl::info::device::printf_buffer_size>(log,
@@ -399,11 +399,11 @@ class TEST_NAME : public util::test_base {
             log, dev);
         check_get_info_param<
             sycl::info::device,
-            sycl::vector_class<sycl::info::partition_property>,
+            std::vector<sycl::info::partition_property>,
             sycl::info::device::partition_properties>(log, dev);
         check_get_info_param<
             sycl::info::device,
-            sycl::vector_class<sycl::info::partition_affinity_domain>,
+            std::vector<sycl::info::partition_affinity_domain>,
             sycl::info::device::partition_affinity_domains>(log, dev);
         check_get_info_param<sycl::info::device,
                              sycl::info::partition_property,
@@ -418,8 +418,8 @@ class TEST_NAME : public util::test_base {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

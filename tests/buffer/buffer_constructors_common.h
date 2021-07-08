@@ -97,7 +97,7 @@ class buffer_ctors {
 
     /* check (shared pointer, range) constructor*/
     {
-      sycl::shared_ptr_class<T> data(new T[size]);
+      std::shared_ptr<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       sycl::buffer<T, dims> buf(data, r, propList);
       sycl::buffer<T, dims> buf1(data, r);
@@ -168,7 +168,7 @@ class buffer_ctors {
 
     /* check (shared pointer, range) constructor*/
     {
-      sycl::shared_ptr_class<T> data(new T[size]);
+      std::shared_ptr<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
@@ -253,7 +253,7 @@ class buffer_ctors {
     /* check (shared pointer, range, allocator) constructor*/
     {
       sycl::buffer_allocator buf_alloc;
-      sycl::shared_ptr_class<T> data(new T[size]);
+      std::shared_ptr<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       sycl::buffer<T, dims> buf1(data, r, buf_alloc);
@@ -319,7 +319,7 @@ class buffer_ctors {
     /* check (shared pointer, range, std allocator) constructor*/
     {
       std::allocator<T> buf_alloc;
-      sycl::shared_ptr_class<T> data(new T[size]);
+      std::shared_ptr<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
       constexpr bool data_verify = true;
@@ -332,9 +332,9 @@ class buffer_ctors {
     /* check (shared pointer, range, mutex, std allocator) constructor*/
     {
       std::allocator<T> buf_alloc;
-      sycl::shared_ptr_class<T> data(new T[size]);
+      std::shared_ptr<T> data(new T[size]);
       std::fill(data.get(), (data.get() + size), 0);
-      sycl::mutex_class m;
+      std::mutex m;
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
       constexpr bool data_verify = true;
       if (!check_buffer_constructor(buf, r, data_verify)) {
@@ -475,7 +475,7 @@ class buffer_ctors {
       sycl::buffer<T, dims> bufA(r);
       sycl::buffer<T, dims> bufB(bufA);
 
-      sycl::hash_class<sycl::buffer<T, dims>> hasher;
+      std::hash<sycl::buffer<T, dims>> hasher;
 
       if (hasher(bufA) != hasher(bufB)) {
         FAIL(log, "buffer hashing of equals failed.");
@@ -512,7 +512,7 @@ template <typename T> class check_buffer_ctors_for_type {
     /* create property lists */
 
     const sycl::property_list empty_pl{};
-    sycl::mutex_class mutex;
+    std::mutex mutex;
     auto context = util::get_cts_object::context();
     const sycl::property_list pl{
         sycl::property::buffer::use_mutex(mutex),

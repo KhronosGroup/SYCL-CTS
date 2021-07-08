@@ -46,8 +46,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       bool compiler_available = is_compiler_available(deviceList);
       bool linker_available = is_linker_available(deviceList);
 
-      const sycl::string_class compileOptions = "-cl-opt-disable";
-      const sycl::string_class linkOptions = "-cl-fast-relaxed-math";
+      const std::string compileOptions = "-cl-opt-disable";
+      const std::string linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note("check program class methods");
@@ -67,21 +67,21 @@ class TEST_NAME : public sycl_cts::util::test_base {
           bool isHost = prog.is_host();
 
           // Check get_binaries()
-          sycl::vector_class<sycl::vector_class<char>> binaries =
+          std::vector<std::vector<char>> binaries =
               prog.get_binaries();
 
           // Check get_context()
           sycl::context progCtx = prog.get_context();
 
           // Check get_compile_options()
-          sycl::string_class progCompileOptions =
+          std::string progCompileOptions =
               prog.get_compile_options();
 
           // Check get_link_options()
-          sycl::string_class progLinkOptions = prog.get_link_options();
+          std::string progLinkOptions = prog.get_link_options();
 
           // Check get_build_options()
-          sycl::string_class progBuildOptions = prog.get_build_options();
+          std::string progBuildOptions = prog.get_build_options();
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           // Check get()
@@ -179,7 +179,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           }
 
           if (prog.get_build_options().find(linkOptions) ==
-              sycl::string_class::npos) {
+              std::string::npos) {
             FAIL(log, "Built program did not store the build options");
           }
 
@@ -436,8 +436,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

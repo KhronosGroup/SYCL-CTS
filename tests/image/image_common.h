@@ -406,12 +406,12 @@ inline collection get_test_set_minimum(sycl::image_channel_order order) {
 }
 
 template <int dims>
-sycl::vector_class<sycl::byte> get_image_host(
+std::vector<sycl::byte> get_image_host(
     unsigned int numElems, unsigned int channelCount,
     unsigned int channelTypeSize) {
   const auto sizePerChannelType = (dims * numElems * channelCount);
   const auto size = (sizePerChannelType * channelTypeSize);
-  sycl::vector_class<sycl::byte> imageHost(size);
+  std::vector<sycl::byte> imageHost(size);
   for (unsigned int ii = 0; ii < sizePerChannelType; ii++) {
     for (unsigned int ij = 0; ij < channelTypeSize; ij++) {
       imageHost[ii * channelTypeSize + ij] = ij + 1;
@@ -461,7 +461,7 @@ class image_api_check {
   void check_api(util::logger &log, sycl::image<dims, AllocatorT> &img,
                   sycl::range<dims> &r, sycl::range<dims - 1> *p,
                   int numElems, int elementSize,
-                  sycl::vector_class<sycl::byte> &finalData) const {
+                  std::vector<sycl::byte> &finalData) const {
 
     // Check get_range()
     if (dims == 3) {
@@ -514,11 +514,11 @@ class image_api_check {
       auto rawPtrVoid = static_cast<void *>(rawPtr);
       auto rawPtrFloat = static_cast<float *>(rawPtrVoid);
       auto sharedPtrVoid =
-          sycl::shared_ptr_class<void>(rawPtrVoid, [](void *) {});
+          std::shared_ptr<void>(rawPtrVoid, [](void *) {});
       auto sharedPtrFloat =
-          sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
-      auto weakPtrVoid = sycl::weak_ptr_class<void>(sharedPtrVoid);
-      auto weakPtrFloat = sycl::weak_ptr_class<float>(sharedPtrFloat);
+          std::shared_ptr<float>(rawPtrFloat, [](float *) {});
+      auto weakPtrVoid = std::weak_ptr<void>(sharedPtrVoid);
+      auto weakPtrFloat = std::weak_ptr<float>(sharedPtrFloat);
       auto iterator = finalData.begin();
 
       img.set_final_data();
@@ -565,7 +565,7 @@ class image_api_check {
           img.template get_property<sycl::property::image::use_mutex>();
       check_return_type<sycl::property::image::use_mutex>(
           log, useMutexProperty, "get_property<use_mutex>()");
-      check_return_type<sycl::mutex_class *>(
+      check_return_type<std::mutex *>(
           log, useMutexProperty.get_mutex_ptr(),
           "image::use_mutex::get_mutex_ptr()");
 
@@ -695,7 +695,7 @@ class image_api_check {
 
     /* Check image properties */
     {
-      sycl::mutex_class mutex;
+      std::mutex mutex;
       auto context = util::get_cts_object::context();
       const sycl::property_list propList{
           sycl::property::image::use_host_ptr(),

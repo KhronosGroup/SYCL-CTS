@@ -43,13 +43,13 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         return;
       }
 
-      sycl::string_class kernelSource = R"(
+      std::string kernelSource = R"(
             __kernel void opencl_interop_constructors_kernel(__global float *input)
             {
               input[get_global_id(0)] = get_global_id(0);
             }
             )";
-      sycl::string_class programBinaryFile =
+      std::string programBinaryFile =
           "opencl_interop_constructors.bin";
       /** check platform (cl_platform_id) constructor
        */
@@ -160,7 +160,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         } else {
           if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
                                           ctsDevice.get(), clProgram, log)) {
-            sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -192,7 +192,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         } else {
           if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
                                           ctsDevice.get(), clProgram, log)) {
-            sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -473,8 +473,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

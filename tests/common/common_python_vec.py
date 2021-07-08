@@ -164,7 +164,7 @@ kernel_template = Template("""  bool resArray[1] = {true};
     });
   }
   if (!resArray[0]) {
-    fail_test(log, sycl::string_class("The following vector test failed: ${testName}"));
+    fail_test(log, std::string("The following vector test failed: ${testName}"));
   }
 """)
 
@@ -179,8 +179,8 @@ void ${func_name}(util::logger &log) {
     }
   } catch (const sycl::exception &e) {
     log_exception(log, e);
-    sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }

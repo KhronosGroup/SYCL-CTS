@@ -74,15 +74,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
             complete.wait_and_throw();
             break;
           }
-          case 2: {  // Test sycl::event::wait(vector_class<event>)
-            sycl::vector_class<sycl::event> evt_list =
+          case 2: {  // Test sycl::event::wait(std::vector<event>)
+            std::vector<sycl::event> evt_list =
                 complete.get_wait_list();
             sycl::event::wait(evt_list);
             break;
           }
           case 3: {  // Test
-            // sycl::event::wait_and_throw(vector_class<event>)
-            sycl::vector_class<sycl::event> evt_list =
+            // sycl::event::wait_and_throw(std::vector<event>)
+            std::vector<sycl::event> evt_list =
                 complete.get_wait_list();
             sycl::event::wait_and_throw(evt_list);
             break;
@@ -113,8 +113,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       queueB.wait_and_throw();
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

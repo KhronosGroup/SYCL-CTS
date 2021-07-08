@@ -54,10 +54,10 @@ template <int dim> void check_dim(util::logger &log) {
 
     for (size_t i = 0; i < globalRangeTotal; i++) {
       if (data[i] != i) {
-        sycl::string_class errorMessage =
-            sycl::string_class("Value for global id ") + std::to_string(i) +
-            sycl::string_class(" was not correct (") +
-            std::to_string(data[i]) + sycl::string_class(" instead of ") +
+        std::string errorMessage =
+            std::string("Value for global id ") + std::to_string(i) +
+            std::string(" was not correct (") +
+            std::to_string(data[i]) + std::string(" instead of ") +
             std::to_string(i);
         FAIL(log, errorMessage);
       }
@@ -65,8 +65,8 @@ template <int dim> void check_dim(util::logger &log) {
 
   } catch (const sycl::exception &e) {
     log_exception(log, e);
-    sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }

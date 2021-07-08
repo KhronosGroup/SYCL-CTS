@@ -255,7 +255,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
           sycl::kernel kernelB = kernelA;
 
-          sycl::hash_class<sycl::kernel> hasher;
+          std::hash<sycl::kernel> hasher;
 
           if (hasher(kernelA) != hasher(kernelB)) {
             FAIL(log,
@@ -268,8 +268,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

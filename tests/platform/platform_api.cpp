@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
         auto devs = plt.get_devices();
-        check_return_type<sycl::vector_class<sycl::device>>(
+        check_return_type<std::vector<sycl::device>>(
             log, devs, "platform::get_devices()");
       }
 
@@ -44,7 +44,7 @@ class TEST_NAME : public util::test_base {
         auto plt = util::get_cts_object::platform(selector);
         auto devs = plt.get_devices(sycl::info::device_type::all);
         if (devs.size() != 0) {
-          check_return_type<sycl::vector_class<sycl::device>>(
+          check_return_type<std::vector<sycl::device>>(
               log, devs, "platform::get_devices(info::device_type::all)");
         }
       }
@@ -55,7 +55,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
         auto extensionSupported =
-            plt.has_extension(sycl::string_class("cl_khr_icd"));
+            plt.has_extension(std::string("cl_khr_icd"));
         check_return_type<bool>(log, extensionSupported,
                                 "platform::has_extension(string_class)");
       }
@@ -66,7 +66,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
         auto platformName = plt.get_info<sycl::info::platform::name>();
-        check_return_type<sycl::string_class>(log, platformName,
+        check_return_type<std::string>(log, platformName,
                                                   "platform::get_info()");
       }
 
@@ -83,13 +83,13 @@ class TEST_NAME : public util::test_base {
       */
       {
         auto plt = sycl::platform::get_platforms();
-        check_return_type<sycl::vector_class<sycl::platform>>(
+        check_return_type<std::vector<sycl::platform>>(
             log, plt, "platform::get_platform()");
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

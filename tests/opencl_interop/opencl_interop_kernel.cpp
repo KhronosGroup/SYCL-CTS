@@ -56,8 +56,8 @@ struct program_kernel_interop {
 
 /** simple OpenCL test kernel
  */
-const sycl::string_class kernelName = "sample";
-sycl::string_class kernel_source = R"(
+const std::string kernelName = "sample";
+std::string kernel_source = R"(
 __kernel void sample(__global float * input)
 {
     input[get_global_id(0)] = get_global_id(0);
@@ -99,7 +99,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         cl_program clProgram{};
         if (online_compiler_supported(device.get(), log)) {
-          sycl::string_class kernelSource = R"(
+          std::string kernelSource = R"(
             struct simple_struct {
               int a;
               float b;
@@ -117,12 +117,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             FAIL(log, "create_built_program failed");
           }
         } else {
-          sycl::string_class programBinaryFile =
+          std::string programBinaryFile =
               "opencl_interop_kernel.bin";
 
           if (!create_program_with_binary(programBinaryFile, context.get(),
                                           device.get(), clProgram, log)) {
-            sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -208,7 +208,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           cl_program clProgram{};
           if (online_compiler_supported(device.get(), log)) {
-            sycl::string_class kernelSource = R"(
+            std::string kernelSource = R"(
               struct simple_struct {
                 int a;
                 float b;
@@ -224,12 +224,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               FAIL(log, "create_built_program failed");
             }
           } else {
-            sycl::string_class programBinaryFile =
+            std::string programBinaryFile =
                 "opencl_interop_image_kernel.bin";
 
             if (!create_program_with_binary(programBinaryFile, context.get(),
                                             device.get(), clProgram, log)) {
-              sycl::string_class errorMsg =
+              std::string errorMsg =
                   "create_program_with_binary failed.";
               errorMsg +=
                   " Since online compile is not supported, expecting to find " +
@@ -303,8 +303,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       bool compiler_available = is_compiler_available(deviceList);
       bool linker_available = is_linker_available(deviceList);
 
-      const sycl::string_class compileOptions = "-cl-opt-disable";
-      const sycl::string_class linkOptions = "-cl-fast-relaxed-math";
+      const std::string compileOptions = "-cl-opt-disable";
+      const std::string linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note(
@@ -518,8 +518,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

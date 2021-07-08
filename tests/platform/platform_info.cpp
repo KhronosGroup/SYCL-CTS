@@ -40,23 +40,23 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        check_get_info_param<sycl::info::platform, sycl::string_class,
+        check_get_info_param<sycl::info::platform, std::string,
                              sycl::info::platform::profile>(log, plt);
-        check_get_info_param<sycl::info::platform, sycl::string_class,
+        check_get_info_param<sycl::info::platform, std::string,
                              sycl::info::platform::version>(log, plt);
-        check_get_info_param<sycl::info::platform, sycl::string_class,
+        check_get_info_param<sycl::info::platform, std::string,
                              sycl::info::platform::name>(log, plt);
-        check_get_info_param<sycl::info::platform, sycl::string_class,
+        check_get_info_param<sycl::info::platform, std::string,
                              sycl::info::platform::vendor>(log, plt);
         check_get_info_param<sycl::info::platform,
-                             sycl::vector_class<sycl::string_class>,
+                             std::vector<std::string>,
                              sycl::info::platform::extensions>(log, plt);
       }
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

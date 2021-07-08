@@ -64,7 +64,7 @@ struct host_task_command_group {
 };
 
 template <typename T>
-void verify_results(sycl::vector_class<T>& data, T expected,
+void verify_results(std::vector<T>& data, T expected,
                     util::logger& log) {
   for (T& d : data) {
     if (d != expected) {
@@ -89,7 +89,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_execution_kernel_host(sycl::queue& q, util::logger& log) {
     log.note("Checking device_task -> host_task execution");
     constexpr int expected{init_value * multiplier + add};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -107,7 +107,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_execution_host_kernel(sycl::queue& q, util::logger& log) {
     log.note("Checking host_task -> device_task execution");
     constexpr int expected = (init_value + add) * multiplier;
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -126,7 +126,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     log.note("Checking device_task -> host_task -> device_task execution");
 
     constexpr int expected = (init_value * multiplier + add) * multiplier;
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -153,7 +153,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_data_update(sycl::queue& q, util::logger& log) {
     constexpr int multiplier{10};
     constexpr int expected{init_value * multiplier};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
 
@@ -190,7 +190,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     constexpr int add_1{3};
     constexpr int add_2{4};
     constexpr int expected{init_value + (add_1 + add_2) * 2};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -213,7 +213,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         "Checking execution of host_task and kernel in different contexts");
     constexpr int add{3};
     constexpr int expected{(init_value * multiplier + add) * multiplier + add};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});

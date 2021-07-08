@@ -59,7 +59,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         }
       }
 
-      log.note("check (context, vector_class<device>) constructor");
+      log.note("check (context, std::vector<device>) constructor");
       {
         auto context = util::get_cts_object::context();
         auto deviceList = context.get_devices();
@@ -72,7 +72,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
 
       log.note(
-          "check (vector_class<program>, string_class = empty_string) "
+          "check (std::vector<program>, string_class = empty_string) "
           "constructor");
       {
         auto context = util::get_cts_object::context();
@@ -84,7 +84,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programB = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<1>>(context);
 
-          sycl::vector_class<sycl::program> programList;
+          std::vector<sycl::program> programList;
           programList.push_back(programA);
           programList.push_back(programB);
           try {
@@ -106,7 +106,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         }
       }
 
-      log.note("check (vector_class<program>, string_class) constructor");
+      log.note("check (std::vector<program>, string_class) constructor");
       {
         auto context = util::get_cts_object::context();
         auto deviceList = context.get_devices();
@@ -117,7 +117,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programB = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<3>>(context);
 
-          sycl::vector_class<sycl::program> programList;
+          std::vector<sycl::program> programList;
           programList.push_back(programA);
           programList.push_back(programB);
           try {
@@ -286,7 +286,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         sycl::program programA(context);
         sycl::program programB(programA);
 
-        sycl::hash_class<sycl::program> hasher;
+        std::hash<sycl::program> hasher;
 
         if (hasher(programA) != hasher(programB)) {
           FAIL(log,
@@ -296,8 +296,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

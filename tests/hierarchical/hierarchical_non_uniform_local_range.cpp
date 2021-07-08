@@ -29,12 +29,12 @@ void check_expected(const std::vector<sycl::int3> &data, unsigned local_id,
                     unsigned idx, int dim, bool set, util::logger &log) {
   int expected = set ? local_id : -1;
   if (getElement(data[idx], dim - 1) != expected) {
-    sycl::string_class errorMessage =
-        sycl::string_class("Value for global id ") + std::to_string(idx) +
-        sycl::string_class(" for dim = ") + std::to_string(dim) +
-        sycl::string_class(" was not correct (") +
+    std::string errorMessage =
+        std::string("Value for global id ") + std::to_string(idx) +
+        std::string(" for dim = ") + std::to_string(dim) +
+        std::string(" was not correct (") +
         std::to_string(getElement(data[idx], dim - 1)) +
-        sycl::string_class(" instead of ") + std::to_string(expected) + ")";
+        std::string(" instead of ") + std::to_string(expected) + ")";
     FAIL(log, errorMessage);
   }
 }
@@ -136,8 +136,8 @@ template <int dim> void check_dim(util::logger &log) {
               }
   } catch (const sycl::exception &e) {
     log_exception(log, e);
-    sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }

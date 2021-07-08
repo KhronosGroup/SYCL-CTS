@@ -29,7 +29,7 @@ class type_size_kernel {
 
 template <typename T>
 bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
-                           const sycl::string_class &name) {
+                           const std::string &name) {
   int32_t host_type_size = sizeof(T);
   int32_t kernel_type_size = 0;
   {
@@ -44,12 +44,12 @@ bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
   }
 
   if (host_type_size != kernel_type_size) {
-    sycl::string_class msg =
-        sycl::string_class("type size mismatch for: ") +
-        sycl::string_class(name);
-    msg += sycl::string_class("; device size = ") +
+    std::string msg =
+        std::string("type size mismatch for: ") +
+        std::string(name);
+    msg += std::string("; device size = ") +
            std::to_string(kernel_type_size);
-    msg += sycl::string_class(", host size = ") +
+    msg += std::string(", host size = ") +
            std::to_string(host_type_size);
     return FAIL(log, msg);
   }
@@ -192,8 +192,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       sycl_queue.wait_and_throw();
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }
