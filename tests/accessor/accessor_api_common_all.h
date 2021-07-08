@@ -23,7 +23,7 @@ namespace {
 /** tests accessor member values
 */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
 void check_accessor_members(sycl_cts::util::logger &log,

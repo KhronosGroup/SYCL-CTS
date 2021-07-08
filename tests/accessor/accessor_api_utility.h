@@ -136,28 +136,28 @@ using tag_atomic_support_t =
                               tag_atomic64_support_t<T, baseT>,
                               baseT>::type;
 
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 struct get_helper {
   using type = tag_atomic_support_t<T, generic>;
 };
 template <typename T>
-struct get_helper<T, sycl::access::target::host_buffer> {
+struct get_helper<T, sycl::target::host_buffer> {
   using type = host;
 };
 template <typename T>
-struct get_helper<T, sycl::access::target::host_image> {
+struct get_helper<T, sycl::target::host_image> {
   using type = host;
 };
 template <typename T>
-struct get_helper<T, sycl::access::target::local> {
+struct get_helper<T, sycl::target::local> {
   using type = tag_atomic_support_t<T, local>;
 };
 template <typename T>
-struct get_helper<T, sycl::access::target::constant_buffer> {
+struct get_helper<T, sycl::target::constant_buffer> {
   using type = constant;
 };
 
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 using get_helper_t = typename get_helper<T, target>::type;
 
 /**
@@ -165,7 +165,7 @@ using get_helper_t = typename get_helper<T, target>::type;
  * @tparam target The SYCL access target to get the tag for
  * @return Instance of the tag
  */
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 auto get() -> decltype(get_helper_t<T, target>{}) {
   return get_helper_t<T, target>{};
 }
@@ -234,60 +234,60 @@ struct constant_placeholder : placeholder {};
 struct global_placeholder : placeholder {};
 struct invalid {};
 
-template <sycl::access::target target,
+template <sycl::target target,
           sycl::access::placeholder placeholder>
 struct get_helper {
   using type = generic;
 };
 template <sycl::access::placeholder placeholder>
-struct get_helper<sycl::access::target::global_buffer, placeholder> {
+struct get_helper<sycl::target::global_buffer, placeholder> {
   using type = buffer;
 };
 template <sycl::access::placeholder placeholder>
-struct get_helper<sycl::access::target::constant_buffer, placeholder> {
+struct get_helper<sycl::target::constant_buffer, placeholder> {
   using type = constant_buffer;
 };
 template <>
-struct get_helper<sycl::access::target::host_buffer,
+struct get_helper<sycl::target::host_buffer,
                   sycl::access::placeholder::false_t> {
   using type = host;
 };
 template <>
-struct get_helper<sycl::access::target::host_image,
+struct get_helper<sycl::target::host_image,
                   sycl::access::placeholder::false_t> {
   using type = host;
 };
 template <>
-struct get_helper<sycl::access::target::image,
+struct get_helper<sycl::target::image,
                   sycl::access::placeholder::false_t> {
   using type = image;
 };
 template <>
-struct get_helper<sycl::access::target::image_array,
+struct get_helper<sycl::target::image_array,
                   sycl::access::placeholder::false_t> {
   using type = image_array;
 };
 template <>
-struct get_helper<sycl::access::target::local,
+struct get_helper<sycl::target::local,
                   sycl::access::placeholder::false_t> {
   using type = local;
 };
-template <sycl::access::target target>
+template <sycl::target target>
 struct get_helper<target, sycl::access::placeholder::true_t> {
   using type = invalid;
 };
 template <>
-struct get_helper<sycl::access::target::global_buffer,
+struct get_helper<sycl::target::global_buffer,
                   sycl::access::placeholder::true_t> {
   using type = global_placeholder;
 };
 template <>
-struct get_helper<sycl::access::target::constant_buffer,
+struct get_helper<sycl::target::constant_buffer,
                   sycl::access::placeholder::true_t> {
   using type = constant_placeholder;
 };
 
-template <sycl::access::target target,
+template <sycl::target target,
           sycl::access::placeholder placeholder>
 using get_helper_t = typename get_helper<target, placeholder>::type;
 
@@ -298,7 +298,7 @@ using get_helper_t = typename get_helper<target, placeholder>::type;
  * @tparam placeholder Whether the accessor is a placeholder or not
  * @return Instance of the tag
  */
-template <sycl::access::target target,
+template <sycl::target target,
           sycl::access::placeholder placeholder>
 auto get() -> decltype(get_helper_t<target, placeholder>{}) {
   return get_helper_t<target, placeholder>{};
@@ -354,11 +354,11 @@ namespace detail {
  * @brief Constant type indicating whether the access target defines host access
  * @tparam target Accessor target to inspect
  */
-template <sycl::access::target target>
+template <sycl::target target>
 using is_host_target =
     std::integral_constant<bool,
-                           ((target == sycl::access::target::host_buffer) ||
-                            (target == sycl::access::target::host_image))>;
+                           ((target == sycl::target::host_buffer) ||
+                            (target == sycl::target::host_image))>;
 
 /**
  * @brief Helper struct for constructing an accessor
@@ -369,7 +369,7 @@ using is_host_target =
  * @tparam placeholder Whether the accessor is a placeholder
  */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder>
 struct accessor_factory {
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
@@ -477,7 +477,7 @@ struct accessor_factory {
  * @return Fully constructed accessor
  */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder,
           typename... Args>
 sycl::accessor<T, dims, mode, target, placeholder> make_accessor(
@@ -496,11 +496,11 @@ sycl::accessor<T, dims, mode, target, placeholder> make_accessor(
  * @return Fully constructed local accessor
  */
 template <typename T, int dims, sycl::access::mode mode>
-sycl::accessor<T, dims, mode, sycl::access::target::local>
+sycl::accessor<T, dims, mode, sycl::target::local>
 make_local_accessor_generic(const sycl_range_t<dims>& rng,
                             sycl::handler& cgh) {
   return detail::accessor_factory<T, dims, mode,
-                                  sycl::access::target::local,
+                                  sycl::target::local,
                                   sycl::access::placeholder::false_t>::
       make_local_generic(rng, cgh, is_zero_dim<dims>{});
 }
@@ -521,7 +521,7 @@ make_local_accessor_generic(const sycl_range_t<dims>& rng,
  * @return Fully constructed buffer accessor
  */
 template <int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder,
           typename T>
 sycl::accessor<T, dims, mode, target, placeholder> make_accessor_generic(
@@ -547,7 +547,7 @@ sycl::accessor<T, dims, mode, target, placeholder> make_accessor_generic(
  * @param log The logger object
  */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
 void log_accessor(const sycl::string_class& functionName,
@@ -573,7 +573,7 @@ void log_accessor(const sycl::string_class& functionName,
  * @brief Helper function to check the return type of an accessor method
  */
 template <typename expectedT, typename dataT, int dims,
-          sycl::access::mode mode, sycl::access::target target,
+          sycl::access::mode mode, sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t,
           typename returnT>

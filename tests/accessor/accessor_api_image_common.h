@@ -30,10 +30,10 @@ using namespace accessor_utility;
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, sycl::access::target target>
+template <int dims, sycl::target target>
 using image_dims = std::integral_constant<
     int,
-    ((target == sycl::access::target::image_array) ? (dims + 1) : dims)>;
+    ((target == sycl::target::image_array) ? (dims + 1) : dims)>;
 
 /**
  * @brief Alias to sycl::id using the proper number of dimensions.
@@ -41,7 +41,7 @@ using image_dims = std::integral_constant<
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, sycl::access::target target>
+template <int dims, sycl::target target>
 using image_id_t = sycl::id<image_dims<dims, target>::value>;
 
 /**
@@ -51,7 +51,7 @@ using image_id_t = sycl::id<image_dims<dims, target>::value>;
  */
 template <int dims>
 using image_array_id_t =
-    image_id_t<dims, sycl::access::target::image_array>;
+    image_id_t<dims, sycl::target::image_array>;
 
 /**
  * @brief Alias to sycl::range using the proper number of dimensions.
@@ -59,7 +59,7 @@ using image_array_id_t =
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, sycl::access::target target>
+template <int dims, sycl::target target>
 using image_range_t = sycl::range<image_dims<dims, target>::value>;
 
 /**
@@ -69,7 +69,7 @@ using image_range_t = sycl::range<image_dims<dims, target>::value>;
  */
 template <int dims>
 using image_array_range_t =
-    image_range_t<dims, sycl::access::target::image_array>;
+    image_range_t<dims, sycl::target::image_array>;
 
 /**
  * @brief Namespace that defines CoordT tags
@@ -389,7 +389,7 @@ sycl::vector_class<sycl::byte> get_image_input_data(
   return convert_image_data_to_bytes<T>(data, byteSize);
 }
 
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           sycl::access::mode mode>
 T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
                  sycl::id<dims> idx) {
@@ -398,7 +398,7 @@ T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
 
 template <typename T, int dims, sycl::access::mode mode>
 T read_image_acc(const sycl::accessor<T, dims, mode,
-                                    sycl::access::target::image_array> &acc,
+                                    sycl::target::image_array> &acc,
                  image_array_id_t<dims> idx) {
   // Verify __image_array_slice__ read
   using coordT = acc_coord_tag::use_int;
@@ -406,7 +406,7 @@ T read_image_acc(const sycl::accessor<T, dims, mode,
   return acc[idx[dims]].read(coords);
 }
 
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           sycl::access::mode mode, typename coordT = acc_coord_tag::use_int>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
@@ -415,7 +415,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          acc_coord_tag::use_int) {
   return acc.read(image_access<dims>::get_int(idx), smpl);
 }
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
@@ -424,7 +424,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          acc_coord_tag::use_float) {
   return acc.read(image_access<dims>::get_float(idx), smpl);
 }
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
@@ -438,7 +438,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
 
 template <typename T, int dims, sycl::access::mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
-                                    sycl::access::target::image_array> &acc,
+                                    sycl::target::image_array> &acc,
                          sycl::sampler smpl,
                          image_array_id_t<dims> idx,
                          image_array_range_t<dims> range,
@@ -448,7 +448,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
   return acc[idx[dims]].read(coords, smpl);
 }
 
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           sycl::access::mode mode>
 void write_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
                      sycl::id<dims> idx, T value) {
@@ -458,7 +458,7 @@ void write_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
 
 template <typename T, int dims, sycl::access::mode mode>
 void write_image_acc(
-    const sycl::accessor<T, dims, mode, sycl::access::target::image_array>
+    const sycl::accessor<T, dims, mode, sycl::target::image_array>
         &acc,
     image_array_id_t<dims> idx, T value) {
   // Verify __image_array_slice__ write
@@ -781,7 +781,7 @@ class image_accessor_failure_storage {
 /** tests image accessors reads
 */
 template <typename T, int dim, sycl::access::mode mode,
-          sycl::access::target target, sycl::access::target errorTarget>
+          sycl::target target, sycl::target errorTarget>
 class image_accessor_api_r {
   using acc_t = sycl::accessor<T, dim, mode, target>;
   using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
@@ -825,7 +825,7 @@ class image_accessor_api_r {
 /** tests image accessors sampled reads
 */
 template <typename T, int dim, sycl::access::mode mode,
-          sycl::access::target target, sycl::access::target errorTarget>
+          sycl::target target, sycl::target errorTarget>
 class image_accessor_api_sampled_r {
   using acc_t = sycl::accessor<T, dim, mode, target>;
   using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
@@ -1089,7 +1089,7 @@ class image_accessor_api_sampled_r {
 /** tests image accessors writes
 */
 template <typename T, int dim, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 class image_accessor_api_w {
   using acc_t = sycl::accessor<T, dim, mode, target>;
 
@@ -1114,11 +1114,11 @@ class image_accessor_api_w {
 /** tests image accessors methods
 */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 class check_image_accessor_api_methods {
  public:
   static constexpr auto isImageArray =
-      (target == sycl::access::target::image_array);
+      (target == sycl::target::image_array);
   using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
@@ -1215,14 +1215,14 @@ class check_image_accessor_api_methods {
 /** tests image accessors reads
 */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 class check_image_accessor_api_reads {
 
-  template <sycl::access::target errorTarget>
+  template <sycl::target errorTarget>
   using read_verifier_t =
       image_accessor_api_r<T, dims, mode, target, errorTarget>;
 
-  template <sycl::access::target errorTarget>
+  template <sycl::target errorTarget>
   using sampled_read_verifier_t =
       image_accessor_api_sampled_r<T, dims, mode, target, errorTarget>;
 
@@ -1235,7 +1235,7 @@ class check_image_accessor_api_reads {
 
  public:
   static constexpr auto isImageArray =
-      (target == sycl::access::target::image_array);
+      (target == sycl::target::image_array);
   using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
@@ -1342,7 +1342,7 @@ class check_image_accessor_api_reads {
    * @param errorBuffer Buffer where error will be stored
    * @param sampler Optional parameter, used for sampled reads only
    */
-  template <template <sycl::access::target> class verifierT,
+  template <template <sycl::target> class verifierT,
             typename ... samplerT>
   void check_command_group_reads(acc_type_tag::host,
                                  sycl::queue & /*queue*/,
@@ -1351,7 +1351,7 @@ class check_image_accessor_api_reads {
                                  error_buffer_t &errorBuffer,
                                  failure_buffer_t &failureBuffer,
                                  samplerT ... sampler) {
-    static constexpr auto errorTarget = sycl::access::target::host_buffer;
+    static constexpr auto errorTarget = sycl::target::host_buffer;
     auto accessor =
         make_accessor<T, dims, mode, target, acc_placeholder::image>(image);
     auto errorAccessor =
@@ -1387,7 +1387,7 @@ class check_image_accessor_api_reads {
    * @param errorBuffer Buffer where error will be stored
    * @param sampler Optional parameter, used for sampled reads only
    */
-  template <template <sycl::access::target> class verifierT,
+  template <template <sycl::target> class verifierT,
             typename ... samplerT>
   void check_command_group_reads(acc_type_tag::generic,
                                  sycl::queue &queue,
@@ -1398,7 +1398,7 @@ class check_image_accessor_api_reads {
                                  samplerT ... sampler) {
     queue.submit([&](sycl::handler &handler) {
       static constexpr auto errorTarget =
-          sycl::access::target::global_buffer;
+          sycl::target::global_buffer;
       auto accessor =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               image, handler);
@@ -1426,11 +1426,11 @@ class check_image_accessor_api_reads {
 /** tests image accessors writes
 */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 class check_image_accessor_api_writes {
  public:
   static constexpr auto isImageArray =
-      (target == sycl::access::target::image_array);
+      (target == sycl::target::image_array);
   using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
@@ -1534,7 +1534,7 @@ class check_image_accessor_api_writes {
 */
 
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
@@ -1548,7 +1548,7 @@ void check_image_accessor_api_mode(util::logger &log,
 }
 
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
@@ -1560,7 +1560,7 @@ void check_image_accessor_api_mode(util::logger &log,
 }
 
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
@@ -1572,7 +1572,7 @@ void check_image_accessor_api_mode(util::logger &log,
 }
 
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target>
+          sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
@@ -1598,7 +1598,7 @@ void check_image_accessor_api_mode(util::logger &log,
 /**
  *  @brief Test image and image array accessors for all modes
  */
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           typename ... argsT>
 void check_image_accessor_api_target(acc_target_tag::generic,
                                      argsT&& ... args) {
@@ -1622,7 +1622,7 @@ void check_image_accessor_api_target(acc_target_tag::generic,
 /**
  *  @brief Test host image accessors for all modes
  */
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           typename ... argsT>
 void check_image_accessor_api_target(acc_target_tag::host,
                                      argsT&& ... args) {
@@ -1651,7 +1651,7 @@ void check_image_accessor_api_target(acc_target_tag::host,
 /**
  *  @brief Tests image accessors with different targets for all modes
  */
-template <typename T, int dims, sycl::access::target target,
+template <typename T, int dims, sycl::target target,
           typename ... argsT>
 void check_image_accessor_api_target_wrapper(argsT&& ... args) {
 
@@ -1674,20 +1674,20 @@ void check_image_accessor_api_dim(acc_dims_tag::generic, util::logger &log,
   /** check image accessor api for image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::access::target::image>(
+                                          sycl::target::image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::access::target::host_image>(
+                                          sycl::target::host_image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for image_array
    */
   {
     static constexpr auto imageArrayTarget =
-        sycl::access::target::image_array;
+        sycl::target::image_array;
     static constexpr bool isImageArray = true;
     const auto imageArrayRange =
         make_test_range<image_dims<dims, imageArrayTarget>::value>(
@@ -1711,13 +1711,13 @@ void check_image_accessor_api_dim(acc_dims_tag::num_dims<3>, util::logger &log,
   /** check image accessor api for image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::access::target::image>(
+                                          sycl::target::image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::access::target::host_image>(
+                                          sycl::target::host_image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** image_array accessors only exist for 1D and 2D

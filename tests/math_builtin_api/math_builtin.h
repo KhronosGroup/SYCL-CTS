@@ -202,7 +202,7 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
       auto resultPtr =
           buffer.template get_access<sycl::access::mode::write>(h);
       sycl::accessor<argT, 1, sycl::access::mode::read_write,
-                         sycl::access::target::global_buffer>
+                         sycl::target::global_buffer>
           globalAccessor(ptrBuffer, h);
       h.single_task<kernel<N>>([=]() { resultPtr[0] = fun(globalAccessor); });
     });
@@ -238,7 +238,7 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
       auto resultPtrArg =
           bufferArg.template get_access<sycl::access::mode::write>(h);
       sycl::accessor<argT, 1, sycl::access::mode::read_write,
-                         sycl::access::target::local> localAccessor(1, h);
+                         sycl::target::local> localAccessor(1, h);
       h.single_task<kernel<N>>(
           [arg, localAccessor, resultPtr, resultPtrArg, fun]() {
             localAccessor[0] = arg;
@@ -289,7 +289,7 @@ void test_function_multi_ptr_global(funT fun, argT arg) {
     sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access::mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::access::target::global_buffer> globalAccessor(ptrBuffer, h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::target::global_buffer> globalAccessor(ptrBuffer, h);
         h.single_task<kernel<T>>([=](){
           resultPtr[0] = fun(globalAccessor);
         });
@@ -308,7 +308,7 @@ void test_function_multi_ptr_local(funT fun, argT arg) {
     sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access::mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::access::target::local> localAccessor(1, h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::target::local> localAccessor(1, h);
         h.single_task<kernel<T>>([arg, localAccessor, resultPtr, fun](){
           localAccessor[0] = arg;
           resultPtr[0] = fun(localAccessor);

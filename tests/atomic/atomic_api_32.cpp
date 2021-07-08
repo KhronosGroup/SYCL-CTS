@@ -21,7 +21,7 @@ using namespace sycl_cts;
 
 /** Check base atomic operations
  */
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 class check_atomics_32 {
   sycl::accessor<T, 1, sycl::access::mode::atomic, target> m_acc;
 
@@ -99,7 +99,7 @@ class check_atomics_32 {
 
 /** Specialization for float because most operations don't permit float type
  */
-template <sycl::access::target target>
+template <sycl::target target>
 class check_atomics_32<float, target> {
   sycl::accessor<float, 1, sycl::access::mode::atomic, target> m_acc;
 

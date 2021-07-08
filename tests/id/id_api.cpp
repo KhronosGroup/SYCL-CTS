@@ -20,7 +20,7 @@ template <int dims>
 void test_id_kernels(
     sycl::id<dims> id,
     sycl::accessor<int, 1, sycl::access::mode::read_write,
-                       sycl::access::target::global_buffer>
+                       sycl::target::global_buffer>
         error_ptr,
     int m_iteration) {
   sycl::id<dims> id_two(id * 2);

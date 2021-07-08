@@ -15,7 +15,7 @@ namespace atomic_constructors_common {
 
 /** Check atomic constructors
  */
-template <typename T, sycl::access::target target,
+template <typename T, sycl::target target,
           sycl::access::address_space addressSpace>
 class check_atomic_constructors {
   sycl::accessor<T, 1, sycl::access::mode::read_write, target> m_acc;
@@ -34,7 +34,7 @@ class check_atomic_constructors {
 
 /** Check atomic constructors
  */
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 class check_atomics {
  public:
   void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
@@ -47,10 +47,10 @@ class check_atomics {
      */
     testQueue.submit([&](sycl::handler &cgh) {
       sycl::accessor<T, 1, sycl::access::mode::read_write,
-                         sycl::access::target::global_buffer>
+                         sycl::target::global_buffer>
           acc(buf, cgh);
 
-      check_atomic_constructors<T, sycl::access::target::global_buffer,
+      check_atomic_constructors<T, sycl::target::global_buffer,
                                 sycl::access::address_space::global_space>
           f(acc);
 
@@ -59,10 +59,10 @@ class check_atomics {
   }
 };
 
-/** Specialization for sycl::access::target::local
+/** Specialization for sycl::target::local
  */
 template <typename T>
-class check_atomics<T, sycl::access::target::local> {
+class check_atomics<T, sycl::target::local> {
  public:
   void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
@@ -71,10 +71,10 @@ class check_atomics<T, sycl::access::target::local> {
      */
     testQueue.submit([&](sycl::handler &cgh) {
       sycl::accessor<T, 1, sycl::access::mode::read_write,
-                         sycl::access::target::local>
+                         sycl::target::local>
           acc(sycl::range<1>(1), cgh);
 
-      check_atomic_constructors<T, sycl::access::target::local,
+      check_atomic_constructors<T, sycl::target::local,
                                 sycl::access::address_space::local_space>
           f(acc);
 

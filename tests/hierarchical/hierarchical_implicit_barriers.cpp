@@ -56,7 +56,7 @@ template <int dim> void check_dim(util::logger &log) {
             input_buffer.get_access<sycl::access::mode::read_write>(cgh);
 
         sycl::accessor<size_t, 1, sycl::access::mode::read_write,
-                           sycl::access::target::local>
+                           sycl::target::local>
             localPtr(sycl::range<1>(localItemsTotal), cgh);
 
         cgh.parallel_for_work_group<kernel<dim>>(

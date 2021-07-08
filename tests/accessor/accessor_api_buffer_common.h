@@ -30,7 +30,7 @@ using namespace accessor_utility;
 */
 template <typename T, typename kernelName, int dims,
           sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder>
 class check_buffer_accessor_api_methods {
  public:
@@ -127,7 +127,7 @@ class check_buffer_accessor_api_methods {
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::host", typeName, log);
 #endif  // VERBOSE_LOG
-    static constexpr auto errorTarget = sycl::access::target::host_buffer;
+    static constexpr auto errorTarget = sycl::target::host_buffer;
 
     auto errors = get_error_data(2);
     {
@@ -171,7 +171,7 @@ class check_buffer_accessor_api_methods {
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::device", typeName, log);
 #endif  // VERBOSE_LOG
-    static constexpr auto errorTarget = sycl::access::target::global_buffer;
+    static constexpr auto errorTarget = sycl::target::global_buffer;
 
     auto errors = get_error_data(2);
     {
@@ -365,7 +365,7 @@ class check_buffer_accessor_api_methods {
 
 template <typename T, typename kernelName, int dims,
           sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder>
 class check_buffer_accessor_api {
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
@@ -446,7 +446,7 @@ class check_buffer_accessor_api {
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
       static constexpr auto errorTarget =
-          sycl::access::target::global_buffer;
+          sycl::target::global_buffer;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
@@ -484,7 +484,7 @@ class check_buffer_accessor_api {
     auto accMultiDimSyntax =
         make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax);
 
-    static constexpr auto errorTarget = sycl::access::target::host_buffer;
+    static constexpr auto errorTarget = sycl::target::host_buffer;
     auto errorAccessor =
         make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
             errorBuffer);
@@ -529,7 +529,7 @@ class check_buffer_accessor_api {
       h.require(a2);
 
       static constexpr auto errorTarget =
-          sycl::access::target::global_buffer;
+          sycl::target::global_buffer;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -711,7 +711,7 @@ class check_buffer_accessor_api {
         get_buffer_input_data<T>(count, dims, useIndexesWrite);
 
     static constexpr bool isHostBuffer =
-        (target == sycl::access::target::host_buffer);
+        (target == sycl::target::host_buffer);
     auto errors = get_error_data(isHostBuffer ? 2 : 4);
 
     {
@@ -807,7 +807,7 @@ class check_buffer_accessor_api {
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
       static constexpr auto errorTarget =
-          sycl::access::target::global_buffer;
+          sycl::target::global_buffer;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
@@ -848,7 +848,7 @@ class check_buffer_accessor_api {
     auto accMultiDimSyntax =
         make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax);
     static constexpr auto errorTarget =
-          sycl::access::target::host_buffer;
+          sycl::target::host_buffer;
     auto errorAccessor =
         make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
             errorBuffer);
@@ -892,7 +892,7 @@ class check_buffer_accessor_api {
       h.require(a1);
       h.require(a2);
       static constexpr auto errorTarget =
-          sycl::access::target::global_buffer;
+          sycl::target::global_buffer;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -921,7 +921,7 @@ class check_buffer_accessor_api {
 */
 template <typename T, typename kernelName, int dims,
           sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder>
 void check_buffer_accessor_api_mode(util::logger &log,
                                     const std::string& typeName,
@@ -974,7 +974,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *  @brief Check global buffer accessor api for different modes except atomic
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename ... argsT>
   static void run(acc_target_tag::generic, argsT&& ... args) {
 
@@ -1016,7 +1016,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *  @brief Check global buffer accessor api for all modes except atomic64 ones
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
             typename ... argsT>
   static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
@@ -1039,7 +1039,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *         generic code path
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
             typename ... argsT>
   static void run(acc_target_tag::atomic64<accTagT>,
@@ -1059,7 +1059,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *  @brief Check constant buffer accessor api for read
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename ... argsT>
   static void run(acc_target_tag::constant, argsT&& ... args) {
 
@@ -1074,7 +1074,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *  @brief Check host buffer accessor api for different modes
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename ... argsT>
   static void run(acc_target_tag::host, argsT&& ... args) {
 
@@ -1121,7 +1121,7 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
    *  @brief Switch off accessor api check of any modes except the atomic64 ones
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder,
             typename ... argsT>
   static void run(acc_target_tag::generic, argsT&& ...) {
@@ -1132,7 +1132,7 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
    *  @brief Run accessor verification for atomic64 modes only
    */
   template <typename T, typename kernelName, int dims,
-            sycl::access::target target,
+            sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
             typename ... argsT>
   static void run(acc_target_tag::atomic64<accTagT>, argsT&& ... args) {
@@ -1150,7 +1150,7 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
  *         which do not require atomic64 extension
  */
 template <typename T, typename kernelName, int dims,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder,
           typename ... argsT>
 void check_buffer_accessor_api_target_wrapper(generic_path_t,
@@ -1165,7 +1165,7 @@ void check_buffer_accessor_api_target_wrapper(generic_path_t,
  *         which do require atomic64 extension
  */
 template <typename T, typename kernelName, int dims,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder,
           typename ... argsT>
 void check_buffer_accessor_api_target_wrapper(atomic64_path_t,
@@ -1180,7 +1180,7 @@ void check_buffer_accessor_api_target_wrapper(atomic64_path_t,
 /** tests buffer accessors with different placeholder values
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::target target,
+          sycl::target target,
           typename ... argsT>
 void check_buffer_accessor_api_placeholder(argsT&& ... args) {
   check_buffer_accessor_api_target_wrapper<T, kernelName, dims, target,
@@ -1199,19 +1199,19 @@ void check_buffer_accessor_api_dim(argsT&& ... args) {
   /** check buffer accessor api for global_buffer
   */
   check_buffer_accessor_api_placeholder<
-      T, kernelName, dims, sycl::access::target::global_buffer>(
+      T, kernelName, dims, sycl::target::global_buffer>(
           std::forward<argsT>(args)...);
 
   /** check buffer accessor api for constant_buffer
   */
   check_buffer_accessor_api_placeholder<
-      T, kernelName, dims, sycl::access::target::constant_buffer>(
+      T, kernelName, dims, sycl::target::constant_buffer>(
           std::forward<argsT>(args)...);
 
   /** check buffer accessor api for host_buffer
   */
   check_buffer_accessor_api_target_wrapper<T, kernelName, dims,
-                                   sycl::access::target::host_buffer,
+                                   sycl::target::host_buffer,
                                    sycl::access::placeholder::false_t>(
       std::forward<argsT>(args)...);
 }

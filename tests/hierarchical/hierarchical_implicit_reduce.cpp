@@ -45,10 +45,10 @@ T reduce(T input[inputSize], sycl::device_selector *selector) {
 
   myQueue.submit([&](sycl::handler& cgh) {
     sycl::accessor<T, 1, sycl::access::mode::read,
-                       sycl::access::target::global_buffer>
+                       sycl::target::global_buffer>
         input_ptr(input_buf, cgh);
     sycl::accessor<T, 1, sycl::access::mode::write,
-                       sycl::access::target::global_buffer>
+                       sycl::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
     auto groupRange = sycl_cts::util::get_cts_object::range<
         dim>::template get_fixed_size<numGroups>(groupItems1d, groupItems2d);
@@ -99,10 +99,10 @@ T reduce(T input[inputSize], sycl::device_selector *selector) {
     sycl::buffer<T, 1> total_buf(&mTotal, sycl::range<1>(1));
     myQueue.submit([&](sycl::handler& cgh) {
       sycl::accessor<T, 1, sycl::access::mode::read,
-                         sycl::access::target::global_buffer>
+                         sycl::target::global_buffer>
           groupSumsPtr(group_sums_buf, cgh);
       sycl::accessor<T, 1, sycl::access::mode::write,
-                         sycl::access::target::global_buffer>
+                         sycl::target::global_buffer>
           totalPtr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T, dim> >([=]() {

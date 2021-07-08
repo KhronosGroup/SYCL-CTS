@@ -24,7 +24,7 @@ class buffer_dtors {
     {
       sycl::buffer<T, dims> buf(data.get(), r);
       sycl::accessor<T, dims, sycl::access::mode::read_write,
-                         sycl::access::target::host_buffer>
+                         sycl::target::host_buffer>
           acc(buf);
       for (int i = 0; i < size; ++i) acc[i] = static_cast<T>(i);
     }

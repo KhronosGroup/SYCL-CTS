@@ -50,7 +50,7 @@ public:
 
 /** @brief Checks all image accessor constructors available
  */
-template <typename T, size_t dims, sycl::access::target target>
+template <typename T, size_t dims, sycl::target target>
 class check_all_accessor_constructors_image {
 public:
   template <sycl::access::mode mode,
@@ -91,7 +91,7 @@ public:
 
 /** @brief Check common-by-reference semantics
  */
-template <typename T, size_t dims, sycl::access::target target>
+template <typename T, size_t dims, sycl::target target>
 class check_accessor_common_by_reference_image {
 public:
   template <sycl::access::mode mode,
@@ -158,7 +158,7 @@ class image_accessor_dims {
     /** check image accessor constructors for image
      */
     {
-      constexpr auto target = sycl::access::target::image;
+      constexpr auto target = sycl::target::image;
       using verifier =
           check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
@@ -189,7 +189,7 @@ class image_accessor_dims {
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(dummy_functor<T, sycl::access::target::image>{});
+        h.single_task(dummy_functor<T, sycl::target::image>{});
       });
       queue.wait_and_throw();
     }
@@ -197,7 +197,7 @@ class image_accessor_dims {
     /** check host_image accessor constructors for host_image
      */
     {
-      constexpr auto target = sycl::access::target::host_image;
+      constexpr auto target = sycl::target::host_image;
       using verifier =
           check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
@@ -232,7 +232,7 @@ class image_accessor_dims {
  */
 template <typename T, size_t dims, typename ... allocatorT>
 class image_array_accessor_dims {
-  static constexpr auto target = sycl::access::target::image_array;
+  static constexpr auto target = sycl::target::image_array;
   static constexpr size_t dataDims = acc_data_dims<target, dims>::get();
   using image_t = sycl::image<dataDims, allocatorT...>;
 public:
@@ -284,7 +284,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         h.single_task(
-            dummy_functor<T, sycl::access::target::image_array>{});
+            dummy_functor<T, sycl::target::image_array>{});
       });
       queue.wait_and_throw();
     }

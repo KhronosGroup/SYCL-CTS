@@ -145,10 +145,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
         auto globalAcc =
             globalBuff.get_access<sycl::access::mode::read>(cgh);
         sycl::accessor<int, 1, sycl::access::mode::read,
-                           sycl::access::target::constant_buffer>
+                           sycl::target::constant_buffer>
             constAcc(constantBuff, cgh);
         sycl::accessor<int, 1, sycl::access::mode::read_write,
-                           sycl::access::target::local>
+                           sycl::target::local>
             localAcc(r, cgh);
 
         cgh.single_task<TEST_NAME>([=]() {

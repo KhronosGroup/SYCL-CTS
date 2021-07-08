@@ -244,9 +244,9 @@ def generate_test_case(test_id, types, sig, memory, check):
         testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
         accessorType = ""
         if memory == "local":
-            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access::mode::read_write, sycl::access::target::local>"
+            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access::mode::read_write, sycl::target::local>"
         if memory == "global":
-            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access::mode::read_write, sycl::access::target::global_buffer>"
+            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access::mode::read_write, sycl::target::global_buffer>"
         testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)
     testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(sig, arg_names, arg_src))
     return testCaseSource

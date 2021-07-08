@@ -51,7 +51,7 @@ struct host_task_command_group {
     auto acc_host =
         m_bufRef.get()
             .template get_access<sycl::access::mode::read_write,
-                                 sycl::access::target::host_buffer>(cgh);
+                                 sycl::target::host_buffer>(cgh);
     cgh.host_task([=]() {
       for (int i = 0; i < container_size; ++i) {
         acc_host[i] += a;
@@ -160,7 +160,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       q.submit([&](sycl::handler& cgh) {
         auto acc_host{
             buffer.get_access<sycl::access::mode::read,
-                              sycl::access::target::host_buffer>(cgh)};
+                              sycl::target::host_buffer>(cgh)};
         auto acc_dev = buffer.get_access<sycl::access::mode::write>(cgh);
         cgh.host_task([=]() {
           for (int i = 0; i < container_size; ++i) {

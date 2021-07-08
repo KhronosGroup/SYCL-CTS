@@ -29,10 +29,10 @@ template <int dimensions>
 class kernel_nd_item {
  protected:
   typedef sycl::accessor<int, dimensions, sycl::access::mode::read,
-                             sycl::access::target::global_buffer>
+                             sycl::target::global_buffer>
       t_readAccess;
   typedef sycl::accessor<int, dimensions, sycl::access::mode::write,
-                             sycl::access::target::global_buffer>
+                             sycl::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_globalID;

@@ -67,7 +67,7 @@ public:
 
 /** @brief Checks all constructors available
  */
-template <typename T, size_t dims, sycl::access::target target>
+template <typename T, size_t dims, sycl::target target>
 class check_all_accessor_constructors_local {
 public:
   template <sycl::access::mode mode, typename ... rangeArgsT>
@@ -105,7 +105,7 @@ public:
 
 /** @brief Check common-by-reference semantics
  */
-template <typename T, size_t dims, sycl::access::target target>
+template <typename T, size_t dims, sycl::target target>
 class check_accessor_common_by_reference_local {
 public:
   template <sycl::access::mode mode, typename ... rangeArgsT>
@@ -161,7 +161,7 @@ public:
     /** check buffer accessor constructors for local
      */
     {
-      constexpr auto target = sycl::access::target::local;
+      constexpr auto target = sycl::target::local;
       using verifier =
           check_all_accessor_constructors_local<T, dims, target>;
       using semantics_verifier =
@@ -188,7 +188,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::local>;
+            dummy_functor<kernelName, sycl::target::local>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
@@ -206,7 +206,7 @@ class local_accessor_dims<T, kernelName, 0> {
     /** check buffer accessor constructors for local
      */
     {
-      constexpr auto target = sycl::access::target::local;
+      constexpr auto target = sycl::target::local;
       constexpr size_t dims = 0;
       using verifier =
           check_all_accessor_constructors_local<T, dims, target>;
@@ -234,7 +234,7 @@ class local_accessor_dims<T, kernelName, 0> {
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::local>;
+            dummy_functor<kernelName, sycl::target::local>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();

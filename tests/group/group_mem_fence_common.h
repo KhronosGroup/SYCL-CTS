@@ -154,7 +154,7 @@ bool test_rw_mem_fence_local_space(sycl_cts::util::logger& log,
     queue.submit([&](sycl::handler &cgh) {
       auto pass = passedBuf.get_access<sycl::access::mode::write>(cgh);
       sycl::accessor<int, 1, sycl::access::mode::atomic,
-                         sycl::access::target::local>
+                         sycl::target::local>
           ptr(globalRange, cgh);
 
       cgh.parallel_for_work_group<kernelT>(

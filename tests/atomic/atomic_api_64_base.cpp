@@ -21,7 +21,7 @@ using namespace sycl_cts;
 
 /** Check base atomic operations
  */
-template <typename T, sycl::access::target target>
+template <typename T, sycl::target target>
 class check_base_atomics {
   sycl::accessor<T, 1, sycl::access::mode::atomic, target> m_acc;
 

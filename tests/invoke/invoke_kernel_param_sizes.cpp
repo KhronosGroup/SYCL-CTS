@@ -16,7 +16,7 @@ using namespace sycl_cts;
 template <typename T>
 class type_size_kernel {
   typedef sycl::accessor<int32_t, 1, sycl::access::mode::write,
-                             sycl::access::target::global_buffer>
+                             sycl::target::global_buffer>
       write_t;
 
   write_t m_out;

@@ -112,7 +112,7 @@ public:
 
 /** @brief Checks all constructors available for non-zero dimensions
  */
-template <typename T, size_t dims, sycl::access::target target,
+template <typename T, size_t dims, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_all_accessor_constructors_buffer {
 public:
@@ -186,7 +186,7 @@ public:
 };
 /** @brief Checks all constructors available for 0 dimension
  */
-template <typename T, sycl::access::target target,
+template <typename T, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_all_accessor_constructors_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
@@ -215,7 +215,7 @@ public:
 
 /** @brief Check common-by-reference semantics for non-zero dimensions
  */
-template <typename T, size_t dims, sycl::access::target target,
+template <typename T, size_t dims, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_accessor_common_by_reference_buffer {
 public:
@@ -263,7 +263,7 @@ public:
 };
 /** @brief Check common-by-reference semantics for 0 dimension
  */
-template <typename T, sycl::access::target target,
+template <typename T, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_accessor_common_by_reference_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
@@ -425,7 +425,7 @@ public:
     /** check buffer accessor constructors for global_buffer
      */
     {
-      constexpr auto target = sycl::access::target::global_buffer;
+      constexpr auto target = sycl::target::global_buffer;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
@@ -467,7 +467,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::global_buffer>;
+            dummy_functor<kernelName, sycl::target::global_buffer>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
@@ -476,7 +476,7 @@ public:
     /** check buffer accessor constructors for constant_buffer
      */
     {
-      constexpr auto target = sycl::access::target::constant_buffer;
+      constexpr auto target = sycl::target::constant_buffer;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
@@ -498,7 +498,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::constant_buffer>;
+            dummy_functor<kernelName, sycl::target::constant_buffer>;
         h.single_task(dummy{});
 
       });
@@ -528,7 +528,7 @@ class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::true_t,
     /** check buffer accessor constructors for host_buffer
      */
     {
-      constexpr auto target = sycl::access::target::host_buffer;
+      constexpr auto target = sycl::target::host_buffer;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
@@ -590,7 +590,7 @@ public:
     /** check buffer accessor constructors for global_buffer
      */
     {
-      constexpr auto target = sycl::access::target::global_buffer;
+      constexpr auto target = sycl::target::global_buffer;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
@@ -634,7 +634,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::global_buffer>;
+            dummy_functor<kernelName, sycl::target::global_buffer>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
@@ -643,7 +643,7 @@ public:
     /** check buffer accessor constructors for constant_buffer
      */
     {
-      constexpr auto target = sycl::access::target::constant_buffer;
+      constexpr auto target = sycl::target::constant_buffer;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
@@ -666,7 +666,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::access::target::constant_buffer>;
+            dummy_functor<kernelName, sycl::target::constant_buffer>;
         h.single_task(dummy{});
 
       });

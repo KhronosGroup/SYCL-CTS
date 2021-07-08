@@ -39,7 +39,7 @@ template <int dim> void check_dim(util::logger &log) {
             local, local, local);
         auto groupRange = globalRange / localRange;
         auto ptr = buf.get_access<sycl::access::mode::read_write,
-                                  sycl::access::target::global_buffer>(cgh);
+                                  sycl::target::global_buffer>(cgh);
         cgh.parallel_for_work_group<kernel<dim>>(
             groupRange, localRange, [ptr](sycl::group<dim> group_pid) {
               // Assign global linear id to captured varible

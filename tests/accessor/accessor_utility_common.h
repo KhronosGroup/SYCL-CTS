@@ -70,26 +70,26 @@ namespace user_namespace {
 /** Convenient compile-time evaluation to determine if an accessor is an image
  *  accessor (of sorts)
  */
-template <sycl::access::target target>
+template <sycl::target target>
 struct is_image {
   static constexpr auto value =
-      target == sycl::access::target::image ||
-      target == sycl::access::target::host_image ||
-      target == sycl::access::target::image_array;
+      target == sycl::target::image ||
+      target == sycl::target::host_image ||
+      target == sycl::target::image_array;
 };
 
 /** Convenient compile-time evaluation to determine if an accessor is an local
  *  accessor
  */
-template <sycl::access::target target>
+template <sycl::target target>
 struct is_local {
-  static constexpr auto value = (target == sycl::access::target::local);
+  static constexpr auto value = (target == sycl::target::local);
 };
 
 /** Convenient compile-time evaluation to determine if an accessor is an buffer
  *  accessor (of sorts)
  */
-template <sycl::access::target target>
+template <sycl::target target>
 struct is_buffer {
   static constexpr auto value =
       !is_image<target>::value && !is_local<target>::value;
@@ -105,7 +105,7 @@ struct is_buffer {
  * @param typeName The name of the underlying data type for scalar or vec types
  */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
 std::string accessor_type_name(const std::string& dataType) {
@@ -131,7 +131,7 @@ std::string accessor_type_name(const std::string& dataType) {
  * @param typeName The name of the underlying data type for scalar or vec types
  */
 template <typename T, int dims, sycl::access::mode mode,
-          sycl::access::target target,
+          sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
 void fail_for_accessor(sycl_cts::util::logger& log,

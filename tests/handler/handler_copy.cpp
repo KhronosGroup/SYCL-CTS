@@ -19,7 +19,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 using mode_t = sycl::access::mode;
-using target_t = sycl::access::target;
+using target_t = sycl::target;
 
 namespace {
 

@@ -15,12 +15,12 @@ using namespace sycl_cts;
 
 template <int dim> class kernel {
   sycl::accessor<size_t, 1, sycl::access::mode::read_write,
-                     sycl::access::target::global_buffer> ptr;
+                     sycl::target::global_buffer> ptr;
 
  public:
    kernel(sycl::buffer<size_t, 1> buf, sycl::handler &cgh)
        : ptr(buf.get_access<sycl::access::mode::read_write,
-                            sycl::access::target::global_buffer>(cgh)) {}
+                            sycl::target::global_buffer>(cgh)) {}
 
    void operator()(sycl::group<dim> group_pid) const {
      group_pid.parallel_for_work_item([&](sycl::h_item<dim> itemID) {

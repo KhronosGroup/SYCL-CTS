@@ -45,13 +45,13 @@ class pointer_ctors {
 
     queue.submit([&](sycl::handler &handler) {
       sycl::accessor<T, 1, sycl::access::mode::read_write,
-                         sycl::access::target::global_buffer>
+                         sycl::target::global_buffer>
           globalAccessor(buffer, handler);
       sycl::accessor<T, 1, sycl::access::mode::read,
-                         sycl::access::target::constant_buffer>
+                         sycl::target::constant_buffer>
           constantAccessor(buffer, handler);
       sycl::accessor<T, 1, sycl::access::mode::read_write,
-                         sycl::access::target::local>
+                         sycl::target::local>
           localAccessor(size, handler);
 
       handler.single_task<class kernel0<T, U>>([=] {

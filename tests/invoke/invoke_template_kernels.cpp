@@ -16,10 +16,10 @@ using namespace sycl_cts;
 template <typename T>
 class templated_functor {
   typedef sycl::accessor<T, 1, sycl::access::mode::read,
-                             sycl::access::target::global_buffer>
+                             sycl::target::global_buffer>
       read_t;
   typedef sycl::accessor<T, 1, sycl::access::mode::write,
-                             sycl::access::target::global_buffer>
+                             sycl::target::global_buffer>
       write_t;
 
   read_t m_in;

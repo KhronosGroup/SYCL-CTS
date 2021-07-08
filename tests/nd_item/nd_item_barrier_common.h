@@ -122,7 +122,7 @@ void test_barrier_local_space(sycl_cts::util::logger &log,
     queue.submit([&](sycl::handler &cgh) {
       auto ptr = buf.template get_access<sycl::access::mode::read_write>(cgh);
       sycl::accessor<size_t, dim, sycl::access::mode::read_write,
-                         sycl::access::target::local>
+                         sycl::target::local>
           tile(localRange, cgh);
 
       cgh.parallel_for<kernelT>(

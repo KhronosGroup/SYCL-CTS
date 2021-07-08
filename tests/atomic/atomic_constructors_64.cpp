@@ -31,13 +31,13 @@ class TEST_NAME : public util::test_base {
 
   template <typename T>
   void check_atomics_for_type(util::logger &log, sycl::queue testQueue) {
-    /** Check atomic constructors for sycl::access::target::global_buffer
+    /** Check atomic constructors for sycl::target::global_buffer
      */
-    check_atomics<T, sycl::access::target::global_buffer>{}(log, testQueue);
+    check_atomics<T, sycl::target::global_buffer>{}(log, testQueue);
 
-    /** Check atomic constructors for sycl::access::target::local
+    /** Check atomic constructors for sycl::target::local
      */
-    check_atomics<T, sycl::access::target::local>{}(log, testQueue);
+    check_atomics<T, sycl::target::local>{}(log, testQueue);
   }
 
   /** Execute the test

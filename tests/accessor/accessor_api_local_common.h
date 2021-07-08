@@ -26,7 +26,7 @@ using namespace accessor_utility;
 // Tests
 ////////////////////////////////////////////////////////////////////////////////
 
-static constexpr auto target = sycl::access::target::local;
+static constexpr auto target = sycl::target::local;
 
 /** tests local accessor methods
 */
@@ -46,7 +46,7 @@ class check_local_accessor_api_methods {
     log_accessor<T, dims, mode, target>("check_local_accessor_api_methods",
                                         typeName, log);
 #endif  // VERBOSE_LOG
-    static constexpr auto errorTarget = sycl::access::target::global_buffer;
+    static constexpr auto errorTarget = sycl::target::global_buffer;
 
     auto errors = get_error_data(2);
     {
@@ -158,7 +158,7 @@ class check_local_accessor_api_reads_and_writes {
 
     auto errors = get_error_data(4);
 
-    static constexpr auto errorTarget = sycl::access::target::global_buffer;
+    static constexpr auto errorTarget = sycl::target::global_buffer;
 
     {
       error_buffer_t errorBuffer(errors.data(),
