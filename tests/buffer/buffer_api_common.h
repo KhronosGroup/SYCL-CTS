@@ -286,9 +286,9 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
       auto acc =
-          buf.template get_access<sycl::access::mode::read_write>(cgh);
+          buf.template get_access<sycl::access_mode::read_write>(cgh);
       check_return_type<
-          sycl::accessor<T, dims, sycl::access::mode::read_write,
+          sycl::accessor<T, dims, sycl::access_mode::read_write,
                              sycl::target::global_buffer>>(
           log, acc, "sycl::buffer::get_access<read_write>(handler&)");
       cgh.single_task(empty_kernel());
@@ -297,11 +297,11 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
       auto acc =
-          buf.template get_access<sycl::access::mode::read,
+          buf.template get_access<sycl::access_mode::read,
                                   sycl::target::constant_buffer>(
               cgh);
       check_return_type<
-          sycl::accessor<T, dims, sycl::access::mode::read,
+          sycl::accessor<T, dims, sycl::access_mode::read,
                              sycl::target::constant_buffer>>(
           log, acc,
           "sycl::buffer::get_access<read, constant_buffer>(handler&)");
@@ -310,19 +310,19 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<sycl::access::mode::read_write>();
+      auto acc = buf.template get_access<sycl::access_mode::read_write>();
       check_return_type<
-          sycl::accessor<T, dims, sycl::access::mode::read_write,
+          sycl::accessor<T, dims, sycl::access_mode::read_write,
                              sycl::target::host_buffer>>(
           log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
     }
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
-      auto acc = buf.template get_access<sycl::access::mode::read_write>(
+      auto acc = buf.template get_access<sycl::access_mode::read_write>(
           cgh, r, offset);
       check_return_type<
-          sycl::accessor<T, dims, sycl::access::mode::read_write,
+          sycl::accessor<T, dims, sycl::access_mode::read_write,
                              sycl::target::global_buffer>>(
           log, acc,
           "sycl::buffer::get_access<read_write, global_buffer>(handler&, "
@@ -332,10 +332,10 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<sycl::access::mode::read_write>(
+      auto acc = buf.template get_access<sycl::access_mode::read_write>(
           r, offset);
       check_return_type<
-          sycl::accessor<T, dims, sycl::access::mode::read_write,
+          sycl::accessor<T, dims, sycl::access_mode::read_write,
                              sycl::target::host_buffer>>(
           log, acc,
           "sycl::buffer::get_access<read_write, host_buffer>(range<>, "

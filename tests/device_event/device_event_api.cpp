@@ -52,13 +52,12 @@ class TEST_NAME : public util::test_base {
         sycl::buffer<bool, 1> errBuf(&error, range);
 
         testQueue.submit([&](sycl::handler &cgh) {
-          using namespace sycl::access;
 
-          auto globalAcc = buf.get_access<mode::read_write>(cgh);
-          auto errorAcc = errBuf.get_access<mode::write>(cgh);
+          auto globalAcc = buf.get_access<sycl::access_mode::read_write>(cgh);
+          auto errorAcc = errBuf.get_access<sycl::access_mode::write>(cgh);
           auto localAcc =
-              sycl::accessor<int, 1, mode::read_write, target::local>(
-                  dataRange, cgh);
+              sycl::accessor<int, 1, sycl::access_mode::read_write,
+                  sycl::target::local>(dataRange, cgh);
 
           cgh.parallel_for<class device_event_wait>(
               sycl::nd_range<1>(range, range),

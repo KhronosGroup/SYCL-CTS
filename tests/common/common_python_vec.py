@@ -156,7 +156,7 @@ kernel_template = Template("""  bool resArray[1] = {true};
   {
     sycl::buffer<bool, 1> boolBuffer(resArray, sycl::range<1>(1));
     testQueue.submit([&](sycl::handler &cgh) {
-      auto resAcc = boolBuffer.get_access<sycl::access::mode::write>(cgh);
+      auto resAcc = boolBuffer.get_access<sycl::access_mode::write>(cgh);
 
       cgh.single_task<class ${kernelName}>([=]() {
         ${test}

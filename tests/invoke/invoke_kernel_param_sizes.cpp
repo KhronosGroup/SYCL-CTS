@@ -15,7 +15,7 @@ using namespace sycl_cts;
 
 template <typename T>
 class type_size_kernel {
-  typedef sycl::accessor<int32_t, 1, sycl::access::mode::write,
+  typedef sycl::accessor<int32_t, 1, sycl::access_mode::write,
                              sycl::target::global_buffer>
       write_t;
 
@@ -37,7 +37,7 @@ bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
                                                sycl::range<1>(1));
     sycl_queue.submit([&](sycl::handler &cgh) {
       auto access_output =
-          buffer_output.template get_access<sycl::access::mode::write>(cgh);
+          buffer_output.template get_access<sycl::access_mode::write>(cgh);
       type_size_kernel<T> kernel(access_output);
       cgh.single_task(kernel);
     });

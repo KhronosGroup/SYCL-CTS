@@ -78,7 +78,7 @@ class TEST_NAME : public util::test_base {
                                          sycl::range<1>(items.size()));
         testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
-              itemBuf.template get_access<sycl::access::mode::write>(cgh);
+              itemBuf.template get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for_work_group<h_item_setup_kernel<numDims>>(
               oneElemRange, itemRange, [=](sycl::group<numDims> group) {
@@ -93,9 +93,9 @@ class TEST_NAME : public util::test_base {
                                           sycl::range<1>(success.size()));
         testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
-              itemBuf.template get_access<sycl::access::mode::read>(cgh);
+              itemBuf.template get_access<sycl::access_mode::read>(cgh);
           auto successAcc =
-              successBuf.get_access<sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.single_task<h_item_equality_kernel<numDims>>([=]() {
             const auto& item0 = itemAcc[0];

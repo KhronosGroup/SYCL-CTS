@@ -104,7 +104,7 @@ struct is_buffer {
  * @tparam placeholder Whether the accessor is a placeholder
  * @param typeName The name of the underlying data type for scalar or vec types
  */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
@@ -130,7 +130,7 @@ std::string accessor_type_name(const std::string& dataType) {
  * @tparam placeholder Whether the accessor is a placeholder
  * @param typeName The name of the underlying data type for scalar or vec types
  */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>

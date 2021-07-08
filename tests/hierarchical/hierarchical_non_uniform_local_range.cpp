@@ -71,7 +71,7 @@ template <int dim> void check_dim(util::logger &log) {
       myQueue.submit([&](sycl::handler &cgh) {
         sycl::stream os(2048, 80, cgh);
         auto accessor =
-            buf.template get_access<sycl::access::mode::read_write>(cgh);
+            buf.template get_access<sycl::access_mode::read_write>(cgh);
 
         auto groupRange =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<

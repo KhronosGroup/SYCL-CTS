@@ -70,7 +70,7 @@ public:
 template <typename T, size_t dims, sycl::target target>
 class check_all_accessor_constructors_local {
 public:
-  template <sycl::access::mode mode, typename ... rangeArgsT>
+  template <sycl::access_mode mode, typename ... rangeArgsT>
   static void check(sycl::handler &handler,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
@@ -108,7 +108,7 @@ public:
 template <typename T, size_t dims, sycl::target target>
 class check_accessor_common_by_reference_local {
 public:
-  template <sycl::access::mode mode, typename ... rangeArgsT>
+  template <sycl::access_mode mode, typename ... rangeArgsT>
   static void check(sycl::handler &handler,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
@@ -171,17 +171,17 @@ public:
         /** check local accessor constructor for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(h, log, typeName, range);
         }
         {
-          constexpr auto mode = sycl::access::mode::atomic;
+          constexpr auto mode = sycl::access_mode::atomic;
           verifier::template check<mode>(h, log, typeName, range);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::read_write;
+          constexpr auto mode = sycl::access_mode::read_write;
           semantics_verifier::template check<mode>(h, log, typeName, range);
         }
 
@@ -217,17 +217,17 @@ class local_accessor_dims<T, kernelName, 0> {
         /** check local accessor constructor for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(h, log, typeName);
         }
         {
-          constexpr auto mode = sycl::access::mode::atomic;
+          constexpr auto mode = sycl::access_mode::atomic;
           verifier::template check<mode>(h, log, typeName);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::read_write;
+          constexpr auto mode = sycl::access_mode::read_write;
           semantics_verifier::template check<mode>(h, log, typeName);
         }
 

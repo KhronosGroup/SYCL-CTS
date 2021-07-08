@@ -31,7 +31,7 @@ static constexpr auto target = sycl::target::local;
 /** tests local accessor methods
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode>
+          sycl::access_mode mode>
 class check_local_accessor_api_methods {
  public:
   size_t count;
@@ -143,7 +143,7 @@ private:
 /** tests local accessor reads and writes
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode>
+          sycl::access_mode mode>
 class check_local_accessor_api_reads_and_writes {
  public:
   size_t count;
@@ -225,7 +225,7 @@ class check_local_accessor_api_reads_and_writes {
 /** @brief tests local accessors with different dimensions
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode>
+          sycl::access_mode mode>
 void check_local_accessor_api_mode(util::logger &log,
                                    const std::string& typeName,
                                    size_t count, size_t size,
@@ -278,7 +278,7 @@ struct check_local_accessor_api_dim<generic_path_t> {
   static void run(acc_target_tag::local,
                   argsT&& ... args) {
     // Run verification for read_write access mode
-    constexpr auto mode = sycl::access::mode::read_write;
+    constexpr auto mode = sycl::access_mode::read_write;
     check_local_accessor_api_mode<T, kernelName, dims, mode>(
         std::forward<argsT>(args)...);
   }
@@ -291,13 +291,13 @@ struct check_local_accessor_api_dim<generic_path_t> {
   static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
     // Run verification for read_write access mode
     {
-      constexpr auto mode = sycl::access::mode::read_write;
+      constexpr auto mode = sycl::access_mode::read_write;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
     // Run verification for atomic access mode
     {
-      constexpr auto mode = sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access_mode::atomic;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
@@ -313,7 +313,7 @@ struct check_local_accessor_api_dim<generic_path_t> {
                   util::logger &log, const std::string& typeName, argsT&& ...) {
     // Do not run atomic64 checks
 #ifdef VERBOSE_LOG
-    constexpr auto mode = sycl::access::mode::atomic;
+    constexpr auto mode = sycl::access_mode::atomic;
     log_accessor<T, kernelName, dims, mode, target>(
         "skip_local_accessor_atomic64", typeName, log);
 #else
@@ -345,7 +345,7 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
                   argsT&& ... args) {
     // Run atomic64 checks only
     {
-      constexpr auto mode = sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access_mode::atomic;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }

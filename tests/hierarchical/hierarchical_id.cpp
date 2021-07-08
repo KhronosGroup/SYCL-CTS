@@ -78,7 +78,7 @@ template <int dim> void check_dim(util::logger &log) {
 
       myQueue.submit([&](sycl::handler &cgh) {
 
-        constexpr auto mode = sycl::access::mode::read_write;
+        constexpr auto mode = sycl::access_mode::read_write;
 
         auto localIdPtr = localIdBuffer.get_access<mode>(cgh);
         auto localSizePtr = localSizeBuffer.get_access<mode>(cgh);

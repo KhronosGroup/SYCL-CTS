@@ -309,11 +309,11 @@ void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
 
     queue.submit([&](sycl::handler &cgh) {
     auto accResult =
-        resultBuffer.template get_access<sycl::access::mode::write>(cgh);
+        resultBuffer.template get_access<sycl::access_mode::write>(cgh);
     auto accGlobal =
-        buf.template get_access<sycl::access::mode::read_write>(cgh);
+        buf.template get_access<sycl::access_mode::read_write>(cgh);
     auto accLocal =
-        sycl::accessor<T, 1, sycl::access::mode::read_write,
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
                            sycl::target::local>(
             sycl::range<1>(BUFFER_SIZE), cgh);
 
@@ -415,17 +415,17 @@ void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
 
     queue.submit([&](sycl::handler &cgh) {
     auto accResult =
-        resultBuffer.template get_access<sycl::access::mode::write>(cgh);
+        resultBuffer.template get_access<sycl::access_mode::write>(cgh);
     auto accGlobal =
-        buf.template get_access<sycl::access::mode::read_write>(cgh);
+        buf.template get_access<sycl::access_mode::read_write>(cgh);
     auto accLocal =
-        sycl::accessor<T, 1, sycl::access::mode::read_write,
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
                            sycl::target::local>(
             sycl::range<1>(BUFFER_SIZE), cgh);
 
     auto events =
         sycl::accessor<sycl::device_event, 1,
-                           sycl::access::mode::read_write,
+                           sycl::access_mode::read_write,
                            sycl::target::local>(
             sycl::range<1>(N_EVENTS_MAX), cgh);
 

@@ -97,7 +97,7 @@ using buffer_t = sycl::buffer<T, data_dim<dim>::value>;
 /**
  * @brief The SYCL access mode to use for storing errors inside kernels
  */
-static constexpr auto errorMode = sycl::access::mode::write;
+static constexpr auto errorMode = sycl::access_mode::write;
 
 /**
  * @brief The SYCL buffer type to use for storing errors inside kernels
@@ -181,28 +181,28 @@ struct write_only : generic {};
 struct read_only : generic {};
 struct atomic : generic {};
 
-template <sycl::access::mode mode>
+template <sycl::access_mode mode>
 struct get_helper {
   using type = generic;
 };
 template <>
-struct get_helper<sycl::access::mode::read> {
+struct get_helper<sycl::access_mode::read> {
   using type = read_only;
 };
 template <>
-struct get_helper<sycl::access::mode::write> {
+struct get_helper<sycl::access_mode::write> {
   using type = write_only;
 };
 template <>
-struct get_helper<sycl::access::mode::discard_write> {
+struct get_helper<sycl::access_mode::discard_write> {
   using type = write_only;
 };
 template <>
-struct get_helper<sycl::access::mode::atomic> {
+struct get_helper<sycl::access_mode::atomic> {
   using type = atomic;
 };
 
-template <sycl::access::mode mode>
+template <sycl::access_mode mode>
 using get_helper_t = typename get_helper<mode>::type;
 
 /**
@@ -210,7 +210,7 @@ using get_helper_t = typename get_helper<mode>::type;
  * @tparam mode The SYCL access mode to get the tag for
  * @return Instance of the tag
  */
-template <sycl::access::mode mode>
+template <sycl::access_mode mode>
 auto get() -> decltype(get_helper_t<mode>{}) {
   return get_helper_t<mode>{};
 }
@@ -368,7 +368,7 @@ using is_host_target =
  * @tparam target Access target used
  * @tparam placeholder Whether the accessor is a placeholder
  */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder>
 struct accessor_factory {
@@ -476,7 +476,7 @@ struct accessor_factory {
  * @param args Arguments passed to the accessor constructor
  * @return Fully constructed accessor
  */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder,
           typename... Args>
@@ -495,7 +495,7 @@ sycl::accessor<T, dims, mode, target, placeholder> make_accessor(
  * @param args Arguments passed to the accessor constructor
  * @return Fully constructed local accessor
  */
-template <typename T, int dims, sycl::access::mode mode>
+template <typename T, int dims, sycl::access_mode mode>
 sycl::accessor<T, dims, mode, sycl::target::local>
 make_local_accessor_generic(const sycl_range_t<dims>& rng,
                             sycl::handler& cgh) {
@@ -520,7 +520,7 @@ make_local_accessor_generic(const sycl_range_t<dims>& rng,
  * @param cgh Optional handler to use on construction, can be null
  * @return Fully constructed buffer accessor
  */
-template <int dims, sycl::access::mode mode,
+template <int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder,
           typename T>
@@ -546,7 +546,7 @@ sycl::accessor<T, dims, mode, target, placeholder> make_accessor_generic(
  * @param typeName The name of the underlying data type for scalar or vec types
  * @param log The logger object
  */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>
@@ -573,7 +573,7 @@ void log_accessor(const sycl::string_class& functionName,
  * @brief Helper function to check the return type of an accessor method
  */
 template <typename expectedT, typename dataT, int dims,
-          sycl::access::mode mode, sycl::target target,
+          sycl::access_mode mode, sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t,
           typename returnT>

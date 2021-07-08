@@ -120,8 +120,8 @@ void test_barrier_local_space(sycl_cts::util::logger &log,
     sycl::buffer<size_t, dim> buf(data.data(), globalRange);
 
     queue.submit([&](sycl::handler &cgh) {
-      auto ptr = buf.template get_access<sycl::access::mode::read_write>(cgh);
-      sycl::accessor<size_t, dim, sycl::access::mode::read_write,
+      auto ptr = buf.template get_access<sycl::access_mode::read_write>(cgh);
+      sycl::accessor<size_t, dim, sycl::access_mode::read_write,
                          sycl::target::local>
           tile(localRange, cgh);
 
@@ -193,7 +193,7 @@ void test_barrier_global_space(sycl_cts::util::logger &log,
     sycl::buffer<size_t, dim> buffer(data.data(), globalRange);
 
     queue.submit([&](sycl::handler &cgh) {
-      auto ptr = buffer.template get_access<sycl::access::mode::read_write>(cgh);
+      auto ptr = buffer.template get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.parallel_for<kernelT>(
           NDRange, [=](sycl::nd_item<dim> item) {

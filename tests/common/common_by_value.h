@@ -109,9 +109,9 @@ public:
       auto queue = sycl_cts::util::get_cts_object::queue();
       queue.submit([&](sycl::handler& cgh) {
         auto itemAcc =
-            itemBuf.template get_access<sycl::access::mode::read>(cgh);
+            itemBuf.template get_access<sycl::access_mode::read>(cgh);
         auto successAcc =
-            successBuf.get_access<sycl::access::mode::write>(cgh);
+            successBuf.get_access<sycl::access_mode::write>(cgh);
 
         cgh.single_task<kernelT>([=]() {
           const auto& a = itemAcc[0];

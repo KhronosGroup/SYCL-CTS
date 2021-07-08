@@ -28,7 +28,7 @@ struct kernel_command_group {
   void operator()(sycl::handler& cgh) {
     int m = m_multiplier;
     auto acc_dev =
-        m_bufRef.get().template get_access<sycl::access::mode::read_write>(cgh);
+        m_bufRef.get().template get_access<sycl::access_mode::read_write>(cgh);
     cgh.parallel_for<kernel<bufferT>>(m_bufRef.get().get_range(),
                                       [=](sycl::id<1> i) { acc_dev[i] *= m; });
   }
@@ -50,7 +50,7 @@ struct host_task_command_group {
     int container_size = m_bufRef.get().get_count();
     auto acc_host =
         m_bufRef.get()
-            .template get_access<sycl::access::mode::read_write,
+            .template get_access<sycl::access_mode::read_write,
                                  sycl::target::host_buffer>(cgh);
     cgh.host_task([=]() {
       for (int i = 0; i < container_size; ++i) {
@@ -159,9 +159,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       q.submit([&](sycl::handler& cgh) {
         auto acc_host{
-            buffer.get_access<sycl::access::mode::read,
+            buffer.get_access<sycl::access_mode::read,
                               sycl::target::host_buffer>(cgh)};
-        auto acc_dev = buffer.get_access<sycl::access::mode::write>(cgh);
+        auto acc_dev = buffer.get_access<sycl::access_mode::write>(cgh);
         cgh.host_task([=]() {
           for (int i = 0; i < container_size; ++i) {
             acc_dev[i] = acc_host[i] * multiplier;
@@ -170,7 +170,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       });
 
       {
-        auto acc_host = buffer.get_access<sycl::access::mode::read>();
+        auto acc_host = buffer.get_access<sycl::access_mode::read>();
         for (int i = 0; i < container_size; ++i) {
           if (acc_host[i] != expected) {
             auto errorMessage = "Data verification failed. Expected: " +

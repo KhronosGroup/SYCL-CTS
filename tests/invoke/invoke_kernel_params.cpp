@@ -32,7 +32,7 @@ struct array_type_t {
 
 struct test_kernel {
  private:
-  typedef sycl::accessor<uint32_t, 1, sycl::access::mode::write,
+  typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
                              sycl::target::global_buffer>
       acc_uint32_t;
 
@@ -71,7 +71,7 @@ class test_kernel_name;
  */
 class TEST_NAME : public util::test_base {
  public:
-  typedef sycl::accessor<uint32_t, 1, sycl::access::mode::write,
+  typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
                              sycl::target::global_buffer>
       acc_uint32_t;
 
@@ -95,7 +95,7 @@ class TEST_NAME : public util::test_base {
         my_queue.submit([&](sycl::handler &cgh) {
           // access the output
           auto acc_pass =
-              buf_result.template get_access<sycl::access::mode::write>(
+              buf_result.template get_access<sycl::access_mode::write>(
                   cgh);
 
           const uint32_t var_a = ref_a;
@@ -149,7 +149,7 @@ class TEST_NAME : public util::test_base {
           // access the output
           auto acc_pass =
               buf_result
-                  .template get_access<sycl::access::mode::write,
+                  .template get_access<sycl::access_mode::write,
                                        sycl::target::global_buffer>(
                       cgh);
 

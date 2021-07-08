@@ -606,7 +606,7 @@ class image_api_check {
                 static_cast<void *>(imageHost.data()), channelOrder, channelType, r, p);
       {
         // target::host_image
-        img.template get_access<T, sycl::access::mode::read_write>();
+        img.template get_access<T, sycl::access_mode::read_write>();
       }
 
       auto testQueue = sycl_cts::util::get_cts_object::queue();
@@ -614,7 +614,7 @@ class image_api_check {
         testQueue.submit([&](sycl::handler &cgh) {
           // target::image
           auto imgAcc =
-              img.template get_access<T, sycl::access::mode::write>(cgh);
+              img.template get_access<T, sycl::access_mode::write>(cgh);
           cgh.single_task(empty_kernel());
         });
 
@@ -744,7 +744,7 @@ class image_api_check {
           queue.submit([&](sycl::handler &cgh) {
           auto img_acc =
               img2.template get_access<sycl::float4,
-                                      sycl::access::mode::read>(cgh);
+                                      sycl::access_mode::read>(cgh);
 
           auto sampler = sycl::sampler(
               sycl::coordinate_normalization_mode::unnormalized,
@@ -771,7 +771,7 @@ class image_api_check {
 
           queue.submit([&](sycl::handler &cgh) {
             auto img_acc = img2.template get_access<sycl::float4,
-                                          sycl::access::mode::write>(cgh);
+                                          sycl::access_mode::write>(cgh);
             auto myKernel = [expected, img_acc](sycl::item<dims> item) {
               // Write image data
               img_acc.write(image_access<dims>::get_int(item),

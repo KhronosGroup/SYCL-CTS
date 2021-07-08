@@ -143,7 +143,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
          */
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
-              buffer.get_access<sycl::access::mode::read_write,
+              buffer.get_access<sycl::access_mode::read_write,
                                 sycl::target::global_buffer>(
                   handler);
 
@@ -168,7 +168,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
          */
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
-              buffer.get_access<sycl::access::mode::read_write,
+              buffer.get_access<sycl::access_mode::read_write,
                                 sycl::target::global_buffer>(
                   handler);
 
@@ -251,7 +251,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           queue.submit([&](sycl::handler &handler) {
             auto imageAccessor =
                 image
-                    .get_access<sycl::float4, sycl::access::mode::read>(
+                    .get_access<sycl::float4, sycl::access_mode::read>(
                         handler);
 
             sycl::sampler sampler(
@@ -275,7 +275,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           queue.submit([&](sycl::handler &handler) {
             auto imageAccessor =
                 image
-                    .get_access<sycl::float4, sycl::access::mode::read>(
+                    .get_access<sycl::float4, sycl::access_mode::read>(
                         handler);
 
             sycl::sampler sampler(

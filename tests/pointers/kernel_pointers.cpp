@@ -40,7 +40,7 @@ class TEST_NAME : public util::test_base {
 
         my_queue.submit([&](sycl::handler &cgh) {
           auto acc_result =
-              buf_result.get_access<sycl::access::mode::read_write>(cgh);
+              buf_result.get_access<sycl::access_mode::read_write>(cgh);
 
           cgh.single_task<TEST_NAME>([acc_result, outer_index]() {
             uint8_t my_array[] = {0, 1, 2, 3, 4};

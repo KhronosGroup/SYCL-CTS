@@ -26,7 +26,7 @@ class kernel_test_class4;
 class kernel_test_class5;
 
 using accessor_t =
-    sycl::accessor<int, 1, sycl::access::mode::read_write,
+    sycl::accessor<int, 1, sycl::access_mode::read_write,
                        sycl::target::global_buffer>;
 
 struct single_task_functor {
@@ -179,7 +179,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     {
       auto buf = sycl::buffer<int, 1>(result.data(), result.size());
       queue.submit([&](sycl::handler &cgh) {
-        auto acc = buf.get_access<sycl::access::mode::read_write>(cgh);
+        auto acc = buf.get_access<sycl::access_mode::read_write>(cgh);
         kernelWrapper(cgh, acc);
       });
     }

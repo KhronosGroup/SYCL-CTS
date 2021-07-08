@@ -29,7 +29,7 @@ using namespace accessor_utility;
 /** tests buffer accessors methods
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode,
+          sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder>
 class check_buffer_accessor_api_methods {
@@ -364,7 +364,7 @@ class check_buffer_accessor_api_methods {
 };
 
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode,
+          sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder>
 class check_buffer_accessor_api {
@@ -727,7 +727,7 @@ class check_buffer_accessor_api {
 
     using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
-      if ((mode != sycl::access::mode::discard_read_write) &&
+      if ((mode != sycl::access_mode::discard_read_write) &&
           (errors[error_code_t::zero_dim_access] != 0)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator dataT&() did not read from the correct index");
@@ -739,7 +739,7 @@ class check_buffer_accessor_api {
             "operator dataT&() did not write to the correct index");
       }
     } else {
-      if (mode != sycl::access::mode::discard_read_write) {
+      if (mode != sycl::access_mode::discard_read_write) {
         if (errors[error_code_t::multi_dim_read_id] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[id<N>] did not read from the correct index");
@@ -920,7 +920,7 @@ class check_buffer_accessor_api {
 /** tests buffer accessors with different modes
 */
 template <typename T, typename kernelName, int dims,
-          sycl::access::mode mode,
+          sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder>
 void check_buffer_accessor_api_mode(util::logger &log,
@@ -978,34 +978,32 @@ struct check_buffer_accessor_api_target<generic_path_t> {
             sycl::access::placeholder placeholder, typename ... argsT>
   static void run(acc_target_tag::generic, argsT&& ... args) {
 
-    using sycl::access::mode;
-
     {
-      constexpr auto mode = sycl::access::mode::read;
+      constexpr auto mode = sycl::access_mode::read;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::write;
+      constexpr auto mode = sycl::access_mode::write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::read_write;
+      constexpr auto mode = sycl::access_mode::read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::discard_write;
+      constexpr auto mode = sycl::access_mode::discard_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::discard_read_write;
+      constexpr auto mode = sycl::access_mode::discard_read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
@@ -1027,7 +1025,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
 
     // Run atomic checks except atomic64 ones
     {
-      constexpr auto mode = sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access_mode::atomic;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
@@ -1046,7 +1044,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
                   util::logger &log, const std::string& typeName, argsT&& ...) {
     // Do not run atomic64 checks
 #ifdef VERBOSE_LOG
-    constexpr auto mode = sycl::access::mode::atomic;
+    constexpr auto mode = sycl::access_mode::atomic;
     log_accessor<T, dims, mode, target, placeholder>(
         "skip_buffer_accessor_atomic64", typeName, log);
 #else
@@ -1063,10 +1061,8 @@ struct check_buffer_accessor_api_target<generic_path_t> {
             sycl::access::placeholder placeholder, typename ... argsT>
   static void run(acc_target_tag::constant, argsT&& ... args) {
 
-    using sycl::access::mode;
-
-    check_buffer_accessor_api_mode<T, kernelName, dims, mode::read, target,
-                                   placeholder>(
+    check_buffer_accessor_api_mode<T, kernelName, dims, sycl::access_mode::read,
+                                   target, placeholder>(
         std::forward<argsT>(args)...);
   }
 
@@ -1079,31 +1075,31 @@ struct check_buffer_accessor_api_target<generic_path_t> {
   static void run(acc_target_tag::host, argsT&& ... args) {
 
     {
-      constexpr auto mode = sycl::access::mode::read;
+      constexpr auto mode = sycl::access_mode::read;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::write;
+      constexpr auto mode = sycl::access_mode::write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::read_write;
+      constexpr auto mode = sycl::access_mode::read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::discard_write;
+      constexpr auto mode = sycl::access_mode::discard_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
     }
     {
-      constexpr auto mode = sycl::access::mode::discard_read_write;
+      constexpr auto mode = sycl::access_mode::discard_read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);
@@ -1138,7 +1134,7 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
   static void run(acc_target_tag::atomic64<accTagT>, argsT&& ... args) {
     // Run atomic64 checks only
     {
-      constexpr auto mode = sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access_mode::atomic;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
                                      placeholder>(
           std::forward<argsT>(args)...);

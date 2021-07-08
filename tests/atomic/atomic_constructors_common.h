@@ -18,11 +18,11 @@ namespace atomic_constructors_common {
 template <typename T, sycl::target target,
           sycl::access::address_space addressSpace>
 class check_atomic_constructors {
-  sycl::accessor<T, 1, sycl::access::mode::read_write, target> m_acc;
+  sycl::accessor<T, 1, sycl::access_mode::read_write, target> m_acc;
 
  public:
   check_atomic_constructors(
-      sycl::accessor<T, 1, sycl::access::mode::read_write, target> acc)
+      sycl::accessor<T, 1, sycl::access_mode::read_write, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {
@@ -46,7 +46,7 @@ class check_atomics {
     /** Check atomic constructors
      */
     testQueue.submit([&](sycl::handler &cgh) {
-      sycl::accessor<T, 1, sycl::access::mode::read_write,
+      sycl::accessor<T, 1, sycl::access_mode::read_write,
                          sycl::target::global_buffer>
           acc(buf, cgh);
 
@@ -70,7 +70,7 @@ class check_atomics<T, sycl::target::local> {
     /** Check atomic constructors
      */
     testQueue.submit([&](sycl::handler &cgh) {
-      sycl::accessor<T, 1, sycl::access::mode::read_write,
+      sycl::accessor<T, 1, sycl::access_mode::read_write,
                          sycl::target::local>
           acc(sycl::range<1>(1), cgh);
 

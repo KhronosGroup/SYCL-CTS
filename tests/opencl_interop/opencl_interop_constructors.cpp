@@ -264,7 +264,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         queue.submit([&](sycl::handler &handler) {
           auto accessor =
-              buffer.get_access<sycl::access::mode::read_write,
+              buffer.get_access<sycl::access_mode::read_write,
                                 sycl::target::global_buffer>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_no_event>([]() {});
@@ -330,7 +330,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         queue.submit([&](sycl::handler &handler) {
           auto accessor =
-              buffer.get_access<sycl::access::mode::read_write,
+              buffer.get_access<sycl::access_mode::read_write,
                                 sycl::target::global_buffer>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_with_event>([]() {});
@@ -390,7 +390,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             queue.submit([&](sycl::handler &handler) {
               auto accessor =
                   image.get_access<sycl::float4,
-                                   sycl::access::mode::read>(handler);
+                                   sycl::access_mode::read>(handler);
               handler.single_task<
                   class image_interop_constructor_kernel_default_event>(
                   []() {});
@@ -417,7 +417,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             queue.submit([&](sycl::handler &handler) {
               auto accessor =
                   image.get_access<sycl::float4,
-                                   sycl::access::mode::read>(handler);
+                                   sycl::access_mode::read>(handler);
               handler.single_task<
                   class image_interop_constructor_kernel_provided_event>(
                   []() {});

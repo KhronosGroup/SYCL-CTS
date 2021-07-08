@@ -39,9 +39,9 @@ struct target_map<sycl::target::global_buffer> {
    * @return Global accessor
    */
   template <typename T>
-  static sycl::accessor<T, 1, sycl::access::mode::atomic, target>
+  static sycl::accessor<T, 1, sycl::access_mode::atomic, target>
   get_accessor(sycl::buffer<T, 1> &buf, sycl::handler &cgh) {
-    return buf.template get_access<sycl::access::mode::atomic, target>(cgh);
+    return buf.template get_access<sycl::access_mode::atomic, target>(cgh);
   }
 };
 
@@ -62,9 +62,9 @@ struct target_map<sycl::target::local> {
    * @return Local accessor
    */
   template <typename T>
-  static sycl::accessor<T, 1, sycl::access::mode::atomic, target>
+  static sycl::accessor<T, 1, sycl::access_mode::atomic, target>
   get_accessor(sycl::buffer<T, 1> &, sycl::handler &cgh) {
-    return sycl::accessor<T, 1, sycl::access::mode::atomic, target>(
+    return sycl::accessor<T, 1, sycl::access_mode::atomic, target>(
         sycl::range<1>(1), cgh);
   }
 };

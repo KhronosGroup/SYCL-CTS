@@ -52,7 +52,7 @@ template <int dim> void check_dim(util::logger &log) {
                 localItemsTotal>(localItems1d, localItems2d);
 
         auto outputPtr =
-            outputBuffer.get_access<sycl::access::mode::read_write>(cgh);
+            outputBuffer.get_access<sycl::access_mode::read_write>(cgh);
 
         cgh.parallel_for_work_group<kernel<dim>>(
             groupRange, localRange, [=](sycl::group<dim> group) {

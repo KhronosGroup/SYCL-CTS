@@ -15,10 +15,10 @@ using namespace sycl_cts;
 
 class kernel_item_2d {
  protected:
-  typedef sycl::accessor<int, 2, sycl::access::mode::read,
+  typedef sycl::accessor<int, 2, sycl::access_mode::read,
                              sycl::target::global_buffer>
       t_readAccess;
-  typedef sycl::accessor<int, 2, sycl::access::mode::write,
+  typedef sycl::accessor<int, 2, sycl::access_mode::write,
                              sycl::target::global_buffer>
       t_writeAccess;
 
@@ -109,9 +109,9 @@ bool test_item_2d(util::logger &log) {
     auto cmdQueue = util::get_cts_object::queue();
 
     cmdQueue.submit([&](sycl::handler &cgh) {
-      auto accIn = bufIn.template get_access<sycl::access::mode::read>(cgh);
+      auto accIn = bufIn.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       auto r = sycl::range<2>(nWidth, nHeight);
       kernel_item_2d kern = kernel_item_2d(accIn, accOut, r);

@@ -30,11 +30,11 @@ load_store_test_template = Template(
           sycl::buffer<${type}, 1> swizzleOutBuffer${type_as_str}${size}(swizzleOutputData${type_as_str}${size}, sycl::range<1>(${size}));
 
           testQueue.submit([&](sycl::handler &cgh) {
-            auto inPtr${type_as_str}${size} = inBuffer${type_as_str}${size}.get_access<sycl::access::mode::read_write>(cgh);
-            auto outPtr${type_as_str}${size} = outBuffer${type_as_str}${size}.get_access<sycl::access::mode::read_write>(cgh);
+            auto inPtr${type_as_str}${size} = inBuffer${type_as_str}${size}.get_access<sycl::access_mode::read_write>(cgh);
+            auto outPtr${type_as_str}${size} = outBuffer${type_as_str}${size}.get_access<sycl::access_mode::read_write>(cgh);
 
-            auto swizzleInPtr${type_as_str}${size} = swizzleInBuffer${type_as_str}${size}.get_access<sycl::access::mode::read_write>(cgh);
-            auto swizzleOutPtr${type_as_str}${size} = swizzleOutBuffer${type_as_str}${size}.get_access<sycl::access::mode::read_write>(cgh);
+            auto swizzleInPtr${type_as_str}${size} = swizzleInBuffer${type_as_str}${size}.get_access<sycl::access_mode::read_write>(cgh);
+            auto swizzleOutPtr${type_as_str}${size} = swizzleOutBuffer${type_as_str}${size}.get_access<sycl::access_mode::read_write>(cgh);
 
             cgh.single_task<class ${kernelName}>([=]() {
               auto testVec${type_as_str}${size} = sycl::vec<${type}, ${size}>(${val});

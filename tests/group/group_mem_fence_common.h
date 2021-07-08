@@ -59,13 +59,13 @@ bool test_rw_mem_fence_global_space(sycl_cts::util::logger& log,
 
     // Initialize data state
     {
-      auto ptr = data.get_access<sycl::access::mode::write>();
+      auto ptr = data.get_access<sycl::access_mode::write>();
       for (size_t i = 0; i < ptr.get_count(); ++i)
         ptr[i] = -1;
     }
     queue.submit([&](sycl::handler &cgh) {
-      auto ptr = data.get_access<sycl::access::mode::atomic>(cgh);
-      auto pass = passedBuf.get_access<sycl::access::mode::write>(cgh);
+      auto ptr = data.get_access<sycl::access_mode::atomic>(cgh);
+      auto pass = passedBuf.get_access<sycl::access_mode::write>(cgh);
 
       cgh.parallel_for_work_group<kernelT>(
         workGroupRange, localRange, [=](sycl::group<1> group) {
@@ -152,8 +152,8 @@ bool test_rw_mem_fence_local_space(sycl_cts::util::logger& log,
     sycl::buffer<bool, 1> passedBuf(&passed, sycl::range<1>(1));
 
     queue.submit([&](sycl::handler &cgh) {
-      auto pass = passedBuf.get_access<sycl::access::mode::write>(cgh);
-      sycl::accessor<int, 1, sycl::access::mode::atomic,
+      auto pass = passedBuf.get_access<sycl::access_mode::write>(cgh);
+      sycl::accessor<int, 1, sycl::access_mode::atomic,
                          sycl::target::local>
           ptr(globalRange, cgh);
 

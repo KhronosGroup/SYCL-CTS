@@ -140,14 +140,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       q.submit([&](sycl::handler &cgh) {
         auto resAcc =
-            resBuff.get_access<sycl::access::mode::read_write>(cgh);
-        auto initAcc = initBuff.get_access<sycl::access::mode::read>(cgh);
+            resBuff.get_access<sycl::access_mode::read_write>(cgh);
+        auto initAcc = initBuff.get_access<sycl::access_mode::read>(cgh);
         auto globalAcc =
-            globalBuff.get_access<sycl::access::mode::read>(cgh);
-        sycl::accessor<int, 1, sycl::access::mode::read,
+            globalBuff.get_access<sycl::access_mode::read>(cgh);
+        sycl::accessor<int, 1, sycl::access_mode::read,
                            sycl::target::constant_buffer>
             constAcc(constantBuff, cgh);
-        sycl::accessor<int, 1, sycl::access::mode::read_write,
+        sycl::accessor<int, 1, sycl::access_mode::read_write,
                            sycl::target::local>
             localAcc(r, cgh);
 

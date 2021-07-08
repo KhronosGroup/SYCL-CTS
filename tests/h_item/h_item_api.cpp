@@ -159,8 +159,8 @@ void api_tests<dims>::run(util::logger& log) {
 
     queue.submit([&](sycl::handler& cgh) {
       auto consistency_acc =
-          consistencyBuf.get_access<sycl::access::mode::write>(cgh);
-      auto id_acc = idsBuf.get_access<sycl::access::mode::write>(cgh);
+          consistencyBuf.get_access<sycl::access_mode::write>(cgh);
+      auto id_acc = idsBuf.get_access<sycl::access_mode::write>(cgh);
 
       cgh.parallel_for_work_group<kernel_common<dims>>(
           kernelGroupRange, kernelPhysicalLocalRange,

@@ -141,7 +141,7 @@ class TEST_NAME : public util::test_base {
 
         testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for_work_group<h_item_constructors_kernel<numDims>>(
               simpleRange, simpleRange, [=](sycl::group<numDims> group) {

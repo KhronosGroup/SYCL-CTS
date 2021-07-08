@@ -116,7 +116,7 @@ template <typename T, size_t dims, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_all_accessor_constructors_buffer {
 public:
-  template <sycl::access::mode mode, typename allocatorT,
+  template <sycl::access_mode mode, typename allocatorT,
             typename ... handlerArgsT>
   static void check(sycl::buffer<T, dims, allocatorT> &buffer,
                     sycl::range<dims> range,
@@ -191,7 +191,7 @@ template <typename T, sycl::target target,
 class check_all_accessor_constructors_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
 public:
-  template <sycl::access::mode mode, typename allocatorT,
+  template <sycl::access_mode mode, typename allocatorT,
             typename ... handlerArgsT>
   static void check(sycl::buffer<T, 1, allocatorT> &buffer,
                     sycl::range<1> range,
@@ -219,7 +219,7 @@ template <typename T, size_t dims, sycl::target target,
           sycl::access::placeholder placeholder>
 class check_accessor_common_by_reference_buffer {
 public:
-  template <sycl::access::mode mode, typename allocatorT,
+  template <sycl::access_mode mode, typename allocatorT,
             typename ... handlerArgsT>
   static void check(sycl::buffer<T, dims, allocatorT> &buffer,
                     sycl::range<dims> range,
@@ -268,7 +268,7 @@ template <typename T, sycl::target target,
 class check_accessor_common_by_reference_buffer<T, 0, target, placeholder> {
   static constexpr size_t dims = 0;
 public:
-  template <sycl::access::mode mode, typename allocatorT,
+  template <sycl::access_mode mode, typename allocatorT,
             typename ... handlerArgsT>
   static void check(sycl::buffer<T, 1, allocatorT> &buffer,
                     sycl::range<1> range,
@@ -435,33 +435,33 @@ public:
         /** check global_buffer constructors for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::write;
+          constexpr auto mode = sycl::access_mode::write;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::read_write;
+          constexpr auto mode = sycl::access_mode::read_write;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::discard_write;
+          constexpr auto mode = sycl::access_mode::discard_write;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::discard_read_write;
+          constexpr auto mode = sycl::access_mode::discard_read_write;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::atomic;
+          constexpr auto mode = sycl::access_mode::atomic;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::discard_read_write;
+          constexpr auto mode = sycl::access_mode::discard_read_write;
           semantics_verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         /** dummy kernel as no kernel is required for these checks
@@ -486,13 +486,13 @@ public:
         /** check constant_buffer constructors for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           semantics_verifier::template check<mode>(buffer, r, offset, log, typeName, h);
         }
         /** dummy kernel as no kernel is required for these checks
@@ -538,29 +538,29 @@ class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::true_t,
       /** check host_buffer constructors for different modes
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::write;
+        constexpr auto mode = sycl::access_mode::write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::read_write;
+        constexpr auto mode = sycl::access_mode::read_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::discard_write;
+        constexpr auto mode = sycl::access_mode::discard_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::discard_read_write;
+        constexpr auto mode = sycl::access_mode::discard_read_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       /** check common-by-reference semantics
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         semantics_verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
     }
@@ -600,33 +600,33 @@ public:
       /** check global_buffer constructors for different modes
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::write;
+        constexpr auto mode = sycl::access_mode::write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::read_write;
+        constexpr auto mode = sycl::access_mode::read_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::discard_write;
+        constexpr auto mode = sycl::access_mode::discard_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::discard_read_write;
+        constexpr auto mode = sycl::access_mode::discard_read_write;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::atomic;
+        constexpr auto mode = sycl::access_mode::atomic;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       /** check common-by-reference semantics
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         semantics_verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
 
@@ -652,13 +652,13 @@ public:
       /** check constant_buffer constructors for different modes
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
       /** check common-by-reference semantics
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         semantics_verifier::template check<mode>(buffer, r, offset, log, typeName);
       }
 

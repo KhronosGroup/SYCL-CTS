@@ -33,7 +33,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                                 sycl::buffer<float, 1> &d_data,
                                 const float operand) {
     return queue.submit([&](sycl::handler &cgh) {
-      auto a_data = d_data.get_access<sycl::access::mode::read_write>(cgh);
+      auto a_data = d_data.get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.single_task<class add_kernel>([=]() { a_data[0] += operand; });
     });
@@ -45,7 +45,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                                 sycl::buffer<float, 1> &d_data,
                                 const float operand) {
     return queue.submit([&](sycl::handler &cgh) {
-      auto a_data = d_data.get_access<sycl::access::mode::read_write>(cgh);
+      auto a_data = d_data.get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.single_task<class mul_kernel>([=]() { a_data[0] *= operand; });
 

@@ -100,7 +100,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         const size_t pattern{13};
         sycl::buffer<size_t, 1> buf(sycl::range<1>{size});
         q.submit([&](sycl::handler& cgh) {
-          auto buf_acc_dev{buf.get_access<sycl::access::mode::read_write>(cgh)};
+          auto buf_acc_dev{buf.get_access<sycl::access_mode::read_write>(cgh)};
           cgh.host_task([=](sycl::interop_handle ih) {
             cl_command_queue native_queue = ih.get_native_queue();
             cl_mem native_mem = ih.get_native_mem(buf_acc_dev);
@@ -109,7 +109,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         });
 
         {
-          auto buf_acc_host{buf.get_access<sycl::access::mode::read>()};
+          auto buf_acc_host{buf.get_access<sycl::access_mode::read>()};
           for (int i = 0; i < size; ++i) {
             if (buf_acc_host[i] != pattern)
               FAIL(log, "OpenCL invocation has failed.");

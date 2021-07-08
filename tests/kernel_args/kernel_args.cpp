@@ -58,7 +58,7 @@ class TEST_NAME : public util::test_base {
         sycl::buffer<int, 1> buf(&error, sycl::range<1>(1));
         my_queue.submit([&](sycl::handler &cgh) {
           auto acc =
-              buf.template get_access<sycl::access::mode::read_write>(cgh);
+              buf.template get_access<sycl::access_mode::read_write>(cgh);
           cgh.single_task<class scalar_struct_kernel>([=]() {
             // Test that the values outside kernel have been captured
             int kernelScalar = testScalar;

@@ -390,13 +390,13 @@ sycl::vector_class<sycl::byte> get_image_input_data(
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access::mode mode>
+          sycl::access_mode mode>
 T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
                  sycl::id<dims> idx) {
   return acc.read(image_access<dims>::get_int(idx));
 }
 
-template <typename T, int dims, sycl::access::mode mode>
+template <typename T, int dims, sycl::access_mode mode>
 T read_image_acc(const sycl::accessor<T, dims, mode,
                                     sycl::target::image_array> &acc,
                  image_array_id_t<dims> idx) {
@@ -407,7 +407,7 @@ T read_image_acc(const sycl::accessor<T, dims, mode,
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access::mode mode, typename coordT = acc_coord_tag::use_int>
+          sycl::access_mode mode, typename coordT = acc_coord_tag::use_int>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
@@ -416,7 +416,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(image_access<dims>::get_int(idx), smpl);
 }
 template <typename T, int dims, sycl::target target,
-          sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
+          sycl::access_mode mode, typename coordT = acc_coord_tag::use_float>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
@@ -425,7 +425,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(image_access<dims>::get_float(idx), smpl);
 }
 template <typename T, int dims, sycl::target target,
-          sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
+          sycl::access_mode mode, typename coordT = acc_coord_tag::use_float>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
@@ -436,7 +436,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(coords, smpl);
 }
 
-template <typename T, int dims, sycl::access::mode mode, typename coordT>
+template <typename T, int dims, sycl::access_mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
                                     sycl::target::image_array> &acc,
                          sycl::sampler smpl,
@@ -449,14 +449,14 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access::mode mode>
+          sycl::access_mode mode>
 void write_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
                      sycl::id<dims> idx, T value) {
   const auto coords = image_access<dims>::get_int(idx);
   acc.write(coords, value);
 }
 
-template <typename T, int dims, sycl::access::mode mode>
+template <typename T, int dims, sycl::access_mode mode>
 void write_image_acc(
     const sycl::accessor<T, dims, mode, sycl::target::image_array>
         &acc,
@@ -780,7 +780,7 @@ class image_accessor_failure_storage {
 
 /** tests image accessors reads
 */
-template <typename T, int dim, sycl::access::mode mode,
+template <typename T, int dim, sycl::access_mode mode,
           sycl::target target, sycl::target errorTarget>
 class image_accessor_api_r {
   using acc_t = sycl::accessor<T, dim, mode, target>;
@@ -824,7 +824,7 @@ class image_accessor_api_r {
 
 /** tests image accessors sampled reads
 */
-template <typename T, int dim, sycl::access::mode mode,
+template <typename T, int dim, sycl::access_mode mode,
           sycl::target target, sycl::target errorTarget>
 class image_accessor_api_sampled_r {
   using acc_t = sycl::accessor<T, dim, mode, target>;
@@ -1088,7 +1088,7 @@ class image_accessor_api_sampled_r {
 
 /** tests image accessors writes
 */
-template <typename T, int dim, sycl::access::mode mode,
+template <typename T, int dim, sycl::access_mode mode,
           sycl::target target>
 class image_accessor_api_w {
   using acc_t = sycl::accessor<T, dim, mode, target>;
@@ -1113,7 +1113,7 @@ class image_accessor_api_w {
 
 /** tests image accessors methods
 */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 class check_image_accessor_api_methods {
  public:
@@ -1214,7 +1214,7 @@ class check_image_accessor_api_methods {
 
 /** tests image accessors reads
 */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 class check_image_accessor_api_reads {
 
@@ -1425,7 +1425,7 @@ class check_image_accessor_api_reads {
 
 /** tests image accessors writes
 */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 class check_image_accessor_api_writes {
  public:
@@ -1533,7 +1533,7 @@ class check_image_accessor_api_writes {
 /** tests image accessors with different modes
 */
 
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
@@ -1547,7 +1547,7 @@ void check_image_accessor_api_mode(util::logger &log,
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
@@ -1559,7 +1559,7 @@ void check_image_accessor_api_mode(util::logger &log,
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
@@ -1571,7 +1571,7 @@ void check_image_accessor_api_mode(util::logger &log,
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
@@ -1603,17 +1603,17 @@ template <typename T, int dims, sycl::target target,
 void check_image_accessor_api_target(acc_target_tag::generic,
                                      argsT&& ... args) {
   {
-    constexpr auto mode = sycl::access::mode::read;
+    constexpr auto mode = sycl::access_mode::read;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = sycl::access::mode::write;
+    constexpr auto mode = sycl::access_mode::write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = sycl::access::mode::discard_write;
+    constexpr auto mode = sycl::access_mode::discard_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
@@ -1627,22 +1627,22 @@ template <typename T, int dims, sycl::target target,
 void check_image_accessor_api_target(acc_target_tag::host,
                                      argsT&& ... args) {
   {
-    constexpr auto mode = sycl::access::mode::read;
+    constexpr auto mode = sycl::access_mode::read;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = sycl::access::mode::write;
+    constexpr auto mode = sycl::access_mode::write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = sycl::access::mode::read_write;
+    constexpr auto mode = sycl::access_mode::read_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = sycl::access::mode::discard_write;
+    constexpr auto mode = sycl::access_mode::discard_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }

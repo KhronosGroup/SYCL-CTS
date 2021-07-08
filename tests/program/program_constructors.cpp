@@ -17,13 +17,13 @@ struct program_ctrs_kernel {
 };
 
 class test_functor_1 {
-  sycl::accessor<float, 1, sycl::access::mode::read_write,
+  sycl::accessor<float, 1, sycl::access_mode::read_write,
                      sycl::target::global_buffer>
       m_acc;
 
  public:
   test_functor_1(
-      sycl::accessor<float, 1, sycl::access::mode::read_write,
+      sycl::accessor<float, 1, sycl::access_mode::read_write,
                          sycl::target::global_buffer>
           acc)
       : m_acc(acc) {}

@@ -23,11 +23,11 @@ using namespace sycl_cts;
  */
 template <typename T, sycl::target target>
 class check_base_atomics {
-  sycl::accessor<T, 1, sycl::access::mode::atomic, target> m_acc;
+  sycl::accessor<T, 1, sycl::access_mode::atomic, target> m_acc;
 
  public:
   check_base_atomics(
-      sycl::accessor<T, 1, sycl::access::mode::atomic, target> acc)
+      sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {

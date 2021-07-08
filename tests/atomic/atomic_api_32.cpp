@@ -23,11 +23,11 @@ using namespace sycl_cts;
  */
 template <typename T, sycl::target target>
 class check_atomics_32 {
-  sycl::accessor<T, 1, sycl::access::mode::atomic, target> m_acc;
+  sycl::accessor<T, 1, sycl::access_mode::atomic, target> m_acc;
 
  public:
   check_atomics_32(
-      sycl::accessor<T, 1, sycl::access::mode::atomic, target> acc)
+      sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {
@@ -101,11 +101,11 @@ class check_atomics_32 {
  */
 template <sycl::target target>
 class check_atomics_32<float, target> {
-  sycl::accessor<float, 1, sycl::access::mode::atomic, target> m_acc;
+  sycl::accessor<float, 1, sycl::access_mode::atomic, target> m_acc;
 
  public:
   check_atomics_32(
-      sycl::accessor<float, 1, sycl::access::mode::atomic, target> acc)
+      sycl::accessor<float, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {

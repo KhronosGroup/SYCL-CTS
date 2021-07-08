@@ -110,7 +110,7 @@ std::array<typename kernelInvokeT::parameterT, numItems> store_instances()
     auto queue = sycl_cts::util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
       auto itemAcc =
-          itemBuf.template get_access<sycl::access::mode::write>(cgh);
+          itemBuf.template get_access<sycl::access_mode::write>(cgh);
 
       kernelInvokeT{}(
           cgh, itemRange, oneElemRange,

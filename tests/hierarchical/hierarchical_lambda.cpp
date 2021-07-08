@@ -38,7 +38,7 @@ template <int dim> void check_dim(util::logger &log) {
         auto localRange = sycl_cts::util::get_cts_object::range<dim>::get(
             local, local, local);
         auto groupRange = globalRange / localRange;
-        auto ptr = buf.get_access<sycl::access::mode::read_write,
+        auto ptr = buf.get_access<sycl::access_mode::read_write,
                                   sycl::target::global_buffer>(cgh);
         cgh.parallel_for_work_group<kernel<dim>>(
             groupRange, localRange, [ptr](sycl::group<dim> group_pid) {

@@ -102,7 +102,7 @@ constexpr bool is_image_accessor() {
 
 /** @brief Helper tag to store accessor type information
  */
-template <typename T, size_t kDims, sycl::access::mode kMode,
+template <typename T, size_t kDims, sycl::access_mode kMode,
           sycl::target kTarget,
           sycl::access::placeholder kPlaceholder =
               sycl::access::placeholder::false_t>
@@ -111,7 +111,7 @@ struct accessor_type_info {
 
   using dataT = T;
   static constexpr size_t dims = kDims;
-  static constexpr sycl::access::mode mode = kMode;
+  static constexpr sycl::access_mode mode = kMode;
   static constexpr sycl::target target = kTarget;
   static constexpr sycl::access::placeholder placeholder = kPlaceholder;
 

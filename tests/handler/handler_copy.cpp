@@ -18,7 +18,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-using mode_t = sycl::access::mode;
+using mode_t = sycl::access_mode;
 using target_t = sycl::target;
 
 namespace {
@@ -451,7 +451,7 @@ class copy_test_context {
     run_test_function(fn, lh);
 
     // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<sycl::access::mode::read>();
+    auto acc = dstBuf->template get_access<sycl::access_mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
       const auto idx = reconstruct_index(dstBufRange, i);
       const auto received = acc[idx];
@@ -552,7 +552,7 @@ class copy_test_context {
   void verify_device_copy(ExpectedValueCallback getExpectedValue,
                           const log_helper& lh) {
     // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<sycl::access::mode::read>();
+    auto acc = dstBuf->template get_access<sycl::access_mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
       const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
       const auto received = acc[dstAbsIdx];

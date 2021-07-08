@@ -186,7 +186,7 @@ class TEST_NAME : public util::test_base {
         auto testQueue = util::get_cts_object::queue();
         testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for<nd_item_constructors_kernel<numDims>>(
               sycl::nd_range<numDims>(simpleRange, simpleRange),
@@ -216,7 +216,7 @@ class TEST_NAME : public util::test_base {
         });
         testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for<nd_item_move_assignment_kernel<numDims>>(
               sycl::nd_range<numDims>(simpleRange, simpleRange),

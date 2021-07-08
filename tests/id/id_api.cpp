@@ -19,7 +19,7 @@ class test_kernel {};
 template <int dims>
 void test_id_kernels(
     sycl::id<dims> id,
-    sycl::accessor<int, 1, sycl::access::mode::read_write,
+    sycl::accessor<int, 1, sycl::access_mode::read_write,
                        sycl::target::global_buffer>
         error_ptr,
     int m_iteration) {
@@ -228,7 +228,7 @@ class test_id {
         auto my_range = sycl::nd_range<dims>(global, local);
 
         auto error_ptr =
-            error_buffer.get_access<sycl::access::mode::read_write>(cgh);
+            error_buffer.get_access<sycl::access_mode::read_write>(cgh);
 
         auto my_kernel = ([=](sycl::nd_item<dims> item) {
           int m_iteration = 0;

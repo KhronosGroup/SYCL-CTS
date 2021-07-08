@@ -22,7 +22,7 @@ namespace {
 
 /** tests accessor member values
 */
-template <typename T, int dims, sycl::access::mode mode,
+template <typename T, int dims, sycl::access_mode mode,
           sycl::target target,
           sycl::access::placeholder placeholder =
               sycl::access::placeholder::false_t>

@@ -28,10 +28,10 @@ size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  typedef sycl::accessor<int, dimensions, sycl::access::mode::read,
+  typedef sycl::accessor<int, dimensions, sycl::access_mode::read,
                              sycl::target::global_buffer>
       t_readAccess;
-  typedef sycl::accessor<int, dimensions, sycl::access::mode::write,
+  typedef sycl::accessor<int, dimensions, sycl::access_mode::write,
                              sycl::target::global_buffer>
       t_writeAccess;
 
@@ -230,10 +230,10 @@ void test_item(util::logger &log, sycl::queue &queue) {
 
     queue.submit([&](sycl::handler &cgh) {
       auto accG =
-          bufGlob.template get_access<sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.template get_access<sycl::access::mode::read>(cgh);
+          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<1> kernel_1d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_1d);
@@ -260,10 +260,10 @@ void test_item(util::logger &log, sycl::queue &queue) {
 
     queue.submit([&](sycl::handler &cgh) {
       auto accG =
-          bufGlob.template get_access<sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.template get_access<sycl::access::mode::read>(cgh);
+          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<2> kernel_2d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_2d);
@@ -288,9 +288,9 @@ void test_item(util::logger &log, sycl::queue &queue) {
     sycl::buffer<int, 3> bufOut(dataOut.get(), globalRange);
 
     queue.submit([&](sycl::handler &cgh) {
-      auto accG = bufGlob.get_access<sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.get_access<sycl::access::mode::read>(cgh);
-      auto accOut = bufOut.get_access<sycl::access::mode::write>(cgh);
+      auto accG = bufGlob.get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.get_access<sycl::access_mode::read>(cgh);
+      auto accOut = bufOut.get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<3> kernel_3d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_3d);

@@ -28,9 +28,9 @@ bool check_data(sycl::buffer<T, dims, allocT> buf,
     sycl::buffer<int, 1> err_buf(&error, sycl::range<1>(1));
     q.submit([&](sycl::handler &cgh) {
 
-      auto acc = buf.template get_access<sycl::access::mode::read>(cgh);
+      auto acc = buf.template get_access<sycl::access_mode::read>(cgh);
       auto err_acc =
-          err_buf.template get_access<sycl::access::mode::read_write>(cgh);
+          err_buf.template get_access<sycl::access_mode::read_write>(cgh);
       cgh.parallel_for<BufferCheck<T, dims, allocT>>(
           r, [=](sycl::id<dims> idx) {
             if (!check_equal_values(acc[idx], T {0})) {

@@ -39,13 +39,13 @@ void test_mem_fence(util::logger &log, sycl::queue &queue) {
       item.mem_fence();
     },
     [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access::mode::read_write>();
+      item.template mem_fence<sycl::access_mode::read_write>();
     },
     [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access::mode::read>();
+      item.template mem_fence<sycl::access_mode::read>();
     },
     [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access::mode::write>();
+      item.template mem_fence<sycl::access_mode::write>();
   });
   const auto access = std::integral_constant<access_group, accessGroup>{};
 

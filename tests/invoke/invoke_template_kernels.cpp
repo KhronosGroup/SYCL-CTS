@@ -15,10 +15,10 @@ using namespace sycl_cts;
 
 template <typename T>
 class templated_functor {
-  typedef sycl::accessor<T, 1, sycl::access::mode::read,
+  typedef sycl::accessor<T, 1, sycl::access_mode::read,
                              sycl::target::global_buffer>
       read_t;
-  typedef sycl::accessor<T, 1, sycl::access::mode::write,
+  typedef sycl::accessor<T, 1, sycl::access_mode::write,
                              sycl::target::global_buffer>
       write_t;
 
@@ -40,9 +40,9 @@ bool test_kernel_functor(T in_value, util::logger &log,
     sycl::buffer<T, 1> buffer_output(&output, sycl::range<1>(1));
     sycl_queue.submit([&](sycl::handler &cgh) {
       auto access_input =
-          buffer_input.template get_access<sycl::access::mode::read>(cgh);
+          buffer_input.template get_access<sycl::access_mode::read>(cgh);
       auto access_output =
-          buffer_output.template get_access<sycl::access::mode::write>(cgh);
+          buffer_output.template get_access<sycl::access_mode::write>(cgh);
       templated_functor<T> kernel(access_input, access_output);
       cgh.single_task(kernel);
     });

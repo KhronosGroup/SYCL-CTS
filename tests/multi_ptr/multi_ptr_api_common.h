@@ -628,14 +628,14 @@ class pointer_apis {
 
       queue.submit([&](sycl::handler &handler) {
         auto resAcc =
-              resBuff.get_access<sycl::access::mode::read_write>(handler);
-        sycl::accessor<T, 1, sycl::access::mode::read_write,
+              resBuff.get_access<sycl::access_mode::read_write>(handler);
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
                            sycl::target::global_buffer>
             globalAccessor(buffer, handler);
-        sycl::accessor<T, 1, sycl::access::mode::read,
+        sycl::accessor<T, 1, sycl::access_mode::read,
                            sycl::target::constant_buffer>
             constantAccessor(buffer, handler);
-        sycl::accessor<T, 1, sycl::access::mode::read_write,
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
                            sycl::target::local>
             localAccessor(size, handler);
 

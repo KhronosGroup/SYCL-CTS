@@ -75,9 +75,9 @@ class TEST_NAME : public util::test_base {
 
         myQueue.submit([&](sycl::handler &cgh) {
           auto accSignResult =
-              bufSignResult.get_access<sycl::access::mode::read_write>(cgh);
+              bufSignResult.get_access<sycl::access_mode::read_write>(cgh);
           auto accSizeResult =
-              bufSizeResult.get_access<sycl::access::mode::read_write>(cgh);
+              bufSizeResult.get_access<sycl::access_mode::read_write>(cgh);
 
           cgh.single_task<TEST_NAME>([=]() {
             // Integral Interop Data Types

@@ -53,7 +53,7 @@ public:
 template <typename T, size_t dims, sycl::target target>
 class check_all_accessor_constructors_image {
 public:
-  template <sycl::access::mode mode,
+  template <sycl::access_mode mode,
             int imageDims, typename allocatorT, typename ... handlerArgsT>
   static void check(sycl::image<imageDims, allocatorT> &image,
                     sycl::range<imageDims> range,
@@ -94,7 +94,7 @@ public:
 template <typename T, size_t dims, sycl::target target>
 class check_accessor_common_by_reference_image {
 public:
-  template <sycl::access::mode mode,
+  template <sycl::access_mode mode,
             int imageDims, typename allocatorT, typename ... handlerArgsT>
   static void check(sycl::image<imageDims, allocatorT> &image,
                     sycl::image<imageDims, allocatorT> &image2,
@@ -168,21 +168,21 @@ class image_accessor_dims {
         /** check image constructors for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::write;
+          constexpr auto mode = sycl::access_mode::write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::discard_write;
+          constexpr auto mode = sycl::access_mode::discard_write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName, h);
         }
@@ -206,21 +206,21 @@ class image_accessor_dims {
       /** check host_image constructor for different modes
        */
       {
-        constexpr auto mode = sycl::access::mode::read;
+        constexpr auto mode = sycl::access_mode::read;
         verifier::template check<mode>(image, range, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::write;
+        constexpr auto mode = sycl::access_mode::write;
         verifier::template check<mode>(image, range, log, typeName);
       }
       {
-        constexpr auto mode = sycl::access::mode::discard_write;
+        constexpr auto mode = sycl::access_mode::discard_write;
         verifier::template check<mode>(image, range, log, typeName);
       }
       /** check common-by-reference semantics
        */
       {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName);
       }
@@ -262,21 +262,21 @@ public:
         /** check image array constructor for different modes
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::write;
+          constexpr auto mode = sycl::access_mode::write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = sycl::access::mode::discard_write;
+          constexpr auto mode = sycl::access_mode::discard_write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = sycl::access::mode::read;
+          constexpr auto mode = sycl::access_mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName, h);
         }

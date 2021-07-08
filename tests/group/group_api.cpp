@@ -108,7 +108,7 @@ public:
 
     queue.submit([&](sycl::handler &cgh) {
       auto a_dev =
-          buf.template get_access<sycl::access::mode::read_write>(cgh);
+          buf.template get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.parallel_for_work_group<test_kernel<dimensions>>(
                 m_globalRange,
