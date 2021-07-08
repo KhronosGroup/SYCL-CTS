@@ -19,7 +19,7 @@ using namespace sycl_cts;
 
 class device_event_wait;
 
-/** tests the api for cl::sycl::device_event
+/** tests the api for sycl::device_event
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -46,25 +46,25 @@ class TEST_NAME : public util::test_base {
 
       bool error = false;
       {
-        cl::sycl::range<1> range(1);
-        cl::sycl::range<1> dataRange(bufferSize);
-        cl::sycl::buffer<int, 1> buf(data.data(), dataRange);
-        cl::sycl::buffer<bool, 1> errBuf(&error, range);
+        sycl::range<1> range(1);
+        sycl::range<1> dataRange(bufferSize);
+        sycl::buffer<int, 1> buf(data.data(), dataRange);
+        sycl::buffer<bool, 1> errBuf(&error, range);
 
-        testQueue.submit([&](cl::sycl::handler &cgh) {
-          using namespace cl::sycl::access;
+        testQueue.submit([&](sycl::handler &cgh) {
+          using namespace sycl::access;
 
           auto globalAcc = buf.get_access<mode::read_write>(cgh);
           auto errorAcc = errBuf.get_access<mode::write>(cgh);
           auto localAcc =
-              cl::sycl::accessor<int, 1, mode::read_write, target::local>(
+              sycl::accessor<int, 1, mode::read_write, target::local>(
                   dataRange, cgh);
 
           cgh.parallel_for<class device_event_wait>(
-              cl::sycl::nd_range<1>(range, range),
-              [=](cl::sycl::nd_item<1> ndItem) {
+              sycl::nd_range<1>(range, range),
+              [=](sycl::nd_item<1> ndItem) {
                 // Run asynchronous copy for full buffer
-                cl::sycl::device_event deviceEvent =
+                sycl::device_event deviceEvent =
                     ndItem.async_work_group_copy(localAcc.get_pointer(),
                                                  globalAcc.get_pointer(),
                                                  bufferSize);
@@ -79,9 +79,9 @@ class TEST_NAME : public util::test_base {
         });
       }
       if (error) {
-        FAIL(log, "cl::sycl::device_event async_work_group_copy failed");
+        FAIL(log, "sycl::device_event async_work_group_copy failed");
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       const auto errorMsg =
           std::string("a SYCL exception was caught: ") + e.what();

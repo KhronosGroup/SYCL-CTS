@@ -16,7 +16,7 @@
 
 namespace TEST_NAMESPACE {
 
-/** tests the constructors for cl::sycl::accessor
+/** tests the constructors for sycl::accessor
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -37,10 +37,10 @@ class TEST_NAME : public util::test_base {
       check_all_types_fp64<local_accessor_all_dims>::run(queue, log);
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

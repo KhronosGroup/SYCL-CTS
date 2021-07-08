@@ -51,7 +51,7 @@ struct success_array {
 namespace TEST_NAME {
 using namespace sycl_cts;
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -74,7 +74,7 @@ class TEST_NAME : public util::test_base {
       //    0 and 1 have the same global range
       //    1 and 2 have the same local range
       //    0 and 2 are completely different
-      using nd_range_t = cl::sycl::nd_range<numDims>;
+      using nd_range_t = sycl::nd_range<numDims>;
       std::array<nd_range_t, 3> objects = {nd_range_t(range8, range4),
                                            nd_range_t(range8, range2),
                                            nd_range_t(range4, range2)};
@@ -136,10 +136,10 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log, success[current_check::not_equal_other_same_local], true,
                   numDims);
 
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

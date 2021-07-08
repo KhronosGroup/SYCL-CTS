@@ -32,7 +32,7 @@ public:
   static void check(sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler,
+                    sycl::handler& handler,
                     const propertyListT& ... properties) {
     // construct the accessor
     typename accTag::type accessor(handler,
@@ -46,11 +46,11 @@ public:
   }
   /** @brief Overload to verify all constructors with range
    */
-  static void check(cl::sycl::range<accTag::dataDims> range,
+  static void check(sycl::range<accTag::dataDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
-                    cl::sycl::handler& handler,
+                    sycl::handler& handler,
                     const propertyListT& ... properties) {
     // construct the accessor
     typename accTag::type accessor(range, handler,
@@ -67,11 +67,11 @@ public:
 
 /** @brief Checks all constructors available
  */
-template <typename T, size_t dims, cl::sycl::access::target target>
+template <typename T, size_t dims, sycl::access::target target>
 class check_all_accessor_constructors_local {
 public:
-  template <cl::sycl::access::mode mode, typename ... rangeArgsT>
-  static void check(cl::sycl::handler &handler,
+  template <sycl::access::mode mode, typename ... rangeArgsT>
+  static void check(sycl::handler &handler,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     rangeArgsT&& ... range) {
@@ -88,7 +88,7 @@ public:
                       log, constructorName, typeName, handler);
     }
     {
-      using property_list = cl::sycl::property_list;
+      using property_list = sycl::property_list;
       using verifier = check_accessor_constructor_local<accTag, property_list>;
 
       property_list properties {};
@@ -105,11 +105,11 @@ public:
 
 /** @brief Check common-by-reference semantics
  */
-template <typename T, size_t dims, cl::sycl::access::target target>
+template <typename T, size_t dims, sycl::access::target target>
 class check_accessor_common_by_reference_local {
 public:
-  template <cl::sycl::access::mode mode, typename ... rangeArgsT>
-  static void check(cl::sycl::handler &handler,
+  template <sycl::access::mode mode, typename ... rangeArgsT>
+  static void check(sycl::handler &handler,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     rangeArgsT&& ... range) {
@@ -152,7 +152,7 @@ public:
 template <typename T, typename kernelName, size_t dims>
 class local_accessor_dims {
 public:
-  static void check(util::logger &log, cl::sycl::queue &queue,
+  static void check(util::logger &log, sycl::queue &queue,
                     const std::string& typeName) {
     int size = 32;
     auto range =
@@ -161,34 +161,34 @@ public:
     /** check buffer accessor constructors for local
      */
     {
-      constexpr auto target = cl::sycl::access::target::local;
+      constexpr auto target = sycl::access::target::local;
       using verifier =
           check_all_accessor_constructors_local<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_local<T, dims, target>;
 
-      queue.submit([&](cl::sycl::handler &h) {
+      queue.submit([&](sycl::handler &h) {
         /** check local accessor constructor for different modes
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           verifier::template check<mode>(h, log, typeName, range);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::atomic;
+          constexpr auto mode = sycl::access::mode::atomic;
           verifier::template check<mode>(h, log, typeName, range);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read_write;
+          constexpr auto mode = sycl::access::mode::read_write;
           semantics_verifier::template check<mode>(h, log, typeName, range);
         }
 
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, cl::sycl::access::target::local>;
+            dummy_functor<kernelName, sycl::access::target::local>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
@@ -201,40 +201,40 @@ public:
 template <typename T, typename kernelName>
 class local_accessor_dims<T, kernelName, 0> {
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue,
+  static void check(util::logger &log, sycl::queue &queue,
                     const std::string& typeName) {
     /** check buffer accessor constructors for local
      */
     {
-      constexpr auto target = cl::sycl::access::target::local;
+      constexpr auto target = sycl::access::target::local;
       constexpr size_t dims = 0;
       using verifier =
           check_all_accessor_constructors_local<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_local<T, dims, target>;
 
-      queue.submit([&](cl::sycl::handler &h) {
+      queue.submit([&](sycl::handler &h) {
         /** check local accessor constructor for different modes
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           verifier::template check<mode>(h, log, typeName);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::atomic;
+          constexpr auto mode = sycl::access::mode::atomic;
           verifier::template check<mode>(h, log, typeName);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read_write;
+          constexpr auto mode = sycl::access::mode::read_write;
           semantics_verifier::template check<mode>(h, log, typeName);
         }
 
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, cl::sycl::access::target::local>;
+            dummy_functor<kernelName, sycl::access::target::local>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();

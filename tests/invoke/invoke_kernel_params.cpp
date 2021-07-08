@@ -32,8 +32,8 @@ struct array_type_t {
 
 struct test_kernel {
  private:
-  typedef cl::sycl::accessor<uint32_t, 1, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<uint32_t, 1, sycl::access::mode::write,
+                             sycl::access::target::global_buffer>
       acc_uint32_t;
 
   uint32_t var_a;
@@ -71,8 +71,8 @@ class test_kernel_name;
  */
 class TEST_NAME : public util::test_base {
  public:
-  typedef cl::sycl::accessor<uint32_t, 1, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<uint32_t, 1, sycl::access::mode::write,
+                             sycl::access::target::global_buffer>
       acc_uint32_t;
 
   /** return information about this test
@@ -90,12 +90,12 @@ class TEST_NAME : public util::test_base {
       try {
         auto my_queue = util::get_cts_object::queue();
 
-        cl::sycl::buffer<uint32_t> buf_result(&result, cl::sycl::range<1>(1));
+        sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
 
-        my_queue.submit([&](cl::sycl::handler &cgh) {
+        my_queue.submit([&](sycl::handler &cgh) {
           // access the output
           auto acc_pass =
-              buf_result.template get_access<cl::sycl::access::mode::write>(
+              buf_result.template get_access<sycl::access::mode::write>(
                   cgh);
 
           const uint32_t var_a = ref_a;
@@ -122,10 +122,10 @@ class TEST_NAME : public util::test_base {
         });
 
         my_queue.wait_and_throw();
-      } catch (const cl::sycl::exception &e) {
+      } catch (const sycl::exception &e) {
         log_exception(log, e);
-        cl::sycl::string_class errorMsg =
-            "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+        sycl::string_class errorMsg =
+            "a SYCL exception was caught: " + sycl::string_class(e.what());
         FAIL(log, errorMsg.c_str());
       }
 
@@ -140,17 +140,17 @@ class TEST_NAME : public util::test_base {
       try {
         auto my_queue = util::get_cts_object::queue();
 
-        cl::sycl::buffer<uint32_t> buf_result(&result, cl::sycl::range<1>(1));
+        sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
 
-        my_queue.submit([&](cl::sycl::handler &cgh) {
+        my_queue.submit([&](sycl::handler &cgh) {
           // construct a basic type
           basic_type_t my_type = {ref_b_a, ref_b_b, ref_b_c};
 
           // access the output
           auto acc_pass =
               buf_result
-                  .template get_access<cl::sycl::access::mode::write,
-                                       cl::sycl::access::target::global_buffer>(
+                  .template get_access<sycl::access::mode::write,
+                                       sycl::access::target::global_buffer>(
                       cgh);
 
           // instantiate the kernel
@@ -165,10 +165,10 @@ class TEST_NAME : public util::test_base {
         });
 
         my_queue.wait_and_throw();
-      } catch (const cl::sycl::exception &e) {
+      } catch (const sycl::exception &e) {
         log_exception(log, e);
-        cl::sycl::string_class errorMsg =
-            "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+        sycl::string_class errorMsg =
+            "a SYCL exception was caught: " + sycl::string_class(e.what());
         FAIL(log, errorMsg.c_str());
       }
 

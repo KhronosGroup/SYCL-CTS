@@ -17,14 +17,14 @@ struct program_ctrs_kernel {
 };
 
 class test_functor_1 {
-  cl::sycl::accessor<float, 1, cl::sycl::access::mode::read_write,
-                     cl::sycl::access::target::global_buffer>
+  sycl::accessor<float, 1, sycl::access::mode::read_write,
+                     sycl::access::target::global_buffer>
       m_acc;
 
  public:
   test_functor_1(
-      cl::sycl::accessor<float, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer>
+      sycl::accessor<float, 1, sycl::access::mode::read_write,
+                         sycl::access::target::global_buffer>
           acc)
       : m_acc(acc) {}
 
@@ -34,7 +34,7 @@ class test_functor_1 {
 namespace program_constructors__ {
 using namespace sycl_cts;
 
-/** tests the constructors for cl::sycl::platform
+/** tests the constructors for sycl::platform
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -51,10 +51,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       log.note("check (context) constructor");
       {
         auto context = util::get_cts_object::context();
-        cl::sycl::program program(context);
+        sycl::program program(context);
 
         if (!context.is_host() &&
-            (program.get_state() != cl::sycl::program_state::none)) {
+            (program.get_state() != sycl::program_state::none)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
@@ -63,10 +63,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         auto context = util::get_cts_object::context();
         auto deviceList = context.get_devices();
-        cl::sycl::program program(context, deviceList);
+        sycl::program program(context, deviceList);
 
         if (!context.is_host() &&
-            (program.get_state() != cl::sycl::program_state::none)) {
+            (program.get_state() != sycl::program_state::none)) {
           FAIL(log, "program was not constructed correctly");
         }
       }
@@ -84,12 +84,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programB = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<1>>(context);
 
-          cl::sycl::vector_class<cl::sycl::program> programList;
+          sycl::vector_class<sycl::program> programList;
           programList.push_back(programA);
           programList.push_back(programB);
           try {
-            cl::sycl::program programC(programList);
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+            sycl::program programC(programList);
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!is_linker_available(deviceList)) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -97,7 +97,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
             }
           }
 
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -117,12 +117,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programB = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<3>>(context);
 
-          cl::sycl::vector_class<cl::sycl::program> programList;
+          sycl::vector_class<sycl::program> programList;
           programList.push_back(programA);
           programList.push_back(programB);
           try {
-            cl::sycl::program programC(programList, "-cl-fast-relaxed-math");
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+            sycl::program programC(programList, "-cl-fast-relaxed-math");
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!is_linker_available(deviceList)) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -130,7 +130,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
             }
           }
 
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -148,13 +148,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programA = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<4>>(context);
 
-          cl::sycl::program programB(programA);
+          sycl::program programB(programA);
 
           if (programA.get_state() != programB.get_state()) {
             FAIL(log,
                  "program was not copy constructed correctly. (get_state)");
           }
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -172,12 +172,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programA = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<5>>(context);
 
-          cl::sycl::program programB = programA;
+          sycl::program programB = programA;
 
           if (programA.get_state() != programB.get_state()) {
             FAIL(log, "program was not copy assigned correctly. (get_state)");
           }
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -195,13 +195,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programA = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<6>>(context);
 
-          cl::sycl::program programB(std::move(programA));
+          sycl::program programB(std::move(programA));
 
-          if (programB.get_state() != cl::sycl::program_state::compiled) {
+          if (programB.get_state() != sycl::program_state::compiled) {
             FAIL(log,
                  "program was not move constructed correctly. (get_state)");
           }
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -219,12 +219,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto programA = util::get_cts_object::program::compiled<
               struct program_ctrs_kernel<7>>(context);
 
-          cl::sycl::program programB = std::move(programA);
+          sycl::program programB = std::move(programA);
 
-          if (programB.get_state() != cl::sycl::program_state::compiled) {
+          if (programB.get_state() != sycl::program_state::compiled) {
             FAIL(log, "program was not move assigned correctly. (get_state)");
           }
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!is_compiler_available(deviceList)) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -238,11 +238,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
 
-        cl::sycl::program programA(context);
-        cl::sycl::program programB(programA);
-        cl::sycl::program programC(context);
+        sycl::program programA(context);
+        sycl::program programB(programA);
+        sycl::program programC(context);
         programC = programA;
-        cl::sycl::program programD(context);
+        sycl::program programD(context);
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
         if (!(programA == programB) &&
@@ -283,10 +283,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
 
-        cl::sycl::program programA(context);
-        cl::sycl::program programB(programA);
+        sycl::program programA(context);
+        sycl::program programB(programA);
 
-        cl::sycl::hash_class<cl::sycl::program> hasher;
+        sycl::hash_class<sycl::program> hasher;
 
         if (hasher(programA) != hasher(programB)) {
           FAIL(log,
@@ -294,10 +294,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
                "failed)");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

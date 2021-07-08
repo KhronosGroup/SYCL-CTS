@@ -19,8 +19,8 @@ from common_python_vec import (
 TEST_NAME = 'SWIZZLE_ASSIGNMENT'
 
 swizzle_xyzw_rgba_assignment_template = Template("""
-        cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-        cl::sycl::vec<${type}, ${size}> swizzledVec = cl::sycl::vec<${type}, ${size}>();
+        sycl::vec<${type}, ${size}> ${vecName}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
+        sycl::vec<${type}, ${size}> swizzledVec = sycl::vec<${type}, ${size}>();
         swizzledVec.${indexes}() = ${vecName}DimTestVec;
         ${type} vals[] = {${orderedValues}};
         if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
@@ -30,8 +30,8 @@ swizzle_xyzw_rgba_assignment_template = Template("""
 
 swizzle_elem_assignment_template = Template("""
         {
-          cl::sycl::vec<${type}, ${size}> ${vecName}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-          cl::sycl::vec<${type}, ${size}> swizzledVec = cl::sycl::vec<${type}, ${size}>();
+          sycl::vec<${type}, ${size}> ${vecName}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
+          sycl::vec<${type}, ${size}> swizzledVec = sycl::vec<${type}, ${size}>();
           swizzledVec.template swizzle<${indexes}>() = ${vecName}DimTestVec;
           ${type} vals[] = {${orderedValues}};
           if (!check_vector_values<${type}, ${size}>(swizzledVec, vals)) {
@@ -49,22 +49,22 @@ index_positions_dict = {
     'g': 1,
     'b': 2,
     'a': 3,
-    'cl::sycl::elem::s0': 0,
-    'cl::sycl::elem::s1': 1,
-    'cl::sycl::elem::s2': 2,
-    'cl::sycl::elem::s3': 3,
-    'cl::sycl::elem::s4': 4,
-    'cl::sycl::elem::s5': 5,
-    'cl::sycl::elem::s6': 6,
-    'cl::sycl::elem::s7': 7,
-    'cl::sycl::elem::s8': 8,
-    'cl::sycl::elem::s9': 9,
-    'cl::sycl::elem::sA': 10,
-    'cl::sycl::elem::sB': 11,
-    'cl::sycl::elem::sC': 12,
-    'cl::sycl::elem::sD': 13,
-    'cl::sycl::elem::sE': 14,
-    'cl::sycl::elem::sF': 15
+    'sycl::elem::s0': 0,
+    'sycl::elem::s1': 1,
+    'sycl::elem::s2': 2,
+    'sycl::elem::s3': 3,
+    'sycl::elem::s4': 4,
+    'sycl::elem::s5': 5,
+    'sycl::elem::s6': 6,
+    'sycl::elem::s7': 7,
+    'sycl::elem::s8': 8,
+    'sycl::elem::s9': 9,
+    'sycl::elem::sA': 10,
+    'sycl::elem::sB': 11,
+    'sycl::elem::sC': 12,
+    'sycl::elem::sD': 13,
+    'sycl::elem::sE': 14,
+    'sycl::elem::sF': 15
 }
 
 
@@ -160,7 +160,7 @@ def gen_elem_str(type_str, size):
         return wrap_with_kernel(
             test_string, 'ELEM_KERNEL_' + type_str + str(size) +
             ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
-                'cl::sycl::elem::', ''), 'Swizzle assignment test for vec<' +
+                'sycl::elem::', ''), 'Swizzle assignment test for vec<' +
             type_str + ', ' + str(size) + '> .swizzle<' +
             ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>',
             test_string)
@@ -198,7 +198,7 @@ def gen_elem_str(type_str, size):
     return wrap_with_kernel(
         test_string, 'KERNEL_SWIZZLE_ASSIGNMENT_ELEM_' + type_str + str(size) +
         ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
-            'cl::sycl::elem::', ''), 'Swizzle assignment test for vec<' +
+            'sycl::elem::', ''), 'Swizzle assignment test for vec<' +
         type_str + ', ' + str(size) + '> .swizzle<' +
         ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>', test_string)
 

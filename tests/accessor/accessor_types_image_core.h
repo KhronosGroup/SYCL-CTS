@@ -19,7 +19,7 @@
 
 namespace TEST_NAMESPACE {
 
-using user_alias = cl::sycl::vec<cl::sycl::cl_int, 4>;
+using user_alias = sycl::vec<sycl::cl_int, 4>;
 
 /**
  *  @brief Run specific image accessors' tests for core type set
@@ -32,9 +32,9 @@ class check_all_types_image_core {
   using check_type = action<T, extensionTagT>;
 
 public:
-  static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
+  static void run(sycl::queue& queue, sycl_cts::util::logger &log) {
 
-    if (!queue.get_device().get_info<cl::sycl::info::device::image_support>()) {
+    if (!queue.get_device().get_info<sycl::info::device::image_support>()) {
       log.note("Device does not support images -- skipping check");
       return;
     }
@@ -46,13 +46,13 @@ public:
       return;
 
     const auto types =
-        named_type_pack<cl::sycl::cl_int4,
-                        cl::sycl::cl_uint4,
-                        cl::sycl::cl_float4,
+        named_type_pack<sycl::cl_int4,
+                        sycl::cl_uint4,
+                        sycl::cl_float4,
                         user_alias>({
-                        "cl::sycl::cl_int",
-                        "cl::sycl::cl_uint",
-                        "cl::sycl::cl_float",
+                        "sycl::cl_int",
+                        "sycl::cl_uint",
+                        "sycl::cl_float",
                         "user_alias"});
 
     for_all_types<check_type>(types, log, queue);

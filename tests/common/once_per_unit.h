@@ -20,7 +20,7 @@ namespace once_per_unit {
   /**
    * @brief Factory method; provides unique queue instance per compilation unit
    */
-  inline cl::sycl::queue& get_queue() {
+  inline sycl::queue& get_queue() {
     static auto q = sycl_cts::util::get_cts_object::queue();
     return q;
   }

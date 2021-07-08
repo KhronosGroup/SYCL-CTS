@@ -35,12 +35,12 @@ class TEST_NAME : public util::test_base {
         return;
       }
       // Test using queue constructed already
-      for_type_and_vectors<check_type, cl::sycl::half>(queue, log,
-          "cl::sycl::half");
-      for_type_and_vectors<check_type, cl::sycl::cl_half>(queue, log,
-          "cl::sycl::cl_half");
+      for_type_and_vectors<check_type, sycl::half>(queue, log,
+          "sycl::half");
+      for_type_and_vectors<check_type, sycl::cl_half>(queue, log,
+          "sycl::cl_half");
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

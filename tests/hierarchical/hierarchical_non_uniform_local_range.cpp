@@ -25,16 +25,16 @@ template <int dim> class kernel;
 
 using namespace sycl_cts;
 
-void check_expected(const std::vector<cl::sycl::int3> &data, unsigned local_id,
+void check_expected(const std::vector<sycl::int3> &data, unsigned local_id,
                     unsigned idx, int dim, bool set, util::logger &log) {
   int expected = set ? local_id : -1;
   if (getElement(data[idx], dim - 1) != expected) {
-    cl::sycl::string_class errorMessage =
-        cl::sycl::string_class("Value for global id ") + std::to_string(idx) +
-        cl::sycl::string_class(" for dim = ") + std::to_string(dim) +
-        cl::sycl::string_class(" was not correct (") +
+    sycl::string_class errorMessage =
+        sycl::string_class("Value for global id ") + std::to_string(idx) +
+        sycl::string_class(" for dim = ") + std::to_string(dim) +
+        sycl::string_class(" was not correct (") +
         std::to_string(getElement(data[idx], dim - 1)) +
-        cl::sycl::string_class(" instead of ") + std::to_string(expected) + ")";
+        sycl::string_class(" instead of ") + std::to_string(expected) + ")";
     FAIL(log, errorMessage);
   }
 }
@@ -45,7 +45,7 @@ template <int dim> void check_dim(util::logger &log) {
   constexpr unsigned group_range_total = 64;
   constexpr unsigned local_range_total = 27;
   constexpr unsigned global_range = group_range_total * local_range_total;
-  std::vector<cl::sycl::int3> data(global_range);
+  std::vector<sycl::int3> data(global_range);
 
   const unsigned group_range_1d = (dim > 1) ? group_range : group_range_total;
   const unsigned group_range_2d =
@@ -59,19 +59,19 @@ template <int dim> void check_dim(util::logger &log) {
   const unsigned local_range_3d = (dim > 2) ? local_range : 1;
   try {
     // Set element of the vector with -1 to represent unset data.
-    std::fill(data.begin(), data.end(), cl::sycl::int3(-1, -1, -1));
+    std::fill(data.begin(), data.end(), sycl::int3(-1, -1, -1));
 
     auto myQueue = util::get_cts_object::queue();
     // using this scope we ensure that the buffer will update the host values
     // after the wait_and_throw
     {
-      cl::sycl::buffer<cl::sycl::int3, 1> buf(data.data(),
-                                              cl::sycl::range<1>(data.size()));
+      sycl::buffer<sycl::int3, 1> buf(data.data(),
+                                              sycl::range<1>(data.size()));
 
-      myQueue.submit([&](cl::sycl::handler &cgh) {
-        cl::sycl::stream os(2048, 80, cgh);
+      myQueue.submit([&](sycl::handler &cgh) {
+        sycl::stream os(2048, 80, cgh);
         auto accessor =
-            buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
+            buf.template get_access<sycl::access::mode::read_write>(cgh);
 
         auto groupRange =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
@@ -80,10 +80,10 @@ template <int dim> void check_dim(util::logger &log) {
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
                 local_range_total>(local_range, local_range);
         cgh.parallel_for_work_group<kernel<dim>>(
-            groupRange, localRange, [=](cl::sycl::group<dim> group_pid) {
+            groupRange, localRange, [=](sycl::group<dim> group_pid) {
               group_pid.parallel_for_work_item(
-                  cl::sycl::range<dim>(group_pid.get_id()),
-                  [&](cl::sycl::h_item<dim> item_id) {
+                  sycl::range<dim>(group_pid.get_id()),
+                  [&](sycl::h_item<dim> item_id) {
                     unsigned physical_local_d1 =
                         item_id.get_physical_local()[0];
                     unsigned physical_local_d2 =
@@ -105,7 +105,7 @@ template <int dim> void check_dim(util::logger &log) {
                     // but in new non-uniform logical local range that depends
                     // on a work-group id
                     accessor[globalIdL] =
-                        cl::sycl::int3(physical_local_d1, physical_local_d2,
+                        sycl::int3(physical_local_d1, physical_local_d2,
                                        physical_local_d3);
                   });
             });
@@ -134,15 +134,15 @@ template <int dim> void check_dim(util::logger &log) {
                 }
                 idx++;
               }
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    sycl::string_class errorMsg =
+        "a SYCL exception was caught: " + sycl::string_class(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
  public:

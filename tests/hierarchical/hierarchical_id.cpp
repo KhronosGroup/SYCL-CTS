@@ -42,43 +42,43 @@ template <int dim> void check_dim(util::logger &log) {
   const int check_gr_range_3d = (check_g_items_3d / check_l_items_3d);
 
   try {
-    cl::sycl::int4 localIdData[gl_items_total];
-    cl::sycl::int4 localSizeData[gl_items_total];
-    cl::sycl::int4 globalIdData[gl_items_total];
-    cl::sycl::int4 globalSizeData[gl_items_total];
+    sycl::int4 localIdData[gl_items_total];
+    sycl::int4 localSizeData[gl_items_total];
+    sycl::int4 globalIdData[gl_items_total];
+    sycl::int4 globalSizeData[gl_items_total];
     for (int i = 0; i < gl_items_total; i++) {
-      localIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
-      localSizeData[i] = cl::sycl::int4(-1, -1, -1, -1);
-      globalIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
-      globalSizeData[i] = cl::sycl::int4(-1, -1, -1, -1);
+      localIdData[i] = sycl::int4(-1, -1, -1, -1);
+      localSizeData[i] = sycl::int4(-1, -1, -1, -1);
+      globalIdData[i] = sycl::int4(-1, -1, -1, -1);
+      globalSizeData[i] = sycl::int4(-1, -1, -1, -1);
     }
 
-    cl::sycl::int4 groupIdData[gr_range_total];
-    cl::sycl::int4 groupRangeData[gr_range_total];
+    sycl::int4 groupIdData[gr_range_total];
+    sycl::int4 groupRangeData[gr_range_total];
     for (int i = 0; i < gr_range_total; i++) {
-      groupIdData[i] = cl::sycl::int4(-1, -1, -1, -1);
-      groupRangeData[i] = cl::sycl::int4(-1, -1, -1, -1);
+      groupIdData[i] = sycl::int4(-1, -1, -1, -1);
+      groupRangeData[i] = sycl::int4(-1, -1, -1, -1);
     }
 
     {
-      cl::sycl::buffer<cl::sycl::int4, 1> localIdBuffer(
-          localIdData, cl::sycl::range<1>(gl_items_total));
-      cl::sycl::buffer<cl::sycl::int4, 1> localSizeBuffer(
-          localSizeData, cl::sycl::range<1>(gl_items_total));
-      cl::sycl::buffer<cl::sycl::int4, 1> globalIdBuffer(
-          globalIdData, cl::sycl::range<1>(gl_items_total));
-      cl::sycl::buffer<cl::sycl::int4, 1> globalSizeBuffer(
-          globalSizeData, cl::sycl::range<1>(gl_items_total));
-      cl::sycl::buffer<cl::sycl::int4, 1> groupIdBuffer(
-          groupIdData, cl::sycl::range<1>(gr_range_total));
-      cl::sycl::buffer<cl::sycl::int4, 1> groupRangeBuffer(
-          groupRangeData, cl::sycl::range<1>(gr_range_total));
+      sycl::buffer<sycl::int4, 1> localIdBuffer(
+          localIdData, sycl::range<1>(gl_items_total));
+      sycl::buffer<sycl::int4, 1> localSizeBuffer(
+          localSizeData, sycl::range<1>(gl_items_total));
+      sycl::buffer<sycl::int4, 1> globalIdBuffer(
+          globalIdData, sycl::range<1>(gl_items_total));
+      sycl::buffer<sycl::int4, 1> globalSizeBuffer(
+          globalSizeData, sycl::range<1>(gl_items_total));
+      sycl::buffer<sycl::int4, 1> groupIdBuffer(
+          groupIdData, sycl::range<1>(gr_range_total));
+      sycl::buffer<sycl::int4, 1> groupRangeBuffer(
+          groupRangeData, sycl::range<1>(gr_range_total));
 
-      cl::sycl::queue myQueue(util::get_cts_object::queue());
+      sycl::queue myQueue(util::get_cts_object::queue());
 
-      myQueue.submit([&](cl::sycl::handler &cgh) {
+      myQueue.submit([&](sycl::handler &cgh) {
 
-        constexpr auto mode = cl::sycl::access::mode::read_write;
+        constexpr auto mode = sycl::access::mode::read_write;
 
         auto localIdPtr = localIdBuffer.get_access<mode>(cgh);
         auto localSizePtr = localSizeBuffer.get_access<mode>(cgh);
@@ -95,7 +95,7 @@ template <int dim> void check_dim(util::logger &log) {
                 l_items_total>(l_items_1d, l_items_2d);
 
         cgh.parallel_for_work_group<kernel<dim>>(
-            gr_range, l_range, [=](cl::sycl::group<dim> group) {
+            gr_range, l_range, [=](sycl::group<dim> group) {
 
               int groupId0 = group.get_id(0);
               int groupId1 = (dim > 1) ? group.get_id(1) : 0;
@@ -109,11 +109,11 @@ template <int dim> void check_dim(util::logger &log) {
 
               // Assign work-group id and range size
               groupIdPtr[groupIdL] =
-                  cl::sycl::int4(groupId0, groupId1, groupId2, groupIdL);
-              groupRangePtr[groupIdL] = cl::sycl::int4(
+                  sycl::int4(groupId0, groupId1, groupId2, groupIdL);
+              groupRangePtr[groupIdL] = sycl::int4(
                   groupRange0, groupRange1, groupRange2, groupRangeL);
 
-              group.parallel_for_work_item([&](cl::sycl::h_item<dim> itemID) {
+              group.parallel_for_work_item([&](sycl::h_item<dim> itemID) {
 
                 int localId0 = itemID.get_local_id(0);
                 int localId1 = (dim > 1) ? itemID.get_local_id(1) : 0;
@@ -137,13 +137,13 @@ template <int dim> void check_dim(util::logger &log) {
 
                 // Assign local id and range size to check with corresponding
                 // global id
-                localIdPtr[globalIdL] = cl::sycl::int4(
+                localIdPtr[globalIdL] = sycl::int4(
                     localId0, localId1, localId2, localIdL);
-                localSizePtr[globalIdL] = cl::sycl::int4(
+                localSizePtr[globalIdL] = sycl::int4(
                     localSize0, localSize1, localSize2, localSizeL);
-                globalIdPtr[globalIdL] = cl::sycl::int4(
+                globalIdPtr[globalIdL] = sycl::int4(
                     globalId0, globalId1, globalId2, globalIdL);
-                globalSizePtr[globalIdL] = cl::sycl::int4(
+                globalSizePtr[globalIdL] = sycl::int4(
                     globalSize0, globalSize1, globalSize2, globalSizeL);
               });
             });
@@ -231,15 +231,15 @@ template <int dim> void check_dim(util::logger &log) {
         }
       }
     }
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    sycl::string_class errorMsg =
+        "a SYCL exception was caught: " + sycl::string_class(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
 public:

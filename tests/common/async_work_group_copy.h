@@ -25,9 +25,9 @@
  * @param ptr Pointer to the start of buffer to initialize
  */
 template <size_t bufferSize, typename T,
-          cl::sycl::access::address_space addressSpace>
+          sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
-    cl::sycl::multi_ptr<T, addressSpace> ptr) {
+    sycl::multi_ptr<T, addressSpace> ptr) {
 
   sycl_cts::util::array<T, bufferSize> result;
 
@@ -58,9 +58,9 @@ sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
  * @param ptr Pointer to the start of buffer to initialize
  */
 template <size_t bufferSize, bool value, typename T,
-          cl::sycl::access::address_space addressSpace>
+          sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
-    cl::sycl::multi_ptr<T, addressSpace> ptr) {
+    sycl::multi_ptr<T, addressSpace> ptr) {
 
   sycl_cts::util::array<T, bufferSize> result;
 
@@ -79,7 +79,7 @@ sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
  *        Stride is always 1 for the local_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(cl::sycl::local_ptr<T>) {
+inline size_t get_async_wg_copy_stride(sycl::local_ptr<T>) {
   return 1;
 }
 /**
@@ -87,7 +87,7 @@ inline size_t get_async_wg_copy_stride(cl::sycl::local_ptr<T>) {
  *        Stride is always the given one for the global_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(cl::sycl::global_ptr<T>) {
+inline size_t get_async_wg_copy_stride(sycl::global_ptr<T>) {
   return stride;
 }
 
@@ -212,8 +212,8 @@ struct check_wait_for {
    * @param events Storage for device event instances
    */
   template <typename instanceT, typename T, typename ... eventsT>
-  returnT operator()(instanceT&& instance, cl::sycl::local_ptr<T> srcPtr,
-                     cl::sycl::global_ptr<T> dstPtr, eventsT ... events) const {
+  returnT operator()(instanceT&& instance, sycl::local_ptr<T> srcPtr,
+                     sycl::global_ptr<T> dstPtr, eventsT ... events) const {
     constexpr size_t nEvents = sizeof...(eventsT);
     constexpr size_t stride = nEvents;
     constexpr size_t numElements = bufferSize / stride;
@@ -273,7 +273,7 @@ struct check_wait_for {
  * @param typeName The string naming the type of data for logs
  */
 template<class kernelInvokeT, typename T>
-void test_async_wg_copy(cl::sycl::queue &queue, sycl_cts::util::logger &log,
+void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
                         const std::string& instanceName,
                         const std::string& typeName) {
   constexpr int dim = kernelInvokeT::dimensions;
@@ -302,20 +302,20 @@ void test_async_wg_copy(cl::sycl::queue &queue, sycl_cts::util::logger &log,
                                                     RANGE_SIZE_2D);
   {
     const size_t globalBufferSize = workGroupRange.size() * BUFFER_SIZE;
-    auto buf = cl::sycl::buffer<T, 1>(cl::sycl::range<1>(globalBufferSize));
+    auto buf = sycl::buffer<T, 1>(sycl::range<1>(globalBufferSize));
     auto resultBuffer =
-        cl::sycl::buffer<bool, 1>(result.data(),
-                                  cl::sycl::range<1>(result.size()));
+        sycl::buffer<bool, 1>(result.data(),
+                                  sycl::range<1>(result.size()));
 
-    queue.submit([&](cl::sycl::handler &cgh) {
+    queue.submit([&](sycl::handler &cgh) {
     auto accResult =
-        resultBuffer.template get_access<cl::sycl::access::mode::write>(cgh);
+        resultBuffer.template get_access<sycl::access::mode::write>(cgh);
     auto accGlobal =
-        buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
+        buf.template get_access<sycl::access::mode::read_write>(cgh);
     auto accLocal =
-        cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::local>(
-            cl::sycl::range<1>(BUFFER_SIZE), cgh);
+        sycl::accessor<T, 1, sycl::access::mode::read_write,
+                           sycl::access::target::local>(
+            sycl::range<1>(BUFFER_SIZE), cgh);
 
     kernelInvokeT{}(
         cgh, workGroupRange, workItemRange,
@@ -323,7 +323,7 @@ void test_async_wg_copy(cl::sycl::queue &queue, sycl_cts::util::logger &log,
           // Each work-group uses its own part of global buffer,
           // single work-item per work-group
           using difference_type =
-              typename cl::sycl::global_ptr<T>::difference_type;
+              typename sycl::global_ptr<T>::difference_type;
           const auto globalBufferOffset =
               static_cast<difference_type>(index * BUFFER_SIZE);
 
@@ -388,7 +388,7 @@ void test_async_wg_copy(cl::sycl::queue &queue, sycl_cts::util::logger &log,
  * @param typeName The string naming the type of data for logs
  */
 template<class kernelInvokeT, typename T>
-void test_wait_for(cl::sycl::queue &queue, sycl_cts::util::logger &log,
+void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
                    const std::string& instanceName) {
   constexpr int dim = kernelInvokeT::dimensions;
   using instanceT = typename kernelInvokeT::parameterT;
@@ -409,25 +409,25 @@ void test_wait_for(cl::sycl::queue &queue, sycl_cts::util::logger &log,
                                                     RANGE_SIZE_2D);
   {
     const size_t globalBufferSize = workGroupRange.size() * BUFFER_SIZE;
-    auto buf = cl::sycl::buffer<T, 1>(cl::sycl::range<1>(globalBufferSize));
+    auto buf = sycl::buffer<T, 1>(sycl::range<1>(globalBufferSize));
     auto resultBuffer =
-        cl::sycl::buffer<bool, 1>(&result, cl::sycl::range<1>(1));
+        sycl::buffer<bool, 1>(&result, sycl::range<1>(1));
 
-    queue.submit([&](cl::sycl::handler &cgh) {
+    queue.submit([&](sycl::handler &cgh) {
     auto accResult =
-        resultBuffer.template get_access<cl::sycl::access::mode::write>(cgh);
+        resultBuffer.template get_access<sycl::access::mode::write>(cgh);
     auto accGlobal =
-        buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
+        buf.template get_access<sycl::access::mode::read_write>(cgh);
     auto accLocal =
-        cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::local>(
-            cl::sycl::range<1>(BUFFER_SIZE), cgh);
+        sycl::accessor<T, 1, sycl::access::mode::read_write,
+                           sycl::access::target::local>(
+            sycl::range<1>(BUFFER_SIZE), cgh);
 
     auto events =
-        cl::sycl::accessor<cl::sycl::device_event, 1,
-                           cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::local>(
-            cl::sycl::range<1>(N_EVENTS_MAX), cgh);
+        sycl::accessor<sycl::device_event, 1,
+                           sycl::access::mode::read_write,
+                           sycl::access::target::local>(
+            sycl::range<1>(N_EVENTS_MAX), cgh);
 
     kernelInvokeT{}(
         cgh, workGroupRange, workItemRange,
@@ -436,7 +436,7 @@ void test_wait_for(cl::sycl::queue &queue, sycl_cts::util::logger &log,
           // Each work-group uses its own part of global buffer,
           // single work-item per work-group
           using difference_type =
-              typename cl::sycl::global_ptr<T>::difference_type;
+              typename sycl::global_ptr<T>::difference_type;
           const auto globalBufferOffset =
               static_cast<difference_type>(index * BUFFER_SIZE);
 
@@ -475,7 +475,7 @@ void test_wait_for(cl::sycl::queue &queue, sycl_cts::util::logger &log,
  */
 template<template<int, typename...> class action,
          typename ... actionArgsT, typename ... argsT>
-void check_all_dims(cl::sycl::queue &queue, sycl_cts::util::logger &log,
+void check_all_dims(sycl::queue &queue, sycl_cts::util::logger &log,
                     argsT&& ... args) {
     action<1, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
     action<2, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
@@ -500,7 +500,7 @@ void check_all_dims(sycl_cts::util::logger &log, argsT&& ... args) {
 
     check_all_dims<action, actionArgsT...>(queue, log,
                                            std::forward<argsT>(args)...);
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
     FAIL(log, errorMsg);

@@ -13,7 +13,7 @@
 namespace platform_api__ {
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::platform
+/** tests the api for sycl::platform
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
         auto devs = plt.get_devices();
-        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+        check_return_type<sycl::vector_class<sycl::device>>(
             log, devs, "platform::get_devices()");
       }
 
@@ -42,9 +42,9 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        auto devs = plt.get_devices(cl::sycl::info::device_type::all);
+        auto devs = plt.get_devices(sycl::info::device_type::all);
         if (devs.size() != 0) {
-          check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+          check_return_type<sycl::vector_class<sycl::device>>(
               log, devs, "platform::get_devices(info::device_type::all)");
         }
       }
@@ -55,7 +55,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
         auto extensionSupported =
-            plt.has_extension(cl::sycl::string_class("cl_khr_icd"));
+            plt.has_extension(sycl::string_class("cl_khr_icd"));
         check_return_type<bool>(log, extensionSupported,
                                 "platform::has_extension(string_class)");
       }
@@ -65,8 +65,8 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        auto platformName = plt.get_info<cl::sycl::info::platform::name>();
-        check_return_type<cl::sycl::string_class>(log, platformName,
+        auto platformName = plt.get_info<sycl::info::platform::name>();
+        check_return_type<sycl::string_class>(log, platformName,
                                                   "platform::get_info()");
       }
 
@@ -82,14 +82,14 @@ class TEST_NAME : public util::test_base {
       /** check get_platforms() static method
       */
       {
-        auto plt = cl::sycl::platform::get_platforms();
-        check_return_type<cl::sycl::vector_class<cl::sycl::platform>>(
+        auto plt = sycl::platform::get_platforms();
+        check_return_type<sycl::vector_class<sycl::platform>>(
             log, plt, "platform::get_platform()");
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

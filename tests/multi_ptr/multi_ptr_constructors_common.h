@@ -25,33 +25,33 @@ class pointer_ctors {
   using data_t = typename std::remove_const<T>::type;
 
   using multiPtrGlobal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::global_space>;
   using multiPtrConstant =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::constant_space>;
   using multiPtrLocal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::local_space>;
   using multiPtrPrivate =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::private_space>;
 
-  void operator()(cl::sycl::queue &queue, const std::string& dataTypeName) {
+  void operator()(sycl::queue &queue, const std::string& dataTypeName) {
     return operator() (queue, dataTypeName, dataTypeName);
   }
-  void operator()(cl::sycl::queue &queue, const std::string&,
+  void operator()(sycl::queue &queue, const std::string&,
                   const std::string&) {
     const int size = 64;
-    cl::sycl::range<1> range(size);
-    cl::sycl::unique_ptr_class<data_t[]> data(new data_t[size]);
-    cl::sycl::buffer<T, 1> buffer(data.get(), range);
+    sycl::range<1> range(size);
+    sycl::unique_ptr_class<data_t[]> data(new data_t[size]);
+    sycl::buffer<T, 1> buffer(data.get(), range);
 
-    queue.submit([&](cl::sycl::handler &handler) {
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer>
+    queue.submit([&](sycl::handler &handler) {
+      sycl::accessor<T, 1, sycl::access::mode::read_write,
+                         sycl::access::target::global_buffer>
           globalAccessor(buffer, handler);
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                         cl::sycl::access::target::constant_buffer>
+      sycl::accessor<T, 1, sycl::access::mode::read,
+                         sycl::access::target::constant_buffer>
           constantAccessor(buffer, handler);
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
+      sycl::accessor<T, 1, sycl::access::mode::read_write,
+                         sycl::access::target::local>
           localAccessor(size, handler);
 
       handler.single_task<class kernel0<T, U>>([=] {
@@ -72,11 +72,11 @@ class pointer_ctors {
         /** check (elementType *) constructors
          */
         {
-          cl::sycl::global_ptr<U> globalPtr(
+          sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+          sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
+          sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtr(globalPtr);
           multiPtrConstant constantMultiPtr(constantPtr);
@@ -90,11 +90,11 @@ class pointer_ctors {
         /** check (pointer) constructors
          */
         {
-          cl::sycl::global_ptr<U> globalPtr(
+          sycl::global_ptr<U> globalPtr(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+          sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
+          sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtr(globalPtr.get());
           multiPtrConstant constantMultiPtr(constantPtr.get());
@@ -130,12 +130,12 @@ class pointer_ctors {
         /** check copy constructors
          */
         {
-          cl::sycl::global_ptr<U> globalPtrA(
+          sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtrA(
+          sycl::constant_ptr<U> constantPtrA(
               constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
+          sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtrA(globalPtrA);
           multiPtrConstant constantMultiPtrA(constantPtrA);
@@ -154,12 +154,12 @@ class pointer_ctors {
         /** check move constructors
          */
         {
-          cl::sycl::global_ptr<U> globalPtrA(
+          sycl::global_ptr<U> globalPtrA(
               static_cast<U *>(&globalAccessor[0]));
-          cl::sycl::constant_ptr<U> constantPtrA(
+          sycl::constant_ptr<U> constantPtrA(
               constantAccessor.get_pointer());
-          cl::sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          cl::sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
+          sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtrA(globalPtrA);
           multiPtrConstant constantMultiPtrA(constantPtrA);

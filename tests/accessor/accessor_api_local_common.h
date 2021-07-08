@@ -14,7 +14,7 @@
 #include "accessor_api_common_all.h"
 #include "accessor_api_common_buffer_local.h"
 #include "accessor_api_utility.h"
- 
+
 #include <utility>
 
 namespace {
@@ -26,36 +26,36 @@ using namespace accessor_utility;
 // Tests
 ////////////////////////////////////////////////////////////////////////////////
 
-static constexpr auto target = cl::sycl::access::target::local;
+static constexpr auto target = sycl::access::target::local;
 
 /** tests local accessor methods
 */
 template <typename T, typename kernelName, int dims,
-          cl::sycl::access::mode mode>
+          sycl::access::mode mode>
 class check_local_accessor_api_methods {
  public:
   size_t count;
   size_t size;
 
   using acc_t = decltype(make_local_accessor_generic<T, dims, mode>(
-      std::declval<sycl_range_t<dims>>(), std::declval<cl::sycl::handler &>()));
+      std::declval<sycl_range_t<dims>>(), std::declval<sycl::handler &>()));
 
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   sycl_range_t<dims> range, const std::string& typeName) {
 #ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_local_accessor_api_methods",
                                         typeName, log);
 #endif  // VERBOSE_LOG
-    static constexpr auto errorTarget = cl::sycl::access::target::global_buffer;
+    static constexpr auto errorTarget = sycl::access::target::global_buffer;
 
     auto errors = get_error_data(2);
     {
       auto kernelRange =
           util::get_cts_object::range<data_dim<dims>::value>::get(1, 1, 1);
       error_buffer_t errorBuffer(errors.data(),
-                                 cl::sycl::range<1>(errors.size()));
+                                 sycl::range<1>(errors.size()));
 
-      queue.submit([&](cl::sycl::handler &h) {
+      queue.submit([&](sycl::handler &h) {
         auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
         {
           /** check get_count() method
@@ -143,13 +143,13 @@ private:
 /** tests local accessor reads and writes
 */
 template <typename T, typename kernelName, int dims,
-          cl::sycl::access::mode mode>
+          sycl::access::mode mode>
 class check_local_accessor_api_reads_and_writes {
  public:
   size_t count;
   size_t size;
 
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   sycl_range_t<dims> range, const std::string& typeName) {
 #ifdef VERBOSE_LOG
     log_accessor<T, dims, mode, target>(
@@ -158,12 +158,12 @@ class check_local_accessor_api_reads_and_writes {
 
     auto errors = get_error_data(4);
 
-    static constexpr auto errorTarget = cl::sycl::access::target::global_buffer;
+    static constexpr auto errorTarget = sycl::access::target::global_buffer;
 
     {
       error_buffer_t errorBuffer(errors.data(),
-                                 cl::sycl::range<1>(errors.size()));
-      queue.submit([&](cl::sycl::handler &handler) {
+                                 sycl::range<1>(errors.size()));
+      queue.submit([&](sycl::handler &handler) {
         auto accIdSyntax =
             make_local_accessor_generic<T, dims, mode>(
                 range, handler);
@@ -225,11 +225,11 @@ class check_local_accessor_api_reads_and_writes {
 /** @brief tests local accessors with different dimensions
 */
 template <typename T, typename kernelName, int dims,
-          cl::sycl::access::mode mode>
+          sycl::access::mode mode>
 void check_local_accessor_api_mode(util::logger &log,
                                    const std::string& typeName,
                                    size_t count, size_t size,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    sycl_range_t<dims> range) {
 #ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target>("", typeName, log);
@@ -278,7 +278,7 @@ struct check_local_accessor_api_dim<generic_path_t> {
   static void run(acc_target_tag::local,
                   argsT&& ... args) {
     // Run verification for read_write access mode
-    constexpr auto mode = cl::sycl::access::mode::read_write;
+    constexpr auto mode = sycl::access::mode::read_write;
     check_local_accessor_api_mode<T, kernelName, dims, mode>(
         std::forward<argsT>(args)...);
   }
@@ -291,13 +291,13 @@ struct check_local_accessor_api_dim<generic_path_t> {
   static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
     // Run verification for read_write access mode
     {
-      constexpr auto mode = cl::sycl::access::mode::read_write;
+      constexpr auto mode = sycl::access::mode::read_write;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
     // Run verification for atomic access mode
     {
-      constexpr auto mode = cl::sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access::mode::atomic;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
@@ -313,7 +313,7 @@ struct check_local_accessor_api_dim<generic_path_t> {
                   util::logger &log, const std::string& typeName, argsT&& ...) {
     // Do not run atomic64 checks
 #ifdef VERBOSE_LOG
-    constexpr auto mode = cl::sycl::access::mode::atomic;
+    constexpr auto mode = sycl::access::mode::atomic;
     log_accessor<T, kernelName, dims, mode, target>(
         "skip_local_accessor_atomic64", typeName, log);
 #else
@@ -345,7 +345,7 @@ struct check_local_accessor_api_dim<atomic64_path_t> {
                   argsT&& ... args) {
     // Run atomic64 checks only
     {
-      constexpr auto mode = cl::sycl::access::mode::atomic;
+      constexpr auto mode = sycl::access::mode::atomic;
       check_local_accessor_api_mode<T, kernelName, dims, mode>(
           std::forward<argsT>(args)...);
     }
@@ -383,32 +383,32 @@ class check_local_accessor_api_type {
   static constexpr auto size = count * sizeof(T);
 
  public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   const std::string& typeName) {
 
     static const extensionTagT extensionTag;
 
     /** check buffer accessor api for 0 dimension
      */
-    cl::sycl::range<1> range0d(count);
+    sycl::range<1> range0d(count);
     check_local_accessor_api_dim_wrapper<T, kernelName, 0>(
         extensionTag, log, typeName, count, size, queue, range0d);
 
     /** check local accessor api for 1 dimension
      */
-    cl::sycl::range<1> range1d(range0d);
+    sycl::range<1> range1d(range0d);
     check_local_accessor_api_dim_wrapper<T, kernelName, 1>(
         extensionTag, log, typeName, count, size, queue, range1d);
 
     /** check local accessor api for 2 dimensions
      */
-    cl::sycl::range<2> range2d(count / 4, 4);
+    sycl::range<2> range2d(count / 4, 4);
     check_local_accessor_api_dim_wrapper<T, kernelName, 2>(
         extensionTag, log, typeName, count, size, queue, range2d);
 
     /** check local accessor api for 3 dimensions
      */
-    cl::sycl::range<3> range3d(count / 8, 4, 2);
+    sycl::range<3> range3d(count / 8, 4, 2);
     check_local_accessor_api_dim_wrapper<T, kernelName, 3>(
         extensionTag, log, typeName, count, size, queue, range3d);
   }

@@ -40,7 +40,7 @@ class custom_alloc {
 template <typename alloc, typename T, int size, int dims>
 class buffer_storage_test {
  public:
-  void operator()(util::logger &log, cl::sycl::range<dims> r) {
+  void operator()(util::logger &log, sycl::range<dims> r) {
 
     // Case 1 - Raw pointer
     auto data_final1 = std::make_unique<T[]>(size);
@@ -68,16 +68,16 @@ class buffer_storage_test {
   }
 
 private:
-  template <typename C> void use_buffer(C final_data, cl::sycl::range<dims> r) {
+  template <typename C> void use_buffer(C final_data, sycl::range<dims> r) {
     std::shared_ptr<T[]> data_shrd(new T[size]);
 
-    cl::sycl::mutex_class m;
+    sycl::mutex_class m;
 
     std::fill(data_shrd.get(), (data_shrd.get() + size), 0);
     {
-      cl::sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
+      sycl::buffer<T, dims, custom_alloc<T>> buf_shrd(
           data_shrd, r,
-          cl::sycl::property_list{cl::sycl::property::buffer::use_mutex(m)});
+          sycl::property_list{sycl::property::buffer::use_mutex(m)});
       m.lock();
       std::fill(data_shrd.get(), (data_shrd.get() + size), 0xFF);
       m.unlock();
@@ -87,7 +87,7 @@ private:
   }
 
   template <template <typename T1> class C>
-  void check_write_back(util::logger &log, cl::sycl::range<dims> r,
+  void check_write_back(util::logger &log, sycl::range<dims> r,
                         C<T[]> final_data) {
     use_buffer(final_data, r);
 
@@ -99,7 +99,7 @@ private:
   }
 
   template <typename C>
-  void check_write_back(util::logger &log, cl::sycl::range<dims> r,
+  void check_write_back(util::logger &log, sycl::range<dims> r,
                         C final_data, bool is_nullptr = false) {
     use_buffer(final_data, r);
 
@@ -114,9 +114,9 @@ private:
 template <typename T> class check_buffer_storage_for_type {
   template <typename alloc> void check_with_alloc(util::logger &log) {
     const int size = 32;
-    cl::sycl::range<1> range1d(size);
-    cl::sycl::range<2> range2d(size, size);
-    cl::sycl::range<3> range3d(size, size, size);
+    sycl::range<1> range1d(size);
+    sycl::range<2> range2d(size, size);
+    sycl::range<3> range3d(size, size, size);
 
     buffer_storage_test<alloc, T, size, 1> buf1d;
     buffer_storage_test<alloc, T, size * size, 2> buf2d;
@@ -131,7 +131,7 @@ public:
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + typeName);
     check_with_alloc<custom_alloc<T>>(log);
-    check_with_alloc<cl::sycl::buffer_allocator>(log);
+    check_with_alloc<sycl::buffer_allocator>(log);
   }
 };
 

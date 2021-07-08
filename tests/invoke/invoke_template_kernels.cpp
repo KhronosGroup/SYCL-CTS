@@ -15,11 +15,11 @@ using namespace sycl_cts;
 
 template <typename T>
 class templated_functor {
-  typedef cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<T, 1, sycl::access::mode::read,
+                             sycl::access::target::global_buffer>
       read_t;
-  typedef cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<T, 1, sycl::access::mode::write,
+                             sycl::access::target::global_buffer>
       write_t;
 
   read_t m_in;
@@ -33,16 +33,16 @@ class templated_functor {
 
 template <typename T>
 bool test_kernel_functor(T in_value, util::logger &log,
-                         cl::sycl::queue &sycl_queue) {
+                         sycl::queue &sycl_queue) {
   T input = in_value, output = 0;
   {
-    cl::sycl::buffer<T, 1> buffer_input(&input, cl::sycl::range<1>(1));
-    cl::sycl::buffer<T, 1> buffer_output(&output, cl::sycl::range<1>(1));
-    sycl_queue.submit([&](cl::sycl::handler &cgh) {
+    sycl::buffer<T, 1> buffer_input(&input, sycl::range<1>(1));
+    sycl::buffer<T, 1> buffer_output(&output, sycl::range<1>(1));
+    sycl_queue.submit([&](sycl::handler &cgh) {
       auto access_input =
-          buffer_input.template get_access<cl::sycl::access::mode::read>(cgh);
+          buffer_input.template get_access<sycl::access::mode::read>(cgh);
       auto access_output =
-          buffer_output.template get_access<cl::sycl::access::mode::write>(cgh);
+          buffer_output.template get_access<sycl::access::mode::write>(cgh);
       templated_functor<T> kernel(access_input, access_output);
       cgh.single_task(kernel);
     });
@@ -50,7 +50,7 @@ bool test_kernel_functor(T in_value, util::logger &log,
   return CHECK_VALUE(log, input, output, 0);
 }
 
-/** test cl::sycl::kernel from functor
+/** test sycl::kernel from functor
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -118,10 +118,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
 
       sycl_queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

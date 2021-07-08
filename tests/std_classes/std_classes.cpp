@@ -16,44 +16,44 @@ using namespace sycl_cts;
 /** check vector_class
 */
 template <class T, class Alloc>
-using vectorClass = cl::sycl::vector_class<T, Alloc>;
+using vectorClass = sycl::vector_class<T, Alloc>;
 
 /** check string_class
 */
-using stringClass = cl::sycl::string_class;
+using stringClass = sycl::string_class;
 
 /** check function_class
 */
 template <class R, class... Args>
-using functionClass = cl::sycl::function_class<R(Args...)>;
+using functionClass = sycl::function_class<R(Args...)>;
 
 /** check mutex_class
 */
-using mutexClass = cl::sycl::mutex_class;
+using mutexClass = sycl::mutex_class;
 
 /** check unique_ptr_class
 */
 template <class T, class D>
-using uniquePtrClass = cl::sycl::unique_ptr_class<T, D>;
+using uniquePtrClass = sycl::unique_ptr_class<T, D>;
 
 /** check shared_ptr_class
 */
 template <class T>
-using sharedPtrClass = cl::sycl::shared_ptr_class<T>;
+using sharedPtrClass = sycl::shared_ptr_class<T>;
 
 /** check weak_ptr_class
 */
 template <class T>
-using weakPtrClass = cl::sycl::weak_ptr_class<T>;
+using weakPtrClass = sycl::weak_ptr_class<T>;
 
 /** check hash_class
 */
 template <class T>
-using hashClass = cl::sycl::hash_class<T>;
+using hashClass = sycl::hash_class<T>;
 
 /** check exception_ptr_class
 */
-using exceptionPtrClass = cl::sycl::exception_ptr_class;
+using exceptionPtrClass = sycl::exception_ptr_class;
 
 struct custom_deleter {
   void operator()(int *p) const {};
@@ -76,7 +76,7 @@ class TEST_NAME : public util::test_base {
     {
       /** check vector_class
       */
-      cl::sycl::vector_class<int> vector;
+      sycl::vector_class<int> vector;
 
       /** check string_class
       */

@@ -28,24 +28,24 @@ class default_mem_fence_kernel_global;
  * @param queue Queue to use
  */
 template <access_group accessGroup, int dim>
-void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
+void test_mem_fence(util::logger &log, sycl::queue &queue) {
   const auto testName = test_name<accessGroup, dim>::get();
 
   using localKernelT = default_mem_fence_kernel_local<accessGroup, dim>;
   using globalKernelT = default_mem_fence_kernel_global<accessGroup, dim>;
 
   const auto fenceCallFactory = make_fence_call_factory(
-    [=](cl::sycl::nd_item<dim> item) {
+    [=](sycl::nd_item<dim> item) {
       item.mem_fence();
     },
-    [=](cl::sycl::nd_item<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::read_write>();
+    [=](sycl::nd_item<dim> item) {
+      item.template mem_fence<sycl::access::mode::read_write>();
     },
-    [=](cl::sycl::nd_item<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::read>();
+    [=](sycl::nd_item<dim> item) {
+      item.template mem_fence<sycl::access::mode::read>();
     },
-    [=](cl::sycl::nd_item<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::write>();
+    [=](sycl::nd_item<dim> item) {
+      item.template mem_fence<sycl::access::mode::write>();
   });
   const auto access = std::integral_constant<access_group, accessGroup>{};
 
@@ -72,7 +72,7 @@ void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
   }
 }
 
-/** test cl::sycl::nd_item mem_fence functions
+/** test sycl::nd_item mem_fence functions
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -95,10 +95,10 @@ class TEST_NAME : public util::test_base {
       test_mem_fence<access_group::useSeparate, 1>(log, queue);
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

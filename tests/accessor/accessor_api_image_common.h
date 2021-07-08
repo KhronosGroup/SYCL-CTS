@@ -30,19 +30,19 @@ using namespace accessor_utility;
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, cl::sycl::access::target target>
+template <int dims, sycl::access::target target>
 using image_dims = std::integral_constant<
     int,
-    ((target == cl::sycl::access::target::image_array) ? (dims + 1) : dims)>;
+    ((target == sycl::access::target::image_array) ? (dims + 1) : dims)>;
 
 /**
- * @brief Alias to cl::sycl::id using the proper number of dimensions.
+ * @brief Alias to sycl::id using the proper number of dimensions.
  *        Required for image array accessors.
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, cl::sycl::access::target target>
-using image_id_t = cl::sycl::id<image_dims<dims, target>::value>;
+template <int dims, sycl::access::target target>
+using image_id_t = sycl::id<image_dims<dims, target>::value>;
 
 /**
  * @brief Alias to image_id_t targetting image array accessors
@@ -51,16 +51,16 @@ using image_id_t = cl::sycl::id<image_dims<dims, target>::value>;
  */
 template <int dims>
 using image_array_id_t =
-    image_id_t<dims, cl::sycl::access::target::image_array>;
+    image_id_t<dims, sycl::access::target::image_array>;
 
 /**
- * @brief Alias to cl::sycl::range using the proper number of dimensions.
+ * @brief Alias to sycl::range using the proper number of dimensions.
  *        Required for image array accessors.
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
-template <int dims, cl::sycl::access::target target>
-using image_range_t = cl::sycl::range<image_dims<dims, target>::value>;
+template <int dims, sycl::access::target target>
+using image_range_t = sycl::range<image_dims<dims, target>::value>;
 
 /**
  * @brief Alias to image_range_t targetting image array accessors
@@ -69,7 +69,7 @@ using image_range_t = cl::sycl::range<image_dims<dims, target>::value>;
  */
 template <int dims>
 using image_array_range_t =
-    image_range_t<dims, cl::sycl::access::target::image_array>;
+    image_range_t<dims, sycl::access::target::image_array>;
 
 /**
  * @brief Namespace that defines CoordT tags
@@ -104,19 +104,19 @@ struct use_int : generic {};
 template <typename dataT>
 struct get;
 template <>
-struct get<cl::sycl::cl_int4> {
+struct get<sycl::cl_int4> {
   using type = use_int;
 };
 template <>
-struct get<cl::sycl::cl_uint4> {
+struct get<sycl::cl_uint4> {
   using type = use_int;
 };
 template <>
-struct get<cl::sycl::cl_float4> {
+struct get<sycl::cl_float4> {
   using type = use_float;
 };
 template <>
-struct get<cl::sycl::cl_half4> {
+struct get<sycl::cl_half4> {
   using type = use_float;
 };
 }
@@ -178,7 +178,7 @@ struct image_array_coords {
  * @return Range of same dimensions as the image
  */
 template <int imageDims>
-cl::sycl::range<imageDims> make_test_range(size_t count,
+sycl::range<imageDims> make_test_range(size_t count,
                                            bool isImageArray = false);
 
 /**
@@ -187,7 +187,7 @@ cl::sycl::range<imageDims> make_test_range(size_t count,
  * @return 1D range
  */
 template <>
-cl::sycl::range<1> make_test_range<1>(size_t count, bool /*isImageArray*/) {
+sycl::range<1> make_test_range<1>(size_t count, bool /*isImageArray*/) {
   return {count};
 }
 
@@ -198,7 +198,7 @@ cl::sycl::range<1> make_test_range<1>(size_t count, bool /*isImageArray*/) {
  * @return 2D range
  */
 template <>
-cl::sycl::range<2> make_test_range<2>(size_t count, bool isImageArray) {
+sycl::range<2> make_test_range<2>(size_t count, bool isImageArray) {
   const auto dim1 = static_cast<size_t>(isImageArray ? 1 : 4);
   return {count / dim1, dim1};
 }
@@ -210,7 +210,7 @@ cl::sycl::range<2> make_test_range<2>(size_t count, bool isImageArray) {
  * @return 3D range
  */
 template <>
-cl::sycl::range<3> make_test_range<3>(size_t count, bool isImageArray) {
+sycl::range<3> make_test_range<3>(size_t count, bool isImageArray) {
   const auto dim2 = static_cast<size_t>(isImageArray ? 1 : 2);
   const size_t dim1 = 4;
   const auto dim0 = count / (dim1 * dim2);
@@ -232,48 +232,48 @@ struct image_format_channel;
 /** image format channel order and type (specialization for cl_int4)
 */
 template <>
-struct image_format_channel<cl::sycl::cl_int4> {
-  static constexpr cl::sycl::image_channel_type type =
-      cl::sycl::image_channel_type::signed_int8;
-  static constexpr cl::sycl::image_channel_order order =
-      cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_char;
+struct image_format_channel<sycl::cl_int4> {
+  static constexpr sycl::image_channel_type type =
+      sycl::image_channel_type::signed_int8;
+  static constexpr sycl::image_channel_order order =
+      sycl::image_channel_order::rgba;
+  using storage_t = sycl::cl_char;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
 /** image format channel order and type (specialization for cl_uint4)
 */
 template <>
-struct image_format_channel<cl::sycl::cl_uint4> {
-  static constexpr cl::sycl::image_channel_type type =
-      cl::sycl::image_channel_type::unsigned_int8;
-  static constexpr cl::sycl::image_channel_order order =
-      cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_uchar;
+struct image_format_channel<sycl::cl_uint4> {
+  static constexpr sycl::image_channel_type type =
+      sycl::image_channel_type::unsigned_int8;
+  static constexpr sycl::image_channel_order order =
+      sycl::image_channel_order::rgba;
+  using storage_t = sycl::cl_uchar;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
 /** image format channel order and type (specialization for cl_float4)
 */
 template <>
-struct image_format_channel<cl::sycl::cl_float4> {
-  static constexpr cl::sycl::image_channel_type type =
-      cl::sycl::image_channel_type::fp32;
-  static constexpr cl::sycl::image_channel_order order =
-      cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_float;
+struct image_format_channel<sycl::cl_float4> {
+  static constexpr sycl::image_channel_type type =
+      sycl::image_channel_type::fp32;
+  static constexpr sycl::image_channel_order order =
+      sycl::image_channel_order::rgba;
+  using storage_t = sycl::cl_float;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
 /** image format channel order and type (specialization for cl_half4)
  */
 template <>
-struct image_format_channel<cl::sycl::cl_half4> {
-  static constexpr cl::sycl::image_channel_type type =
-      cl::sycl::image_channel_type::fp16;
-  static constexpr cl::sycl::image_channel_order order =
-      cl::sycl::image_channel_order::rgba;
-  using storage_t = cl::sycl::cl_half;
+struct image_format_channel<sycl::cl_half4> {
+  static constexpr sycl::image_channel_type type =
+      sycl::image_channel_type::fp16;
+  static constexpr sycl::image_channel_order order =
+      sycl::image_channel_order::rgba;
+  using storage_t = sycl::cl_half;
   static constexpr size_t elementSize = 4 * sizeof(storage_t);
 };
 
@@ -291,16 +291,16 @@ template <typename elementT>
 struct use_normalization_coefficient : std::false_type {};
 
 /** specialized struct for defining the normalization coefficient for an image
- * accessor type. Specialization for cl::sycl::cl_float4.
+ * accessor type. Specialization for sycl::cl_float4.
 */
 template <>
-struct use_normalization_coefficient<cl::sycl::cl_float4> : std::true_type {};
+struct use_normalization_coefficient<sycl::cl_float4> : std::true_type {};
 
 /** specialized struct for defining the normalization coefficient for an image
- * accessor type. Specialization for cl::sycl::cl_half4.
+ * accessor type. Specialization for sycl::cl_half4.
 */
 template <>
-struct use_normalization_coefficient<cl::sycl::cl_half4> : std::true_type {};
+struct use_normalization_coefficient<sycl::cl_half4> : std::true_type {};
 
 /**
  * @brief Retrieves the expected single image value when reading to
@@ -339,12 +339,12 @@ T get_expected_image_elem() {
  */
 template <typename T,
           typename storage_t = typename image_format_channel<T>::storage_t>
-cl::sycl::vector_class<cl::sycl::byte> convert_image_data_to_bytes(
-    const cl::sycl::vector_class<storage_t> &storageData, size_t byteSize) {
-  using byte_t = cl::sycl::byte;
+sycl::vector_class<sycl::byte> convert_image_data_to_bytes(
+    const sycl::vector_class<storage_t> &storageData, size_t byteSize) {
+  using byte_t = sycl::byte;
   const auto byteDataPtr = reinterpret_cast<const byte_t *>(storageData.data());
   auto byteData =
-      cl::sycl::vector_class<byte_t>(byteDataPtr, byteDataPtr + byteSize);
+      sycl::vector_class<byte_t>(byteDataPtr, byteDataPtr + byteSize);
   return byteData;
 }
 
@@ -357,12 +357,12 @@ cl::sycl::vector_class<cl::sycl::byte> convert_image_data_to_bytes(
  */
 template <typename T,
           typename storage_t = typename image_format_channel<T>::storage_t>
-cl::sycl::vector_class<storage_t> convert_image_bytes_to_data(
-    const cl::sycl::vector_class<cl::sycl::byte> &byteData) {
+sycl::vector_class<storage_t> convert_image_bytes_to_data(
+    const sycl::vector_class<sycl::byte> &byteData) {
   const auto dataCount = (byteData.size() / sizeof(storage_t));
   const auto storageDataPtr =
       reinterpret_cast<const storage_t *>(byteData.data());
-  auto storageData = cl::sycl::vector_class<storage_t>(
+  auto storageData = sycl::vector_class<storage_t>(
       storageDataPtr, storageDataPtr + dataCount);
   return storageData;
 }
@@ -377,7 +377,7 @@ cl::sycl::vector_class<storage_t> convert_image_bytes_to_data(
  * @return Byte container ready to be passed to an image constructor
  */
 template <typename T>
-cl::sycl::vector_class<cl::sycl::byte> get_image_input_data(
+sycl::vector_class<sycl::byte> get_image_input_data(
     size_t byteSize, bool initialize = true) {
   using storage_t = typename image_format_channel<T>::storage_t;
   const auto dataCount = (byteSize / sizeof(storage_t));
@@ -385,20 +385,20 @@ cl::sycl::vector_class<cl::sycl::byte> get_image_input_data(
   if (initialize) {
     singleElem = get_expected_image_value<T>();
   }
-  const auto data = cl::sycl::vector_class<storage_t>(dataCount, singleElem);
+  const auto data = sycl::vector_class<storage_t>(dataCount, singleElem);
   return convert_image_data_to_bytes<T>(data, byteSize);
 }
 
-template <typename T, int dims, cl::sycl::access::target target,
-          cl::sycl::access::mode mode>
-T read_image_acc(const cl::sycl::accessor<T, dims, mode, target> &acc,
-                 cl::sycl::id<dims> idx) {
+template <typename T, int dims, sycl::access::target target,
+          sycl::access::mode mode>
+T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
+                 sycl::id<dims> idx) {
   return acc.read(image_access<dims>::get_int(idx));
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode>
-T read_image_acc(const cl::sycl::accessor<T, dims, mode,
-                                    cl::sycl::access::target::image_array> &acc,
+template <typename T, int dims, sycl::access::mode mode>
+T read_image_acc(const sycl::accessor<T, dims, mode,
+                                    sycl::access::target::image_array> &acc,
                  image_array_id_t<dims> idx) {
   // Verify __image_array_slice__ read
   using coordT = acc_coord_tag::use_int;
@@ -406,40 +406,40 @@ T read_image_acc(const cl::sycl::accessor<T, dims, mode,
   return acc[idx[dims]].read(coords);
 }
 
-template <typename T, int dims, cl::sycl::access::target target,
-          cl::sycl::access::mode mode, typename coordT = acc_coord_tag::use_int>
-T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode, target> &acc,
-                         const cl::sycl::sampler& smpl,
-                         cl::sycl::id<dims> idx,
-                         cl::sycl::range<dims>,
+template <typename T, int dims, sycl::access::target target,
+          sycl::access::mode mode, typename coordT = acc_coord_tag::use_int>
+T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
+                         const sycl::sampler& smpl,
+                         sycl::id<dims> idx,
+                         sycl::range<dims>,
                          acc_coord_tag::use_int) {
   return acc.read(image_access<dims>::get_int(idx), smpl);
 }
-template <typename T, int dims, cl::sycl::access::target target,
-          cl::sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
-T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode, target> &acc,
-                         const cl::sycl::sampler& smpl,
-                         cl::sycl::id<dims> idx,
-                         cl::sycl::range<dims>,
+template <typename T, int dims, sycl::access::target target,
+          sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
+T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
+                         const sycl::sampler& smpl,
+                         sycl::id<dims> idx,
+                         sycl::range<dims>,
                          acc_coord_tag::use_float) {
   return acc.read(image_access<dims>::get_float(idx), smpl);
 }
-template <typename T, int dims, cl::sycl::access::target target,
-          cl::sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
-T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode, target> &acc,
-                         const cl::sycl::sampler& smpl,
-                         cl::sycl::id<dims> idx,
-                         cl::sycl::range<dims> range,
+template <typename T, int dims, sycl::access::target target,
+          sycl::access::mode mode, typename coordT = acc_coord_tag::use_float>
+T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
+                         const sycl::sampler& smpl,
+                         sycl::id<dims> idx,
+                         sycl::range<dims> range,
                          coordT coordTag) {
   const auto pixelTag = acc_coord_tag::get_pixel_tag(coordTag);
   const auto& coords = image_access<dims>::get_normalized(pixelTag, idx, range);
   return acc.read(coords, smpl);
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode, typename coordT>
-T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode,
-                                    cl::sycl::access::target::image_array> &acc,
-                         cl::sycl::sampler smpl,
+template <typename T, int dims, sycl::access::mode mode, typename coordT>
+T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
+                                    sycl::access::target::image_array> &acc,
+                         sycl::sampler smpl,
                          image_array_id_t<dims> idx,
                          image_array_range_t<dims> range,
                          const coordT& coordTag) {
@@ -448,17 +448,17 @@ T read_image_acc_sampled(const cl::sycl::accessor<T, dims, mode,
   return acc[idx[dims]].read(coords, smpl);
 }
 
-template <typename T, int dims, cl::sycl::access::target target,
-          cl::sycl::access::mode mode>
-void write_image_acc(const cl::sycl::accessor<T, dims, mode, target> &acc,
-                     cl::sycl::id<dims> idx, T value) {
+template <typename T, int dims, sycl::access::target target,
+          sycl::access::mode mode>
+void write_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
+                     sycl::id<dims> idx, T value) {
   const auto coords = image_access<dims>::get_int(idx);
   acc.write(coords, value);
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode>
+template <typename T, int dims, sycl::access::mode mode>
 void write_image_acc(
-    const cl::sycl::accessor<T, dims, mode, cl::sycl::access::target::image_array>
+    const sycl::accessor<T, dims, mode, sycl::access::target::image_array>
         &acc,
     image_array_id_t<dims> idx, T value) {
   // Verify __image_array_slice__ write
@@ -475,14 +475,14 @@ void write_image_acc(
  *  @brief Provide sampler instance to share with device
  */
 struct image_accessor_sampler {
-  cl::sycl::sampler instance;
-  cl::sycl::coordinate_normalization_mode coordinate_normalization_mode;
-  cl::sycl::addressing_mode addressing_mode;
-  cl::sycl::filtering_mode filtering_mode;
+  sycl::sampler instance;
+  sycl::coordinate_normalization_mode coordinate_normalization_mode;
+  sycl::addressing_mode addressing_mode;
+  sycl::filtering_mode filtering_mode;
 
-  image_accessor_sampler(cl::sycl::coordinate_normalization_mode normalization,
-                         cl::sycl::addressing_mode addressing,
-                         cl::sycl::filtering_mode filtering) :
+  image_accessor_sampler(sycl::coordinate_normalization_mode normalization,
+                         sycl::addressing_mode addressing,
+                         sycl::filtering_mode filtering) :
     instance(normalization, addressing, filtering),
     coordinate_normalization_mode(normalization),
     addressing_mode(addressing),
@@ -492,7 +492,7 @@ struct image_accessor_sampler {
     return false;
   }
   static inline bool supports_out_of_range(const image_accessor_sampler& inst) {
-    return inst.addressing_mode != cl::sycl::addressing_mode::none;
+    return inst.addressing_mode != sycl::addressing_mode::none;
   }
 };
 
@@ -500,9 +500,9 @@ struct image_accessor_sampler {
  *  @brief Provide samplers to use for tests
  */
 class image_accessor_samplers {
-  using normalization_t = cl::sycl::coordinate_normalization_mode;
-  using addressing_t = cl::sycl::addressing_mode;
-  using filtering_t = cl::sycl::filtering_mode;
+  using normalization_t = sycl::coordinate_normalization_mode;
+  using addressing_t = sycl::addressing_mode;
+  using filtering_t = sycl::filtering_mode;
 
   std::string get_addressing_desc(addressing_t value) const {
     std::string result;
@@ -654,7 +654,7 @@ struct image_accessor_failure_item {
  */
 template <typename T>
 class image_accessor_failure_storage {
-  cl::sycl::vector_class<image_accessor_failure_item<T>> m_data;
+  sycl::vector_class<image_accessor_failure_item<T>> m_data;
 
   template <typename dataT>
   struct data_type;
@@ -667,7 +667,7 @@ class image_accessor_failure_storage {
     using base = std::uint64_t;
   };
   template <>
-  struct data_type<cl::sycl::half> {
+  struct data_type<sycl::half> {
     using base = std::uint16_t;
   };
 
@@ -687,9 +687,9 @@ class image_accessor_failure_storage {
     }
   };
   template<typename dataT, int dataDims>
-  struct printer<cl::sycl::vec<dataT, dataDims>> {
+  struct printer<sycl::vec<dataT, dataDims>> {
     void operator()(std::stringstream& stream,
-                           const cl::sycl::vec<dataT, dataDims>& value) {
+                           const sycl::vec<dataT, dataDims>& value) {
       printer<dataT> valuePrinter;
 
       stream << "(";
@@ -703,19 +703,19 @@ class image_accessor_failure_storage {
   };
   template<int rangeDims>
   void printIndex(std::stringstream& stream, size_t linearIndex,
-                  const cl::sycl::range<rangeDims>& imageRange,
-                  const cl::sycl::range<rangeDims>& verificationRange);
+                  const sycl::range<rangeDims>& imageRange,
+                  const sycl::range<rangeDims>& verificationRange);
   template<>
   void printIndex<1>(std::stringstream& stream, size_t linearIndex,
-                  const cl::sycl::range<1>& imageRange,
-                  const cl::sycl::range<1>&) {
+                  const sycl::range<1>& imageRange,
+                  const sycl::range<1>&) {
     stream << linearIndex << " [" <<
               linearIndex << ":" << imageRange[0] << "]";
   }
   template<>
   void printIndex<2>(std::stringstream& stream, size_t linearIndex,
-                  const cl::sycl::range<2>& imageRange,
-                  const cl::sycl::range<2>& verificationRange) {
+                  const sycl::range<2>& imageRange,
+                  const sycl::range<2>& verificationRange) {
     const auto id1 = linearIndex % verificationRange[1];
     const auto id0 = linearIndex / verificationRange[1];
     stream << linearIndex << " [" <<
@@ -724,8 +724,8 @@ class image_accessor_failure_storage {
   }
   template<>
   void printIndex<3>(std::stringstream& stream, size_t linearIndex,
-                  const cl::sycl::range<3>& imageRange,
-                  const cl::sycl::range<3>& verificationRange) {
+                  const sycl::range<3>& imageRange,
+                  const sycl::range<3>& verificationRange) {
     const auto id2 = linearIndex % verificationRange[2];
     const auto idx = linearIndex / verificationRange[2];
     const auto id1 = idx % verificationRange[1];
@@ -738,7 +738,7 @@ class image_accessor_failure_storage {
 
  public:
   using item_t = image_accessor_failure_item<T>;
-  using buffer_t = cl::sycl::buffer<item_t, 1>;
+  using buffer_t = sycl::buffer<item_t, 1>;
 
   image_accessor_failure_storage(size_t size) :
     m_data(size) {}
@@ -753,8 +753,8 @@ class image_accessor_failure_storage {
 
   template <int rangeDims>
   void dump(sycl_cts::util::logger& log,
-            const cl::sycl::range<rangeDims>& imageRange,
-            const cl::sycl::range<rangeDims>& verificationRange) {
+            const sycl::range<rangeDims>& imageRange,
+            const sycl::range<rangeDims>& verificationRange) {
     std::stringstream stream;
     printer<T> valuePrinter;
 
@@ -780,12 +780,12 @@ class image_accessor_failure_storage {
 
 /** tests image accessors reads
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget>
+template <typename T, int dim, sycl::access::mode mode,
+          sycl::access::target target, sycl::access::target errorTarget>
 class image_accessor_api_r {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target>;
-  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
-  using failure_acc_t = cl::sycl::accessor<image_accessor_failure_item<T>, 1,
+  using acc_t = sycl::accessor<T, dim, mode, target>;
+  using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
+  using failure_acc_t = sycl::accessor<image_accessor_failure_item<T>, 1,
                                            errorMode, errorTarget>;
   acc_t m_acc;
   error_acc_t m_errorAccessor;
@@ -824,12 +824,12 @@ class image_accessor_api_r {
 
 /** tests image accessors sampled reads
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget>
+template <typename T, int dim, sycl::access::mode mode,
+          sycl::access::target target, sycl::access::target errorTarget>
 class image_accessor_api_sampled_r {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target>;
-  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
-  using failure_acc_t = cl::sycl::accessor<image_accessor_failure_item<T>, 1,
+  using acc_t = sycl::accessor<T, dim, mode, target>;
+  using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
+  using failure_acc_t = sycl::accessor<image_accessor_failure_item<T>, 1,
                                            errorMode, errorTarget>;
   acc_t m_acc;
   error_acc_t m_errorAccessor;
@@ -842,28 +842,28 @@ class image_accessor_api_sampled_r {
 
  private:
   template <int idDims>
-  bool in_scope(cl::sycl::id<idDims>& idx,
-                const cl::sycl::range<idDims>& range,
-                const cl::sycl::id<idDims>& delta) const;
+  bool in_scope(sycl::id<idDims>& idx,
+                const sycl::range<idDims>& range,
+                const sycl::id<idDims>& delta) const;
   template <>
-  bool in_scope<1>(cl::sycl::id<1>& idx, const cl::sycl::range<1>& range,
-                   const cl::sycl::id<1>& delta) const {
+  bool in_scope<1>(sycl::id<1>& idx, const sycl::range<1>& range,
+                   const sycl::id<1>& delta) const {
     // We cannot move sycl::id to the negative values for linear filtering,
     // so we move range instead
     return (idx[0] >= delta[0]) &&
            (idx[0] < (range[0] + delta[0]));
   }
   template <>
-  bool in_scope<2>(cl::sycl::id<2>& idx, const cl::sycl::range<2>& range,
-                   const cl::sycl::id<2>& delta) const {
+  bool in_scope<2>(sycl::id<2>& idx, const sycl::range<2>& range,
+                   const sycl::id<2>& delta) const {
     return (idx[0] >= delta[0]) &&
            (idx[1] >= delta[1]) &&
            (idx[0] < (range[0] + delta[0])) &&
            (idx[1] < (range[1] + delta[1]));
   }
   template <>
-  bool in_scope<3>(cl::sycl::id<3>& idx, const cl::sycl::range<3>& range,
-                   const cl::sycl::id<3>& delta) const {
+  bool in_scope<3>(sycl::id<3>& idx, const sycl::range<3>& range,
+                   const sycl::id<3>& delta) const {
     return (idx[0] >= delta[0]) &&
            (idx[1] >= delta[1]) &&
            (idx[2] >= delta[2]) &&
@@ -889,8 +889,8 @@ class image_accessor_api_sampled_r {
      */
     auto expected = get_expected_image_elem<T>();
     const bool useBorderColor =
-        (m_sampler.addressing_mode == cl::sycl::addressing_mode::clamp) ||
-        (m_sampler.addressing_mode == cl::sycl::addressing_mode::none);
+        (m_sampler.addressing_mode == sycl::addressing_mode::clamp) ||
+        (m_sampler.addressing_mode == sycl::addressing_mode::none);
 
     if (useBorderColor && !in_scope(idx, m_range, delta)){
       expected = image_border_color<T>();
@@ -899,16 +899,16 @@ class image_accessor_api_sampled_r {
   }
 
   template <int idDims>
-  T get_expected_value_nearest(cl::sycl::id<idDims> idx) const {
+  T get_expected_value_nearest(sycl::id<idDims> idx) const {
     const auto delta = sycl_cts::util::get_cts_object::id<idDims>::get(0,0,0);
 
     return get_expected_value_texel(idx, delta);
   }
 
   template <int idDims>
-  T get_expected_value_linear(cl::sycl::id<idDims> idx) const;
+  T get_expected_value_linear(sycl::id<idDims> idx) const;
   template <>
-  T get_expected_value_linear<1>(cl::sycl::id<1> idx) const {
+  T get_expected_value_linear<1>(sycl::id<1> idx) const {
     /**
      *  For none, clamp, clamp_to_edge and repeat addressing modes OpenCL 1.2
      *    spec does not mention 1D images usage with linear filtering.
@@ -920,34 +920,34 @@ class image_accessor_api_sampled_r {
      *  Also we are using the fact exact coordinates are provided originally for
      *    any normalization mode, so we can simplify weighted equations.
      */
-    const auto v0 = get_expected_value_texel(idx, cl::sycl::id<1>(0));
-    const auto v1 = get_expected_value_texel(idx, cl::sycl::id<1>(1));
+    const auto v0 = get_expected_value_texel(idx, sycl::id<1>(0));
+    const auto v1 = get_expected_value_texel(idx, sycl::id<1>(1));
     return (v0 + v1) / 2;
   }
   template <>
-  T get_expected_value_linear<2>(cl::sycl::id<2> idx) const {
-    const auto v00 = get_expected_value_texel(idx, cl::sycl::id<2>(0,0));
-    const auto v01 = get_expected_value_texel(idx, cl::sycl::id<2>(0,1));
-    const auto v10 = get_expected_value_texel(idx, cl::sycl::id<2>(1,0));
-    const auto v11 = get_expected_value_texel(idx, cl::sycl::id<2>(1,1));
+  T get_expected_value_linear<2>(sycl::id<2> idx) const {
+    const auto v00 = get_expected_value_texel(idx, sycl::id<2>(0,0));
+    const auto v01 = get_expected_value_texel(idx, sycl::id<2>(0,1));
+    const auto v10 = get_expected_value_texel(idx, sycl::id<2>(1,0));
+    const auto v11 = get_expected_value_texel(idx, sycl::id<2>(1,1));
     return (v00 + v01 + v10 + v11) / 4;
   }
   template <>
-  T get_expected_value_linear<3>(cl::sycl::id<3> idx) const {
-    const auto v000 = get_expected_value_texel(idx, cl::sycl::id<3>(0,0,0));
-    const auto v001 = get_expected_value_texel(idx, cl::sycl::id<3>(0,0,1));
-    const auto v010 = get_expected_value_texel(idx, cl::sycl::id<3>(0,1,0));
-    const auto v011 = get_expected_value_texel(idx, cl::sycl::id<3>(0,1,1));
-    const auto v100 = get_expected_value_texel(idx, cl::sycl::id<3>(1,0,0));
-    const auto v101 = get_expected_value_texel(idx, cl::sycl::id<3>(1,0,1));
-    const auto v110 = get_expected_value_texel(idx, cl::sycl::id<3>(1,1,0));
-    const auto v111 = get_expected_value_texel(idx, cl::sycl::id<3>(1,1,1));
+  T get_expected_value_linear<3>(sycl::id<3> idx) const {
+    const auto v000 = get_expected_value_texel(idx, sycl::id<3>(0,0,0));
+    const auto v001 = get_expected_value_texel(idx, sycl::id<3>(0,0,1));
+    const auto v010 = get_expected_value_texel(idx, sycl::id<3>(0,1,0));
+    const auto v011 = get_expected_value_texel(idx, sycl::id<3>(0,1,1));
+    const auto v100 = get_expected_value_texel(idx, sycl::id<3>(1,0,0));
+    const auto v101 = get_expected_value_texel(idx, sycl::id<3>(1,0,1));
+    const auto v110 = get_expected_value_texel(idx, sycl::id<3>(1,1,0));
+    const auto v111 = get_expected_value_texel(idx, sycl::id<3>(1,1,1));
     return (v000 + v001 + v010 + v011 + v100 + v101 + v110 + v111) / 8;
   }
 
   T get_expected_value(image_id_t<dim, target> idx) const {
     const bool useLinear =
-        m_sampler.filtering_mode == cl::sycl::filtering_mode::linear;
+        m_sampler.filtering_mode == sycl::filtering_mode::linear;
 
     if (!useLinear) {
       return get_expected_value_nearest(idx);
@@ -965,10 +965,10 @@ class image_accessor_api_sampled_r {
   template <typename dataT>
   dataT get_ulp_error(acc_data_tag::use_float, dataT x) const {
     const bool isNearest =
-        m_sampler.filtering_mode == cl::sycl::filtering_mode::nearest;
+        m_sampler.filtering_mode == sycl::filtering_mode::nearest;
     const bool isNormalized =
         m_sampler.coordinate_normalization_mode ==
-            cl::sycl::coordinate_normalization_mode::normalized;
+            sycl::coordinate_normalization_mode::normalized;
     const auto texelNumber = 1 << dim;
 
     if (isNearest && !isNormalized)
@@ -1002,7 +1002,7 @@ class image_accessor_api_sampled_r {
   template <typename dataT>
   dataT get_abs_error(acc_data_tag::use_int, dataT) const {
     const bool isNearest =
-        m_sampler.filtering_mode == cl::sycl::filtering_mode::nearest;
+        m_sampler.filtering_mode == sycl::filtering_mode::nearest;
     /**
      *  These tests have image dimensions as power of two, so no loss of
      *    precision due coordinate normalization is expected
@@ -1033,7 +1033,7 @@ class image_accessor_api_sampled_r {
   }
 
   template <typename coordT, int idDims>
-  bool check_read(cl::sycl::id<idDims> idx, const T& expected) const {
+  bool check_read(sycl::id<idDims> idx, const T& expected) const {
     T elem =
         read_image_acc_sampled(m_acc, m_sampler.instance, idx, m_range,
                                coordT{});
@@ -1071,7 +1071,7 @@ class image_accessor_api_sampled_r {
      */
     const bool useNormalized =
         m_sampler.coordinate_normalization_mode ==
-            cl::sycl::coordinate_normalization_mode::normalized;
+            sycl::coordinate_normalization_mode::normalized;
     if (useNormalized) {
       const bool worksForLower =
         check_read<acc_coord_tag::use_normalized_lower>(idx, expected);
@@ -1088,10 +1088,10 @@ class image_accessor_api_sampled_r {
 
 /** tests image accessors writes
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dim, sycl::access::mode mode,
+          sycl::access::target target>
 class image_accessor_api_w {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target>;
+  using acc_t = sycl::accessor<T, dim, mode, target>;
 
   acc_t m_accCoordsSyntax;
   image_range_t<dim, target> m_range;
@@ -1113,18 +1113,18 @@ class image_accessor_api_w {
 
 /** tests image accessors methods
 */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 class check_image_accessor_api_methods {
  public:
   static constexpr auto isImageArray =
-      (target == cl::sycl::access::target::image_array);
-  using image_t = cl::sycl::image<(isImageArray ? (dims + 1) : dims)>;
+      (target == sycl::access::target::image_array);
+  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
   size_t size;
 
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string& typeName) {
 #ifdef VERBOSE_LOG
@@ -1183,7 +1183,7 @@ class check_image_accessor_api_methods {
    * @param log The logger object
    * @param image SYCL image to request access to
    */
-  void check_methods_helper(util::logger &log, cl::sycl::queue & /*queue*/,
+  void check_methods_helper(util::logger &log, sycl::queue & /*queue*/,
                             image_t &image, image_range_t<dims, target> range,
                             const std::string& typeName,
                             acc_type_tag::host) const {
@@ -1198,11 +1198,11 @@ class check_image_accessor_api_methods {
    * @param queue SYCL queue where a kernel will be executed
    * @param image SYCL image to request access to
    */
-  void check_methods_helper(util::logger &log, cl::sycl::queue &queue,
+  void check_methods_helper(util::logger &log, sycl::queue &queue,
                             image_t &image, image_range_t<dims, target> range,
                             const std::string& typeName,
                             acc_type_tag::generic) const {
-    queue.submit([&](cl::sycl::handler &handler) {
+    queue.submit([&](sycl::handler &handler) {
       auto acc =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               image, handler);
@@ -1214,15 +1214,15 @@ class check_image_accessor_api_methods {
 
 /** tests image accessors reads
 */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 class check_image_accessor_api_reads {
 
-  template <cl::sycl::access::target errorTarget>
+  template <sycl::access::target errorTarget>
   using read_verifier_t =
       image_accessor_api_r<T, dims, mode, target, errorTarget>;
 
-  template <cl::sycl::access::target errorTarget>
+  template <sycl::access::target errorTarget>
   using sampled_read_verifier_t =
       image_accessor_api_sampled_r<T, dims, mode, target, errorTarget>;
 
@@ -1235,13 +1235,13 @@ class check_image_accessor_api_reads {
 
  public:
   static constexpr auto isImageArray =
-      (target == cl::sycl::access::target::image_array);
-  using image_t = cl::sycl::image<(isImageArray ? (dims + 1) : dims)>;
+      (target == sycl::access::target::image_array);
+  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
   size_t size;
 
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string& typeName) {
 #ifdef VERBOSE_LOG
@@ -1264,9 +1264,9 @@ class check_image_accessor_api_reads {
                       image_format_channel<T>::order,
                       image_format_channel<T>::type, range);
         error_buffer_t errorBuffer(errors.data(),
-                                   cl::sycl::range<1>(errors.size()));
+                                   sycl::range<1>(errors.size()));
         failure_buffer_t failureBuffer(failures.data(),
-                                   cl::sycl::range<1>(failures.size()));
+                                   sycl::range<1>(failures.size()));
 
         check_command_group_reads<read_verifier_t>(
             tag, queue, range, image, errorBuffer, failureBuffer);
@@ -1287,7 +1287,7 @@ class check_image_accessor_api_reads {
      */
     for (auto&& sampler: samplers.get()) {
       if (!supportsLinearFilering &&
-          (sampler.filtering_mode == cl::sycl::filtering_mode::linear))
+          (sampler.filtering_mode == sycl::filtering_mode::linear))
           continue;
 
       auto data = get_image_input_data<T>(size);
@@ -1299,9 +1299,9 @@ class check_image_accessor_api_reads {
                       image_format_channel<T>::order,
                       image_format_channel<T>::type, range);
         error_buffer_t errorBuffer(errors.data(),
-                                   cl::sycl::range<1>(errors.size()));
+                                   sycl::range<1>(errors.size()));
         failure_buffer_t failureBuffer(failures.data(),
-                                       cl::sycl::range<1>(failures.size()));
+                                       sycl::range<1>(failures.size()));
 
         check_command_group_reads<sampled_read_verifier_t>(
             tag, queue, range, image, errorBuffer, failureBuffer, sampler);
@@ -1342,16 +1342,16 @@ class check_image_accessor_api_reads {
    * @param errorBuffer Buffer where error will be stored
    * @param sampler Optional parameter, used for sampled reads only
    */
-  template <template <cl::sycl::access::target> class verifierT,
+  template <template <sycl::access::target> class verifierT,
             typename ... samplerT>
   void check_command_group_reads(acc_type_tag::host,
-                                 cl::sycl::queue & /*queue*/,
+                                 sycl::queue & /*queue*/,
                                  const image_range_t<dims, target> &range,
                                  image_t &image,
                                  error_buffer_t &errorBuffer,
                                  failure_buffer_t &failureBuffer,
                                  samplerT ... sampler) {
-    static constexpr auto errorTarget = cl::sycl::access::target::host_buffer;
+    static constexpr auto errorTarget = sycl::access::target::host_buffer;
     auto accessor =
         make_accessor<T, dims, mode, target, acc_placeholder::image>(image);
     auto errorAccessor =
@@ -1387,18 +1387,18 @@ class check_image_accessor_api_reads {
    * @param errorBuffer Buffer where error will be stored
    * @param sampler Optional parameter, used for sampled reads only
    */
-  template <template <cl::sycl::access::target> class verifierT,
+  template <template <sycl::access::target> class verifierT,
             typename ... samplerT>
   void check_command_group_reads(acc_type_tag::generic,
-                                 cl::sycl::queue &queue,
+                                 sycl::queue &queue,
                                  const image_range_t<dims, target> &range,
                                  image_t &image,
                                  error_buffer_t &errorBuffer,
                                  failure_buffer_t &failureBuffer,
                                  samplerT ... sampler) {
-    queue.submit([&](cl::sycl::handler &handler) {
+    queue.submit([&](sycl::handler &handler) {
       static constexpr auto errorTarget =
-          cl::sycl::access::target::global_buffer;
+          sycl::access::target::global_buffer;
       auto accessor =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               image, handler);
@@ -1425,18 +1425,18 @@ class check_image_accessor_api_reads {
 
 /** tests image accessors writes
 */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 class check_image_accessor_api_writes {
  public:
   static constexpr auto isImageArray =
-      (target == cl::sycl::access::target::image_array);
-  using image_t = cl::sycl::image<(isImageArray ? (dims + 1) : dims)>;
+      (target == sycl::access::target::image_array);
+  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
 
   size_t count;
   size_t size;
 
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string typeName) {
 #ifdef VERBOSE_LOG
@@ -1479,7 +1479,7 @@ class check_image_accessor_api_writes {
    * @param imgCoordsSyntax Image to use when writing to an accessor
    *        using coordinates
    */
-  void check_command_group_writes(cl::sycl::queue &queue,
+  void check_command_group_writes(sycl::queue &queue,
                                   const image_range_t<dims, target> &range,
                                   image_t &imgCoordsSyntax,
                                   const std::string typeName,
@@ -1506,14 +1506,14 @@ class check_image_accessor_api_writes {
    * @param imgCoordsSyntax Image to use when writing to an accessor
    *        using coordinates
    */
-  void check_command_group_writes(cl::sycl::queue &queue,
+  void check_command_group_writes(sycl::queue &queue,
                                   const image_range_t<dims, target> &range,
                                   image_t &imgCoordsSyntax,
                                   const std::string typeName,
                                   acc_type_tag::generic) {
     static_cast<void>(typeName); //no failure log here currently
 
-    queue.submit([&](cl::sycl::handler &handler) {
+    queue.submit([&](sycl::handler &handler) {
       auto accCoordsSyntax =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               imgCoordsSyntax, handler);
@@ -1533,12 +1533,12 @@ class check_image_accessor_api_writes {
 /** tests image accessors with different modes
 */
 
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    image_range_t<dims, target> range,
                                    acc_mode_tag::generic) {
   check_image_accessor_api_reads<T, dims, mode, target>{count, size}(
@@ -1547,36 +1547,36 @@ void check_image_accessor_api_mode(util::logger &log,
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    image_range_t<dims, target> range,
                                    acc_mode_tag::write_only) {
   check_image_accessor_api_writes<T, dims, mode, target>{count, size}(
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    image_range_t<dims, target> range,
                                    acc_mode_tag::read_only) {
   check_image_accessor_api_reads<T, dims, mode, target>{count, size}(
       log, queue, range, typeName);
 }
 
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target>
 void check_image_accessor_api_mode(util::logger &log,
                                    const std::string typeName,
                                    size_t count, size_t size,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    image_range_t<dims, target> range) {
 #ifdef VERBOSE_LOG
   log_accessor<T, dims, mode, target>("", typeName, log);
@@ -1598,22 +1598,22 @@ void check_image_accessor_api_mode(util::logger &log,
 /**
  *  @brief Test image and image array accessors for all modes
  */
-template <typename T, int dims, cl::sycl::access::target target,
+template <typename T, int dims, sycl::access::target target,
           typename ... argsT>
 void check_image_accessor_api_target(acc_target_tag::generic,
                                      argsT&& ... args) {
   {
-    constexpr auto mode = cl::sycl::access::mode::read;
+    constexpr auto mode = sycl::access::mode::read;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = cl::sycl::access::mode::write;
+    constexpr auto mode = sycl::access::mode::write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = cl::sycl::access::mode::discard_write;
+    constexpr auto mode = sycl::access::mode::discard_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
@@ -1622,27 +1622,27 @@ void check_image_accessor_api_target(acc_target_tag::generic,
 /**
  *  @brief Test host image accessors for all modes
  */
-template <typename T, int dims, cl::sycl::access::target target,
+template <typename T, int dims, sycl::access::target target,
           typename ... argsT>
 void check_image_accessor_api_target(acc_target_tag::host,
                                      argsT&& ... args) {
   {
-    constexpr auto mode = cl::sycl::access::mode::read;
+    constexpr auto mode = sycl::access::mode::read;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = cl::sycl::access::mode::write;
+    constexpr auto mode = sycl::access::mode::write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = cl::sycl::access::mode::read_write;
+    constexpr auto mode = sycl::access::mode::read_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
   {
-    constexpr auto mode = cl::sycl::access::mode::discard_write;
+    constexpr auto mode = sycl::access::mode::discard_write;
     check_image_accessor_api_mode<T, dims, mode, target>(
         std::forward<argsT>(args)...);
   }
@@ -1651,7 +1651,7 @@ void check_image_accessor_api_target(acc_target_tag::host,
 /**
  *  @brief Tests image accessors with different targets for all modes
  */
-template <typename T, int dims, cl::sycl::access::target target,
+template <typename T, int dims, sycl::access::target target,
           typename ... argsT>
 void check_image_accessor_api_target_wrapper(argsT&& ... args) {
 
@@ -1674,20 +1674,20 @@ void check_image_accessor_api_dim(acc_dims_tag::generic, util::logger &log,
   /** check image accessor api for image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          cl::sycl::access::target::image>(
+                                          sycl::access::target::image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          cl::sycl::access::target::host_image>(
+                                          sycl::access::target::host_image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for image_array
    */
   {
     static constexpr auto imageArrayTarget =
-        cl::sycl::access::target::image_array;
+        sycl::access::target::image_array;
     static constexpr bool isImageArray = true;
     const auto imageArrayRange =
         make_test_range<image_dims<dims, imageArrayTarget>::value>(
@@ -1711,13 +1711,13 @@ void check_image_accessor_api_dim(acc_dims_tag::num_dims<3>, util::logger &log,
   /** check image accessor api for image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          cl::sycl::access::target::image>(
+                                          sycl::access::target::image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** check image accessor api for host_image
    */
   check_image_accessor_api_target_wrapper<T, dims,
-                                          cl::sycl::access::target::host_image>(
+                                          sycl::access::target::host_image>(
       log, typeName, count, std::forward<argsT>(args)..., imageRange);
 
   /** image_array accessors only exist for 1D and 2D
@@ -1740,7 +1740,7 @@ class check_image_accessor_api_type {
   static constexpr auto size = count * image_format_channel<T>::elementSize;
 
  public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   const std::string& typeName) {
     /**
      *  check image accessor api for all dimensions

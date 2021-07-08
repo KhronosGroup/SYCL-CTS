@@ -13,7 +13,7 @@
 namespace sampler_api__ {
 using namespace sycl_cts;
 
-/** tests the API for cl::sycl::sampler
+/** tests the API for sycl::sampler
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -28,46 +28,46 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       // Ensure all addressing_mode values defined
-      check_enum_class_value(cl::sycl::addressing_mode::mirrored_repeat);
-      check_enum_class_value(cl::sycl::addressing_mode::repeat);
-      check_enum_class_value(cl::sycl::addressing_mode::clamp_to_edge);
-      check_enum_class_value(cl::sycl::addressing_mode::clamp);
-      check_enum_class_value(cl::sycl::addressing_mode::none);
-      check_enum_underlying_type<cl::sycl::addressing_mode, unsigned int>(log);
+      check_enum_class_value(sycl::addressing_mode::mirrored_repeat);
+      check_enum_class_value(sycl::addressing_mode::repeat);
+      check_enum_class_value(sycl::addressing_mode::clamp_to_edge);
+      check_enum_class_value(sycl::addressing_mode::clamp);
+      check_enum_class_value(sycl::addressing_mode::none);
+      check_enum_underlying_type<sycl::addressing_mode, unsigned int>(log);
 
       // Ensure all filtering_mode values defined
-      check_enum_class_value(cl::sycl::filtering_mode::nearest);
-      check_enum_class_value(cl::sycl::filtering_mode::linear);
-      check_enum_underlying_type<cl::sycl::filtering_mode, unsigned int>(log);
+      check_enum_class_value(sycl::filtering_mode::nearest);
+      check_enum_class_value(sycl::filtering_mode::linear);
+      check_enum_underlying_type<sycl::filtering_mode, unsigned int>(log);
 
       // Ensure all coordinate_normalization_mode values defined
       check_enum_class_value(
-          cl::sycl::coordinate_normalization_mode::normalized);
+          sycl::coordinate_normalization_mode::normalized);
       check_enum_class_value(
-          cl::sycl::coordinate_normalization_mode::unnormalized);
-      check_enum_underlying_type<cl::sycl::coordinate_normalization_mode,
+          sycl::coordinate_normalization_mode::unnormalized);
+      check_enum_underlying_type<sycl::coordinate_normalization_mode,
                                  unsigned int>(log);
 
-      cl::sycl::sampler sampler(
-          cl::sycl::coordinate_normalization_mode::unnormalized,
-          cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::nearest);
+      sycl::sampler sampler(
+          sycl::coordinate_normalization_mode::unnormalized,
+          sycl::addressing_mode::none, sycl::filtering_mode::nearest);
 
       /** check get_addressing_mode() method
       */
       auto addressingMode = sampler.get_addressing_mode();
-      check_return_type<cl::sycl::addressing_mode>(log, addressingMode,
+      check_return_type<sycl::addressing_mode>(log, addressingMode,
                                                    "get_addressing_mode()");
 
       /** check get_filtering_mode() method
       */
       auto filterMode = sampler.get_filtering_mode();
-      check_return_type<cl::sycl::filtering_mode>(log, filterMode,
+      check_return_type<sycl::filtering_mode>(log, filterMode,
                                                   "get_filtering_mode()");
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

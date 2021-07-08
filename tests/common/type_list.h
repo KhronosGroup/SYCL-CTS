@@ -37,9 +37,9 @@ namespace get_cts_types {
 static const auto vector_types = named_type_pack<
     bool, char, signed char, unsigned char, short, unsigned short, int,
     unsigned int, long, unsigned long, long long, unsigned long long, float,
-    cl::sycl::cl_float, cl::sycl::byte, cl::sycl::cl_bool, cl::sycl::cl_char,
-    cl::sycl::cl_uchar, cl::sycl::cl_short, cl::sycl::cl_ushort,
-    cl::sycl::cl_int, cl::sycl::cl_uint, cl::sycl::cl_long, cl::sycl::cl_ulong>{
+    sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char,
+    sycl::cl_uchar, sycl::cl_short, sycl::cl_ushort,
+    sycl::cl_int, sycl::cl_uint, sycl::cl_long, sycl::cl_ulong>{
     "bool",
     "char",
     "signed char",
@@ -53,17 +53,17 @@ static const auto vector_types = named_type_pack<
     "long long",
     "unsigned long long",
     "float",
-    "cl::sycl::cl_float",
-    "cl::sycl::byte",
-    "cl::sycl::cl_bool",
-    "cl::sycl::cl_char",
-    "cl::sycl::cl_uchar",
-    "cl::sycl::cl_short",
-    "cl::sycl::cl_ushort",
-    "cl::sycl::cl_int",
-    "cl::sycl::cl_uint",
-    "cl::sycl::cl_long",
-    "cl::sycl::cl_ulong"};
+    "sycl::cl_float",
+    "sycl::byte",
+    "sycl::cl_bool",
+    "sycl::cl_char",
+    "sycl::cl_uchar",
+    "sycl::cl_short",
+    "sycl::cl_ushort",
+    "sycl::cl_int",
+    "sycl::cl_uint",
+    "sycl::cl_long",
+    "sycl::cl_ulong"};
 } // namespace get_cts_type
 
 #endif // __SYCLCTS_TESTS_COMMON_TYPE_LIST_H

@@ -17,14 +17,14 @@ using namespace sycl_cts::util;
 template <typename T, int size, int dims>
 class buffer_dtors {
  public:
-  void operator()(util::logger &log, cl::sycl::range<dims> r) {
-    cl::sycl::unique_ptr_class<T[]> data(new T[size]);
+  void operator()(util::logger &log, sycl::range<dims> r) {
+    sycl::unique_ptr_class<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
 
     {
-      cl::sycl::buffer<T, dims> buf(data.get(), r);
-      cl::sycl::accessor<T, dims, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::host_buffer>
+      sycl::buffer<T, dims> buf(data.get(), r);
+      sycl::accessor<T, dims, sycl::access::mode::read_write,
+                         sycl::access::target::host_buffer>
           acc(buf);
       for (int i = 0; i < size; ++i) acc[i] = static_cast<T>(i);
     }
@@ -40,7 +40,7 @@ class buffer_dtors {
 };
 
 /**
- * test cl::sycl::buffer initialization
+ * test sycl::buffer initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -53,7 +53,7 @@ class TEST_NAME : public util::test_base {
   template <typename T>
   void test_buffers(util::logger &log) {
     const int size = 32;
-    cl::sycl::range<1> range1d(size);
+    sycl::range<1> range1d(size);
     buffer_dtors<T, size, 1> buf1d;
     buf1d(log, range1d);
   }
@@ -65,10 +65,10 @@ class TEST_NAME : public util::test_base {
       test_buffers<int>(log);
       test_buffers<float>(log);
       test_buffers<double>(log);
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

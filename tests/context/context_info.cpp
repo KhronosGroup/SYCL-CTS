@@ -13,7 +13,7 @@
 namespace contect_info__ {
 using namespace sycl_cts;
 
-/** tests the info for cl::sycl::context
+/** tests the info for sycl::context
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -33,35 +33,35 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto ref_count =
-            context.get_info<cl::sycl::info::context::reference_count>();
+            context.get_info<sycl::info::context::reference_count>();
         check_return_type<cl_uint>(
             log, ref_count,
-            "get_info<cl::sycl::info::context::reference_count>()");
+            "get_info<sycl::info::context::reference_count>()");
         TEST_TYPE_TRAIT(context, reference_count, context);
       }
 
       /** check get_info for info::context::platform
        */
       {
-        auto platform = context.get_info<cl::sycl::info::context::platform>();
-        check_return_type<cl::sycl::platform>(
-            log, platform, "get_info<cl::sycl::info::context::platform>()");
+        auto platform = context.get_info<sycl::info::context::platform>();
+        check_return_type<sycl::platform>(
+            log, platform, "get_info<sycl::info::context::platform>()");
         TEST_TYPE_TRAIT(context, platform, context);
       }
 
       /** check get_info for info::context::devices
        */
       {
-        auto devs = context.get_info<cl::sycl::info::context::devices>();
-        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
-            log, devs, "get_info<cl::sycl::info::context::devices>()");
+        auto devs = context.get_info<sycl::info::context::devices>();
+        check_return_type<sycl::vector_class<sycl::device>>(
+            log, devs, "get_info<sycl::info::context::devices>()");
         TEST_TYPE_TRAIT(context, devices, context);
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

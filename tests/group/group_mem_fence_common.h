@@ -30,7 +30,7 @@ namespace {
 template <class kernelT, int dim, typename readFenceCallT,
           typename writeFenceCallT>
 bool test_rw_mem_fence_global_space(sycl_cts::util::logger& log,
-                                    cl::sycl::queue &queue,
+                                    sycl::queue &queue,
                                     const readFenceCallT& readMemFence,
                                     const writeFenceCallT& writeMemFence)
 {
@@ -48,29 +48,29 @@ bool test_rw_mem_fence_global_space(sycl_cts::util::logger& log,
   bool passed = true;
 
   // Init ranges
-  cl::sycl::range<1> globalRange(globalSize);
-  cl::sycl::range<1> workGroupRange(globalSize / localSize);
-  cl::sycl::range<1> localRange(localSize);
+  sycl::range<1> globalRange(globalSize);
+  sycl::range<1> workGroupRange(globalSize / localSize);
+  sycl::range<1> localRange(localSize);
 
   // Run kernel to verify memory ordering works for adjacent work-items
   {
-    cl::sycl::buffer<int, 1> data(globalRange);
-    cl::sycl::buffer<bool, 1> passedBuf(&passed, cl::sycl::range<1>(1));
+    sycl::buffer<int, 1> data(globalRange);
+    sycl::buffer<bool, 1> passedBuf(&passed, sycl::range<1>(1));
 
     // Initialize data state
     {
-      auto ptr = data.get_access<cl::sycl::access::mode::write>();
+      auto ptr = data.get_access<sycl::access::mode::write>();
       for (size_t i = 0; i < ptr.get_count(); ++i)
         ptr[i] = -1;
     }
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto ptr = data.get_access<cl::sycl::access::mode::atomic>(cgh);
-      auto pass = passedBuf.get_access<cl::sycl::access::mode::write>(cgh);
+    queue.submit([&](sycl::handler &cgh) {
+      auto ptr = data.get_access<sycl::access::mode::atomic>(cgh);
+      auto pass = passedBuf.get_access<sycl::access::mode::write>(cgh);
 
       cgh.parallel_for_work_group<kernelT>(
-        workGroupRange, localRange, [=](cl::sycl::group<1> group) {
+        workGroupRange, localRange, [=](sycl::group<1> group) {
           group.parallel_for_work_item(
-            [&](cl::sycl::h_item<1> item) {
+            [&](sycl::h_item<1> item) {
               const size_t current = item.get_global().get_linear_id();
               const size_t other = current ^ 1U;
 
@@ -125,7 +125,7 @@ bool test_rw_mem_fence_global_space(sycl_cts::util::logger& log,
 template <class kernelT, int dim, typename readFenceCallT,
           typename writeFenceCallT>
 bool test_rw_mem_fence_local_space(sycl_cts::util::logger& log,
-                                   cl::sycl::queue &queue,
+                                   sycl::queue &queue,
                                    const readFenceCallT& readMemFence,
                                    const writeFenceCallT& writeMemFence)
 {
@@ -143,32 +143,32 @@ bool test_rw_mem_fence_local_space(sycl_cts::util::logger& log,
   bool passed = true;
 
   // Init ranges
-  cl::sycl::range<1> globalRange(globalSize);
-  cl::sycl::range<1> workGroupRange(globalSize / localSize);
-  cl::sycl::range<1> localRange(localSize);
+  sycl::range<1> globalRange(globalSize);
+  sycl::range<1> workGroupRange(globalSize / localSize);
+  sycl::range<1> localRange(localSize);
 
   // Run kernel to verify memory ordering works for adjacent work-items
   {
-    cl::sycl::buffer<bool, 1> passedBuf(&passed, cl::sycl::range<1>(1));
+    sycl::buffer<bool, 1> passedBuf(&passed, sycl::range<1>(1));
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto pass = passedBuf.get_access<cl::sycl::access::mode::write>(cgh);
-      cl::sycl::accessor<int, 1, cl::sycl::access::mode::atomic,
-                         cl::sycl::access::target::local>
+    queue.submit([&](sycl::handler &cgh) {
+      auto pass = passedBuf.get_access<sycl::access::mode::write>(cgh);
+      sycl::accessor<int, 1, sycl::access::mode::atomic,
+                         sycl::access::target::local>
           ptr(globalRange, cgh);
 
       cgh.parallel_for_work_group<kernelT>(
-        workGroupRange, localRange, [=](cl::sycl::group<1> group) {
+        workGroupRange, localRange, [=](sycl::group<1> group) {
           // Initialize data state
           group.parallel_for_work_item(
-            [&](cl::sycl::h_item<1> item) {
+            [&](sycl::h_item<1> item) {
               const size_t idx = item.get_global().get_linear_id();
 
               ptr[idx].store(-1);
           });
           // Implicit barrier
           group.parallel_for_work_item(
-            [&](cl::sycl::h_item<1> item) {
+            [&](sycl::h_item<1> item) {
               const size_t current = item.get_global().get_linear_id();
               const size_t other = current ^ 1U;
 
@@ -230,14 +230,14 @@ public:
    * @brief Retrieve test name for explicit fence space usage
    * @param fenceSpace Fence space value
    */
-  static std::string get(cl::sycl::access::fence_space fenceSpace)
+  static std::string get(sycl::access::fence_space fenceSpace)
   {
     switch (fenceSpace) {
-    case cl::sycl::access::fence_space::global_and_local:
+    case sycl::access::fence_space::global_and_local:
       return "global_and_local space " + mem_fence_name();
-    case cl::sycl::access::fence_space::local_space:
+    case sycl::access::fence_space::local_space:
       return "local space " + mem_fence_name();
-    case cl::sycl::access::fence_space::global_space:
+    case sycl::access::fence_space::global_space:
       return "global space " + mem_fence_name();
     default:
       return "__unknown__";

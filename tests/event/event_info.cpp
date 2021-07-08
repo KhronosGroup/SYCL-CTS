@@ -13,7 +13,7 @@
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
-namespace sycl = cl::sycl;
+namespace sycl = sycl;
 
 /** test the get_info and get_profiling_info apis for sycl::event
  */

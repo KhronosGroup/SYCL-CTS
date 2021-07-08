@@ -18,18 +18,18 @@ namespace atomic_api_common {
  *        access target
  * @tparam target Access target
  */
-template <cl::sycl::access::target target>
+template <sycl::access::target target>
 struct target_map;
 
 /**
  * @brief Helper struct for performing operations using a global_buffer target
  */
 template <>
-struct target_map<cl::sycl::access::target::global_buffer> {
-  static constexpr auto target = cl::sycl::access::target::global_buffer;
+struct target_map<sycl::access::target::global_buffer> {
+  static constexpr auto target = sycl::access::target::global_buffer;
 
   static constexpr auto addressSpace =
-      cl::sycl::access::address_space::global_space;
+      sycl::access::address_space::global_space;
 
   /**
    * @brief Retrieves a global accessor
@@ -39,9 +39,9 @@ struct target_map<cl::sycl::access::target::global_buffer> {
    * @return Global accessor
    */
   template <typename T>
-  static cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target>
-  get_accessor(cl::sycl::buffer<T, 1> &buf, cl::sycl::handler &cgh) {
-    return buf.template get_access<cl::sycl::access::mode::atomic, target>(cgh);
+  static sycl::accessor<T, 1, sycl::access::mode::atomic, target>
+  get_accessor(sycl::buffer<T, 1> &buf, sycl::handler &cgh) {
+    return buf.template get_access<sycl::access::mode::atomic, target>(cgh);
   }
 };
 
@@ -49,11 +49,11 @@ struct target_map<cl::sycl::access::target::global_buffer> {
  * @brief Helper struct for performing operations using a local target
  */
 template <>
-struct target_map<cl::sycl::access::target::local> {
-  static constexpr auto target = cl::sycl::access::target::local;
+struct target_map<sycl::access::target::local> {
+  static constexpr auto target = sycl::access::target::local;
 
   static constexpr auto addressSpace =
-      cl::sycl::access::address_space::local_space;
+      sycl::access::address_space::local_space;
 
   /**
    * @brief Retrieves a local accessor
@@ -62,29 +62,29 @@ struct target_map<cl::sycl::access::target::local> {
    * @return Local accessor
    */
   template <typename T>
-  static cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target>
-  get_accessor(cl::sycl::buffer<T, 1> &, cl::sycl::handler &cgh) {
-    return cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target>(
-        cl::sycl::range<1>(1), cgh);
+  static sycl::accessor<T, 1, sycl::access::mode::atomic, target>
+  get_accessor(sycl::buffer<T, 1> &, sycl::handler &cgh) {
+    return sycl::accessor<T, 1, sycl::access::mode::atomic, target>(
+        sycl::range<1>(1), cgh);
   }
 };
 
 /** Check atomic operations
  */
-template <typename T, cl::sycl::access::target target,
-          template <class, cl::sycl::access::target>
+template <typename T, sycl::access::target target,
+          template <class, sycl::access::target>
           class check_atomics_functor>
 class check_atomics {
  public:
-  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
 
     T data = 0;
     std::memset(&data, 0xFF, sizeof(T));
 
-    cl::sycl::buffer<T, 1> buf(&data, cl::sycl::range<1>(1));
+    sycl::buffer<T, 1> buf(&data, sycl::range<1>(1));
 
-    testQueue.submit([&](cl::sycl::handler &cgh) {
+    testQueue.submit([&](sycl::handler &cgh) {
       auto acc = target_map<target>::get_accessor(buf, cgh);
       auto f = check_atomics_functor<T, target>(acc);
       cgh.single_task(f);
@@ -92,18 +92,18 @@ class check_atomics {
   }
 };
 
-template <typename T, template <class, cl::sycl::access::target>
+template <typename T, template <class, sycl::access::target>
                       class check_atomics_functor>
 void generic_check_for_atomics(sycl_cts::util::logger &log,
-                               cl::sycl::queue testQueue) {
-  /** Check atomics for cl::sycl::access::target::global_buffer
+                               sycl::queue testQueue) {
+  /** Check atomics for sycl::access::target::global_buffer
    */
-  check_atomics<T, cl::sycl::access::target::global_buffer,
+  check_atomics<T, sycl::access::target::global_buffer,
                 check_atomics_functor>{}(log, testQueue);
 
-  /** Check atomics for cl::sycl::access::target::local
+  /** Check atomics for sycl::access::target::local
    */
-  check_atomics<T, cl::sycl::access::target::local, check_atomics_functor>{}(
+  check_atomics<T, sycl::access::target::local, check_atomics_functor>{}(
       log, testQueue);
 }
 

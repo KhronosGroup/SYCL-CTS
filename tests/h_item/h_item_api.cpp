@@ -157,7 +157,7 @@ void api_tests<dims>::run(util::logger& log) {
     sycl::buffer<int> consistencyBuf(consistency.data(), offsetsRange);
     sycl::buffer<work_item_ids> idsBuf(ids.data(), offsetsRange);
 
-    queue.submit([&](cl::sycl::handler& cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto consistency_acc =
           consistencyBuf.get_access<sycl::access::mode::write>(cgh);
       auto id_acc = idsBuf.get_access<sycl::access::mode::write>(cgh);
@@ -166,7 +166,7 @@ void api_tests<dims>::run(util::logger& log) {
           kernelGroupRange, kernelPhysicalLocalRange,
           [=](sycl::group<dims> group) {
             group.parallel_for_work_item(
-                kernelLogicalLocalRange, [&](cl::sycl::h_item<dims> item) {
+                kernelLogicalLocalRange, [&](sycl::h_item<dims> item) {
                   bool success = true;
                   const size_t offset = offsets.get(group, item);
 
@@ -283,7 +283,7 @@ void api_tests<dims>::validate_id_count(util::logger& log,
 
 template <int dims>
 template <int currentDim>
-bool api_tests<dims>::run_1d_checks(const cl::sycl::h_item<dims>& item) {
+bool api_tests<dims>::run_1d_checks(const sycl::h_item<dims>& item) {
   bool success = true;
   {
     auto value = item.get_global_range(currentDim);
@@ -329,7 +329,7 @@ bool api_tests<dims>::run_1d_checks(const cl::sycl::h_item<dims>& item) {
 }
 
 template <int dims>
-bool api_tests<dims>::run_nd_checks(const cl::sycl::h_item<dims>& item,
+bool api_tests<dims>::run_nd_checks(const sycl::h_item<dims>& item,
                                     work_item_ids& ids) {
   bool success = true;
   static constexpr bool with_offset = false;
@@ -377,7 +377,7 @@ bool api_tests<dims>::run_nd_checks(const cl::sycl::h_item<dims>& item,
   return success;
 }
 
-/** Test cl::sycl::device initialization
+/** Test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -394,7 +394,7 @@ class TEST_NAME : public util::test_base {
       api_tests<1>::run(log);
       api_tests<2>::run(log);
       api_tests<3>::run(log);
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

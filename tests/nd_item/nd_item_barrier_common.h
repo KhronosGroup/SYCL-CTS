@@ -16,13 +16,13 @@
 namespace {
 
 template<int dim>
-bool check_result(std::vector<size_t>&, const cl::sycl::range<dim>&, size_t) {
+bool check_result(std::vector<size_t>&, const sycl::range<dim>&, size_t) {
   return true;
 }
 
 template<>
 bool check_result<1>(std::vector<size_t> &data,
-                     const cl::sycl::range<1> &globalRange,
+                     const sycl::range<1> &globalRange,
                      size_t localSize) {
   size_t globalSize = globalRange[0];
   for (size_t id = 0; id < globalSize; id += localSize) {
@@ -37,7 +37,7 @@ bool check_result<1>(std::vector<size_t> &data,
 
 template<>
 bool check_result<2>(std::vector<size_t> &data,
-                     const cl::sycl::range<2> &globalRange,
+                     const sycl::range<2> &globalRange,
                      size_t localSize) {
   size_t globalSize0 = globalRange[0];
   size_t globalSize1 = globalRange[1];
@@ -56,7 +56,7 @@ bool check_result<2>(std::vector<size_t> &data,
 
 template<>
 bool check_result<3>(std::vector<size_t>& data,
-                     const cl::sycl::range<3> &globalRange,
+                     const sycl::range<3> &globalRange,
                      size_t localSize) {
   size_t globalSize0 = globalRange[0];
   size_t globalSize1 = globalRange[1];
@@ -86,9 +86,9 @@ bool check_result<3>(std::vector<size_t>& data,
  */
 template <int dim, class kernelT, typename barrierCallT>
 void test_barrier_local_space(sycl_cts::util::logger &log,
-                              cl::sycl::queue &queue,
+                              sycl::queue &queue,
                               const barrierCallT &barrier,
-                              const cl::sycl::string_class &errorMsg) {
+                              const sycl::string_class &errorMsg) {
 
   const size_t globalSizeD1 = (dim == 3) ? 4 : 8;
   const size_t globalSizeD2 = 4;
@@ -108,7 +108,7 @@ void test_barrier_local_space(sycl_cts::util::logger &log,
   const auto localRange =
       sycl_cts::util::get_cts_object::range<dim>::get(localSize, localSize,
                                                       localSize);
-  cl::sycl::nd_range<dim> NDRange(globalRange, localRange);
+  sycl::nd_range<dim> NDRange(globalRange, localRange);
 
   // Allocate and assign host data
   std::vector<size_t> data(globalRange.size());
@@ -117,19 +117,19 @@ void test_barrier_local_space(sycl_cts::util::logger &log,
 
   // Run kernel to swap adjacent work item's id within data
   {
-    cl::sycl::buffer<size_t, dim> buf(data.data(), globalRange);
+    sycl::buffer<size_t, dim> buf(data.data(), globalRange);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto ptr = buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
-      cl::sycl::accessor<size_t, dim, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
+    queue.submit([&](sycl::handler &cgh) {
+      auto ptr = buf.template get_access<sycl::access::mode::read_write>(cgh);
+      sycl::accessor<size_t, dim, sycl::access::mode::read_write,
+                         sycl::access::target::local>
           tile(localRange, cgh);
 
       cgh.parallel_for<kernelT>(
-          NDRange, [=](cl::sycl::nd_item<dim> item) {
-            cl::sycl::id<dim> item_id = item.get_global_id();
-            cl::sycl::id<dim> pos_id;
-            cl::sycl::id<dim> opp_id;
+          NDRange, [=](sycl::nd_item<dim> item) {
+            sycl::id<dim> item_id = item.get_global_id();
+            sycl::id<dim> pos_id;
+            sycl::id<dim> opp_id;
             for (size_t i = 0; i < dim; i++){
               const size_t idx = item_id[i];
               const size_t pos = idx & 1;
@@ -159,9 +159,9 @@ void test_barrier_local_space(sycl_cts::util::logger &log,
  */
 template <int dim, class kernelT, typename barrierCallT>
 void test_barrier_global_space(sycl_cts::util::logger &log,
-                               cl::sycl::queue &queue,
+                               sycl::queue &queue,
                                const barrierCallT &barrier,
-                               const cl::sycl::string_class &errorMsg) {
+                               const sycl::string_class &errorMsg) {
 
   const size_t globalSizeD1 = (dim == 3) ? 4 : 8;
   const size_t globalSizeD2 = 4;
@@ -181,7 +181,7 @@ void test_barrier_global_space(sycl_cts::util::logger &log,
   const auto localRange =
       sycl_cts::util::get_cts_object::range<dim>::get(localSize, localSize,
                                                       localSize);
-  cl::sycl::nd_range<dim> NDRange(globalRange, localRange);
+  sycl::nd_range<dim> NDRange(globalRange, localRange);
 
   // Allocate and assign host data
   std::vector<size_t> data(globalRange.size());
@@ -190,15 +190,15 @@ void test_barrier_global_space(sycl_cts::util::logger &log,
 
   // Run kernel to swap adjacent work item's id within data
   {
-    cl::sycl::buffer<size_t, dim> buffer(data.data(), globalRange);
+    sycl::buffer<size_t, dim> buffer(data.data(), globalRange);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto ptr = buffer.template get_access<cl::sycl::access::mode::read_write>(cgh);
+    queue.submit([&](sycl::handler &cgh) {
+      auto ptr = buffer.template get_access<sycl::access::mode::read_write>(cgh);
 
       cgh.parallel_for<kernelT>(
-          NDRange, [=](cl::sycl::nd_item<dim> item) {
-            cl::sycl::id<dim> item_id = item.get_global_id();
-            cl::sycl::id<dim> opp_id;
+          NDRange, [=](sycl::nd_item<dim> item) {
+            sycl::id<dim> item_id = item.get_global_id();
+            sycl::id<dim> opp_id;
             for (size_t i = 0; i < dim; i++){
               const size_t pos = item_id[i];
               const size_t opp = pos ^ 1;

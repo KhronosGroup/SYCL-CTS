@@ -47,14 +47,14 @@ function(get_std_type OUT_LIST)
 
   list(APPEND STD_TYPE_LIST float
     double
-    cl::sycl::half)
+    sycl::half)
 
   set(${OUT_LIST} ${${OUT_LIST}} ${STD_TYPE_LIST} PARENT_SCOPE)
 endfunction()
 
 function(get_no_vec_alias_type OUT_LIST)
   set(NO_VEC_ALIAS_LIST "")
-  list(APPEND NO_VEC_ALIAS_LIST cl::sycl::byte)
+  list(APPEND NO_VEC_ALIAS_LIST sycl::byte)
 
   set(${OUT_LIST} ${${OUT_LIST}} ${NO_VEC_ALIAS_LIST} PARENT_SCOPE)
 endfunction()
@@ -79,7 +79,7 @@ macro(half_double_filter list)
   endif()
 
   if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
-    list(REMOVE_ITEM ${list} cl::sycl::half)
+    list(REMOVE_ITEM ${list} sycl::half)
   endif()
 
 endmacro()

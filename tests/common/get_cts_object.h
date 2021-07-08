@@ -22,7 +22,7 @@
 template <class kernel_name = void>
 struct dummy_functor {
   void operator()() const {}
-  void operator()(cl::sycl::group<3> g) const {}
+  void operator()(sycl::group<3> g) const {}
 };
 
 namespace sycl_cts {
@@ -39,9 +39,9 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL device
   */
-  static cl::sycl::device device(
-      const cl::sycl::device_selector &selector = cts_selector()) {
-    return cl::sycl::device(selector);
+  static sycl::device device(
+      const sycl::device_selector &selector = cts_selector()) {
+    return sycl::device(selector);
   }
 
   /**
@@ -50,9 +50,9 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL platform
   */
-  static cl::sycl::platform platform(
-      const cl::sycl::device_selector &selector = cts_selector()) {
-    return cl::sycl::platform(selector);
+  static sycl::platform platform(
+      const sycl::device_selector &selector = cts_selector()) {
+    return sycl::platform(selector);
   }
 
   /**
@@ -61,10 +61,10 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL queue
   */
-  static cl::sycl::queue queue(
-      const cl::sycl::device_selector &selector = cts_selector()) {
+  static sycl::queue queue(
+      const sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
-    return cl::sycl::queue(selector, asyncHandler);
+    return sycl::queue(selector, asyncHandler);
   }
 
   /**
@@ -73,10 +73,10 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL context
   */
-  static cl::sycl::context context(
-      const cl::sycl::device_selector &selector = cts_selector()) {
+  static sycl::context context(
+      const sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
-    return cl::sycl::context(selector.select_device(), asyncHandler);
+    return sycl::context(selector.select_device(), asyncHandler);
   }
 
   /**
@@ -91,8 +91,8 @@ struct get_cts_object {
       @return The built kernel
     */
     template <class kernel_name>
-    static cl::sycl::kernel prebuilt(cl::sycl::queue &queue) {
-      cl::sycl::program program(queue.get_context());
+    static sycl::kernel prebuilt(sycl::queue &queue) {
+      sycl::program program(queue.get_context());
       program.build_with_kernel_type<kernel_name>();
       return program.get_kernel<kernel_name>();
     }
@@ -113,14 +113,14 @@ struct get_cts_object {
       @return Compiled SYCL program
     */
     template <class kernel_name>
-    static cl::sycl::program compiled(
-        const cl::sycl::context &ctx,
-        const cl::sycl::string_class &compileOptions = "",
-        const cl::sycl::device_selector &selector = cts_selector()) {
-      cl::sycl::program program(ctx);
+    static sycl::program compiled(
+        const sycl::context &ctx,
+        const sycl::string_class &compileOptions = "",
+        const sycl::device_selector &selector = cts_selector()) {
+      sycl::program program(ctx);
 
       auto q = queue(selector);
-      q.submit([](cl::sycl::handler &cgh) {
+      q.submit([](sycl::handler &cgh) {
         cgh.single_task(dummy_functor<kernel_name>());
       });
       q.wait_and_throw();
@@ -140,14 +140,14 @@ struct get_cts_object {
       @return Compiled SYCL program
     */
     template <class kernel_name>
-    static cl::sycl::program built(
-        const cl::sycl::context &ctx,
-        const cl::sycl::string_class &buildOptions = "",
-        const cl::sycl::device_selector &selector = cts_selector()) {
-      cl::sycl::program program(ctx);
+    static sycl::program built(
+        const sycl::context &ctx,
+        const sycl::string_class &buildOptions = "",
+        const sycl::device_selector &selector = cts_selector()) {
+      sycl::program program(ctx);
 
       auto q = queue(selector);
-      q.submit([](cl::sycl::handler &cgh) {
+      q.submit([](sycl::handler &cgh) {
         cgh.single_task(dummy_functor<kernel_name>());
       });
       q.wait_and_throw();
@@ -180,8 +180,8 @@ struct get_cts_object::range<1> {
    * @param r0 Value of the first component of the range
    * @return range<1>
    */
-  static cl::sycl::range<1> get(size_t r0, size_t, size_t) {
-    return cl::sycl::range<1>(r0);
+  static sycl::range<1> get(size_t r0, size_t, size_t) {
+    return sycl::range<1>(r0);
   }
 
   /**
@@ -189,8 +189,8 @@ struct get_cts_object::range<1> {
    *        dimension
    */
   template <int dims>
-  static cl::sycl::range<1> get(const cl::sycl::range<dims>& range) {
-    return cl::sycl::range<1>(range[0]);
+  static sycl::range<1> get(const sycl::range<dims>& range) {
+    return sycl::range<1>(range[0]);
   }
 
   /**
@@ -199,8 +199,8 @@ struct get_cts_object::range<1> {
    * @return range<1>
    */
   template <size_t totalSize>
-  static cl::sycl::range<1> get_fixed_size(size_t, size_t) {
-    return cl::sycl::range<1>(totalSize);
+  static sycl::range<1> get_fixed_size(size_t, size_t) {
+    return sycl::range<1>(totalSize);
   }
 };
 
@@ -215,8 +215,8 @@ struct get_cts_object::range<2> {
    * @param r1 Value of the second component of the range
    * @return range<2>
    */
-  static cl::sycl::range<2> get(size_t r0, size_t r1, size_t) {
-    return cl::sycl::range<2>(r0, r1);
+  static sycl::range<2> get(size_t r0, size_t r1, size_t) {
+    return sycl::range<2>(r0, r1);
   }
 
   /**
@@ -224,8 +224,8 @@ struct get_cts_object::range<2> {
    *        dimensions
    */
   template <int dims>
-  static cl::sycl::range<2> get(const cl::sycl::range<dims>& range) {
-    return cl::sycl::range<2>(range[0], range[1]);
+  static sycl::range<2> get(const sycl::range<dims>& range) {
+    return sycl::range<2>(range[0], range[1]);
   }
 
   /**
@@ -236,10 +236,10 @@ struct get_cts_object::range<2> {
    * @return range<2>
    */
   template <size_t totalSize>
-  static cl::sycl::range<2> get_fixed_size(size_t r0, size_t) {
+  static sycl::range<2> get_fixed_size(size_t r0, size_t) {
     assert("Parameters passed for fixed size range are not supported" &&
            (totalSize % r0 == 0));
-    return cl::sycl::range<2>(r0, totalSize / r0);
+    return sycl::range<2>(r0, totalSize / r0);
   }
 };
 
@@ -255,14 +255,14 @@ struct get_cts_object::range<3> {
    * @param r2 Value of the third component of the range
    * @return range<3>
    */
-  static cl::sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
-    return cl::sycl::range<3>(r0, r1, r2);
+  static sycl::range<3> get(size_t r0, size_t r1, size_t r2) {
+    return sycl::range<3>(r0, r1, r2);
   }
 
   /**
    * @brief Common code support for bigger range usage
    */
-  static cl::sycl::range<3> get(cl::sycl::range<3> range) {
+  static sycl::range<3> get(sycl::range<3> range) {
     return range;
   }
 
@@ -275,10 +275,10 @@ struct get_cts_object::range<3> {
    * @return range<3>
    */
   template <size_t totalSize>
-  static cl::sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
+  static sycl::range<3> get_fixed_size(size_t r0, size_t r1) {
     assert("Parameters passed for fixed size range are not supported" &&
            (totalSize % (r0 * r1) == 0));
-    return cl::sycl::range<3>(r0, r1, totalSize / r0 / r1);
+    return sycl::range<3>(r0, r1, totalSize / r0 / r1);
   }
 };
 
@@ -292,15 +292,15 @@ struct get_cts_object::id<1> {
    * @param v0 Value of the first component of the id
    * @return id<1>
    */
-  static cl::sycl::id<1> get(size_t v0, size_t, size_t) {
-    return cl::sycl::id<1>(v0);
+  static sycl::id<1> get(size_t v0, size_t, size_t) {
+    return sycl::id<1>(v0);
   }
   /**
    * @brief Constructs an id<1> by using any bigger id
    */
   template <int dims>
-  static cl::sycl::id<1> get(const cl::sycl::id<dims>& id) {
-    return cl::sycl::id<1>(id[0]);
+  static sycl::id<1> get(const sycl::id<dims>& id) {
+    return sycl::id<1>(id[0]);
   }
 };
 /**
@@ -314,15 +314,15 @@ struct get_cts_object::id<2> {
    * @param v1 Value of the second component of the id
    * @return id<2>
    */
-  static cl::sycl::id<2> get(size_t v0, size_t v1, size_t) {
-    return cl::sycl::id<2>(v0, v1);
+  static sycl::id<2> get(size_t v0, size_t v1, size_t) {
+    return sycl::id<2>(v0, v1);
   }
   /**
    * @brief Constructs an id<2> by using any bigger id
    */
   template <int dims>
-  static cl::sycl::id<2> get(const cl::sycl::id<dims>& id) {
-    return cl::sycl::id<2>(id[0], id[1]);
+  static sycl::id<2> get(const sycl::id<dims>& id) {
+    return sycl::id<2>(id[0], id[1]);
   }
 };
 /**
@@ -337,13 +337,13 @@ struct get_cts_object::id<3> {
    * @param v2 Value of the third component of the id
    * @return id<3>
    */
-  static cl::sycl::id<3> get(size_t v0, size_t v1, size_t v2) {
-    return cl::sycl::id<3>(v0, v1, v2);
+  static sycl::id<3> get(size_t v0, size_t v1, size_t v2) {
+    return sycl::id<3>(v0, v1, v2);
   }
   /**
    * @brief Common code support for bigger id usage
    */
-  static cl::sycl::id<3> get(cl::sycl::id<3> id) {
+  static sycl::id<3> get(sycl::id<3> id) {
     return id;
   }
 };

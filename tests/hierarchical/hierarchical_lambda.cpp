@@ -28,23 +28,23 @@ template <int dim> void check_dim(util::logger &log) {
     // using this scope we ensure that the buffer will update the host values
     // after the wait_and_throw
     {
-      cl::sycl::buffer<size_t, 1> buf(data.data(),
-                                      cl::sycl::range<1>(globalRangeTotal));
+      sycl::buffer<size_t, 1> buf(data.data(),
+                                      sycl::range<1>(globalRangeTotal));
 
-      myQueue.submit([&](cl::sycl::handler &cgh) {
+      myQueue.submit([&](sycl::handler &cgh) {
         auto globalRange =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
                 globalRangeTotal>(globalRange1d, globalRange2d);
         auto localRange = sycl_cts::util::get_cts_object::range<dim>::get(
             local, local, local);
         auto groupRange = globalRange / localRange;
-        auto ptr = buf.get_access<cl::sycl::access::mode::read_write,
-                                  cl::sycl::access::target::global_buffer>(cgh);
+        auto ptr = buf.get_access<sycl::access::mode::read_write,
+                                  sycl::access::target::global_buffer>(cgh);
         cgh.parallel_for_work_group<kernel<dim>>(
-            groupRange, localRange, [ptr](cl::sycl::group<dim> group_pid) {
+            groupRange, localRange, [ptr](sycl::group<dim> group_pid) {
               // Assign global linear id to captured varible
               group_pid.parallel_for_work_item(
-                  [ptr](cl::sycl::h_item<dim> itemID) {
+                  [ptr](sycl::h_item<dim> itemID) {
                     auto globalIdL = itemID.get_global().get_linear_id();
                     ptr[globalIdL] = globalIdL;
                   });
@@ -54,24 +54,24 @@ template <int dim> void check_dim(util::logger &log) {
 
     for (size_t i = 0; i < globalRangeTotal; i++) {
       if (data[i] != i) {
-        cl::sycl::string_class errorMessage =
-            cl::sycl::string_class("Value for global id ") + std::to_string(i) +
-            cl::sycl::string_class(" was not correct (") +
-            std::to_string(data[i]) + cl::sycl::string_class(" instead of ") +
+        sycl::string_class errorMessage =
+            sycl::string_class("Value for global id ") + std::to_string(i) +
+            sycl::string_class(" was not correct (") +
+            std::to_string(data[i]) + sycl::string_class(" instead of ") +
             std::to_string(i);
         FAIL(log, errorMessage);
       }
     }
 
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    sycl::string_class errorMsg =
+        "a SYCL exception was caught: " + sycl::string_class(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
  public:

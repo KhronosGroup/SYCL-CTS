@@ -75,7 +75,7 @@ class test_kernel;
 template <int dimensions>
 class test_helper {
 public:
-  using range_t = cl::sycl::range<dimensions>;
+  using range_t = sycl::range<dimensions>;
 
 private:
   static constexpr int NUM_RESULTS = NUM_GROUPS * NUM_METHODS;
@@ -84,13 +84,13 @@ private:
     bool hasValidType;
     sycl_cts::util::array<size_t, dimensions> values;
   };
-  cl::sycl::vector_class<call_result_t> m_callResults;
-  cl::sycl::range<dimensions>           m_globalRange;
-  cl::sycl::range<dimensions>           m_localRange;
+  sycl::vector_class<call_result_t> m_callResults;
+  sycl::range<dimensions>           m_globalRange;
+  sycl::range<dimensions>           m_localRange;
 
 public:
-  test_helper(cl::sycl::range<dimensions> globalRange,
-              cl::sycl::range<dimensions> localRange):
+  test_helper(sycl::range<dimensions> globalRange,
+              sycl::range<dimensions> localRange):
     m_callResults(NUM_RESULTS),
     m_globalRange(globalRange),
     m_localRange(localRange) {
@@ -102,18 +102,18 @@ public:
       }
   }
 
-  void collect_group_indicies(cl::sycl::queue& queue) {
-    cl::sycl::buffer<call_result_t, 1> buf(m_callResults.data(),
-                                           cl::sycl::range<1>(NUM_RESULTS));
+  void collect_group_indicies(sycl::queue& queue) {
+    sycl::buffer<call_result_t, 1> buf(m_callResults.data(),
+                                           sycl::range<1>(NUM_RESULTS));
 
-    queue.submit([&](cl::sycl::handler &cgh) {
+    queue.submit([&](sycl::handler &cgh) {
       auto a_dev =
-          buf.template get_access<cl::sycl::access::mode::read_write>(cgh);
+          buf.template get_access<sycl::access::mode::read_write>(cgh);
 
       cgh.parallel_for_work_group<test_kernel<dimensions>>(
                 m_globalRange,
                 m_localRange,
-                [=](cl::sycl::group<dimensions> my_group) {
+                [=](sycl::group<dimensions> my_group) {
 
           const size_t groupLinearID = my_group.get_linear_id();
 
@@ -126,7 +126,7 @@ public:
             for (size_t i = 0; i < dimensions; ++i)
               callResult.values[i] = m_get_group.get(i);
 
-            using expected_t = cl::sycl::id<dimensions>;
+            using expected_t = sycl::id<dimensions>;
             callResult.hasValidType =
                 std::is_same<expected_t, decltype(my_group.get_id())>::value;
           }
@@ -152,7 +152,7 @@ public:
             for (size_t i = 0; i < dimensions; ++i)
               callResult.values[i] = m_get_local_range.get(i);
 
-            using expected_t = cl::sycl::range<dimensions>;
+            using expected_t = sycl::range<dimensions>;
             callResult.hasValidType =
                 std::is_same<expected_t,
                              decltype(my_group.get_local_range())>::value;
@@ -179,7 +179,7 @@ public:
             for (size_t i = 0; i < dimensions; ++i)
               callResult.values[i] = m_get_global_range.get(i);
 
-            using expected_t = cl::sycl::range<dimensions>;
+            using expected_t = sycl::range<dimensions>;
             callResult.hasValidType =
                 std::is_same<expected_t,
                              decltype(my_group.get_global_range())>::value;
@@ -206,7 +206,7 @@ public:
             for (size_t i = 0; i < dimensions; ++i)
               callResult.values[i] = m_get_group_range.get(i);
 
-            using expected_t = cl::sycl::range<dimensions>;
+            using expected_t = sycl::range<dimensions>;
             callResult.hasValidType =
                 std::is_same<expected_t,
                              decltype(my_group.get_group_range())>::value;
@@ -374,10 +374,10 @@ private:
 };
 
 template <int dimensions>
-bool reduce_size(cl::sycl::queue& queue) {
+bool reduce_size(sycl::queue& queue) {
   bool res = true;
   // Check if default work group size is supported
-  cl::sycl::program program(queue.get_context());
+  sycl::program program(queue.get_context());
   if (is_compiler_available(program.get_devices()) &&
       is_linker_available(program.get_devices())) {
     program.build_with_kernel_type<test_kernel<dimensions>>();
@@ -385,7 +385,7 @@ bool reduce_size(cl::sycl::queue& queue) {
     auto device = queue.get_device();
 
     auto work_group_size_limit = kernel.template get_work_group_info<
-        cl::sycl::info::kernel_work_group::work_group_size>(device);
+        sycl::info::kernel_work_group::work_group_size>(device);
 
     size_t default_wg_size = 1;
     for (size_t dim = 0; dim < dimensions; ++dim) {
@@ -415,8 +415,8 @@ class TEST_NAME : public util::test_base {
         bool reduce_wg_size = reduce_size<1>(queue);
         size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[0];
         auto validator = test_helper<1>(
-            cl::sycl::range<1>(GROUP_RANGE_1D),
-            cl::sycl::range<1>(LOCAL_RANGE_1D));
+            sycl::range<1>(GROUP_RANGE_1D),
+            sycl::range<1>(LOCAL_RANGE_1D));
 
         validator.collect_group_indicies(queue);
         validator.validate_group_indicies(log);
@@ -427,8 +427,8 @@ class TEST_NAME : public util::test_base {
         size_t LOCAL_RANGE_1D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[0];
         size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[1];
         auto validator = test_helper<2>(
-            cl::sycl::range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D),
-            cl::sycl::range<2>(LOCAL_RANGE_1D, LOCAL_RANGE_2D));
+            sycl::range<2>(GROUP_RANGE_1D, GROUP_RANGE_2D),
+            sycl::range<2>(LOCAL_RANGE_1D, LOCAL_RANGE_2D));
 
         validator.collect_group_indicies(queue);
         validator.validate_group_indicies(log);
@@ -440,16 +440,16 @@ class TEST_NAME : public util::test_base {
         size_t LOCAL_RANGE_2D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[1];
         size_t LOCAL_RANGE_3D = reduce_wg_size ? 1 : DEFAULT_LOCAL_RANGE[2];
         auto validator = test_helper<3>(
-            cl::sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D, GROUP_RANGE_3D),
-            cl::sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D, LOCAL_RANGE_3D));
+            sycl::range<3>(GROUP_RANGE_1D, GROUP_RANGE_2D, GROUP_RANGE_3D),
+            sycl::range<3>(LOCAL_RANGE_1D, LOCAL_RANGE_2D, LOCAL_RANGE_3D));
 
         validator.collect_group_indicies(queue);
         validator.validate_group_indicies(log);
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

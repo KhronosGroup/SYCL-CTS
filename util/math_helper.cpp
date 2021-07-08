@@ -21,21 +21,21 @@ float int_to_float(uint32_t x) {
 
 void fill(float &e, float v) { e = v; }
 
-void fill(cl::sycl::float2 &e, float v) {
+void fill(sycl::float2 &e, float v) {
   e.x() = v;
   e.y() = v;
 }
 
-void fill(cl::sycl::float3 &e, float v) { e.x() = e.y() = e.z() = v; }
+void fill(sycl::float3 &e, float v) { e.x() = e.y() = e.z() = v; }
 
-void fill(cl::sycl::float4 &e, float v) { e.x() = e.y() = e.z() = e.w() = v; }
+void fill(sycl::float4 &e, float v) { e.x() = e.y() = e.z() = e.w() = v; }
 
-void fill(cl::sycl::float8 &e, float v) {
+void fill(sycl::float8 &e, float v) {
   e.s0() = e.s1() = e.s2() = e.s3() = v;
   e.s4() = e.s5() = e.s6() = e.s7() = v;
 }
 
-void fill(cl::sycl::float16 &e, float v) {
+void fill(sycl::float16 &e, float v) {
   e.s0() = e.s1() = e.s2() = e.s3() = v;
   e.s4() = e.s5() = e.s6() = e.s7() = v;
   e.s8() = e.s9() = e.sA() = e.sB() = v;
@@ -59,28 +59,28 @@ void rand(MTdata &rng, float *buf, int num) {
   for (int i = 0; i < num; i++) buf[i] = (float)int32_t(genrand_int32(rng));
 }
 
-void rand(MTdata &rng, cl::sycl::float2 *buf, int num) {
-  const int nDim = int(sizeof(cl::sycl::float2) / sizeof(float));
+void rand(MTdata &rng, sycl::float2 *buf, int num) {
+  const int nDim = int(sizeof(sycl::float2) / sizeof(float));
   rand(rng, (float *)buf, num * nDim);
 }
 
-void rand(MTdata &rng, cl::sycl::float3 *buf, int num) {
-  const int nDim = int(sizeof(cl::sycl::float3) / sizeof(float));
+void rand(MTdata &rng, sycl::float3 *buf, int num) {
+  const int nDim = int(sizeof(sycl::float3) / sizeof(float));
   rand(rng, (float *)buf, num * nDim);
 }
 
-void rand(MTdata &rng, cl::sycl::float4 *buf, int num) {
-  const int nDim = int(sizeof(cl::sycl::float4) / sizeof(float));
+void rand(MTdata &rng, sycl::float4 *buf, int num) {
+  const int nDim = int(sizeof(sycl::float4) / sizeof(float));
   rand(rng, (float *)buf, num * nDim);
 }
 
-void rand(MTdata &rng, cl::sycl::float8 *buf, int num) {
-  const int nDim = int(sizeof(cl::sycl::float8) / sizeof(float));
+void rand(MTdata &rng, sycl::float8 *buf, int num) {
+  const int nDim = int(sizeof(sycl::float8) / sizeof(float));
   rand(rng, (float *)buf, num * nDim);
 }
 
-void rand(MTdata &rng, cl::sycl::float16 *buf, int num) {
-  const int nDim = int(sizeof(cl::sycl::float16) / sizeof(float));
+void rand(MTdata &rng, sycl::float16 *buf, int num) {
+  const int nDim = int(sizeof(sycl::float16) / sizeof(float));
   rand(rng, (float *)buf, num * nDim);
 }
 

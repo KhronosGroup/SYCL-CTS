@@ -37,10 +37,10 @@ class TEST_NAME : public util::test_base {
       // Test using queue constructed already
       for_type_and_vectors<check_type, double>(queue, log,
           "double");
-      for_type_and_vectors<check_type, cl::sycl::cl_double>(queue, log,
-          "cl::sycl::cl_double");
+      for_type_and_vectors<check_type, sycl::cl_double>(queue, log,
+          "sycl::cl_double");
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

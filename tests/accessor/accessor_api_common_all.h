@@ -22,10 +22,10 @@ namespace {
 
 /** tests accessor member values
 */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+template <typename T, int dims, sycl::access::mode mode,
+          sycl::access::target target,
+          sycl::access::placeholder placeholder =
+              sycl::access::placeholder::false_t>
 void check_accessor_members(sycl_cts::util::logger &log,
                             const std::string& typeName) {
 #ifdef VERBOSE_LOG
@@ -35,7 +35,7 @@ void check_accessor_members(sycl_cts::util::logger &log,
   static_cast<void>(typeName);
 #endif  // VERBOSE_LOG
 
-  using acc_t = cl::sycl::accessor<T, dims, mode, target, placeholder>;
+  using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
 
   using value_type = typename acc_t::value_type;
   static_assert(std::is_same<value_type, T>::value,

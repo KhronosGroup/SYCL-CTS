@@ -28,25 +28,25 @@ class combined_mem_fence_kernel_global;
  * @param queue Queue to use
  */
 template <access_group accessGroup, int dim>
-void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
-  const auto fenceSpace = cl::sycl::access::fence_space::global_and_local;
+void test_mem_fence(util::logger &log, sycl::queue &queue) {
+  const auto fenceSpace = sycl::access::fence_space::global_and_local;
   const auto testName = test_name<accessGroup, dim>::get(fenceSpace);
 
   using localKernelT = combined_mem_fence_kernel_local<accessGroup, dim>;
   using globalKernelT = combined_mem_fence_kernel_global<accessGroup, dim>;
 
   const auto fenceCallFactory = make_fence_call_factory(
-    [=](cl::sycl::group<dim> item) {
+    [=](sycl::group<dim> item) {
       item.mem_fence(fenceSpace);
     },
-    [=](cl::sycl::group<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::read_write>(fenceSpace);
+    [=](sycl::group<dim> item) {
+      item.template mem_fence<sycl::access::mode::read_write>(fenceSpace);
     },
-    [=](cl::sycl::group<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::read>(fenceSpace);
+    [=](sycl::group<dim> item) {
+      item.template mem_fence<sycl::access::mode::read>(fenceSpace);
     },
-    [=](cl::sycl::group<dim> item) {
-      item.template mem_fence<cl::sycl::access::mode::write>(fenceSpace);
+    [=](sycl::group<dim> item) {
+      item.template mem_fence<sycl::access::mode::write>(fenceSpace);
   });
   const auto access = std::integral_constant<access_group, accessGroup>{};
 
@@ -73,7 +73,7 @@ void test_mem_fence(util::logger &log, cl::sycl::queue &queue) {
   }
 }
 
-/** test cl::sycl::group mem_fence functions
+/** test sycl::group mem_fence functions
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -96,10 +96,10 @@ class TEST_NAME : public util::test_base {
       test_mem_fence<access_group::useSeparate, 1>(log, queue);
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -70,8 +70,8 @@ using success_array_t =
  */
 template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
-                                  const cl::sycl::h_item<numDims>& actual,
-                                  const cl::sycl::h_item<numDims>& expected) {
+                                  const sycl::h_item<numDims>& actual,
+                                  const sycl::h_item<numDims>& expected) {
   CHECK_EQUALITY_HELPER(index, success, actual, expected, get_global_range);
   CHECK_EQUALITY_HELPER(index, success, actual, expected, get_global_id);
   CHECK_EQUALITY_HELPER(index, success, actual, expected, get_local_range);
@@ -100,8 +100,8 @@ inline void check_equality_helper(success_acc_t& success,
 template <int numDims, typename success_acc_t>
 inline void check_equality(success_acc_t& successAcc,
                            current_check currentCheck,
-                           const cl::sycl::h_item<numDims>& actual,
-                           const cl::sycl::h_item<numDims>& expected) {
+                           const sycl::h_item<numDims>& actual,
+                           const sycl::h_item<numDims>& expected) {
   auto& success = successAcc[static_cast<size_t>(currentCheck)];
   if (numDims >= 1) {
     check_equality_helper<0>(success, actual, expected);
@@ -114,7 +114,7 @@ inline void check_equality(success_acc_t& successAcc,
   }
 }
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -136,25 +136,25 @@ class TEST_NAME : public util::test_base {
         const auto simpleRange =
             util::get_cts_object::range<numDims>::get(1, 1, 1);
 
-        cl::sycl::buffer<bool> successBuf(success.data(),
-                                          cl::sycl::range<1>(success.size()));
+        sycl::buffer<bool> successBuf(success.data(),
+                                          sycl::range<1>(success.size()));
 
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access::mode::write>(cgh);
 
           cgh.parallel_for_work_group<h_item_constructors_kernel<numDims>>(
-              simpleRange, simpleRange, [=](cl::sycl::group<numDims> group) {
+              simpleRange, simpleRange, [=](sycl::group<numDims> group) {
                 group.parallel_for_work_item(
-                    simpleRange, [&](cl::sycl::h_item<numDims> item) {
+                    simpleRange, [&](sycl::h_item<numDims> item) {
                       // Check copy constructor
-                      cl::sycl::h_item<numDims> copied(item);
+                      sycl::h_item<numDims> copied(item);
                       check_equality(successAcc,
                                      current_check::copy_constructor, copied,
                                      item);
 
                       // Check move constructor
-                      cl::sycl::h_item<numDims> moved(std::move(copied));
+                      sycl::h_item<numDims> moved(std::move(copied));
                       check_equality(successAcc,
                                      current_check::move_constructor, moved,
                                      item);
@@ -186,7 +186,7 @@ class TEST_NAME : public util::test_base {
                   success[static_cast<size_t>(current_check::move_assignment)],
                   true, numDims);
 
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

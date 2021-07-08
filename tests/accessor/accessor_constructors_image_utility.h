@@ -28,8 +28,8 @@ template <typename accTag, typename ... propertyListT>
 class check_accessor_constructor_image {
 public:
   template <typename allocatorT, typename ... handlerArgsT>
-  static void check(cl::sycl::image<accTag::dataDims, allocatorT> &image,
-                    cl::sycl::range<accTag::dataDims> range,
+  static void check(sycl::image<accTag::dataDims, allocatorT> &image,
+                    sycl::range<accTag::dataDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& constructorName,
                     const std::string& typeName,
@@ -50,13 +50,13 @@ public:
 
 /** @brief Checks all image accessor constructors available
  */
-template <typename T, size_t dims, cl::sycl::access::target target>
+template <typename T, size_t dims, sycl::access::target target>
 class check_all_accessor_constructors_image {
 public:
-  template <cl::sycl::access::mode mode,
+  template <sycl::access::mode mode,
             int imageDims, typename allocatorT, typename ... handlerArgsT>
-  static void check(cl::sycl::image<imageDims, allocatorT> &image,
-                    cl::sycl::range<imageDims> range,
+  static void check(sycl::image<imageDims, allocatorT> &image,
+                    sycl::range<imageDims> range,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     handlerArgsT&& ... handler) {
@@ -73,12 +73,12 @@ public:
                       log, constructorName, typeName, handler...);
     }
     {
-      using property_list = cl::sycl::property_list;
+      using property_list = sycl::property_list;
       using verifier = check_accessor_constructor_image<accTag, property_list>;
 
       auto context = util::get_cts_object::context();
       property_list properties {
-          cl::sycl::property::buffer::context_bound(context)};
+          sycl::property::buffer::context_bound(context)};
 
       const auto constructorName = usesHander ?
           "constructor(image, handler, property_list)" :
@@ -91,13 +91,13 @@ public:
 
 /** @brief Check common-by-reference semantics
  */
-template <typename T, size_t dims, cl::sycl::access::target target>
+template <typename T, size_t dims, sycl::access::target target>
 class check_accessor_common_by_reference_image {
 public:
-  template <cl::sycl::access::mode mode,
+  template <sycl::access::mode mode,
             int imageDims, typename allocatorT, typename ... handlerArgsT>
-  static void check(cl::sycl::image<imageDims, allocatorT> &image,
-                    cl::sycl::image<imageDims, allocatorT> &image2,
+  static void check(sycl::image<imageDims, allocatorT> &image,
+                    sycl::image<imageDims, allocatorT> &image2,
                     sycl_cts::util::logger &log,
                     const std::string& typeName,
                     handlerArgsT&& ... handler) {
@@ -139,57 +139,57 @@ public:
  */
 template <typename T, size_t dims, typename ... allocatorT>
 class image_accessor_dims {
-  using image_t = cl::sycl::image<dims, allocatorT...>;
+  using image_t = sycl::image<dims, allocatorT...>;
  public:
-  static void check(util::logger &log, cl::sycl::queue &queue,
+  static void check(util::logger &log, sycl::queue &queue,
                     const std::string& typeName) {
     int size = 32;
     auto range =
         sycl_cts::util::get_cts_object::range<dims>::get(size, size,size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
     image_t image(data.data(),
-                  cl::sycl::image_channel_order::rgba,
-                  cl::sycl::image_channel_type::fp32, range);
+                  sycl::image_channel_order::rgba,
+                  sycl::image_channel_type::fp32, range);
     std::vector<cl_float> data2(range.size() * 4, 0.0f);
     image_t image2(data2.data(),
-                   cl::sycl::image_channel_order::rgba,
-                   cl::sycl::image_channel_type::fp32, range);
+                   sycl::image_channel_order::rgba,
+                   sycl::image_channel_type::fp32, range);
 
     /** check image accessor constructors for image
      */
     {
-      constexpr auto target = cl::sycl::access::target::image;
+      constexpr auto target = sycl::access::target::image;
       using verifier =
           check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_image<T, dims, target>;
 
-      queue.submit([&](cl::sycl::handler &h) {
+      queue.submit([&](sycl::handler &h) {
         /** check image constructors for different modes
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::write;
+          constexpr auto mode = sycl::access::mode::write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          constexpr auto mode = sycl::access::mode::discard_write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName, h);
         }
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(dummy_functor<T, cl::sycl::access::target::image>{});
+        h.single_task(dummy_functor<T, sycl::access::target::image>{});
       });
       queue.wait_and_throw();
     }
@@ -197,7 +197,7 @@ class image_accessor_dims {
     /** check host_image accessor constructors for host_image
      */
     {
-      constexpr auto target = cl::sycl::access::target::host_image;
+      constexpr auto target = sycl::access::target::host_image;
       using verifier =
           check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
@@ -206,21 +206,21 @@ class image_accessor_dims {
       /** check host_image constructor for different modes
        */
       {
-        constexpr auto mode = cl::sycl::access::mode::read;
+        constexpr auto mode = sycl::access::mode::read;
         verifier::template check<mode>(image, range, log, typeName);
       }
       {
-        constexpr auto mode = cl::sycl::access::mode::write;
+        constexpr auto mode = sycl::access::mode::write;
         verifier::template check<mode>(image, range, log, typeName);
       }
       {
-        constexpr auto mode = cl::sycl::access::mode::discard_write;
+        constexpr auto mode = sycl::access::mode::discard_write;
         verifier::template check<mode>(image, range, log, typeName);
       }
       /** check common-by-reference semantics
        */
       {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName);
       }
@@ -232,23 +232,23 @@ class image_accessor_dims {
  */
 template <typename T, size_t dims, typename ... allocatorT>
 class image_array_accessor_dims {
-  static constexpr auto target = cl::sycl::access::target::image_array;
+  static constexpr auto target = sycl::access::target::image_array;
   static constexpr size_t dataDims = acc_data_dims<target, dims>::get();
-  using image_t = cl::sycl::image<dataDims, allocatorT...>;
+  using image_t = sycl::image<dataDims, allocatorT...>;
 public:
-  static void check(util::logger &log, cl::sycl::queue &queue,
+  static void check(util::logger &log, sycl::queue &queue,
                     const std::string& typeName) {
     int size = 32;
     auto range =
         sycl_cts::util::get_cts_object::range<dataDims>::get(size, size, size);
     std::vector<cl_float> data(range.size() * 4, 0.0f);
     image_t image(data.data(),
-                  cl::sycl::image_channel_order::rgba,
-                  cl::sycl::image_channel_type::fp32, range);
+                  sycl::image_channel_order::rgba,
+                  sycl::image_channel_type::fp32, range);
     std::vector<cl_float> data2(range.size() * 4, 0.0f);
     image_t image2(data2.data(),
-                   cl::sycl::image_channel_order::rgba,
-                   cl::sycl::image_channel_type::fp32, range);
+                   sycl::image_channel_order::rgba,
+                   sycl::image_channel_type::fp32, range);
 
     /** check image array accessor constructors for image
      */
@@ -258,25 +258,25 @@ public:
       using semantics_verifier =
           check_accessor_common_by_reference_image<T, dims, target>;
 
-      queue.submit([&](cl::sycl::handler &h) {
+      queue.submit([&](sycl::handler &h) {
         /** check image array constructor for different modes
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::write;
+          constexpr auto mode = sycl::access::mode::write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         {
-          constexpr auto mode = cl::sycl::access::mode::discard_write;
+          constexpr auto mode = sycl::access::mode::discard_write;
           verifier::template check<mode>(image, range, log, typeName, h);
         }
         /** check common-by-reference semantics
          */
         {
-          constexpr auto mode = cl::sycl::access::mode::read;
+          constexpr auto mode = sycl::access::mode::read;
           semantics_verifier::template check<mode>(image, image2,
                                                    log, typeName, h);
         }
@@ -284,7 +284,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         h.single_task(
-            dummy_functor<T, cl::sycl::access::target::image_array>{});
+            dummy_functor<T, sycl::access::target::image_array>{});
       });
       queue.wait_and_throw();
     }

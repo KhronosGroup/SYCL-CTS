@@ -21,7 +21,7 @@ using namespace sycl_cts;
  * @tparam dims Number of image dimensions
  * @tparam AllocatorT Allocator type to use to allocate image data
  */
-template <int dims, typename AllocatorT = cl::sycl::image_allocator >
+template <int dims, typename AllocatorT = sycl::image_allocator >
 struct image_generic {
   /**
    * @brief Compares an image pitch to the provided pitch. If the provided pitch
@@ -31,8 +31,8 @@ struct image_generic {
    * @param pitch Pointer to the pitch that the image pitch will be compared to
    * return True if pitches are equal
    */
-  static bool compare_pitch(util::logger &log, cl::sycl::image<3, AllocatorT> &img,
-                            cl::sycl::range<2> *pitch) {
+  static bool compare_pitch(util::logger &log, sycl::image<3, AllocatorT> &img,
+                            sycl::range<2> *pitch) {
     if (pitch == nullptr) {
       // Don't compare if pitch is null
       return true;
@@ -44,8 +44,8 @@ struct image_generic {
     return true;
   }
 
-  static bool compare_pitch(util::logger &log, cl::sycl::image<2, AllocatorT> &img,
-                            cl::sycl::range<1> *pitch) {
+  static bool compare_pitch(util::logger &log, sycl::image<2, AllocatorT> &img,
+                            sycl::range<1> *pitch) {
     if (pitch == nullptr) {
       // Don't compare if pitch is null
       return true;
@@ -63,8 +63,8 @@ struct image_generic {
    * @param imgB Second image where the pitch will be retrieved from
    * return True if pitches are equal
    */
-  static bool compare_pitch(util::logger &log, cl::sycl::image<dims, AllocatorT> &imgA,
-                            cl::sycl::image<dims, AllocatorT> &imgB) {
+  static bool compare_pitch(util::logger &log, sycl::image<dims, AllocatorT> &imgA,
+                            sycl::image<dims, AllocatorT> &imgB) {
     auto pitch = imgB.get_pitch();
     return compare_pitch(log, imgA, &pitch);
   }
@@ -79,15 +79,15 @@ struct image_generic {
    * @param pitch Image pitch
    * @return The constructed image
    */
-    static cl::sycl::image<dims, AllocatorT> create_with_pitch_and_allocator(
-      void *imageData, cl::sycl::image_channel_order channelOrder,
-      cl::sycl::image_channel_type channelType, cl::sycl::range<dims> &r,
-      cl::sycl::range<dims - 1> *pitch) {
+    static sycl::image<dims, AllocatorT> create_with_pitch_and_allocator(
+      void *imageData, sycl::image_channel_order channelOrder,
+      sycl::image_channel_type channelType, sycl::range<dims> &r,
+      sycl::range<dims - 1> *pitch) {
     if (pitch == nullptr) {
-      return cl::sycl::image<dims, AllocatorT>(imageData, channelOrder,
+      return sycl::image<dims, AllocatorT>(imageData, channelOrder,
                                                channelType, r);
     } else {
-      return cl::sycl::image<dims, AllocatorT>(imageData, channelOrder,
+      return sycl::image<dims, AllocatorT>(imageData, channelOrder,
                                                channelType, r, *pitch);
     }
   }
@@ -102,10 +102,10 @@ struct image_generic {
    * @param pitch Image pitch
    * @return The constructed image
    */
-  static cl::sycl::image<dims> create_with_pitch(
-      void *imageData, cl::sycl::image_channel_order channelOrder,
-      cl::sycl::image_channel_type channelType, cl::sycl::range<dims> &r,
-      cl::sycl::range<dims - 1> *pitch) {
+  static sycl::image<dims> create_with_pitch(
+      void *imageData, sycl::image_channel_order channelOrder,
+      sycl::image_channel_type channelType, sycl::range<dims> &r,
+      sycl::range<dims - 1> *pitch) {
     return create_with_pitch_and_allocator(
         imageData, channelOrder, channelType, r, pitch);
   }
@@ -115,7 +115,7 @@ struct image_generic {
    * @param pitch Image pitch
    * @param multiplier What to multiply the pitch by
    */
-  static void multiply_pitch(cl::sycl::range<dims - 1> *pitch,
+  static void multiply_pitch(sycl::range<dims - 1> *pitch,
                              size_t multiplier) {
     if (pitch == nullptr) {
       return;
@@ -128,27 +128,27 @@ struct image_generic {
  */
 template <typename AllocatorT>
 struct image_generic<1, AllocatorT> {
-  static bool compare_pitch(util::logger &log, cl::sycl::image<1, AllocatorT> &img,
+  static bool compare_pitch(util::logger &log, sycl::image<1, AllocatorT> &img,
                             void *pitch) {
     // 1D images don't have a get_pitch() method
     return true;
   }
-  static bool compare_pitch(util::logger &log, cl::sycl::image<1, AllocatorT> &imgA,
-                            cl::sycl::image<1, AllocatorT> &imgB) {
+  static bool compare_pitch(util::logger &log, sycl::image<1, AllocatorT> &imgA,
+                            sycl::image<1, AllocatorT> &imgB) {
     // 1D images don't have a get_pitch() method
     return true;
   }
-  static cl::sycl::image<1, AllocatorT> create_with_pitch_and_allocator(
-      void *imageData, cl::sycl::image_channel_order channelOrder,
-      cl::sycl::image_channel_type channelType, cl::sycl::range<1> &r,
+  static sycl::image<1, AllocatorT> create_with_pitch_and_allocator(
+      void *imageData, sycl::image_channel_order channelOrder,
+      sycl::image_channel_type channelType, sycl::range<1> &r,
       void *pitch) {
     // 1D images cannot be constructed with a pitch
-    return cl::sycl::image<1, AllocatorT>(static_cast<void *>(imageData),
+    return sycl::image<1, AllocatorT>(static_cast<void *>(imageData),
                                           channelOrder, channelType, r);
   }
-  static cl::sycl::image<1> create_with_pitch(
-      void *imageData, cl::sycl::image_channel_order channelOrder,
-      cl::sycl::image_channel_type channelType, cl::sycl::range<1> &r,
+  static sycl::image<1> create_with_pitch(
+      void *imageData, sycl::image_channel_order channelOrder,
+      sycl::image_channel_type channelType, sycl::range<1> &r,
       void *pitch) {
     // 1D images cannot be constructed with a pitch
     return create_with_pitch_and_allocator(
@@ -165,7 +165,7 @@ struct image_generic<1, AllocatorT> {
  *        image channel type
  */
 struct channel_type_size {
-  cl::sycl::image_channel_type type;
+  sycl::image_channel_type type;
   unsigned int size;
   const char *str;
 };
@@ -175,21 +175,21 @@ struct channel_type_size {
  *        channel types
  */
 channel_type_size g_channelTypeSize[] = {
-    {cl::sycl::image_channel_type::snorm_int8, 1, "snorm_int8"},
-    {cl::sycl::image_channel_type::snorm_int16, 2, "snorm_int16"},
-    {cl::sycl::image_channel_type::unorm_int8, 1, "unorm_int8"},
-    {cl::sycl::image_channel_type::unorm_int16, 2, "unorm_int16"},
-    {cl::sycl::image_channel_type::unorm_short_555, 2, "unorm_short_555"},
-    {cl::sycl::image_channel_type::unorm_short_565, 2, "unorm_short_565"},
-    {cl::sycl::image_channel_type::unorm_int_101010, 4, "unorm_int_101010"},
-    {cl::sycl::image_channel_type::signed_int8, 1, "signed_int8"},
-    {cl::sycl::image_channel_type::signed_int16, 2, "signed_int16"},
-    {cl::sycl::image_channel_type::signed_int32, 4, "signed_int32"},
-    {cl::sycl::image_channel_type::unsigned_int8, 1, "unsigned_int8"},
-    {cl::sycl::image_channel_type::unsigned_int16, 2, "unsigned_int16"},
-    {cl::sycl::image_channel_type::unsigned_int32, 4, "unsigned_int32"},
-    {cl::sycl::image_channel_type::fp16, sizeof(cl::sycl::half), "fp16"},
-    {cl::sycl::image_channel_type::fp32, sizeof(float), "fp32"}};
+    {sycl::image_channel_type::snorm_int8, 1, "snorm_int8"},
+    {sycl::image_channel_type::snorm_int16, 2, "snorm_int16"},
+    {sycl::image_channel_type::unorm_int8, 1, "unorm_int8"},
+    {sycl::image_channel_type::unorm_int16, 2, "unorm_int16"},
+    {sycl::image_channel_type::unorm_short_555, 2, "unorm_short_555"},
+    {sycl::image_channel_type::unorm_short_565, 2, "unorm_short_565"},
+    {sycl::image_channel_type::unorm_int_101010, 4, "unorm_int_101010"},
+    {sycl::image_channel_type::signed_int8, 1, "signed_int8"},
+    {sycl::image_channel_type::signed_int16, 2, "signed_int16"},
+    {sycl::image_channel_type::signed_int32, 4, "signed_int32"},
+    {sycl::image_channel_type::unsigned_int8, 1, "unsigned_int8"},
+    {sycl::image_channel_type::unsigned_int16, 2, "unsigned_int16"},
+    {sycl::image_channel_type::unsigned_int32, 4, "unsigned_int32"},
+    {sycl::image_channel_type::fp16, sizeof(sycl::half), "fp16"},
+    {sycl::image_channel_type::fp32, sizeof(float), "fp32"}};
 
 /**
  * @brief The total number of different image channel types
@@ -200,7 +200,7 @@ static const int NUM_CHANNEL_TYPES =
 /**
  * @brief Retrieve the size of the image channel type
  */
-inline unsigned int get_channel_type_size(cl::sycl::image_channel_type channelType) {
+inline unsigned int get_channel_type_size(sycl::image_channel_type channelType) {
   for (int i = 0; i < NUM_CHANNEL_TYPES; ++i) {
     if (g_channelTypeSize[i].type == channelType) {
       return g_channelTypeSize[i].size;
@@ -212,7 +212,7 @@ inline unsigned int get_channel_type_size(cl::sycl::image_channel_type channelTy
 /**
  * @brief Retrieve the name of the image channel type
  */
-inline const char *get_channel_type_string(cl::sycl::image_channel_type channelType) {
+inline const char *get_channel_type_string(sycl::image_channel_type channelType) {
   for (int i = 0; i < NUM_CHANNEL_TYPES; ++i) {
     if (g_channelTypeSize[i].type == channelType) {
       return g_channelTypeSize[i].str;
@@ -227,7 +227,7 @@ inline const char *get_channel_type_string(cl::sycl::image_channel_type channelT
  *        image channel order
  */
 struct channel_order_count {
-  cl::sycl::image_channel_order order;
+  sycl::image_channel_order order;
   unsigned int count;
   const char *str;
 };
@@ -238,26 +238,26 @@ struct channel_order_count {
  */
 channel_order_count g_channelOrderCount[] = {
     // rgba and bgra are the mandated minimum supported
-    {cl::sycl::image_channel_order::rgba, 4, "rgba"},
-    {cl::sycl::image_channel_order::bgra, 4, "bgra"},
+    {sycl::image_channel_order::rgba, 4, "rgba"},
+    {sycl::image_channel_order::bgra, 4, "bgra"},
 
-    {cl::sycl::image_channel_order::argb, 4, "argb"},
-    {cl::sycl::image_channel_order::abgr, 4, "abgr"},
+    {sycl::image_channel_order::argb, 4, "argb"},
+    {sycl::image_channel_order::abgr, 4, "abgr"},
 
-    {cl::sycl::image_channel_order::r, 1, "r"},
-    {cl::sycl::image_channel_order::a, 1, "a"},
+    {sycl::image_channel_order::r, 1, "r"},
+    {sycl::image_channel_order::a, 1, "a"},
 
-    {cl::sycl::image_channel_order::rg, 2, "rg"},
-    {cl::sycl::image_channel_order::ra, 2, "ra"},
-    {cl::sycl::image_channel_order::rx, 2, "rx"},
-    {cl::sycl::image_channel_order::rgx, 3, "rgx"},
+    {sycl::image_channel_order::rg, 2, "rg"},
+    {sycl::image_channel_order::ra, 2, "ra"},
+    {sycl::image_channel_order::rx, 2, "rx"},
+    {sycl::image_channel_order::rgx, 3, "rgx"},
 
-    {cl::sycl::image_channel_order::intensity, 1, "intensity"},
-    {cl::sycl::image_channel_order::luminance, 1, "luminance"},
+    {sycl::image_channel_order::intensity, 1, "intensity"},
+    {sycl::image_channel_order::luminance, 1, "luminance"},
 
     // These two are special cases
-    {cl::sycl::image_channel_order::rgb, 1, "rgb"},
-    {cl::sycl::image_channel_order::rgbx, 1, "rgbx"}};
+    {sycl::image_channel_order::rgb, 1, "rgb"},
+    {sycl::image_channel_order::rgbx, 1, "rgbx"}};
 
 /**
  * @brief The total number of different image channel orders
@@ -275,7 +275,7 @@ static const int MINIMUM_CHANNEL_ORDERS = 2;
  * @brief Retrieve the count of the image channel order
  */
 inline unsigned int get_channel_order_count(
-    cl::sycl::image_channel_order channelOrder) {
+    sycl::image_channel_order channelOrder) {
   for (int i = 0; i < NUM_CHANNEL_ORDERS; ++i) {
     if (g_channelOrderCount[i].order == channelOrder) {
       return g_channelOrderCount[i].count;
@@ -289,7 +289,7 @@ inline unsigned int get_channel_order_count(
  * @brief Retrieve the name of the image channel order
  */
 inline const char *get_channel_order_string(
-    cl::sycl::image_channel_order channelOrder) {
+    sycl::image_channel_order channelOrder) {
   for (int i = 0; i < NUM_CHANNEL_ORDERS; ++i) {
     if (g_channelOrderCount[i].order == channelOrder) {
       return g_channelOrderCount[i].str;
@@ -304,9 +304,9 @@ inline const char *get_channel_order_string(
  *        channel order
  */
 struct collection {
-  cl::sycl::image_channel_order order;
+  sycl::image_channel_order order;
   int numChannelTypes;
-  cl::sycl::image_channel_type typeArray[NUM_CHANNEL_TYPES];
+  sycl::image_channel_type typeArray[NUM_CHANNEL_TYPES];
 };
 
 /**
@@ -315,34 +315,34 @@ struct collection {
  * @param order Image channel order to be tested.
  * @return Collection of channel order and all valid channel types for the order
  */
-inline collection get_test_set_full(cl::sycl::image_channel_order order) {
+inline collection get_test_set_full(sycl::image_channel_order order) {
   collection testSet;
   testSet.order = order;
   // Not all combinations are allowed
   switch (order) {
-    case cl::sycl::image_channel_order::argb:
-    case cl::sycl::image_channel_order::bgra:
-      testSet.typeArray[0] = cl::sycl::image_channel_type::unorm_int8;
-      testSet.typeArray[1] = cl::sycl::image_channel_type::snorm_int8;
-      testSet.typeArray[2] = cl::sycl::image_channel_type::signed_int8;
-      testSet.typeArray[3] = cl::sycl::image_channel_type::unsigned_int8;
+    case sycl::image_channel_order::argb:
+    case sycl::image_channel_order::bgra:
+      testSet.typeArray[0] = sycl::image_channel_type::unorm_int8;
+      testSet.typeArray[1] = sycl::image_channel_type::snorm_int8;
+      testSet.typeArray[2] = sycl::image_channel_type::signed_int8;
+      testSet.typeArray[3] = sycl::image_channel_type::unsigned_int8;
       testSet.numChannelTypes = 4;
       break;
-    case cl::sycl::image_channel_order::intensity:
-    case cl::sycl::image_channel_order::luminance:
-      testSet.typeArray[0] = cl::sycl::image_channel_type::unorm_int8;
-      testSet.typeArray[1] = cl::sycl::image_channel_type::unorm_int16;
-      testSet.typeArray[2] = cl::sycl::image_channel_type::snorm_int8;
-      testSet.typeArray[3] = cl::sycl::image_channel_type::snorm_int16;
-      testSet.typeArray[4] = cl::sycl::image_channel_type::fp16;
-      testSet.typeArray[5] = cl::sycl::image_channel_type::fp32;
+    case sycl::image_channel_order::intensity:
+    case sycl::image_channel_order::luminance:
+      testSet.typeArray[0] = sycl::image_channel_type::unorm_int8;
+      testSet.typeArray[1] = sycl::image_channel_type::unorm_int16;
+      testSet.typeArray[2] = sycl::image_channel_type::snorm_int8;
+      testSet.typeArray[3] = sycl::image_channel_type::snorm_int16;
+      testSet.typeArray[4] = sycl::image_channel_type::fp16;
+      testSet.typeArray[5] = sycl::image_channel_type::fp32;
       testSet.numChannelTypes = 6;
       break;
-    case cl::sycl::image_channel_order::rgb:
-    case cl::sycl::image_channel_order::rgbx:
-      testSet.typeArray[0] = cl::sycl::image_channel_type::unorm_short_555;
-      testSet.typeArray[1] = cl::sycl::image_channel_type::unorm_short_565;
-      testSet.typeArray[2] = cl::sycl::image_channel_type::unorm_int_101010;
+    case sycl::image_channel_order::rgb:
+    case sycl::image_channel_order::rgbx:
+      testSet.typeArray[0] = sycl::image_channel_type::unorm_short_555;
+      testSet.typeArray[1] = sycl::image_channel_type::unorm_short_565;
+      testSet.typeArray[2] = sycl::image_channel_type::unorm_int_101010;
       testSet.numChannelTypes = 3;
       break;
     default:
@@ -352,9 +352,9 @@ inline collection get_test_set_full(cl::sycl::image_channel_order order) {
       for (int itType = 0; itType < NUM_CHANNEL_TYPES; ++itType) {
         auto channelType = g_channelTypeSize[itType].type;
         switch (channelType) {
-          case cl::sycl::image_channel_type::unorm_short_555:
-          case cl::sycl::image_channel_type::unorm_short_565:
-          case cl::sycl::image_channel_type::unorm_int_101010:
+          case sycl::image_channel_type::unorm_short_555:
+          case sycl::image_channel_type::unorm_short_565:
+          case sycl::image_channel_type::unorm_int_101010:
             // These types are exceptions, can only be used with specific
             // channel orders
             break;
@@ -376,25 +376,25 @@ inline collection get_test_set_full(cl::sycl::image_channel_order order) {
  * @return Collection of channel order and the minimum of valid channel types
  *         for the order
  */
-inline collection get_test_set_minimum(cl::sycl::image_channel_order order) {
+inline collection get_test_set_minimum(sycl::image_channel_order order) {
   collection testSet;
   testSet.order = order;
   switch (order) {
-    case cl::sycl::image_channel_order::rgba:
-      testSet.typeArray[0] = cl::sycl::image_channel_type::unorm_int8;
-      testSet.typeArray[1] = cl::sycl::image_channel_type::unorm_int16;
-      testSet.typeArray[2] = cl::sycl::image_channel_type::signed_int8;
-      testSet.typeArray[3] = cl::sycl::image_channel_type::signed_int16;
-      testSet.typeArray[4] = cl::sycl::image_channel_type::signed_int32;
-      testSet.typeArray[5] = cl::sycl::image_channel_type::unsigned_int8;
-      testSet.typeArray[6] = cl::sycl::image_channel_type::unsigned_int16;
-      testSet.typeArray[7] = cl::sycl::image_channel_type::unsigned_int32;
-      testSet.typeArray[8] = cl::sycl::image_channel_type::fp16;
-      testSet.typeArray[9] = cl::sycl::image_channel_type::fp32;
+    case sycl::image_channel_order::rgba:
+      testSet.typeArray[0] = sycl::image_channel_type::unorm_int8;
+      testSet.typeArray[1] = sycl::image_channel_type::unorm_int16;
+      testSet.typeArray[2] = sycl::image_channel_type::signed_int8;
+      testSet.typeArray[3] = sycl::image_channel_type::signed_int16;
+      testSet.typeArray[4] = sycl::image_channel_type::signed_int32;
+      testSet.typeArray[5] = sycl::image_channel_type::unsigned_int8;
+      testSet.typeArray[6] = sycl::image_channel_type::unsigned_int16;
+      testSet.typeArray[7] = sycl::image_channel_type::unsigned_int32;
+      testSet.typeArray[8] = sycl::image_channel_type::fp16;
+      testSet.typeArray[9] = sycl::image_channel_type::fp32;
       testSet.numChannelTypes = 10;
       break;
-    case cl::sycl::image_channel_order::bgra:
-      testSet.typeArray[0] = cl::sycl::image_channel_type::unorm_int8;
+    case sycl::image_channel_order::bgra:
+      testSet.typeArray[0] = sycl::image_channel_type::unorm_int8;
       testSet.numChannelTypes = 1;
       break;
     default:
@@ -406,12 +406,12 @@ inline collection get_test_set_minimum(cl::sycl::image_channel_order order) {
 }
 
 template <int dims>
-cl::sycl::vector_class<cl::sycl::byte> get_image_host(
+sycl::vector_class<sycl::byte> get_image_host(
     unsigned int numElems, unsigned int channelCount,
     unsigned int channelTypeSize) {
   const auto sizePerChannelType = (dims * numElems * channelCount);
   const auto size = (sizePerChannelType * channelTypeSize);
-  cl::sycl::vector_class<cl::sycl::byte> imageHost(size);
+  sycl::vector_class<sycl::byte> imageHost(size);
   for (unsigned int ii = 0; ii < sizePerChannelType; ii++) {
     for (unsigned int ij = 0; ij < channelTypeSize; ij++) {
       imageHost[ii * channelTypeSize + ij] = ij + 1;
@@ -431,8 +431,8 @@ class empty_kernel {
 
 template <int dims>
 class image_api_check {
-  int calc_numElems(util::logger &log, cl::sycl::range<dims> &r,
-                    cl::sycl::range<dims - 1> *p) const {
+  int calc_numElems(util::logger &log, sycl::range<dims> &r,
+                    sycl::range<dims - 1> *p) const {
     auto numElems = 1;
     switch (dims) {
       case 1:
@@ -457,11 +457,11 @@ class image_api_check {
     return numElems;
   }
 
-  template <typename AllocatorT = cl::sycl::image_allocator>
-  void check_api(util::logger &log, cl::sycl::image<dims, AllocatorT> &img,
-                  cl::sycl::range<dims> &r, cl::sycl::range<dims - 1> *p,
+  template <typename AllocatorT = sycl::image_allocator>
+  void check_api(util::logger &log, sycl::image<dims, AllocatorT> &img,
+                  sycl::range<dims> &r, sycl::range<dims - 1> *p,
                   int numElems, int elementSize,
-                  cl::sycl::vector_class<cl::sycl::byte> &finalData) const {
+                  sycl::vector_class<sycl::byte> &finalData) const {
 
     // Check get_range()
     if (dims == 3) {
@@ -514,11 +514,11 @@ class image_api_check {
       auto rawPtrVoid = static_cast<void *>(rawPtr);
       auto rawPtrFloat = static_cast<float *>(rawPtrVoid);
       auto sharedPtrVoid =
-          cl::sycl::shared_ptr_class<void>(rawPtrVoid, [](void *) {});
+          sycl::shared_ptr_class<void>(rawPtrVoid, [](void *) {});
       auto sharedPtrFloat =
-          cl::sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
-      auto weakPtrVoid = cl::sycl::weak_ptr_class<void>(sharedPtrVoid);
-      auto weakPtrFloat = cl::sycl::weak_ptr_class<float>(sharedPtrFloat);
+          sycl::shared_ptr_class<float>(rawPtrFloat, [](float *) {});
+      auto weakPtrVoid = sycl::weak_ptr_class<void>(sharedPtrVoid);
+      auto weakPtrFloat = sycl::weak_ptr_class<float>(sharedPtrFloat);
       auto iterator = finalData.begin();
 
       img.set_final_data();
@@ -535,54 +535,54 @@ class image_api_check {
 
   }
 
-  template <typename AllocatorT = cl::sycl::image_allocator>
-  void check_image_properties(util::logger &log, cl::sycl::image<dims, AllocatorT> &img) const {
+  template <typename AllocatorT = sycl::image_allocator>
+  void check_image_properties(util::logger &log, sycl::image<dims, AllocatorT> &img) const {
     /* check has_property() */
 
       auto hasHostPtrProperty =
-          img.template has_property<cl::sycl::property::image::use_host_ptr>();
+          img.template has_property<sycl::property::image::use_host_ptr>();
       check_return_type<bool>(log, hasHostPtrProperty,
                               "has_property<use_host_ptr>()");
 
       auto hasUseMutexProperty =
-          img.template has_property<cl::sycl::property::image::use_mutex>();
+          img.template has_property<sycl::property::image::use_mutex>();
       check_return_type<bool>(log, hasUseMutexProperty,
                               "has_property<use_mutex>()");
 
       auto hasContentBoundProperty = img.template has_property<
-          cl::sycl::property::image::context_bound>();
+          sycl::property::image::context_bound>();
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
 
       /* check get_property() */
 
       auto hostPtrProperty =
-          img.template get_property<cl::sycl::property::image::use_host_ptr>();
-      check_return_type<cl::sycl::property::image::use_host_ptr>(
+          img.template get_property<sycl::property::image::use_host_ptr>();
+      check_return_type<sycl::property::image::use_host_ptr>(
           log, hostPtrProperty, "get_property<use_host_ptr>()");
 
       auto useMutexProperty =
-          img.template get_property<cl::sycl::property::image::use_mutex>();
-      check_return_type<cl::sycl::property::image::use_mutex>(
+          img.template get_property<sycl::property::image::use_mutex>();
+      check_return_type<sycl::property::image::use_mutex>(
           log, useMutexProperty, "get_property<use_mutex>()");
-      check_return_type<cl::sycl::mutex_class *>(
+      check_return_type<sycl::mutex_class *>(
           log, useMutexProperty.get_mutex_ptr(),
           "image::use_mutex::get_mutex_ptr()");
 
       auto contextBoundProperty = img.template get_property<
-          cl::sycl::property::image::context_bound>();
-      check_return_type<cl::sycl::property::image::context_bound>(
+          sycl::property::image::context_bound>();
+      check_return_type<sycl::property::image::context_bound>(
           log, contextBoundProperty, "get_property<context_bound>()");
-      check_return_type<cl::sycl::context>(
+      check_return_type<sycl::context>(
           log, contextBoundProperty.get_context(),
           "image::context_bound::get_context()");
   }
 
  public:
   template <typename T, typename AllocatorT>
-  void check_get_access(util::logger &log, cl::sycl::image_channel_order channelOrder,
-                        cl::sycl::image_channel_type channelType, cl::sycl::range<dims> &r,
-                        cl::sycl::range<dims - 1> *p, bool multiply) const {
+  void check_get_access(util::logger &log, sycl::image_channel_order channelOrder,
+                        sycl::image_channel_type channelType, sycl::range<dims> &r,
+                        sycl::range<dims - 1> *p, bool multiply) const {
 
       auto numElems = calc_numElems(log, r, p);
 
@@ -601,27 +601,27 @@ class image_api_check {
 
       // Creates an image, either with a pitch or without
       // The pitch is not used for a 1D image or when null
-      cl::sycl::image<dims, AllocatorT> img =
+      sycl::image<dims, AllocatorT> img =
               image_generic<dims, AllocatorT>::create_with_pitch_and_allocator(
                 static_cast<void *>(imageHost.data()), channelOrder, channelType, r, p);
       {
         // target::host_image
-        img.template get_access<T, cl::sycl::access::mode::read_write>();
+        img.template get_access<T, sycl::access::mode::read_write>();
       }
 
       auto testQueue = sycl_cts::util::get_cts_object::queue();
       try {
-        testQueue.submit([&](cl::sycl::handler &cgh) {
+        testQueue.submit([&](sycl::handler &cgh) {
           // target::image
           auto imgAcc =
-              img.template get_access<T, cl::sycl::access::mode::write>(cgh);
+              img.template get_access<T, sycl::access::mode::write>(cgh);
           cgh.single_task(empty_kernel());
         });
 
         testQueue.wait_and_throw();
-      } catch (const cl::sycl::feature_not_supported &fnse) {
+      } catch (const sycl::feature_not_supported &fnse) {
         if (!testQueue.get_device()
-                 .template get_info<cl::sycl::info::device::image_support>()) {
+                 .template get_info<sycl::info::device::image_support>()) {
           log.note("device does not support images -- skipping check");
         } else {
           throw;
@@ -629,13 +629,13 @@ class image_api_check {
       }
   }
 
-  void operator()(util::logger &log, cl::sycl::range<dims> &r,
-                  cl::sycl::range<dims - 1> *p = nullptr) const {
+  void operator()(util::logger &log, sycl::range<dims> &r,
+                  sycl::range<dims - 1> *p = nullptr) const {
     auto numElems = calc_numElems(log, r, p);
 
     // This combination is required to be supported by the OpenCL spec
-    const auto channelOrder = cl::sycl::image_channel_order::rgba;
-    const auto channelType = cl::sycl::image_channel_type::fp32;
+    const auto channelOrder = sycl::image_channel_order::rgba;
+    const auto channelType = sycl::image_channel_type::fp32;
 
     // Prepare variables
     const auto channelCount = get_channel_order_count(channelOrder);
@@ -654,11 +654,11 @@ class image_api_check {
     auto finalData =
         get_image_host<dims>(numElems, channelTypeSize, channelCount);
 
-    using AllocatorT = std::allocator<cl::sycl::byte>;
+    using AllocatorT = std::allocator<sycl::byte>;
 
     // Creates an image, either with a pitch or without
     // The pitch is not used for a 1D image or when null
-    cl::sycl::image<dims> img = image_generic<dims>::create_with_pitch(
+    sycl::image<dims> img = image_generic<dims>::create_with_pitch(
         static_cast<void *>(imageHost.data()), channelOrder, channelType, r, p);
 
     check_api(log, img, r, p, numElems, elementSize, finalData);
@@ -674,7 +674,7 @@ class image_api_check {
     {
       auto defaultAllocator = img.get_allocator();
 
-      check_return_type<cl::sycl::image_allocator>(log, defaultAllocator, "get_allocator()");
+      check_return_type<sycl::image_allocator>(log, defaultAllocator, "get_allocator()");
 
       /* create another image with a custom allocator */
       auto imgAlloc2 =
@@ -695,38 +695,38 @@ class image_api_check {
 
     /* Check image properties */
     {
-      cl::sycl::mutex_class mutex;
+      sycl::mutex_class mutex;
       auto context = util::get_cts_object::context();
-      const cl::sycl::property_list propList{
-          cl::sycl::property::image::use_host_ptr(),
-          cl::sycl::property::image::use_mutex(mutex),
-          cl::sycl::property::image::context_bound(context)};
+      const sycl::property_list propList{
+          sycl::property::image::use_host_ptr(),
+          sycl::property::image::use_mutex(mutex),
+          sycl::property::image::context_bound(context)};
 
       // Create another image
-      auto img2 = cl::sycl::image<dims>(static_cast<void *>(imageHost.data()),
+      auto img2 = sycl::image<dims>(static_cast<void *>(imageHost.data()),
                                         channelOrder, channelType, r, propList);
 
       check_image_properties(log, img2);
 
-      auto imgAlloc2 = cl::sycl::image<dims, AllocatorT>(static_cast<void *>(imageHost.data()),
+      auto imgAlloc2 = sycl::image<dims, AllocatorT>(static_cast<void *>(imageHost.data()),
                                         channelOrder, channelType, r, AllocatorT(), propList);
       check_image_properties<AllocatorT>(log, imgAlloc2);
     }
 
     // Check get_access()
     {
-      check_get_access<cl::sycl::cl_int4, cl::sycl::image_allocator>(log,
-              channelOrder, cl::sycl::image_channel_type::signed_int32, r, p, false);
-      check_get_access<cl::sycl::cl_uint4, cl::sycl::image_allocator>(log,
-              channelOrder, cl::sycl::image_channel_type::unsigned_int32, r, p, false);
-      check_get_access<cl::sycl::cl_float4, cl::sycl::image_allocator>(log,
+      check_get_access<sycl::cl_int4, sycl::image_allocator>(log,
+              channelOrder, sycl::image_channel_type::signed_int32, r, p, false);
+      check_get_access<sycl::cl_uint4, sycl::image_allocator>(log,
+              channelOrder, sycl::image_channel_type::unsigned_int32, r, p, false);
+      check_get_access<sycl::cl_float4, sycl::image_allocator>(log,
               channelOrder, channelType, r, p, false);
 
-      check_get_access<cl::sycl::cl_int4, AllocatorT>(log, channelOrder,
-                            cl::sycl::image_channel_type::signed_int32, r, p, false);
-      check_get_access<cl::sycl::cl_uint4, AllocatorT>(log, channelOrder,
-                            cl::sycl::image_channel_type::unsigned_int32, r, p, false);
-      check_get_access<cl::sycl::cl_float4, AllocatorT>(log, channelOrder,
+      check_get_access<sycl::cl_int4, AllocatorT>(log, channelOrder,
+                            sycl::image_channel_type::signed_int32, r, p, false);
+      check_get_access<sycl::cl_uint4, AllocatorT>(log, channelOrder,
+                            sycl::image_channel_type::unsigned_int32, r, p, false);
+      check_get_access<sycl::cl_float4, AllocatorT>(log, channelOrder,
                               channelType, r, p, false);
     }
     const auto expected = 0.5f;
@@ -736,46 +736,46 @@ class image_api_check {
       auto queue = util::get_cts_object::queue();
 
       if (queue.get_device()
-                 .template get_info<cl::sycl::info::device::image_support>()) {
+                 .template get_info<sycl::info::device::image_support>()) {
         {
-          cl::sycl::image<dims> img2 = image_generic<dims>::create_with_pitch(
+          sycl::image<dims> img2 = image_generic<dims>::create_with_pitch(
               static_cast<void *>(imageHost.data()), channelOrder, channelType,
               r, p);
-          queue.submit([&](cl::sycl::handler &cgh) {
+          queue.submit([&](sycl::handler &cgh) {
           auto img_acc =
-              img2.template get_access<cl::sycl::float4,
-                                      cl::sycl::access::mode::read>(cgh);
+              img2.template get_access<sycl::float4,
+                                      sycl::access::mode::read>(cgh);
 
-          auto sampler = cl::sycl::sampler(
-              cl::sycl::coordinate_normalization_mode::unnormalized,
-              cl::sycl::addressing_mode::clamp,
-              cl::sycl::filtering_mode::nearest);
+          auto sampler = sycl::sampler(
+              sycl::coordinate_normalization_mode::unnormalized,
+              sycl::addressing_mode::clamp,
+              sycl::filtering_mode::nearest);
 
-          auto myKernel = [img_acc, sampler](cl::sycl::item<dims> item) {
+          auto myKernel = [img_acc, sampler](sycl::item<dims> item) {
               // Read image data using integer coordinates
-              cl::sycl::float4 dataFromInt =
+              sycl::float4 dataFromInt =
                               img_acc.read(image_access<dims>::get_int(item));
               (void)dataFromInt;  // silent warning
               // Read image data using integer coordinates and a sampler
-              cl::sycl::float4 dataFromIntWithSampler =
+              sycl::float4 dataFromIntWithSampler =
                   img_acc.read(image_access<dims>::get_int(item), sampler);
               (void)dataFromIntWithSampler;  // silent warning
               // Read image data using floating point coordinates
               // Only works with a sampler
-              cl::sycl::float4 dataFromFloat =
+              sycl::float4 dataFromFloat =
                   img_acc.read(image_access<dims>::get_float(item), sampler);
               (void)dataFromFloat;  // silent warning
           };
           cgh.parallel_for<image_kernel_read<dims>>(r, myKernel);
           });
 
-          queue.submit([&](cl::sycl::handler &cgh) {
-            auto img_acc = img2.template get_access<cl::sycl::float4,
-                                          cl::sycl::access::mode::write>(cgh);
-            auto myKernel = [expected, img_acc](cl::sycl::item<dims> item) {
+          queue.submit([&](sycl::handler &cgh) {
+            auto img_acc = img2.template get_access<sycl::float4,
+                                          sycl::access::mode::write>(cgh);
+            auto myKernel = [expected, img_acc](sycl::item<dims> item) {
               // Write image data
               img_acc.write(image_access<dims>::get_int(item),
-                                                  cl::sycl::float4(expected));
+                                                  sycl::float4(expected));
             };
             cgh.parallel_for<image_kernel_write<dims>>(r, myKernel);
           });

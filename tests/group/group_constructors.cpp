@@ -55,7 +55,7 @@ private:
   sycl_cts::util::array<size_t, numDims> m_groupRange;
   sycl_cts::util::array<size_t, numDims> m_localRange;
 public:
-  state_storage(const cl::sycl::group<numDims>& state)
+  state_storage(const sycl::group<numDims>& state)
   {
     m_linearId = state.get_linear_id();
     for (size_t dim = 0; dim < numDims; ++dim) {
@@ -94,7 +94,7 @@ public:
 
 template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
-                                  const cl::sycl::group<numDims>& actual,
+                                  const sycl::group<numDims>& actual,
                                   const state_storage<numDims>& expected) {
   CHECK_EQUALITY_HELPER(success, actual.get_id(index), expected.get_id(index));
   CHECK_EQUALITY_HELPER(success, actual.get_global_range(index),
@@ -109,7 +109,7 @@ inline void check_equality_helper(success_acc_t& success,
 template <int numDims, typename success_acc_t>
 inline void check_equality(success_acc_t& successAcc,
                            current_check currentCheck,
-                           const cl::sycl::group<numDims>& actual,
+                           const sycl::group<numDims>& actual,
                            const state_storage<numDims>& expected) {
   auto& success = successAcc[to_integral(currentCheck)];
   if (numDims >= 1) {
@@ -126,7 +126,7 @@ inline void check_equality(success_acc_t& successAcc,
 
 #undef CHECK_EQUALITY_HELPER
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -146,22 +146,22 @@ class TEST_NAME : public util::test_base {
         const auto simpleRange =
             util::get_cts_object::range<numDims>::get(1, 1, 1);
 
-        cl::sycl::buffer<bool> successBuf(success.data(),
-                                          cl::sycl::range<1>(success.size()));
+        sycl::buffer<bool> successBuf(success.data(),
+                                          sycl::range<1>(success.size()));
 
         auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access::mode::write>(cgh);
 
           cgh.parallel_for_work_group<group_constructors_kernel<numDims>>(
-              simpleRange, simpleRange, [=](cl::sycl::group<numDims> group) {
+              simpleRange, simpleRange, [=](sycl::group<numDims> group) {
                 const auto& groupReadOnly = group;
                 state_storage<numDims> expected(groupReadOnly);
 
                 // Check copy constructor
                 {
-                  cl::sycl::group<numDims> copied(groupReadOnly);
+                  sycl::group<numDims> copied(groupReadOnly);
                   check_equality(successAcc, current_check::copy_constructor,
                                  copied, expected);
                 }
@@ -173,18 +173,18 @@ class TEST_NAME : public util::test_base {
                 }
                 // Check move constructor; invalidates group
                 {
-                  cl::sycl::group<numDims> moved(std::move(group));
+                  sycl::group<numDims> moved(std::move(group));
                   check_equality(successAcc, current_check::move_constructor,
                                  moved, expected);
                 }
               });
         });
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access::mode::write>(cgh);
 
           cgh.parallel_for_work_group<group_move_assignment_kernel<numDims>>(
-              simpleRange, simpleRange, [=](cl::sycl::group<numDims> group) {
+              simpleRange, simpleRange, [=](sycl::group<numDims> group) {
                 state_storage<numDims> expected(group);
 
                 // Check move assignment; invalidates group
@@ -210,7 +210,7 @@ class TEST_NAME : public util::test_base {
 
           // Check copy constructor
           {
-            cl::sycl::group<numDims> copied(groupReadOnly);
+            sycl::group<numDims> copied(groupReadOnly);
             check_equality(success, current_check::copy_constructor,
                            copied, expected);
           }
@@ -222,7 +222,7 @@ class TEST_NAME : public util::test_base {
           }
           // Check move constructor; invalidates group
           {
-            cl::sycl::group<numDims> moved(std::move(group));
+            sycl::group<numDims> moved(std::move(group));
             check_equality(success, current_check::move_constructor,
                            moved, expected);
           }
@@ -250,10 +250,10 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log,
                   success[to_integral(current_check::move_assignment)],
                   true, numDims);
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

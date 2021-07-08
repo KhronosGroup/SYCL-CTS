@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer constructors tests for cl::sycl::half and cl::sycl::cl_half
+// Provides buffer constructors tests for sycl::half and sycl::cl_half
 //
 *******************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** test cl::sycl::buffer initialization
+/** test sycl::buffer initialization
  */
 class TEST_NAME : public util::test_base {
 public:
@@ -36,11 +36,11 @@ public:
     }
     for_type_and_vectors<
         buffer_constructors_common::check_buffer_ctors_for_type,
-        cl::sycl::half>(log, "cl::sycl::half");
+        sycl::half>(log, "sycl::half");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<
         buffer_constructors_common::check_buffer_ctors_for_type,
-        cl::sycl::cl_half>(log, "cl::sycl::cl_half");
+        sycl::cl_half>(log, "sycl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

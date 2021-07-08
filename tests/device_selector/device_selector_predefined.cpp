@@ -13,7 +13,7 @@
 namespace device_selector_predefined__ {
 using namespace sycl_cts;
 
-/** tests predefined selectors for cl::sycl::device_selector
+/** tests predefined selectors for sycl::device_selector
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,7 +30,7 @@ class TEST_NAME : public util::test_base {
       bool gpuAvailable = false;
       bool cpuAvailable = false;
       bool acceleratorAvailable = false;
-      auto devices = cl::sycl::device::get_devices();
+      auto devices = sycl::device::get_devices();
       for (auto device : devices) {
         if (device.is_gpu()) {
           gpuAvailable = true;
@@ -46,16 +46,16 @@ class TEST_NAME : public util::test_base {
       /** check default_selector
       */
       if (!cpuAvailable && !gpuAvailable && !acceleratorAvailable) {
-        cl::sycl::default_selector defaultSelector;
+        sycl::default_selector defaultSelector;
         try {
           auto defaultDevice = util::get_cts_object::device(defaultSelector);
           if (!defaultDevice.is_host()) {
-            cl::sycl::string_class errorMsg =
+            sycl::string_class errorMsg =
                 "a SYCL exception occured when default_selector tried to "
                 "select a device when no opencl devices available";
             FAIL(log, errorMsg.c_str());
           }
-        } catch (const cl::sycl::exception &e) {
+        } catch (const sycl::exception &e) {
           log_exception(log, e);
           FAIL(log,
                "default_selector failed to select a host device when no opencl "
@@ -65,7 +65,7 @@ class TEST_NAME : public util::test_base {
 
       /** check host_selector
       */
-      cl::sycl::host_selector hostSelector;
+      sycl::host_selector hostSelector;
       auto hostDevice = util::get_cts_object::device(hostSelector);
 
       if (!hostDevice.is_host()) {
@@ -75,7 +75,7 @@ class TEST_NAME : public util::test_base {
       /** check cpu_selector
       */
       if (cpuAvailable) {
-        cl::sycl::cpu_selector cpuSelector;
+        sycl::cpu_selector cpuSelector;
         auto cpuDevice = util::get_cts_object::device(cpuSelector);
         if (!(cpuDevice.is_cpu())) {
           FAIL(log, "cpu_selector failed to select an appropriate device");
@@ -85,7 +85,7 @@ class TEST_NAME : public util::test_base {
       /** check gpu_selector
       */
       if (gpuAvailable) {
-        cl::sycl::gpu_selector gpuSelector;
+        sycl::gpu_selector gpuSelector;
         auto gpuDevice = util::get_cts_object::device(gpuSelector);
         if (!(gpuDevice.is_gpu())) {
           FAIL(log, "gpu_selector failed to select an appropriate device");
@@ -95,17 +95,17 @@ class TEST_NAME : public util::test_base {
       /** check accelerator_selector
       */
       if (acceleratorAvailable) {
-        cl::sycl::accelerator_selector acceleratorSelector;
+        sycl::accelerator_selector acceleratorSelector;
         auto acceleratorDevice = util::get_cts_object::device(acceleratorSelector);
         if (!(acceleratorDevice.is_accelerator())) {
           FAIL(log, "accelerator_selector failed to select an appropriate device");
         }
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

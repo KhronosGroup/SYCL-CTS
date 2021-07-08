@@ -14,7 +14,7 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::device
+/** tests the api for sycl::device
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -27,11 +27,11 @@ class TEST_NAME : public util::test_base {
   /** returns true if the device supports a particular partition property
    */
   static bool supports_partition_property(
-      const cl::sycl::device &dev,
-      cl::sycl::info::partition_property partitionProp) {
+      const sycl::device &dev,
+      sycl::info::partition_property partitionProp) {
     auto supported =
-        dev.get_info<cl::sycl::info::device::partition_properties>();
-    for (cl::sycl::info::partition_property prop : supported) {
+        dev.get_info<sycl::info::device::partition_properties>();
+    for (sycl::info::partition_property prop : supported) {
       if (prop == partitionProp) {
         return true;
       }
@@ -42,16 +42,16 @@ class TEST_NAME : public util::test_base {
   /** returns true if the device supports a particular affinity domain
    */
   static bool supports_affinity_domain(
-      const cl::sycl::device &dev,
-      cl::sycl::info::partition_property partitionProp,
-      cl::sycl::info::partition_affinity_domain domain) {
+      const sycl::device &dev,
+      sycl::info::partition_property partitionProp,
+      sycl::info::partition_affinity_domain domain) {
     if (partitionProp !=
-        cl::sycl::info::partition_property::partition_by_affinity_domain) {
+        sycl::info::partition_property::partition_by_affinity_domain) {
       return true;
     }
     auto supported =
-        dev.get_info<cl::sycl::info::device::partition_affinity_domains>();
-    for (cl::sycl::info::partition_affinity_domain dom : supported) {
+        dev.get_info<sycl::info::device::partition_affinity_domains>();
+    for (sycl::info::partition_affinity_domain dom : supported) {
       if (dom == domain) {
         return true;
       }
@@ -69,7 +69,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         auto parentPlatform = dev.get_platform();
-        check_return_type<cl::sycl::platform>(log, parentPlatform,
+        check_return_type<sycl::platform>(log, parentPlatform,
                                               "device::get_platform()");
       }
 
@@ -127,8 +127,8 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
-        auto platformName = dev.get_info<cl::sycl::info::device::name>();
-        check_return_type<cl::sycl::string_class>(log, platformName,
+        auto platformName = dev.get_info<sycl::info::device::name>();
+        check_return_type<sycl::string_class>(log, platformName,
                                                   "device::get_info()");
       }
 
@@ -138,7 +138,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         auto extensionSupported =
-            dev.has_extension(cl::sycl::string_class("cl_khr_fp64"));
+            dev.has_extension(sycl::string_class("cl_khr_fp64"));
         check_return_type<bool>(log, extensionSupported,
                                 "device::has_extension(string_class)");
       }
@@ -151,10 +151,10 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         if (supports_partition_property(
-                dev, cl::sycl::info::partition_property::partition_equally)) {
+                dev, sycl::info::partition_property::partition_equally)) {
           auto subDevices = dev.create_sub_devices<
-              cl::sycl::info::partition_property::partition_equally>(2);
-          check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+              sycl::info::partition_property::partition_equally>(2);
+          check_return_type<sycl::vector_class<sycl::device>>(
               log, subDevices, "device::create_sub_devices(size_t)");
         }
       }
@@ -167,14 +167,14 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         if (supports_partition_property(
-                dev, cl::sycl::info::partition_property::partition_by_counts)) {
-          cl::sycl::vector_class<size_t> devicePartitionCounts;
+                dev, sycl::info::partition_property::partition_by_counts)) {
+          sycl::vector_class<size_t> devicePartitionCounts;
           devicePartitionCounts.push_back(3);
           devicePartitionCounts.push_back(1);
           auto subDevices = dev.create_sub_devices<
-              cl::sycl::info::partition_property::partition_by_counts>(
+              sycl::info::partition_property::partition_by_counts>(
               devicePartitionCounts);
-          check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+          check_return_type<sycl::vector_class<sycl::device>>(
               log, subDevices,
               "device::create_sub_devices(vector_class<size_t>)");
         }
@@ -187,18 +187,18 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
-        cl::sycl::info::partition_property partitionProperty =
-            cl::sycl::info::partition_property::partition_by_affinity_domain;
-        cl::sycl::info::partition_affinity_domain affinityDomain =
-            cl::sycl::info::partition_affinity_domain::next_partitionable;
+        sycl::info::partition_property partitionProperty =
+            sycl::info::partition_property::partition_by_affinity_domain;
+        sycl::info::partition_affinity_domain affinityDomain =
+            sycl::info::partition_affinity_domain::next_partitionable;
         if (supports_partition_property(dev, partitionProperty)) {
           if (supports_affinity_domain(dev, partitionProperty,
                                        affinityDomain)) {
             auto subDevices =
-                dev.create_sub_devices<cl::sycl::info::partition_property::
+                dev.create_sub_devices<sycl::info::partition_property::
                                            partition_by_affinity_domain>(
                     affinityDomain);
-            check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+            check_return_type<sycl::vector_class<sycl::device>>(
                 log, subDevices,
                 "device::create_sub_device(info::partition_affinity_domain)");
           }
@@ -208,8 +208,8 @@ class TEST_NAME : public util::test_base {
       /** check get_devices() static member function
       */
       {
-        auto devs = cl::sycl::device::get_devices();
-        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+        auto devs = sycl::device::get_devices();
+        check_return_type<sycl::vector_class<sycl::device>>(
             log, devs, "device::get_devices()");
       }
 
@@ -217,14 +217,14 @@ class TEST_NAME : public util::test_base {
       */
       {
         auto devs =
-            cl::sycl::device::get_devices(cl::sycl::info::device_type::all);
-        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+            sycl::device::get_devices(sycl::info::device_type::all);
+        check_return_type<sycl::vector_class<sycl::device>>(
             log, devs, "device::get_devices(info::device_type::all)");
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

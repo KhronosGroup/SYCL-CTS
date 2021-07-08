@@ -18,7 +18,7 @@ TEST_NAME = 'ALIAS'
 
 alias_test_template = Template("""
         auto aliasVec = ${aliasVecName}();
-        resAcc[0] = check_equal_type_bool<cl::sycl::vec<${typeName}, ${size}>>(aliasVec);
+        resAcc[0] = check_equal_type_bool<sycl::vec<${typeName}, ${size}>>(aliasVec);
 """)
 
 
@@ -27,7 +27,7 @@ def gen_alias_test(type_str, size):
     test_string = alias_test_template.substitute(
         aliasVecName=alias_vec_name, typeName=type_str, size=size)
     string = wrap_with_kernel(
-        type_str, 'KERNEL_alias_' + alias_vec_name.replace('cl::sycl::', ''),
+        type_str, 'KERNEL_alias_' + alias_vec_name.replace('sycl::', ''),
         'Alias vector test: ' + alias_vec_name, test_string)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
@@ -47,7 +47,7 @@ def get_types():
     for base_type in Data.standard_types:
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
+                or base_type == 'sycl::half') and sign is False:
                 continue
             types.append(Data.standard_type_dict[(sign, base_type)])
     return types

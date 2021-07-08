@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer api tests for double and cl::sycl::cl_double
+// Provides buffer api tests for double and sycl::cl_double
 //
 *******************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** test cl::sycl::buffer API
+/** test sycl::buffer API
  */
 class TEST_NAME : public util::test_base {
 public:
@@ -38,7 +38,7 @@ public:
         log, "double");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
-                         cl::sycl::cl_double>(log, "cl::sycl::cl_double");
+                         sycl::cl_double>(log, "sycl::cl_double");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

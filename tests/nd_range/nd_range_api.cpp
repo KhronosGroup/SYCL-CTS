@@ -16,10 +16,10 @@ using namespace sycl_cts;
 static const size_t sizes[] = {16, 32, 64};
 
 template <int dim>
-void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
-                   cl::sycl::range<dim> ls, cl::sycl::id<dim> offset) {
+void test_nd_range(util::logger &log, sycl::range<dim> gs,
+                   sycl::range<dim> ls, sycl::id<dim> offset) {
   for (int i = 0; i < dim; i++) {
-    cl::sycl::nd_range<dim> no_offset(gs, ls);
+    sycl::nd_range<dim> no_offset(gs, ls);
     CHECK_TYPE(log, no_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, no_offset.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
@@ -30,7 +30,7 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
     CHECK_TYPE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
 
-    cl::sycl::nd_range<dim> deep_copy(no_offset);
+    sycl::nd_range<dim> deep_copy(no_offset);
 
     CHECK_TYPE(log, deep_copy.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, deep_copy.get_global_range()[i], sizes[i], i);
@@ -42,7 +42,7 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
     CHECK_TYPE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
 
-    cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
+    sycl::nd_range<dim> with_offset(gs, ls, offset);
     CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, with_offset.get_local_range()[i], sizes[i] / 4);
@@ -52,7 +52,7 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
     CHECK_TYPE(log, with_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, with_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
 
-    cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
+    sycl::nd_range<dim> deep_copy_offset(with_offset);
     CHECK_TYPE(log, deep_copy_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, deep_copy_offset.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4);
@@ -65,7 +65,7 @@ void test_nd_range(util::logger &log, cl::sycl::range<dim> gs,
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -82,34 +82,34 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       // global size to be set to the size
-      cl::sycl::range<1> gs_1d(sizes[0]);
+      sycl::range<1> gs_1d(sizes[0]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<1> ls_1d(sizes[0] / 4);
+      sycl::range<1> ls_1d(sizes[0] / 4);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::id<1> offset_1d(sizes[0] / 8);
+      sycl::id<1> offset_1d(sizes[0] / 8);
       test_nd_range(log, gs_1d, ls_1d, offset_1d);
 
       // global size to be set to the size
-      cl::sycl::range<2> gs_2d(sizes[0], sizes[1]);
+      sycl::range<2> gs_2d(sizes[0], sizes[1]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<2> ls_2d(sizes[0] / 4, sizes[1] / 4);
+      sycl::range<2> ls_2d(sizes[0] / 4, sizes[1] / 4);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::range<2> range_2d(sizes[0] / 8u, sizes[1] / 8u);
-      cl::sycl::id<2> offset_2d(range_2d);
+      sycl::range<2> range_2d(sizes[0] / 8u, sizes[1] / 8u);
+      sycl::id<2> offset_2d(range_2d);
       test_nd_range(log, gs_2d, ls_2d, offset_2d);
 
       // global size to be set to the size
-      cl::sycl::range<3> gs_3d(sizes[0], sizes[1], sizes[2]);
+      sycl::range<3> gs_3d(sizes[0], sizes[1], sizes[2]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<3> ls_3d(sizes[0] / 4, sizes[1] / 4, sizes[2] / 4);
+      sycl::range<3> ls_3d(sizes[0] / 4, sizes[1] / 4, sizes[2] / 4);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
-      cl::sycl::id<3> offset_3d(range_3d);
+      sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
+      sycl::id<3> offset_3d(range_3d);
       test_nd_range(log, gs_3d, ls_3d, offset_3d);
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -17,7 +17,7 @@ struct kernel_name_api {
 namespace kernel_api__ {
 using namespace sycl_cts;
 
-/** test cl::sycl::kernel
+/** test sycl::kernel
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -40,11 +40,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
         log.note(
             "online compiler is not available -- skipping test of kernel api");
       } else {
-        cl::sycl::program prog(ctsQueue.get_context());
+        sycl::program prog(ctsQueue.get_context());
         prog.build_with_kernel_type<kernel_name_api>();
         auto k = prog.get_kernel<kernel_name_api>();
         ctsQueue.submit(
-            [&](cl::sycl::handler &h) { h.single_task(kernel_name_api{}); });
+            [&](sycl::handler &h) { h.single_task(kernel_name_api{}); });
         ctsQueue.wait_and_throw();
 
         // Check is_host()
@@ -52,18 +52,18 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
         // Check get_context()
         auto cxt = k.get_context();
-        check_return_type<cl::sycl::context>(log, cxt,
-                                             "cl::sycl::kernel::get_context()");
+        check_return_type<sycl::context>(log, cxt,
+                                             "sycl::kernel::get_context()");
 
         // Check get_program()
         auto prgrm = k.get_program();
-        check_return_type<cl::sycl::program>(log, prgrm,
-                                             "cl::sycl::kernel::get_program()");
+        check_return_type<sycl::program>(log, prgrm,
+                                             "sycl::kernel::get_program()");
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

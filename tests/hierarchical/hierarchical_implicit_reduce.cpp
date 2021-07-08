@@ -35,20 +35,20 @@ template <typename T, int dim> class sth {};
 template <typename T, int dim> class sth_else {};
 
 template <typename T, int dim>
-T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
+T reduce(T input[inputSize], sycl::device_selector *selector) {
   T mGroupSums[numGroups];
 
   auto myQueue = util::get_cts_object::queue(*selector);
-  cl::sycl::buffer<T, 1> input_buf(input, cl::sycl::range<1>(inputSize));
-  cl::sycl::buffer<T, 1> group_sums_buf(mGroupSums,
-                                        cl::sycl::range<1>(numGroups));
+  sycl::buffer<T, 1> input_buf(input, sycl::range<1>(inputSize));
+  sycl::buffer<T, 1> group_sums_buf(mGroupSums,
+                                        sycl::range<1>(numGroups));
 
-  myQueue.submit([&](cl::sycl::handler& cgh) {
-    cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                       cl::sycl::access::target::global_buffer>
+  myQueue.submit([&](sycl::handler& cgh) {
+    sycl::accessor<T, 1, sycl::access::mode::read,
+                       sycl::access::target::global_buffer>
         input_ptr(input_buf, cgh);
-    cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
-                       cl::sycl::access::target::global_buffer>
+    sycl::accessor<T, 1, sycl::access::mode::write,
+                       sycl::access::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
     auto groupRange = sycl_cts::util::get_cts_object::range<
         dim>::template get_fixed_size<numGroups>(groupItems1d, groupItems2d);
@@ -57,13 +57,13 @@ T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
             localItemsTotal>(localItems1d, localItems2d);
         cgh.parallel_for_work_group<class sth<T, dim>>(
                     groupRange, localRange,
-                    [=]( cl::sycl::group<dim> group )
+                    [=]( sycl::group<dim> group )
         {
           T localSums[localItemsTotal];
 
           // process items in each work item
           group.parallel_for_work_item(
-              [=, &localSums](cl::sycl::h_item<dim> item) {
+              [=, &localSums](sycl::h_item<dim> item) {
                 int globalId = item.get_global().get_linear_id();
                 int localId = item.get_local().get_linear_id();
                 /* Split the array into work-group-size different arrays */
@@ -96,13 +96,13 @@ T reduce(T input[inputSize], cl::sycl::device_selector *selector) {
 
   T mTotal;
   {
-    cl::sycl::buffer<T, 1> total_buf(&mTotal, cl::sycl::range<1>(1));
-    myQueue.submit([&](cl::sycl::handler& cgh) {
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                         cl::sycl::access::target::global_buffer>
+    sycl::buffer<T, 1> total_buf(&mTotal, sycl::range<1>(1));
+    myQueue.submit([&](sycl::handler& cgh) {
+      sycl::accessor<T, 1, sycl::access::mode::read,
+                         sycl::access::target::global_buffer>
           groupSumsPtr(group_sums_buf, cgh);
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::write,
-                         cl::sycl::access::target::global_buffer>
+      sycl::accessor<T, 1, sycl::access::mode::write,
+                         sycl::access::target::global_buffer>
           totalPtr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T, dim> >([=]() {
@@ -180,15 +180,15 @@ template <int dim> void check_dim(util::logger &log) {
           FAIL(log, msg);
         }
       }
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
 public:

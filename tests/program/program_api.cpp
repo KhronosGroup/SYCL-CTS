@@ -24,7 +24,7 @@ struct program_api_kernel {
 namespace program_api__ {
 using namespace sycl_cts;
 
-/** test cl::sycl::program
+/** test sycl::program
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -46,13 +46,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
       bool compiler_available = is_compiler_available(deviceList);
       bool linker_available = is_linker_available(deviceList);
 
-      const cl::sycl::string_class compileOptions = "-cl-opt-disable";
-      const cl::sycl::string_class linkOptions = "-cl-fast-relaxed-math";
+      const sycl::string_class compileOptions = "-cl-opt-disable";
+      const sycl::string_class linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note("check program class methods");
 
-        cl::sycl::program prog(context);
+        sycl::program prog(context);
 
         // Check build_with_kernel_type()
         try {
@@ -67,21 +67,21 @@ class TEST_NAME : public sycl_cts::util::test_base {
           bool isHost = prog.is_host();
 
           // Check get_binaries()
-          cl::sycl::vector_class<cl::sycl::vector_class<char>> binaries =
+          sycl::vector_class<sycl::vector_class<char>> binaries =
               prog.get_binaries();
 
           // Check get_context()
-          cl::sycl::context progCtx = prog.get_context();
+          sycl::context progCtx = prog.get_context();
 
           // Check get_compile_options()
-          cl::sycl::string_class progCompileOptions =
+          sycl::string_class progCompileOptions =
               prog.get_compile_options();
 
           // Check get_link_options()
-          cl::sycl::string_class progLinkOptions = prog.get_link_options();
+          sycl::string_class progLinkOptions = prog.get_link_options();
 
           // Check get_build_options()
-          cl::sycl::string_class progBuildOptions = prog.get_build_options();
+          sycl::string_class progBuildOptions = prog.get_build_options();
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           // Check get()
@@ -91,8 +91,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
 #endif
 
           {
-            auto q = cl::sycl::queue(context, selector);
-            q.submit([](cl::sycl::handler &cgh) {
+            auto q = sycl::queue(context, selector);
+            q.submit([](sycl::handler &cgh) {
               cgh.single_task(program_api_kernel());
             });
             q.wait_and_throw();
@@ -104,16 +104,16 @@ class TEST_NAME : public sycl_cts::util::test_base {
             }
 
             // Check get_kernel<>()
-            cl::sycl::kernel k = prog.get_kernel<program_api_kernel>();
+            sycl::kernel k = prog.get_kernel<program_api_kernel>();
           }
 
           // Check get_state()
-          cl::sycl::program_state state = prog.get_state();
-          if (state != cl::sycl::program_state::linked) {
+          sycl::program_state state = prog.get_state();
+          if (state != sycl::program_state::linked) {
             FAIL(log, "Program was not built properly (get_state())");
           }
 
-        } catch (const cl::sycl::feature_not_supported &fnse_build) {
+        } catch (const sycl::feature_not_supported &fnse_build) {
           if (!compiler_available || !linker_available) {
             log.note(
                 "online compiler or linker not available -- skipping check");
@@ -126,17 +126,17 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         log.note("build program without build options");
 
-        auto myQueue = cl::sycl::queue(context, selector);
-        cl::sycl::program prog(myQueue.get_context());
+        auto myQueue = sycl::queue(context, selector);
+        sycl::program prog(myQueue.get_context());
 
-        if (prog.get_state() != cl::sycl::program_state::none) {
+        if (prog.get_state() != sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         try {
           prog.build_with_kernel_type<program_kernel<0>>();
 
-          if (prog.get_state() != cl::sycl::program_state::linked) {
+          if (prog.get_state() != sycl::program_state::linked) {
             FAIL(log, "Program was not built properly (get_state())");
           }
 
@@ -145,12 +145,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
             FAIL(log, "Wrong value for program.get_binaries()");
           }
 
-          myQueue.submit([&](cl::sycl::handler &cgh) {
+          myQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(program_kernel<0>());
           });
           myQueue.wait_and_throw();
 
-        } catch (const cl::sycl::feature_not_supported &fnse_build) {
+        } catch (const sycl::feature_not_supported &fnse_build) {
           if (!compiler_available || !linker_available) {
             log.note(
                 "online compiler or linker not available -- skipping check");
@@ -163,23 +163,23 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         log.note("build program with build options");
 
-        auto myQueue = cl::sycl::queue(context, selector);
+        auto myQueue = sycl::queue(context, selector);
 
-        cl::sycl::program prog(myQueue.get_context());
+        sycl::program prog(myQueue.get_context());
 
-        if (prog.get_state() != cl::sycl::program_state::none) {
+        if (prog.get_state() != sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
         try {
           prog.build_with_kernel_type<program_kernel<1>>(linkOptions);
 
-          if (prog.get_state() != cl::sycl::program_state::linked) {
+          if (prog.get_state() != sycl::program_state::linked) {
             FAIL(log, "Program was not built properly (get_state())");
           }
 
           if (prog.get_build_options().find(linkOptions) ==
-              cl::sycl::string_class::npos) {
+              sycl::string_class::npos) {
             FAIL(log, "Built program did not store the build options");
           }
 
@@ -188,12 +188,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
             FAIL(log, "Wrong value for program.get_binaries()");
           }
 
-          myQueue.submit([&](cl::sycl::handler &cgh) {
+          myQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(program_kernel<1>());
           });
           myQueue.wait_and_throw();
 
-        } catch (const cl::sycl::feature_not_supported &fnse_build) {
+        } catch (const sycl::feature_not_supported &fnse_build) {
           if (!compiler_available || !linker_available) {
             log.note(
                 "online compiler or linker not available -- skipping check");
@@ -206,10 +206,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         log.note("compile and link program without compile and link options");
 
-        auto myQueue = cl::sycl::queue(context, selector);
-        cl::sycl::program prog(myQueue.get_context());
+        auto myQueue = sycl::queue(context, selector);
+        sycl::program prog(myQueue.get_context());
 
-        if (prog.get_state() != cl::sycl::program_state::none) {
+        if (prog.get_state() != sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
@@ -217,14 +217,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
         try {
           prog.compile_with_kernel_type<program_kernel<2>>();
 
-          if (prog.get_state() != cl::sycl::program_state::compiled) {
+          if (prog.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Program should be in compiled state after compilation");
           }
 
           // Check link()
           prog.link();
 
-          if (prog.get_state() != cl::sycl::program_state::linked) {
+          if (prog.get_state() != sycl::program_state::linked) {
             FAIL(log, "Program was not built properly (get_state())");
           }
 
@@ -238,12 +238,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
             FAIL(log, "program.get_build_options() should be empty");
           }
 
-          myQueue.submit([&](cl::sycl::handler &cgh) {
+          myQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(program_kernel<2>());
           });
           myQueue.wait_and_throw();
 
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!compiler_available) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -255,10 +255,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         log.note("compile and link program with compile and link options");
 
-        auto myQueue = cl::sycl::queue(context, selector);
-        cl::sycl::program prog(myQueue.get_context());
+        auto myQueue = sycl::queue(context, selector);
+        sycl::program prog(myQueue.get_context());
 
-        if (prog.get_state() != cl::sycl::program_state::none) {
+        if (prog.get_state() != sycl::program_state::none) {
           FAIL(log, "Newly created program should not be linked yet");
         }
 
@@ -266,14 +266,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
         try {
           prog.compile_with_kernel_type<program_kernel<3>>(compileOptions);
 
-          if (prog.get_state() != cl::sycl::program_state::compiled) {
+          if (prog.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Program should be in compiled state after compilation");
           }
 
           // Check link(options)
           prog.link(linkOptions);
 
-          if (prog.get_state() != cl::sycl::program_state::linked) {
+          if (prog.get_state() != sycl::program_state::linked) {
             FAIL(log, "Program was not built properly (get_state())");
           }
 
@@ -297,12 +297,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
             FAIL(log, "Linked program did not store the link options");
           }
 
-          myQueue.submit([&](cl::sycl::handler &cgh) {
+          myQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(program_kernel<3>());
           });
           myQueue.wait_and_throw();
 
-        } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+        } catch (const sycl::feature_not_supported &fnse_compile) {
           if (!compiler_available) {
             log.note("online compiler not available -- skipping check");
           } else {
@@ -319,43 +319,43 @@ class TEST_NAME : public sycl_cts::util::test_base {
         if (!compiler_available) {
           log.note("online compiler not available -- skipping check");
         } else {
-          auto myQueue = cl::sycl::queue(context, selector);
+          auto myQueue = sycl::queue(context, selector);
 
           // Create SYCL programs to link
-          cl::sycl::program mySyclProgram1(myQueue.get_context());
+          sycl::program mySyclProgram1(myQueue.get_context());
           mySyclProgram1.compile_with_kernel_type<program_kernel<4>>();
 
-          if (mySyclProgram1.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram1.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
-          cl::sycl::program mySyclProgram2(myQueue.get_context());
+          sycl::program mySyclProgram2(myQueue.get_context());
           mySyclProgram2.compile_with_kernel_type<program_kernel<5>>();
 
-          if (mySyclProgram2.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram2.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
           // Link SYCL programs
           try {
-            cl::sycl::program myLinkedProgram({mySyclProgram1, mySyclProgram2});
+            sycl::program myLinkedProgram({mySyclProgram1, mySyclProgram2});
 
             if (myLinkedProgram.get_state() !=
-                cl::sycl::program_state::linked) {
+                sycl::program_state::linked) {
               FAIL(log, "Program was not linked");
             }
 
-            myQueue.submit([&](cl::sycl::handler &cgh) {
+            myQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel<4>());
             });
             myQueue.wait_and_throw();
 
-            myQueue.submit([&](cl::sycl::handler &cgh) {
+            myQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel<5>());
             });
             myQueue.wait_and_throw();
 
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!linker_available) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -371,14 +371,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
         if (!compiler_available) {
           log.note("online compiler not available -- skipping check");
         } else {
-          auto myQueue = cl::sycl::queue(context, selector);
+          auto myQueue = sycl::queue(context, selector);
 
           // Create SYCL program objects with specified compile options
-          cl::sycl::program mySyclProgram1(myQueue.get_context());
+          sycl::program mySyclProgram1(myQueue.get_context());
           mySyclProgram1.compile_with_kernel_type<program_kernel<6>>(
               compileOptions);
 
-          if (mySyclProgram1.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram1.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
@@ -388,11 +388,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
           }
 
           // Create SYCL program objects with specified compile options
-          cl::sycl::program mySyclProgram2(myQueue.get_context());
+          sycl::program mySyclProgram2(myQueue.get_context());
           mySyclProgram2.compile_with_kernel_type<program_kernel<7>>(
               compileOptions);
 
-          if (mySyclProgram2.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram2.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
@@ -403,11 +403,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
           // Link created SYCL programs using provided link options
           try {
-            cl::sycl::program myLinkedProgram({mySyclProgram1, mySyclProgram2},
+            sycl::program myLinkedProgram({mySyclProgram1, mySyclProgram2},
                                               linkOptions);
 
             if (myLinkedProgram.get_state() !=
-                cl::sycl::program_state::linked) {
+                sycl::program_state::linked) {
               FAIL(log, "Program was not linked");
             }
 
@@ -415,17 +415,17 @@ class TEST_NAME : public sycl_cts::util::test_base {
               FAIL(log, "Linked program did not store the link options");
             }
 
-            myQueue.submit([&](cl::sycl::handler &cgh) {
+            myQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel<6>());
             });
             myQueue.wait_and_throw();
 
-            myQueue.submit([&](cl::sycl::handler &cgh) {
+            myQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel<7>());
             });
             myQueue.wait_and_throw();
 
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!linker_available) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -434,10 +434,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
           }
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

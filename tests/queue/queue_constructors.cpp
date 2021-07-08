@@ -14,7 +14,7 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** check the constructors for cl::sycl::queue
+/** check the constructors for sycl::queue
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,17 +30,17 @@ class TEST_NAME : public util::test_base {
     try {
       /** check default constructor and destructor
       */
-      { cl::sycl::queue queue; }
+      { sycl::queue queue; }
 
       /** check (property_list) constructor
       */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(cl::sycl::property_list{
-            cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(sycl::property_list{
+            sycl::property::queue::enable_profiling()});
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with property_list was not constructed correctly "
                "(has_property)");
@@ -51,18 +51,18 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(asyncHandler);
+        sycl::queue queue(asyncHandler);
       }
 
       /** check (async_handler, property_list) constructor
       */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(asyncHandler,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(asyncHandler,
+                              {sycl::property::queue::enable_profiling()});
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with async_handler and property_list was not "
                "constructed correctly (has_property)");
@@ -73,7 +73,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::queue queue(selector);
+        sycl::queue queue(selector);
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -86,8 +86,8 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::queue queue(selector,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(selector,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -96,7 +96,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with device_selector and property_list was not "
                "constructed correctly (has_property)");
@@ -108,7 +108,7 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(selector, asyncHandler);
+        sycl::queue queue(selector, asyncHandler);
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -122,8 +122,8 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(selector, asyncHandler,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(selector, asyncHandler,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -132,7 +132,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with device_selector, async_handler and "
                "property_list was not constructed correctly (has_property)");
@@ -142,8 +142,8 @@ class TEST_NAME : public util::test_base {
       /** check (device) constructor
       */
       {
-        cl::sycl::device device = util::get_cts_object::device();
-        cl::sycl::queue queue(device);
+        sycl::device device = util::get_cts_object::device();
+        sycl::queue queue(device);
 
         if (queue.is_host() != device.is_host()) {
           FAIL(log,
@@ -155,9 +155,9 @@ class TEST_NAME : public util::test_base {
       /** check (device, property_list) constructor
       */
       {
-        cl::sycl::device device = util::get_cts_object::device();
-        cl::sycl::queue queue(device,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::device device = util::get_cts_object::device();
+        sycl::queue queue(device,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != device.is_host()) {
           FAIL(log,
@@ -166,7 +166,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with device and property_list was not constructed "
                "correctly (has_property)");
@@ -176,9 +176,9 @@ class TEST_NAME : public util::test_base {
       /** check (device, async_handler) constructor
       */
       {
-        cl::sycl::device device = util::get_cts_object::device();
+        sycl::device device = util::get_cts_object::device();
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(device, asyncHandler);
+        sycl::queue queue(device, asyncHandler);
 
         if (queue.is_host() != device.is_host()) {
           FAIL(log,
@@ -190,10 +190,10 @@ class TEST_NAME : public util::test_base {
       /** check (device, async_handler, property_list) constructor
       */
       {
-        cl::sycl::device device = util::get_cts_object::device();
+        sycl::device device = util::get_cts_object::device();
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(device, asyncHandler,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(device, asyncHandler,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != device.is_host()) {
           FAIL(log,
@@ -202,7 +202,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with device, async_handler and property_list was "
                "not constructed correctly (has_property)");
@@ -214,7 +214,7 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
-        cl::sycl::queue queue(context, selector);
+        sycl::queue queue(context, selector);
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -228,8 +228,8 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
-        cl::sycl::queue queue(context, selector,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(context, selector,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -238,7 +238,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with context, device_selector and property_list was "
                "not constructed correctly (has_property)");
@@ -251,7 +251,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(context, selector, asyncHandler);
+        sycl::queue queue(context, selector, asyncHandler);
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -267,8 +267,8 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto context = util::get_cts_object::context(selector);
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(context, selector, asyncHandler,
-                              {cl::sycl::property::queue::enable_profiling()});
+        sycl::queue queue(context, selector, asyncHandler,
+                              {sycl::property::queue::enable_profiling()});
 
         if (queue.is_host() != selector.is_host()) {
           FAIL(log,
@@ -277,7 +277,7 @@ class TEST_NAME : public util::test_base {
         }
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with context, device_selector, async_handler and "
                "property_list was not constructed correctly (has_property)");
@@ -289,7 +289,7 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
-        cl::sycl::queue queueB(queueA);
+        sycl::queue queueB(queueA);
 
         if (queueA.is_host() != selector.is_host()) {
           FAIL(log, "queue source after copy construction failed (is_host)");
@@ -314,7 +314,7 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
-        cl::sycl::queue queueB;
+        sycl::queue queueB;
         queueB = queueA;
 
         if (queueA.is_host() != selector.is_host()) {
@@ -341,7 +341,7 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
-        cl::sycl::queue queueB(std::move(queueA));
+        sycl::queue queueB(std::move(queueA));
 
         if (queueB.is_host() != selector.is_host()) {
           FAIL(log, "queue was not move constructed correctly (is_host)");
@@ -354,7 +354,7 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
 
-        cl::sycl::queue queueB;
+        sycl::queue queueB;
         queueB = std::move(queueA);
 
         if (queueB.is_host() != selector.is_host()) {
@@ -367,10 +367,10 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
-        cl::sycl::queue queueB(queueA);
-        cl::sycl::queue queueC(selector);
+        sycl::queue queueB(queueA);
+        sycl::queue queueC(selector);
         queueC = queueA;
-        cl::sycl::queue queueD(selector);
+        sycl::queue queueD(selector);
 
         if (!(queueA == queueB)) {
           FAIL(log,
@@ -406,8 +406,8 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
-        cl::sycl::queue queueB(queueA);
-        cl::sycl::hash_class<cl::sycl::queue> hasher;
+        sycl::queue queueB(queueA);
+        sycl::hash_class<sycl::queue> hasher;
 
         if (hasher(queueA) != hasher(queueB)) {
           FAIL(log,
@@ -415,10 +415,10 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

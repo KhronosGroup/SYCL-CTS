@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  cl::sycl::string_class errorStr = cl::sycl::string_class(
+  sycl::string_class errorStr = sycl::string_class(
       "The following device type does not have the correct ");
 
   /** execute the test
@@ -59,8 +59,8 @@ class TEST_NAME : public util::test_base {
                                            "size_t");
 
       // SYCL Floating Point Data Types
-      check_type_min_size_sign_log<cl::sycl::half>(log, 2, true,
-                                                   "cl::sycl::half");
+      check_type_min_size_sign_log<sycl::half>(log, 2, true,
+                                                   "sycl::half");
       check_type_min_size_sign_log<float>(log, 4, true, "float");
       check_type_min_size_sign_log<double>(log, 8, true, "double");
 
@@ -69,16 +69,16 @@ class TEST_NAME : public util::test_base {
       std::array<bool, 15> signResults;
       std::array<bool, 16> sizeResults;
       {
-        cl::sycl::buffer<bool, 1> bufSignResult(
-            signResults.data(), cl::sycl::range<1>(signResults.size()));
-        cl::sycl::buffer<bool, 1> bufSizeResult(
-            sizeResults.data(), cl::sycl::range<1>(sizeResults.size()));
+        sycl::buffer<bool, 1> bufSignResult(
+            signResults.data(), sycl::range<1>(signResults.size()));
+        sycl::buffer<bool, 1> bufSizeResult(
+            sizeResults.data(), sycl::range<1>(sizeResults.size()));
 
-        myQueue.submit([&](cl::sycl::handler &cgh) {
+        myQueue.submit([&](sycl::handler &cgh) {
           auto accSignResult =
-              bufSignResult.get_access<cl::sycl::access::mode::read_write>(cgh);
+              bufSignResult.get_access<sycl::access::mode::read_write>(cgh);
           auto accSizeResult =
-              bufSizeResult.get_access<cl::sycl::access::mode::read_write>(cgh);
+              bufSizeResult.get_access<sycl::access::mode::read_write>(cgh);
 
           cgh.single_task<TEST_NAME>([=]() {
             // SYCL Integral Data Types
@@ -94,8 +94,8 @@ class TEST_NAME : public util::test_base {
             accSignResult[8] = check_type_sign<unsigned long long int>(false);
             accSignResult[9] = check_type_sign<long long int>(true);
             accSignResult[10] = check_type_sign<size_t>(false);
-            accSignResult[11] = check_type_sign<cl::sycl::byte>(false);
-            accSignResult[12] = check_type_sign<cl::sycl::half>(true);
+            accSignResult[11] = check_type_sign<sycl::byte>(false);
+            accSignResult[12] = check_type_sign<sycl::half>(true);
             accSignResult[13] = check_type_sign<float>(true);
             accSignResult[14] = check_type_sign<double>(true);
 
@@ -112,8 +112,8 @@ class TEST_NAME : public util::test_base {
             accSizeResult[9] = check_type_min_size<unsigned long long int>(8);
             accSizeResult[10] = check_type_min_size<long long int>(8);
             accSizeResult[11] = check_type_min_size<size_t>(host_size_t_size);
-            accSizeResult[12] = check_type_min_size<cl::sycl::byte>(1);
-            accSizeResult[13] = check_type_min_size<cl::sycl::half>(2);
+            accSizeResult[12] = check_type_min_size<sycl::byte>(1);
+            accSizeResult[13] = check_type_min_size<sycl::half>(2);
             accSizeResult[14] = check_type_min_size<float>(4);
             accSizeResult[15] = check_type_min_size<double>(8);
 
@@ -156,10 +156,10 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "sign: size_t");
       }
       if (!signResults[11]) {
-        FAIL(log, errorStr + "sign: cl::sycl::byte");
+        FAIL(log, errorStr + "sign: sycl::byte");
       }
       if (!signResults[12]) {
-        FAIL(log, errorStr + "sign: cl::sycl::half");
+        FAIL(log, errorStr + "sign: sycl::half");
       }
       if (!signResults[13]) {
         FAIL(log, errorStr + "sign: float");
@@ -206,10 +206,10 @@ class TEST_NAME : public util::test_base {
         FAIL(log, errorStr + "size: size_t");
       }
       if (!sizeResults[12]) {
-        FAIL(log, errorStr + "size: cl::sycl::byte");
+        FAIL(log, errorStr + "size: sycl::byte");
       }
       if (!sizeResults[13]) {
-        FAIL(log, errorStr + "size: cl::sycl::half");
+        FAIL(log, errorStr + "size: sycl::half");
       }
       if (!sizeResults[14]) {
         FAIL(log, errorStr + "size: float");
@@ -220,10 +220,10 @@ class TEST_NAME : public util::test_base {
 
       myQueue.wait_and_throw();
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      sycl::string_class errorMsg =
+          "a SYCL exception was caught: " + sycl::string_class(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

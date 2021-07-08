@@ -18,16 +18,16 @@ from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_k
 TEST_NAME = 'API'
 
 vector_api_template = Template("""
-        auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
+        auto inputVec = sycl::vec<${type}, ${size}>(${vals});
         ${type} reversed_vals[] = {${reversed_vals}};
         if (!check_vector_get_count_get_size<${type}, ${size}>(inputVec)) {
           resAcc[0] = false;
         }
-        cl::sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};
+        sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};
         if (!check_vector_values<${type}, ${size}>(swizzledVec, reversed_vals)) {
           resAcc[0] = false;
         }
-        if (std::alignment_of<cl::sycl::vec<${type}, ${size}>>::value !=
+        if (std::alignment_of<sycl::vec<${type}, ${size}>>::value !=
             sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
           resAcc[0] = false;
         }
@@ -44,7 +44,7 @@ lo_hi_odd_even_template = Template("""
 """)
 
 as_convert_call_template = Template("""
-        auto inputVec = cl::sycl::vec<${type}, ${size}>(${vals});
+        auto inputVec = sycl::vec<${type}, ${size}>(${vals});
         if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec)) {
             resAcc[0] = false;
         }
@@ -68,14 +68,14 @@ def gen_checks(type_str, size):
                 size) + ', double>(inputVec);\n'
     if 'half' in type_str:
         test_string += 'check_convert_as_all_dims<'+type_str +','+ str(
-                size) + ', cl::sycl::half>(inputVec);\n'
+                size) + ', sycl::half>(inputVec);\n'
     if size != 1:
         test_string += lo_hi_odd_even_template.substitute(
         type=type_str,
         vals=', '.join(vals_list))
     string = wrap_with_kernel(
         type_str, kernel_name,
-        'API test for cl::sycl::vec<' + type_str + ', ' + str(size) + '>',
+        'API test for sycl::vec<' + type_str + ', ' + str(size) + '>',
         test_string)
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
@@ -89,7 +89,7 @@ def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
 
     string = wrap_with_kernel(
         dest_type, kernel_name,
-        'convert() as() test for cl::sycl::vec<' + type_str + ', ' + str(size) + '> to '+ dest,
+        'convert() as() test for sycl::vec<' + type_str + ', ' + str(size) + '> to '+ dest,
         test_string)
     return wrap_with_test_func(TEST_NAME_OP, type_str, string, str(size))
 
@@ -118,7 +118,7 @@ def make_tests(type_str, input_file, output_file, target_enable):
 
     if '16' in target_enable and not('half' in type_str):
         make_optional_tests(type_str, input_file, output_file, 'fp16',
-                            'cl::sycl::half')
+                            'sycl::half')
 
 
 def main():

@@ -18,8 +18,8 @@
 template <int T>
 class kernel;
 
-inline cl::sycl::queue makeQueueOnce() {
-  static cl::sycl::queue q = sycl_cts::util::get_cts_object::queue();
+inline sycl::queue makeQueueOnce() {
+  static sycl::queue q = sycl_cts::util::get_cts_object::queue();
   return q;
 }
 
@@ -33,7 +33,7 @@ template <typename returnT, typename ArgT> struct privatePtrCheck {
 template <typename T> struct base;
 template <> struct base<float> { using type = std::uint32_t; };
 template <> struct base<double> { using type = std::uint64_t; };
-template <> struct base<cl::sycl::half> { using type = std::uint16_t; };
+template <> struct base<sycl::half> { using type = std::uint16_t; };
 
 template <typename T> std::string printable(T value) {
   const auto representation =
@@ -46,8 +46,8 @@ template <typename T> std::string printable(T value) {
 
 template <typename T> T min_t() { return std::numeric_limits<T>::min(); }
 
-template <> inline cl::sycl::half min_t<cl::sycl::half>() {
-  return static_cast<cl::sycl::half>(powf(2.0f, -14.0f));
+template <> inline sycl::half min_t<sycl::half>() {
+  return static_cast<sycl::half>(powf(2.0f, -14.0f));
 }
 
 template <typename T>
@@ -56,7 +56,7 @@ bool verify(sycl_cts::util::logger &log, T a, T b, int accuracy,
 
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value ||
-                            std::is_same<cl::sycl::half, T>::value,
+                            std::is_same<sycl::half, T>::value,
                         bool>::type
 verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r, int accuracy,
        std::string comment) {
@@ -105,10 +105,10 @@ verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r, int, std:
 }
 
 template <typename T, int N>
-bool verify(sycl_cts::util::logger &log, cl::sycl::vec<T, N> a,
-            sycl_cts::resultRef<cl::sycl::vec<T, N>> r, int accuracy,
+bool verify(sycl_cts::util::logger &log, sycl::vec<T, N> a,
+            sycl_cts::resultRef<sycl::vec<T, N>> r, int accuracy,
             std::string comment) {
-  cl::sycl::vec<T, N> b = r.res;
+  sycl::vec<T, N> b = r.res;
   for (int i = 0; i < sycl_cts::math::numElements(a); i++)
     if (r.undefined.find(i) == r.undefined.end() &&
         !verify(log, getElement(a, i), getElement(b, i), accuracy, comment))
@@ -126,17 +126,17 @@ template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger &log, funT fun,
                     sycl_cts::resultRef<returnT> ref, int accuracy = 0,
                     std::string comment = "") {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
+    sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
       auto resultPtr =
-          buffer.template get_access<cl::sycl::access::mode::write>(h);
+          buffer.template get_access<sycl::access::mode::write>(h);
       h.single_task<kernel<N>>([=]() { resultPtr[0] = fun(); });
     });
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
                            " a SYCL exception was caught: " + e.what();
@@ -154,25 +154,25 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
                                       argT ptrRef,
                                       int accuracy = 0,
                                       std::string comment = "") {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
   auto&& testQueue = once_per_unit::get_queue();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
-    cl::sycl::buffer<argT, 1> bufferArg(&kernelResultArg, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
+    sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
+    sycl::buffer<argT, 1> bufferArg(&kernelResultArg, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
       auto resultPtr =
-          buffer.template get_access<cl::sycl::access::mode::write>(h);
+          buffer.template get_access<sycl::access::mode::write>(h);
       auto resultPtrArg =
-          bufferArg.template get_access<cl::sycl::access::mode::write>(h);
+          bufferArg.template get_access<sycl::access::mode::write>(h);
       h.single_task<kernel<N>>([=]() {
         privatePtrCheck<returnT, argT> result = fun();
         resultPtr[0] = result.res;
         resultPtrArg[0] = result.resArg;
       });
     });
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
                            " a SYCL exception was caught: " + e.what();
@@ -192,21 +192,21 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
                                      argT arg, sycl_cts::resultRef<returnT> ref,
                                      argT ptrRef, int accuracy = 0,
                                      std::string comment = "") {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
-    cl::sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
+    sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
+    sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
       auto resultPtr =
-          buffer.template get_access<cl::sycl::access::mode::write>(h);
-      cl::sycl::accessor<argT, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer>
+          buffer.template get_access<sycl::access::mode::write>(h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write,
+                         sycl::access::target::global_buffer>
           globalAccessor(ptrBuffer, h);
       h.single_task<kernel<N>>([=]() { resultPtr[0] = fun(globalAccessor); });
     });
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
                            " a SYCL exception was caught: " + e.what();
@@ -226,19 +226,19 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
                                     argT arg, sycl_cts::resultRef<returnT> ref,
                                     argT ptrRef, int accuracy = 0,
                                     std::string comment = "") {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
   try {
-    cl::sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
-    cl::sycl::buffer<argT, 1> bufferArg(&arg, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
+    sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
+    sycl::buffer<argT, 1> bufferArg(&arg, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
       auto resultPtr =
-          buffer.template get_access<cl::sycl::access::mode::write>(h);
+          buffer.template get_access<sycl::access::mode::write>(h);
       auto resultPtrArg =
-          bufferArg.template get_access<cl::sycl::access::mode::write>(h);
-      cl::sycl::accessor<argT, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local> localAccessor(1, h);
+          bufferArg.template get_access<sycl::access::mode::write>(h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write,
+                         sycl::access::target::local> localAccessor(1, h);
       h.single_task<kernel<N>>(
           [arg, localAccessor, resultPtr, resultPtrArg, fun]() {
             localAccessor[0] = arg;
@@ -246,7 +246,7 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
             resultPtrArg[0] = localAccessor[0];
           });
     });
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
                            " a SYCL exception was caught: " + e.what();
@@ -263,13 +263,13 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
 
 template <int T, typename returnT, typename funT>
 void test_function(funT fun) {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
   auto&& testQueue = once_per_unit::get_queue();
   {
-    cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
-      auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
+    sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
+      auto resultPtr = buffer.template get_access<sycl::access::mode::write>(h);
         h.single_task<kernel<T>>([=](){
           resultPtr[0] = fun();
         });
@@ -281,15 +281,15 @@ void test_function(funT fun) {
 
 template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_global(funT fun, argT arg) {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
   auto&& testQueue = once_per_unit::get_queue();
   {
-    cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
-    cl::sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
-      auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
-      cl::sycl::accessor<argT, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer> globalAccessor(ptrBuffer, h);
+    sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
+    sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
+      auto resultPtr = buffer.template get_access<sycl::access::mode::write>(h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::access::target::global_buffer> globalAccessor(ptrBuffer, h);
         h.single_task<kernel<T>>([=](){
           resultPtr[0] = fun(globalAccessor);
         });
@@ -301,14 +301,14 @@ void test_function_multi_ptr_global(funT fun, argT arg) {
 
 template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_local(funT fun, argT arg) {
-  cl::sycl::range<1> ndRng(1);
+  sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
   auto&& testQueue = once_per_unit::get_queue();
   {
-    cl::sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
-    testQueue.submit([&](cl::sycl::handler &h) {
-      auto resultPtr = buffer.template get_access<cl::sycl::access::mode::write>(h);
-      cl::sycl::accessor<argT, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local> localAccessor(1, h);
+    sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
+    testQueue.submit([&](sycl::handler &h) {
+      auto resultPtr = buffer.template get_access<sycl::access::mode::write>(h);
+      sycl::accessor<argT, 1, sycl::access::mode::read_write, sycl::access::target::local> localAccessor(1, h);
         h.single_task<kernel<T>>([arg, localAccessor, resultPtr, fun](){
           localAccessor[0] = arg;
           resultPtr[0] = fun(localAccessor);

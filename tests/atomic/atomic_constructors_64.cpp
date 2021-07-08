@@ -19,7 +19,7 @@ namespace TEST_NAMESPACE {
 using namespace atomic_constructors_common;
 using namespace sycl_cts;
 
-/** Check the api for cl::sycl::atomic
+/** Check the api for sycl::atomic
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,14 +30,14 @@ class TEST_NAME : public util::test_base {
   }
 
   template <typename T>
-  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
-    /** Check atomic constructors for cl::sycl::access::target::global_buffer
+  void check_atomics_for_type(util::logger &log, sycl::queue testQueue) {
+    /** Check atomic constructors for sycl::access::target::global_buffer
      */
-    check_atomics<T, cl::sycl::access::target::global_buffer>{}(log, testQueue);
+    check_atomics<T, sycl::access::target::global_buffer>{}(log, testQueue);
 
-    /** Check atomic constructors for cl::sycl::access::target::local
+    /** Check atomic constructors for sycl::access::target::local
      */
-    check_atomics<T, cl::sycl::access::target::local>{}(log, testQueue);
+    check_atomics<T, sycl::access::target::local>{}(log, testQueue);
   }
 
   /** Execute the test
@@ -61,7 +61,7 @@ class TEST_NAME : public util::test_base {
 
       testQueue.wait_and_throw();
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

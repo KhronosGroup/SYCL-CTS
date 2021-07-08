@@ -15,7 +15,7 @@ from modules import test_generator
 
 class runner:
     def __init__(self):
-        self.base_types = ["float", "double", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t", "cl::sycl::half"]
+        self.base_types = ["float", "double", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t", "sycl::half"]
         self.var_types = ["scalar","vector"]
         self.dimensions = [1,2,3,4,8,16]
         self.unsigned = [True, False]
@@ -65,7 +65,7 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name, che
         if contains_base_type(sig, types, "double"):
             double_signatures.append(sig)
             continue
-        if contains_base_type(sig, types, "cl::sycl::half"):
+        if contains_base_type(sig, types, "sycl::half"):
             half_signatures.append(sig)
             continue
         base_signatures.append(sig)
