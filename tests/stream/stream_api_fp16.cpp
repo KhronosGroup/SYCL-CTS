@@ -34,7 +34,7 @@ class TEST_NAME : public util::test_base {
       {
         auto testQueue = util::get_cts_object::queue();
 
-        if (!testQueue.get_device().has_extension("cl_khr_fp16")) {
+        if (!testQueue.get_device().has(sycl::aspect::fp16)) {
           log.note(
             "Device does not support half precision floating point operations");
         return;

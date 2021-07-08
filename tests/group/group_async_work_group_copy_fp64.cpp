@@ -29,7 +29,7 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp64")) {
+      if (!queue.get_device().has(sycl::aspect::fp64)) {
         log.note(
           "Device does not support double precision floating point operations");
         return;

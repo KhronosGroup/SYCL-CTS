@@ -197,7 +197,7 @@ def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     """
     Wraps |test_string| inside a kernel with |kernel_name|.
 
-    Wraps kernels with checks for cl_khr_fp16 and cl_khr_fp64 when appropriate.
+    Wraps kernels with checks for fp16 and fp64 when appropriate.
     The necessity for extension checks is determined based on |type_str|
     """
 
@@ -233,16 +233,16 @@ def make_func_call(test_name, type_str, additional=''):
 
 
 def wrap_with_half_check(test_string):
-    """Wraps test_string with a check for cl_khr_fp16 if appropriate"""
-    string = 'if (testDevice.has_extension("cl_khr_fp16")) {\n'
+    """Wraps test_string with a check for fp16 if appropriate"""
+    string = 'if (testDevice.has(sycl::aspect::fp16)) {\n'
     string += test_string
     string += '}\n'
     return string
 
 
 def wrap_with_double_check(test_string):
-    """Wraps test_string with a check for cl_khr_fp64 if appropriate"""
-    string = 'if (testDevice.has_extension("cl_khr_fp64")) {\n'
+    """Wraps test_string with a check for fp64 if appropriate"""
+    string = 'if (testDevice.has(sycl::aspect::fp64)) {\n'
     string += test_string
     string += '}\n'
     return string

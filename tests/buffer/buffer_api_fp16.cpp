@@ -29,7 +29,7 @@ public:
    */
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
-    if (!queue.get_device().has_extension("cl_khr_fp16")) {
+    if (!queue.get_device().has(sycl::aspect::fp16)) {
       log.note(
           "Device does not support half precision floating point operations");
       return;

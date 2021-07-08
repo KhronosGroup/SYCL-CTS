@@ -132,15 +132,15 @@ class TEST_NAME : public util::test_base {
                                                   "device::get_info()");
       }
 
-      /** check has_extensions() member function
+      /** check has() member function
       */
       {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
         auto extensionSupported =
-            dev.has_extension(sycl::string_class("cl_khr_fp64"));
+            dev.has(sycl::aspect::fp64);
         check_return_type<bool>(log, extensionSupported,
-                                "device::has_extension(string_class)");
+                                "device::has(sycl::aspect)");
       }
 
       /** check

@@ -236,10 +236,10 @@ void test_manager::dump_device_info() {
         deviceTypeStr = "device_type::all";
         break;
     };
-    auto doesDeviceSupportHalf = chosenDevice.has_extension("cl_khr_fp_16")
+    auto doesDeviceSupportHalf = chosenDevice.has(sycl::aspect::fp16)
                                      ? "Supported"
                                      : "Not Supported";
-    auto doesDeviceSupportDouble = chosenDevice.has_extension("cl_khr_fp64")
+    auto doesDeviceSupportDouble = chosenDevice.has(sycl::aspect::fp64)
                                        ? "Supported"
                                        : "Not Supported";
     auto doesDeviceSupportBaseAtomics =

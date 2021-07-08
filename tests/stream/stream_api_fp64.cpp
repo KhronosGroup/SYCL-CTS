@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
       // Check stream operator for sycl::cl_double and double
       auto testQueue = util::get_cts_object::queue();
 
-      if (!testQueue.get_device().has_extension("cl_khr_fp64")) {
+      if (!testQueue.get_device().has(sycl::aspect::fp64)) {
         log.note(
             "Device does not support double precision floating point operations");
         return;
