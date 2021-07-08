@@ -18,7 +18,7 @@ struct custom_type {
   int value;
 };
 
-/** @brief Kernel index to differentiate kernel names in methods
+/** @brief Kernel index to differentiate kernel names in member functions
  */
 enum class memb_func_index : int { fill = 0, simple, device, host };
 
