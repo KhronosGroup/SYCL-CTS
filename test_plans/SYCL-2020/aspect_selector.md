@@ -72,10 +72,10 @@ These steps are performed for each combination:
 2. Test using a vector of aspects
 
     1. Construct `selectorVector` object obtained by calling `aspect_selector(std::vector{asp1, ..., aspN})`.
-    2. Try/catch block
+    2. `try`/`catch` block
 
         1. Construct SYCL device (`selectedDevice`) using `selectorVector`.
-        2. If exception is throw:
+        2. If exception is thrown:
 
             * If `testDevice` contains all the requested aspects,
               but no device was found using the aspect selector,
