@@ -40,7 +40,7 @@ auto allocate_usm_memory(const sycl::queue &queue, size_t num_elements = 1) {
         sycl::malloc_host<elems_typeT>(num_elements, context), deleter);
     return usm_memory;
   } else {
-    static_assert(false, "Unknown USM allocation type");
+    static_assert(alloc != alloc, "Unknown USM allocation type");
   }
 };
 
