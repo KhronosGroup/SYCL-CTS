@@ -29,7 +29,7 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp64")) {
+      if (!queue.get_device().has(sycl::aspect::fp64)) {
         log.note(
           "Device does not support double precision floating point operations");
         return;
@@ -37,10 +37,10 @@ class TEST_NAME : public util::test_base {
       // Test using queue constructed already
       for_type_and_vectors<check_type, double>(queue, log,
           "double");
-      for_type_and_vectors<check_type, cl::sycl::cl_double>(queue, log,
-          "cl::sycl::cl_double");
+      for_type_and_vectors<check_type, sycl::cl_double>(queue, log,
+          "sycl::cl_double");
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

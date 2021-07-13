@@ -55,7 +55,7 @@ class TEST_NAME : public util::test_base {
       check_pointer_api<user_struct>{}(log, queue, "user_struct");
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

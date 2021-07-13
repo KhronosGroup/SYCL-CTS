@@ -18,7 +18,7 @@ class queue_api_0;
 class queue_api_1;
 class queueNoWait;
 
-/** test the api for cl::sycl::queue
+/** test the api for sycl::queue
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -39,7 +39,7 @@ class TEST_NAME : public util::test_base {
         auto queue = util::get_cts_object::queue(selector);
 
         auto isHost = queue.is_host();
-        check_return_type<bool>(log, isHost, "cl::sycl::queue::is_host()");
+        check_return_type<bool>(log, isHost, "sycl::queue::is_host()");
       }
 
       /** check get_context() member function
@@ -49,8 +49,8 @@ class TEST_NAME : public util::test_base {
         auto queue = util::get_cts_object::queue(selector);
 
         auto context = queue.get_context();
-        check_return_type<cl::sycl::context>(log, context,
-                                             "cl::sycl::queue::get_context()");
+        check_return_type<sycl::context>(log, context,
+                                             "sycl::queue::get_context()");
       }
 
       /** check get_device() member function
@@ -60,8 +60,8 @@ class TEST_NAME : public util::test_base {
         auto queue = util::get_cts_object::queue(selector);
 
         auto device = queue.get_device();
-        check_return_type<cl::sycl::device>(log, device,
-                                            "cl::sycl::queue::get_device()");
+        check_return_type<sycl::device>(log, device,
+                                            "sycl::queue::get_device()");
       }
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
@@ -73,7 +73,7 @@ class TEST_NAME : public util::test_base {
         if (!selector.is_host()) {
           auto clQueueObject = queue.get();
           check_return_type<cl_command_queue>(log, clQueueObject,
-                                              "cl::sycl::queue::get()");
+                                              "sycl::queue::get()");
         }
       }
 #endif
@@ -84,11 +84,11 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         auto queue = util::get_cts_object::queue(selector);
 
-        auto event = queue.submit([&](cl::sycl::handler &handler) {
+        auto event = queue.submit([&](sycl::handler &handler) {
           handler.single_task<class queue_api_0>([=]() {});
         });
-        check_return_type<cl::sycl::event>(
-            log, event, "cl::sycl::queue::submit(command_group_scope)");
+        check_return_type<sycl::event>(
+            log, event, "sycl::queue::submit(command_group_scope)");
       }
       /** check submit(command_group_scope, queue) member function
       */
@@ -98,12 +98,12 @@ class TEST_NAME : public util::test_base {
 
         auto secondaryQueue = util::get_cts_object::queue();
         auto event = queue.submit(
-            [&](cl::sycl::handler &handler) {
+            [&](sycl::handler &handler) {
               handler.single_task<class queue_api_1>([=]() {});
             },
             secondaryQueue);
-        check_return_type<cl::sycl::event>(
-            log, event, "cl::sycl::queue::submit(command_group_scope, queue)");
+        check_return_type<sycl::event>(
+            log, event, "sycl::queue::submit(command_group_scope, queue)");
         queue.wait_and_throw();
       }
 
@@ -133,10 +133,10 @@ class TEST_NAME : public util::test_base {
 
         queue.throw_asynchronous();
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

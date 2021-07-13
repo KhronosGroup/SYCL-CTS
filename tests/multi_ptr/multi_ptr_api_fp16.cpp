@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp16")) {
+      if (!queue.get_device().has(sycl::aspect::fp16)) {
         log.note(
             "Device does not support half precision floating point operations");
         return;
@@ -43,7 +43,7 @@ class TEST_NAME : public util::test_base {
       check_pointer_api<half>{}(log, queue, "half");
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

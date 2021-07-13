@@ -200,46 +200,46 @@ void test_manager::dump_device_info() {
   if (m_infoDump) {
     cts_selector selector;
 
-    auto chosenDevice = cl::sycl::device(selector);
-    auto chosenPlatform = cl::sycl::platform(selector);
+    auto chosenDevice = sycl::device(selector);
+    auto chosenPlatform = sycl::platform(selector);
 
     std::fstream infoFile(m_infoDumpFile, std::ios::out);
 
-    auto deviceNameStr = chosenDevice.get_info<cl::sycl::info::device::name>();
+    auto deviceNameStr = chosenDevice.get_info<sycl::info::device::name>();
     auto deviceVendorStr =
-        chosenDevice.get_info<cl::sycl::info::device::vendor>();
+        chosenDevice.get_info<sycl::info::device::vendor>();
     auto deviceType =
-        chosenDevice.get_info<cl::sycl::info::device::device_type>();
+        chosenDevice.get_info<sycl::info::device::device_type>();
     auto deviceVersionStr =
-        chosenDevice.get_info<cl::sycl::info::device::version>();
+        chosenDevice.get_info<sycl::info::device::version>();
     std::string deviceTypeStr;
     switch (deviceType) {
-      case cl::sycl::info::device_type::host:
+      case sycl::info::device_type::host:
         deviceTypeStr = "device_type::host";
         break;
-      case cl::sycl::info::device_type::cpu:
+      case sycl::info::device_type::cpu:
         deviceTypeStr = "device_type::cpu";
         break;
-      case cl::sycl::info::device_type::gpu:
+      case sycl::info::device_type::gpu:
         deviceTypeStr = "device_type::gpu";
         break;
-      case cl::sycl::info::device_type::accelerator:
+      case sycl::info::device_type::accelerator:
         deviceTypeStr = "device_type::accelerator";
         break;
-      case cl::sycl::info::device_type::custom:
+      case sycl::info::device_type::custom:
         deviceTypeStr = "device_type::custom";
         break;
-      case cl::sycl::info::device_type::automatic:
+      case sycl::info::device_type::automatic:
         deviceTypeStr = "device_type::automatic";
         break;
-      case cl::sycl::info::device_type::all:
+      case sycl::info::device_type::all:
         deviceTypeStr = "device_type::all";
         break;
     };
-    auto doesDeviceSupportHalf = chosenDevice.has_extension("cl_khr_fp_16")
+    auto doesDeviceSupportHalf = chosenDevice.has(sycl::aspect::fp16)
                                      ? "Supported"
                                      : "Not Supported";
-    auto doesDeviceSupportDouble = chosenDevice.has_extension("cl_khr_fp64")
+    auto doesDeviceSupportDouble = chosenDevice.has(sycl::aspect::fp64)
                                        ? "Supported"
                                        : "Not Supported";
     auto doesDeviceSupportBaseAtomics =
@@ -254,11 +254,11 @@ void test_manager::dump_device_info() {
         chosenDevice.has_extension("cl_khr_3d_image_writes") ? "Supported"
                                                              : "Not Supported";
     auto platformNameStr =
-        chosenPlatform.get_info<cl::sycl::info::platform::name>();
+        chosenPlatform.get_info<sycl::info::platform::name>();
     auto platformVendorStr =
-        chosenPlatform.get_info<cl::sycl::info::platform::vendor>();
+        chosenPlatform.get_info<sycl::info::platform::vendor>();
     auto platformVersionStr =
-        chosenPlatform.get_info<cl::sycl::info::platform::version>();
+        chosenPlatform.get_info<sycl::info::platform::version>();
 
     infoFile << "{\"device-name\": \"" << deviceNameStr
              << "\", \"device-vendor\": \"" << deviceVendorStr

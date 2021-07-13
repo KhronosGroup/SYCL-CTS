@@ -17,7 +17,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 /**
- * test cl::sycl::buffer initialization
+ * test sycl::buffer initialization
  */
 class TEST_NAME : public sycl_cts::util::test_base {
 public:
@@ -82,10 +82,10 @@ public:
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<buffer_constructors_common::check_buffer_ctors_for_type>(
           get_buffer_types::scalar_types, log);
-    } catch (cl::sycl::exception e) {
+    } catch (sycl::exception e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

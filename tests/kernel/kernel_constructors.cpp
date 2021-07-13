@@ -22,7 +22,7 @@ class kernel1;
 namespace kernel_constructors__ {
 using namespace sycl_cts;
 
-/** test cl::sycl::kernel
+/** test sycl::kernel
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -48,14 +48,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "online compiler is not available -- skipping test of copy "
               "constructor");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
 
           prog.build_with_kernel_type<test_kernel<0>>();
           auto kernelA = prog.get_kernel<test_kernel<0>>();
 
-          cl::sycl::kernel kernelB(kernelA);
+          sycl::kernel kernelB(kernelA);
 
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<0>());
           });
 
@@ -83,15 +83,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "online compiler is not available -- skipping test of assignment "
               "operator");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
           prog.build_with_kernel_type<test_kernel<1>>();
           auto kernelA = prog.get_kernel<test_kernel<1>>();
 
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<1>());
           });
 
-          cl::sycl::kernel kernelB = kernelA;
+          sycl::kernel kernelB = kernelA;
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
           if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
@@ -117,15 +117,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "online compiler is not available -- skipping test of move "
               "constructor");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
           prog.build_with_kernel_type<test_kernel<2>>();
           auto kernelA = prog.get_kernel<test_kernel<2>>();
 
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<2>());
           });
 
-          cl::sycl::kernel kernelB(std::move(kernelA));
+          sycl::kernel kernelB(std::move(kernelA));
 
           ctsQueue.wait_and_throw();
         }
@@ -143,14 +143,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "online compiler is not available -- skipping test of move "
               "assignment operator");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
           prog.build_with_kernel_type<test_kernel<3>>();
           auto kernelA = prog.get_kernel<test_kernel<3>>();
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<3>());
           });
 
-          cl::sycl::kernel kernelB = std::move(kernelA);
+          sycl::kernel kernelB = std::move(kernelA);
 
           ctsQueue.wait_and_throw();
         }
@@ -168,27 +168,27 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "online compiler is not available -- skipping test of equality "
               "operator");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
           prog.build_with_kernel_type<test_kernel<4>>();
           auto kernelA = prog.get_kernel<test_kernel<4>>();
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<4>());
           });
 
-          cl::sycl::kernel kernelB(kernelA);
+          sycl::kernel kernelB(kernelA);
 
-          cl::sycl::program progC(ctsQueue.get_context());
+          sycl::program progC(ctsQueue.get_context());
           progC.build_with_kernel_type<test_kernel<5>>();
           auto kernelC = progC.get_kernel<test_kernel<5>>();
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<5>());
           });
           kernelC = (kernelA);
 
-          cl::sycl::program progD(ctsQueue.get_context());
+          sycl::program progD(ctsQueue.get_context());
           progD.build_with_kernel_type<test_kernel<6>>();
           auto kernelD = progD.get_kernel<test_kernel<6>>();
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<6>());
           });
 
@@ -246,16 +246,16 @@ class TEST_NAME : public sycl_cts::util::test_base {
           log.note(
               "online compiler is not available -- skipping test of hashing");
         } else {
-          cl::sycl::program prog(ctsQueue.get_context());
+          sycl::program prog(ctsQueue.get_context());
           prog.build_with_kernel_type<test_kernel<7>>();
           auto kernelA = prog.get_kernel<test_kernel<7>>();
-          ctsQueue.submit([&](cl::sycl::handler &cgh) {
+          ctsQueue.submit([&](sycl::handler &cgh) {
             cgh.single_task(test_kernel<7>());
           });
 
-          cl::sycl::kernel kernelB = kernelA;
+          sycl::kernel kernelB = kernelA;
 
-          cl::sycl::hash_class<cl::sycl::kernel> hasher;
+          std::hash<sycl::kernel> hasher;
 
           if (hasher(kernelA) != hasher(kernelB)) {
             FAIL(log,
@@ -266,10 +266,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
           ctsQueue.wait_and_throw();
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

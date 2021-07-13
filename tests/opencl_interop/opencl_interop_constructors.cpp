@@ -43,18 +43,18 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         return;
       }
 
-      cl::sycl::string_class kernelSource = R"(
+      std::string kernelSource = R"(
             __kernel void opencl_interop_constructors_kernel(__global float *input)
             {
               input[get_global_id(0)] = get_global_id(0);
             }
             )";
-      cl::sycl::string_class programBinaryFile =
+      std::string programBinaryFile =
           "opencl_interop_constructors.bin";
       /** check platform (cl_platform_id) constructor
        */
       {
-        cl::sycl::platform platform(m_cl_platform_id);
+        sycl::platform platform(m_cl_platform_id);
 
         cl_platform_id interopPlatformID = platform.get();
         if (interopPlatformID != m_cl_platform_id) {
@@ -65,7 +65,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check device (cl_device_id) constructor
        */
       {
-        cl::sycl::device device(m_cl_device_id);
+        sycl::device device(m_cl_device_id);
 
         cl_device_id interopDeviceID = device.get();
         if (interopDeviceID != m_cl_device_id) {
@@ -79,7 +79,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check context (cl_context) constructor
        */
       {
-        cl::sycl::context context(m_cl_context);
+        sycl::context context(m_cl_context);
 
         cl_context interopContext = context.get();
         if (interopContext != m_cl_context) {
@@ -94,7 +94,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
        */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::context context(m_cl_context, asyncHandler);
+        sycl::context context(m_cl_context, asyncHandler);
 
         cl_context interopContext = context.get();
         if (interopContext != m_cl_context) {
@@ -108,7 +108,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       /** check queue (cl_command_queue, const context&) constructor
        */
       {
-        cl::sycl::queue queue(m_cl_command_queue, ctsContext);
+        sycl::queue queue(m_cl_command_queue, ctsContext);
 
         cl_command_queue interopQueue = queue.get();
         if (interopQueue != m_cl_command_queue) {
@@ -117,7 +117,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         /** check that queue copy constructor preserve the same OpenCL queue
          */
-        cl::sycl::queue queueCopy(queue);
+        sycl::queue queueCopy(queue);
         auto clQueueCopy = queueCopy.get();
         if (interopQueue != clQueueCopy) {
           FAIL(log, "queue destination was not copy constructed correctly");
@@ -137,7 +137,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
        */
       {
         cts_async_handler asyncHandler;
-        cl::sycl::queue queue(m_cl_command_queue, ctsContext, asyncHandler);
+        sycl::queue queue(m_cl_command_queue, ctsContext, asyncHandler);
 
         cl_command_queue interopQueue = queue.get();
         if (interopQueue != m_cl_command_queue) {
@@ -160,7 +160,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         } else {
           if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
                                           ctsDevice.get(), clProgram, log)) {
-            cl::sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -169,7 +169,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
 
-        cl::sycl::program program(ctsContext, clProgram);
+        sycl::program program(ctsContext, clProgram);
 
         cl_program interopProgram = program.get();
         if (interopProgram != clProgram) {
@@ -192,7 +192,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         } else {
           if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
                                           ctsDevice.get(), clProgram, log)) {
-            cl::sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -207,7 +207,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create_kernel failed");
         }
 
-        cl::sycl::kernel kernel(clKernel, ctsContext);
+        sycl::kernel kernel(clKernel, ctsContext);
 
         cl_kernel interopKernel = kernel.get();
         if (interopKernel != clKernel) {
@@ -234,10 +234,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create buffer failed");
         }
 
-        cl::sycl::buffer<int, 1> buffer(clBuffer, queue.get_context());
+        sycl::buffer<int, 1> buffer(clBuffer, queue.get_context());
 
         // calculate element count, size and range for the interop buffer
-        cl::sycl::range<1> interopRange{size};
+        sycl::range<1> interopRange{size};
         size_t interopSize = size * sizeof(int);
 
 
@@ -262,10 +262,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               "opencl buffer was not interop constructed properly. (get_count) ");
         }
 
-        queue.submit([&](cl::sycl::handler &handler) {
+        queue.submit([&](sycl::handler &handler) {
           auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(
+              buffer.get_access<sycl::access_mode::read_write,
+                                sycl::target::global_buffer>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_no_event>([]() {});
         });
@@ -288,7 +288,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto queue = util::get_cts_object::queue(ctsSelector);
 
         // create an event to wait for
-        cl::sycl::event event = queue.submit([](cl::sycl::handler &cgh) {
+        sycl::event event = queue.submit([](sycl::handler &cgh) {
           cgh.single_task<class buffer_interop_event>(
               []() {});  // do not do anything here, we only need the event
         });
@@ -300,10 +300,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create buffer failed");
         }
 
-        cl::sycl::buffer<int, 1> buffer(clBuffer, queue.get_context(), event);
+        sycl::buffer<int, 1> buffer(clBuffer, queue.get_context(), event);
 
         // calculate element count, size and range for the interop buffer
-        cl::sycl::range<1> interopRange{size};
+        sycl::range<1> interopRange{size};
         size_t interopSize = size * sizeof(int);
 
 
@@ -328,10 +328,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               "opencl buffer was not interop constructed properly. (get_count) ");
         }
 
-        queue.submit([&](cl::sycl::handler &handler) {
+        queue.submit([&](sycl::handler &handler) {
           auto accessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(
+              buffer.get_access<sycl::access_mode::read_write,
+                                sycl::target::global_buffer>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_with_event>([]() {});
         });
@@ -349,7 +349,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         auto queue = util::get_cts_object::queue(ctsSelector);
         if (!queue.get_device()
-                 .get_info<cl::sycl::info::device::image_support>()) {
+                 .get_info<sycl::info::device::image_support>()) {
           log.note("Device does not support images");
         } else {
           constexpr size_t imageSideSize = 16;
@@ -385,12 +385,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               FAIL(log, "create image failed");
             }
 
-            cl::sycl::image<2> image(clImage, queue.get_context());
+            sycl::image<2> image(clImage, queue.get_context());
 
-            queue.submit([&](cl::sycl::handler &handler) {
+            queue.submit([&](sycl::handler &handler) {
               auto accessor =
-                  image.get_access<cl::sycl::float4,
-                                   cl::sycl::access::mode::read>(handler);
+                  image.get_access<sycl::float4,
+                                   sycl::access_mode::read>(handler);
               handler.single_task<
                   class image_interop_constructor_kernel_default_event>(
                   []() {});
@@ -404,7 +404,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           // Check constructing image with specified event
           {
-            cl::sycl::event event;
+            sycl::event event;
             cl_mem clImage = clCreateImage(
                 clContext, (CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR),
                 &clImageFormat, &clImageDesc, data, &error);
@@ -412,12 +412,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               FAIL(log, "create image failed");
             }
 
-            cl::sycl::image<2> image(clImage, queue.get_context(), event);
+            sycl::image<2> image(clImage, queue.get_context(), event);
 
-            queue.submit([&](cl::sycl::handler &handler) {
+            queue.submit([&](sycl::handler &handler) {
               auto accessor =
-                  image.get_access<cl::sycl::float4,
-                                   cl::sycl::access::mode::read>(handler);
+                  image.get_access<sycl::float4,
+                                   sycl::access_mode::read>(handler);
               handler.single_task<
                   class image_interop_constructor_kernel_provided_event>(
                   []() {});
@@ -437,14 +437,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         auto queue = util::get_cts_object::queue(ctsSelector);
         if (!queue.get_device()
-                 .get_info<cl::sycl::info::device::image_support>()) {
+                 .get_info<sycl::info::device::image_support>()) {
           log.note("Device does not support images");
         } else {
           cl_sampler clSampler;
           create_sampler(clSampler, log);
 
-          queue.submit([&](cl::sycl::handler &handler) {
-            cl::sycl::sampler sampler(clSampler, queue.get_context());
+          queue.submit([&](sycl::handler &handler) {
+            sycl::sampler sampler(clSampler, queue.get_context());
 
             handler.single_task<class sampler_interop_constructor_kernel>(
                 []() {});
@@ -463,7 +463,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
        */
       {
         cl_event clEvent = clCreateUserEvent(ctsContext.get(), nullptr);
-        cl::sycl::event event(clEvent, ctsContext);
+        sycl::event event(clEvent, ctsContext);
 
         cl_event interopEvent = event.get();
         if (interopEvent != clEvent) {
@@ -471,10 +471,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

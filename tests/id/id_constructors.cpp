@@ -18,7 +18,7 @@ class id_it1;
 class id_it2;
 class id_it3;
 
-/** test cl::sycl::id initialization
+/** test sycl::id initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -36,7 +36,7 @@ class TEST_NAME : public util::test_base {
 
       // dim 1
       {
-        cl::sycl::id<1> id;
+        sycl::id<1> id;
         if ((id[0] != 0) || (id.get(0) != 0)) {
           FAIL(log, "default constructed id failed for dim = 1");
         }
@@ -44,7 +44,7 @@ class TEST_NAME : public util::test_base {
 
       // dim 2
       {
-        cl::sycl::id<2> id;
+        sycl::id<2> id;
         if ((id[0] != 0) || (id.get(0) != 0) || (id[1] != 0) ||
             (id.get(1) != 0)) {
           FAIL(log, "default constructed id failed for dim = 2");
@@ -53,7 +53,7 @@ class TEST_NAME : public util::test_base {
 
       // dim 3
       {
-        cl::sycl::id<3> id;
+        sycl::id<3> id;
         if ((id[0] != 0) || (id.get(0) != 0) || (id[1] != 0) ||
             (id.get(1) != 0) || (id[2] != 0) || (id.get(2) != 0)) {
           FAIL(log, "default constructed id failed for dim = 3");
@@ -68,30 +68,30 @@ class TEST_NAME : public util::test_base {
 
       // dim 1
       {
-        cl::sycl::id<1> id_explicit(sizes[0]);
+        sycl::id<1> id_explicit(sizes[0]);
         if ((id_explicit[0] != sizes[0]) || (id_explicit.get(0) != sizes[0])) {
           FAIL(log, "id with size_t was not constructed correctly for dim = 1");
         }
 
-        cl::sycl::range<1> range(sizes[0]);
-        cl::sycl::id<1> id(range);
+        sycl::range<1> range(sizes[0]);
+        sycl::id<1> id(range);
         if ((id[0] != sizes[0]) || (id.get(0) != sizes[0])) {
           FAIL(log, "id with range was not constructed correctly for dim = 1");
         }
 
-        cl::sycl::id<1> id_deep(id);
+        sycl::id<1> id_deep(id);
         if ((id_deep[0] != sizes[0]) || (id_deep.get(0) != sizes[0])) {
           FAIL(log, "id with id was not constructed correctly for dim = 1");
         }
 
-        cl::sycl::id<1> id_moved_constr(std::move(id));
+        sycl::id<1> id_moved_constr(std::move(id));
         if ((id_moved_constr[0] != sizes[0]) ||
             (id_moved_constr.get(0) != sizes[0])) {
           FAIL(log,
                "id with id was not move constructed correctly for dim = 1");
         }
 
-        cl::sycl::id<1> id_move_assign;
+        sycl::id<1> id_move_assign;
         id_move_assign = std::move(id_deep);
         if ((id_move_assign[0] != sizes[0]) ||
             (id_move_assign.get(0) != sizes[0])) {
@@ -103,26 +103,26 @@ class TEST_NAME : public util::test_base {
 
       // dim 2
       {
-        cl::sycl::id<2> id_explicit(sizes[0], sizes[1]);
+        sycl::id<2> id_explicit(sizes[0], sizes[1]);
         if ((id_explicit[0] != sizes[0]) || (id_explicit.get(0) != sizes[0]) ||
             (id_explicit[1] != sizes[1]) || (id_explicit.get(1) != sizes[1])) {
           FAIL(log, "id with size_t was not constructed correctly for dim = 2");
         }
 
-        cl::sycl::range<2> range(sizes[0], sizes[1]);
-        cl::sycl::id<2> id(range);
+        sycl::range<2> range(sizes[0], sizes[1]);
+        sycl::id<2> id(range);
         if ((id[0] != sizes[0]) || (id.get(0) != sizes[0]) ||
             (id[1] != sizes[1]) || (id.get(1) != sizes[1])) {
           FAIL(log, "id with range was not constructed correctly for dim = 2");
         }
 
-        cl::sycl::id<2> id_deep(id);
+        sycl::id<2> id_deep(id);
         if ((id_deep[0] != sizes[0]) || (id_deep.get(0) != sizes[0]) ||
             (id_deep[1] != sizes[1]) || (id_deep.get(1) != sizes[1])) {
           FAIL(log, "id with id was not constructed correctly for dim = 2");
         }
 
-        cl::sycl::id<2> id_moved_constr(std::move(id));
+        sycl::id<2> id_moved_constr(std::move(id));
         if ((id_moved_constr[0] != sizes[0]) ||
             (id_moved_constr.get(0) != sizes[0]) ||
             (id_moved_constr[1] != sizes[1]) ||
@@ -131,7 +131,7 @@ class TEST_NAME : public util::test_base {
                "id with id was not move constructed correctly for dim = 2");
         }
 
-        cl::sycl::id<2> id_move_assign;
+        sycl::id<2> id_move_assign;
         id_move_assign = std::move(id_deep);
         if ((id_move_assign[0] != sizes[0]) ||
             (id_move_assign.get(0) != sizes[0]) ||
@@ -145,29 +145,29 @@ class TEST_NAME : public util::test_base {
 
       // dim 3
       {
-        cl::sycl::id<3> id_explicit(sizes[0], sizes[1], sizes[2]);
+        sycl::id<3> id_explicit(sizes[0], sizes[1], sizes[2]);
         if ((id_explicit[0] != sizes[0]) || (id_explicit.get(0) != sizes[0]) ||
             (id_explicit[1] != sizes[1]) || (id_explicit.get(1) != sizes[1]) ||
             (id_explicit[2] != sizes[2]) || (id_explicit.get(2) != sizes[2])) {
           FAIL(log, "id with size_t was not constructed correctly for dim = 3");
         }
 
-        cl::sycl::range<3> range(sizes[0], sizes[1], sizes[2]);
-        cl::sycl::id<3> id(range);
+        sycl::range<3> range(sizes[0], sizes[1], sizes[2]);
+        sycl::id<3> id(range);
         if ((id[0] != sizes[0]) || (id.get(0) != sizes[0]) ||
             (id[1] != sizes[1]) || (id.get(1) != sizes[1]) ||
             (id[2] != sizes[2]) || (id.get(2) != sizes[2])) {
           FAIL(log, "id with range was not constructed correctly for dim = 3");
         }
 
-        cl::sycl::id<3> id_deep(id);
+        sycl::id<3> id_deep(id);
         if ((id_deep[0] != sizes[0]) || (id_deep.get(0) != sizes[0]) ||
             (id_deep[1] != sizes[1]) || (id_deep.get(1) != sizes[1]) ||
             (id_deep[2] != sizes[2]) || (id_deep.get(2) != sizes[2])) {
           FAIL(log, "id with id was not constructed correctly for dim = 3");
         }
 
-        cl::sycl::id<3> id_moved_constr(std::move(id));
+        sycl::id<3> id_moved_constr(std::move(id));
         if ((id_moved_constr[0] != sizes[0]) ||
             (id_moved_constr.get(0) != sizes[0]) ||
             (id_moved_constr[1] != sizes[1]) ||
@@ -178,7 +178,7 @@ class TEST_NAME : public util::test_base {
                "id with id was not move constructed correctly for dim = 3");
         }
 
-        cl::sycl::id<3> id_move_assign;
+        sycl::id<3> id_move_assign;
         id_move_assign = std::move(id_deep);
         if ((id_move_assign[0] != sizes[0]) ||
             (id_move_assign.get(0) != sizes[0]) ||
@@ -199,16 +199,16 @@ class TEST_NAME : public util::test_base {
         auto q = util::get_cts_object::queue();
         bool success = true;
         {
-          cl::sycl::buffer<bool, 1> b(&success, cl::sycl::range<1>(1));
-          q.submit([&](cl::sycl::handler &cgh) {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
-                b.get_access<cl::sycl::access::mode::read_write,
-                             cl::sycl::access::target::global_buffer>(cgh);
+                b.get_access<sycl::access_mode::read_write,
+                             sycl::target::global_buffer>(cgh);
 
-            auto my_range = cl::sycl::range<1>(sizes[0]);
+            auto my_range = sycl::range<1>(sizes[0]);
 
-            auto my_kernel = [=](cl::sycl::item<1> item) {
-              cl::sycl::id<1> id(item);
+            auto my_kernel = [=](sycl::item<1> item) {
+              sycl::id<1> id(item);
               if (id.get(0) != item.get_id(0)) {
                 hasSucceded[0] = false;
               }
@@ -228,16 +228,16 @@ class TEST_NAME : public util::test_base {
         auto q = util::get_cts_object::queue();
         bool success = true;
         {
-          cl::sycl::buffer<bool, 1> b(&success, cl::sycl::range<1>(1));
-          q.submit([&](cl::sycl::handler &cgh) {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
-                b.get_access<cl::sycl::access::mode::read_write,
-                             cl::sycl::access::target::global_buffer>(cgh);
+                b.get_access<sycl::access_mode::read_write,
+                             sycl::target::global_buffer>(cgh);
 
-            auto my_range = cl::sycl::range<2>(sizes[0], sizes[1]);
+            auto my_range = sycl::range<2>(sizes[0], sizes[1]);
 
-            auto my_kernel = [=](cl::sycl::item<2> item) {
-              cl::sycl::id<2> id(item);
+            auto my_kernel = [=](sycl::item<2> item) {
+              sycl::id<2> id(item);
               if ((id.get(0) != item.get_id(0)) ||
                   (id.get(1) != item.get_id(1))) {
                 hasSucceded[0] = false;
@@ -259,16 +259,16 @@ class TEST_NAME : public util::test_base {
         auto q = util::get_cts_object::queue();
         bool success = true;
         {
-          cl::sycl::buffer<bool, 1> b(&success, cl::sycl::range<1>(1));
-          q.submit([&](cl::sycl::handler &cgh) {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
-                b.get_access<cl::sycl::access::mode::read_write,
-                             cl::sycl::access::target::global_buffer>(cgh);
+                b.get_access<sycl::access_mode::read_write,
+                             sycl::target::global_buffer>(cgh);
 
-            auto my_range = cl::sycl::range<3>(sizes[0], sizes[1], sizes[2]);
+            auto my_range = sycl::range<3>(sizes[0], sizes[1], sizes[2]);
 
-            auto my_kernel = [=](cl::sycl::item<3> item) {
-              cl::sycl::id<3> id(item);
+            auto my_kernel = [=](sycl::item<3> item) {
+              sycl::id<3> id(item);
               if ((id.get(0) != item.get_id(0)) ||
                   (id.get(1) != item.get_id(1)) ||
                   (id.get(2) != item.get_id(2))) {
@@ -285,10 +285,10 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "id with item was not constructed correctly for dim = 3");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -13,7 +13,7 @@
 namespace device_selector_constructors__ {
 using namespace sycl_cts;
 
-/** tests the constructors for cl::sycl::device_selector
+/** tests the constructors for sycl::device_selector
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -44,10 +44,10 @@ class TEST_NAME : public util::test_base {
         cts_selector selectorA;
         cts_selector selectorB = selectorA;
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -18,8 +18,8 @@ from common_python_vec import (Data, ReverseData, wrap_with_kernel, wrap_with_te
 TEST_NAME = 'CONSTRUCTORS'
 
 default_constructor_vec_template = Template(
-    """        auto test = cl::sycl::vec<${type}, ${size}>();
-        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+    """        auto test = sycl::vec<${type}, ${size}>();
+        if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
         if (!check_vector_size<${type}, ${size}>(test)) {
@@ -30,8 +30,8 @@ default_constructor_vec_template = Template(
 explicit_constructor_vec_template = Template(
     """        const ${type} val = ${val};
         ${type} vals[] = {${vals}};
-        auto test = cl::sycl::vec<${type}, ${size}>(val);
-        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+        auto test = sycl::vec<${type}, ${size}>(val);
+        if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
         if (!check_vector_size<${type}, ${size}>(test)) {
@@ -43,9 +43,9 @@ explicit_constructor_vec_template = Template(
 """)
 
 vec_constructor_vec_template = Template(
-    """        auto test = cl::sycl::vec<${type}, ${size}>(${val});
+    """        auto test = sycl::vec<${type}, ${size}>(${val});
         ${type} vals[] = {${vals}};
-        if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(test)) {
+        if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test)) {
           resAcc[0] = false;
         }
         if (!check_vector_size<${type}, ${size}>(test)) {
@@ -57,8 +57,8 @@ vec_constructor_vec_template = Template(
 """)
 
 opencl_constructor_vec_template = Template(
-    """        cl::sycl::vec<${type}, ${size}>::vector_t interopVec{};
-        auto test = cl::sycl::vec<${type}, ${size}>(interopVec);
+    """        sycl::vec<${type}, ${size}>::vector_t interopVec{};
+        auto test = sycl::vec<${type}, ${size}>(interopVec);
 """)
 
 
@@ -68,7 +68,7 @@ def generate_default(type_str, size):
         type=type_str, size=size)
     return wrap_with_kernel(
         type_str, 'VEC_DEFAULT_CONSTRUCTOR_KERNEL_' + type_str + str(size),
-        'Default constructor, cl::sycl::vec<' + type_str + ', ' + str(size) +
+        'Default constructor, sycl::vec<' + type_str + ', ' + str(size) +
         '>', test_string)
 
 
@@ -84,7 +84,7 @@ def generate_explicit(type_str, size):
         vals=', '.join(val_list))
     return wrap_with_kernel(
         type_str, 'VEC_EXPLICIT_CONSTRUCTOR_KERNEL_' + type_str + str(size),
-        'Explicit constructor, cl::sycl::vec<' + type_str + ', ' + str(size) +
+        'Explicit constructor, sycl::vec<' + type_str + ', ' + str(size) +
         '>', test_string)
 
 
@@ -100,7 +100,7 @@ def generate_vec(type_str, size):
         vals=', '.join(val_list))
     return wrap_with_kernel(type_str,
                             'VEC_VEC_CONSTRUCTOR_KERNEL_' + type_str + str(size),
-                            'const &vec constructor, cl::sycl::vec<' + type_str
+                            'const &vec constructor, sycl::vec<' + type_str
                             + ', ' + str(size) + '>', test_string)
 
 
@@ -110,7 +110,7 @@ def generate_opencl(type_str, size):
         type=type_str, size=size)
     return '#ifdef __SYCL_DEVICE_ONLY__\n' + wrap_with_kernel(
         type_str, 'VEC_OPENCL_CONSTRUCTOR_KERNEL_' + type_str + str(size),
-        'vec(vector_t openclVector), cl::sycl::vec<' + type_str + ', ' +
+        'vec(vector_t openclVector), sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string) + '#endif  // __SYCL_DEVICE_ONLY__\n'
 
 

@@ -13,7 +13,7 @@
 namespace context_api__ {
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::context
+/** tests the api for sycl::context
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -40,7 +40,7 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto deviceList = context.get_devices();
-        check_return_type<cl::sycl::vector_class<cl::sycl::device>>(
+        check_return_type<std::vector<sycl::device>>(
             log, deviceList, "get_devices()");
       }
 
@@ -48,13 +48,13 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto platform = context.get_platform();
-        check_return_type<cl::sycl::platform>(log, platform, "get_platform()");
+        check_return_type<sycl::platform>(log, platform, "get_platform()");
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

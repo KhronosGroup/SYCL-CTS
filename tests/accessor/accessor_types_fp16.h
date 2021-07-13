@@ -34,7 +34,7 @@ class check_all_types_fp16 {
   using check_type = action<T, extension_tag_t, kernel_name<T>>;
 
 public:
-  static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
+  static void run(sycl::queue& queue, sycl_cts::util::logger &log) {
 
     // Skip tests in case extension is not available
     using availability =
@@ -47,16 +47,16 @@ public:
 
     /** check specific accessor api for half
      */
-    check_type<cl::sycl::half>()(log, queue, "cl::sycl::half");
+    check_type<sycl::half>()(log, queue, "sycl::half");
     /** check specific accessor api for vec
      */
-    check_type<cl::sycl::half3>()(log, queue, "cl::sycl::half");
+    check_type<sycl::half3>()(log, queue, "sycl::half");
 #else
     // Extended type coverage
-    for_type_and_vectors<check_type, cl::sycl::half>(
-        log, queue, "cl::sycl::half");
-    for_type_and_vectors<check_type, cl::sycl::cl_half>(
-        log, queue, "cl::sycl::cl_half");
+    for_type_and_vectors<check_type, sycl::half>(
+        log, queue, "sycl::half");
+    for_type_and_vectors<check_type, sycl::cl_half>(
+        log, queue, "sycl::cl_half");
 
 #endif // SYCL_CTS_FULL_CONFORMANCE
 

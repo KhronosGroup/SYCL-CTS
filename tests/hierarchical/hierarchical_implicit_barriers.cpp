@@ -40,10 +40,10 @@ template <int dim> void check_dim(util::logger &log) {
       inputData[i] = i;
     }
     {
-      cl::sycl::buffer<size_t, 1> input_buffer(
-          inputData, cl::sycl::range<1>(groupItemsTotal));
+      sycl::buffer<size_t, 1> input_buffer(
+          inputData, sycl::range<1>(groupItemsTotal));
 
-      testQueue.submit([&](cl::sycl::handler &cgh) {
+      testQueue.submit([&](sycl::handler &cgh) {
 
         auto globalRange =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
@@ -53,15 +53,15 @@ template <int dim> void check_dim(util::logger &log) {
                 localItemsTotal>(localItems1d, localItems2d);
 
         auto inputPtr =
-            input_buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
+            input_buffer.get_access<sycl::access_mode::read_write>(cgh);
 
-        cl::sycl::accessor<size_t, 1, cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::local>
-            localPtr(cl::sycl::range<1>(localItemsTotal), cgh);
+        sycl::accessor<size_t, 1, sycl::access_mode::read_write,
+                           sycl::target::local>
+            localPtr(sycl::range<1>(localItemsTotal), cgh);
 
         cgh.parallel_for_work_group<kernel<dim>>(
-            globalRange, localRange, [=](cl::sycl::group<dim> group) {
-              group.parallel_for_work_item([&](cl::sycl::h_item<dim> item) {
+            globalRange, localRange, [=](sycl::group<dim> group) {
+              group.parallel_for_work_item([&](sycl::h_item<dim> item) {
                 auto globalId = item.get_global().get_linear_id();
                 auto localId = item.get_local().get_linear_id();
 
@@ -73,7 +73,7 @@ template <int dim> void check_dim(util::logger &log) {
 
               // Assign inverted val which guaranteed to be already in localPtr
               // due to implicit barrier call
-              group.parallel_for_work_item([&](cl::sycl::h_item<dim> item) {
+              group.parallel_for_work_item([&](sycl::h_item<dim> item) {
                 auto globalId = item.get_global().get_linear_id();
                 auto localId = item.get_local().get_linear_id();
 
@@ -91,15 +91,15 @@ template <int dim> void check_dim(util::logger &log) {
       }
     }
 
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
 public:

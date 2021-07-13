@@ -55,17 +55,17 @@ inline const char* name<tag::fp64>() {
  * @brief Retrieve description for logs by tag
  */
 template <typename tagT>
-inline cl::sycl::string_class description();
+inline std::string description();
 template <>
-inline cl::sycl::string_class description<tag::atomic64>() {
+inline std::string description<tag::atomic64>() {
   return "64-bit base atomic operations";
 }
 template <>
-inline cl::sycl::string_class description<tag::fp16>() {
+inline std::string description<tag::fp16>() {
   return "half precision floating point operations";
 }
 template <>
-inline cl::sycl::string_class description<tag::fp64>() {
+inline std::string description<tag::fp64>() {
   return "double precision floating point operations";
 }
 
@@ -77,13 +77,13 @@ struct availability {
   /**
    *  @brief Verify extension availability without log messages
    */
-  static inline bool check(const cl::sycl::queue& queue) {
+  static inline bool check(const sycl::queue& queue) {
     return queue.get_device().has_extension(name<tagT>());
   }
   /**
    *  @brief Verify extension availability with default log messages
    */
-  static inline bool check(const cl::sycl::queue& queue,
+  static inline bool check(const sycl::queue& queue,
                            sycl_cts::util::logger& log) {
     const bool result = check(queue);
     if (!result)

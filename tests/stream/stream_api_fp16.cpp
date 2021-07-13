@@ -16,7 +16,7 @@ using namespace sycl_cts;
 
 class test_kernel;
 
-/** test cl::sycl::stream interface
+/** test sycl::stream interface
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,31 +30,31 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      // Check stream operator for cl::sycl::half
+      // Check stream operator for sycl::half
       {
         auto testQueue = util::get_cts_object::queue();
 
-        if (!testQueue.get_device().has_extension("cl_khr_fp16")) {
+        if (!testQueue.get_device().has(sycl::aspect::fp16)) {
           log.note(
             "Device does not support half precision floating point operations");
         return;
       }
 
-        testQueue.submit([&](cl::sycl::handler &cgh) {
-          cl::sycl::stream os(2048, 80, cgh);
+        testQueue.submit([&](sycl::handler &cgh) {
+          sycl::stream os(2048, 80, cgh);
 
           cgh.single_task<class test_kernel>([=]() {
-            check_all_vec_dims(os, cl::sycl::half(0.2f));
-            check_all_vec_dims(os, cl::sycl::cl_half(0.3f));
+            check_all_vec_dims(os, sycl::half(0.2f));
+            check_all_vec_dims(os, sycl::cl_half(0.3f));
           });
         });
 
         testQueue.wait_and_throw();
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

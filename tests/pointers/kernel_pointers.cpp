@@ -33,14 +33,14 @@ class TEST_NAME : public util::test_base {
 
       res_type result = 0;
       {
-        cl::sycl::buffer<res_type, 1> buf_result(&result,
-                                                 cl::sycl::range<1>(1));
+        sycl::buffer<res_type, 1> buf_result(&result,
+                                                 sycl::range<1>(1));
 
         uint32_t outer_index = 2;
 
-        my_queue.submit([&](cl::sycl::handler &cgh) {
+        my_queue.submit([&](sycl::handler &cgh) {
           auto acc_result =
-              buf_result.get_access<cl::sycl::access::mode::read_write>(cgh);
+              buf_result.get_access<sycl::access_mode::read_write>(cgh);
 
           cgh.single_task<TEST_NAME>([acc_result, outer_index]() {
             uint8_t my_array[] = {0, 1, 2, 3, 4};
@@ -58,10 +58,10 @@ class TEST_NAME : public util::test_base {
       }
 
       my_queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

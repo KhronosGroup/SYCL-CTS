@@ -15,43 +15,43 @@ namespace atomic_constructors_common {
 
 /** Check atomic constructors
  */
-template <typename T, cl::sycl::access::target target,
-          cl::sycl::access::address_space addressSpace>
+template <typename T, sycl::target target,
+          sycl::access::address_space addressSpace>
 class check_atomic_constructors {
-  cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write, target> m_acc;
+  sycl::accessor<T, 1, sycl::access_mode::read_write, target> m_acc;
 
  public:
   check_atomic_constructors(
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write, target> acc)
+      sycl::accessor<T, 1, sycl::access_mode::read_write, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {
     /** Check atomic constructor
      */
-    cl::sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
+    sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
   }
 };
 
 /** Check atomic constructors
  */
-template <typename T, cl::sycl::access::target target>
+template <typename T, sycl::target target>
 class check_atomics {
  public:
-  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
     T data = 0;
     std::memset(&data, 0xFF, sizeof(T));
 
-    cl::sycl::buffer<T, 1> buf(&data, cl::sycl::range<1>(1));
+    sycl::buffer<T, 1> buf(&data, sycl::range<1>(1));
 
     /** Check atomic constructors
      */
-    testQueue.submit([&](cl::sycl::handler &cgh) {
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::global_buffer>
+    testQueue.submit([&](sycl::handler &cgh) {
+      sycl::accessor<T, 1, sycl::access_mode::read_write,
+                         sycl::target::global_buffer>
           acc(buf, cgh);
 
-      check_atomic_constructors<T, cl::sycl::access::target::global_buffer,
-                                cl::sycl::access::address_space::global_space>
+      check_atomic_constructors<T, sycl::target::global_buffer,
+                                sycl::access::address_space::global_space>
           f(acc);
 
       cgh.single_task(f);
@@ -59,23 +59,23 @@ class check_atomics {
   }
 };
 
-/** Specialization for cl::sycl::access::target::local
+/** Specialization for sycl::target::local
  */
 template <typename T>
-class check_atomics<T, cl::sycl::access::target::local> {
+class check_atomics<T, sycl::target::local> {
  public:
-  void operator()(sycl_cts::util::logger &log, cl::sycl::queue &testQueue) {
+  void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
 
     /** Check atomic constructors
      */
-    testQueue.submit([&](cl::sycl::handler &cgh) {
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                         cl::sycl::access::target::local>
-          acc(cl::sycl::range<1>(1), cgh);
+    testQueue.submit([&](sycl::handler &cgh) {
+      sycl::accessor<T, 1, sycl::access_mode::read_write,
+                         sycl::target::local>
+          acc(sycl::range<1>(1), cgh);
 
-      check_atomic_constructors<T, cl::sycl::access::target::local,
-                                cl::sycl::access::address_space::local_space>
+      check_atomic_constructors<T, sycl::target::local,
+                                sycl::access::address_space::local_space>
           f(acc);
 
       cgh.single_task(f);

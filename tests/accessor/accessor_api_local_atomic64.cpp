@@ -16,7 +16,7 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::accessor
+/** tests the api for sycl::accessor
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -37,10 +37,10 @@ class TEST_NAME : public util::test_base {
       check_all_types_core<check_local_accessor_api_type,
                            extension_tag>::run(queue, log);
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

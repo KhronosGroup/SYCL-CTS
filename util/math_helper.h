@@ -43,8 +43,8 @@ template <typename returnT> struct resultRef {
 namespace math {
 
 template <typename R, typename T, int N, typename funT, typename... Args>
-cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
-  cl::sycl::vec<R, N> res;
+sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
+  sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
     setElement<R, N>(res, i, fun(getElement(args, i)...));
   }
@@ -54,8 +54,8 @@ cl::sycl::vec<R, N> run_func_on_vector(funT fun, Args... args) {
 /* helper for relational functions where true result gives 1 for scalar
     and -1 for vector argument types */
 template <typename R, typename T, int N, typename funT, typename... Args>
-cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
-  cl::sycl::vec<R, N> res;
+sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
+  sycl::vec<R, N> res;
   for (int i = 0; i < N; i++) {
     if (fun(getElement<T, N>(args, i)...))
       setElement<R, N>(res, i, -1);
@@ -66,9 +66,9 @@ cl::sycl::vec<R, N> run_rel_func_on_vector(funT fun, Args... args) {
 }
 
 template <typename T, int N, typename funT, typename... Args>
-sycl_cts::resultRef<cl::sycl::vec<T, N>>
+sycl_cts::resultRef<sycl::vec<T, N>>
 run_func_on_vector_result_ref(funT fun, Args... args) {
-  cl::sycl::vec<T, N> res;
+  sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
     resultRef<T> element = fun(getElement(args, i)...);
@@ -77,7 +77,7 @@ run_func_on_vector_result_ref(funT fun, Args... args) {
     else
       undefined[i] = true;
   }
-  return sycl_cts::resultRef<cl::sycl::vec<T, N>>(res, undefined);
+  return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
 
 template <typename T>
@@ -98,8 +98,8 @@ typename rel_funcs_return<T>::type rel_func_dispatcher(T a, Args... args) {
 }
 
 template <template <class> class funT, typename T, int N, typename... Args>
-typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
-rel_func_dispatcher(cl::sycl::vec<T, N> a, Args... args) {
+typename sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(sycl::vec<T, N> a, Args... args) {
   return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
       funT<T>{}, a, args...);
 }
@@ -111,8 +111,8 @@ typename rel_funcs_return<T>::type rel_func_dispatcher(funT fun, T a,
 }
 
 template <typename funT, typename T, int N, typename... Args>
-typename cl::sycl::vec<typename rel_funcs_return<T>::type, N>
-rel_func_dispatcher(funT fun, cl::sycl::vec<T, N> a, Args... args) {
+typename sycl::vec<typename rel_funcs_return<T>::type, N>
+rel_func_dispatcher(funT fun, sycl::vec<T, N> a, Args... args) {
   return run_rel_func_on_vector<typename rel_funcs_return<T>::type, T, N>(
       fun, a, args...);
 }
@@ -134,11 +134,11 @@ template <typename T> bool if_msb_set(T x) {
 float int_to_float(uint32_t x);
 
 void fill(float &e, float v);
-void fill(cl::sycl::float2 &e, float v);
-void fill(cl::sycl::float3 &e, float v);
-void fill(cl::sycl::float4 &e, float v);
-void fill(cl::sycl::float8 &e, float v);
-void fill(cl::sycl::float16 &e, float v);
+void fill(sycl::float2 &e, float v);
+void fill(sycl::float3 &e, float v);
+void fill(sycl::float4 &e, float v);
+void fill(sycl::float8 &e, float v);
+void fill(sycl::float16 &e, float v);
 
 /* return number of elements in a type */
 int numElements(const float &);
@@ -147,7 +147,7 @@ int numElements(const float &);
 int numElements(const int &);
 
 template <typename T, int numElems>
-int numElements(const cl::sycl::vec<T, numElems> &) {
+int numElements(const sycl::vec<T, numElems> &) {
   return numElems;
 }
 
@@ -158,23 +158,23 @@ float getElement(const float &f, int ix);
 int getElement(const int &f, int ix);
 
 template <typename T, int dim>
-T getElement(cl::sycl::vec<T, dim> &f, int ix) {
+T getElement(sycl::vec<T, dim> &f, int ix) {
   return getComponent<T, dim>()(f, ix);
 }
 
 template <typename T, int dim>
-void setElement(cl::sycl::vec<T, dim> &f, int ix, T value) {
+void setElement(sycl::vec<T, dim> &f, int ix, T value) {
   setComponent<T, dim>()(f, ix, value);
 }
 
 /* create random floats with an integer range [-0x7fffffff to 0x7fffffff]
  */
 void rand(MTdata &rng, float *buf, int num);
-void rand(MTdata &rng, cl::sycl::float2 *buf, int num);
-void rand(MTdata &rng, cl::sycl::float3 *buf, int num);
-void rand(MTdata &rng, cl::sycl::float4 *buf, int num);
-void rand(MTdata &rng, cl::sycl::float8 *buf, int num);
-void rand(MTdata &rng, cl::sycl::float16 *buf, int num);
+void rand(MTdata &rng, sycl::float2 *buf, int num);
+void rand(MTdata &rng, sycl::float3 *buf, int num);
+void rand(MTdata &rng, sycl::float4 *buf, int num);
+void rand(MTdata &rng, sycl::float8 *buf, int num);
+void rand(MTdata &rng, sycl::float16 *buf, int num);
 
 /* generate a stream of random integer data
  */

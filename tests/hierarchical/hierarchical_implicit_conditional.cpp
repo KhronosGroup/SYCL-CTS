@@ -37,12 +37,12 @@ template <int dim> void check_dim(util::logger &log) {
     }
 
     {
-      cl::sycl::buffer<int, 1> outputBuffer(
-          outputData, cl::sycl::range<1>(groupItemsTotal));
+      sycl::buffer<int, 1> outputBuffer(
+          outputData, sycl::range<1>(groupItemsTotal));
 
-      cl::sycl::queue myQueue(util::get_cts_object::queue());
+      sycl::queue myQueue(util::get_cts_object::queue());
 
-      myQueue.submit([&](cl::sycl::handler &cgh) {
+      myQueue.submit([&](sycl::handler &cgh) {
 
         auto groupRange =
             sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
@@ -52,14 +52,14 @@ template <int dim> void check_dim(util::logger &log) {
                 localItemsTotal>(localItems1d, localItems2d);
 
         auto outputPtr =
-            outputBuffer.get_access<cl::sycl::access::mode::read_write>(cgh);
+            outputBuffer.get_access<sycl::access_mode::read_write>(cgh);
 
         cgh.parallel_for_work_group<kernel<dim>>(
-            groupRange, localRange, [=](cl::sycl::group<dim> group) {
+            groupRange, localRange, [=](sycl::group<dim> group) {
               // Create a local variable to store the work item id.
               int work_item_id;
 
-              group.parallel_for_work_item([&](cl::sycl::h_item<dim> item) {
+              group.parallel_for_work_item([&](sycl::h_item<dim> item) {
                 // Assign the work item id to a local variable.
                 work_item_id =
                     group.get_linear_id() * item.get_local_range().size() +
@@ -88,15 +88,15 @@ template <int dim> void check_dim(util::logger &log) {
       }
     }
 
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
  public:

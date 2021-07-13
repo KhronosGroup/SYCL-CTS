@@ -20,7 +20,7 @@ class wait_for_kernel;
 
 template<int dim>
 struct check_dim {
-  void operator()(cl::sycl::queue &queue, sycl_cts::util::logger &log) {
+  void operator()(sycl::queue &queue, sycl_cts::util::logger &log) {
     using dataT = int;
     using kernelT = wait_for_kernel<dim>;
     using kernelInvokeT = invoke_group<dim, kernelT>;
@@ -30,7 +30,7 @@ struct check_dim {
   }
 };
 
-/** test cl::sycl::group::wait_for
+/** test sycl::group::wait_for
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -50,7 +50,7 @@ class TEST_NAME : public util::test_base {
 
       check_all_dims<check_dim>(queue, log);
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

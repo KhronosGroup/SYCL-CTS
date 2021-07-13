@@ -28,7 +28,7 @@ struct kernel_command_group {
   void operator()(sycl::handler& cgh) {
     int m = m_multiplier;
     auto acc_dev =
-        m_bufRef.get().template get_access<sycl::access::mode::read_write>(cgh);
+        m_bufRef.get().template get_access<sycl::access_mode::read_write>(cgh);
     cgh.parallel_for<kernel<bufferT>>(m_bufRef.get().get_range(),
                                       [=](sycl::id<1> i) { acc_dev[i] *= m; });
   }
@@ -50,8 +50,8 @@ struct host_task_command_group {
     int container_size = m_bufRef.get().get_count();
     auto acc_host =
         m_bufRef.get()
-            .template get_access<sycl::access::mode::read_write,
-                                 sycl::access::target::host_buffer>(cgh);
+            .template get_access<sycl::access_mode::read_write,
+                                 sycl::target::host_buffer>(cgh);
     cgh.host_task([=]() {
       for (int i = 0; i < container_size; ++i) {
         acc_host[i] += a;
@@ -64,7 +64,7 @@ struct host_task_command_group {
 };
 
 template <typename T>
-void verify_results(sycl::vector_class<T>& data, T expected,
+void verify_results(std::vector<T>& data, T expected,
                     util::logger& log) {
   for (T& d : data) {
     if (d != expected) {
@@ -89,7 +89,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_execution_kernel_host(sycl::queue& q, util::logger& log) {
     log.note("Checking device_task -> host_task execution");
     constexpr int expected{init_value * multiplier + add};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -107,7 +107,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_execution_host_kernel(sycl::queue& q, util::logger& log) {
     log.note("Checking host_task -> device_task execution");
     constexpr int expected = (init_value + add) * multiplier;
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -126,7 +126,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     log.note("Checking device_task -> host_task -> device_task execution");
 
     constexpr int expected = (init_value * multiplier + add) * multiplier;
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -153,15 +153,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void check_data_update(sycl::queue& q, util::logger& log) {
     constexpr int multiplier{10};
     constexpr int expected{init_value * multiplier};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
 
       q.submit([&](sycl::handler& cgh) {
         auto acc_host{
-            buffer.get_access<sycl::access::mode::read,
-                              sycl::access::target::host_buffer>(cgh)};
-        auto acc_dev = buffer.get_access<sycl::access::mode::write>(cgh);
+            buffer.get_access<sycl::access_mode::read,
+                              sycl::target::host_buffer>(cgh)};
+        auto acc_dev = buffer.get_access<sycl::access_mode::write>(cgh);
         cgh.host_task([=]() {
           for (int i = 0; i < container_size; ++i) {
             acc_dev[i] = acc_host[i] * multiplier;
@@ -170,7 +170,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       });
 
       {
-        auto acc_host = buffer.get_access<sycl::access::mode::read>();
+        auto acc_host = buffer.get_access<sycl::access_mode::read>();
         for (int i = 0; i < container_size; ++i) {
           if (acc_host[i] != expected) {
             auto errorMessage = "Data verification failed. Expected: " +
@@ -190,7 +190,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     constexpr int add_1{3};
     constexpr int add_2{4};
     constexpr int expected{init_value + (add_1 + add_2) * 2};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
@@ -213,7 +213,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         "Checking execution of host_task and kernel in different contexts");
     constexpr int add{3};
     constexpr int expected{(init_value * multiplier + add) * multiplier + add};
-    sycl::vector_class<int> data(container_size, init_value);
+    std::vector<int> data(container_size, init_value);
 
     {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});

@@ -39,7 +39,7 @@ void check_exception_api(util::logger &log) {
   auto ctx = q.get_context();
 
   try {
-    q.submit([&](cl::sycl::handler &cgh) {
+    q.submit([&](sycl::handler &cgh) {
       cgh.single_task<class TEST_NAME>([=]() {});
 
       throw custom_exception(ctx);
@@ -112,7 +112,7 @@ class TEST_NAME : public util::test_base {
     try {
       check_exception_api(log);
       check_exception_usage(log);
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

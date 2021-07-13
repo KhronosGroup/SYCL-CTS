@@ -15,7 +15,7 @@ using namespace sycl_cts;
 
 class kernel0;
 
-/** tests the info for cl::sycl::kernel
+/** tests the info for sycl::kernel
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -36,24 +36,24 @@ class TEST_NAME : public sycl_cts::util::test_base {
         log.note(
             "online compiler is not available -- skipping test of kernel info");
       } else {
-        cl::sycl::program program(queue.get_context());
+        sycl::program program(queue.get_context());
         program.build_with_kernel_type<kernel0>();
-        cl::sycl::kernel kernel = program.get_kernel<kernel0>();
+        sycl::kernel kernel = program.get_kernel<kernel0>();
 
-        queue.submit([&](cl::sycl::handler &cgh) {
+        queue.submit([&](sycl::handler &cgh) {
           cgh.single_task<kernel0>([=]() {});
         });
 
         /** check types
          */
-        check_type_existence<cl::sycl::info::kernel> typeCheck;
+        check_type_existence<sycl::info::kernel> typeCheck;
 
         /** initialize return values
          */
         cl_uint clUintRet;
-        cl::sycl::string_class stringRet;
+        std::string stringRet;
         size_t sizeTRet;
-        cl::sycl::range<3> range3Ret{0, 0, 0};
+        sycl::range<3> range3Ret{0, 0, 0};
         cl_ulong clUlongRet;
 
         // silent warnings
@@ -65,27 +65,27 @@ class TEST_NAME : public sycl_cts::util::test_base {
          */
         if (!queue.is_host()) {
           clUintRet =
-              kernel.get_info<cl::sycl::info::kernel::reference_count>();
+              kernel.get_info<sycl::info::kernel::reference_count>();
         }
-        stringRet = kernel.get_info<cl::sycl::info::kernel::function_name>();
-        clUintRet = kernel.get_info<cl::sycl::info::kernel::num_args>();
-        stringRet = kernel.get_info<cl::sycl::info::kernel::attributes>();
+        stringRet = kernel.get_info<sycl::info::kernel::function_name>();
+        clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
+        stringRet = kernel.get_info<sycl::info::kernel::attributes>();
         auto dev = util::get_cts_object::device();
-        if (dev.get_info<cl::sycl::info::device::device_type>() ==
-            cl::sycl::info::device_type::custom) {
+        if (dev.get_info<sycl::info::device::device_type>() ==
+            sycl::info::device_type::custom) {
           range3Ret = kernel.get_work_group_info<
-              cl::sycl::info::kernel_work_group::global_work_size>(dev);
+              sycl::info::kernel_work_group::global_work_size>(dev);
         }
         range3Ret = kernel.get_work_group_info<
-            cl::sycl::info::kernel_work_group::compile_work_group_size>(dev);
+            sycl::info::kernel_work_group::compile_work_group_size>(dev);
         sizeTRet =
-            kernel.get_work_group_info<cl::sycl::info::kernel_work_group::
+            kernel.get_work_group_info<sycl::info::kernel_work_group::
                                            preferred_work_group_size_multiple>(
                 dev);
         clUlongRet = kernel.get_work_group_info<
-            cl::sycl::info::kernel_work_group::private_mem_size>(dev);
+            sycl::info::kernel_work_group::private_mem_size>(dev);
         sizeTRet = kernel.get_work_group_info<
-            cl::sycl::info::kernel_work_group::work_group_size>(dev);
+            sycl::info::kernel_work_group::work_group_size>(dev);
 
         TEST_TYPE_TRAIT(kernel, reference_count, kernel);
         TEST_TYPE_TRAIT(kernel, function_name, kernel);
@@ -94,10 +94,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
         queue.wait_and_throw();
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

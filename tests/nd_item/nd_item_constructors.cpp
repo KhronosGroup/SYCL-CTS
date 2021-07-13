@@ -59,7 +59,7 @@ private:
   sycl_cts::util::array<size_t, numDims> m_localRange;
   sycl_cts::util::array<size_t, numDims> m_offset;
 public:
-  state_storage(const cl::sycl::nd_item<numDims>& state)
+  state_storage(const sycl::nd_item<numDims>& state)
   {
     m_globalLinearId = state.get_global_linear_id();
     m_groupLinearId = state.get_group_linear_id();
@@ -118,7 +118,7 @@ public:
 
 template <int index, int numDims, typename success_acc_t>
 inline void check_equality_helper(success_acc_t& success,
-                                  const cl::sycl::nd_item<numDims>& actual,
+                                  const sycl::nd_item<numDims>& actual,
                                   const state_storage<numDims>& expected) {
   CHECK_EQUALITY_HELPER(success, actual.get_global_id(index),
                         expected.get_global_id(index));
@@ -139,7 +139,7 @@ inline void check_equality_helper(success_acc_t& success,
 template <int numDims, typename success_acc_t>
 inline void check_equality(success_acc_t& successAcc,
                            current_check currentCheck,
-                           const cl::sycl::nd_item<numDims>& actual,
+                           const sycl::nd_item<numDims>& actual,
                            const state_storage<numDims>& expected) {
   auto& success = successAcc[to_integral(currentCheck)];
   if (numDims >= 1) {
@@ -161,7 +161,7 @@ inline void check_equality(success_acc_t& successAcc,
 
 #undef CHECK_EQUALITY_HELPER
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -180,23 +180,23 @@ class TEST_NAME : public util::test_base {
       {
         const auto simpleRange =
             util::get_cts_object::range<numDims>::get(1, 1, 1);
-        cl::sycl::buffer<bool> successBuf(success.data(),
-                                          cl::sycl::range<1>(success.size()));
+        sycl::buffer<bool> successBuf(success.data(),
+                                          sycl::range<1>(success.size()));
 
         auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for<nd_item_constructors_kernel<numDims>>(
-              cl::sycl::nd_range<numDims>(simpleRange, simpleRange),
-              [=](cl::sycl::nd_item<numDims> item) {
+              sycl::nd_range<numDims>(simpleRange, simpleRange),
+              [=](sycl::nd_item<numDims> item) {
                 const auto& itemReadOnly = item;
                 state_storage<numDims> expected(itemReadOnly);
 
                 // Check copy constructor
                 {
-                  cl::sycl::nd_item<numDims> copied(itemReadOnly);
+                  sycl::nd_item<numDims> copied(itemReadOnly);
                   check_equality(successAcc, current_check::copy_constructor,
                                  copied, expected);
                 }
@@ -208,19 +208,19 @@ class TEST_NAME : public util::test_base {
                 }
                 // Check move constructor; invalidates item
                 {
-                  cl::sycl::nd_item<numDims> moved(item);
+                  sycl::nd_item<numDims> moved(item);
                   check_equality(successAcc, current_check::move_constructor,
                                  moved, expected);
                 }
               });
         });
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for<nd_item_move_assignment_kernel<numDims>>(
-              cl::sycl::nd_range<numDims>(simpleRange, simpleRange),
-              [=](cl::sycl::nd_item<numDims> item) {
+              sycl::nd_range<numDims>(simpleRange, simpleRange),
+              [=](sycl::nd_item<numDims> item) {
                 state_storage<numDims> expected(item);
 
                 // Check move assignment; invalidates item
@@ -246,7 +246,7 @@ class TEST_NAME : public util::test_base {
 
           // Check copy constructor
           {
-            cl::sycl::nd_item<numDims> copied(itemReadOnly);
+            sycl::nd_item<numDims> copied(itemReadOnly);
             check_equality(success, current_check::copy_constructor,
                            copied, expected);
           }
@@ -258,7 +258,7 @@ class TEST_NAME : public util::test_base {
           }
           // Check move constructor; invalidates item
           {
-            cl::sycl::nd_item<numDims> moved(item);
+            sycl::nd_item<numDims> moved(item);
             check_equality(success, current_check::move_constructor,
                            moved, expected);
           }
@@ -286,10 +286,10 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log,
                   success[to_integral(current_check::move_assignment)],
                   true, numDims);
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

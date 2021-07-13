@@ -120,16 +120,16 @@ template <typename T, typename U,
 class core_check_helper {
  public:
   using multiPtrGlobal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::global_space>;
   using multiPtrConstant =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::constant_space>;
   using multiPtrLocal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::local_space>;
   using multiPtrPrivate =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::private_space>;
 
-  template <cl::sycl::access::address_space Space>
-  bool pointer_assignment(cl::sycl::multi_ptr<U, Space> multiPtr,
+  template <sycl::access::address_space Space>
+  bool pointer_assignment(sycl::multi_ptr<U, Space> multiPtr,
                           T *elementTypePtr) const {
     auto elementT = static_cast<U *>(elementTypePtr);
 
@@ -157,27 +157,27 @@ class core_check_helper {
                                   multiPtrLocal localMultiPtr,
                                   multiPtrPrivate privateMultiPtr) const {
     // Convert from U to const U
-    auto cgPtr = static_cast<cl::sycl::global_ptr<const U>>(globalMultiPtr);
-    auto ccPtr = static_cast<cl::sycl::constant_ptr<const U>>(constantMultiPtr);
-    auto clPtr = static_cast<cl::sycl::local_ptr<const U>>(localMultiPtr);
-    auto cpPtr = static_cast<cl::sycl::private_ptr<const U>>(privateMultiPtr);
+    auto cgPtr = static_cast<sycl::global_ptr<const U>>(globalMultiPtr);
+    auto ccPtr = static_cast<sycl::constant_ptr<const U>>(constantMultiPtr);
+    auto clPtr = static_cast<sycl::local_ptr<const U>>(localMultiPtr);
+    auto cpPtr = static_cast<sycl::private_ptr<const U>>(privateMultiPtr);
 
     ASSERT_RETURN_TYPE(
-        cl::sycl::global_ptr<const U>, cgPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<const U, "
-        "cl::sycl::access::address_space::global_space>()");
+        sycl::global_ptr<const U>, cgPtr,
+        "sycl::multi_ptr operator sycl::multi_ptr<const U, "
+        "sycl::access::address_space::global_space>()");
     ASSERT_RETURN_TYPE(
-        cl::sycl::constant_ptr<const U>, ccPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<const U, "
-        "cl::sycl::access::address_space::constant_space>()");
+        sycl::constant_ptr<const U>, ccPtr,
+        "sycl::multi_ptr operator sycl::multi_ptr<const U, "
+        "sycl::access::address_space::constant_space>()");
     ASSERT_RETURN_TYPE(
-        cl::sycl::local_ptr<const U>, clPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<const U, "
-        "cl::sycl::access::address_space::local_space>()");
+        sycl::local_ptr<const U>, clPtr,
+        "sycl::multi_ptr operator sycl::multi_ptr<const U, "
+        "sycl::access::address_space::local_space>()");
     ASSERT_RETURN_TYPE(
-        cl::sycl::private_ptr<const U>, cpPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<const U, "
-        "cl::sycl::access::address_space::private_space>()");
+        sycl::private_ptr<const U>, cpPtr,
+        "sycl::multi_ptr operator sycl::multi_ptr<const U, "
+        "sycl::access::address_space::private_space>()");
   }
 
   void arrow_operators(multiPtrGlobal globalMultiPtr,
@@ -188,13 +188,13 @@ class core_check_helper {
     return;
   }
 
-  template <cl::sycl::access::address_space Space>
-  void relational_operators(cl::sycl::multi_ptr<U, Space> multiPtr) const {
+  template <sycl::access::address_space Space>
+  void relational_operators(sycl::multi_ptr<U, Space> multiPtr) const {
 #define TEST_RELATION_OPERATOR_TEMPLATE(OP, LHS, RHS, LHS_TY_STR, RHS_TY_STR) \
   {                                                                           \
     auto res = LHS OP RHS;                                                    \
                                                                               \
-    ASSERT_RETURN_TYPE(bool, res, "cl::sycl::operator" #OP "(" LHS_TY_STR     \
+    ASSERT_RETURN_TYPE(bool, res, "sycl::operator" #OP "(" LHS_TY_STR     \
                                   ", " RHS_TY_STR ")");                       \
   }
 
@@ -206,21 +206,21 @@ class core_check_helper {
   TEST_RELATION_OPERATOR_TEMPLATE(<=, LHS, RHS, LHS_TY_STR, RHS_TY_STR) \
   TEST_RELATION_OPERATOR_TEMPLATE(>=, LHS, RHS, LHS_TY_STR, RHS_TY_STR)
 
-    TEST_RELATION_OPERATOR(multiPtr, multiPtr, "cl::sycl::multi_ptr",
-                           "cl::sycl::multi_ptr");
+    TEST_RELATION_OPERATOR(multiPtr, multiPtr, "sycl::multi_ptr",
+                           "sycl::multi_ptr");
     TEST_RELATION_OPERATOR(nullptr, multiPtr, "std::nullptr_t",
-                           "cl::sycl::multi_ptr");
-    TEST_RELATION_OPERATOR(multiPtr, nullptr, "cl::sycl::multi_ptr",
+                           "sycl::multi_ptr");
+    TEST_RELATION_OPERATOR(multiPtr, nullptr, "sycl::multi_ptr",
                            "std::nullptr_t");
 #undef TEST_RELATION_OPERATOR_TEMPLATE
 #undef TEST_RELATION_OPERATOR
   }
 
-  template <cl::sycl::access::address_space Space>
-  void member_types(cl::sycl::multi_ptr<U, Space> multiPtr) const {
-    using multi_ptr_t = cl::sycl::multi_ptr<U, Space>;
+  template <sycl::access::address_space Space>
+  void member_types(sycl::multi_ptr<U, Space> multiPtr) const {
+    using multi_ptr_t = sycl::multi_ptr<U, Space>;
     static_assert(
-        std::is_same<multi_ptr_t, cl::sycl::multi_ptr<U, Space>>::value,
+        std::is_same<multi_ptr_t, sycl::multi_ptr<U, Space>>::value,
         "Invalid multi_ptr type");
 
     using difference_type = typename multi_ptr_t::difference_type;
@@ -246,10 +246,10 @@ class core_check_helper {
     specificHelperT<T, U>::reference_member_types(multiPtr);
   }
 
-  template <cl::sycl::access::address_space Space>
-  void address_space_member(cl::sycl::multi_ptr<U, Space> multiPtr) const {
-    static constexpr cl::sycl::access::address_space addressSpace =
-        cl::sycl::multi_ptr<U, Space>::address_space;
+  template <sycl::access::address_space Space>
+  void address_space_member(sycl::multi_ptr<U, Space> multiPtr) const {
+    static constexpr sycl::access::address_space addressSpace =
+        sycl::multi_ptr<U, Space>::address_space;
     static_assert(addressSpace == Space, "Wrong address space");
   }
 };
@@ -273,17 +273,17 @@ class generic_check_helper :
                                    multiPtrLocal localMultiPtr,
                                    multiPtrPrivate privateMultiPtr) {
     using voidMultiPtrGlobal =
-        cl::sycl::multi_ptr<data_void_t,
-                            cl::sycl::access::address_space::global_space>;
+        sycl::multi_ptr<data_void_t,
+                            sycl::access::address_space::global_space>;
     using voidMultiPtrConstant =
-        cl::sycl::multi_ptr<data_void_t,
-                            cl::sycl::access::address_space::constant_space>;
+        sycl::multi_ptr<data_void_t,
+                            sycl::access::address_space::constant_space>;
     using voidMultiPtrLocal =
-        cl::sycl::multi_ptr<data_void_t,
-                            cl::sycl::access::address_space::local_space>;
+        sycl::multi_ptr<data_void_t,
+                            sycl::access::address_space::local_space>;
     using voidMultiPtrPrivate =
-        cl::sycl::multi_ptr<data_void_t,
-                            cl::sycl::access::address_space::private_space>;
+        sycl::multi_ptr<data_void_t,
+                            sycl::access::address_space::private_space>;
 
     // Convert from U to void
     auto gPtr = static_cast<voidMultiPtrGlobal>(globalMultiPtr);
@@ -292,17 +292,17 @@ class generic_check_helper :
     auto pPtr = static_cast<voidMultiPtrPrivate>(privateMultiPtr);
 
     ASSERT_RETURN_TYPE(voidMultiPtrGlobal, gPtr,
-                       "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<void, "
-                       "cl::sycl::access::address_space::global_space>()");
+                       "sycl::multi_ptr operator sycl::multi_ptr<void, "
+                       "sycl::access::address_space::global_space>()");
     ASSERT_RETURN_TYPE(voidMultiPtrConstant, cPtr,
-                       "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<void, "
-                       "cl::sycl::access::address_space::constant_space>()");
+                       "sycl::multi_ptr operator sycl::multi_ptr<void, "
+                       "sycl::access::address_space::constant_space>()");
     ASSERT_RETURN_TYPE(voidMultiPtrLocal, lPtr,
-                       "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<void, "
-                       "cl::sycl::access::address_space::local_space>()");
+                       "sycl::multi_ptr operator sycl::multi_ptr<void, "
+                       "sycl::access::address_space::local_space>()");
     ASSERT_RETURN_TYPE(voidMultiPtrPrivate, pPtr,
-                       "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<void, "
-                       "cl::sycl::access::address_space::private_space>()");
+                       "sycl::multi_ptr operator sycl::multi_ptr<void, "
+                       "sycl::access::address_space::private_space>()");
   }
 
   static bool access_operators(multiPtrGlobal globalMultiPtr,
@@ -317,10 +317,10 @@ class generic_check_helper :
       U localElem = (*localMultiPtr);
       U privateElem = (*privateMultiPtr);
 
-      ASSERT_RETURN_TYPE(U, globalElem, "cl::sycl::multi_ptr operator*()");
-      ASSERT_RETURN_TYPE(U, constantElem, "cl::sycl::multi_ptr operator*()");
-      ASSERT_RETURN_TYPE(U, localElem, "cl::sycl::multi_ptr operator*()");
-      ASSERT_RETURN_TYPE(U, privateElem, "cl::sycl::multi_ptr operator*()");
+      ASSERT_RETURN_TYPE(U, globalElem, "sycl::multi_ptr operator*()");
+      ASSERT_RETURN_TYPE(U, constantElem, "sycl::multi_ptr operator*()");
+      ASSERT_RETURN_TYPE(U, localElem, "sycl::multi_ptr operator*()");
+      ASSERT_RETURN_TYPE(U, privateElem, "sycl::multi_ptr operator*()");
 
       // Verify access result
       const auto expected = reference_t::value(0);
@@ -365,7 +365,7 @@ class generic_check_helper :
 
       auto retval = multiPtr++;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator++(int)");
+                         "sycl::multi_ptr operator++(int)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -374,7 +374,7 @@ class generic_check_helper :
 
       auto retval = ++multiPtr;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator++()");
+                         "sycl::multi_ptr operator++()");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -383,7 +383,7 @@ class generic_check_helper :
 
       auto retval = multiPtr--;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator--(int)");
+                         "sycl::multi_ptr operator--(int)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -392,7 +392,7 @@ class generic_check_helper :
 
       auto retval = --multiPtr;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator--()");
+                         "sycl::multi_ptr operator--()");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -401,7 +401,7 @@ class generic_check_helper :
 
       auto retval = multiPtr + diff;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                        "cl::sycl::multi_ptr operator+(std::ptrdiff_t r)");
+                        "sycl::multi_ptr operator+(std::ptrdiff_t r)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -410,7 +410,7 @@ class generic_check_helper :
 
       auto retval = multiPtr - diff;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator-(std::ptrdiff_t r)");
+                         "sycl::multi_ptr operator-(std::ptrdiff_t r)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -419,7 +419,7 @@ class generic_check_helper :
 
       auto retval = multiPtr += diff;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator+=(std::ptrdiff_t r)");
+                         "sycl::multi_ptr operator+=(std::ptrdiff_t r)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -428,7 +428,7 @@ class generic_check_helper :
 
       auto retval = multiPtr -= diff;
       ASSERT_RETURN_TYPE(multiPtrT, retval,
-                         "cl::sycl::multi_ptr operator-=(std::ptrdiff_t r)");
+                         "sycl::multi_ptr operator-=(std::ptrdiff_t r)");
       result &= retval.get() == expected;
       result &= multiPtr.get() == value;
     }
@@ -445,11 +445,11 @@ class generic_check_helper :
            arithmetic_operators(privateMultiPtr);
   }
 
-  template <cl::sycl::access::address_space Space>
-  static void reference_member_types(cl::sycl::multi_ptr<U, Space> multiPtr) {
-    using multi_ptr_t = cl::sycl::multi_ptr<U, Space>;
+  template <sycl::access::address_space Space>
+  static void reference_member_types(sycl::multi_ptr<U, Space> multiPtr) {
+    using multi_ptr_t = sycl::multi_ptr<U, Space>;
     static_assert(
-        std::is_same<multi_ptr_t, cl::sycl::multi_ptr<U, Space>>::value,
+        std::is_same<multi_ptr_t, sycl::multi_ptr<U, Space>>::value,
         "Invalid multi_ptr type");
 
     using reference_t = typename multi_ptr_t::reference_t;
@@ -485,17 +485,17 @@ class void_check_helper: public core_check_helper<T, VoidT, void_check_helper> {
     using float_t = typename cast_keep_const<T, float>::type;
 
     using floatMultiPtrGlobal =
-        cl::sycl::multi_ptr<float_t,
-                            cl::sycl::access::address_space::global_space>;
+        sycl::multi_ptr<float_t,
+                            sycl::access::address_space::global_space>;
     using floatMultiPtrConstant =
-        cl::sycl::multi_ptr<float_t,
-                            cl::sycl::access::address_space::constant_space>;
+        sycl::multi_ptr<float_t,
+                            sycl::access::address_space::constant_space>;
     using floatMultiPtrLocal =
-        cl::sycl::multi_ptr<float_t,
-                            cl::sycl::access::address_space::local_space>;
+        sycl::multi_ptr<float_t,
+                            sycl::access::address_space::local_space>;
     using floatMultiPtrPrivate =
-        cl::sycl::multi_ptr<float_t,
-                            cl::sycl::access::address_space::private_space>;
+        sycl::multi_ptr<float_t,
+                            sycl::access::address_space::private_space>;
 
     auto gPtr = static_cast<floatMultiPtrGlobal>(globalMultiPtr);
     auto cPtr = static_cast<floatMultiPtrConstant>(constantMultiPtr);
@@ -504,20 +504,20 @@ class void_check_helper: public core_check_helper<T, VoidT, void_check_helper> {
 
     ASSERT_RETURN_TYPE(
         floatMultiPtrGlobal, gPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<float, "
-        "cl::sycl::access::address_space::global_space>()");
+        "sycl::multi_ptr operator sycl::multi_ptr<float, "
+        "sycl::access::address_space::global_space>()");
     ASSERT_RETURN_TYPE(
         floatMultiPtrConstant, cPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<float, "
-        "cl::sycl::access::address_space::constant_space>()");
+        "sycl::multi_ptr operator sycl::multi_ptr<float, "
+        "sycl::access::address_space::constant_space>()");
     ASSERT_RETURN_TYPE(
         floatMultiPtrLocal, lPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<float, "
-        "cl::sycl::access::address_space::local_space>()");
+        "sycl::multi_ptr operator sycl::multi_ptr<float, "
+        "sycl::access::address_space::local_space>()");
     ASSERT_RETURN_TYPE(
         floatMultiPtrPrivate, pPtr,
-        "cl::sycl::multi_ptr operator cl::sycl::multi_ptr<float, "
-        "cl::sycl::access::address_space::private_space>()");
+        "sycl::multi_ptr operator sycl::multi_ptr<float, "
+        "sycl::access::address_space::private_space>()");
   }
 
   static bool prefetch_operation(multiPtrGlobal) {
@@ -537,8 +537,8 @@ class void_check_helper: public core_check_helper<T, VoidT, void_check_helper> {
     return true;
   }
 
-  template <cl::sycl::access::address_space Space>
-  static void reference_member_types(cl::sycl::multi_ptr<VoidT, Space>) {
+  template <sycl::access::address_space Space>
+  static void reference_member_types(sycl::multi_ptr<VoidT, Space>) {
     // multi_ptr<VoidT> does not have any reference member types
   }
 };
@@ -550,13 +550,13 @@ class pointer_apis {
   using reference_t = reference<T, U>;
 
   using multiPtrGlobal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::global_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::global_space>;
   using multiPtrConstant =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::constant_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::constant_space>;
   using multiPtrLocal =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::local_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::local_space>;
   using multiPtrPrivate =
-      cl::sycl::multi_ptr<U, cl::sycl::access::address_space::private_space>;
+      sycl::multi_ptr<U, sycl::access::address_space::private_space>;
 
   /** @brief Provides error message for any check with result verification
    */
@@ -602,17 +602,17 @@ class pointer_apis {
   }
 
  public:
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   const std::string& dataTypeName) {
     return operator() (log, queue, dataTypeName, dataTypeName);
   }
-  void operator()(util::logger &log, cl::sycl::queue &queue,
+  void operator()(util::logger &log, sycl::queue &queue,
                   const std::string& dataTypeName,
                   const std::string& storageTypeName) {
     constexpr auto nChecks = to_integral(check_id::N_CHECKS);
     const auto size = reference_t::size;
-    cl::sycl::range<1> range(size);
-    cl::sycl::range<1> resRange(nChecks);
+    sycl::range<1> range(size);
+    sycl::range<1> resRange(nChecks);
     std::unique_ptr<data_t[]> data(new data_t[size]);
 
     bool pass[nChecks];
@@ -623,20 +623,20 @@ class pointer_apis {
     }
 
     {
-      cl::sycl::buffer<bool, 1> resBuff(pass, resRange);
-      cl::sycl::buffer<T, 1> buffer(data.get(), range);
+      sycl::buffer<bool, 1> resBuff(pass, resRange);
+      sycl::buffer<T, 1> buffer(data.get(), range);
 
-      queue.submit([&](cl::sycl::handler &handler) {
+      queue.submit([&](sycl::handler &handler) {
         auto resAcc =
-              resBuff.get_access<cl::sycl::access::mode::read_write>(handler);
-        cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::global_buffer>
+              resBuff.get_access<sycl::access_mode::read_write>(handler);
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
+                           sycl::target::global_buffer>
             globalAccessor(buffer, handler);
-        cl::sycl::accessor<T, 1, cl::sycl::access::mode::read,
-                           cl::sycl::access::target::constant_buffer>
+        sycl::accessor<T, 1, sycl::access_mode::read,
+                           sycl::target::constant_buffer>
             constantAccessor(buffer, handler);
-        cl::sycl::accessor<T, 1, cl::sycl::access::mode::read_write,
-                           cl::sycl::access::target::local>
+        sycl::accessor<T, 1, sycl::access_mode::read_write,
+                           sycl::target::local>
             localAccessor(size, handler);
 
         handler.single_task<class kernel0<T, U>>(
@@ -662,16 +662,16 @@ class pointer_apis {
            */
           {
             static_assert(
-              std::is_same<multiPtrGlobal, cl::sycl::global_ptr<U>>::value,
+              std::is_same<multiPtrGlobal, sycl::global_ptr<U>>::value,
               "Invalid global_ptr type");
             static_assert(
-              std::is_same<multiPtrConstant, cl::sycl::constant_ptr<U>>::value,
+              std::is_same<multiPtrConstant, sycl::constant_ptr<U>>::value,
               "Invalid constant_ptr type");
             static_assert(
-              std::is_same<multiPtrLocal, cl::sycl::local_ptr<U>>::value,
+              std::is_same<multiPtrLocal, sycl::local_ptr<U>>::value,
               "Invalid local_ptr type");
             static_assert(
-              std::is_same<multiPtrPrivate, cl::sycl::private_ptr<U>>::value,
+              std::is_same<multiPtrPrivate, sycl::private_ptr<U>>::value,
               "Invalid private_ptr type");
           }
 
@@ -679,10 +679,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -699,10 +699,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -719,10 +719,10 @@ class pointer_apis {
            */
           {
             // construct two sets of multi_ptr
-            cl::sycl::global_ptr<U> globalPtrA(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtrA(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtrA(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtrA(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtrA(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtrA(expectedConstantPtr);
+            sycl::local_ptr<U> localPtrA(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtrA(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtrA(globalPtrA);
             multiPtrConstant constantMultiPtrA(constantPtrA);
@@ -758,10 +758,10 @@ class pointer_apis {
            */
           {
             // construct two sets of multi_ptr
-            cl::sycl::global_ptr<U> globalPtrA(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtrA(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtrA(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtrA(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtrA(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtrA(expectedConstantPtr);
+            sycl::local_ptr<U> localPtrA(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtrA(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtrA(globalPtrA);
             multiPtrConstant constantMultiPtrA(constantPtrA);
@@ -797,10 +797,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -825,10 +825,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -840,14 +840,14 @@ class pointer_apis {
             auto lPtr = localMultiPtr.get();
             auto pPtr = privateMultiPtr.get();
 
-            ASSERT_RETURN_TYPE(typename cl::sycl::global_ptr<U>::pointer_t,
-                               gPtr, "cl::sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename cl::sycl::constant_ptr<U>::pointer_t,
-                               cPtr, "cl::sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename cl::sycl::local_ptr<U>::pointer_t, lPtr,
-                               "cl::sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename cl::sycl::private_ptr<U>::pointer_t,
-                               pPtr, "cl::sycl::multi_ptr::get()");
+            ASSERT_RETURN_TYPE(typename sycl::global_ptr<U>::pointer_t,
+                               gPtr, "sycl::multi_ptr::get()");
+            ASSERT_RETURN_TYPE(typename sycl::constant_ptr<U>::pointer_t,
+                               cPtr, "sycl::multi_ptr::get()");
+            ASSERT_RETURN_TYPE(typename sycl::local_ptr<U>::pointer_t, lPtr,
+                               "sycl::multi_ptr::get()");
+            ASSERT_RETURN_TYPE(typename sycl::private_ptr<U>::pointer_t,
+                               pPtr, "sycl::multi_ptr::get()");
 
             bool result = true;
             result &= gPtr == expectedGlobalPtr;
@@ -867,7 +867,7 @@ class pointer_apis {
            */
           {
             // construct a global multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
             multiPtrGlobal globalMultiPtr(globalPtr);
 
             resAcc[to_integral(check_id::prefetch_method)] =
@@ -878,10 +878,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -911,10 +911,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -932,10 +932,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -951,10 +951,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -969,10 +969,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             multiPtrGlobal globalMultiPtr(globalPtr);
             multiPtrConstant constantMultiPtr(constantPtr);
@@ -987,19 +987,19 @@ class pointer_apis {
           /** check make_ptr function
            */
           {
-            using namespace cl::sycl::access;
+            using namespace sycl::access;
 
             multiPtrGlobal globalMultiPtr =
-                cl::sycl::make_ptr<U, address_space::global_space>(
+                sycl::make_ptr<U, address_space::global_space>(
                     expectedGlobalPtr);
             multiPtrConstant constantMultiPtr =
-                cl::sycl::make_ptr<U, address_space::constant_space>(
+                sycl::make_ptr<U, address_space::constant_space>(
                     expectedConstantPtr);
             multiPtrLocal localMultiPtr =
-                cl::sycl::make_ptr<U, address_space::local_space>(
+                sycl::make_ptr<U, address_space::local_space>(
                     expectedLocalPtr);
             multiPtrPrivate privateMultiPtr =
-                cl::sycl::make_ptr<U, address_space::private_space>(
+                sycl::make_ptr<U, address_space::private_space>(
                     expectedPrivatePtr);
 
             bool result = true;
@@ -1016,10 +1016,10 @@ class pointer_apis {
            */
           {
             // construct a set of multi_ptr
-            cl::sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            cl::sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            cl::sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            cl::sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+            sycl::local_ptr<U> localPtr(expectedLocalPtr);
+            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
             checker.relational_operators(globalPtr);
             checker.relational_operators(constantPtr);
@@ -1034,37 +1034,37 @@ class pointer_apis {
      */
     {
       // construct two sets of multi_ptr
-      cl::sycl::global_ptr<U> globalPtrA;
-      cl::sycl::constant_ptr<U> constantPtrA;
-      cl::sycl::local_ptr<U> localPtrA;
-      cl::sycl::private_ptr<U> privatePtrA;
+      sycl::global_ptr<U> globalPtrA;
+      sycl::constant_ptr<U> constantPtrA;
+      sycl::local_ptr<U> localPtrA;
+      sycl::private_ptr<U> privatePtrA;
 
       static constexpr auto resG = decltype(globalPtrA)::address_space;
       static constexpr auto resC = decltype(constantPtrA)::address_space;
       static constexpr auto resL = decltype(localPtrA)::address_space;
       static constexpr auto resP = decltype(privatePtrA)::address_space;
 
-      check_return_type<cl::sycl::access::address_space>(
-          log, resG, "cl::sycl::multi_ptr::space");
-      check_return_type<cl::sycl::access::address_space>(
-          log, resC, "cl::sycl::multi_ptr::space");
-      check_return_type<cl::sycl::access::address_space>(
-          log, resL, "cl::sycl::multi_ptr::space");
-      check_return_type<cl::sycl::access::address_space>(
-          log, resP, "cl::sycl::multi_ptr::space");
+      check_return_type<sycl::access::address_space>(
+          log, resG, "sycl::multi_ptr::space");
+      check_return_type<sycl::access::address_space>(
+          log, resC, "sycl::multi_ptr::space");
+      check_return_type<sycl::access::address_space>(
+          log, resL, "sycl::multi_ptr::space");
+      check_return_type<sycl::access::address_space>(
+          log, resP, "sycl::multi_ptr::space");
 
-      check_return_value<cl::sycl::access::address_space>(
-          log, resG, cl::sycl::access::address_space::global_space,
-          "cl::sycl::multi_ptr::space");
-      check_return_value<cl::sycl::access::address_space>(
-          log, resC, cl::sycl::access::address_space::constant_space,
-          "cl::sycl::multi_ptr::space");
-      check_return_value<cl::sycl::access::address_space>(
-          log, resL, cl::sycl::access::address_space::local_space,
-          "cl::sycl::multi_ptr::space");
-      check_return_value<cl::sycl::access::address_space>(
-          log, resP, cl::sycl::access::address_space::private_space,
-          "cl::sycl::multi_ptr::space");
+      check_return_value<sycl::access::address_space>(
+          log, resG, sycl::access::address_space::global_space,
+          "sycl::multi_ptr::space");
+      check_return_value<sycl::access::address_space>(
+          log, resC, sycl::access::address_space::constant_space,
+          "sycl::multi_ptr::space");
+      check_return_value<sycl::access::address_space>(
+          log, resL, sycl::access::address_space::local_space,
+          "sycl::multi_ptr::space");
+      check_return_value<sycl::access::address_space>(
+          log, resP, sycl::access::address_space::private_space,
+          "sycl::multi_ptr::space");
     }
 
     /** Report on failures

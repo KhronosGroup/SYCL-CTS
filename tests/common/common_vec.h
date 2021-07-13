@@ -34,7 +34,7 @@ namespace {
  * @brief Helper function to check the size of a vector is correct.
  */
 template <typename vecType, int numOfElems>
-bool check_vector_size(cl::sycl::vec<vecType, numOfElems> vector) {
+bool check_vector_size(sycl::vec<vecType, numOfElems> vector) {
   int count = (vector.get_count() == 3) ? 4 : vector.get_count();
   return ((sizeof(vecType) * count) == vector.get_size());
 }
@@ -43,7 +43,7 @@ bool check_vector_size(cl::sycl::vec<vecType, numOfElems> vector) {
  * @brief Helper function to check vector values are correct.
  */
 template <typename vecType, int numOfElems>
-bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
+bool check_vector_values(sycl::vec<vecType, numOfElems> vector,
                          vecType* vals) {
   for (int i = 0; i < numOfElems; i++) {
     if ((vals[i] != getElement(vector, i))) {
@@ -59,14 +59,14 @@ bool check_vector_values(cl::sycl::vec<vecType, numOfElems> vector,
  */
 template <typename vecType, int numOfElems>
 typename std::enable_if<is_cl_float_type<vecType>::value, bool>::type
-check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
                         vecType *vals) {
   for (int i = 0; i < numOfElems; i++) {
     vecType vectorValue = getElement(vector, i);
     if (vals[i] == vectorValue)
       continue;
     const vecType ulpsExpected = 2.5; // Min Accuracy for x / y
-    const vecType difference = cl::sycl::fabs(vectorValue - vals[i]);
+    const vecType difference = sycl::fabs(vectorValue - vals[i]);
     // using sycl functions to get ulp because it used in kernel
     const vecType differenceExpected = ulpsExpected * get_ulp_sycl(vals[i]);
 
@@ -82,7 +82,7 @@ check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
  */
 template <typename vecType, int numOfElems>
 typename std::enable_if<!is_cl_float_type<vecType>::value, bool>::type
-check_vector_values_div(cl::sycl::vec<vecType, numOfElems> vector,
+check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
                         vecType *vals) {
   return check_vector_values(vector, vals);
 }
@@ -123,8 +123,8 @@ static constexpr bool if_FP_to_non_FP_conv_v =
     is_cl_float_type<sourceType>::value && !is_cl_float_type<targetType>::value;
 
 template <typename vecType, int N, typename convertType>
-cl::sycl::vec<convertType, N> convert_vec(cl::sycl::vec<vecType, N> inputVec) {
-  cl::sycl::vec<convertType, N> resVec;
+sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
+  sycl::vec<convertType, N> resVec;
   for (size_t i = 0; i < N; ++i) {
     vecType elem = getElement(inputVec, i);
     setElement<convertType, N>(resVec, i, convertType(elem));
@@ -133,7 +133,7 @@ cl::sycl::vec<convertType, N> convert_vec(cl::sycl::vec<vecType, N> inputVec) {
 }
 
 template <typename vecType, int N, typename convertType>
-cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
+sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
@@ -145,7 +145,7 @@ cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
                               static_cast<convertType>(-4),
                               static_cast<convertType>(-2),
                               static_cast<convertType>(-2)};
-    cl::sycl::vec<convertType, N> resVec;
+    sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
       auto elemConvert = float_map_match(floats, vals, size, elem);
@@ -158,7 +158,7 @@ cl::sycl::vec<convertType, N> rte(cl::sycl::vec<vecType, N> inputVec) {
 
 // rtz
 template <typename vecType, int N, typename convertType>
-cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
+sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
@@ -170,7 +170,7 @@ cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
                               static_cast<convertType>(-3),
                               static_cast<convertType>(-1),
                               static_cast<convertType>(-2)};
-    cl::sycl::vec<convertType, N> resVec;
+    sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
       auto elemConvert = float_map_match(floats, vals, size, elem);
@@ -183,7 +183,7 @@ cl::sycl::vec<convertType, N> rtz(cl::sycl::vec<vecType, N> inputVec) {
 
 // rtp
 template <typename vecType, int N, typename convertType>
-cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
+sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
@@ -195,7 +195,7 @@ cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
                               static_cast<convertType>(-3),
                               static_cast<convertType>(-1),
                               static_cast<convertType>(-2)};
-    cl::sycl::vec<convertType, N> resVec;
+    sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
       auto elemConvert = float_map_match(floats, vals, size, elem);
@@ -208,7 +208,7 @@ cl::sycl::vec<convertType, N> rtp(cl::sycl::vec<vecType, N> inputVec) {
 
 // rtn
 template <typename vecType, int N, typename convertType>
-cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
+sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
@@ -220,7 +220,7 @@ cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
                               static_cast<convertType>(-4),
                               static_cast<convertType>(-2),
                               static_cast<convertType>(-3)};
-    cl::sycl::vec<convertType, N> resVec;
+    sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
       auto elemConvert = float_map_match(floats, vals, size, elem);
@@ -236,7 +236,7 @@ cl::sycl::vec<convertType, N> rtn(cl::sycl::vec<vecType, N> inputVec) {
 // initial vectors contain negative values, check conversion of their absolute
 // values instead.
 template <typename vecType, int N, typename convertType>
-void handleFPToUnsignedConv(cl::sycl::vec<vecType, N>& inputVec) {
+void handleFPToUnsignedConv(sycl::vec<vecType, N>& inputVec) {
   if constexpr (is_cl_float_type<vecType>::value &&
                 std::is_unsigned_v<convertType>) {
     for (size_t i = 0; i < N; ++i) {
@@ -247,27 +247,27 @@ void handleFPToUnsignedConv(cl::sycl::vec<vecType, N>& inputVec) {
 }
 
 template <typename vecType, int N, typename convertType,
-          cl::sycl::rounding_mode mode>
-bool check_vector_convert_result(cl::sycl::vec<vecType, N> inputVec) {
+          sycl::rounding_mode mode>
+bool check_vector_convert_result(sycl::vec<vecType, N> inputVec) {
   handleFPToUnsignedConv<vecType, N, convertType>(inputVec);
-  cl::sycl::vec<convertType, N> convertedVec =
+  sycl::vec<convertType, N> convertedVec =
       inputVec.template convert<convertType, mode>();
 
-  cl::sycl::vec<convertType, N> expectedVec;
+  sycl::vec<convertType, N> expectedVec;
   switch (mode) {
-    case cl::sycl::rounding_mode::automatic:
+    case sycl::rounding_mode::automatic:
       expectedVec = convert_vec<vecType, N, convertType>(inputVec);
       break;
-    case cl::sycl::rounding_mode::rte:
+    case sycl::rounding_mode::rte:
       expectedVec = rte<vecType, N, convertType>(inputVec);
       break;
-    case cl::sycl::rounding_mode::rtz:
+    case sycl::rounding_mode::rtz:
       expectedVec = rtz<vecType, N, convertType>(inputVec);
       break;
-    case cl::sycl::rounding_mode::rtp:
+    case sycl::rounding_mode::rtp:
       expectedVec = rtp<vecType, N, convertType>(inputVec);
       break;
-    case cl::sycl::rounding_mode::rtn:
+    case sycl::rounding_mode::rtn:
       expectedVec = rtn<vecType, N, convertType>(inputVec);
       break;
   }
@@ -278,20 +278,20 @@ bool check_vector_convert_result(cl::sycl::vec<vecType, N> inputVec) {
 }
 
 template <typename vecType, int N, typename convertType>
-bool check_vector_convert_modes(cl::sycl::vec<vecType, N> inputVec) {
+bool check_vector_convert_modes(sycl::vec<vecType, N> inputVec) {
   bool flag = true;
   flag &=
       check_vector_convert_result<vecType, N, convertType,
-                                  cl::sycl::rounding_mode::automatic>(inputVec);
+                                  sycl::rounding_mode::automatic>(inputVec);
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   flag &= check_vector_convert_result<vecType, N, convertType,
-                                      cl::sycl::rounding_mode::rte>(inputVec);
+                                      sycl::rounding_mode::rte>(inputVec);
   flag &= check_vector_convert_result<vecType, N, convertType,
-                                      cl::sycl::rounding_mode::rtz>(inputVec);
+                                      sycl::rounding_mode::rtz>(inputVec);
   flag &= check_vector_convert_result<vecType, N, convertType,
-                                      cl::sycl::rounding_mode::rtp>(inputVec);
+                                      sycl::rounding_mode::rtp>(inputVec);
   flag &= check_vector_convert_result<vecType, N, convertType,
-                                      cl::sycl::rounding_mode::rtn>(inputVec);
+                                      sycl::rounding_mode::rtn>(inputVec);
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return flag;
 }
@@ -304,40 +304,40 @@ struct vector_swizzle_check {
 template <typename T>
 struct vector_swizzle_check<T, 1> {
   static auto get_swizzle(sycl::vec<T, 1> v) {
-    return v.template swizzle<cl::sycl::elem::s0>();
+    return v.template swizzle<sycl::elem::s0>();
   }
 };
 
 template <typename T>
 struct vector_swizzle_check<T, 2> {
   static auto get_swizzle(sycl::vec<T, 2> v) {
-    return v.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>();
+    return v.template swizzle<sycl::elem::s0, sycl::elem::s1>();
   }
 };
 
 template <typename T>
 struct vector_swizzle_check<T, 3> {
   static auto get_swizzle(sycl::vec<T, 3> v) {
-    return v.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2>();
+    return v.template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2>();
   }
 };
 
 template <typename T>
 struct vector_swizzle_check<T, 4> {
   static auto get_swizzle(sycl::vec<T, 4> v) {
-    return v.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3>();
+    return v.template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3>();
   }
 };
 
 template <typename T>
 struct vector_swizzle_check<T, 8> {
   static auto get_swizzle(sycl::vec<T, 8> v) {
-    return v.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3,
-                              cl::sycl::elem::s4, cl::sycl::elem::s5,
-                              cl::sycl::elem::s6, cl::sycl::elem::s7>();
+    return v.template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3,
+                              sycl::elem::s4, sycl::elem::s5,
+                              sycl::elem::s6, sycl::elem::s7>();
   }
 };
 
@@ -345,12 +345,12 @@ template <typename T>
 struct vector_swizzle_check<T, 16> {
   static auto get_swizzle(sycl::vec<T, 16> v) {
     return v.template swizzle<
-        cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-        cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-        cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-        cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-        cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-        cl::sycl::elem::sF>();
+        sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
+        sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
+        sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
+        sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
+        sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
+        sycl::elem::sF>();
   }
 };
 
@@ -360,7 +360,7 @@ struct vector_swizzle_check<T, 16> {
  * get_size()
  */
 template <typename vecType, int N>
-bool check_vector_get_count_get_size(cl::sycl::vec<vecType, N> inputVec) {
+bool check_vector_get_count_get_size(sycl::vec<vecType, N> inputVec) {
   // get_count()
   size_t count = inputVec.get_count();
   if (count != N) {
@@ -388,7 +388,7 @@ bool check_vector_get_count_get_size(cl::sycl::vec<vecType, N> inputVec) {
  * @brief Helper function to test the convert() function of a vec
  */
 template <typename vecType, int N, typename convertType>
-bool check_vector_convert(cl::sycl::vec<vecType, N> inputVec) {
+bool check_vector_convert(sycl::vec<vecType, N> inputVec) {
   // convert()
   return check_vector_convert_modes<vecType, N, convertType>(inputVec) &&
          check_vector_convert_modes<vecType, N, convertType>(
@@ -396,8 +396,8 @@ bool check_vector_convert(cl::sycl::vec<vecType, N> inputVec) {
 }
 
 template <typename vecType, int N, typename asType, int asN>
-asType check_as_result(cl::sycl::vec<vecType, N> inputVec,
-                       cl::sycl::vec<asType, asN> asVec) {
+asType check_as_result(sycl::vec<vecType, N> inputVec,
+                       sycl::vec<asType, asN> asVec) {
   vecType tmp_ptr[N];
   for (size_t i = 0; i < N; ++i) {
     tmp_ptr[i] = getElement(inputVec, i);
@@ -416,8 +416,8 @@ asType check_as_result(cl::sycl::vec<vecType, N> inputVec,
  * as()
  */
 template <typename vecType, int N, typename asType, int asN>
-bool check_vector_as(cl::sycl::vec<vecType, N> inputVec) {
-  using asVecType = cl::sycl::vec<asType, asN>;
+bool check_vector_as(sycl::vec<vecType, N> inputVec) {
+  using asVecType = sycl::vec<asType, asN>;
   asVecType asVec = inputVec.template as<asVecType>();
   asVecType asVecSwizzle =
       vector_swizzle_check<vecType, N>::get_swizzle(inputVec)
@@ -431,9 +431,9 @@ bool check_vector_as(cl::sycl::vec<vecType, N> inputVec) {
  * as()
  */
 template <typename vecType, int N, typename asType, int asN>
-bool check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
-  if constexpr (sizeof(cl::sycl::vec<vecType, N>) ==
-                sizeof(cl::sycl::vec<asType, asN>))
+bool check_vectorN_as(sycl::vec<vecType, N> inputVec) {
+  if constexpr (sizeof(sycl::vec<vecType, N>) ==
+                sizeof(sycl::vec<asType, asN>))
     return check_vector_as<vecType, N, asType, asN>(inputVec);
   else
     return true;
@@ -444,7 +444,7 @@ bool check_vectorN_as(cl::sycl::vec<vecType, N> inputVec) {
  * sizes
  */
 template <typename vecType, int N, typename newVecType>
-bool check_convert_as_all_dims(cl::sycl::vec<vecType, N> inputVec) {
+bool check_convert_as_all_dims(sycl::vec<vecType, N> inputVec) {
   bool result = true;
   result += check_vector_convert<vecType, N, newVecType>(inputVec);
 
@@ -462,7 +462,7 @@ bool check_convert_as_all_dims(cl::sycl::vec<vecType, N> inputVec) {
  * @brief Helper function to test as() and convert() functions for all types
  */
 template <typename vecType, int N>
-bool check_convert_as_all_types(cl::sycl::vec<vecType, N> inputVec) {
+bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
   result += check_convert_as_all_dims<vecType, N, char>(inputVec);
   result += check_convert_as_all_dims<vecType, N, signed char>(inputVec);
@@ -478,7 +478,7 @@ bool check_convert_as_all_types(cl::sycl::vec<vecType, N> inputVec) {
       check_convert_as_all_dims<vecType, N, unsigned long long int>(inputVec);
   result += check_convert_as_all_dims<vecType, N, float>(inputVec);
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  result += check_convert_as_all_dims<vecType, N, cl::sycl::byte>(inputVec);
+  result += check_convert_as_all_dims<vecType, N, sycl::byte>(inputVec);
 
 #ifdef INT8_MAX
   result += check_convert_as_all_dims<vecType, N, std::int8_t>(inputVec);
@@ -516,11 +516,11 @@ bool check_convert_as_all_types(cl::sycl::vec<vecType, N> inputVec) {
  * even()
  */
 template <typename vecType>
-bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
+bool check_lo_hi_odd_even(sycl::vec<vecType, 2> inputVec, vecType* vals) {
   constexpr size_t mid = 1;
   // lo()
   {
-    cl::sycl::vec<vecType, mid> loVec{inputVec.lo()};
+    sycl::vec<vecType, mid> loVec{inputVec.lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
@@ -530,8 +530,8 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> loVec{
-        inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
+    sycl::vec<vecType, mid> loVec{
+        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
             .lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -545,7 +545,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
   // test it
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       hiVals[i] = vals[i + mid];
@@ -556,8 +556,8 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
   }
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{
-        inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
+    sycl::vec<vecType, mid> hiVec{
+        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
             .hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -571,7 +571,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
   // test it
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       oddVals[i] = vals[i * 2 + 1];
@@ -582,8 +582,8 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
   }
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{
-        inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
+    sycl::vec<vecType, mid> oddVec{
+        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
             .odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -595,7 +595,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
   }
   // even()
   {
-    cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+    sycl::vec<vecType, mid> evenVec{inputVec.even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -605,8 +605,8 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> evenVec{
-        inputVec.template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1>()
+    sycl::vec<vecType, mid> evenVec{
+        inputVec.template swizzle<sycl::elem::s0, sycl::elem::s1>()
             .even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -628,11 +628,11 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 2> inputVec, vecType* vals) {
  * even()
  */
 template <typename vecType>
-bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 3> inputVec, vecType* vals) {
+bool check_lo_hi_odd_even(sycl::vec<vecType, 3> inputVec, vecType* vals) {
   constexpr size_t mid = 2;
   // lo()
   {
-    cl::sycl::vec<vecType, mid> loVec{inputVec.lo()};
+    sycl::vec<vecType, mid> loVec{inputVec.lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
@@ -642,10 +642,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 3> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> loVec{
+    sycl::vec<vecType, mid> loVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2>()
             .lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -661,7 +661,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 3> inputVec, vecType* vals) {
   // test it
   // even()
   {
-    cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+    sycl::vec<vecType, mid> evenVec{inputVec.even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -671,10 +671,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 3> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> evenVec{
+    sycl::vec<vecType, mid> evenVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2>()
             .even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -696,11 +696,11 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 3> inputVec, vecType* vals) {
  * even()
  */
 template <typename vecType>
-bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
+bool check_lo_hi_odd_even(sycl::vec<vecType, 4> inputVec, vecType* vals) {
   constexpr size_t mid = 2;
   // lo()
   {
-    cl::sycl::vec<vecType, mid> loVec{inputVec.lo()};
+    sycl::vec<vecType, mid> loVec{inputVec.lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
@@ -710,10 +710,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> loVec{
+    sycl::vec<vecType, mid> loVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3>()
             .lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -727,7 +727,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
   // test it
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       hiVals[i] = vals[i + mid];
@@ -738,10 +738,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
   }
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{
+    sycl::vec<vecType, mid> hiVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3>()
             .hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -755,7 +755,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
   // test it
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       oddVals[i] = vals[i * 2 + 1];
@@ -766,10 +766,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
   }
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{
+    sycl::vec<vecType, mid> oddVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3>()
             .odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -781,7 +781,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
   }
   // even()
   {
-    cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+    sycl::vec<vecType, mid> evenVec{inputVec.even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -791,10 +791,10 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> evenVec{
+    sycl::vec<vecType, mid> evenVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3>()
             .even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -816,11 +816,11 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 4> inputVec, vecType* vals) {
  * even()
  */
 template <typename vecType>
-bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
+bool check_lo_hi_odd_even(sycl::vec<vecType, 8> inputVec, vecType* vals) {
   constexpr size_t mid = 4;
   // lo()
   {
-    cl::sycl::vec<vecType, mid> loVec{inputVec.lo()};
+    sycl::vec<vecType, mid> loVec{inputVec.lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       loVals[i] = vals[i];
@@ -830,12 +830,12 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> loVec{
+    sycl::vec<vecType, mid> loVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3,
-                              cl::sycl::elem::s4, cl::sycl::elem::s5,
-                              cl::sycl::elem::s6, cl::sycl::elem::s7>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3,
+                              sycl::elem::s4, sycl::elem::s5,
+                              sycl::elem::s6, sycl::elem::s7>()
             .lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -849,7 +849,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
   // test it
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       hiVals[i] = vals[i + mid];
@@ -860,12 +860,12 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
   }
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{
+    sycl::vec<vecType, mid> hiVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3,
-                              cl::sycl::elem::s4, cl::sycl::elem::s5,
-                              cl::sycl::elem::s6, cl::sycl::elem::s7>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3,
+                              sycl::elem::s4, sycl::elem::s5,
+                              sycl::elem::s6, sycl::elem::s7>()
             .hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -879,7 +879,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
   // test it
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       oddVals[i] = vals[i * 2 + 1];
@@ -890,12 +890,12 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
   }
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{
+    sycl::vec<vecType, mid> oddVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3,
-                              cl::sycl::elem::s4, cl::sycl::elem::s5,
-                              cl::sycl::elem::s6, cl::sycl::elem::s7>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3,
+                              sycl::elem::s4, sycl::elem::s5,
+                              sycl::elem::s6, sycl::elem::s7>()
             .odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -907,7 +907,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
   }
   // even()
   {
-    cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+    sycl::vec<vecType, mid> evenVec{inputVec.even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -917,12 +917,12 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> evenVec{
+    sycl::vec<vecType, mid> evenVec{
         inputVec
-            .template swizzle<cl::sycl::elem::s0, cl::sycl::elem::s1,
-                              cl::sycl::elem::s2, cl::sycl::elem::s3,
-                              cl::sycl::elem::s4, cl::sycl::elem::s5,
-                              cl::sycl::elem::s6, cl::sycl::elem::s7>()
+            .template swizzle<sycl::elem::s0, sycl::elem::s1,
+                              sycl::elem::s2, sycl::elem::s3,
+                              sycl::elem::s4, sycl::elem::s5,
+                              sycl::elem::s6, sycl::elem::s7>()
             .even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -944,11 +944,11 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 8> inputVec, vecType* vals) {
  * even()
  */
 template <typename vecType>
-bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
+bool check_lo_hi_odd_even(sycl::vec<vecType, 16> inputVec, vecType* vals) {
   constexpr size_t mid = 8;
   // lo()
   {
-    cl::sycl::vec<vecType, mid> loVec{inputVec
+    sycl::vec<vecType, mid> loVec{inputVec
 
                                           .lo()};
     vecType loVals[mid] = {0};
@@ -960,15 +960,15 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> loVec{
+    sycl::vec<vecType, mid> loVec{
         inputVec
             .template swizzle<
-                cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-                cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-                cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-                cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-                cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-                cl::sycl::elem::sF>()
+                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
+                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
+                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
+                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
+                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
+                sycl::elem::sF>()
             .lo()};
     vecType loVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -982,7 +982,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
   // test it
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{inputVec.hi()};
+    sycl::vec<vecType, mid> hiVec{inputVec.hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
       hiVals[i] = vals[i + mid];
@@ -993,15 +993,15 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
   }
   {
     // hi()
-    cl::sycl::vec<vecType, mid> hiVec{
+    sycl::vec<vecType, mid> hiVec{
         inputVec
             .template swizzle<
-                cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-                cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-                cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-                cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-                cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-                cl::sycl::elem::sF>()
+                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
+                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
+                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
+                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
+                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
+                sycl::elem::sF>()
             .hi()};
     vecType hiVals[mid] = {0};
     for (size_t i = 0; i < mid; i++) {
@@ -1015,7 +1015,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
   // test it
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{inputVec.odd()};
+    sycl::vec<vecType, mid> oddVec{inputVec.odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       oddVals[i] = vals[i * 2 + 1];
@@ -1026,15 +1026,15 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
   }
   {
     // odd()
-    cl::sycl::vec<vecType, mid> oddVec{
+    sycl::vec<vecType, mid> oddVec{
         inputVec
             .template swizzle<
-                cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-                cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-                cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-                cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-                cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-                cl::sycl::elem::sF>()
+                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
+                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
+                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
+                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
+                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
+                sycl::elem::sF>()
             .odd()};
     vecType oddVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
@@ -1046,7 +1046,7 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
   }
   // even()
   {
-    cl::sycl::vec<vecType, mid> evenVec{inputVec.even()};
+    sycl::vec<vecType, mid> evenVec{inputVec.even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {
       evenVals[i] = vals[i * 2];
@@ -1056,15 +1056,15 @@ bool check_lo_hi_odd_even(cl::sycl::vec<vecType, 16> inputVec, vecType* vals) {
     }
   }
   {
-    cl::sycl::vec<vecType, mid> evenVec{
+    sycl::vec<vecType, mid> evenVec{
         inputVec
             .template swizzle<
-                cl::sycl::elem::s0, cl::sycl::elem::s1, cl::sycl::elem::s2,
-                cl::sycl::elem::s3, cl::sycl::elem::s4, cl::sycl::elem::s5,
-                cl::sycl::elem::s6, cl::sycl::elem::s7, cl::sycl::elem::s8,
-                cl::sycl::elem::s9, cl::sycl::elem::sA, cl::sycl::elem::sB,
-                cl::sycl::elem::sC, cl::sycl::elem::sD, cl::sycl::elem::sE,
-                cl::sycl::elem::sF>()
+                sycl::elem::s0, sycl::elem::s1, sycl::elem::s2,
+                sycl::elem::s3, sycl::elem::s4, sycl::elem::s5,
+                sycl::elem::s6, sycl::elem::s7, sycl::elem::s8,
+                sycl::elem::s9, sycl::elem::sA, sycl::elem::sB,
+                sycl::elem::sC, sycl::elem::sD, sycl::elem::sE,
+                sycl::elem::sF>()
             .even()};
     vecType evenVals[mid] = {0};
     for (size_t i = 0; i < mid; ++i) {

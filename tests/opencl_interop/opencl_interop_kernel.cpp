@@ -18,27 +18,27 @@ using namespace sycl_cts;
 /** check inter-op types
  */
 template <typename T>
-using globalPtrType = typename cl::sycl::global_ptr<T>::pointer;
+using globalPtrType = typename sycl::global_ptr<T>::pointer;
 template <typename T>
-using constantPtrType = typename cl::sycl::constant_ptr<T>::pointer;
+using constantPtrType = typename sycl::constant_ptr<T>::pointer;
 template <typename T>
-using localPtrType = typename cl::sycl::local_ptr<T>::pointer;
+using localPtrType = typename sycl::local_ptr<T>::pointer;
 template <typename T>
-using privatePtrType = typename cl::sycl::private_ptr<T>::pointer;
+using privatePtrType = typename sycl::private_ptr<T>::pointer;
 template <typename T>
-using globalMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::access::address_space::global_space>::pointer;
+using globalMultiPtrType = typename sycl::multi_ptr<
+    T, sycl::access::address_space::global_space>::pointer;
 template <typename T>
-using constantMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::access::address_space::constant_space>::pointer;
+using constantMultiPtrType = typename sycl::multi_ptr<
+    T, sycl::access::address_space::constant_space>::pointer;
 template <typename T>
-using localMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::access::address_space::local_space>::pointer;
+using localMultiPtrType = typename sycl::multi_ptr<
+    T, sycl::access::address_space::local_space>::pointer;
 template <typename T>
-using privateMultiPtrType = typename cl::sycl::multi_ptr<
-    T, cl::sycl::access::address_space::private_space>::pointer;
+using privateMultiPtrType = typename sycl::multi_ptr<
+    T, sycl::access::address_space::private_space>::pointer;
 template <typename T, int dims>
-using vectorType = typename cl::sycl::vec<T, dims>::vector_t;
+using vectorType = typename sycl::vec<T, dims>::vector_t;
 
 /**
  * @brief Trivially-copyable standard layout custom type
@@ -56,8 +56,8 @@ struct program_kernel_interop {
 
 /** simple OpenCL test kernel
  */
-const cl::sycl::string_class kernelName = "sample";
-cl::sycl::string_class kernel_source = R"(
+const std::string kernelName = "sample";
+std::string kernel_source = R"(
 __kernel void sample(__global float * input)
 {
     input[get_global_id(0)] = get_global_id(0);
@@ -94,12 +94,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         auto context = queue.get_context();
         auto device = queue.get_device();
 
-        cl::sycl::buffer<int, 1> buffer(bufferData,
-                                        cl::sycl::range<1>(bufferSize));
+        sycl::buffer<int, 1> buffer(bufferData,
+                                        sycl::range<1>(bufferSize));
 
         cl_program clProgram{};
         if (online_compiler_supported(device.get(), log)) {
-          cl::sycl::string_class kernelSource = R"(
+          std::string kernelSource = R"(
             struct simple_struct {
               int a;
               float b;
@@ -117,12 +117,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             FAIL(log, "create_built_program failed");
           }
         } else {
-          cl::sycl::string_class programBinaryFile =
+          std::string programBinaryFile =
               "opencl_interop_kernel.bin";
 
           if (!create_program_with_binary(programBinaryFile, context.get(),
                                           device.get(), clProgram, log)) {
-            cl::sycl::string_class errorMsg =
+            std::string errorMsg =
                 "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
@@ -137,14 +137,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           FAIL(log, "create_kernel failed");
         }
 
-        cl::sycl::kernel kernel(clKernel, context);
+        sycl::kernel kernel(clKernel, context);
 
         /** test single_task(kernel)
          */
-        queue.submit([&](cl::sycl::handler &handler) {
+        queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(
+              buffer.get_access<sycl::access_mode::read_write,
+                                sycl::target::global_buffer>(
                   handler);
 
           simple_struct simpleStruct{19, 13.37f};
@@ -166,10 +166,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
         /** test parallel_for(const nd range<dimensions>&, kernel)
          */
-        queue.submit([&](cl::sycl::handler &handler) {
+        queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
-              buffer.get_access<cl::sycl::access::mode::read_write,
-                                cl::sycl::access::target::global_buffer>(
+              buffer.get_access<sycl::access_mode::read_write,
+                                sycl::target::global_buffer>(
                   handler);
 
           simple_struct simpleStruct{19, 13.37f};
@@ -178,7 +178,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
            */
           handler.set_args(bufferAccessor, 15.0f, 17, simpleStruct);
 
-          cl::sycl::range<1> myRange(1024);
+          sycl::range<1> myRange(1024);
           handler.parallel_for(myRange, kernel);
         });
 
@@ -188,7 +188,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       {
         if (!util::get_cts_object::queue(ctsSelector)
                  .get_device()
-                 .get_info<cl::sycl::info::device::image_support>()) {
+                 .get_info<sycl::info::device::image_support>()) {
           log.note("Device does not support images");
         } else {
           static constexpr size_t imageSideSize = 32;
@@ -201,14 +201,14 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           auto context = queue.get_context();
           auto device = queue.get_device();
 
-          cl::sycl::image<2> image(
-              imageData, cl::sycl::image_channel_order::rgba,
-              cl::sycl::image_channel_type::fp32,
-              cl::sycl::range<2>(imageSideSize, imageSideSize));
+          sycl::image<2> image(
+              imageData, sycl::image_channel_order::rgba,
+              sycl::image_channel_type::fp32,
+              sycl::range<2>(imageSideSize, imageSideSize));
 
           cl_program clProgram{};
           if (online_compiler_supported(device.get(), log)) {
-            cl::sycl::string_class kernelSource = R"(
+            std::string kernelSource = R"(
               struct simple_struct {
                 int a;
                 float b;
@@ -224,12 +224,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               FAIL(log, "create_built_program failed");
             }
           } else {
-            cl::sycl::string_class programBinaryFile =
+            std::string programBinaryFile =
                 "opencl_interop_image_kernel.bin";
 
             if (!create_program_with_binary(programBinaryFile, context.get(),
                                             device.get(), clProgram, log)) {
-              cl::sycl::string_class errorMsg =
+              std::string errorMsg =
                   "create_program_with_binary failed.";
               errorMsg +=
                   " Since online compile is not supported, expecting to find " +
@@ -244,20 +244,20 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             FAIL(log, "create_kernel failed");
           }
 
-          cl::sycl::kernel kernel(clKernel, context);
+          sycl::kernel kernel(clKernel, context);
 
           /** test single_task(kernel)
            */
-          queue.submit([&](cl::sycl::handler &handler) {
+          queue.submit([&](sycl::handler &handler) {
             auto imageAccessor =
                 image
-                    .get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
+                    .get_access<sycl::float4, sycl::access_mode::read>(
                         handler);
 
-            cl::sycl::sampler sampler(
-                cl::sycl::coordinate_normalization_mode::unnormalized,
-                cl::sycl::addressing_mode::none,
-                cl::sycl::filtering_mode::nearest);
+            sycl::sampler sampler(
+                sycl::coordinate_normalization_mode::unnormalized,
+                sycl::addressing_mode::none,
+                sycl::filtering_mode::nearest);
 
             /** check the set_arg() methods
              */
@@ -272,22 +272,22 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           /** test parallel_for(const nd range<dimensions>&, kernel)
            */
-          queue.submit([&](cl::sycl::handler &handler) {
+          queue.submit([&](sycl::handler &handler) {
             auto imageAccessor =
                 image
-                    .get_access<cl::sycl::float4, cl::sycl::access::mode::read>(
+                    .get_access<sycl::float4, sycl::access_mode::read>(
                         handler);
 
-            cl::sycl::sampler sampler(
-                cl::sycl::coordinate_normalization_mode::unnormalized,
-                cl::sycl::addressing_mode::none,
-                cl::sycl::filtering_mode::nearest);
+            sycl::sampler sampler(
+                sycl::coordinate_normalization_mode::unnormalized,
+                sycl::addressing_mode::none,
+                sycl::filtering_mode::nearest);
 
             /** check the set_args() method
              */
             handler.set_args(imageAccessor, sampler);
 
-            cl::sycl::range<1> myRange(1024);
+            sycl::range<1> myRange(1024);
             handler.parallel_for(myRange, kernel);
           });
 
@@ -303,8 +303,8 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
       bool compiler_available = is_compiler_available(deviceList);
       bool linker_available = is_linker_available(deviceList);
 
-      const cl::sycl::string_class compileOptions = "-cl-opt-disable";
-      const cl::sycl::string_class linkOptions = "-cl-fast-relaxed-math";
+      const std::string compileOptions = "-cl-opt-disable";
+      const std::string linkOptions = "-cl-fast-relaxed-math";
 
       {
         log.note(
@@ -325,37 +325,37 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
 
           // Create a SYCL program object from a cl_program object
-          cl::sycl::program myExternProgram(context,
+          sycl::program myExternProgram(context,
                                             myClProgram);
 
           if (myExternProgram.get_state() !=
-              cl::sycl::program_state::compiled) {
+              sycl::program_state::compiled) {
             FAIL(log, "Compiled interop program should be in compiled state");
           }
 
           // Add in the SYCL program object for our kernel
-          cl::sycl::program mySyclProgram(context);
+          sycl::program mySyclProgram(context);
           mySyclProgram.compile_with_kernel_type<program_kernel_interop<0>>();
 
-          if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
           // Link myClProgram with the SYCL program object
           try {
-            cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram});
+            sycl::program myLinkedProgram({myExternProgram, mySyclProgram});
 
             if (myLinkedProgram.get_state() !=
-                cl::sycl::program_state::linked) {
+                sycl::program_state::linked) {
               FAIL(log, "Program was not linked");
             }
 
-            ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            ctsQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel_interop<0>());
             });
             ctsQueue.wait_and_throw();
 
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!linker_available) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -383,20 +383,20 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
 
           // Create a SYCL program object from a cl_program object
-          cl::sycl::program myExternProgram(context,
+          sycl::program myExternProgram(context,
                                             myClProgram);
 
           if (myExternProgram.get_state() !=
-              cl::sycl::program_state::compiled) {
+              sycl::program_state::compiled) {
             FAIL(log, "Compiled interop program should be in compiled state");
           }
 
           // Add in the SYCL program object for our kernel
-          cl::sycl::program mySyclProgram(context);
+          sycl::program mySyclProgram(context);
           mySyclProgram.compile_with_kernel_type<program_kernel_interop<1>>(
               compileOptions);
 
-          if (mySyclProgram.get_state() != cl::sycl::program_state::compiled) {
+          if (mySyclProgram.get_state() != sycl::program_state::compiled) {
             FAIL(log, "Compiled SYCL program should be in compiled state");
           }
 
@@ -407,11 +407,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
 
           // Link myClProgram with the SYCL program object
           try {
-            cl::sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
+            sycl::program myLinkedProgram({myExternProgram, mySyclProgram},
                                               linkOptions);
 
             if (myLinkedProgram.get_state() !=
-                cl::sycl::program_state::linked) {
+                sycl::program_state::linked) {
               FAIL(log, "Program was not linked");
             }
 
@@ -419,12 +419,12 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
               FAIL(log, "Linked program did not store the link options");
             }
 
-            ctsQueue.submit([&](cl::sycl::handler &cgh) {
+            ctsQueue.submit([&](sycl::handler &cgh) {
               cgh.single_task(program_kernel_interop<1>());
             });
             ctsQueue.wait_and_throw();
 
-          } catch (const cl::sycl::feature_not_supported &fnse_link) {
+          } catch (const sycl::feature_not_supported &fnse_link) {
             if (!linker_available) {
               log.note("online linker not available -- skipping check");
             } else {
@@ -438,10 +438,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         log.note("check compiling and building from source");
 
         {  // Check compile_with_source(source)
-          cl::sycl::program prog(context);
+          sycl::program prog(context);
           try {
             prog.compile_with_source(kernel_source);
-          } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          } catch (const sycl::feature_not_supported &fnse_compile) {
             if (!compiler_available) {
               log.note("online compiler not available -- skipping check");
             } else {
@@ -450,10 +450,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
         {  // Check compile_with_source(source, options)
-          cl::sycl::program prog(context);
+          sycl::program prog(context);
           try {
             prog.compile_with_source(kernel_source, compileOptions);
-          } catch (const cl::sycl::feature_not_supported &fnse_compile) {
+          } catch (const sycl::feature_not_supported &fnse_compile) {
             if (!compiler_available) {
               log.note("online compiler not available -- skipping check");
             } else {
@@ -462,10 +462,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
         {  // Check build_with_source(source)
-          cl::sycl::program prog(context);
+          sycl::program prog(context);
           try {
             prog.build_with_source(kernel_source);
-          } catch (const cl::sycl::feature_not_supported &fnse_build) {
+          } catch (const sycl::feature_not_supported &fnse_build) {
             if (!compiler_available || !linker_available) {
               log.note(
                   "online compiler or linker not available -- skipping check");
@@ -475,11 +475,11 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
           }
         }
         {  // Check build_with_source(source, options)
-          cl::sycl::program prog(context);
+          sycl::program prog(context);
 
           try {
             prog.build_with_source(kernel_source, linkOptions);
-          } catch (const cl::sycl::feature_not_supported &fnse_build) {
+          } catch (const sycl::feature_not_supported &fnse_build) {
             if (!compiler_available || !linker_available) {
               log.note(
                   "online compiler or linker not available -- skipping check");
@@ -490,7 +490,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
 
         {  // Check retrieving kernel
-          cl::sycl::program prog(context);
+          sycl::program prog(context);
 
           try {
             prog.build_with_source(kernel_source);
@@ -503,9 +503,9 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
             }
 
             // Check get_kernel(string_class)
-            cl::sycl::kernel k = prog.get_kernel(kernelName);
+            sycl::kernel k = prog.get_kernel(kernelName);
 
-          } catch (const cl::sycl::feature_not_supported &fnse_build) {
+          } catch (const sycl::feature_not_supported &fnse_build) {
             if (!compiler_available || !linker_available) {
               log.note(
                   "online compiler or linker not available -- skipping check");
@@ -516,10 +516,10 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         }
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

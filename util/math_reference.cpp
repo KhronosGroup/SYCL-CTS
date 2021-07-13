@@ -56,7 +56,7 @@ float bitselect(float a, float b, float c) {
 double bitselect(double a, double b, double c) {
   return bitselect_f_t<int64_t>(a, b, c);
 }
-cl::sycl::half bitselect(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
+sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c) {
   return bitselect_f_t<int16_t>(a, b, c);
 }
 
@@ -190,13 +190,13 @@ template <typename T> T mad_sat_signed_long(T x, T y, T z) {
 }
 
 unsigned char mad_sat(unsigned char a, unsigned char b, unsigned char c) {
-  return mad_sat_unsigned<cl::sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
 }
 unsigned short mad_sat(unsigned short a, unsigned short b, unsigned short c) {
-  return mad_sat_unsigned<cl::sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
 }
 unsigned int mad_sat(unsigned int a, unsigned int b, unsigned int c) {
-  return mad_sat_unsigned<cl::sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
 }
 unsigned long mad_sat(unsigned long a, unsigned long b, unsigned long c) {
   return mad_sat_unsigned_long(a, b, c);
@@ -206,16 +206,16 @@ unsigned long long mad_sat(unsigned long long a, unsigned long long b,
   return mad_sat_unsigned_long(a, b, c);
 }
 char mad_sat(char a, char b, char c) {
-  return mad_sat_signed<cl::sycl::cl_long>(a, b, c);
+  return mad_sat_signed<sycl::cl_long>(a, b, c);
 }
 signed char mad_sat(signed char a, signed char b, signed char c) {
-  return mad_sat_signed<cl::sycl::cl_long>(a, b, c);
+  return mad_sat_signed<sycl::cl_long>(a, b, c);
 }
 short mad_sat(short a, short b, short c) {
-  return mad_sat_signed<cl::sycl::cl_long>(a, b, c);
+  return mad_sat_signed<sycl::cl_long>(a, b, c);
 }
 int mad_sat(int a, int b, int c) {
-  return mad_sat_signed<cl::sycl::cl_long>(a, b, c);
+  return mad_sat_signed<sycl::cl_long>(a, b, c);
 }
 long mad_sat(long a, long b, long c) {
   return mad_sat_signed_long<long>(a, b, c);
@@ -404,42 +404,42 @@ sycl_cts::resultRef<uint32_t> mul24(uint32_t x, uint32_t y) {
  *
  */
 
-cl::sycl::half acospi(cl::sycl::half a) { return reference_acospi(a); }
+sycl::half acospi(sycl::half a) { return reference_acospi(a); }
 float acospi(float a) { return reference_acospi(a); }
 double acospi(double a) { return reference_acospil(a); }
 
-cl::sycl::half asinpi(cl::sycl::half a) { return reference_asinpi(a); }
+sycl::half asinpi(sycl::half a) { return reference_asinpi(a); }
 float asinpi(float a) { return reference_asinpi(a); }
 double asinpi(double a) { return reference_asinpil(a); }
 
-cl::sycl::half atanpi(cl::sycl::half a) { return reference_atanpi(a); }
+sycl::half atanpi(sycl::half a) { return reference_atanpi(a); }
 float atanpi(float a) { return reference_atanpi(a); }
 double atanpi(double a) { return reference_atanpil(a); }
 
-cl::sycl::half atan2pi(cl::sycl::half a, cl::sycl::half b) {
+sycl::half atan2pi(sycl::half a, sycl::half b) {
   return reference_atan2pi(a, b);
 }
 float atan2pi(float a, float b) { return reference_atan2pi(a, b); }
 double atan2pi(double a, double b) { return reference_atan2pil(a, b); }
 
-cl::sycl::half cospi(cl::sycl::half a) { return reference_cospi(a); }
+sycl::half cospi(sycl::half a) { return reference_cospi(a); }
 float cospi(float a) { return reference_cospi(a); }
 double cospi(double a) { return reference_cospil(a); }
 
-cl::sycl::half fma(cl::sycl::half a, cl::sycl::half b, cl::sycl::half c) {
+sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
   return reference_fma(a, b, c, 0);
 }
 float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
 double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
-cl::sycl::half fdim(cl::sycl::half a, cl::sycl::half b) {
+sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
     double resd = static_cast<double>(a) - static_cast<double>(b);
-    cl::sycl::half res = static_cast<cl::sycl::half>(resd);
+    sycl::half res = static_cast<sycl::half>(resd);
     double diff = resd - static_cast<double>(res);
-    cl::sycl::half next =
-        nextafter(res, static_cast<cl::sycl::half>(DBL_MAX * diff));
+    sycl::half next =
+        nextafter(res, static_cast<sycl::half>(DBL_MAX * diff));
     if (static_cast<double>(next) - resd == diff) {
       int16_t rep;
       type_punn(next, rep);
@@ -455,14 +455,14 @@ float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
 double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
 double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }
 
-cl::sycl::half modf(cl::sycl::half a, cl::sycl::half *b) {
+sycl::half modf(sycl::half a, sycl::half *b) {
   float resPtr;
   float res = modf(static_cast<float>(a), &resPtr);
-  *b = static_cast<cl::sycl::half>(resPtr);
+  *b = static_cast<sycl::half>(resPtr);
   return res;
 }
 
-cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
+sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x))
     return x;
 
@@ -490,14 +490,14 @@ cl::sycl::half nextafter(cl::sycl::half x, cl::sycl::half y) {
   // into sign bit + unsigned value
   a = (a < 0) ? (int16_t)0x8000 - a : a;
 
-  return sycl::bit_cast<cl::sycl::half>(a);
+  return sycl::bit_cast<sycl::half>(a);
 }
 
-cl::sycl::half sinpi(cl::sycl::half a) { return reference_sinpi(a); }
+sycl::half sinpi(sycl::half a) { return reference_sinpi(a); }
 float sinpi(float a) { return reference_sinpi(a); }
 double sinpi(double a) { return reference_sinpil(a); }
 
-cl::sycl::half tanpi(cl::sycl::half a) { return reference_tanpi(a); }
+sycl::half tanpi(sycl::half a) { return reference_tanpi(a); }
 float tanpi(float a) { return reference_tanpi(a); }
 double tanpi(double a) { return reference_tanpil(a); }
 
@@ -506,8 +506,8 @@ double tanpi(double a) { return reference_tanpil(a); }
 // Geometric functions
 
 template <typename T, int N>
-cl::sycl::vec<T, N> cross_t(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
-  cl::sycl::vec<T, N> res;
+sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
+  sycl::vec<T, N> res;
   std::vector<T> temp_res(4);
   std::vector<T> av({a.x(), a.y(), a.z()});
   std::vector<T> bv({b.x(), b.y(), b.z()});
@@ -520,16 +520,16 @@ cl::sycl::vec<T, N> cross_t(cl::sycl::vec<T, N> a, cl::sycl::vec<T, N> b) {
   return res;
 }
 
-cl::sycl::float4 cross(cl::sycl::float4 p0, cl::sycl::float4 p1) {
+sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) {
   return cross_t(p0, p1);
 }
-cl::sycl::float3 cross(cl::sycl::float3 p0, cl::sycl::float3 p1) {
+sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) {
   return cross_t(p0, p1);
 }
-cl::sycl::double4 cross(cl::sycl::double4 p0, cl::sycl::double4 p1) {
+sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
   return cross_t(p0, p1);
 }
-cl::sycl::double3 cross(cl::sycl::double3 p0, cl::sycl::double3 p1) {
+sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
 }
 

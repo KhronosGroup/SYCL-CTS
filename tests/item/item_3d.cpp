@@ -14,35 +14,35 @@ using namespace sycl_cts;
 
 class kernel_item_3d {
  protected:
-  typedef cl::sycl::accessor<int, 3, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, 3, sycl::access_mode::read,
+                             sycl::target::global_buffer>
       t_readAccess;
-  typedef cl::sycl::accessor<int, 3, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, 3, sycl::access_mode::write,
+                             sycl::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_x;
   t_writeAccess m_o;
-  cl::sycl::range<3> r_exp;
-  cl::sycl::id<3> offset_exp;
+  sycl::range<3> r_exp;
+  sycl::id<3> offset_exp;
 
  public:
-  kernel_item_3d(t_readAccess in_, t_writeAccess out_, cl::sycl::range<3> r)
-      : m_x(in_), m_o(out_), r_exp(r), offset_exp(cl::sycl::id<3>(0, 0, 0)) {}
+  kernel_item_3d(t_readAccess in_, t_writeAccess out_, sycl::range<3> r)
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(sycl::id<3>(0, 0, 0)) {}
 
-  void operator()(cl::sycl::item<3> item) const {
+  void operator()(sycl::item<3> item) const {
     bool result = true;
-    cl::sycl::id<3> gid = item.get_id();
+    sycl::id<3> gid = item.get_id();
 
     size_t dim_a = item.get_id(0) + item.get_id(1) + item.get_id(2);
     size_t dim_b = item[0] + item[1] + item[2];
     size_t id_exp = gid.get(0) + gid.get(1) + gid.get(2);
     result &= id_exp == dim_a && id_exp == dim_b;
 
-    cl::sycl::range<3> localRange = item.get_range();
+    sycl::range<3> localRange = item.get_range();
     result &= localRange == r_exp;
 
-    cl::sycl::id<3> offset = item.get_offset();
+    sycl::id<3> offset = item.get_offset();
     result &= offset == offset_exp;
 
     /* get work item range */
@@ -105,29 +105,29 @@ bool test_item_3d(util::logger &log) {
   buffer_fill(dataIn.get(), nWidth, nHeight, nDepth);
 
   try {
-    cl::sycl::range<3> dataRange(nWidth, nHeight, nDepth);
+    sycl::range<3> dataRange(nWidth, nHeight, nDepth);
 
-    cl::sycl::buffer<int, 3> bufIn(dataIn.get(), dataRange);
-    cl::sycl::buffer<int, 3> bufOut(dataOut.get(), dataRange);
+    sycl::buffer<int, 3> bufIn(dataIn.get(), dataRange);
+    sycl::buffer<int, 3> bufOut(dataOut.get(), dataRange);
 
     auto cmdQueue = util::get_cts_object::queue();
 
-    cmdQueue.submit([&](cl::sycl::handler &cgh) {
-      auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
+    cmdQueue.submit([&](sycl::handler &cgh) {
+      auto accIn = bufIn.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
-      auto r = cl::sycl::range<3>(dataRange);
+      auto r = sycl::range<3>(dataRange);
       kernel_item_3d kern = kernel_item_3d(accIn, accOut, r);
 
       cgh.parallel_for(r, kern);
     });
 
     cmdQueue.wait_and_throw();
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
     return false;
   }
@@ -140,7 +140,7 @@ bool test_item_3d(util::logger &log) {
   return true;
 }
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:

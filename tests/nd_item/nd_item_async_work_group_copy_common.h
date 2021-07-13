@@ -32,7 +32,7 @@ struct check_dim {
    * @param log Logger to use for test
    * @param typeName The string naming the type of data for logs
    */
-  void operator()(cl::sycl::queue &queue, sycl_cts::util::logger &log,
+  void operator()(sycl::queue &queue, sycl_cts::util::logger &log,
                   std::string typeName) {
     using kernelT = kernel_type<T, dim>;
     using kernelInvokeT = invoke_nd_item<dim, kernelT>;

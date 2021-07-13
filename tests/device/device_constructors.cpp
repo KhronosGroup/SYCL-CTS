@@ -13,7 +13,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** tests the constructors for cl::sycl::device
+/** tests the constructors for sycl::device
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,7 +30,7 @@ class TEST_NAME : public util::test_base {
       /** check default constructor and destructor
        */
       {
-        cl::sycl::device device;
+        sycl::device device;
 
         if (!device.is_host()) {
           FAIL(log, "device was not constructed correctly (is_host)");
@@ -41,7 +41,7 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device device(selector);
+        sycl::device device(selector);
 
         if (device.is_host() != selector.is_host()) {
           FAIL(log, "device was not constructed correctly (is_host)");
@@ -52,8 +52,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB(deviceA);
+        sycl::device deviceA(selector);
+        sycl::device deviceB(deviceA);
 
         if (deviceA.is_host() != deviceB.is_host()) {
           FAIL(log, "device was not copied correctly (is_host)");
@@ -70,8 +70,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB = deviceA;
+        sycl::device deviceA(selector);
+        sycl::device deviceB = deviceA;
 
         if (deviceA.is_host() != deviceB.is_host()) {
           FAIL(log, "device was not assigned correctly (is_host)");
@@ -87,8 +87,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB(std::move(deviceA));
+        sycl::device deviceA(selector);
+        sycl::device deviceB(std::move(deviceA));
 
         if (selector.is_host() != deviceB.is_host()) {
           FAIL(log, "device was not move constructed correctly (is_host)");
@@ -99,8 +99,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB = std::move(deviceA);
+        sycl::device deviceA(selector);
+        sycl::device deviceB = std::move(deviceA);
 
         if (selector.is_host() != deviceB.is_host()) {
           FAIL(log, "device was not move assigned correctly (is_host)");
@@ -111,9 +111,9 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB(deviceA);
-        cl::sycl::device deviceC(selector);
+        sycl::device deviceA(selector);
+        sycl::device deviceB(deviceA);
+        sycl::device deviceC(selector);
         deviceC = deviceA;
 
         if (!(deviceA == deviceB)) {
@@ -139,11 +139,11 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::device deviceA(selector);
-        cl::sycl::device deviceB(deviceA);
-        cl::sycl::device deviceC = deviceA;
+        sycl::device deviceA(selector);
+        sycl::device deviceB(deviceA);
+        sycl::device deviceC = deviceA;
 
-        cl::sycl::hash_class<cl::sycl::device> hasher;
+        std::hash<sycl::device> hasher;
 
         if (hasher(deviceA) != hasher(deviceB)) {
           FAIL(log,
@@ -154,10 +154,10 @@ class TEST_NAME : public util::test_base {
                "device hash_class does not work correctly (copy assigned)");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

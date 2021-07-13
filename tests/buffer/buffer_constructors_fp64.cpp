@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer constructors tests for double and cl::sycl::cl_double
+// Provides buffer constructors tests for double and sycl::cl_double
 //
 *******************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** test cl::sycl::buffer initialization
+/** test sycl::buffer initialization
  */
 class TEST_NAME : public util::test_base {
 public:
@@ -29,7 +29,7 @@ public:
    */
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
-    if (!queue.get_device().has_extension("cl_khr_fp64")) {
+    if (!queue.get_device().has(sycl::aspect::fp64)) {
       log.note(
           "Device does not support double precision floating point operations");
       return;
@@ -40,7 +40,7 @@ public:
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<
         buffer_constructors_common::check_buffer_ctors_for_type,
-        cl::sycl::cl_double>(log, "cl::sycl::cl_double");
+        sycl::cl_double>(log, "sycl::cl_double");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

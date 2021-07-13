@@ -21,7 +21,7 @@ struct nd_item_setup_kernel;
 template <int numDims>
 struct nd_item_equality_kernel;
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -34,7 +34,7 @@ class TEST_NAME : public util::test_base {
   template <int numDims>
   void test_equality(util::logger& log) {
     try {
-      using item_t = cl::sycl::nd_item<numDims>;
+      using item_t = sycl::nd_item<numDims>;
 
       // nd_item is not default constructible, store two objects into the array
       static constexpr size_t numItems = 2;
@@ -51,10 +51,10 @@ class TEST_NAME : public util::test_base {
       check_equality_comparable_generic(log, items[0],
                                         "nd_item " + std::to_string(numDims) +
                                         " (host)");
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

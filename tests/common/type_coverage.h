@@ -24,14 +24,14 @@ struct type_name_string {
 };
 
 /**
- * @brief Specialization of type name retrievement for cl::sycl::vec class
+ * @brief Specialization of type name retrievement for sycl::vec class
  * @param T Type of the data stored in vector
  * @param nElements Number of elements stored in vector
  */
 template <typename T, size_t nElements>
-struct type_name_string<cl::sycl::vec<T, nElements>> {
+struct type_name_string<sycl::vec<T, nElements>> {
     static std::string get(const std::string& dataType) {
-        return "cl::sycl::vec<" + dataType + "," +
+        return "sycl::vec<" + dataType + "," +
                std::to_string(nElements) + ">";
     }
 };
@@ -121,12 +121,12 @@ template <template<typename, typename...> class action, typename T,
           typename ... actionArgsT, typename ... argsT>
 void for_type_and_vectors(argsT&& ... args) {
   static const auto types = type_pack<T,
-                                      typename cl::sycl::template vec<T,1>,
-                                      typename cl::sycl::template vec<T,2>,
-                                      typename cl::sycl::template vec<T,3>,
-                                      typename cl::sycl::template vec<T,4>,
-                                      typename cl::sycl::template vec<T,8>,
-                                      typename cl::sycl::template vec<T,16>>{};
+                                      typename sycl::template vec<T,1>,
+                                      typename sycl::template vec<T,2>,
+                                      typename sycl::template vec<T,3>,
+                                      typename sycl::template vec<T,4>,
+                                      typename sycl::template vec<T,8>,
+                                      typename sycl::template vec<T,16>>{};
   // Use type_pack without names here for lazy log message construction
   for_all_types<action, actionArgsT...>(types, std::forward<argsT>(args)...);
 }

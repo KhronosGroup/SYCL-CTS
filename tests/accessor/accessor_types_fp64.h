@@ -39,7 +39,7 @@ class check_all_types_fp64 {
   using check_type = action<T, extension_tag_t, kernel_name<T>>;
 
 public:
-  static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
+  static void run(sycl::queue& queue, sycl_cts::util::logger &log) {
 
     // Skip tests in case extension is not available
     using availability =
@@ -55,13 +55,13 @@ public:
     check_type<double>()(log, queue, "double");
     /** check specific accessor api for vec
      */
-    check_type<cl::sycl::double3>()(log, queue, "double");
+    check_type<sycl::double3>()(log, queue, "double");
 #else
     // Extended type coverage
     for_type_and_vectors<check_type, double>(
         log, queue, "double");
-    for_type_and_vectors<check_type, cl::sycl::cl_double>(
-        log, queue, "cl::sycl::cl_double");
+    for_type_and_vectors<check_type, sycl::cl_double>(
+        log, queue, "sycl::cl_double");
 
 #endif // SYCL_CTS_FULL_CONFORMANCE
 

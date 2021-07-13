@@ -17,19 +17,19 @@ using namespace sycl_cts;
  * @brief Checks exception_list for aliased types
  */
 void check_exception_list_types() {
-  using value_type = cl::sycl::exception_list::value_type;
-  static_assert(std::is_same<value_type, cl::sycl::exception_ptr_class>::value,
+  using value_type = sycl::exception_list::value_type;
+  static_assert(std::is_same<value_type, std::exception_ptr>::value,
                 "exception_list::value_type is of wrong type");
 
-  { check_type_existence<cl::sycl::exception_list::reference> typeCheck; }
-  { check_type_existence<cl::sycl::exception_list::const_reference> typeCheck; }
+  { check_type_existence<sycl::exception_list::reference> typeCheck; }
+  { check_type_existence<sycl::exception_list::const_reference> typeCheck; }
 
-  using size_type = cl::sycl::exception_list::size_type;
+  using size_type = sycl::exception_list::size_type;
   static_assert(std::is_same<size_type, std::size_t>::value,
                 "exception_list::size_type is of wrong type");
 
-  { check_type_existence<cl::sycl::exception_list::iterator> typeCheck; }
-  { check_type_existence<cl::sycl::exception_list::const_iterator> typeCheck; }
+  { check_type_existence<sycl::exception_list::iterator> typeCheck; }
+  { check_type_existence<sycl::exception_list::const_iterator> typeCheck; }
 }
 
 /**
@@ -37,7 +37,7 @@ void check_exception_list_types() {
  * @param exceptionList List to check
  */
 void check_exception_list_members(
-    const cl::sycl::exception_list &exceptionList) {
+    const sycl::exception_list &exceptionList) {
   auto size = exceptionList.size();
   auto beginIt = exceptionList.begin();
   auto endIt = exceptionList.end();
@@ -55,15 +55,15 @@ class TEST_NAME_3;
 class TEST_NAME : public util::test_base {
  public:
   struct async_handler_functor {
-    cl::sycl::vector_class<cl::sycl::exception_ptr_class> excps;
-    void operator()(cl::sycl::exception_list l) {
+    std::vector<std::exception_ptr> excps;
+    void operator()(sycl::exception_list l) {
       for (auto &e : l) {
         excps.push_back(e);
       }
     }
   };
 
-  static void async_handler_function(cl::sycl::exception_list l) {
+  static void async_handler_function(sycl::exception_list l) {
     /*no access to logger at this point*/
     for (auto &e : l) {
       throw e;
@@ -74,17 +74,17 @@ class TEST_NAME : public util::test_base {
    */
   void check_exceptions(
       util::logger &log,
-      cl::sycl::vector_class<cl::sycl::exception_ptr_class> &excps) const {
+      std::vector<std::exception_ptr> &excps) const {
     for (auto &e : excps) {
       try {
         throw e;
-      } catch (const cl::sycl::exception &e) {
+      } catch (const sycl::exception &e) {
         // Check methods
-        cl::sycl::string_class sc = e.what();
+        std::string sc = e.what();
         if (e.has_context()) {
-          cl::sycl::context c = e.get_context();
+          sycl::context c = e.get_context();
         }
-        cl::sycl::cl_int ci = e.get_cl_code();
+        sycl::cl_int ci = e.get_cl_code();
 
         log_exception(log, e);
         FAIL(log, "An exception should not really have been thrown");
@@ -103,9 +103,9 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     /*test lambda async handler*/
     {
-      cl::sycl::vector_class<cl::sycl::exception_ptr_class> excps;
-      cl::sycl::function_class<void(cl::sycl::exception_list)>
-          asyncHandlerLambda = [&excps](cl::sycl::exception_list l) {
+      std::vector<std::exception_ptr> excps;
+      std::function<void(sycl::exception_list)>
+          asyncHandlerLambda = [&excps](sycl::exception_list l) {
             // Check the exception list interface
             check_exception_list_types();
             check_exception_list_members(l);
@@ -116,9 +116,9 @@ class TEST_NAME : public util::test_base {
           };
 
       cts_selector selector;
-      cl::sycl::queue q(selector, asyncHandlerLambda);
+      sycl::queue q(selector, asyncHandlerLambda);
 
-      q.submit([&](cl::sycl::handler &cgh) {
+      q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME>([=]() {});
       });
 
@@ -133,9 +133,9 @@ class TEST_NAME : public util::test_base {
       async_handler_functor asyncHandlerFunctor;
 
       cts_selector selector;
-      cl::sycl::queue q(selector, asyncHandlerFunctor);
+      sycl::queue q(selector, asyncHandlerFunctor);
 
-      q.submit([&](cl::sycl::handler &cgh) {
+      q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME_2>([=]() {});
       });
 
@@ -148,9 +148,9 @@ class TEST_NAME : public util::test_base {
     /*test function async handler*/
     {
       cts_selector selector;
-      cl::sycl::queue q(selector, async_handler_function);
+      sycl::queue q(selector, async_handler_function);
 
-      q.submit([&](cl::sycl::handler &cgh) {
+      q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME_3>([=]() {});
       });
 

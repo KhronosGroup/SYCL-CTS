@@ -54,59 +54,59 @@ class TEST_NAME : public util::test_base {
     for_type_and_vectors<check_type, float>(log,
         "float");
 
-    for_type_and_vectors<check_type, cl::sycl::byte>(log,
-        "cl::sycl::byte");
-    for_type_and_vectors<check_type, cl::sycl::cl_bool>(log,
-        "cl::sycl::cl_bool");
-    for_type_and_vectors<check_type, cl::sycl::cl_char>(log,
-        "cl::sycl::cl_char");
-    for_type_and_vectors<check_type, cl::sycl::cl_uchar>(log,
-        "cl::sycl::cl_uchar");
-    for_type_and_vectors<check_type, cl::sycl::cl_short>(log,
-        "cl::sycl::cl_short");
-    for_type_and_vectors<check_type, cl::sycl::cl_ushort>(log,
-        "cl::sycl::cl_ushort");
-    for_type_and_vectors<check_type, cl::sycl::cl_int>(log,
-        "cl::sycl::cl_int");
-    for_type_and_vectors<check_type, cl::sycl::cl_uint>(log,
-        "cl::sycl::cl_uint");
-    for_type_and_vectors<check_type, cl::sycl::cl_long>(log,
-        "cl::sycl::cl_long");
-    for_type_and_vectors<check_type, cl::sycl::cl_ulong>(log,
-        "cl::sycl::cl_ulong");
-    for_type_and_vectors<check_type, cl::sycl::cl_float>(log,
-        "cl::sycl::cl_float");
+    for_type_and_vectors<check_type, sycl::byte>(log,
+        "sycl::byte");
+    for_type_and_vectors<check_type, sycl::cl_bool>(log,
+        "sycl::cl_bool");
+    for_type_and_vectors<check_type, sycl::cl_char>(log,
+        "sycl::cl_char");
+    for_type_and_vectors<check_type, sycl::cl_uchar>(log,
+        "sycl::cl_uchar");
+    for_type_and_vectors<check_type, sycl::cl_short>(log,
+        "sycl::cl_short");
+    for_type_and_vectors<check_type, sycl::cl_ushort>(log,
+        "sycl::cl_ushort");
+    for_type_and_vectors<check_type, sycl::cl_int>(log,
+        "sycl::cl_int");
+    for_type_and_vectors<check_type, sycl::cl_uint>(log,
+        "sycl::cl_uint");
+    for_type_and_vectors<check_type, sycl::cl_long>(log,
+        "sycl::cl_long");
+    for_type_and_vectors<check_type, sycl::cl_ulong>(log,
+        "sycl::cl_ulong");
+    for_type_and_vectors<check_type, sycl::cl_float>(log,
+        "sycl::cl_float");
 
 #ifdef INT8_MAX
-    if (!std::is_same<cl::sycl::cl_char, std::int8_t>::value)
+    if (!std::is_same<sycl::cl_char, std::int8_t>::value)
       for_type_and_vectors<check_type, std::int8_t>(log, "std::int8_t");
 #endif
 #ifdef INT16_MAX
-    if (!std::is_same<cl::sycl::cl_short, std::int16_t>::value)
+    if (!std::is_same<sycl::cl_short, std::int16_t>::value)
       for_type_and_vectors<check_type, std::int16_t>(log, "std::int16_t");
 #endif
 #ifdef INT32_MAX
-    if (!std::is_same<cl::sycl::cl_int, std::int32_t>::value)
+    if (!std::is_same<sycl::cl_int, std::int32_t>::value)
       for_type_and_vectors<check_type, std::int32_t>(log, "std::int32_t");
 #endif
 #ifdef INT64_MAX
-    if (!std::is_same<cl::sycl::cl_long, std::int64_t>::value)
+    if (!std::is_same<sycl::cl_long, std::int64_t>::value)
       for_type_and_vectors<check_type, std::int64_t>(log, "std::int64_t");
 #endif
 #ifdef UINT8_MAX
-    if (!std::is_same<cl::sycl::cl_uchar, std::uint8_t>::value)
+    if (!std::is_same<sycl::cl_uchar, std::uint8_t>::value)
       for_type_and_vectors<check_type, std::uint8_t>(log, "std::uint8_t");
 #endif
 #ifdef UINT16_MAX
-    if (!std::is_same<cl::sycl::cl_ushort, std::uint16_t>::value)
+    if (!std::is_same<sycl::cl_ushort, std::uint16_t>::value)
       for_type_and_vectors<check_type, std::uint16_t>(log, "std::uint16_t");
 #endif
 #ifdef UINT32_MAX
-    if (!std::is_same<cl::sycl::cl_uint, std::uint32_t>::value)
+    if (!std::is_same<sycl::cl_uint, std::uint32_t>::value)
       for_type_and_vectors<check_type, std::uint32_t>(log, "std::uint32_t");
 #endif
 #ifdef UINT64_MAX
-    if (!std::is_same<cl::sycl::cl_ulong, std::uint64_t>::value)
+    if (!std::is_same<sycl::cl_ulong, std::uint64_t>::value)
       for_type_and_vectors<check_type, std::uint64_t>(log, "std::uint64_t");
 #endif
   }

@@ -21,10 +21,10 @@ all_type_test_template = Template("""
   /** Performs a test of each vector operator available to all types,
    *  on a given type, size, and two given values of that type
    */
-  auto testVec1 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec1Copy = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec2 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
-  cl::sycl::vec<${type}, ${size}> resVec;
+  auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec1Copy = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec2 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
+  sycl::vec<${type}, ${size}> resVec;
   ${type} resArr[${size}];
   ${type} resArr2[${size}];
 
@@ -392,9 +392,9 @@ all_type_test_template = Template("""
 specific_return_type_test_template = Template("""
   /** Tests each logical and relational operator available to vector types
    */
-  auto testVec1 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec2 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
-  cl::sycl::vec<${ret_type}, ${size}> resVec;
+  auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec2 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
+  sycl::vec<${ret_type}, ${size}> resVec;
   ${ret_type} resArr[${size}];
 
   // Logical operators
@@ -697,9 +697,9 @@ non_fp_bitwise_test_template = Template("""
   /** Performs a test of each vector bitwise operator not available to floating
    *  point types, on a given type, size, and two given values of that type
    */
-  auto testVec1 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec2 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
-  cl::sycl::vec<${type}, ${size}> resVec;
+  auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec2 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
+  sycl::vec<${type}, ${size}> resVec;
   ${type} resArr[${size}];
 
   // Bitwise operations
@@ -895,9 +895,9 @@ non_fp_assignment_test_template = Template("""
   /** Performs a test of each vector assignment operator not available to floating
    *  point types, on a given type, size, and two given values of that type
    */
-  auto testVec1 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec2 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
-  cl::sycl::vec<${type}, ${size}> resVec;
+  auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec2 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
+  sycl::vec<${type}, ${size}> resVec;
   ${type} resArr[${size}];
 
   // Assignment operations
@@ -1105,9 +1105,9 @@ non_fp_arithmetic_test_template = Template("""
   /** Performs a test of each vector operator not available to floating point
    *  types, on a given type, size, and two given values of that type
    */
-  auto testVec1 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
-  auto testVec2 = cl::sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
-  cl::sycl::vec<${type}, ${size}> resVec;
+  auto testVec1 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_1}));
+  auto testVec2 = sycl::vec<${type}, ${size}>(static_cast<${type}>(${test_value_2}));
+  sycl::vec<${type}, ${size}> resVec;
   ${type} resArr[${size}];
 
   // Arithmetic operations
@@ -1163,7 +1163,7 @@ def generate_all_type_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(type_str,
                             'VEC_ALL_TYPE_OPERATOR_KERNEL_' + type_str + str(size),
-                            'All types operator test, cl::sycl::vec<' +
+                            'All types operator test, sycl::vec<' +
                             type_str + ', ' + str(size) + '>', test_string)
 
 
@@ -1178,7 +1178,7 @@ def generate_all_types_specific_return_type_test(type_str, size):
     return wrap_with_kernel(
         type_str, 'VEC_SPECIFIC_RETURN_TYPE_OPERATOR_KERNEL_' +
         type_str + str(size),
-        'Specific return type operator test, cl::sycl::vec<' + type_str +
+        'Specific return type operator test, sycl::vec<' + type_str +
         ', ' + str(size) + '>', test_string)
 
 
@@ -1191,8 +1191,8 @@ def generate_non_fp_bitwise_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_BITWISE_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
-        'Non FP bitwise operator test, cl::sycl::vec<' + type_str + ', ' +
+            'sycl::', '').replace(' ', '').replace('std::', '') + str(size),
+        'Non FP bitwise operator test, sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
 
@@ -1205,8 +1205,8 @@ def generate_non_fp_assignment_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_ASSIGNMENT_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
-        'Non FP assignment operator test, cl::sycl::vec<' + type_str + ', ' +
+            'sycl::', '').replace(' ', '').replace('std::', '') + str(size),
+        'Non FP assignment operator test, sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
 
@@ -1219,8 +1219,8 @@ def generate_non_fp_arithmetic_test(type_str, size):
         test_value_2=2)
     return wrap_with_kernel(
         type_str, 'VEC_NON_FP_ARITHMETIC_OPERATOR_KERNEL_' + type_str.replace(
-            'cl::sycl::', '').replace(' ', '').replace('std::', '') + str(size),
-        'Non FP arithmetic operator test, cl::sycl::vec<' + type_str + ', ' +
+            'sycl::', '').replace(' ', '').replace('std::', '') + str(size),
+        'Non FP arithmetic operator test, sycl::vec<' + type_str + ', ' +
         str(size) + '>', test_string)
 
 
@@ -1235,7 +1235,7 @@ def generate_operator_tests(type_str, input_file, output_file):
         func_calls += make_func_call(TEST_NAME + '_ALL_TYPES', type_str,
                                      str(size))
         if not type_str in [
-                'float', 'double', 'cl::sycl::half'
+                'float', 'double', 'sycl::half'
         ]:
             test_str = generate_non_fp_assignment_test(type_str, size)
             test_func_str += wrap_with_test_func(

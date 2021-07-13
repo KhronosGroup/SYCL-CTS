@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides buffer api tests for cl::sycl::half and cl::sycl::cl_half
+// Provides buffer api tests for sycl::half and sycl::cl_half
 //
 *******************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** test cl::sycl::buffer API
+/** test sycl::buffer API
  */
 class TEST_NAME : public util::test_base {
 public:
@@ -29,16 +29,16 @@ public:
    */
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
-    if (!queue.get_device().has_extension("cl_khr_fp16")) {
+    if (!queue.get_device().has(sycl::aspect::fp16)) {
       log.note(
           "Device does not support half precision floating point operations");
       return;
     }
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
-                         cl::sycl::half>(log, "cl::sycl::half");
+                         sycl::half>(log, "sycl::half");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
-                         cl::sycl::cl_half>(log, "cl::sycl::cl_half");
+                         sycl::cl_half>(log, "sycl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };

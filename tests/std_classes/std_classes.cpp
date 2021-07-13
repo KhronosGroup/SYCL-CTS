@@ -13,47 +13,47 @@
 namespace std_classes__ {
 using namespace sycl_cts;
 
-/** check vector_class
+/** check std::vector
 */
 template <class T, class Alloc>
-using vectorClass = cl::sycl::vector_class<T, Alloc>;
+using vectorClass = std::vector<T, Alloc>;
 
-/** check string_class
+/** check std::string
 */
-using stringClass = cl::sycl::string_class;
+using stringClass = std::string;
 
-/** check function_class
+/** check std::function
 */
 template <class R, class... Args>
-using functionClass = cl::sycl::function_class<R(Args...)>;
+using functionClass = std::function<R(Args...)>;
 
-/** check mutex_class
+/** check std::mutex
 */
-using mutexClass = cl::sycl::mutex_class;
+using mutexClass = std::mutex;
 
-/** check unique_ptr_class
+/** check std::unique_ptr
 */
 template <class T, class D>
-using uniquePtrClass = cl::sycl::unique_ptr_class<T, D>;
+using uniquePtrClass = std::unique_ptr<T, D>;
 
-/** check shared_ptr_class
+/** check std::shared_ptr
 */
 template <class T>
-using sharedPtrClass = cl::sycl::shared_ptr_class<T>;
+using sharedPtrClass = std::shared_ptr<T>;
 
-/** check weak_ptr_class
+/** check std::weak_ptr
 */
 template <class T>
-using weakPtrClass = cl::sycl::weak_ptr_class<T>;
+using weakPtrClass = std::weak_ptr<T>;
 
-/** check hash_class
+/** check std::hash
 */
 template <class T>
-using hashClass = cl::sycl::hash_class<T>;
+using hashClass = std::hash<T>;
 
-/** check exception_ptr_class
+/** check std::exception_ptr
 */
-using exceptionPtrClass = cl::sycl::exception_ptr_class;
+using exceptionPtrClass = std::exception_ptr;
 
 struct custom_deleter {
   void operator()(int *p) const {};
@@ -74,39 +74,39 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     /* Try instantiating these classes */
     {
-      /** check vector_class
+      /** check std::vector
       */
-      cl::sycl::vector_class<int> vector;
+      std::vector<int> vector;
 
-      /** check string_class
+      /** check std::string
       */
       stringClass string;
 
-      /** check function_class
+      /** check std::function
       */
       functionClass<void> function;
 
-      /** check mutex_class
+      /** check std::mutex
       */
       mutexClass mutex;
 
-      /** check unique_ptr_class
+      /** check std::unique_ptr
       */
       uniquePtrClass<int, custom_deleter> uniquePtr;
 
-      /** check shared_ptr_class
+      /** check std::shared_ptr
       */
       sharedPtrClass<int> sharedPtr;
 
-      /** check weak_ptr_class
+      /** check std::weak_ptr
       */
       weakPtrClass<int> weakPtr;
 
-      /** check hash_class
+      /** check std::hash
       */
       hashClass<int> hash;
 
-      /** check exception_ptr_class
+      /** check std::exception_ptr
       */
       exceptionPtrClass exceptionPtr;
     }

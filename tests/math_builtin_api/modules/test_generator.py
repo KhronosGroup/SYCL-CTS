@@ -81,7 +81,7 @@ test_case_templates_check = {
 def generate_value(base_type, dim, unsigned):
     val = ""
     for i in range(dim):
-        if base_type == "float" or base_type == "double" or base_type == "cl::sycl::half":
+        if base_type == "float" or base_type == "double" or base_type == "sycl::half":
             # 10 digits of precision for floats, doubles and half.
             val += str(round(random.uniform(0.1, 0.9), 10)) + ","
         # random 8 bit integer
@@ -114,13 +114,13 @@ def generate_value(base_type, dim, unsigned):
 def generate_multi_ptr(var_name, var_type, memory):
     decl = ""
     if memory == "global":
-        decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::global_space> " + var_name + "(acc);\n"
+        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
     if memory == "local":
-        decl = "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::local_space> " + var_name + "(acc);\n"
+        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
     if memory == "private":
         source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim, var_type.unsigned) + ");\n"
-        decl += "cl::sycl::multi_ptr<" + var_type.name + ", cl::sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
     return decl
 
 def generate_variable(var_name, var_type, var_index):
@@ -205,7 +205,7 @@ reference_ptr_template = Template("""
 """)
 def generate_reference_ptr(types, sig, arg_names, arg_src):
     fc = reference_ptr_template.substitute(
-        arg_src=re.sub(r'^cl::sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
+        arg_src=re.sub(r'^sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
         func_name=sig.name,
         ret_type=sig.ret_type,
         arg_names=",".join(arg_names[:-1]),
@@ -244,9 +244,9 @@ def generate_test_case(test_id, types, sig, memory, check):
         testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
         accessorType = ""
         if memory == "local":
-            accessorType = "cl::sycl::accessor<" + pointerType + ", 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local>"
+            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access_mode::read_write, sycl::target::local>"
         if memory == "global":
-            accessorType = "cl::sycl::accessor<" + pointerType + ", 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::global_buffer>"
+            accessorType = "sycl::accessor<" + pointerType + ", 1, sycl::access_mode::read_write, sycl::target::global_buffer>"
         testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)
     testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(sig, arg_names, arg_src))
     return testCaseSource

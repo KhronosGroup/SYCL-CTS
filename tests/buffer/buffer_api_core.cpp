@@ -17,7 +17,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-/** test cl::sycl::buffer API
+/** test sycl::buffer API
  */
 class TEST_NAME : public util::test_base {
 public:
