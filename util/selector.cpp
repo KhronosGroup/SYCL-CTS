@@ -14,21 +14,7 @@ namespace util {
 
 /** constructor
  */
-selector::selector()
-    : m_platform(ctsplat::unknown), m_device(ctsdevice::unknown) {}
-
-void selector::set_default_platform(const std::string &name) {
-  if (name == "host")
-    m_platform = ctsplat::host;
-  else if (name == "amd")
-    m_platform = ctsplat::amd;
-  else if (name == "arm")
-    m_platform = ctsplat::arm;
-  else if (name == "intel")
-    m_platform = ctsplat::intel;
-  else if (name == "nvidia")
-    m_platform = ctsplat::nvidia;
-}
+selector::selector() : m_device(ctsdevice::unknown) {}
 
 /** set the default device to use for the SYCL CTS
  *  @param name, the name of the device to use.
@@ -53,21 +39,10 @@ void selector::set_default_device(const std::string &name) {
   }
 }
 
-/** set the default platform via enum
- */
-void selector::set_default_platform(ctsplat platform) { m_platform = platform; }
-
 /** set the default device type via enum
  */
 void selector::set_default_device(ctsdevice deviceType) {
   m_device = deviceType;
-}
-
-/** return the default platform of choice for this cts run
- */
-selector::ctsplat selector::get_default_platform() const {
-  // return the cached device type
-  return m_platform;
 }
 
 /** return the default device of choice for this cts run

@@ -99,7 +99,7 @@ The SYCL test suite can be launched via the following command::
     $ python runtests.py --help
 
     usage: runtests.py [-h] [-b BINPATH] [--csvpath CSVPATH] [--list]
-                       [-j JUNIT] [-p {host,intel,amd}]
+                       [-j JUNIT]
                        [-d {host,opencl_cpu,opencl_gpu,opencl_accelerator}]
 
     Khronos SYCL CTS
@@ -113,9 +113,6 @@ The SYCL test suite can be launched via the following command::
       --list                list all tests in a test binary
       -j JUNIT, --junit JUNIT
                             specify output path for a junit xml file
-      -p PLATFORM, --platform PLATFORM
-                            The platform to run on (where PLATFORM can be
-                            host, intel, amd)
       -d DEVICE, --device DEVICE
                             The device to run on (where DEVICE can be host,
                             opencl_cpu, opencl_gpu, opencl_accelerator)
@@ -149,9 +146,6 @@ stored in a test executable.  For instance::
 
 Passing the ``--junit`` option will output test results in `junit` format
 when the test suite has finished executing.
-
-The ``--platform`` argument can be used to specify which platform to run the
-tests on.
 
 The ``--device`` argument can be used to specify which device to run the
 tests on.

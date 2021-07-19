@@ -153,12 +153,10 @@ function(add_cts_test)
   set(info_dump_dir "${CMAKE_BINARY_DIR}/Testing")
   add_test(NAME ${test_exe_name}_host
            COMMAND ${test_exe_name}
-                   --platform ${host_platform_name}
                    --device ${host_device_name}
                    --info-dump "${info_dump_dir}/${test_exe_name}_host.info")
   add_test(NAME ${test_exe_name}_opencl
            COMMAND ${test_exe_name}
-                   --platform ${opencl_platform_name}
                    --device ${opencl_device_name}
                    --info-dump "${info_dump_dir}/${test_exe_name}_opencl.info")
 
