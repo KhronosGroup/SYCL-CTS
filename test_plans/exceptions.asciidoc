@@ -34,20 +34,21 @@ For every errc value check that:
 * `error_code::category` is equal to sycl_category()
 * `error_code::default_error_condition()` is equal to
   `std::error_condition(errc, sycl::sycl_category())`
-* `std::error_code(errc)` works the same way as `make_error_code`
 
 ==== sycl_category()
 
 For each of the following use-cases:
 
 * using reference or copy of `error_category` retrieved at the function scope
-* using global static scope to call and copy the result;
+* using static variable in the test namespace that is constructed from sycl_category()
+  and then copied
 
 provide checks under a separate test name:
 
 * `error_category::name()` should return "sycl"
-* For `sycl::errc::success` and any other value `error_category::default_error_condition(errc)`
+* For `sycl::errc::success` and any other one `errc` value `error_category::default_error_condition(errc)`
   is equal to `std::err_condition(errc, sycl::sycl_category())`
+* For FULL conformance - same as bullet above but for all `errc` values
 
 ==== error_category_for()
 
@@ -108,13 +109,6 @@ If SYCL_BACKEND_OPENCL is defined check that
 
 * Check that class is derived from `std::exception`
 
-Should be covered by constructors' checks:
-* code()
-* category()
-* what()
-* has_context()
-* get_context()
-
 ==== exception(std::error_code ec)
 
 For `sycl::errc::success` and any other value
@@ -131,11 +125,11 @@ for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
 for `error_code = std::error_code(value, sycl::eror_category_for<sycl::backend::opencl>())`
 for exception(error_code) check same as above.
 
-==== exception(int env, const std::error_category& cat)
+==== exception(int ev, const std::error_category& cat)
 
 For `sycl::errc::success` and any other value
-for `env = static_cast<int>(value)` and for `cat = sycl_category()`
-check that exception(env, cat) is same as exception(std::error_code ec)
+for `ev = static_cast<int>(value)` and for `cat = sycl_category()`
+check that exception(ev, cat) is same as exception(std::error_code ec)
 
 * `exception::code()` returns value passed
 * `exception::category()` returns sycl_category
@@ -144,8 +138,8 @@ check that exception(env, cat) is same as exception(std::error_code ec)
 * `exception::get_context()` throws with `errc::invalid`
 
 If SYCL_BACKEND_OPENCL defined
-for `env = 0` and for `cat = sycl::eror_category_for<sycl::backend::opencl>()`
-check that exception(env, cat) is same as exception(std::error_code ec)
+for `ev = 0` and for `cat = sycl::eror_category_for<sycl::backend::opencl>()`
+check that exception(ev, cat) is same as exception(std::error_code ec)
 
 ==== exception(context ctx, std::error_code ec)
 
@@ -154,9 +148,9 @@ Same as `exception(std::error_code)`, but:
 * `exception::has_context()` should return true
 * `exception::get_context()` should return the ctx passed
 
-==== exception(context ctx, int env, const std::error_category& cat)
+==== exception(context ctx, int ev, const std::error_category& cat)
 
-Same as `exception(int env, const std::error_category& cat)`, but:
+Same as `exception(int ev, const std::error_category& cat)`, but:
 
 * `exception::has_context()` should return true
 * `exception::get_context()` should return the ctx passed
@@ -172,14 +166,14 @@ Same as `exception(std::error_code)`, but:
 
 Same as `exception(std::error_code ec, const std::string& what_arg)`.
 
-==== exception(int env, const std::error_category& cat, const std::string& what_arg)
+==== exception(int ev, const std::error_category& cat, const std::string& what_arg)
 
-Same as `exception(int env, const std::error_category& cat)`, but
+Same as `exception(int ev, const std::error_category& cat)`, but
 same checks for `what_arg` as for
 `exception(std::error_code ec,  const std::string& what_arg)`
 
-==== exception(int env, const std::error_category& cat, const char* what_arg)
-Same as `exception(int env, const std::error_category& cat, const std::string& what_arg)`
+==== exception(int ev, const std::error_category& cat, const char* what_arg)
+Same as `exception(int ev, const std::error_category& cat, const std::string& what_arg)`
 
 ==== exception(context ctx, std::error_code ec, const std::string& what_arg)
 
@@ -190,25 +184,25 @@ same checks for `what_arg` as for
 ==== exception(context ctx, std::error_code ec, const char* what_arg)
 Same as `exception(context ctx, std::error_code ec, const std::string& what_arg)`
 
-==== exception(context ctx, int env, const std::error_category& cat, const std::string& what_arg)
+==== exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)
 
-Same as `exception(context ctx, int env, const std::error_category& cat)`, but:
+Same as `exception(context ctx, int ev, const std::error_category& cat)`, but:
 same checks for `what_arg` as for
 `exception(std::error_code ec,  const std::string& what_arg)`
 
-==== exception(context ctx, int env, const std::error_category& cat, const std::string& what_arg)
+==== exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)
 
-Same as `exception(context ctx, int env, const std::error_category& cat, const std::string& what_arg)`
+Same as `exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)`
 
 ==== exception( const exception& other )
 
-For default constructor and any other 12 constructors
+For any constructor from 12 constructors above
 make same checks as for the original constructor
 
 ==== operator = ()
 
-* For any constructor from (default constructor and 12 other constructors) as SRC object:
-  for any second constructor from ( default and 12 custom constructors) as DST object:
+* For any constructor from 12 constructors above as SRC object:
+  for any second constructor from 12 constructors above as DST object:
   make same checks as for the SRC constructor
 * ensure copy assignment doesn't throw
 
@@ -222,6 +216,9 @@ Verify that:
 * `size_type` `std::is_same` with `std::size_t`
 * `iterator` satisfies `LegacyForwardIterator`
 * `const_iterator` satisfies `LegacyForwardIterator`
+
+For default-constructed `exception_list` check that:
+
 * `exception_list::size()` is zero
 * `++exception_list::begin()` is equal to `exception_list::end()`
 
