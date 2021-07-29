@@ -11,6 +11,18 @@
 
 #include "../common/get_cts_object.h"
 
+namespace detail {
+  /**
+   * @brief Helper class for once_per_unit::log() function
+   */
+  struct log_notice {
+    log_notice(sycl_cts::util::logger &log, const std::string &message) {
+      log.note(message);
+    }
+  };
+
+}
+
 namespace {
   /**
    * All symbols have internal linkage here;
@@ -23,6 +35,15 @@ namespace once_per_unit {
   inline sycl::queue& get_queue() {
     static auto q = sycl_cts::util::get_cts_object::queue();
     return q;
+  }
+
+  /**
+   * @brief Provide possibility to log message once per translation unit
+   */
+  static void log(sycl_cts::util::logger &log,
+                       const std::string &message) {
+    static const detail::log_notice once(log, message);
+    static_cast<void>(once);
   }
 } // namespace once_per_unit
 } // namespace
