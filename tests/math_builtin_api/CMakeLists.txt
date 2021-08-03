@@ -1,9 +1,16 @@
 set(TEST_CASES_LIST "")
 
 set(MATH_CAT_WITH_VARIANT common float relational)
-set(MATH_VARIANT base double half)
+set(MATH_VARIANT base)
 
 set(MATH_CAT integer geometric native half)
+
+if(SYCL_CTS_ENABLE_HALF_TESTS)
+  list(APPEND MATH_VARIANT half)
+endif()
+if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
+  list(APPEND MATH_VARIANT double)
+endif()
 
 set(math_builtin_depends
   "modules/sycl_functions.py"
