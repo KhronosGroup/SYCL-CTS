@@ -406,9 +406,6 @@ def launch_cts_binary( list ):
     if g_csv_path:
         l_args = l_args + " --csv " + g_csv_path
 
-    if g_platform:
-        l_args += " --platform " + g_platform
-
     if g_device:
         l_args += " --device " + g_device
 
@@ -507,10 +504,12 @@ def parse_args( ):
     parser.add_argument( "--csvpath", help="specify path to csv file for filtering tests" )
     parser.add_argument( "--list", help="list all tests in a test binary", action="store_true" )
     parser.add_argument( "-j", "--junit", help="specify output path for a junit xml file" )
-    parser.add_argument( "-p", "--platform", choices=platforms, help="The platform to run on " )
     parser.add_argument( "-d", "--device", choices=devices, help="The device to run on " )
 
-    args = parser.parse_args()
+    (args, unknown_args) = parser.parse_known_args()
+    if unknown_args:
+        print("Unknown arguments:")
+        print(unknown_args)
 
     if 'binpath' in args:
         g_binary_path = args.binpath

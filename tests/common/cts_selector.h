@@ -17,12 +17,13 @@
  */
 class cts_selector : public cl::sycl::device_selector {
  public:
-  /** Returns true if the default platform of the selector is host.
-   * @return boolean specifying whether the default platform is host. */
+  /** Checks whether the default device is a host device
+   * @return True if the default device is host
+   */
   bool is_host() const {
     using namespace sycl_cts::util;
 
-    return (get<selector>().get_default_platform() == selector::ctsplat::host);
+    return (get<selector>().get_default_device() == selector::ctsdevice::host);
   }
 
   /**
@@ -86,48 +87,11 @@ class cts_selector : public cl::sycl::device_selector {
     using namespace sycl_cts::util;
 
     selector::ctsdevice ctsDevType = get<selector>().get_default_device();
-    selector::ctsplat ctsPlatform = get<selector>().get_default_platform();
 
-    // Early exit for host device
-    if (dev.is_host()) {
-      if (ctsDevType == selector::ctsdevice::host) {
-        return 1000;
-      } else {
-        return -1;
-      }
-    }
-
-    cl::sycl::string_class vendor =
-        dev.get_platform().get_info<cl::sycl::info::platform::vendor>();
     cl::sycl::info::device_type type =
         dev.get_info<cl::sycl::info::device::device_type>();
 
-    int result = -1;
-
-    switch (ctsPlatform) {
-      case selector::ctsplat::amd:
-        if (vendor.find("AMD") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::arm:
-        if (vendor.find("ARM") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::intel:
-        if (vendor.find("Intel") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::nvidia:
-        if (vendor.find("NVIDIA") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      default:
-        result = -1;
-    }
+    int result = score(type, ctsDevType);
 
     return result;
   }

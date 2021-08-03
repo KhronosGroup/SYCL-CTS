@@ -20,10 +20,6 @@ namespace util {
  */
 class selector : public singleton<selector> {
  public:
-  /** SYCL platforms
-   */
-  enum class ctsplat { unknown = 0, host, amd, arm, intel, nvidia };
-
   /** SYCL device types
    */
   enum class ctsdevice {
@@ -39,17 +35,6 @@ class selector : public singleton<selector> {
    */
   selector();
 
-  /**
-   * @param name, the name of the platform to select.
-   * valid values are:
-   *    'amd'
-   *    'arm'
-   *    'host'
-   *    'intel'
-   *    'nvidia'
-   */
-  void set_default_platform(const std::string &name);
-
   /** set the default device to use for the SYCL CTS
    *  @param name, the name of the device to use.
    *  valid options are:
@@ -64,23 +49,12 @@ class selector : public singleton<selector> {
    */
   void set_default_device(ctsdevice deviceType);
 
-  /** set the default device type via enum
-   */
-  void set_default_platform(ctsplat platform);
-
   /** return a enum of cts_device type specifying the
    *  requested default device type for this run of the cts
    */
   ctsdevice get_default_device() const;
 
-  /** return a enum of ctsplat type specifying the
-   *  requested default platform type for this run of the cts
-   */
-  ctsplat get_default_platform() const;
-
  protected:
-  // default platform to select
-  ctsplat m_platform;
   // default SYCL device type to use
   ctsdevice m_device;
 };

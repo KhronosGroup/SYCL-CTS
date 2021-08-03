@@ -25,8 +25,11 @@ namespace util {
 
 /**
  */
-test_manager::test_manager() : m_willExecute(false), m_wimpyMode(false),
-  m_infoDump(false), m_infoDumpFile{""} {}
+test_manager::test_manager()
+    : m_willExecute(false),
+      m_wimpyMode(false),
+      m_infoDump(false),
+      m_infoDumpFile{""} {}
 
 /**
  */
@@ -110,13 +113,6 @@ bool test_manager::parse(const int argc, const char **args) {
     printer.set_format(sycl_cts::util::printer::etext);
   }
 
-  // set the default sycl cts platform
-  std::string platformName;
-  if (cmdarg.get_value("--platform", platformName) ||
-      cmdarg.get_value("-p", platformName)) {
-    selector.set_default_platform(platformName);
-  }
-
   // set the default sycl cts device
   std::string deviceName;
   if (cmdarg.get_value("--device", deviceName) ||
@@ -167,12 +163,6 @@ Usage:
     --csv       -c         CSV file for specifying tests to run
     --list      -l         List the tests compiled in this executable
     --wimpy     -w         Run with reduced test complexity (faster)
-    --platform  -p [name]  Set a platform to target:
-                   'host'
-                   'amd'
-                   'arm'
-                   'intel'
-                   'nvidia'
     --device    -d [name]  Select a device to target:
                    'host'
                    'opencl_cpu'
