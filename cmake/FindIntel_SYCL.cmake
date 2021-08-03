@@ -74,3 +74,8 @@ function(add_sycl_executable_implementation)
             $<TARGET_PROPERTY:INTEL_SYCL::Runtime,INTERFACE_LINK_OPTIONS>)
     endif()
 endfunction()
+
+# Adds device compiler definitions
+# This functions is a no-op because add_definitions should take care of it
+function(add_device_compiler_definitions_implementation)
+endfunction()

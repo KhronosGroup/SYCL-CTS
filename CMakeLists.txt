@@ -30,10 +30,10 @@ include(AddSYCLExecutable)
 option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
 option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)
 if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
-    add_definitions(-DSYCL_CTS_TEST_DOUBLE)
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_DOUBLE)
 endif()
 if(SYCL_CTS_ENABLE_HALF_TESTS)
-    add_definitions(-DSYCL_CTS_TEST_HALF)
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_HALF)
 endif()
 # ------------------
 
@@ -42,12 +42,12 @@ endif()
 option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
        "Enable OpenCL interoperability tests." ON)
 if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
-    add_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
 endif()
 # ------------------
 
 if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
-    add_definitions(-DSYCL_CTS_INTEL_PI_CUDA)
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_INTEL_PI_CUDA)
 endif()
 
 enable_testing()
