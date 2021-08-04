@@ -407,7 +407,7 @@ T read_image_acc(const sycl::accessor<T, dims, mode,
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode, typename coordT = acc_coord_tag::use_int>
+          sycl::access_mode mode>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
@@ -416,7 +416,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(image_access<dims>::get_int(idx), smpl);
 }
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode, typename coordT = acc_coord_tag::use_float>
+          sycl::access_mode mode>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
@@ -425,7 +425,7 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(image_access<dims>::get_float(idx), smpl);
 }
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode, typename coordT = acc_coord_tag::use_float>
+          sycl::access_mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
