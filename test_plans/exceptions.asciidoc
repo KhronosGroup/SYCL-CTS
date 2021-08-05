@@ -18,16 +18,16 @@ is selected on the CTS command line.
 
 Every method should be checked for accordance to spec:
 
-* Method existance
+* Method existence
 * Const correctness
 * Type of result
 * Result for noexcept() operator
 
-=== sycl namespace functions
+=== namespace sycl functions
 
 ==== make_error_code
 
-For every errc value check that:
+For every `errc` value check that:
 
 * Result of the call should be equal to `std::error_code(errc)`
 * `error_code::value` is equal to errc value passed
@@ -39,9 +39,9 @@ For every errc value check that:
 
 For each of the following use-cases:
 
-* using reference or copy of `error_category` retrieved at the function scope
-* using static variable in the test namespace that is constructed from sycl_category()
-  and then copied
+* using reference of `error_category` retrieved at the function scope
+* using construction of some object instance at global static scope to
+  run checks and save their results for later check in `TEST_NAME::run()`
 
 provide checks under a separate test name:
 
@@ -57,13 +57,13 @@ provide checks under a separate test name:
 If `SYCL_BACKEND_OPENCL` is defined run same checks as for sycl_category, but:
 
 * `error_category::name()` should return "opencl"
-* for value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)
+* for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
   `error_category_for<>::default_error_condition(value)` should be equal to
   `std::error_condition(value, sycl::error_category_for<sycl::backend::opencl>())`
 
 === sycl::errc
 
-For all values from spec:
+For all values of the enum class `sycl::errc`:
 
 * `runtime`
 * `kernel`
@@ -82,13 +82,13 @@ For all values from spec:
 
 check that:
 
-* that they exsist
+* they exist
 * that all values are different
 
 Special cases:
 
 * Check that `std::is_error_code_enum` is `true` for `sycl::errc`
-* Check that `std::is_error_condition_enum` should be `false` for `sycl::err`
+* Check that `std::is_error_condition_enum` should be `false` for `sycl::errc`
 
 === sycl::errc_for
 
@@ -96,10 +96,9 @@ Special cases:
 
 If SYCL_BACKEND_OPENCL is defined check that
 
-* enum class with `b == sycl::backend::opencl` exists
-* there is value 0
+* enum class with `b == sycl::backend::opencl` exists and is a scoped enum
 * `std::is_error_code_enum` is `true`
-* `std::is_error_condition` is `false`
+* `std::is_error_condition_enum` is `false`
 * for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
   for `std::error_code(value, sycl::eror_category_for<sycl::backend::opencl>())`
   `error_code::default_error_condition()` is equal to
@@ -224,7 +223,7 @@ For default-constructed `exception_list` check that:
 
 === sycl::async_handler
 
-Check that `sycl::async_handler` std_is same with `std::function<void(sycl::exception_list)>`
+Check that `sycl::async_handler` `std::is_same` with `std::function<void(sycl::exception_list)>`
 
 For cases:
 
@@ -235,9 +234,9 @@ For cases:
 * on context destruction
 * on buffer destruction
 
-check when there is no exceptions expected it is not be invoked
+check that when there are no exceptions expected then the async handler is not invoked.
 
 
 === Synchronous exceptions mechanism
 
-Check an empty `queue::submit()` doesn't result in exceptions
+Check an empty `queue::submit()` doesn't result in exceptions.
