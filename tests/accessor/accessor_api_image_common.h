@@ -17,6 +17,7 @@
 #include <array>
 #include <numeric>
 #include <sstream>
+#include <type_traits>
 
 namespace {
 
@@ -407,35 +408,25 @@ T read_image_acc(const sycl::accessor<T, dims, mode,
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode>
-T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
-                         const sycl::sampler& smpl,
-                         sycl::id<dims> idx,
-                         sycl::range<dims>,
-                         acc_coord_tag::use_int) {
-  return acc.read(image_access<dims>::get_int(idx), smpl);
-}
-template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode>
-T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
-                         const sycl::sampler& smpl,
-                         sycl::id<dims> idx,
-                         sycl::range<dims>,
-                         acc_coord_tag::use_float) {
-  return acc.read(image_access<dims>::get_float(idx), smpl);
-}
-template <typename T, int dims, sycl::target target,
           sycl::access_mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
                          sycl::range<dims> range,
-                         coordT coordTag) {
-  const auto pixelTag = acc_coord_tag::get_pixel_tag(coordTag);
-  const auto& coords = image_access<dims>::get_normalized(pixelTag, idx, range);
-  return acc.read(coords, smpl);
+                         const coordT& coordTag) {
+  if constexpr (std::is_same_v<coordT, acc_coord_tag::use_int>) {
+    // Verify read using integer unnormalized coordinates
+    return acc.read(image_access<dims>::get_int(idx), smpl);
+  } else if constexpr (std::is_same_v<coordT, acc_coord_tag::use_float>) {
+    // Verify read using floating point unnormalized coordinates
+    return acc.read(image_access<dims>::get_float(idx), smpl);
+  } else {
+    // Verify read using normalized coordinates
+    const auto pixelTag = acc_coord_tag::get_pixel_tag(coordTag);
+    const auto& coords = image_access<dims>::get_normalized(pixelTag, idx, range);
+    return acc.read(coords, smpl);
+  }
 }
-
 template <typename T, int dims, sycl::access_mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
                                     sycl::target::image_array> &acc,
