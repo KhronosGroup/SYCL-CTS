@@ -42,8 +42,8 @@ namespace once_per_unit {
    */
   static void log(sycl_cts::util::logger &log,
                        const std::string &message) {
-    static const detail::log_notice once(log, message);
-    static_cast<void>(once);
+    static const detail::log_notice log_just_once(log, message);
+    static_cast<void>(log_just_once);
   }
 } // namespace once_per_unit
 } // namespace
