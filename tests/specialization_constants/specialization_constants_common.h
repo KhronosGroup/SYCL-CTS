@@ -23,11 +23,11 @@ struct no_cnstr {
   float a;
   int b;
   char c;
-};
 
-inline bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
-  return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-}
+  friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
+    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+  }
+};
 
 // A user-defined class with several scalar member variables, a user-defined
 //  default constructor, and some member functions that modify the member
@@ -46,7 +46,7 @@ struct def_cnstr {
     c = val;
   }
 
-  friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
+  inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 };
@@ -86,8 +86,12 @@ static const auto composite_types =
 
 }  // namespace testing_types
 
-struct sc_use_kernel_bundle { static constexpr bool value = true; };
-struct sc_no_kernel_bundle { static constexpr bool value = false; };
+struct sc_use_kernel_bundle {
+  static constexpr bool value = true;
+};
+struct sc_no_kernel_bundle {
+  static constexpr bool value = false;
+};
 
 template <typename T>
 inline constexpr auto value_helper(int x) {
