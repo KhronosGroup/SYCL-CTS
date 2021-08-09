@@ -56,9 +56,9 @@ class check_specialization_constants_multiple_for_type {
     int val_A = 5;
     int val_B = 10;
     int val_C = 30;
-    T ref1 = T(get_init_value_helper<T>(0));
-    T ref2 = T(get_init_value_helper<T>(0));
-    T ref3 = T(get_init_value_helper<T>(0));
+    T ref1{get_init_value_helper<T>(0)};
+    T ref2{get_init_value_helper<T>(0)};
+    T ref3{get_init_value_helper<T>(0)};
     fill_init_values(ref1, val_A);
     fill_init_values(ref2, val_B);
     fill_init_values(ref3, val_C);
