@@ -140,7 +140,7 @@ void fill_init_values(sycl::marray<T, numElements> &result, int val) {
   std::iota(result.begin(), result.end(), val);
 }
 
-enum test_cases_external {
+enum class test_cases_external {
   by_reference_via_handler = 1,
   by_value_via_handler = 2,
   by_reference_via_bundle = 3,
