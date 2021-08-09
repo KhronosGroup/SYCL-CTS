@@ -67,8 +67,8 @@ class check_specialization_constants_same_name_stress_for_type {
       T *result_arr = (T *)malloc(size * sizeof(T));
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
-        init_values(ref_def_values_arr[i], i);
-        init_values(ref_arr[i], i + static_cast<int>(size));
+        fill_init_values(ref_def_values_arr[i], i);
+        fill_init_values(ref_arr[i], i + static_cast<int>(size));
       }
 
       {
@@ -142,7 +142,7 @@ class check_specialization_constants_same_name_stress_for_type {
             get_default_and_set(cgh);
             read_from_kernel_handler();
           } else {
-          // Via kernel_bundle
+            // Via kernel_bundle
             auto kernelId = sycl::get_kernel_id<kernel_name>();
             auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
                 ctx, {dev}, {kernelId});

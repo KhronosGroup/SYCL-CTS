@@ -96,12 +96,12 @@ struct sc_no_kernel_bundle {
 };
 
 template <typename T>
-inline constexpr auto value_helper(int x) {
+inline constexpr auto get_init_value_helper(int x) {
   return x;
 }
 
 template <>
-inline constexpr auto value_helper<testing_types::no_cnstr>(int x) {
+inline constexpr auto get_init_value_helper<testing_types::no_cnstr>(int x) {
   testing_types::no_cnstr instance{};
   instance.a = x;
   instance.b = x;
@@ -110,7 +110,7 @@ inline constexpr auto value_helper<testing_types::no_cnstr>(int x) {
 }
 
 template <>
-inline constexpr auto value_helper<testing_types::def_cnstr>(int x) {
+inline constexpr auto get_init_value_helper<testing_types::def_cnstr>(int x) {
   testing_types::def_cnstr instance;
   instance.assign(x);
   return instance;
@@ -119,15 +119,16 @@ inline constexpr auto value_helper<testing_types::def_cnstr>(int x) {
 constexpr int default_val = 20;
 
 template <typename T, int case_num>
-constexpr sycl::specialization_id<T> spec_const(value_helper<T>(default_val));
+constexpr sycl::specialization_id<T> spec_const(
+    get_init_value_helper<T>(default_val));
 
 template <typename T>
-void init_values(T &result, int val) {
-  result = value_helper<T>(val);
+void fill_init_values(T &result, int val) {
+  result = get_init_value_helper<T>(val);
 }
 
 template <typename T, int numElements>
-void init_values(sycl::vec<T, numElements> &result, int val) {
+void fill_init_values(sycl::vec<T, numElements> &result, int val) {
   // Fill manually because sycl::vec does not have iterators
   for (int i = 0; i < numElements; ++i) {
     result[i] = val + i;
@@ -135,7 +136,7 @@ void init_values(sycl::vec<T, numElements> &result, int val) {
 }
 
 template <typename T, std::size_t numElements>
-void init_values(sycl::marray<T, numElements> &result, int val) {
+void fill_init_values(sycl::marray<T, numElements> &result, int val) {
   std::iota(result.begin(), result.end(), val);
 }
 

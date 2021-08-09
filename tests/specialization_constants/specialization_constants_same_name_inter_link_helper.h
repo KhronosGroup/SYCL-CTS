@@ -30,7 +30,7 @@ namespace {
 // SC_SN_IL_TU_NUM is defined in every TU
 template <typename T, typename via_kb>
 constexpr sycl::specialization_id<T> sc_same_name_inter_link(
-    get_spec_const::value_helper<T>(SC_SN_IL_TU_NUM));
+    get_spec_const::get_init_value_helper<T>(SC_SN_IL_TU_NUM));
 
 }  // namespace
 
