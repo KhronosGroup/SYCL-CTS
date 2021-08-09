@@ -18,10 +18,10 @@ is selected on the CTS command line.
 
 Every method should be checked for accordance to spec:
 
-* Method existence
+* Member function existence
 * Const correctness
 * Type of result
-* Result for noexcept() operator
+* Result for `noexcept()` operator
 
 === namespace sycl functions
 
@@ -54,7 +54,7 @@ provide checks under a separate test name:
 
 * Check that function template exists.
 
-If `SYCL_BACKEND_OPENCL` is defined run same checks as for sycl_category, but:
+If `SYCL_BACKEND_OPENCL` is defined run same checks as for `sycl_category`, but:
 
 * `error_category::name()` should return "opencl"
 * for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
