@@ -94,7 +94,7 @@ namespace {
 // namespace
 template <typename T>
 constexpr sycl::specialization_id<T> sc_same_name(
-    gsc::get_init_value_helperue_helper<T>(
+    gsc::get_init_value_helper<T>(
         to_integral(spec_const_help::sc_st_id::outer_unnamed_inner_unnamed)));
 
 template <typename T>
