@@ -58,13 +58,21 @@ class check_specialization_constants_same_name_stress_for_type {
       sycl::range<1> range(size);
       // Using malloc to not initialize for struct with no default constructor
       // Array of expected default values
-      T *ref_def_values_arr = (T *)malloc(size * sizeof(T));
+      auto ref_def_smart_storage = std::make_unique<
+          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+      auto ref_def_values_arr = ref_def_smart_storage.get();
       // Array of expected values
-      T *ref_arr = (T *)malloc(size * sizeof(T));
+      auto ref_arr_smart_storage = std::make_unique<
+          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+      auto ref_arr = ref_arr_smart_storage.get();
       // Array for real default values
-      T *def_values_arr = (T *)malloc(size * sizeof(T));
+      auto def_values_arr_smart_storage = std::make_unique<
+          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+      auto def_values_arr = def_values_arr_smart_storage.get();
       // Array for real values
-      T *result_arr = (T *)malloc(size * sizeof(T));
+      auto result_arr_smart_storage = std::make_unique<
+          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+      auto result_arr = result_arr_smart_storage.get();
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
         fill_init_values(ref_def_values_arr[i], i);
@@ -72,7 +80,7 @@ class check_specialization_constants_same_name_stress_for_type {
       }
 
       {
-        sycl::buffer<T, 1> result_buffer(result_arr, range);
+        sycl::buffer<T, 1> result_buffer(result_arr->data(), range);
         queue.submit([&](sycl::handler &cgh) {
           // Kernel name
           using kernel_name = kernel<T, via_kb>;
@@ -168,10 +176,6 @@ class check_specialization_constants_same_name_stress_for_type {
                         get_hint(i) + "for type " + type_name);
         }
       }
-      free(ref_def_values_arr);
-      free(ref_arr);
-      free(def_values_arr);
-      free(result_arr);
     } catch (...) {
       std::string message{"for type " + type_name_string<T>::get(type_name)};
       log.note(message);

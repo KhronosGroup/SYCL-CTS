@@ -24,6 +24,12 @@ struct no_cnstr {
   int b;
   char c;
 
+  void operator=(const int &v) {
+    this->a = v;
+    this->b = v;
+    this->c = v;
+  }
+
   friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
@@ -46,6 +52,12 @@ struct def_cnstr {
     c = val;
   }
 
+  void operator=(const int &v) {
+    this->a = v * 3.0;
+    this->b = v * 2;
+    this->c = v;
+  }
+
   inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
@@ -66,6 +78,13 @@ class no_def_cnstr {
   friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
+
+  void operator=(const int &v) {
+    no_def_cnstr temp(v);
+    this->a = temp.a;
+    this->b = temp.b;
+    this->c = temp.c;
+  }
 };
 
 template <typename T>
@@ -79,6 +98,10 @@ union remove_initialization {
   template <typename T>
   void operator=(const T &v) {
     this->value = v;
+  }
+
+  friend bool operator==(const remove_initialization &lhs, const remove_initialization &rhs) {
+    return lhs.value == rhs.value;
   }
 
   value_type *data() { return &value; }
