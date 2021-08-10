@@ -11,9 +11,9 @@ $IFDEF
 #include "../common/common.h"
 #include "../common/common_vec.h"
 
-#define TEST_NAME vector_swizzles_$OPENCL$TYPE_NAME
+#define TEST_NAME vector_swizzles_$TYPE_NAME
 
-namespace vector_swizzles_$OPENCL$TYPE_NAME__ {
+namespace vector_swizzles_$TYPE_NAME__ {
 using namespace sycl_cts;
 
 /** Test each combination of vector swizzles can be generated
@@ -57,10 +57,10 @@ class TEST_NAME : public util::test_base {
       }
 
       testQueue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

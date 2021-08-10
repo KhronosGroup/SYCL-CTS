@@ -32,7 +32,7 @@ namespace {
  * @brief Helper function to print an error message and fail a test
  */
 inline void fail_test(sycl_cts::util::logger& log,
-                      cl::sycl::string_class errorMsg) {
+                      std::string errorMsg) {
   FAIL(log, errorMsg);
 }
 
@@ -41,7 +41,7 @@ inline void fail_test(sycl_cts::util::logger& log,
  */
 template <typename T>
 void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
-                        cl::sycl::string_class functionName) {
+                        std::string functionName) {
   if (a != b) {
     FAIL(log, functionName + " returns an incorrect value");
   }
@@ -52,10 +52,10 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
  */
 template <typename expectedT, typename returnT>
 void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
-                       cl::sycl::string_class functionName) {
+                       std::string functionName) {
   if (!std::is_same<returnT, expectedT>::value) {
     FAIL(log, functionName + " has incorrect return type -> " +
-                  cl::sycl::string_class(typeid(returnT).name()));
+                  std::string(typeid(returnT).name()));
   }
 }
 
@@ -72,12 +72,12 @@ bool check_return_type_bool(returnT returnVal) {
  */
 template <typename expectedT, typename actualT>
 void check_equal_type(sycl_cts::util::logger& log, actualT actualVal,
-                      cl::sycl::string_class logMsg) {
+                      std::string logMsg) {
   if (typeid(expectedT) != typeid(actualT)) {
     FAIL(log, logMsg + "\nGot type -> " +
-                  cl::sycl::string_class(typeid(actualT).name()) +
+                  std::string(typeid(actualT).name()) +
                   "\nExpected type -> " +
-                  cl::sycl::string_class(typeid(expectedT).name()));
+                  std::string(typeid(expectedT).name()));
   }
 }
 
@@ -104,10 +104,10 @@ template <typename enumT, typename underlyingT>
 void check_enum_underlying_type(sycl_cts::util::logger& log) {
   if (typeid(typename std::underlying_type<enumT>::type) !=
       typeid(underlyingT)) {
-    FAIL(log, cl::sycl::string_class(
+    FAIL(log, std::string(
                   typeid(typename std::underlying_type<enumT>::type).name()) +
                   " enum underlying type is not " +
-                  cl::sycl::string_class(typeid(underlyingT).name()));
+                  std::string(typeid(underlyingT).name()));
   }
 }
 
@@ -119,7 +119,7 @@ void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
   /** check param_traits return type
    */
   using paramTraitsType =
-      typename cl::sycl::info::param_traits<enumT, kValue>::return_type;
+      typename sycl::info::param_traits<enumT, kValue>::return_type;
   if (typeid(paramTraitsType) != typeid(returnT)) {
     FAIL(log, "param_trait specialization has incorrect return type");
   }
@@ -139,7 +139,7 @@ void check_get_profiling_info_param(sycl_cts::util::logger& log,
   /** check param_traits return type
    */
   using paramTraitsType =
-      typename cl::sycl::info::param_traits<enumT, kValue>::return_type;
+      typename sycl::info::param_traits<enumT, kValue>::return_type;
   if (!std::is_same<paramTraitsType, returnT>::value) {
     FAIL(log, "param_trait specialization has incorrect return type");
   }
@@ -199,11 +199,11 @@ bool check_type_sign(bool expected_sign) {
 }
 
 /**
- * @brief Helper function to see if cl::sycl::half is of the wrong sign
+ * @brief Helper function to see if sycl::half is of the wrong sign
  */
 template <>
-inline bool check_type_sign<cl::sycl::half>(bool expected_sign) {
-  bool is_signed = cl::sycl::half(1) > cl::sycl::half(-1);
+inline bool check_type_sign<sycl::half>(bool expected_sign) {
+  bool is_signed = sycl::half(1) > sycl::half(-1);
   return is_signed == expected_sign;
 }
 
@@ -214,14 +214,14 @@ inline bool check_type_sign<cl::sycl::half>(bool expected_sign) {
 template <typename T>
 void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
                                   bool expected_sign,
-                                  cl::sycl::string_class typeName) {
+                                  std::string typeName) {
   if (!check_type_min_size<T>(minSize)) {
-    FAIL(log, cl::sycl::string_class(
+    FAIL(log, std::string(
                   "The following host type does not have the correct size: ") +
                   typeName);
   }
   if (!check_type_sign<T>(expected_sign)) {
-    FAIL(log, cl::sycl::string_class(
+    FAIL(log, std::string(
                   "The following host type does not have the correct sign: ") +
                   typeName);
   }
@@ -239,8 +239,8 @@ bool check_equal_values(const T& lhs, const T& rhs) {
  * @brief Instantiation for vectors with the same API as for scalar values
  */
 template <typename T, int numElements>
-bool check_equal_values(const cl::sycl::vec<T, numElements>& lhs,
-                        const cl::sycl::vec<T, numElements>& rhs) {
+bool check_equal_values(const sycl::vec<T, numElements>& lhs,
+                        const sycl::vec<T, numElements>& rhs) {
   bool result = true;
   auto perElement = lhs == rhs;
   for (int i = 0; i < numElements; ++i) {
@@ -252,22 +252,22 @@ bool check_equal_values(const cl::sycl::vec<T, numElements>& lhs,
 /** helper function for retrieving an event from a submitted kernel
  */
 template <typename kernelT>
-cl::sycl::event get_queue_event(cl::sycl::queue& queue) {
-  return queue.submit([&](cl::sycl::handler& handler) {
+sycl::event get_queue_event(sycl::queue& queue) {
+  return queue.submit([&](sycl::handler& handler) {
     handler.single_task<kernelT>([=]() {});
   });
 }
 
 #define TEST_TYPE_TRAIT(syclType, param, syclObject)                    \
-  if (typeid(cl::sycl::info::param_traits<                              \
-             cl::sycl::info::syclType,                                  \
-             cl::sycl::info::syclType::param>::return_type) !=          \
-      typeid(syclObject.get_info<cl::sycl::info::syclType::param>())) { \
+  if (typeid(sycl::info::param_traits<                              \
+             sycl::info::syclType,                                  \
+             sycl::info::syclType::param>::return_type) !=          \
+      typeid(syclObject.get_info<sycl::info::syclType::param>())) { \
     FAIL(log, #syclType                                                 \
-         ".get_info<cl::sycl::info::" #syclType "::" #param             \
+         ".get_info<sycl::info::" #syclType "::" #param             \
          ">() does not return "                                         \
-         "cl::sycl::info::param_traits<cl::sycl::info::" #syclType      \
-         ", cl::sycl::info::" #syclType "::" #param ">::return_type");  \
+         "sycl::info::param_traits<sycl::info::" #syclType      \
+         ", sycl::info::" #syclType "::" #param ">::return_type");  \
   }
 
 /** Enables concept checking ahead of the Concepts TS
@@ -355,6 +355,24 @@ constexpr auto to_integral(enumT const& value)
 }
 
 /**
+ * @brief Tag to denote mapping of integer coordinates to real scale
+ *
+ * For example, if we make a one pixel wide image this pixel can have
+ * any coordinate in range [0.0 .. 1.0)
+ */
+namespace pixel_tag {
+  struct generic {};
+  /** @brief The low boundary of the pixel, equal to the integer one
+   *         if representable
+   */
+  struct lower : generic {};
+  /** @brief The upper boundary of the pixel, equal to the left limit
+   *         lim(x-) where x is the low boundary for the next pixel
+   */
+  struct upper: generic {};
+};
+
+/**
  * @brief Helps with retrieving the right access type for reading/writing
  *        an image
  * @tparam dims Number of image dimensions
@@ -367,19 +385,33 @@ struct image_access;
  */
 template <>
 struct image_access<1> {
-  using int_type = cl::sycl::cl_int;
-  using float_type = cl::sycl::cl_float;
-  static int_type get_int(const cl::sycl::id<1>& i) {
+  using int_type = sycl::cl_int;
+  using float_type = sycl::cl_float;
+  static int_type get_int(const sycl::id<1>& i) {
     return int_type(i.get(0));
   }
-  static int_type get_int(const cl::sycl::item<1>& i) {
+  static int_type get_int(const sycl::item<1>& i) {
     return get_int(i.get_id());
   }
-  static float_type get_float(const cl::sycl::id<1>& i) {
+  static float_type get_float(const sycl::id<1>& i) {
     return float_type(static_cast<float>(i.get(0)));
   }
-  static float_type get_float(const cl::sycl::item<1>& i) {
+  static float_type get_float(const sycl::item<1>& i) {
     return get_float(i.get_id());
+  }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const sycl::id<1>& i,
+                                   const sycl::range<1>& r) {
+    return get_float(i) / static_cast<int>(r.get(0));
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const sycl::id<1>& i,
+                                   const sycl::range<1>& r) {
+    const auto negative_inf =
+        -1.0f * std::numeric_limits<float_type>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return sycl::nextafter(next, negative_inf);
   }
 };
 
@@ -388,20 +420,36 @@ struct image_access<1> {
  */
 template <>
 struct image_access<2> {
-  using int_type = cl::sycl::cl_int2;
-  using float_type = cl::sycl::cl_float2;
-  static int_type get_int(const cl::sycl::id<2>& i) {
+  using int_type = sycl::cl_int2;
+  using float_type = sycl::cl_float2;
+  static int_type get_int(const sycl::id<2>& i) {
     return int_type(i.get(0), i.get(1));
   }
-  static int_type get_int(const cl::sycl::item<2>& i) {
+  static int_type get_int(const sycl::item<2>& i) {
     return get_int(i.get_id());
   }
-  static float_type get_float(const cl::sycl::id<2>& i) {
+  static float_type get_float(const sycl::id<2>& i) {
     return float_type(static_cast<float>(i.get(0)),
                       static_cast<float>(i.get(1)));
   }
-  static float_type get_float(const cl::sycl::item<2>& i) {
+  static float_type get_float(const sycl::item<2>& i) {
     return get_float(i.get_id());
+  }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const sycl::id<2>& i,
+                                   const sycl::range<2>& r) {
+    return float_type(
+        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
+        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)));
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const sycl::id<2>& i,
+                                   const sycl::range<2>& r) {
+    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return float_type(sycl::nextafter(next[0], negative_inf),
+                      sycl::nextafter(next[1], negative_inf));
   }
 };
 
@@ -410,21 +458,39 @@ struct image_access<2> {
  */
 template <>
 struct image_access<3> {
-  using int_type = cl::sycl::cl_int4;
-  using float_type = cl::sycl::cl_float4;
-  static int_type get_int(const cl::sycl::id<3>& i) {
+  using int_type = sycl::cl_int4;
+  using float_type = sycl::cl_float4;
+  static int_type get_int(const sycl::id<3>& i) {
     return int_type(i.get(0), i.get(1), i.get(2), 0);
   }
-  static int_type get_int(const cl::sycl::item<3>& i) {
+  static int_type get_int(const sycl::item<3>& i) {
     return get_int(i.get_id());
   }
-  static float_type get_float(const cl::sycl::id<3>& i) {
+  static float_type get_float(const sycl::id<3>& i) {
     return float_type(static_cast<float>(i.get(0)),
                       static_cast<float>(i.get(1)),
                       static_cast<float>(i.get(2)), .0f);
   }
-  static float_type get_float(const cl::sycl::item<3>& i) {
+  static float_type get_float(const sycl::item<3>& i) {
     return get_float(i.get_id());
+  }
+  static float_type get_normalized(const pixel_tag::lower,
+                                   const sycl::id<3>& i,
+                                   const sycl::range<3>& r) {
+    return float_type(
+        static_cast<float>(i.get(0)) / static_cast<int>(r.get(0)),
+        static_cast<float>(i.get(1)) / static_cast<int>(r.get(1)),
+        static_cast<float>(i.get(2)) / static_cast<int>(r.get(2)), .0f);
+  }
+  static float_type get_normalized(const pixel_tag::upper,
+                                   const sycl::id<3>& i,
+                                   const sycl::range<3>& r) {
+    const auto negative_inf = -1.0f * std::numeric_limits<float>::infinity();
+    const auto next = get_normalized(pixel_tag::lower{}, 1 + i, r);
+
+    return float_type(sycl::nextafter(next[0], negative_inf),
+                      sycl::nextafter(next[1], negative_inf),
+                      sycl::nextafter(next[2], negative_inf), .0f);
   }
 };
 
@@ -440,10 +506,10 @@ struct check_type_existence {
  * @brief Helper function to check if all devices support online compiler.
  */
 inline bool is_compiler_available(
-    const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
+    const std::vector<sycl::device>& deviceList) {
   bool compiler_available = true;
   for (const auto& device : deviceList) {
-    if (!device.get_info<cl::sycl::info::device::is_compiler_available>()) {
+    if (!device.get_info<sycl::info::device::is_compiler_available>()) {
       compiler_available = false;
       break;
     }
@@ -455,10 +521,10 @@ inline bool is_compiler_available(
  * @brief Helper function to check if all devices support online linker.
  */
 inline bool is_linker_available(
-    const cl::sycl::vector_class<cl::sycl::device>& deviceList) {
+    const std::vector<sycl::device>& deviceList) {
   bool linker_available = true;
   for (const auto& device : deviceList) {
-    if (!device.get_info<cl::sycl::info::device::is_linker_available>()) {
+    if (!device.get_info<sycl::info::device::is_linker_available>()) {
       linker_available = false;
       break;
     }
@@ -473,12 +539,12 @@ inline bool is_linker_available(
  * @param wgSize Work-group size to verify for support
  */
 inline bool device_supports_wg_size(sycl_cts::util::logger& log,
-                                    cl::sycl::queue &queue,
+                                    sycl::queue &queue,
                                     size_t wgSize)
 {
   auto device = queue.get_device();
   const auto maxDeviceWorkGroupSize =
-      device.template get_info<cl::sycl::info::device::max_work_group_size>();
+      device.template get_info<sycl::info::device::max_work_group_size>();
 
   const bool supports = maxDeviceWorkGroupSize >= wgSize;
   if (!supports)
@@ -496,13 +562,13 @@ inline bool device_supports_wg_size(sycl_cts::util::logger& log,
  */
 template <class kernelT>
 inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
-                                    cl::sycl::queue &queue,
+                                    sycl::queue &queue,
                                     size_t wgSize)
 {
   // Verify only for device in use
   auto device = queue.get_device();
   const auto& context = queue.get_context();
-  const cl::sycl::vector_class<cl::sycl::device> devicesToCheck{device};
+  const std::vector<sycl::device> devicesToCheck{device};
 
   /* To query info::kernel_work_group::work_group_size property, we need to
    * obtain test kernel handler, which requires online compilation
@@ -513,11 +579,11 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
     return false;
   }
 
-  cl::sycl::program program(context, devicesToCheck);
+  sycl::program program(context, devicesToCheck);
   program.build_with_kernel_type<kernelT>("");
   auto kernel = program.get_kernel<kernelT>();
   auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
-      cl::sycl::info::kernel_work_group::work_group_size>(device);
+      sycl::info::kernel_work_group::work_group_size>(device);
 
   const bool supports = maxKernelWorkGroupSize >= wgSize;
   if (!supports) {

@@ -13,7 +13,7 @@
 namespace platform_info__ {
 using namespace sycl_cts;
 
-/** tests the info for cl::sycl::platform
+/** tests the info for sycl::platform
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -29,34 +29,34 @@ class TEST_NAME : public util::test_base {
     try {
       /** check info::platform
        */
-      check_enum_class_value(cl::sycl::info::platform::profile);
-      check_enum_class_value(cl::sycl::info::platform::version);
-      check_enum_class_value(cl::sycl::info::platform::name);
-      check_enum_class_value(cl::sycl::info::platform::vendor);
-      check_enum_class_value(cl::sycl::info::platform::extensions);
+      check_enum_class_value(sycl::info::platform::profile);
+      check_enum_class_value(sycl::info::platform::version);
+      check_enum_class_value(sycl::info::platform::name);
+      check_enum_class_value(sycl::info::platform::vendor);
+      check_enum_class_value(sycl::info::platform::extensions);
 
       /** check get_info parameters
        */
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
-                             cl::sycl::info::platform::profile>(log, plt);
-        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
-                             cl::sycl::info::platform::version>(log, plt);
-        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
-                             cl::sycl::info::platform::name>(log, plt);
-        check_get_info_param<cl::sycl::info::platform, cl::sycl::string_class,
-                             cl::sycl::info::platform::vendor>(log, plt);
-        check_get_info_param<cl::sycl::info::platform,
-                             cl::sycl::vector_class<cl::sycl::string_class>,
-                             cl::sycl::info::platform::extensions>(log, plt);
+        check_get_info_param<sycl::info::platform, std::string,
+                             sycl::info::platform::profile>(log, plt);
+        check_get_info_param<sycl::info::platform, std::string,
+                             sycl::info::platform::version>(log, plt);
+        check_get_info_param<sycl::info::platform, std::string,
+                             sycl::info::platform::name>(log, plt);
+        check_get_info_param<sycl::info::platform, std::string,
+                             sycl::info::platform::vendor>(log, plt);
+        check_get_info_param<sycl::info::platform,
+                             std::vector<std::string>,
+                             sycl::info::platform::extensions>(log, plt);
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

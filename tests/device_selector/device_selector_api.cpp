@@ -13,7 +13,7 @@
 namespace device_selector_api__ {
 using namespace sycl_cts;
 
-/** tests the api for cl::sycl::device_selector
+/** tests the api for sycl::device_selector
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -32,23 +32,23 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto selected_device = selector.select_device();
-        check_return_type<cl::sycl::device>(log, selected_device,
+        check_return_type<sycl::device>(log, selected_device,
                                             "select_device()");
       }
 
       /** check ()(device) operator
        */
       {
-        cl::sycl::device device;
+        sycl::device device;
         cts_selector selector;
         auto score = selector(device);
-        check_return_type<int>(log, score, "selector(cl::sycl::device)");
+        check_return_type<int>(log, score, "selector(sycl::device)");
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

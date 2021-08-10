@@ -23,40 +23,40 @@ namespace {
 
 /** explicit pointer type
 */
-template <typename T, cl::sycl::access::target target>
+template <typename T, sycl::target target>
 struct explicit_pointer;
 
 /** explicit pointer type (specialization for local)
 */
 template <typename T>
-struct explicit_pointer<T, cl::sycl::access::target::local> {
-  using type = cl::sycl::local_ptr<T>;
+struct explicit_pointer<T, sycl::target::local> {
+  using type = sycl::local_ptr<T>;
 };
 
 /** explicit pointer type (specialization for global_buffer)
 */
 template <typename T>
-struct explicit_pointer<T, cl::sycl::access::target::global_buffer> {
-  using type = cl::sycl::global_ptr<T>;
+struct explicit_pointer<T, sycl::target::global_buffer> {
+  using type = sycl::global_ptr<T>;
 };
 
 /** explicit pointer type (specialization for constant_buffer)
 */
 template <typename T>
-struct explicit_pointer<T, cl::sycl::access::target::constant_buffer> {
-  using type = cl::sycl::constant_ptr<T>;
+struct explicit_pointer<T, sycl::target::constant_buffer> {
+  using type = sycl::constant_ptr<T>;
 };
 
 /** explicit pointer type (specialization for host_buffer)
 */
 template <typename T>
-struct explicit_pointer<T, cl::sycl::access::target::host_buffer> {
+struct explicit_pointer<T, sycl::target::host_buffer> {
   using type = T *;
 };
 
 /** explicit pointer alias
  */
-template <typename T, cl::sycl::access::target target>
+template <typename T, sycl::target target>
 using explicit_pointer_t = typename explicit_pointer<T, target>::type;
 
 }  // namespace
@@ -67,7 +67,7 @@ using explicit_pointer_t = typename explicit_pointer<T, target>::type;
 
 namespace accessor_utility {
 
-template <typename T, cl::sycl::target target, cl::sycl::access::mode mode>
+template <typename T, sycl::target target, sycl::access_mode mode>
 struct buffer_accessor_value {
   using dataT = T;
   using elemT = T;
@@ -81,8 +81,8 @@ struct buffer_accessor_value {
   }
 };
 
-template <typename T, cl::sycl::target target>
-struct buffer_accessor_value<T, target, cl::sycl::access::mode::read> {
+template <typename T, sycl::target target>
+struct buffer_accessor_value<T, target, sycl::access_mode::read> {
   using dataT = T;
   using elemT = T;
 
@@ -91,14 +91,14 @@ struct buffer_accessor_value<T, target, cl::sycl::access::mode::read> {
   }
 };
 
-template <typename T, cl::sycl::target target>
-struct buffer_accessor_value<T, target, cl::sycl::access::mode::atomic> {
+template <typename T, sycl::target target>
+struct buffer_accessor_value<T, target, sycl::access_mode::atomic> {
   static constexpr auto addressSpace =
-      (target == cl::sycl::target::local) ?
-      cl::sycl::access::address_space::local_space :
-      cl::sycl::access::address_space::global_space;
+      (target == sycl::target::local) ?
+      sycl::access::address_space::local_space :
+      sycl::access::address_space::global_space;
   using dataT = T;
-  using elemT = cl::sycl::atomic<T, addressSpace>;
+  using elemT = sycl::atomic<T, addressSpace>;
   using elemRefT = elemT;
 
   static inline dataT get(elemRefT value) {
@@ -109,58 +109,58 @@ struct buffer_accessor_value<T, target, cl::sycl::access::mode::atomic> {
   }
 };
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
-    cl::sycl::id<1> idx) {
+    const sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    sycl::id<1> idx) {
   return buffer_accessor_value<T, target, mode>::get(acc[idx[0]]);
 }
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
-    cl::sycl::id<2> idx) {
+    const sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    sycl::id<2> idx) {
   return buffer_accessor_value<T, target, mode>::get(acc[idx[0]][idx[1]]);
 }
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 T multidim_subscript_read(
-    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
-    cl::sycl::id<3> idx) {
+    const sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    sycl::id<3> idx) {
   return
       buffer_accessor_value<T, target, mode>::get(acc[idx[0]][idx[1]][idx[2]]);
 }
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    const cl::sycl::accessor<T, 1, mode, target, placeholder>& acc,
-    cl::sycl::id<1> idx, T value) {
+    const sycl::accessor<T, 1, mode, target, placeholder>& acc,
+    sycl::id<1> idx, T value) {
   buffer_accessor_value<T, target, mode>::set(acc[idx[0]], value);
 }
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    const cl::sycl::accessor<T, 2, mode, target, placeholder>& acc,
-    cl::sycl::id<2> idx, T value) {
+    const sycl::accessor<T, 2, mode, target, placeholder>& acc,
+    sycl::id<2> idx, T value) {
   buffer_accessor_value<T, target, mode>::set(acc[idx[0]][idx[1]], value);
 }
 
-template <typename T, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 void multidim_subscript_write(
-    const cl::sycl::accessor<T, 3, mode, target, placeholder>& acc,
-    cl::sycl::id<3> idx, T value) {
+    const sycl::accessor<T, 3, mode, target, placeholder>& acc,
+    sycl::id<3> idx, T value) {
   buffer_accessor_value<T, target, mode>::set(acc[idx[0]][idx[1]][idx[2]],
                                               value);
 }
@@ -259,7 +259,7 @@ struct buffer_accessor_get_pointer_w {
 /**
  *  @brief Tests buffer accessors pointer value with read-write data access
  */
-template <typename T, int dim, cl::sycl::access::target target>
+template <typename T, int dim, sycl::target target>
 struct buffer_accessor_get_pointer_rw {
   using error_code_t = buffer_accessor_api_pointer_error_code;
   using expected_value_t = buffer_accessor_expected_value<T, dim>;
@@ -273,7 +273,7 @@ struct buffer_accessor_get_pointer_rw {
     auto ptr = acc.get_pointer();
     T elem;
 
-    if (target != cl::sycl::access::target::local) {
+    if (target != sycl::target::local) {
       /** check read syntax
       */
       elem = *ptr;
@@ -296,19 +296,19 @@ struct buffer_accessor_get_pointer_rw {
 /**
  *  @brief Kernel name for buffer_accessor_get_pointer functor
  */
-template <typename kernelName, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename kernelName, int dim, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 struct buffer_accessor_get_pointer_kernel {};
 /**
  *  @brief Tests buffer accessors pointer value with any data access
  */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, int dim, sycl::access_mode mode,
+          sycl::target target, sycl::target errorTarget,
+          sycl::access::placeholder placeholder>
 class buffer_accessor_get_pointer {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
-  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  using acc_t = sycl::accessor<T, dim, mode, target, placeholder>;
+  using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
   acc_t m_acc;
   error_acc_t m_errorAccessor;
   sycl_id_t<dim> m_offset;
@@ -346,19 +346,19 @@ class buffer_accessor_get_pointer {
 /**
  *  @brief Kernel name for buffer_accessor_api_* functors
  */
-template <typename kernelName, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename kernelName, int dim, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 struct buffer_accessor_api_kernel {};
 
 /** tests buffer accessors reads
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, int dim, sycl::access_mode mode,
+          sycl::target target, sycl::target errorTarget,
+          sycl::access::placeholder placeholder>
 class buffer_accessor_api_r {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
-  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  using acc_t = sycl::accessor<T, dim, mode, target, placeholder>;
+  using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
   using elem_acc_t = buffer_accessor_value<T, target, mode>;
   using error_code_t = buffer_accessor_api_subscripts_error_code;
   using expected_value_t = buffer_accessor_expected_value<T, dim>;
@@ -425,11 +425,11 @@ class buffer_accessor_api_r {
 
 /** tests buffer accessors writes
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, int dim, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder>
 class buffer_accessor_api_w {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
+  using acc_t = sycl::accessor<T, dim, mode, target, placeholder>;
   using elem_acc_t = buffer_accessor_value<T, target, mode>;
   using expected_value_t = buffer_accessor_expected_value<T, dim>;
 
@@ -483,12 +483,12 @@ class buffer_accessor_api_w {
 
 /** tests buffer accessors reads and writes
 */
-template <typename T, int dim, cl::sycl::access::mode mode,
-          cl::sycl::access::target target, cl::sycl::access::target errorTarget,
-          cl::sycl::access::placeholder placeholder>
+template <typename T, int dim, sycl::access_mode mode,
+          sycl::target target, sycl::target errorTarget,
+          sycl::access::placeholder placeholder>
 class buffer_accessor_api_rw {
-  using acc_t = cl::sycl::accessor<T, dim, mode, target, placeholder>;
-  using error_acc_t = cl::sycl::accessor<int, 1, errorMode, errorTarget>;
+  using acc_t = sycl::accessor<T, dim, mode, target, placeholder>;
+  using error_acc_t = sycl::accessor<int, 1, errorMode, errorTarget>;
   using elem_acc_t = buffer_accessor_value<T, target, mode>;
   using error_code_t = buffer_accessor_api_subscripts_error_code;
   using expected_value_t = buffer_accessor_expected_value<T, dim>;
@@ -526,7 +526,7 @@ class buffer_accessor_api_rw {
     T elem;
 
     // A local accessor doesn't have any valid information at this point
-    if (target != cl::sycl::access::target::local) {
+    if (target != sycl::target::local) {
       const auto expectedRead = expected_value_t::expected_read(idx, m_range);
 
       /** check id read syntax

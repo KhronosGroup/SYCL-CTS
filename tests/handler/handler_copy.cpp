@@ -18,8 +18,8 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-using mode_t = cl::sycl::access::mode;
-using target_t = cl::sycl::access::target;
+using mode_t = sycl::access_mode;
+using target_t = sycl::target;
 
 namespace {
 
@@ -40,18 +40,18 @@ class log_helper {
     if (std::is_same<dataT, long>::value) result.dataType = "long";
     if (std::is_same<dataT, float>::value) result.dataType = "float";
     if (std::is_same<dataT, double>::value) result.dataType = "double";
-    if (std::is_same<dataT, cl::sycl::char2>::value)
-      result.dataType = "cl::sycl::char2";
-    if (std::is_same<dataT, cl::sycl::short3>::value)
-      result.dataType = "cl::sycl::short3";
-    if (std::is_same<dataT, cl::sycl::int4>::value)
-      result.dataType = "cl::sycl::int4";
-    if (std::is_same<dataT, cl::sycl::long8>::value)
-      result.dataType = "cl::sycl::long8";
-    if (std::is_same<dataT, cl::sycl::float8>::value)
-      result.dataType = "cl::sycl::float8";
-    if (std::is_same<dataT, cl::sycl::double16>::value)
-      result.dataType = "cl::sycl::double16";
+    if (std::is_same<dataT, sycl::char2>::value)
+      result.dataType = "sycl::char2";
+    if (std::is_same<dataT, sycl::short3>::value)
+      result.dataType = "sycl::short3";
+    if (std::is_same<dataT, sycl::int4>::value)
+      result.dataType = "sycl::int4";
+    if (std::is_same<dataT, sycl::long8>::value)
+      result.dataType = "sycl::long8";
+    if (std::is_same<dataT, sycl::float8>::value)
+      result.dataType = "sycl::float8";
+    if (std::is_same<dataT, sycl::double16>::value)
+      result.dataType = "sycl::double16";
     return result;
   }
 
@@ -185,8 +185,8 @@ struct type_helper {
 };
 
 template <typename dataT, int numElements>
-struct type_helper<cl::sycl::vec<dataT, numElements>> {
-  using T = cl::sycl::vec<dataT, numElements>;
+struct type_helper<sycl::vec<dataT, numElements>> {
+  using T = sycl::vec<dataT, numElements>;
   static T make(size_t v) {
     return T{static_cast<typename T::element_type>(v)};
   }
@@ -202,12 +202,12 @@ template <typename dataT, int dims>
 struct scalar_init_op {
   dataT value;
   scalar_init_op(dataT value) : value(value) {}
-  dataT operator()(cl::sycl::id<dims>) const { return value; }
+  dataT operator()(sycl::id<dims>) const { return value; }
 };
 
 template <typename dataT, int dims>
 struct encode_index_init_op {
-  dataT operator()(cl::sycl::id<dims> id) const {
+  dataT operator()(sycl::id<dims> id) const {
     size_t result = 10000 * id[0];
     if (dims > 1) result += 100 * id[1];
     if (dims > 2) result += id[2];
@@ -222,12 +222,12 @@ template <typename dataT, int dims, typename initOp>
 class fill_kernel;
 
 template <typename dataT, int dims, template <typename, int> class initOp>
-void fill_buffer(cl::sycl::queue& queue, cl::sycl::buffer<dataT, dims>& buf,
+void fill_buffer(sycl::queue& queue, sycl::buffer<dataT, dims>& buf,
                  initOp<dataT, dims> init_op) {
-  queue.submit([&](cl::sycl::handler& cgh) {
+  queue.submit([&](sycl::handler& cgh) {
     auto acc = buf.template get_access<mode_t::discard_write>(cgh);
     cgh.parallel_for<fill_kernel<dataT, dims, initOp<dataT, dims>>>(
-        buf.get_range(), [=](cl::sycl::id<dims> id) { acc[id] = init_op(id); });
+        buf.get_range(), [=](sycl::id<dims> id) { acc[id] = init_op(id); });
   });
 }
 
@@ -278,10 +278,10 @@ struct range_id_helper<T, 3, default_value> {
 };
 
 template <int dims>
-using range_helper = range_id_helper<cl::sycl::range, dims, 1>;
+using range_helper = range_id_helper<sycl::range, dims, 1>;
 
 template <int dims>
-using id_helper = range_id_helper<cl::sycl::id, dims, 0>;
+using id_helper = range_id_helper<sycl::id, dims, 0>;
 
 /**
  * @brief The copy_test_context encapsulates all host and device data required
@@ -307,13 +307,13 @@ using id_helper = range_id_helper<cl::sycl::id, dims, 0>;
 template <typename dataT, int dim_src, int dim_dst, bool strided_copy,
           bool transposed_copy>
 class copy_test_context {
-  using host_shared_ptr = cl::sycl::shared_ptr_class<dataT>;
-  using buffer_src_t = cl::sycl::buffer<dataT, dim_src>;
-  using buffer_dst_t = cl::sycl::buffer<dataT, dim_dst>;
+  using host_shared_ptr = std::shared_ptr<dataT>;
+  using buffer_src_t = sycl::buffer<dataT, dim_src>;
+  using buffer_dst_t = sycl::buffer<dataT, dim_dst>;
   using th = type_helper<dataT>;
 
  public:
-  explicit copy_test_context(cl::sycl::queue& queue) : queue(queue) {
+  explicit copy_test_context(sycl::queue& queue) : queue(queue) {
     setup_ranges();
 
     srcBufHostMemory =
@@ -332,8 +332,8 @@ class copy_test_context {
 
     srcBuf = std::unique_ptr<buffer_src_t>(new buffer_src_t(
         srcBufHostMemory, srcBufRange,
-        cl::sycl::property_list{
-            cl::sycl::property::buffer::use_mutex{srcBufHostMemoryMutex}}));
+        sycl::property_list{
+            sycl::property::buffer::use_mutex{srcBufHostMemoryMutex}}));
     dstBuf = std::unique_ptr<buffer_dst_t>(new buffer_dst_t(dstBufRange));
 
     fill_buffer(queue, *srcBuf, encode_index_init_op<dataT, dim_src>());
@@ -361,12 +361,12 @@ class copy_test_context {
             encode_index_init_op<dataT, dim_src>{}(srcCopyOffset + srcRelIdx);
 
         if (!th::equal(received, expected)) {
-          log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
+          log_error(lh, sycl::id<3>(i, 0, 0), received, expected);
           return;
         }
       } else {
         if (!th::equal(received, hostCanary)) {
-          log_canary_violation(lh, cl::sycl::id<3>(i, 0, 0), received);
+          log_canary_violation(lh, sycl::id<3>(i, 0, 0), received);
           return;
         }
       }
@@ -385,14 +385,14 @@ class copy_test_context {
   void verify_update_host(test_fn fn, const log_helper& lh) const {
     run_test_function(fn, lh);
 
-    std::lock_guard<cl::sycl::mutex_class> lock(srcBufHostMemoryMutex);
+    std::lock_guard<std::mutex> lock(srcBufHostMemoryMutex);
     for (size_t i = 0; i < numElems; ++i) {
       const auto idx = reconstruct_index(srcBufRange, i);
       if (is_within_window(srcCopyOffset, srcCopyRange, idx)) {
         const auto expected = encode_index_init_op<dataT, dim_src>{}(idx);
         const auto received = srcBufHostMemory.get()[i];
         if (!th::equal(received, expected)) {
-          log_error(lh, cl::sycl::id<3>(i, 0, 0), received, expected);
+          log_error(lh, sycl::id<3>(i, 0, 0), received, expected);
           return;
         }
       }
@@ -451,7 +451,7 @@ class copy_test_context {
     run_test_function(fn, lh);
 
     // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
+    auto acc = dstBuf->template get_access<sycl::access_mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
       const auto idx = reconstruct_index(dstBufRange, i);
       const auto received = acc[idx];
@@ -469,11 +469,11 @@ class copy_test_context {
     }
   }
 
-  cl::sycl::id<dim_src> getSrcCopyOffset() const { return srcCopyOffset; }
-  cl::sycl::id<dim_dst> getDstCopyOffset() const { return dstCopyOffset; }
+  sycl::id<dim_src> getSrcCopyOffset() const { return srcCopyOffset; }
+  sycl::id<dim_dst> getDstCopyOffset() const { return dstCopyOffset; }
 
-  cl::sycl::range<dim_src> getSrcCopyRange() const { return srcCopyRange; }
-  cl::sycl::range<dim_dst> getDstCopyRange() const { return dstCopyRange; }
+  sycl::range<dim_src> getSrcCopyRange() const { return srcCopyRange; }
+  sycl::range<dim_dst> getDstCopyRange() const { return dstCopyRange; }
 
   buffer_src_t getSrcBuf() const { return *srcBuf; }
   buffer_dst_t getDstBuf() const { return *dstBuf; }
@@ -482,19 +482,19 @@ class copy_test_context {
   host_shared_ptr getDstHostPtr() const { return dstHostPtr; }
 
  private:
-  cl::sycl::queue& queue;
+  sycl::queue& queue;
 
   const dataT hostCanary = th::make(12345);
   const dataT deviceCanary = th::make(54321);
 
-  cl::sycl::range<dim_src> srcBufRange = range_helper<dim_src>::make(0, 0, 0);
-  cl::sycl::range<dim_dst> dstBufRange = range_helper<dim_dst>::make(0, 0, 0);
+  sycl::range<dim_src> srcBufRange = range_helper<dim_src>::make(0, 0, 0);
+  sycl::range<dim_dst> dstBufRange = range_helper<dim_dst>::make(0, 0, 0);
 
-  cl::sycl::id<dim_src> srcCopyOffset = id_helper<dim_src>::make(0, 0, 0);
-  cl::sycl::id<dim_dst> dstCopyOffset = id_helper<dim_dst>::make(0, 0, 0);
+  sycl::id<dim_src> srcCopyOffset = id_helper<dim_src>::make(0, 0, 0);
+  sycl::id<dim_dst> dstCopyOffset = id_helper<dim_dst>::make(0, 0, 0);
 
-  cl::sycl::range<dim_src> srcCopyRange = srcBufRange;
-  cl::sycl::range<dim_dst> dstCopyRange = dstBufRange;
+  sycl::range<dim_src> srcCopyRange = srcBufRange;
+  sycl::range<dim_dst> dstCopyRange = dstBufRange;
 
   std::unique_ptr<buffer_src_t> srcBuf;
   std::unique_ptr<buffer_dst_t> dstBuf;
@@ -507,13 +507,13 @@ class copy_test_context {
   // Host memory region backing srcBuf,
   // used for testing handler::update_host().
   host_shared_ptr srcBufHostMemory = nullptr;
-  mutable cl::sycl::mutex_class srcBufHostMemoryMutex;
+  mutable std::mutex srcBufHostMemoryMutex;
 
   template <int dim>
-  static cl::sycl::id<dim> reconstruct_index(cl::sycl::range<dim> range,
+  static sycl::id<dim> reconstruct_index(sycl::range<dim> range,
                                              size_t linearIndex) {
     assert(range.size() > 0);
-    const auto r3 = cl::sycl::range<3>(range[0], dim > 1 ? range[1] : 1,
+    const auto r3 = sycl::range<3>(range[0], dim > 1 ? range[1] : 1,
                                        dim > 2 ? range[2] : 1);
     const auto d0 = linearIndex / (r3[1] * r3[2]);
     const auto d1 = linearIndex % (r3[1] * r3[2]) / r3[2];
@@ -522,9 +522,9 @@ class copy_test_context {
   }
 
   template <int dim>
-  static size_t compute_relative_linear_id(cl::sycl::id<dim> offset,
-                                           cl::sycl::range<dim> range,
-                                           cl::sycl::id<dim> absIdx) {
+  static size_t compute_relative_linear_id(sycl::id<dim> offset,
+                                           sycl::range<dim> range,
+                                           sycl::id<dim> absIdx) {
     const auto relIdx3 = id_helper<3>::cast(absIdx - offset);
     const auto range3 = range_helper<3>::cast(range);
     const size_t relLinearIdx = relIdx3[0] * range3[1] * range3[2] +
@@ -533,9 +533,9 @@ class copy_test_context {
   }
 
   template <int dim>
-  static bool is_within_window(cl::sycl::id<dim> windowOffset,
-                               cl::sycl::range<dim> windowRange,
-                               cl::sycl::id<dim> idx) {
+  static bool is_within_window(sycl::id<dim> windowOffset,
+                               sycl::range<dim> windowRange,
+                               sycl::id<dim> idx) {
     return ((idx >= windowOffset == id_helper<dim>::make(true, true, true)) &&
             (idx < windowOffset + windowRange ==
              id_helper<dim>::make(true, true, true)));
@@ -552,7 +552,7 @@ class copy_test_context {
   void verify_device_copy(ExpectedValueCallback getExpectedValue,
                           const log_helper& lh) {
     // TODO: Consider verifying directly on device.
-    auto acc = dstBuf->template get_access<cl::sycl::access::mode::read>();
+    auto acc = dstBuf->template get_access<sycl::access_mode::read>();
     for (size_t i = 0; i < numElems; ++i) {
       const auto dstAbsIdx = reconstruct_index(dstBufRange, i);
       const auto received = acc[dstAbsIdx];
@@ -575,7 +575,7 @@ class copy_test_context {
     }
   }
 
-  static void log_error(const log_helper& lh, cl::sycl::id<3> index,
+  static void log_error(const log_helper& lh, sycl::id<3> index,
                         dataT received, dataT expected) {
     std::stringstream ss;
     ss << "Unexpected value at index ";
@@ -585,7 +585,7 @@ class copy_test_context {
     lh.fail(ss.str());
   }
 
-  static void log_canary_violation(const log_helper& lh, cl::sycl::id<3> index,
+  static void log_canary_violation(const log_helper& lh, sycl::id<3> index,
                                    dataT received) {
     std::stringstream ss;
     ss << "Canary violation at index ";
@@ -614,7 +614,7 @@ class copy_test_context {
 
     auto largeBufRange =
         range_helper<3>::cast(range_helper<dim_large>::make(5, 7, 9));
-    auto smallBufRange = cl::sycl::range<3>(1, 1, 1);
+    auto smallBufRange = sycl::range<3>(1, 1, 1);
 
     // Condense large range into small range so that both
     // have the same size (= same number of items).
@@ -631,8 +631,8 @@ class copy_test_context {
     auto largeCopyRange = largeBufRange;
     auto smallCopyRange = smallBufRange;
 
-    auto largeCopyOffset = cl::sycl::id<3>(0, 0, 0);
-    auto smallCopyOffset = cl::sycl::id<3>(0, 0, 0);
+    auto largeCopyOffset = sycl::id<3>(0, 0, 0);
+    auto smallCopyOffset = sycl::id<3>(0, 0, 0);
 
     // When doing a strided copy, we simply add an offset of 1 in every large
     // dimension, and reduce the copy range by 2 (resulting in an 1-item gap
@@ -697,9 +697,9 @@ class copy_test_context {
   void run_test_function(test_fn fn, const log_helper& lh) const {
     // lh.note("Running...");  // Enable for verbose debugging output
     try {
-      queue.submit([&](cl::sycl::handler& cgh) { fn(cgh); });
+      queue.submit([&](sycl::handler& cgh) { fn(cgh); });
       queue.wait_and_throw();
-    } catch (cl::sycl::exception&) {
+    } catch (sycl::exception&) {
       lh.fail("Exception thrown during call:");
       throw;
     }
@@ -714,13 +714,13 @@ class copy_test_context {
 template <typename dataT, int dim, mode_t mode_src, target_t target,
           bool strided, bool transposed>
 static void test_read_acc_copy_functions(log_helper lh,
-                                         cl::sycl::queue& queue) {
+                                         sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_target(target);
   {
     // Check copy(accessor, shared_ptr_class)
     copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_d2h_copy(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
               cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.copy(r, ctx.getDstHostPtr());
@@ -733,7 +733,7 @@ static void test_read_acc_copy_functions(log_helper lh,
     // Check copy(accessor, dataT*)
     copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_d2h_copy(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
               cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.copy(r, ctx.getDstHostPtr().get());
@@ -746,7 +746,7 @@ static void test_read_acc_copy_functions(log_helper lh,
     // Check update_host(accessor)
     copy_test_context<dataT, dim, dim, strided, transposed> ctx(queue);
     ctx.verify_update_host(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
               cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           cgh.update_host(r);
@@ -763,13 +763,13 @@ static void test_read_acc_copy_functions(log_helper lh,
 template <typename dataT, int dim_src, int dim_dst, mode_t mode_src,
           mode_t mode_dst, target_t target, bool strided, bool transposed>
 static void test_write_acc_copy_functions(log_helper lh,
-                                          cl::sycl::queue& queue) {
+                                          sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_mode_dst(mode_dst).set_target(target);
   {
     // Check copy(shared_ptr_class, accessor)
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_h2d_copy(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
               cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.copy(ctx.getSrcHostPtr(), w);
@@ -782,7 +782,7 @@ static void test_write_acc_copy_functions(log_helper lh,
     // Check copy(dataT*, accessor)
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_h2d_copy(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
               cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.copy(ctx.getSrcHostPtr().get(), w);
@@ -794,7 +794,7 @@ static void test_write_acc_copy_functions(log_helper lh,
     // Check copy(accessor, accessor)
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_d2d_copy(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto r = ctx.getSrcBuf().template get_access<mode_src, target>(
               cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
           auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
@@ -810,7 +810,7 @@ static void test_write_acc_copy_functions(log_helper lh,
     const auto pattern = type_helper<dataT>::make(117);
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
     ctx.verify_fill(
-        [&](cl::sycl::handler& cgh) {
+        [&](sycl::handler& cgh) {
           auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
               cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
           cgh.fill(w, pattern);
@@ -826,7 +826,7 @@ static void test_write_acc_copy_functions(log_helper lh,
  */
 template <typename dataT, int dim_src, bool strided, bool transposed>
 static void test_all_read_acc_copy_functions(log_helper lh,
-                                             cl::sycl::queue& queue) {
+                                             sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src);
   {
     constexpr auto target = target_t::global_buffer;
@@ -848,7 +848,7 @@ static void test_all_read_acc_copy_functions(log_helper lh,
 template <typename dataT, int dim_src, int dim_dst, bool strided,
           bool transposed>
 static void test_all_write_acc_copy_functions(log_helper lh,
-                                              cl::sycl::queue& queue) {
+                                              sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src).set_dim_dst(dim_dst);
   constexpr auto target = target_t::global_buffer;
 
@@ -882,7 +882,7 @@ static void test_all_write_acc_copy_functions(log_helper lh,
  * @brief Tests all valid combinations of source and destination dimensions.
  */
 template <typename dataT, bool strided, bool transposed>
-static void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_dimensions(log_helper lh, sycl::queue& queue) {
   const std::string strided_note = strided ? "strided" : "";
   const std::string transposed_note = transposed ? "transposed" : "";
   lh = lh.set_extra_info(strided_note + (strided && transposed ? ", " : "") +
@@ -912,7 +912,7 @@ static void test_all_dimensions(log_helper lh, cl::sycl::queue& queue) {
  *        non-transposed explicit memory operations.
  */
 template <typename dataT>
-static void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
+static void test_all_variants(log_helper lh, sycl::queue& queue) {
   lh = lh.set_data_type<dataT>();
 
   test_all_dimensions<dataT, false, false>(lh, queue);
@@ -923,7 +923,7 @@ static void test_all_variants(log_helper lh, cl::sycl::queue& queue) {
 
 }  // namespace
 
-/** tests the API for cl::sycl::handler
+/** tests the API for sycl::handler
  * TODO: Also test image accessors
  * TODO: Also test copying between buffers of different data types.
  */
@@ -945,7 +945,7 @@ class TEST_NAME : public util::test_base {
 
       test_all_variants<int>(lh, queue);
       test_all_variants<double>(lh, queue);
-      test_all_variants<cl::sycl::double16>(lh, queue);
+      test_all_variants<sycl::double16>(lh, queue);
 
 #if defined(SYCL_CTS_FULL_CONFORMANCE)
       test_all_variants<char>(lh, queue);
@@ -953,17 +953,17 @@ class TEST_NAME : public util::test_base {
       test_all_variants<long>(lh, queue);
       test_all_variants<float>(lh, queue);
 
-      test_all_variants<cl::sycl::char2>(lh, queue);
-      test_all_variants<cl::sycl::short3>(lh, queue);
-      test_all_variants<cl::sycl::int4>(lh, queue);
-      test_all_variants<cl::sycl::long8>(lh, queue);
-      test_all_variants<cl::sycl::float8>(lh, queue);
+      test_all_variants<sycl::char2>(lh, queue);
+      test_all_variants<sycl::short3>(lh, queue);
+      test_all_variants<sycl::int4>(lh, queue);
+      test_all_variants<sycl::long8>(lh, queue);
+      test_all_variants<sycl::float8>(lh, queue);
 #endif
 
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -19,12 +19,12 @@ class global_barrier_kernel_fence;
 
 template<int dim>
 struct barrierCall {
-    void operator()(cl::sycl::nd_item<dim> item) const {
-      item.barrier(cl::sycl::access::fence_space::global_space);
+    void operator()(sycl::nd_item<dim> item) const {
+      item.barrier(sycl::access::fence_space::global_space);
     }
 };
 
-/** test cl::sycl::nd_item global barrier
+/** test sycl::nd_item global barrier
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -43,7 +43,7 @@ class TEST_NAME : public util::test_base {
       auto cmdQueue = util::get_cts_object::queue();
 
       // Verify global barrier works as fence for global address space
-      cl::sycl::string_class errorMsg =
+      std::string errorMsg =
           "global barrier failed for global address space";
       test_barrier_global_space<1, global_barrier_kernel_fence<1>>(
           log, cmdQueue, barrierCall<1>(), errorMsg);
@@ -53,10 +53,10 @@ class TEST_NAME : public util::test_base {
           log, cmdQueue, barrierCall<3>(), errorMsg);
 
       cmdQueue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

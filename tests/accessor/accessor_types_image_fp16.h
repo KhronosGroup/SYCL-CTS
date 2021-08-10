@@ -31,9 +31,9 @@ class check_all_types_image_fp16 {
   using check_type = action<T, extension_tag_t>;
 
 public:
-  static void run(cl::sycl::queue& queue, sycl_cts::util::logger &log) {
+  static void run(sycl::queue& queue, sycl_cts::util::logger &log) {
 
-    if (!queue.get_device().get_info<cl::sycl::info::device::image_support>()) {
+    if (!queue.get_device().get_info<sycl::info::device::image_support>()) {
       log.note("Device does not support images -- skipping check");
       return;
     }
@@ -44,7 +44,7 @@ public:
     if (!availability::check(queue, log))
       return;
 
-    check_type<cl::sycl::cl_half4>()(log, queue, "cl::sycl::cl_half");
+    check_type<sycl::cl_half4>()(log, queue, "sycl::cl_half");
 
     queue.wait_and_throw();
   }

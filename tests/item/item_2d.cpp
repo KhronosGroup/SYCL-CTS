@@ -15,32 +15,42 @@ using namespace sycl_cts;
 
 class kernel_item_2d {
  protected:
-  typedef cl::sycl::accessor<int, 2, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, 2, sycl::access_mode::read,
+                             sycl::target::global_buffer>
       t_readAccess;
-  typedef cl::sycl::accessor<int, 2, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, 2, sycl::access_mode::write,
+                             sycl::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_x;
   t_writeAccess m_o;
+  sycl::range<2> r_exp;
+  sycl::id<2> offset_exp;
 
  public:
-  kernel_item_2d(t_readAccess in_, t_writeAccess out_) : m_x(in_), m_o(out_) {}
+  kernel_item_2d(t_readAccess in_, t_writeAccess out_, sycl::range<2> r)
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(sycl::id<2>(0, 0)) {}
 
-  void operator()(cl::sycl::item<2> item) const {
-    cl::sycl::id<2> gid = item.get_id();
+  void operator()(sycl::item<2> item) const {
+    bool result = true;
+
+    sycl::id<2> gid = item.get_id();
 
     size_t dim_a = item.get_id(0) + item.get_id(1);
     size_t dim_b = item[0] + item[1];
+    result &= (gid.get(0) + gid.get(1)) == dim_a &&
+              (gid.get(0) + gid.get(1)) == dim_b;
 
-    cl::sycl::range<2> localRange = item.get_range();
+    sycl::range<2> localRange = item.get_range();
+    result &= localRange == r_exp;
 
-    cl::sycl::id<2> offset = item.get_offset();
+    sycl::id<2> offset = item.get_offset();
+    result &= offset == offset_exp;
 
     /* get work item range */
-    const size_t nWidth = localRange.get(0);
-    const size_t nHeight = localRange.get(1);
+    const size_t nWidth = item.get_range(0);
+    const size_t nHeight = item.get_range(1);
+    result &= nWidth == r_exp.get(0) && nHeight == r_exp.get(1);
 
     /* find the row major array id for this work item */
     size_t index = gid.get(1) +            /* y */
@@ -50,7 +60,8 @@ class kernel_item_2d {
     const size_t glid = item.get_linear_id();
 
     /* compare against the precomputed index */
-    m_o[item] = (m_x[item] == static_cast<int>(index));
+    result &= m_x[item] == static_cast<int>(index);
+    m_o[item] = result;
   }
 };
 
@@ -89,30 +100,30 @@ bool test_item_2d(util::logger &log) {
   buffer_fill(dataIn.get(), nWidth, nHeight);
 
   try {
-    cl::sycl::range<2> dataRange_i(nWidth, nHeight);
-    cl::sycl::range<2> dataRange_o(nWidth, nHeight);
+    sycl::range<2> dataRange_i(nWidth, nHeight);
+    sycl::range<2> dataRange_o(nWidth, nHeight);
 
-    cl::sycl::buffer<int, 2> bufIn(dataIn.get(), dataRange_i);
-    cl::sycl::buffer<int, 2> bufOut(dataOut.get(), dataRange_o);
+    sycl::buffer<int, 2> bufIn(dataIn.get(), dataRange_i);
+    sycl::buffer<int, 2> bufOut(dataOut.get(), dataRange_o);
 
     auto cmdQueue = util::get_cts_object::queue();
 
-    cmdQueue.submit([&](cl::sycl::handler &cgh) {
-      auto accIn = bufIn.template get_access<cl::sycl::access::mode::read>(cgh);
+    cmdQueue.submit([&](sycl::handler &cgh) {
+      auto accIn = bufIn.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
-      kernel_item_2d kern = kernel_item_2d(accIn, accOut);
+      auto r = sycl::range<2>(nWidth, nHeight);
+      kernel_item_2d kern = kernel_item_2d(accIn, accOut, r);
 
-      auto r = cl::sycl::range<2>(nWidth, nHeight);
       cgh.parallel_for(r, kern);
     });
 
     cmdQueue.wait_and_throw();
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
     return false;
   }
@@ -125,7 +136,7 @@ bool test_item_2d(util::logger &log) {
   return true;
 }
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:

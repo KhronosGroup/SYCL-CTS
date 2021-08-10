@@ -22,12 +22,12 @@ class combined_barrier_kernel_global;
 
 template<int dim>
 struct barrierCall {
-    void operator()(cl::sycl::nd_item<dim> item) const {
-      item.barrier(cl::sycl::access::fence_space::global_and_local);
+    void operator()(sycl::nd_item<dim> item) const {
+      item.barrier(sycl::access::fence_space::global_and_local);
     }
 };
 
-/** test cl::sycl::nd_item barrier functions
+/** test sycl::nd_item barrier functions
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -46,7 +46,7 @@ class TEST_NAME : public util::test_base {
       auto cmdQueue = util::get_cts_object::queue();
 
       // Verify global_and_local barrier works for local address space
-      cl::sycl::string_class errorMsg =
+      std::string errorMsg =
           "global_and_local barrier failed for local address space";
       test_barrier_local_space<1, combined_barrier_kernel_local<1>>(
           log, cmdQueue, barrierCall<1>(), errorMsg);
@@ -66,10 +66,10 @@ class TEST_NAME : public util::test_base {
           log, cmdQueue, barrierCall<3>(), errorMsg);
 
       cmdQueue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -2,7 +2,6 @@ set(TEST_CASES_LIST "")
 
 set(TYPE_LIST "")
 get_std_type(TYPE_LIST)
-get_opencl_type(TYPE_LIST)
 
 foreach(TY IN LISTS TYPE_LIST)
   set(OUT_FILE "vector_alias_${TY}.cpp")

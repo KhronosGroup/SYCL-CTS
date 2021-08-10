@@ -15,7 +15,7 @@ class Data:
     standard_sizes = [1, 2, 3, 4, 8, 16]
     standard_types = [
         'char', 'short', 'int', 'long', 'long long', 'float', 'double',
-        'cl::sycl::half'
+        'sycl::half'
     ]
     standard_type_dict = {
         (False, 'char'): 'unsigned char',
@@ -30,7 +30,7 @@ class Data:
         (True, 'long long'): 'long long',
         (True, 'float'): 'float',
         (True, 'double'): 'double',
-        (True, 'cl::sycl::half'): 'cl::sycl::half'
+        (True, 'sycl::half'): 'sycl::half'
     }
 
     fixed_width_types = [
@@ -59,71 +59,26 @@ class Data:
         ('std::int64_t'): 'INT32_MAX'
     }
 
-    opencl_types = [
-        'cl::sycl::cl_char', 'cl::sycl::cl_short', 'cl::sycl::cl_int',
-        'cl::sycl::cl_long', 'cl::sycl::cl_float', 'cl::sycl::cl_double',
-        'cl::sycl::cl_half'
-    ]
-    opencl_type_dict = {
-        (False, 'cl::sycl::cl_char'): 'cl::sycl::cl_uchar',
-        (True, 'cl::sycl::cl_char'): 'cl::sycl::cl_char',
-        (False, 'cl::sycl::cl_short'): 'cl::sycl::cl_ushort',
-        (True, 'cl::sycl::cl_short'): 'cl::sycl::cl_short',
-        (False, 'cl::sycl::cl_int'): 'cl::sycl::cl_uint',
-        (True, 'cl::sycl::cl_int'): 'cl::sycl::cl_int',
-        (False, 'cl::sycl::cl_long'): 'cl::sycl::cl_ulong',
-        (True, 'cl::sycl::cl_long'): 'cl::sycl::cl_long',
-        (True, 'cl::sycl::cl_float'): 'cl::sycl::cl_float',
-        (True, 'cl::sycl::cl_double'): 'cl::sycl::cl_double',
-        (True, 'cl::sycl::cl_half'): 'cl::sycl::cl_half'
-    }
-    opencl_sized_return_type_dict = {
-        'cl::sycl::cl_char': 'cl::sycl::cl_char',
-        'cl::sycl::cl_uchar': 'cl::sycl::cl_char',
-        'cl::sycl::cl_short': 'cl::sycl::cl_short',
-        'cl::sycl::cl_ushort': 'cl::sycl::cl_short',
-        'cl::sycl::cl_half': 'cl::sycl::cl_short',
-        'cl::sycl::cl_int': 'cl::sycl::cl_int',
-        'cl::sycl::cl_uint': 'cl::sycl::cl_int',
-        'cl::sycl::cl_float': 'cl::sycl::cl_int',
-        'cl::sycl::cl_long': 'cl::sycl::cl_long',
-        'cl::sycl::cl_ulong': 'cl::sycl::cl_long',
-        'cl::sycl::cl_double': 'cl::sycl::cl_long'
-    }
     alias_dict = {
-        'char': 'cl::sycl::char',
-        'signed char': 'cl::sycl::schar',
-        'unsigned char': 'cl::sycl::uchar',
-        'short': 'cl::sycl::short',
-        'unsigned short': 'cl::sycl::ushort',
-        'int': 'cl::sycl::int',
-        'unsigned int': 'cl::sycl::uint',
-        'long': 'cl::sycl::long',
-        'unsigned long': 'cl::sycl::ulong',
-        'long long': 'cl::sycl::longlong',
-        'unsigned long long': 'cl::sycl::ulonglong',
-        'float': 'cl::sycl::float',
-        'double': 'cl::sycl::double',
-        'cl::sycl::half': 'cl::sycl::half',
-        'cl::sycl::cl_char': 'cl::sycl::cl_char',
-        'cl::sycl::cl_uchar': 'cl::sycl::cl_uchar',
-        'cl::sycl::cl_short': 'cl::sycl::cl_short',
-        'cl::sycl::cl_ushort': 'cl::sycl::cl_ushort',
-        'cl::sycl::cl_int': 'cl::sycl::cl_int',
-        'cl::sycl::cl_uint': 'cl::sycl::cl_uint',
-        'cl::sycl::cl_long': 'cl::sycl::cl_long',
-        'cl::sycl::cl_ulong': 'cl::sycl::cl_ulong',
-        'cl::sycl::cl_float': 'cl::sycl::cl_float',
-        'cl::sycl::cl_double': 'cl::sycl::cl_double',
-        'cl::sycl::cl_half': 'cl::sycl::cl_half'
+        'char': 'sycl::char',
+        'signed char': 'sycl::schar',
+        'unsigned char': 'sycl::uchar',
+        'short': 'sycl::short',
+        'unsigned short': 'sycl::ushort',
+        'int': 'sycl::int',
+        'unsigned int': 'sycl::uint',
+        'long': 'sycl::long',
+        'unsigned long': 'sycl::ulong',
+        'long long': 'sycl::longlong',
+        'unsigned long long': 'sycl::ulonglong',
+        'float': 'sycl::float',
+        'double': 'sycl::double',
+        'sycl::half': 'sycl::half'
     }
     value_default_dict = defaultdict(lambda: '0', {
         'float': '0.0f',
         'double': '0.0',
-        'cl::sycl::half': '0.0f',
-        'cl::sycl::cl_float': '0.0f',
-        'cl::sycl::cl_double': '0.0',
-        'cl::sycl::cl_half': '0.0f'
+        'sycl::half': '0.0f'
     })
     vec_name_dict = {
         1: 'One',
@@ -144,6 +99,19 @@ class Data:
             '13', '14', '15'
         ]
     }
+
+    vals_list_dict_float = {
+        1: ['2.3f'],
+        2: ['2.3f', '3.8f'],
+        3: ['2.3f', '3.8f', '1.5f'],
+        4: ['2.3f', '3.8f', '1.5f', '2.5f'],
+        8: ['2.3f', '3.8f', '1.5f', '2.5f', '-2.3f', '-3.8f', '-1.5f', '-2.5f'],
+        16: [
+            '2.3f', '3.8f', '1.5f', '2.5f', '-2.3f', '-3.8f', '-1.5f', '-2.5f', '2.3f',
+            '3.8f', '1.5f', '2.5f', '-2.3f', '-3.8f', '-1.5f', '-2.5f'
+        ]
+    }
+
     swizzle_xyzw_list_dict = {
         1: ['x'],
         2: ['x', 'y'],
@@ -157,39 +125,38 @@ class Data:
         4: ['r', 'g', 'b', 'a']
     }
     swizzle_elem_list_dict = {
-        1: ['cl::sycl::elem::s0'],
-        2: ['cl::sycl::elem::s0', 'cl::sycl::elem::s1'],
-        3: ['cl::sycl::elem::s0', 'cl::sycl::elem::s1', 'cl::sycl::elem::s2'],
+        1: ['sycl::elem::s0'],
+        2: ['sycl::elem::s0', 'sycl::elem::s1'],
+        3: ['sycl::elem::s0', 'sycl::elem::s1', 'sycl::elem::s2'],
         4: [
-            'cl::sycl::elem::s0', 'cl::sycl::elem::s1', 'cl::sycl::elem::s2',
-            'cl::sycl::elem::s3'
+            'sycl::elem::s0', 'sycl::elem::s1', 'sycl::elem::s2',
+            'sycl::elem::s3'
         ],
         8: [
-            'cl::sycl::elem::s0', 'cl::sycl::elem::s1', 'cl::sycl::elem::s2',
-            'cl::sycl::elem::s3', 'cl::sycl::elem::s4', 'cl::sycl::elem::s5',
-            'cl::sycl::elem::s6', 'cl::sycl::elem::s7'
+            'sycl::elem::s0', 'sycl::elem::s1', 'sycl::elem::s2',
+            'sycl::elem::s3', 'sycl::elem::s4', 'sycl::elem::s5',
+            'sycl::elem::s6', 'sycl::elem::s7'
         ],
         16: [
-            'cl::sycl::elem::s0', 'cl::sycl::elem::s1', 'cl::sycl::elem::s2',
-            'cl::sycl::elem::s3', 'cl::sycl::elem::s4', 'cl::sycl::elem::s5',
-            'cl::sycl::elem::s6', 'cl::sycl::elem::s7', 'cl::sycl::elem::s8',
-            'cl::sycl::elem::s9', 'cl::sycl::elem::sA', 'cl::sycl::elem::sB',
-            'cl::sycl::elem::sC', 'cl::sycl::elem::sD', 'cl::sycl::elem::sE',
-            'cl::sycl::elem::sF'
+            'sycl::elem::s0', 'sycl::elem::s1', 'sycl::elem::s2',
+            'sycl::elem::s3', 'sycl::elem::s4', 'sycl::elem::s5',
+            'sycl::elem::s6', 'sycl::elem::s7', 'sycl::elem::s8',
+            'sycl::elem::s9', 'sycl::elem::sA', 'sycl::elem::sB',
+            'sycl::elem::sC', 'sycl::elem::sD', 'sycl::elem::sE',
+            'sycl::elem::sF'
         ]
     }
 
 class ReverseData:
     rev_standard_type_dict = { Data.standard_type_dict[k] : k for k in list(Data.standard_type_dict.keys()) }
-    rev_opencl_type_dict = { Data.opencl_type_dict[k] : k for k in list(Data.opencl_type_dict.keys()) }
     rev_fixed_width_type_dict = { Data.fixed_width_type_dict[k] : k for k in list(Data.fixed_width_type_dict.keys()) }
 
 
 kernel_template = Template("""  bool resArray[1] = {true};
   {
-    cl::sycl::buffer<bool, 1> boolBuffer(resArray, cl::sycl::range<1>(1));
-    testQueue.submit([&](cl::sycl::handler &cgh) {
-      auto resAcc = boolBuffer.get_access<cl::sycl::access::mode::write>(cgh);
+    sycl::buffer<bool, 1> boolBuffer(resArray, sycl::range<1>(1));
+    testQueue.submit([&](sycl::handler &cgh) {
+      auto resAcc = boolBuffer.get_access<sycl::access_mode::write>(cgh);
 
       cgh.single_task<class ${kernelName}>([=]() {
         ${test}
@@ -197,7 +164,7 @@ kernel_template = Template("""  bool resArray[1] = {true};
     });
   }
   if (!resArray[0]) {
-    fail_test(log, cl::sycl::string_class("The following vector test failed: ${testName}"));
+    fail_test(log, std::string("The following vector test failed: ${testName}"));
   }
 """)
 
@@ -210,10 +177,10 @@ void ${func_name}(util::logger &log) {
       auto testDevice = testQueue.get_device();
       ${test}
     }
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
-    cl::sycl::string_class errorMsg =
-        "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+    std::string errorMsg =
+        "a SYCL exception was caught: " + std::string(e.what());
     FAIL(log, errorMsg.c_str());
   }
 }
@@ -223,14 +190,14 @@ def remove_namespaces_whitespaces(type_str):
     """
     Clear type name from namespaces and whitespaces
     """
-    return type_str.replace('cl::sycl::', '').replace(
+    return type_str.replace('sycl::', '').replace(
             ' ', '_').replace('std::', '')
 
 def wrap_with_kernel(type_str, kernel_name, test_name, test_string):
     """
     Wraps |test_string| inside a kernel with |kernel_name|.
 
-    Wraps kernels with checks for cl_khr_fp16 and cl_khr_fp64 when appropriate.
+    Wraps kernels with checks for fp16 and fp64 when appropriate.
     The necessity for extension checks is determined based on |type_str|
     """
 
@@ -266,16 +233,16 @@ def make_func_call(test_name, type_str, additional=''):
 
 
 def wrap_with_half_check(test_string):
-    """Wraps test_string with a check for cl_khr_fp16 if appropriate"""
-    string = 'if (testDevice.has_extension("cl_khr_fp16")) {\n'
+    """Wraps test_string with a check for fp16 if appropriate"""
+    string = 'if (testDevice.has(sycl::aspect::fp16)) {\n'
     string += test_string
     string += '}\n'
     return string
 
 
 def wrap_with_double_check(test_string):
-    """Wraps test_string with a check for cl_khr_fp64 if appropriate"""
-    string = 'if (testDevice.has_extension("cl_khr_fp64")) {\n'
+    """Wraps test_string with a check for fp64 if appropriate"""
+    string = 'if (testDevice.has(sycl::aspect::fp64)) {\n'
     string += test_string
     string += '}\n'
     return string
@@ -292,14 +259,13 @@ def wrap_with_extension_checks(type_str, test_string):
 
 def append_fp_postfix(type_str, input_val_list):
     """Generates and returns a new list from the input, with .0f or .0 appended
-    to each value in the list if type_str is 'float', 'double' or 'cl::sycl::half'"""
+    to each value in the list if type_str is 'float', 'double' or 'sycl::half'"""
     result_val_list = []
     for val in input_val_list:
-        if (type_str == 'float' or type_str == 'cl::sycl::cl_float'
-                or type_str == 'cl::sycl::half'
-                or type_str == 'cl::sycl::cl_half'):
+        if (type_str == 'float'
+                or type_str == 'sycl::half'):
             result_val_list.append(val + '.0f')
-        elif type_str == 'double' or type_str == 'cl::sycl::cl_double':
+        elif type_str == 'double':
             result_val_list.append(val + '.0')
         else:
             result_val_list.append(val)
@@ -388,12 +354,12 @@ def write_source_file(test_str, func_calls, test_name, input_file, output_file,
     with open(output_file, 'w+') as output:
         output.write(source)
 
-def get_standard_and_fixed_width_types():
-    types = ['char', 'cl::sycl::byte']
+def get_types():
+    types = ['char', 'sycl::byte']
     for base_type in Data.standard_types:
         for sign in Data.signs:
             if (base_type == 'float' or base_type == 'double'
-                or base_type == 'cl::sycl::half') and sign is False:
+                or base_type == 'sycl::half') and sign is False:
                 continue
             types.append(Data.standard_type_dict[(sign, base_type)])
 
@@ -402,33 +368,15 @@ def get_standard_and_fixed_width_types():
             types.append(Data.fixed_width_type_dict[(sign, base_type)])
     return types
 
-def get_opencl_types():
-    types = list()
-    for base_type in Data.opencl_types:
-        for sign in Data.signs:
-            if (base_type == 'cl::sycl::cl_float'
-                    or base_type == 'cl::sycl::cl_double'
-                    or base_type == 'cl::sycl::cl_half') and sign is False:
-                continue
-            types.append(Data.opencl_type_dict[(sign, base_type)])
-    return types
-
-def get_types():
-    types = list()
-    types += get_standard_and_fixed_width_types()
-    types += get_opencl_types()
-
-    return types
-
 class SwizzleData:
     swizzle_template = Template(
-        """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
-            cl::sycl::vec<${type}, ${size}> swizzledVec {${name}DimTestVec.${indexes}()};
+        """        sycl::vec<${type}, ${size}> ${name}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
+            sycl::vec<${type}, ${size}> swizzledVec {${name}DimTestVec.${indexes}()};
             ${type} in_order_vals[] = {${in_order_vals}};
             ${type} reversed_vals[] = {${reversed_vals}};
             ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
             ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
-            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(swizzledVec)) {
+            if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(swizzledVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(swizzledVec)) {
@@ -437,10 +385,14 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(swizzledVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(swizzledVec)) {
                 resAcc[0] = false;
             }
-            check_convert_as_all_types<${type}, ${size}>(swizzledVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+            if (!check_convert_as_all_types<${type}, ${size}>(swizzledVec)) {
+                resAcc[0] = false;
+            }
+#endif // SYCL_CTS_EXTENSIVE_MODE
     """)
 
     lo_hi_odd_even_template = Template(
@@ -450,29 +402,29 @@ class SwizzleData:
     """)
 
     swizzle_elem_template = Template(
-        """        cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_swiz_indexes}>()};
+        """        sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_swiz_indexes}>()};
             if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_swiz_indexes}>()};
+            sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_swiz_indexes}>()};
             if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
-            cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
+            sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
             if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
+            sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {swizzledVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
             if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
     """)
 
     swizzle_full_test_template = Template(
-        """        cl::sycl::vec<${type}, ${size}> ${name}DimTestVec = cl::sycl::vec<${type}, ${size}>(${testVecValues});
+        """        sycl::vec<${type}, ${size}> ${name}DimTestVec = sycl::vec<${type}, ${size}>(${testVecValues});
             ${type} in_order_vals[] = {${in_order_vals}};
-            cl::sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_swiz_indexes}>()};
-            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderSwizzleFunctionVec)) {
+            sycl::vec<${type}, ${size}> inOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_swiz_indexes}>()};
+            if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
@@ -481,14 +433,18 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(inOrderSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-            check_convert_as_all_types<${type}, ${size}>(inOrderSwizzleFunctionVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+            if (!check_convert_as_all_types<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+#endif // SYCL_CTS_EXTENSIVE_MODE
 
             ${type} reversed_vals[] = {${reversed_vals}};
-            cl::sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>()};
-            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderSwizzleFunctionVec)) {
+            sycl::vec<${type}, ${size}> reverseOrderSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_swiz_indexes}>()};
+            if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
@@ -497,14 +453,18 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(reverseOrderSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-            check_convert_as_all_types<${type}, ${size}>(reverseOrderSwizzleFunctionVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+            if (!check_convert_as_all_types<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+#endif // SYCL_CTS_EXTENSIVE_MODE
 
             ${type} in_order_reversed_pair_vals[] = {${in_order_pair_vals}};
-            cl::sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
-            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(inOrderReversedPairSwizzleFunctionVec)) {
+            sycl::vec<${type}, ${size}> inOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${in_order_reversed_pair_swiz_indexes}>()};
+            if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
@@ -513,14 +473,18 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(inOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-            check_convert_as_all_types<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+            if (!check_convert_as_all_types<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+#endif // SYCL_CTS_EXTENSIVE_MODE
 
             ${type} reverse_order_reversed_pair_vals[] = {${reverse_order_pair_vals}};
-            cl::sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
-            if (!check_equal_type_bool<cl::sycl::vec<${type}, ${size}>>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            sycl::vec<${type}, ${size}> reverseOrderReversedPairSwizzleFunctionVec {${name}DimTestVec.template swizzle<${reverse_order_reversed_pair_swiz_indexes}>()};
+            if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
             if (!check_vector_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
@@ -529,10 +493,14 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-            check_convert_as_all_types<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec);
+#ifdef SYCL_CTS_EXTENSIVE_MODE
+            if (!check_convert_as_all_types<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+                resAcc[0] = false;
+            }
+#endif // SYCL_CTS_EXTENSIVE_MODE
     """)
 
 def substitute_swizzles_templates(type_str, size, index_subset, value_subset, convert_type_str, as_type_str):
@@ -608,7 +576,7 @@ def gen_swizzle_test(type_str, convert_type_str, as_type_str, size):
         string += wrap_with_kernel(
             type_str, 'ELEM_KERNEL_' + type_str + str(size) +
             ''.join(Data.swizzle_elem_list_dict[size][:size]).replace(
-                'cl::sycl::elem::', ''),
+                'sycl::elem::', ''),
             'vec<' + type_str + ', ' + str(size) + '> .swizzle<' +
             ', '.join(Data.swizzle_elem_list_dict[size][:size]) + '>',
             test_string)
@@ -641,15 +609,9 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
     with open(input_file, 'r') as source_file:
         source = source_file.read()
 
-    is_opencl_type = type_str in ReverseData.rev_opencl_type_dict
-
     source = replace_string_in_source_string(source,
                                             remove_namespaces_whitespaces(type_str),
                                             '$TYPE_NAME')
-    if is_opencl_type:
-        source = source.replace('$OPENCL', 'opencl_')
-    else:
-        source = source.replace('$OPENCL', '')
 
     source = replace_string_in_source_string(source, swizzles[0],
                                              '$1D_SWIZZLES')
@@ -670,18 +632,14 @@ def write_swizzle_source_file(swizzles, input_file, output_file, type_str):
         output.write(source)
 
 def get_reverse_type(type_str):
-    if type_str == 'char' or type_str == 'cl::sycl::byte':
+    if type_str == 'char' or type_str == 'sycl::byte':
       return type_str
     if type_str in ReverseData.rev_standard_type_dict:
         type_dict =  Data.standard_type_dict
         rev_type_dict = ReverseData.rev_standard_type_dict
     else:
-        if type_str in ReverseData.rev_opencl_type_dict:
-            type_dict =  Data.opencl_type_dict
-            rev_type_dict = ReverseData.rev_opencl_type_dict
-        else:
-            type_dict =  Data.fixed_width_type_dict
-            rev_type_dict = ReverseData.rev_fixed_width_type_dict
+        type_dict =  Data.fixed_width_type_dict
+        rev_type_dict = ReverseData.rev_fixed_width_type_dict
     (sign, base_type) = rev_type_dict[type_str]
     if (not sign, base_type) in type_dict:
         reverse_type_str = type_dict[(not sign, base_type)]

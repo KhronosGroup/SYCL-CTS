@@ -18,21 +18,21 @@ class test_kernel {};
 
 template <int dims>
 void test_id_kernels(
-    cl::sycl::id<dims> id,
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>
+    sycl::id<dims> id,
+    sycl::accessor<int, 1, sycl::access_mode::read_write,
+                       sycl::target::global_buffer>
         error_ptr,
     int m_iteration) {
-  cl::sycl::id<dims> id_two(id * 2);
-  cl::sycl::id<dims> id_three(id);
+  sycl::id<dims> id_two(id * 2);
+  sycl::id<dims> id_three(id);
   size_t integer = 16;
   for (int j = 0; j < dims; j++) {
     if (id_two.get(j) == 0) {
       id_two[j] = 1;
     }
   }
-  const cl::sycl::id<dims> id_two_const(id_two);
-  const cl::sycl::id<dims> id_const(id);
+  const sycl::id<dims> id_two_const(id_two);
+  const sycl::id<dims> id_const(id);
 
   // operators
   // +=
@@ -213,28 +213,28 @@ class test_id {
   static const int error_size = 200;  // up to 200 possible errors
   int m_error[error_size];
 
-  void operator()(util::logger &log, cl::sycl::range<dims> global,
-                  cl::sycl::range<dims> local, cl::sycl::queue q) {
+  void operator()(util::logger &log, sycl::range<dims> global,
+                  sycl::range<dims> local, sycl::queue q) {
     // for testing get()
     for (int i = 0; i < error_size; i++) {
       m_error[i] = 0;  // no error
     }
 
     {
-      cl::sycl::buffer<int, 1> error_buffer(m_error,
-                                            cl::sycl::range<1>(error_size));
+      sycl::buffer<int, 1> error_buffer(m_error,
+                                            sycl::range<1>(error_size));
 
-      q.submit([&](cl::sycl::handler &cgh) {
-        auto my_range = cl::sycl::nd_range<dims>(global, local);
+      q.submit([&](sycl::handler &cgh) {
+        auto my_range = sycl::nd_range<dims>(global, local);
 
         auto error_ptr =
-            error_buffer.get_access<cl::sycl::access::mode::read_write>(cgh);
+            error_buffer.get_access<sycl::access_mode::read_write>(cgh);
 
-        auto my_kernel = ([=](cl::sycl::nd_item<dims> item) {
+        auto my_kernel = ([=](sycl::nd_item<dims> item) {
           int m_iteration = 0;
 
           // create check table
-          cl::sycl::id<dims> id = item.get_nd_range().get_global_range();
+          sycl::id<dims> id = item.get_nd_range().get_global_range();
 
           size_t check[] = {m_x, m_y, m_z};
 
@@ -260,7 +260,7 @@ class test_id {
   }
 };
 
-/** test cl::sycl::range::get(int index) return size_t
+/** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -278,14 +278,14 @@ class TEST_NAME : public util::test_base {
       auto my_queue = util::get_cts_object::queue();
       // templated approach
       {
-        cl::sycl::range<1> range_1d_g(test_id<1>::m_x);
-        cl::sycl::range<2> range_2d_g(test_id<2>::m_x, test_id<2>::m_y);
-        cl::sycl::range<3> range_3d_g(test_id<3>::m_x, test_id<3>::m_y,
+        sycl::range<1> range_1d_g(test_id<1>::m_x);
+        sycl::range<2> range_2d_g(test_id<2>::m_x, test_id<2>::m_y);
+        sycl::range<3> range_3d_g(test_id<3>::m_x, test_id<3>::m_y,
                                       test_id<3>::m_z);
 
-        cl::sycl::range<1> range_1d_l(test_id<1>::m_local);
-        cl::sycl::range<2> range_2d_l(test_id<2>::m_local, test_id<2>::m_local);
-        cl::sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
+        sycl::range<1> range_1d_l(test_id<1>::m_local);
+        sycl::range<2> range_2d_l(test_id<2>::m_local, test_id<2>::m_local);
+        sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
                                       test_id<3>::m_local);
 
         test_id<1> test1d;
@@ -295,10 +295,10 @@ class TEST_NAME : public util::test_base {
         test_id<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

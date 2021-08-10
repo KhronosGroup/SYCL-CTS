@@ -13,15 +13,15 @@
 namespace device_selector_custom__ {
 using namespace sycl_cts;
 
-/** tests custom selectors for cl::sycl::device_selector
+/** tests custom selectors for sycl::device_selector
  */
-class call_selector : public cl::sycl::device_selector {
+class call_selector : public sycl::device_selector {
  public:
   mutable bool called;
 
   call_selector() : called(false) {}
 
-  virtual int operator()(const cl::sycl::device &device) const {
+  virtual int operator()(const sycl::device &device) const {
     called = true;
     return 1;
   }
@@ -29,11 +29,11 @@ class call_selector : public cl::sycl::device_selector {
 
 /** create a selector for testing negative scores
  */
-class negative_selector : public cl::sycl::device_selector {
+class negative_selector : public sycl::device_selector {
  public:
   negative_selector() {}
 
-  virtual int operator()(const cl::sycl::device &device) const {
+  virtual int operator()(const sycl::device &device) const {
     if (!device.is_host()) {
       return -1;
     } else {
@@ -103,10 +103,10 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "custom selector selected a device with a negative score");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

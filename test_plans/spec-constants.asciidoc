@@ -1,0 +1,670 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for specialization constants
+
+This is a test plan for the APIs described in SYCL 2020 section 4.9.5.
+"Specialization constants" and for the
+`kernel_bundle::set_specialization_constant()` and
+`kernel_bundle::get_specialization_constant()` APIs that are described
+in section 4.11.12.2. "Specialization constant support".
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+[[sec:types]]
+=== Specialization constant types
+
+All of tests described below (with the exception of those tests described under
+"Tests which are not run for all types") are performed using each of the
+following types as the underlying type of a `specialization_id` variable.
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+* `float`
+* `bool`
+* `std::byte`
+* `std::int8_t`
+* `std::int16_t`
+* `std::int32_t`
+* `std::int64_t`
+* `std::uint8_t`
+* `std::uint16_t`
+* `std::uint32_t`
+* `std::uint64_t`
+* `std::size_t`
+* `vec<T, int dim>` where `T` is each of the scalar types listed above except
+   for `bool` and `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
+* `marray<T, size_t dim>` where `T` is each of the scalar types listed above
+  and `dim` is `2`, `5`, and `10`.
+* A user-defined struct with several scalar member variables, no constructor,
+  destructor or member functions.
+* A user-defined class with several scalar member variables and a user-defined
+  default constructor.
+* A user-defined class with several scalar member variables, a deleted default
+  constructor, and a user-defined (non-default) constructor.
+
+In addition, if the device has `aspect::fp64`, the following types are tested:
+
+* `double`
+* `vec<double, int dim>` where `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
+* `marray<double, size_t dim>` where `dim` is `2`, `5`, and `10`.
+
+In addition, if the device has `aspect::fp16`, the following types are tested:
+
+* `sycl::half`
+* `vec<sycl::half, int dim>` where `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
+* `marray<sycl::half, size_t dim>` where `dim` is `2`, `5`, and `10`.
+
+
+== Tests
+
+=== Basic tests with handler
+
+All of the following basic tests have these initial steps:
+
+* Declare a `specialization_id` variable in the global namespace for the
+  tested type.  The variable's default value has some non-zero value.
+* Create a `queue` from the tested device and call `queue::submit()`.
+
+==== Read a spec constant from a handler without writing its value
+
+* Call `handler::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+==== Write and read a spec constant from a handler
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Call `handler::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Write the value twice from a handler and make sure we read the second value
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `handler::get_specialization_constant()` and make sure we get the second
+  value back.
+* No kernel is submitted.
+
+==== Read a spec constant from a kernel without writing its value
+
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the
+   default value back.
+
+==== Write the value from a handler and read it from a kernel
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the same
+   value back.
+
+==== Write the value twice from a handler and read it from a kernel
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Set the value again to a different value.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the second
+   value back.
+
+==== Write the value from a handler and read it twice from a kernel
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant twice via
+  `kernel_handler::get_specialization_constant()` and make sure that each time
+  we get that value that was written.
+
+[[sec:hander-by-ref]]
+==== Pass kernel handler object by reference to another function
+
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Call some helper function in the same translation unit, passing the
+  `kernel_handler` object by reference.
+* From the helper function, read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the same
+   value back.
+
+==== Pass kernel handler object by value to another function
+
+* Same test as in <<sec:hander-by-ref>>, except pass the `kernel_handler`
+  object by value.
+
+[[sec:multiple]]
+=== Multiple spec constants
+
+* Declare several `specialization_id` variables of the tested type in the
+  global namespace.  All the default values are different and none are zero.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set the values of some of the spec constants via
+  `handler::set_specialization_constant()` but do not set the values for all of
+  them.
+* Submit a kernel via `handler::single_task()`.
+* Read the values of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the
+  expected value from each (either the value we set or the default value).
+
+=== Multiple spec constants with `kernel_bundle`
+
+* Same test as in <<sec:multiple>>, except set spec constants in a
+  `kernel_bundle`, build the bundle and register the bundle with a handler.
+
+[[sec:two-command]]
+=== Two command groups that read the same spec constant, both set value
+
+* Declare a `specialization_id` variable in the global namespace for the
+  tested type.  The variable's default value has some non-zero value.
+* Declare a single object whose type is a class with `operator(handler &)`.
+  This object will be the command group handler for our test.
+* Create a `queue` from the tested device and call `queue::submit()` twice.
+  Each call passes the same command group handler object described above.
+* Each command group handler sets the value of the spec constant to a
+  different value.
+* Each command group handler submits a kernel via `handler::single_task()`.
+* Each kernel reads the spec constant via
+  `kernel_handler::get_specialization_constant()`.
+* Verify that the value read in the kernel is the same as the value set in
+  the command group handler which launched that kernel instance.
+* The two kernels should run in parallel for this test.
+
+=== Two command groups that read the same spec constant, only one sets value
+
+Same test as in <<sec:two-command>> except only one of the command group
+handlers sets the value of the spec constant.  The kernel instance that is
+launched from the handler that does not set a value should read the spec
+constant's default value.
+
+[[sec:declarations]]
+=== Spec constant defined in various ways
+
+Create an application with `specialization_id` variables defined in the
+following ways:
+
+* Defined in a non-global named namespace.
+* Defined in an unnamed namespace.
+* Defined in the global namespace as `inline constexpr`.
+* Defined in the global namespace as `static constexpr`.
+* A static member variable of a struct in the global namespace.
+* A static member variable of a struct in a non-global namespace.
+* A static member variable of a struct in an unnamed namespace.
+* A static member variable declared `inline constexpr` of a struct in the global
+  namespace.
+* A static member variable of a templated struct in the global namespace.
+
+Perform the following test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set each spec constant to a different value via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+   value back.
+
+=== Spec constant defined in various ways and set via `kernel_bundle`
+
+Define the same set of `specialization_id` variables as in <<sec:declarations>>
+and perform this test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Get a `kernel_bundle` in `input` state.
+* Set each spec constant to a different value via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
+
+[[sec:same-name]]
+=== Same name stress test
+
+Create several `specialization_id` variables, each with the same name but in
+different namespaces as shown below.
+
+```
+constexpr sycl::specialization_id<T> same_name{...};
+namespace outer {
+  constexpr sycl::specialization_id<T> same_name{...};
+  namespace inner {
+    constexpr sycl::specialization_id<T> same_name{...};
+  }
+  namespace {
+    constexpr sycl::specialization_id<T> same_name{...};
+    namespace inner {
+      constexpr sycl::specialization_id<T> same_name{...};
+      namespace {
+        constexpr sycl::specialization_id<T> same_name{...};
+      }
+    }
+  }
+}
+namespace {
+  constexpr sycl::specialization_id<T> same_name{...};
+  namespace outer {
+    constexpr sycl::specialization_id<T> same_name{...};
+    namespace {
+      constexpr sycl::specialization_id<T> same_name{...};
+      namespace inner {
+        constexpr sycl::specialization_id<T> same_name{...};
+      }
+    }
+  }
+}
+```
+
+Perform the following test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set each spec constant to a different value via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
+
+=== Same name stress test with `kernel_bundle`
+
+Define the same set of `specialization_id` variables as in <<sec:same-name>>
+and perform this test:
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Get a `kernel_bundle` in `input` state.
+* Set each spec constant to a different value via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of each spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get its
+  value back.
+
+[[sec:two-tu-by-ref]]
+=== Two translation units, `kernel_handler` by reference
+
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
+* In one translation unit:
+  - Define a `specialization_id` variable as `inline` in the global namespace
+    for the tested type.  The variable's default value has some non-zero value.
+  - Set the value of the spec constant via
+    `handler::set_specialization_constant()`.
+  - Submit a kernel via `handler::single_task()`.
+  - Call a `SYCL_EXTERNAL` helper function, passing the `kernel_handler` object
+    by reference.
+* In a second translation unit:
+  - Define the same `specialization_id` variable as `inline` in the global
+    namespace.  The variable's default value is the same as in the first
+    translation unit.
+  - Define the helper function as `SYCL_EXTERNAL`.
+  - From the helper function, read the value of the spec constant via
+    `kernel_handler::get_specialization_constant()` and make sure we get the
+    value set from the first translation unit.
+
+=== Two translation units, `kernel_handler` by value
+
+* Same test as in <<sec:two-tu-by-ref>>, except pass the `kernel_handler`
+  object by value.
+
+[[sec:two-tu-bundle-by-ref]]
+=== Two translation units using `kernel_bundle`, `kernel_handler` by reference
+
+* This test runs only if the implementation defines `SYCL_EXTERNAL`.
+* In one translation unit:
+  - Define a `specialization_id` variable as `inline` in the global namespace
+    for the tested type.  The variable's default value has some non-zero value.
+  - There is a named kernel defined in this translation unit that calls a
+    `SYCL_EXTERNAL` helper function.
+  - Get a `kernel_bundle` in `input` state for this kernel.
+  - Set the value of the spec constants in the `kernel_bundle`.
+  - Call `build()` to build the `kernel_bundle` into `executable` state.
+  - Register the bundle with a handler via `use_kernel_bundle()`.
+  - Submit a kernel via `handler::single_task()`.
+  - The kernel calls the `SYCL_EXTERNAL` helper function, passing the
+    `kernel_handler` object by reference.
+* In a second translation unit:
+  - Define the same `specialization_id` variable as `inline` in the global
+    namespace.  The variable's default value is the same as in the first
+    translation unit.
+  - Define the helper function as `SYCL_EXTERNAL`.
+  - From the helper function, read the value of the spec constant via
+    `kernel_handler::get_specialization_constant()` and make sure we get the
+    value set from the first translation unit.
+
+=== Two translation units using `kernel_bundle`, `kernel_handler` by value
+
+* Same test as in <<sec:two-tu-bundle-by-ref>>, except pass the
+  `kernel_handler` object by value.
+
+[[sec:internal-linkage]]
+=== Spec constants with same name and internal linkage
+
+* In one translation unit:
+  - Define a `specialization_id` variable in the global namespace for the
+    tested type.  The variable must have internal linkage.
+* In a second translation unit:
+  - Define a `specialization_id` variable in the global namespace for the
+    tested type.  The variable must have internal linkage, and it's name must
+    be the same as the variable in the first translation unit.
+* In both translation units:
+  - Create a `queue` from the tested device and call `queue::submit()`.
+  - Set the spec constant to some value via
+    `handler::set_specialization_constant()`.  The value must be different in
+    each translation unit.
+  - Submit a kernel via `handler::single_task()`.
+  - Read the value of the spec constant via
+    `kernel_handler::get_specialization_constant()` and make sure we get its
+    value back.
+
+=== Spec constants with same name and internal linkage in `kernel_bundle`
+
+* Same test as in <<sec:internal-linkage>>, except:
+  - Set spec constants in a `kernel_bundle`.
+  - Call `build()` to build the `kernel_bundle` into `executable` state.
+  - Register the bundle with a handler via `use_kernel_bundle()`.
+
+=== Basic tests with `kernel_bundle` for all kernel bundle states
+
+All of the following basic tests have these initial steps:
+
+* Declare a `specialization_id` variable in the global namespace for the
+  tested type.  The variable's default value has some non-zero value.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Create `kernel_bundle` using all kernel bundle states
+  `State` == (`bundle_state::input`, `bundle_state::object`, `bundle_state::executable`)
+
+==== Read a spec constant from a `kernel_bundle` without writing its value
+
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+==== Read a spec constant from a joined `kernel_bundle` without writing its value
+
+* Join bundle with another bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+=== Tests for with `kernel_bundle` specific to `bundle_state::input`
+
+All of the following basic tests have these initial steps:
+
+* Declare a `specialization_id` variable in the global namespace for the
+  tested type.  The variable's default value has some non-zero value.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Create `kernel_bundle` with `State` == `bundle_state::input`.
+
+==== Set the value in a `kernel_bundle` and then read it from the same bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice and then read it from the same bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+* No kernel is submitted.
+
+==== Read a spec constant from a compiled `kernel_bundle` without writing its value
+
+* Call `compile()` to compile the `kernel_bundle` into `object` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` and read it from the compiled bundle.
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `compile()` to compile the `kernel_bundle` into `object` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice and read it from the compiled bundle.
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `compile()` to compile the `kernel_bundle` into `object` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+* No kernel is submitted.
+
+==== Read a spec constant from a linked `kernel_bundle` without writing its value
+
+* Call `compile()` and then `link` to compile and link the `kernel_bundle` into
+  `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` and read it from the linked bundle.
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `compile()` and then `link` to compile and link the `kernel_bundle` into
+  `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice and read it from the linked bundle.
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `compile()` and then `link` to compile and link the `kernel_bundle` into
+  `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+* No kernel is submitted.
+
+==== Read a spec constant from a built `kernel_bundle` without writing its value
+
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the
+  default value.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` and read it from the built bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice and read it from the built bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `join()` to join the bundle with another `input` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `join()` to join the bundle with another `input` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle`, compile and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `compile()` to compile the `kernel_bundle` into `object` state.
+* Call `join()` to join the bundle with another `object` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice, compile and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `compile()` to compile the `kernel_bundle` into `object` state.
+* Join bundle with another `object` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle`, build and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Join bundle with another `executable` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+* No kernel is submitted.
+
+==== Set the value in a `kernel_bundle` twice, build and read it from the joined bundle
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Join bundle with another `executable` bundle.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+  value back.
+* No kernel is submitted.
+
+==== Read a spec constant from a kernel without writing its value
+
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()` and make sure we get the
+   default value back.
+
+==== Set the value in a `kernel_bundle` and read it from a kernel
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the same
+  value back.
+
+==== Set the value in a `kernel_bundle` twice and read it from a kernel
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Set the value again to a different value.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`
+* Submit a kernel via `handler::single_task()`.
+* Call `kernel_bundle::get_specialization_constant()` and make sure we get the second
+   value back.
+
+==== Set the value in a `kernel_bundle` and read it twice from a kernel
+
+* Set the value of the spec constant via
+  `kernel_bundle::set_specialization_constant()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant twice via
+  `kernel_handler::get_specialization_constant()` and make sure that each time
+  we get the value that was written.
+
+=== Check expected exceptions
+
+==== Try to get specialization constant via handler that bound to a `kernel_bundle`
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Try to call `handler::get_specialization_constant()`
+* Catch exception and make sure it's with the `errc::invalid` error code.
+
+==== Try to set specialization constant via handler that bound to a `kernel_bundle`
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Call `build()` to build the `kernel_bundle` into `executable` state.
+* Register the bundle with a handler via `use_kernel_bundle()`.
+* Try to call `handler::set_specialization_constant()`.
+* Catch exception and make sure it's with the `errc::invalid` error code.
+
+=== Tests which are not run for all types
+
+The following tests are not run for each of the types defined in <<sec:types>>.
+Instead, each of these tests specifies the type of the specialization constant.
+
+==== Class with a member function that accesses members
+
+* Declare a type that is a class with at least one member variable and a member
+  function which accesses that member variable.  For example:
+
+```
+struct myType {
+  int a, b;
+  constexpr myType(int a, int b) : a(a), b(b) {}
+  int calculate(int c) const { return a * b * c; }
+};
+```
+
+* Declare a `specialization_id` variable templated on that type in the global
+  namespace.
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Set the value of the spec constant via
+  `handler::set_specialization_constant()`.
+* Submit a kernel via `handler::single_task()`.
+* Read the value of the spec constant via
+  `kernel_handler::get_specialization_constant()`.  This will return an object
+  of the tested type (i.e. `myType`).
+* Call the member function on that object (i.e. `myType::calculate()`).
+* Verify the return value of the member function to make sure it executed
+  correctly.

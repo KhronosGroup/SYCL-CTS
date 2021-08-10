@@ -26,8 +26,8 @@ class kernel_test_class4;
 class kernel_test_class5;
 
 using accessor_t =
-    cl::sycl::accessor<int, 1, cl::sycl::access::mode::read_write,
-                       cl::sycl::access::target::global_buffer>;
+    sycl::accessor<int, 1, sycl::access_mode::read_write,
+                       sycl::target::global_buffer>;
 
 struct single_task_functor {
   single_task_functor(accessor_t acc, size_t range) : acc(acc), range(range) {}
@@ -46,7 +46,7 @@ template <int useOffset>
 struct parallel_for_range_id_functor {
   parallel_for_range_id_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::id<1> id) const { acc[id] = id[0]; }
+  void operator()(sycl::id<1> id) const { acc[id] = id[0]; }
 
   accessor_t acc;
 };
@@ -55,7 +55,7 @@ template <int useOffset>
 struct parallel_for_range_item_functor {
   parallel_for_range_item_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::item<1> item) const { acc[item] = item[0]; }
+  void operator()(sycl::item<1> item) const { acc[item] = item[0]; }
 
   accessor_t acc;
 };
@@ -63,7 +63,7 @@ struct parallel_for_range_item_functor {
 struct parallel_for_nd_range_functor {
   parallel_for_nd_range_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::nd_item<1> ndItem) const {
+  void operator()(sycl::nd_item<1> ndItem) const {
     acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
   }
 
@@ -77,12 +77,12 @@ struct parallel_for_nd_range_functor {
 struct parallel_for_work_group_dynamic_functor {
   parallel_for_work_group_dynamic_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::group<1> group) const {
-    group.parallel_for_work_item([&](cl::sycl::h_item<1> item) { acc[0] = 0; });
+  void operator()(sycl::group<1> group) const {
+    group.parallel_for_work_item([&](sycl::h_item<1> item) { acc[0] = 0; });
 
-    cl::sycl::range<1> subRange(1);
+    sycl::range<1> subRange(1);
 
-    group.parallel_for_work_item(subRange, [&](cl::sycl::h_item<1> item) {
+    group.parallel_for_work_item(subRange, [&](sycl::h_item<1> item) {
       if (item.get_global_id(0) > 0) {
         acc[item.get_global_id()] = item.get_global_id(0);
       }
@@ -99,16 +99,16 @@ struct parallel_for_work_group_dynamic_functor {
 struct parallel_for_work_group_fixed_functor {
   parallel_for_work_group_fixed_functor(accessor_t acc) : acc(acc) {}
 
-  void operator()(cl::sycl::group<1> group) const {
-    group.parallel_for_work_item([&](cl::sycl::h_item<1> item) {
+  void operator()(sycl::group<1> group) const {
+    group.parallel_for_work_item([&](sycl::h_item<1> item) {
       if (item.get_global_id(0) > 0) {
         acc[item.get_global_id()] = item.get_global_id(0);
       }
     });
 
-    cl::sycl::range<1> subRange(1);
+    sycl::range<1> subRange(1);
 
-    group.parallel_for_work_item(subRange, [&](cl::sycl::h_item<1> item) {
+    group.parallel_for_work_item(subRange, [&](sycl::h_item<1> item) {
       acc[item.get_global_id()] = 0;
     });
   }
@@ -133,7 +133,7 @@ class parallel_for_work_group_2range_lambda_prebuilt;
  * @return The built kernel
  */
 template <class kernel_name>
-cl::sycl::kernel get_prebuilt_kernel(cl::sycl::queue &queue) {
+sycl::kernel get_prebuilt_kernel(sycl::queue &queue) {
   return util::get_cts_object::kernel::prebuilt<kernel_name>(queue);
 }
 
@@ -169,17 +169,17 @@ class TEST_NAME : public sycl_cts::util::test_base {
    * their corresponding global work item id.
    */
   template <class kernel_wrapper>
-  void check_api_call(cl::sycl::string_class methodName, util::logger &log,
-                      cl::sycl::queue &queue, kernel_wrapper &&kernelWrapper,
+  void check_api_call(std::string methodName, util::logger &log,
+                      sycl::queue &queue, kernel_wrapper &&kernelWrapper,
                       size_t startIndex = 0,
                       size_t numModified = defaultNumModified) {
     log.note("Check %s", methodName.c_str());
     // Initialize buffer with a canary value we can recognize again below.
     std::vector<int> result(bufferSize, 12345);
     {
-      auto buf = cl::sycl::buffer<int, 1>(result.data(), result.size());
-      queue.submit([&](cl::sycl::handler &cgh) {
-        auto acc = buf.get_access<cl::sycl::access::mode::read_write>(cgh);
+      auto buf = sycl::buffer<int, 1>(result.data(), result.size());
+      queue.submit([&](sycl::handler &cgh) {
+        auto acc = buf.get_access<sycl::access_mode::read_write>(cgh);
         kernelWrapper(cgh, acc);
       });
     }
@@ -202,20 +202,20 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      using handler = cl::sycl::handler;
+      using handler = sycl::handler;
 
       auto queue = util::get_cts_object::queue();
       auto deviceList = queue.get_context().get_devices();
 
-      const cl::sycl::range<1> defaultRange = defaultNumModified;
-      const cl::sycl::id<1> offset = 28;
-      const cl::sycl::range<1> offsetRange = defaultRange[0] - offset[0];
+      const sycl::range<1> defaultRange = defaultNumModified;
+      const sycl::id<1> offset = 28;
+      const sycl::range<1> offsetRange = defaultRange[0] - offset[0];
 
-      const cl::sycl::nd_range<1> ndRange(defaultRange, defaultRange);
-      const cl::sycl::nd_range<1> offsetNdRange(offsetRange, offsetRange,
+      const sycl::nd_range<1> ndRange(defaultRange, defaultRange);
+      const sycl::nd_range<1> offsetNdRange(offsetRange, offsetRange,
                                                 offset);
-      const cl::sycl::range<1> numWorkGroups(1);
-      const cl::sycl::range<1> workGroupSize(defaultRange);
+      const sycl::range<1> numWorkGroups(1);
+      const sycl::range<1> workGroupSize(defaultRange);
 
       /* single_task */
 
@@ -272,7 +272,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                      [&](handler &cgh, accessor_t acc) {
                        cgh.parallel_for<class parallel_for_range_id_lambda>(
                            defaultRange,
-                           [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                           [=](sycl::id<1> id) { acc[id] = id[0]; });
                      });
 
       check_api_call("parallel_for(range, functor) with id", log, queue,
@@ -297,7 +297,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 cgh.parallel_for<
                     parallel_for_range_id_lambda_prebuilt<use_offset::no>>(
                     preBuiltKernel, defaultRange,
-                    [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                    [=](sycl::id<1> id) { acc[id] = id[0]; });
               });
         }
 
@@ -322,7 +322,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           [&](handler &cgh, accessor_t acc) {
             cgh.parallel_for<class parallel_for_range_offset_id_lambda>(
                 offsetRange, offset,
-                [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                [=](sycl::id<1> id) { acc[id] = id[0]; });
           },
           offset[0], offsetRange[0]);
 
@@ -351,7 +351,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 cgh.parallel_for<
                     parallel_for_range_id_lambda_prebuilt<use_offset::yes>>(
                     preBuiltKernel, offsetRange, offset,
-                    [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                    [=](sycl::id<1> id) { acc[id] = id[0]; });
               },
               offset[0], offsetRange[0]);
         }
@@ -376,7 +376,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       check_api_call("parallel_for(range, lambda) with item", log, queue,
                      [&](handler &cgh, accessor_t acc) {
                        cgh.parallel_for<class parallel_for_range_item_lambda>(
-                           defaultRange, [=](cl::sycl::item<1> item) {
+                           defaultRange, [=](sycl::item<1> item) {
                              acc[item] = item[0];
                            });
                      });
@@ -404,7 +404,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 cgh.parallel_for<
                     parallel_for_range_item_lambda_prebuilt<use_offset::no>>(
                     preBuiltKernel, defaultRange,
-                    [=](cl::sycl::item<1> item) { acc[item] = item[0]; });
+                    [=](sycl::item<1> item) { acc[item] = item[0]; });
               });
         }
 
@@ -429,7 +429,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           [&](handler &cgh, accessor_t acc) {
             cgh.parallel_for<class parallel_for_range_offset_item_lambda>(
                 offsetRange, offset,
-                [=](cl::sycl::item<1> item) { acc[item] = item[0]; });
+                [=](sycl::item<1> item) { acc[item] = item[0]; });
           },
           offset[0], offsetRange[0]);
 
@@ -457,7 +457,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 cgh.parallel_for<
                     parallel_for_range_item_lambda_prebuilt<use_offset::yes>>(
                     preBuiltKernel, offsetRange, offset,
-                    [=](cl::sycl::item<1> item) { acc[item] = item[0]; });
+                    [=](sycl::item<1> item) { acc[item] = item[0]; });
               },
               offset[0], offsetRange[0]);
         }
@@ -482,7 +482,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       check_api_call("parallel_for(nd_range, lambda)", log, queue,
                      [&](handler &cgh, accessor_t acc) {
                        cgh.parallel_for<class parallel_for_nd_range_lambda>(
-                           ndRange, [=](cl::sycl::nd_item<1> ndItem) {
+                           ndRange, [=](sycl::nd_item<1> ndItem) {
                              acc[ndItem.get_global_id()] =
                                  ndItem.get_global_id(0);
                            });
@@ -507,7 +507,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
               "parallel_for(kernel, nd_range, lambda)", log, queue,
               [&](handler &cgh, accessor_t acc) {
                 cgh.parallel_for<parallel_for_nd_range_lambda_prebuilt>(
-                    preBuiltKernel, ndRange, [=](cl::sycl::nd_item<1> ndItem) {
+                    preBuiltKernel, ndRange, [=](sycl::nd_item<1> ndItem) {
                       acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
                     });
               });
@@ -531,7 +531,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           "parallel_for(nd_range, lambda) with offset", log, queue,
           [&](handler &cgh, accessor_t acc) {
             cgh.parallel_for<class parallel_for_nd_range_offset_lambda>(
-                offsetNdRange, [=](cl::sycl::nd_item<1> ndItem) {
+                offsetNdRange, [=](sycl::nd_item<1> ndItem) {
                   acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
                 });
           },
@@ -560,7 +560,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
               [&](handler &cgh, accessor_t acc) {
                 cgh.parallel_for<parallel_for_nd_range_offset_lambda_prebuilt>(
                     preBuiltKernel, offsetNdRange,
-                    [=](cl::sycl::nd_item<1> ndItem) {
+                    [=](sycl::nd_item<1> ndItem) {
                       acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
                     });
               },
@@ -587,11 +587,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
                      [&](handler &cgh, accessor_t acc) {
                        cgh.parallel_for_work_group<
                            class parallel_for_work_group_1range_lambda>(
-                           defaultRange, [=](cl::sycl::group<1> group) {
+                           defaultRange, [=](sycl::group<1> group) {
                              group.parallel_for_work_item(
-                                 [&](cl::sycl::h_item<1> item) { acc[0] = 0; });
+                                 [&](sycl::h_item<1> item) { acc[0] = 0; });
                              group.parallel_for_work_item(
-                                 1, [&](cl::sycl::h_item<1> item) {
+                                 1, [&](sycl::h_item<1> item) {
                                    if (item.get_global_id(0) > 0) {
                                      acc[item.get_global_id()] =
                                          item.get_global_id(0);
@@ -621,11 +621,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
               [&](handler &cgh, accessor_t acc) {
                 cgh.parallel_for_work_group<
                     parallel_for_work_group_1range_lambda_prebuilt>(
-                    defaultRange, [=](cl::sycl::group<1> group) {
+                    defaultRange, [=](sycl::group<1> group) {
                       group.parallel_for_work_item(
-                          [&](cl::sycl::h_item<1> item) { acc[0] = 0; });
+                          [&](sycl::h_item<1> item) { acc[0] = 0; });
                       group.parallel_for_work_item(
-                          1, [&](cl::sycl::h_item<1> item) {
+                          1, [&](sycl::h_item<1> item) {
                             if (item.get_global_id(0) > 0) {
                               acc[item.get_global_id()] = item.get_global_id(0);
                             }
@@ -655,14 +655,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
           [&](handler &cgh, accessor_t acc) {
             cgh.parallel_for_work_group<
                 class parallel_for_work_group_2range_lambda>(
-                numWorkGroups, workGroupSize, [=](cl::sycl::group<1> group) {
-                  group.parallel_for_work_item([&](cl::sycl::h_item<1> item) {
+                numWorkGroups, workGroupSize, [=](sycl::group<1> group) {
+                  group.parallel_for_work_item([&](sycl::h_item<1> item) {
                     if (item.get_global_id(0) > 0) {
                       acc[item.get_global_id()] = item.get_global_id(0);
                     }
                   });
                   group.parallel_for_work_item(1,
-                                               [&](cl::sycl::h_item<1> item) {
+                                               [&](sycl::h_item<1> item) {
                                                  acc[item.get_global_id()] = 0;
                                                });
                 });
@@ -691,14 +691,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 cgh.parallel_for_work_group<
                     parallel_for_work_group_2range_lambda_prebuilt>(
                     numWorkGroups, workGroupSize,
-                    [=](cl::sycl::group<1> group) {
+                    [=](sycl::group<1> group) {
                       group.parallel_for_work_item(
-                          [&](cl::sycl::h_item<1> item) {
+                          [&](sycl::h_item<1> item) {
                             acc[item.get_global_id()] =
                                 item.get_global_id(0) * 2;
                           });
                       group.parallel_for_work_item(
-                          defaultRange, [&](cl::sycl::h_item<1> item) {
+                          defaultRange, [&](sycl::h_item<1> item) {
                             acc[item.get_global_id()] /= 2;
                           });
                     });
@@ -726,9 +726,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
             "single_task with kernel object");
       } else {
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class0>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class0>());
 
           check_api_call("single_task<kernel_test_class>()", log, queue,
@@ -749,23 +749,23 @@ class TEST_NAME : public sycl_cts::util::test_base {
             "parallel_for with kernel object");
       } else {
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class1>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class1>());
 
           check_api_call("parallel_for(range, kernel) with id", log, queue,
                          [&](handler &cgh, accessor_t acc) {
                            cgh.parallel_for<kernel_test_class1>(
                                defaultRange,
-                               [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                               [=](sycl::id<1> id) { acc[id] = id[0]; });
                          });
         }
 
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class2>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class2>());
 
           check_api_call(
@@ -773,30 +773,30 @@ class TEST_NAME : public sycl_cts::util::test_base {
               [&](handler &cgh, accessor_t acc) {
                 cgh.parallel_for<kernel_test_class2>(
                     offsetRange, offset,
-                    [=](cl::sycl::id<1> id) { acc[id] = id[0]; });
+                    [=](sycl::id<1> id) { acc[id] = id[0]; });
               },
               offset[0], offsetRange[0]);
         }
 
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class3>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class3>());
 
           check_api_call("parallel_for(range, kernel) with item", log, queue,
                          [&](handler &cgh, accessor_t acc) {
                            cgh.parallel_for<kernel_test_class3>(
-                               defaultRange, [=](cl::sycl::item<1> item) {
+                               defaultRange, [=](sycl::item<1> item) {
                                  acc[item] = item[0];
                                });
                          });
         }
 
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class4>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class4>());
 
           check_api_call(
@@ -804,21 +804,21 @@ class TEST_NAME : public sycl_cts::util::test_base {
               [&](handler &cgh, accessor_t acc) {
                 cgh.parallel_for<kernel_test_class4>(
                     offsetRange, offset,
-                    [=](cl::sycl::item<1> item) { acc[item] = item[0]; });
+                    [=](sycl::item<1> item) { acc[item] = item[0]; });
               },
               offset[0], offsetRange[0]);
         }
 
         {
-          cl::sycl::program test_program(queue.get_context());
+          sycl::program test_program(queue.get_context());
           test_program.build_with_kernel_type<kernel_test_class5>();
-          cl::sycl::kernel test_kernel(
+          sycl::kernel test_kernel(
               test_program.get_kernel<kernel_test_class5>());
 
           check_api_call("parallel_for(nd_range, kernel);", log, queue,
                          [&](handler &cgh, accessor_t acc) {
                            cgh.parallel_for<kernel_test_class5>(
-                               ndRange, [=](cl::sycl::nd_item<1> ndItem) {
+                               ndRange, [=](sycl::nd_item<1> ndItem) {
                                  acc[ndItem.get_global_id()] =
                                      ndItem.get_global_id(0);
                                });
@@ -826,7 +826,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         }
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       FAIL(log,
            "A SYCL exception was "

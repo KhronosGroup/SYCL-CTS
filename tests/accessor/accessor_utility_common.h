@@ -70,26 +70,26 @@ namespace user_namespace {
 /** Convenient compile-time evaluation to determine if an accessor is an image
  *  accessor (of sorts)
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 struct is_image {
   static constexpr auto value =
-      target == cl::sycl::access::target::image ||
-      target == cl::sycl::access::target::host_image ||
-      target == cl::sycl::access::target::image_array;
+      target == sycl::target::image ||
+      target == sycl::target::host_image ||
+      target == sycl::target::image_array;
 };
 
 /** Convenient compile-time evaluation to determine if an accessor is an local
  *  accessor
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 struct is_local {
-  static constexpr auto value = (target == cl::sycl::access::target::local);
+  static constexpr auto value = (target == sycl::target::local);
 };
 
 /** Convenient compile-time evaluation to determine if an accessor is an buffer
  *  accessor (of sorts)
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 struct is_buffer {
   static constexpr auto value =
       !is_image<target>::value && !is_local<target>::value;
@@ -104,10 +104,10 @@ struct is_buffer {
  * @tparam placeholder Whether the accessor is a placeholder
  * @param typeName The name of the underlying data type for scalar or vec types
  */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+template <typename T, int dims, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder =
+              sycl::access::placeholder::false_t>
 std::string accessor_type_name(const std::string& dataType) {
   std::stringstream stream;
   stream << "accessor<" << type_name_string<T>::get(dataType) << ", " << dims
@@ -115,7 +115,7 @@ std::string accessor_type_name(const std::string& dataType) {
          << static_cast<int>(target) << "}";
   if (!is_image<target>::value) {
     stream << ", placeholder{"
-           << (placeholder == cl::sycl::access::placeholder::true_t) << "}";
+           << (placeholder == sycl::access::placeholder::true_t) << "}";
   }
   stream << ">";
   return stream.str();
@@ -130,10 +130,10 @@ std::string accessor_type_name(const std::string& dataType) {
  * @tparam placeholder Whether the accessor is a placeholder
  * @param typeName The name of the underlying data type for scalar or vec types
  */
-template <typename T, int dims, cl::sycl::access::mode mode,
-          cl::sycl::access::target target,
-          cl::sycl::access::placeholder placeholder =
-              cl::sycl::access::placeholder::false_t>
+template <typename T, int dims, sycl::access_mode mode,
+          sycl::target target,
+          sycl::access::placeholder placeholder =
+              sycl::access::placeholder::false_t>
 void fail_for_accessor(sycl_cts::util::logger& log,
                        const std::string& dataType,
                        const std::string& message) {

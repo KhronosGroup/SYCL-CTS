@@ -14,7 +14,7 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** tests the properties for cl::sycl::queue
+/** tests the properties for sycl::queue
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -33,29 +33,29 @@ class TEST_NAME : public util::test_base {
       /** check property::queue::enable_profiling
       */
       {
-        cl::sycl::queue queue(
+        sycl::queue queue(
             util::get_cts_object::device(),
-            cl::sycl::property_list{
-                cl::sycl::property::queue::enable_profiling()});
+            sycl::property_list{
+                sycl::property::queue::enable_profiling()});
 
         if (!queue
-                 .has_property<cl::sycl::property::queue::enable_profiling>()) {
+                 .has_property<sycl::property::queue::enable_profiling>()) {
           FAIL(log,
                "queue with enable_profiling property was not constructed "
                "correctly");
         }
 
         auto prop =
-            queue.get_property<cl::sycl::property::queue::enable_profiling>();
-        check_return_type<cl::sycl::property::queue::enable_profiling>(
+            queue.get_property<sycl::property::queue::enable_profiling>();
+        check_return_type<sycl::property::queue::enable_profiling>(
             log, prop,
-            "cl::sycl::queue::has_property<cl::sycl::property::queue::"
+            "sycl::queue::has_property<sycl::property::queue::"
             "enable_profiling>()");
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

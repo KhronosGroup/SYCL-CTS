@@ -47,40 +47,14 @@ function(get_std_type OUT_LIST)
 
   list(APPEND STD_TYPE_LIST float
     double
-    cl::sycl::half)
+    sycl::half)
 
   set(${OUT_LIST} ${${OUT_LIST}} ${STD_TYPE_LIST} PARENT_SCOPE)
 endfunction()
 
-function(get_opencl_type OUT_LIST)
-  set(OPENCL_TYPE_LIST "")
-  list(APPEND OPENCL_TYPE_LIST
-    cl::sycl::cl_char
-    cl::sycl::cl_uchar)
-
-  list(APPEND OPENCL_TYPE_LIST
-    cl::sycl::cl_short
-    cl::sycl::cl_ushort)
-
-  list(APPEND OPENCL_TYPE_LIST
-    cl::sycl::cl_int
-    cl::sycl::cl_uint)
-
-  list(APPEND OPENCL_TYPE_LIST
-    cl::sycl::cl_long
-    cl::sycl::cl_ulong)
-
-  list(APPEND OPENCL_TYPE_LIST
-    cl::sycl::cl_float
-    cl::sycl::cl_double
-    cl::sycl::cl_half)
-
-  set(${OUT_LIST} ${${OUT_LIST}} ${OPENCL_TYPE_LIST} PARENT_SCOPE)
-endfunction()
-
 function(get_no_vec_alias_type OUT_LIST)
   set(NO_VEC_ALIAS_LIST "")
-  list(APPEND NO_VEC_ALIAS_LIST cl::sycl::byte)
+  list(APPEND NO_VEC_ALIAS_LIST sycl::byte)
 
   set(${OUT_LIST} ${${OUT_LIST}} ${NO_VEC_ALIAS_LIST} PARENT_SCOPE)
 endfunction()
@@ -101,11 +75,11 @@ endfunction()
 
 macro(half_double_filter list)
   if(NOT SYCL_CTS_ENABLE_DOUBLE_TESTS)
-    list(REMOVE_ITEM ${list} double cl::sycl::cl_double)
+    list(REMOVE_ITEM ${list} double)
   endif()
 
   if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
-    list(REMOVE_ITEM ${list} cl::sycl::half cl::sycl::cl_half)
+    list(REMOVE_ITEM ${list} sycl::half)
   endif()
 
 endmacro()

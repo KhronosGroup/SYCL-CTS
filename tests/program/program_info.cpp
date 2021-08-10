@@ -13,7 +13,7 @@
 namespace program_info__ {
 using namespace sycl_cts;
 
-/** tests the info for cl::sycl::program
+/** tests the info for sycl::program
  */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -36,30 +36,30 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
         /** check types
          */
-        { check_type_existence<cl::sycl::info::program> typeCheck; }
-        using vectorDevicesInfo = cl::sycl::vector_class<cl::sycl::device>;
+        { check_type_existence<sycl::info::program> typeCheck; }
+        using vectorDevicesInfo = std::vector<sycl::device>;
 
         /** check program info parameters
          */
         {
-          cl::sycl::context programContext =
-              program.get_info<cl::sycl::info::program::context>();
+          sycl::context programContext =
+              program.get_info<sycl::info::program::context>();
           TEST_TYPE_TRAIT(program, context, program);
         }
         {
           vectorDevicesInfo vectorDevices =
-              program.get_info<cl::sycl::info::program::devices>();
+              program.get_info<sycl::info::program::devices>();
           TEST_TYPE_TRAIT(program, devices, program);
         }
         {
           if (!program.is_host()) {
             cl_uint referenceCount =
-                program.get_info<cl::sycl::info::program::reference_count>();
+                program.get_info<sycl::info::program::reference_count>();
             TEST_TYPE_TRAIT(program, reference_count, program);
           }
         }
 
-      } catch (const cl::sycl::feature_not_supported &fnse_build) {
+      } catch (const sycl::feature_not_supported &fnse_build) {
         if (!is_compiler_available(deviceList) ||
             !is_linker_available(deviceList)) {
           log.note("online compiler or linker not available -- skipping check");
@@ -68,10 +68,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
         }
       }
 
-    } catch (cl::sycl::exception e) {
+    } catch (sycl::exception e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

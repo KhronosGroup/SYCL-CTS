@@ -22,7 +22,7 @@ namespace {
 template <int dim, typename kernelT>
 struct invoke_nd_item {
   static constexpr int dimensions = dim;
-  using parameterT = cl::sycl::nd_item<dim>;
+  using parameterT = sycl::nd_item<dim>;
 
   /**
    * @brief Functor body
@@ -33,14 +33,14 @@ struct invoke_nd_item {
    * @param kernelBody Kernel body to call
    */
   template <typename kernelBodyT>
-  void operator()(cl::sycl::handler &cgh,
-                  cl::sycl::range<dim> numWorkItems,
-                  cl::sycl::range<dim> workGroupSize,
+  void operator()(sycl::handler &cgh,
+                  sycl::range<dim> numWorkItems,
+                  sycl::range<dim> workGroupSize,
                   kernelBodyT kernelBody) {
 
     cgh.parallel_for<kernelT>(
-        cl::sycl::nd_range<dim>(numWorkItems, workGroupSize),
-        [=](cl::sycl::nd_item<dim> ndItem) {
+        sycl::nd_range<dim>(numWorkItems, workGroupSize),
+        [=](sycl::nd_item<dim> ndItem) {
           const size_t index = ndItem.get_global_linear_id();
 
           kernelBody(ndItem, index);
@@ -56,7 +56,7 @@ struct invoke_nd_item {
 template <int dim, typename kernelT>
 struct invoke_group {
   static constexpr int dimensions = dim;
-  using parameterT = cl::sycl::group<dim>;
+  using parameterT = sycl::group<dim>;
 
   /**
    * @brief Functor body
@@ -67,15 +67,15 @@ struct invoke_group {
    * @param kernelBody Kernel body to call
    */
   template <typename kernelBodyT>
-  void operator()(cl::sycl::handler &cgh,
-                  cl::sycl::range<dim> numWorkItems,
-                  cl::sycl::range<dim> workGroupSize,
+  void operator()(sycl::handler &cgh,
+                  sycl::range<dim> numWorkItems,
+                  sycl::range<dim> workGroupSize,
                   kernelBodyT kernelBody) {
-    cl::sycl::range<dim> numWorkGroups = numWorkItems / workGroupSize;
+    sycl::range<dim> numWorkGroups = numWorkItems / workGroupSize;
 
     cgh.parallel_for_work_group<kernelT>(
         numWorkGroups, workGroupSize,
-        [=](cl::sycl::group<dim> group) {
+        [=](sycl::group<dim> group) {
             const size_t index = group.get_linear_id();
 
             kernelBody(group, index);
@@ -104,13 +104,13 @@ std::array<typename kernelInvokeT::parameterT, numItems> store_instances()
       sycl_cts::util::get_cts_object::range<numDims>::get(numItems, 1, 1);
 
   {
-    cl::sycl::buffer<item_t> itemBuf(items.data(),
-                                     cl::sycl::range<1>(items.size()));
+    sycl::buffer<item_t> itemBuf(items.data(),
+                                     sycl::range<1>(items.size()));
 
     auto queue = sycl_cts::util::get_cts_object::queue();
-    queue.submit([&](cl::sycl::handler& cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto itemAcc =
-          itemBuf.template get_access<cl::sycl::access::mode::write>(cgh);
+          itemBuf.template get_access<sycl::access_mode::write>(cgh);
 
       kernelInvokeT{}(
           cgh, itemRange, oneElemRange,

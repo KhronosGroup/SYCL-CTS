@@ -13,26 +13,26 @@
 namespace test_nd_item__ {
 using namespace sycl_cts;
 
-size_t getIndex(cl::sycl::id<1> Id, cl::sycl::range<1> Range) {
+size_t getIndex(sycl::id<1> Id, sycl::range<1> Range) {
   return Id.get(0);
 }
 
-size_t getIndex(cl::sycl::id<2> Id, cl::sycl::range<2> Range) {
+size_t getIndex(sycl::id<2> Id, sycl::range<2> Range) {
   return Id.get(1) + Id.get(0) * Range.get(1);
 }
 
-size_t getIndex(cl::sycl::id<3> Id, cl::sycl::range<3> Range) {
+size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
   return Id.get(2) + Id.get(1) * Range.get(0) + Id.get(0) * Range.get(0) * Range.get(1);
 }
 
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  typedef cl::sycl::accessor<int, dimensions, cl::sycl::access::mode::read,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, dimensions, sycl::access_mode::read,
+                             sycl::target::global_buffer>
       t_readAccess;
-  typedef cl::sycl::accessor<int, dimensions, cl::sycl::access::mode::write,
-                             cl::sycl::access::target::global_buffer>
+  typedef sycl::accessor<int, dimensions, sycl::access_mode::write,
+                             sycl::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_globalID;
@@ -43,11 +43,11 @@ class kernel_nd_item {
   kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_writeAccess out_)
       : m_globalID(inG_), m_localID(inL_), m_o(out_) {}
 
-  void operator()(cl::sycl::nd_item<dimensions> myitem) const {
+  void operator()(sycl::nd_item<dimensions> myitem) const {
     bool failed = false;
 
     /* test global ID*/
-    cl::sycl::id<dimensions> global_id = myitem.get_global_id();
+    sycl::id<dimensions> global_id = myitem.get_global_id();
     size_t globals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -57,7 +57,7 @@ class kernel_nd_item {
       }
     }
 
-    cl::sycl::id<dimensions> local_id = myitem.get_local_id();
+    sycl::id<dimensions> local_id = myitem.get_local_id();
     size_t locals[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -68,7 +68,7 @@ class kernel_nd_item {
     }
 
     /* test group ID*/
-    cl::sycl::group<dimensions> group_id = myitem.get_group();
+    sycl::group<dimensions> group_id = myitem.get_group();
     size_t groups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -79,7 +79,7 @@ class kernel_nd_item {
     }
 
     /* test range*/
-    cl::sycl::range<dimensions> globalRange = myitem.get_global_range();
+    sycl::range<dimensions> globalRange = myitem.get_global_range();
     size_t global_ranges[dimensions];
 
     size_t globalIndex = getIndex(global_id, globalRange);
@@ -93,7 +93,7 @@ class kernel_nd_item {
       }
     }
 
-    cl::sycl::range<dimensions> localRange = myitem.get_local_range();
+    sycl::range<dimensions> localRange = myitem.get_local_range();
     size_t local_ranges[dimensions];
 
     size_t localIndex = getIndex(local_id, localRange);
@@ -113,7 +113,7 @@ class kernel_nd_item {
     }
 
     /* test number of groups*/
-    cl::sycl::id<dimensions> num_groups = myitem.get_group_range();
+    sycl::id<dimensions> num_groups = myitem.get_group_range();
     size_t nGroups[dimensions];
 
     for (int i = 0; i < dimensions; ++i) {
@@ -131,12 +131,12 @@ class kernel_nd_item {
     }
 
     /* test NDrange and offset*/
-    cl::sycl::id<dimensions> offset = myitem.get_offset();
-    cl::sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
+    sycl::id<dimensions> offset = myitem.get_offset();
+    sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
 
-    cl::sycl::range<dimensions> ndGlobal = NDRange.get_global_range();
-    cl::sycl::range<dimensions> ndLocal = NDRange.get_local_range();
-    cl::sycl::id<dimensions> ndOffset = NDRange.get_offset();
+    sycl::range<dimensions> ndGlobal = NDRange.get_global_range();
+    sycl::range<dimensions> ndLocal = NDRange.get_local_range();
+    sycl::id<dimensions> ndOffset = NDRange.get_offset();
 
     for (int i = 0; i < dimensions; ++i) {
       bool are_same = true;
@@ -197,7 +197,7 @@ void populate(int *globalBuf, int *localBuf, const int *localSize,
   }
 }
 
-void test_item(util::logger &log, cl::sycl::queue &queue) {
+void test_item(util::logger &log, sycl::queue &queue) {
   /* set sizes*/
   const int globalSize[3] = {16, 16, 16};
   const int localSize[3] = {4, 4, 4};
@@ -213,27 +213,27 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
 
   /* create ranges*/
-  cl::sycl::range<1> globalRange(globalSize[0]);
-  cl::sycl::range<1> localRange(localSize[0]);
-  cl::sycl::nd_range<1> dataRange(globalRange, localRange);
+  sycl::range<1> globalRange(globalSize[0]);
+  sycl::range<1> localRange(localSize[0]);
+  sycl::nd_range<1> dataRange(globalRange, localRange);
 
   /* test 1 Dimension*/
   {
     /* create ranges*/
-    cl::sycl::range<1> globalRange(globalSize[0]);
-    cl::sycl::range<1> localRange(localSize[0]);
-    cl::sycl::nd_range<1> dataRange(globalRange, localRange);
+    sycl::range<1> globalRange(globalSize[0]);
+    sycl::range<1> localRange(localSize[0]);
+    sycl::nd_range<1> dataRange(globalRange, localRange);
 
-    cl::sycl::buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
-    cl::sycl::buffer<int, 1> bufLoc(localIDs.get(), globalRange);
-    cl::sycl::buffer<int, 1> bufOut(dataOut.get(), globalRange);
+    sycl::buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
+    sycl::buffer<int, 1> bufLoc(localIDs.get(), globalRange);
+    sycl::buffer<int, 1> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
+    queue.submit([&](sycl::handler &cgh) {
       auto accG =
-          bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
+          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<1> kernel_1d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_1d);
@@ -250,20 +250,20 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
     /* create ranges*/
-    cl::sycl::range<2> globalRange(globalSize[0], globalSize[1]);
-    cl::sycl::range<2> localRange(localSize[0], localSize[1]);
-    cl::sycl::nd_range<2> dataRange(globalRange, localRange);
+    sycl::range<2> globalRange(globalSize[0], globalSize[1]);
+    sycl::range<2> localRange(localSize[0], localSize[1]);
+    sycl::nd_range<2> dataRange(globalRange, localRange);
 
-    cl::sycl::buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
-    cl::sycl::buffer<int, 2> bufLoc(localIDs.get(), globalRange);
-    cl::sycl::buffer<int, 2> bufOut(dataOut.get(), globalRange);
+    sycl::buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
+    sycl::buffer<int, 2> bufLoc(localIDs.get(), globalRange);
+    sycl::buffer<int, 2> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
+    queue.submit([&](sycl::handler &cgh) {
       auto accG =
-          bufGlob.template get_access<cl::sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.template get_access<cl::sycl::access::mode::read>(cgh);
+          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
       auto accOut =
-          bufOut.template get_access<cl::sycl::access::mode::write>(cgh);
+          bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<2> kernel_2d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_2d);
@@ -279,18 +279,18 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
     /* create ranges*/
-    cl::sycl::range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
-    cl::sycl::range<3> localRange(localSize[0], localSize[1], localSize[2]);
-    cl::sycl::nd_range<3> dataRange(globalRange, localRange);
+    sycl::range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
+    sycl::range<3> localRange(localSize[0], localSize[1], localSize[2]);
+    sycl::nd_range<3> dataRange(globalRange, localRange);
 
-    cl::sycl::buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
-    cl::sycl::buffer<int, 3> bufLoc(localIDs.get(), globalRange);
-    cl::sycl::buffer<int, 3> bufOut(dataOut.get(), globalRange);
+    sycl::buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
+    sycl::buffer<int, 3> bufLoc(localIDs.get(), globalRange);
+    sycl::buffer<int, 3> bufOut(dataOut.get(), globalRange);
 
-    queue.submit([&](cl::sycl::handler &cgh) {
-      auto accG = bufGlob.get_access<cl::sycl::access::mode::read>(cgh);
-      auto accL = bufLoc.get_access<cl::sycl::access::mode::read>(cgh);
-      auto accOut = bufOut.get_access<cl::sycl::access::mode::write>(cgh);
+    queue.submit([&](sycl::handler &cgh) {
+      auto accG = bufGlob.get_access<sycl::access_mode::read>(cgh);
+      auto accL = bufLoc.get_access<sycl::access_mode::read>(cgh);
+      auto accOut = bufOut.get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<3> kernel_3d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_3d);
@@ -303,7 +303,7 @@ void test_item(util::logger &log, cl::sycl::queue &queue) {
   }
 }
 
-/** test cl::sycl::nd_item
+/** test sycl::nd_item
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -324,10 +324,10 @@ class TEST_NAME : public util::test_base {
       test_item(log, cmd_queue);
 
       cmd_queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

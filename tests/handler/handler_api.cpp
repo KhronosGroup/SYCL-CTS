@@ -20,7 +20,7 @@ struct simple_struct {
 
 class test_placeholder;
 
-/** tests the API for cl::sycl::handler
+/** tests the API for sycl::handler
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -35,21 +35,21 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     try {
       auto queue = util::get_cts_object::queue();
-      const auto range = cl::sycl::range<1>(1);
+      const auto range = sycl::range<1>(1);
       int data[1]{0};
 
       {
-        auto buffer = cl::sycl::buffer<int, 1>(range);
+        auto buffer = sycl::buffer<int, 1>(range);
 
         log.note("Check require() method");
-        cl::sycl::buffer<int, 1> resultBuf(data, cl::sycl::range<1>(1));
+        sycl::buffer<int, 1> resultBuf(data, sycl::range<1>(1));
         auto placeholder =
-            cl::sycl::accessor<int, 1, cl::sycl::access::mode::write,
-                               cl::sycl::access::target::global_buffer,
-                               cl::sycl::access::placeholder::true_t>(
+            sycl::accessor<int, 1, sycl::access_mode::write,
+                               sycl::target::global_buffer,
+                               sycl::access::placeholder::true_t>(
                 resultBuf);
 
-        queue.submit([&](cl::sycl::handler &cgh) {
+        queue.submit([&](sycl::handler &cgh) {
           cgh.require(placeholder);
 
           cgh.single_task<class test_placeholder>(
@@ -63,10 +63,10 @@ class TEST_NAME : public util::test_base {
       }
 
       queue.wait_and_throw();
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

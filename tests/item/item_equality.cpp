@@ -36,7 +36,7 @@ enum class current_check {
 namespace TEST_NAME {
 using namespace sycl_cts;
 
-/** test cl::sycl::device initialization
+/** test sycl::device initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -49,7 +49,7 @@ class TEST_NAME : public util::test_base {
   template <int numDims>
   void test_equality(util::logger& log) {
     try {
-      using item_t = cl::sycl::item<numDims>;
+      using item_t = sycl::item<numDims>;
 
       // item is not default constructible, store two objects
       static constexpr size_t numItems = 2;
@@ -73,11 +73,11 @@ class TEST_NAME : public util::test_base {
             util::get_cts_object::range<numDims>::get(numItems, 1, 1);
 
         // Retrieve two item objects and store them
-        cl::sycl::buffer<item_t> itemBuf(items.data(),
-                                         cl::sycl::range<1>(items.size()));
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        sycl::buffer<item_t> itemBuf(items.data(),
+                                         sycl::range<1>(items.size()));
+        testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
-              itemBuf.template get_access<cl::sycl::access::mode::write>(cgh);
+              itemBuf.template get_access<sycl::access_mode::write>(cgh);
 
           cgh.parallel_for<item_setup_kernel<numDims>>(
               itemRange,
@@ -85,13 +85,13 @@ class TEST_NAME : public util::test_base {
         });
 
         // Perform comparisons on the stored item objects
-        cl::sycl::buffer<bool> successBuf(success.data(),
-                                          cl::sycl::range<1>(success.size()));
-        testQueue.submit([&](cl::sycl::handler& cgh) {
+        sycl::buffer<bool> successBuf(success.data(),
+                                          sycl::range<1>(success.size()));
+        testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
-              itemBuf.template get_access<cl::sycl::access::mode::read>(cgh);
+              itemBuf.template get_access<sycl::access_mode::read>(cgh);
           auto successAcc =
-              successBuf.get_access<cl::sycl::access::mode::write>(cgh);
+              successBuf.get_access<sycl::access_mode::write>(cgh);
 
           cgh.single_task<item_equality_kernel<numDims>>([=]() {
             const auto& item0 = itemAcc[0];
@@ -135,10 +135,10 @@ class TEST_NAME : public util::test_base {
                   success[static_cast<size_t>(current_check::not_equal_other)],
                   true, numDims);
 
-    } catch (const cl::sycl::exception& e) {
+    } catch (const sycl::exception& e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

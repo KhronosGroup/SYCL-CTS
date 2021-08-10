@@ -28,10 +28,10 @@ namespace TEST_NAMESPACE {
  *  this is a hack until the CMake script is fixed; kill both the alias and the
  *  dummy class once it is fixed
  */
-template <typename kernelName, cl::sycl::access::target kTarget>
+template <typename kernelName, sycl::target kTarget>
 struct dummy_accessor_ctors {};
 
-template <typename kernelName, cl::sycl::access::target kTarget>
+template <typename kernelName, sycl::target kTarget>
 using dummy_functor =
     ::dummy_functor<dummy_accessor_ctors<kernelName, kTarget>>;
 
@@ -40,7 +40,7 @@ using namespace sycl_cts;
 /** @brief Helper functor to retrieve underlying data dimensionality
  *         for buffer and local accessors
  */
-template <cl::sycl::access::target target, size_t dims>
+template <sycl::target target, size_t dims>
 struct acc_data_dims {
   static constexpr size_t get() {
     return (dims == 0) ? 1 : dims;
@@ -50,7 +50,7 @@ struct acc_data_dims {
  *         for image accessors
  */
 template <size_t dims>
-struct acc_data_dims<cl::sycl::access::target::image, dims> {
+struct acc_data_dims<sycl::target::image, dims> {
   static constexpr size_t get() {
     return dims;
   }
@@ -59,7 +59,7 @@ struct acc_data_dims<cl::sycl::access::target::image, dims> {
  *         for host_image accessors
  */
 template <size_t dims>
-struct acc_data_dims<cl::sycl::access::target::host_image, dims> {
+struct acc_data_dims<sycl::target::host_image, dims> {
   static constexpr size_t get() {
     return dims;
   }
@@ -68,7 +68,7 @@ struct acc_data_dims<cl::sycl::access::target::host_image, dims> {
  *         for image_array accessors
  */
 template <size_t dims>
-struct acc_data_dims<cl::sycl::access::target::image_array, dims> {
+struct acc_data_dims<sycl::target::image_array, dims> {
   static constexpr size_t get() {
     return dims + 1;
   }
@@ -76,44 +76,44 @@ struct acc_data_dims<cl::sycl::access::target::image_array, dims> {
 
 /** @brief Helper type trait for buffer accessors
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 constexpr bool is_buffer_accessor() {
   return
-      (target == cl::sycl::access::target::global_buffer) ||
-      (target == cl::sycl::access::target::constant_buffer) ||
-      (target == cl::sycl::access::target::host_buffer);
+      (target == sycl::target::global_buffer) ||
+      (target == sycl::target::constant_buffer) ||
+      (target == sycl::target::host_buffer);
 }
 /** @brief Helper type trait for local accessors
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 constexpr bool is_local_accessor() {
   return
-      (target == cl::sycl::access::target::local);
+      (target == sycl::target::local);
 }
 /** @brief Helper type trait for image accessors
  */
-template <cl::sycl::access::target target>
+template <sycl::target target>
 constexpr bool is_image_accessor() {
   return
-      (target == cl::sycl::access::target::image) ||
-      (target == cl::sycl::access::target::host_image) ||
-      (target == cl::sycl::access::target::image_array);
+      (target == sycl::target::image) ||
+      (target == sycl::target::host_image) ||
+      (target == sycl::target::image_array);
 }
 
 /** @brief Helper tag to store accessor type information
  */
-template <typename T, size_t kDims, cl::sycl::access::mode kMode,
-          cl::sycl::access::target kTarget,
-          cl::sycl::access::placeholder kPlaceholder =
-              cl::sycl::access::placeholder::false_t>
+template <typename T, size_t kDims, sycl::access_mode kMode,
+          sycl::target kTarget,
+          sycl::access::placeholder kPlaceholder =
+              sycl::access::placeholder::false_t>
 struct accessor_type_info {
-  using type = cl::sycl::accessor<T, kDims, kMode, kTarget, kPlaceholder>;
+  using type = sycl::accessor<T, kDims, kMode, kTarget, kPlaceholder>;
 
   using dataT = T;
   static constexpr size_t dims = kDims;
-  static constexpr cl::sycl::access::mode mode = kMode;
-  static constexpr cl::sycl::access::target target = kTarget;
-  static constexpr cl::sycl::access::placeholder placeholder = kPlaceholder;
+  static constexpr sycl::access_mode mode = kMode;
+  static constexpr sycl::target target = kTarget;
+  static constexpr sycl::access::placeholder placeholder = kPlaceholder;
 
   static constexpr size_t dataDims = acc_data_dims<target, dims>::get();
 };
@@ -216,7 +216,7 @@ namespace accessor_members {
   template <size_t dims>
   class offset {
   public:
-    using type = cl::sycl::id<dims>;
+    using type = sycl::id<dims>;
     const type value;
 
     /** @brief Type trait to enable verification only if accessor has
@@ -271,7 +271,7 @@ namespace accessor_members {
   template <size_t dims>
   class range {
   public:
-    using type = cl::sycl::range<dims>;
+    using type = sycl::range<dims>;
     const type value;
 
     /** @brief Type trait to enable verification only if accessor has
@@ -324,7 +324,7 @@ namespace accessor_members {
    */
   class placeholder {
   public:
-    using type = cl::sycl::access::placeholder;
+    using type = sycl::access::placeholder;
     const type value;
 
     /** @brief Type trait to enable verification only if accessor has
@@ -342,8 +342,8 @@ namespace accessor_members {
     typename std::enable_if<enabled<accTag>(), placeholder>::type
         static from(const typename accTag::type& a) {
       const auto v = a.is_placeholder() ?
-                     cl::sycl::access::placeholder::true_t :
-                     cl::sycl::access::placeholder::false_t;
+                     sycl::access::placeholder::true_t :
+                     sycl::access::placeholder::false_t;
       return placeholder{v};
     }
     /** @brief Factory method to generate member tag in case accessor has no
@@ -363,7 +363,7 @@ namespace accessor_members {
               const std::string& operation, const std::string& typeName) {
 
       const bool expectedValue =
-        (value == cl::sycl::access::placeholder::true_t);
+        (value == sycl::access::placeholder::true_t);
 
       if (a.is_placeholder() != expectedValue) {
         fail_for_accessor<accTag>(log, typeName,

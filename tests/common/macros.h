@@ -47,7 +47,7 @@ namespace {
  *  structure
  */
 inline void set_test_info(sycl_cts::util::test_base::info &out,
-                          const cl::sycl::string_class &name,
+                          const std::string &name,
                           const char *file) {
   out.m_name = name;
   out.m_file = file;
@@ -59,12 +59,12 @@ inline void set_test_info(sycl_cts::util::test_base::info &out,
  *
  */
 inline void log_exception(sycl_cts::util::logger &log,
-                          const cl::sycl::exception &e) {
+                          const sycl::exception &e) {
   // notify that an exception was thrown
   log.note("sycl exception caught");
 
   // log exception error string
-  cl::sycl::string_class what = e.what();
+  std::string what = e.what();
   if (!what.empty()) {
     log.note("what - " + what);
   }
@@ -96,13 +96,12 @@ inline bool check_cl_success_proxy(sycl_cts::util::logger &log, int error,
 /* macro to check if provided value is equal to expected value */
 template <typename T1, typename T2>
 bool check_value_proxy(sycl_cts::util::logger &log, const T1 &got,
-                       const T2 &expected, cl::sycl::string_class gotStr,
-                       cl::sycl::string_class expectedStr, int element,
+                       const T2 &expected, std::string gotStr,
+                       std::string expectedStr, int element,
                        int line, const bool useElement = true) {
-  using cl::sycl::string_class;
 
   if (got != expected) {
-    string_class msg = "Expected " + std::to_string(expected) + " {" +
+    std::string msg = "Expected " + std::to_string(expected) + " {" +
                        expectedStr + "} but got " + std::to_string(got) + " {" +
                        gotStr + "}";
     if (useElement) {
@@ -125,11 +124,10 @@ bool check_value_proxy(sycl_cts::util::logger &log, const T1 &got,
 template <typename T1, typename T2>
 bool check_type_proxy(sycl_cts::util::logger &log, const T1 &val_a,
                       const T2 &val_b, int line) {
-  using cl::sycl::string_class;
 
   if (typeid(val_a) != typeid(val_b)) {
-    string_class msg = string_class("Type mismatch between ") +
-                       type_name<T1>() + string_class(" and ") +
+    std::string msg = "Type mismatch between " +
+                       type_name<T1>() + " and " +
                        type_name<T2>();
     fail_proxy(log, msg.c_str(), line);
     return false;

@@ -13,7 +13,7 @@
 namespace platform_constructors__ {
 using namespace sycl_cts;
 
-/** tests the constructors for cl::sycl::platform
+/** tests the constructors for sycl::platform
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,7 +30,7 @@ class TEST_NAME : public util::test_base {
       /** check default constructor and destructor
       */
       {
-        cl::sycl::platform platform;
+        sycl::platform platform;
 
         if (!platform.is_host()) {
           FAIL(log, "platform was not constructed correctly (is_host)");
@@ -41,7 +41,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         const cts_selector selector;
-        cl::sycl::platform platform(selector);
+        sycl::platform platform(selector);
 
         if (platform.is_host() != selector.is_host()) {
           FAIL(log, "platform was not constructed correctly (is_host)");
@@ -52,8 +52,8 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB(platformA);
+        sycl::platform platformA(selector);
+        sycl::platform platformB(platformA);
 
         if (platformA.is_host() != platformB.is_host()) {
           FAIL(log, "platform was not copy constructed correctly (is_host)");
@@ -70,8 +70,8 @@ class TEST_NAME : public util::test_base {
       */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB = platformA;
+        sycl::platform platformA(selector);
+        sycl::platform platformB = platformA;
 
         if (platformA.is_host() != platformB.is_host()) {
           FAIL(log, "platform was not copy assigned correctly (is_host)");
@@ -88,8 +88,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB(std::move(platformA));
+        sycl::platform platformA(selector);
+        sycl::platform platformB(std::move(platformA));
 
         if (selector.is_host() != platformB.is_host()) {
           FAIL(log, "platform was not move constructed correctly (is_host)");
@@ -100,8 +100,8 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB = std::move(platformA);
+        sycl::platform platformA(selector);
+        sycl::platform platformB = std::move(platformA);
 
         if (selector.is_host() != platformB.is_host()) {
           FAIL(log, "platform was not move assigned correctly (is_host)");
@@ -112,9 +112,9 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB = platformA;
-        cl::sycl::platform platformC(selector);
+        sycl::platform platformA(selector);
+        sycl::platform platformB = platformA;
+        sycl::platform platformC(selector);
         platformC = platformA;
 
         if (!(platformA == platformB)) {
@@ -141,11 +141,11 @@ class TEST_NAME : public util::test_base {
        */
       {
         cts_selector selector;
-        cl::sycl::platform platformA(selector);
-        cl::sycl::platform platformB = platformA;
-        cl::sycl::platform platformC(platformA);
+        sycl::platform platformA(selector);
+        sycl::platform platformB = platformA;
+        sycl::platform platformC(platformA);
 
-        cl::sycl::hash_class<cl::sycl::platform> hasher;
+        std::hash<sycl::platform> hasher;
 
         if (hasher(platformA) != hasher(platformB)) {
           FAIL(
@@ -158,10 +158,10 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -10,10 +10,10 @@
 #define SYCL_CONFORMANCE_SUITE_MATH_VECTOR_H
 
 template <typename T, int dim>
-T getElement(const cl::sycl::vec<T, dim> f, int ix);
+T getElement(const sycl::vec<T, dim> f, int ix);
 
 template <typename T, int dim>
-void setElement(const cl::sycl::vec<T, dim> &f, int ix, T value);
+void setElement(const sycl::vec<T, dim> &f, int ix, T value);
 
 #define CASE_GET_ELEMENT(NUM, COMPONENT) \
   case NUM:                              \
@@ -26,13 +26,13 @@ void setElement(const cl::sycl::vec<T, dim> &f, int ix, T value);
 
 template <typename T, int dim>
 struct getComponent {
-  T &operator()(cl::sycl::vec<T, dim> &f, int number) = delete;
+  T &operator()(sycl::vec<T, dim> &f, int number) = delete;
 };
 
 template <typename T>
 struct getComponent<T, 1> {
   static const unsigned dim = 1;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) {
+  T operator()(sycl::vec<T, dim> &f, int number) {
     switch (number) {
       CASE_GET_ELEMENT(0, 0);
       default:
@@ -44,7 +44,7 @@ struct getComponent<T, 1> {
 template <typename T>
 struct getComponent<T, 2> {
   static const unsigned dim = 2;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) {
+  T operator()(sycl::vec<T, dim> &f, int number) {
     switch (number) {
       CASE_GET_ELEMENT(0, 0);
       CASE_GET_ELEMENT(1, 1);
@@ -57,7 +57,7 @@ struct getComponent<T, 2> {
 template <typename T>
 struct getComponent<T, 3> {
   static const unsigned dim = 3;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) {
+  T operator()(sycl::vec<T, dim> &f, int number) {
     switch (number) {
       CASE_GET_ELEMENT(0, 0);
       CASE_GET_ELEMENT(1, 1);
@@ -71,7 +71,7 @@ struct getComponent<T, 3> {
 template <typename T>
 struct getComponent<T, 4> {
   static const unsigned dim = 4;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) const {
+  T operator()(sycl::vec<T, dim> &f, int number) const {
     switch (number) {
       CASE_GET_ELEMENT(0, 0)
       CASE_GET_ELEMENT(1, 1);
@@ -86,7 +86,7 @@ struct getComponent<T, 4> {
 template <typename T>
 struct getComponent<T, 8> {
   static const unsigned dim = 8;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) const {
+  T operator()(sycl::vec<T, dim> &f, int number) const {
     switch (number) {
       CASE_GET_ELEMENT(0, 0)
       CASE_GET_ELEMENT(1, 1);
@@ -105,7 +105,7 @@ struct getComponent<T, 8> {
 template <typename T>
 struct getComponent<T, 16> {
   static const unsigned dim = 16;
-  T operator()(cl::sycl::vec<T, dim> &f, int number) const {
+  T operator()(sycl::vec<T, dim> &f, int number) const {
     switch (number) {
       CASE_GET_ELEMENT(0, 0)
       CASE_GET_ELEMENT(1, 1);
@@ -131,13 +131,25 @@ struct getComponent<T, 16> {
 
 template <typename T, int dim>
 struct setComponent {
-  T &operator()(cl::sycl::vec<T, dim> &f, int number) const = delete;
+  T &operator()(sycl::vec<T, dim> &f, int number) const = delete;
+};
+
+template <typename T>
+struct setComponent<T, 1> {
+  static const unsigned dim = 1;
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
+    switch (number) {
+      CASE_SET_ELEMENT(0, 0, value)
+      default:
+        break;
+    }
+  }
 };
 
 template <typename T>
 struct setComponent<T, 2> {
   static const unsigned dim = 2;
-  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {
       CASE_SET_ELEMENT(0, 0, value)
       CASE_SET_ELEMENT(1, 1, value);
@@ -150,7 +162,7 @@ struct setComponent<T, 2> {
 template <typename T>
 struct setComponent<T, 3> {
   static const unsigned dim = 3;
-  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {
       CASE_SET_ELEMENT(0, 0, value)
       CASE_SET_ELEMENT(1, 1, value);
@@ -164,7 +176,7 @@ struct setComponent<T, 3> {
 template <typename T>
 struct setComponent<T, 4> {
   static const unsigned dim = 4;
-  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {
       CASE_SET_ELEMENT(0, 0, value)
       CASE_SET_ELEMENT(1, 1, value);
@@ -179,7 +191,7 @@ struct setComponent<T, 4> {
 template <typename T>
 struct setComponent<T, 8> {
   static const unsigned dim = 8;
-  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {
       CASE_SET_ELEMENT(0, 0, value)
       CASE_SET_ELEMENT(1, 1, value);
@@ -198,7 +210,7 @@ struct setComponent<T, 8> {
 template <typename T>
 struct setComponent<T, 16> {
   static const unsigned dim = 16;
-  void operator()(cl::sycl::vec<T, dim> &f, int number, T value) const {
+  void operator()(sycl::vec<T, dim> &f, int number, T value) const {
     switch (number) {
       CASE_SET_ELEMENT(0, 0, value)
       CASE_SET_ELEMENT(1, 1, value);
@@ -226,12 +238,12 @@ struct setComponent<T, 16> {
 #undef CASE_SET_ELEMENT
 
 template <typename T, int dim>
-T getElement(cl::sycl::vec<T, dim> f, int ix) {
+T getElement(sycl::vec<T, dim> f, int ix) {
   return getComponent<T, dim>()(f, ix);
 }
 
 template <typename T, int dim>
-void setElement(cl::sycl::vec<T, dim> &f, int ix, T value) {
+void setElement(sycl::vec<T, dim> &f, int ix, T value) {
   setComponent<T, dim>()(f, ix, value);
 }
 

@@ -10,7 +10,7 @@
 
 #define TEST_NAME nd_range_constructors
 
-namespace nd_range_constructors__ {
+namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 /**
@@ -19,39 +19,67 @@ using namespace sycl_cts;
  * @return nd_range<dim> object with default values
  */
 template <int dim>
-inline cl::sycl::nd_range<dim> get_default_nd_range() {
+inline sycl::nd_range<dim> get_default_nd_range() {
   const auto range = util::get_cts_object::range<dim>::get(1, 1, 1);
-  return cl::sycl::nd_range<dim>(range, range);
+  return sycl::nd_range<dim>(range, range);
 }
 
 template <int dim>
-void test_nd_range_constructors(util::logger &log, cl::sycl::range<dim> gs,
-                                cl::sycl::range<dim> ls,
-                                cl::sycl::id<dim> offset) {
-  cl::sycl::nd_range<dim> no_offset(gs, ls);
-  cl::sycl::nd_range<dim> deep_copy(no_offset);
-  cl::sycl::nd_range<dim> with_offset(gs, ls, offset);
-  cl::sycl::nd_range<dim> deep_copy_offset(with_offset);
+void test_nd_range_constructors(util::logger &log, sycl::range<dim> gs,
+                                sycl::range<dim> ls,
+                                sycl::id<dim> offset) {
+  sycl::nd_range<dim> no_offset(gs, ls);
+  sycl::nd_range<dim> with_offset(gs, ls, offset);
 
   {  // Copy assignment, no offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = no_offset;
+
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Copy assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = with_offset;
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, defaultRange.get_offset()[i], offset[i], i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Move assignment, no offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(no_offset);
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+
+      CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
+      CHECK_VALUE(log, defaultRange.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
   {  // Move assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(with_offset);
+    for (int i = 0; i < dim; i++) {
+      CHECK_VALUE(log, with_offset.get_global_range()[i], gs[i], i);
+      CHECK_VALUE(log, with_offset.get_local_range()[i], ls[i], i);
+      CHECK_VALUE(log, with_offset.get_offset()[i], offset[i], i);
+      CHECK_VALUE(log, with_offset.get_group_range()[i],
+                 gs[i] / ls[i], i);
+    }
   }
 }
 
-/** test cl::sycl::nd_range initialization
+/** test sycl::nd_range initialization
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -64,38 +92,38 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    const size_t sizes[] = {16, 32, 64};
+    constexpr size_t sizes[] = {16, 32, 64};
 
     try {
       // global size to be set to the size
-      cl::sycl::range<1> gs_1d(sizes[0]);
+      sycl::range<1> gs_1d(sizes[0]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<1> ls_1d(sizes[0] / 4u);
+      sycl::range<1> ls_1d(sizes[0] / 4u);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::id<1> offset_1d(sizes[0] / 8u);
+      sycl::id<1> offset_1d(sizes[0] / 8u);
       test_nd_range_constructors(log, gs_1d, ls_1d, offset_1d);
 
       // global size to be set to the size
-      cl::sycl::range<2> gs_2d(sizes[0], sizes[1]);
+      sycl::range<2> gs_2d(sizes[0], sizes[1]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<2> ls_2d(sizes[0] / 4u, sizes[1] / 4u);
+      sycl::range<2> ls_2d(sizes[0] / 4u, sizes[1] / 4u);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::range<2> range_2d(sizes[0] / 8u, sizes[1] / 8u);
-      cl::sycl::id<2> offset_2d(range_2d);
+      sycl::range<2> range_2d(sizes[0] / 8u, sizes[1] / 8u);
+      sycl::id<2> offset_2d(range_2d);
       test_nd_range_constructors(log, gs_2d, ls_2d, offset_2d);
 
       // global size to be set to the size
-      cl::sycl::range<3> gs_3d(sizes[0], sizes[1], sizes[2]);
+      sycl::range<3> gs_3d(sizes[0], sizes[1], sizes[2]);
       // local size to be set to 1/4 of the sizes
-      cl::sycl::range<3> ls_3d(sizes[0] / 4, sizes[1] / 4, sizes[2] / 4);
+      sycl::range<3> ls_3d(sizes[0] / 4, sizes[1] / 4, sizes[2] / 4);
       // offset to be set to 1/8 of the sizes
-      cl::sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
-      cl::sycl::id<3> offset_3d(range_3d);
+      sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
+      sycl::id<3> offset_3d(range_3d);
       test_nd_range_constructors(log, gs_3d, ls_3d, offset_3d);
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

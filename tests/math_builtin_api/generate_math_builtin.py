@@ -15,7 +15,7 @@ from modules import test_generator
 
 class runner:
     def __init__(self):
-        self.base_types = ["float", "double", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t", "cl::sycl::half"]
+        self.base_types = ["float", "double", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t", "sycl::half"]
         self.var_types = ["scalar","vector"]
         self.dimensions = [1,2,3,4,8,16]
         self.unsigned = [True, False]
@@ -39,7 +39,7 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
 
     # Execute the tests if the extensions are supported by target device.
     if extension:
-        checkPoint = "\n\nif(once_per_unit::get_queue().get_device().has_extension(\"" + extension + "\")){\n"
+        checkPoint = "\n\nif(once_per_unit::get_queue().get_device().has(sycl::aspect::" + extension + ")){\n"
         generated_test_cases = checkPoint + generated_test_cases + "\n\n}"
 
     newSource = source.replace("$TEST_CASES", generated_test_cases)
@@ -65,7 +65,7 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name, che
         if contains_base_type(sig, types, "double"):
             double_signatures.append(sig)
             continue
-        if contains_base_type(sig, types, "cl::sycl::half"):
+        if contains_base_type(sig, types, "sycl::half"):
             half_signatures.append(sig)
             continue
         base_signatures.append(sig)
@@ -75,10 +75,10 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name, che
         write_cases_to_file(generated_base_test_cases, template, file_name)
     elif half_signatures and kind == 'half':
         generated_half_test_cases = test_generator.generate_test_cases(test_id + 300000, types, half_signatures, check)
-        write_cases_to_file(generated_half_test_cases, template, file_name, "cl_khr_fp16")
+        write_cases_to_file(generated_half_test_cases, template, file_name, "fp16")
     elif double_signatures and kind == 'double':
         generated_double_test_cases = test_generator.generate_test_cases(test_id + 600000, types, double_signatures, check)
-        write_cases_to_file(generated_double_test_cases, template, file_name, "cl_khr_fp64")
+        write_cases_to_file(generated_double_test_cases, template, file_name, "fp64")
     else:
         print("No %s overloads to generate for the test category" % kind)
         sys.exit(1)

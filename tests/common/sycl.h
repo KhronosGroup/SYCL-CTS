@@ -21,4 +21,8 @@
 #include <CL/sycl.hpp>
 #endif
 
+// TODO: Switch to canonical <sycl/sycl.hpp> header
+// once CTS has been fully converted to ::sycl namespace
+namespace sycl = ::sycl;
+
 #endif  // __SYCLCTS_TESTS_COMMON_H

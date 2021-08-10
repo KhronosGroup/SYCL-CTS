@@ -11,7 +11,7 @@ import sys
 import argparse
 from string import Template
 sys.path.append('../common/')
-from common_python_vec import (get_standard_and_fixed_width_types, make_swizzles_tests)
+from common_python_vec import (get_types, make_swizzles_tests)
 
 def main():
     argparser = argparse.ArgumentParser(
@@ -24,7 +24,7 @@ def main():
         '-type',
         dest='ty',
         required=True,
-        choices=get_standard_and_fixed_width_types(),
+        choices=get_types(),
         help='Type to generate the test for')
     argparser.add_argument(
         '-o',

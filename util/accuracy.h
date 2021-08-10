@@ -24,11 +24,11 @@ template <typename T> T get_ulp_std(T x) {
   return std::fmin(negative, positive);
 }
 template <>
-inline cl::sycl::half get_ulp_std<cl::sycl::half>(cl::sycl::half x) {
+inline sycl::half get_ulp_std<sycl::half>(sycl::half x) {
   const auto ulp = get_ulp_std<float>(x);
   const float multiplier = 8192.0f;
   // Multiplier is set according to the difference in precision
-  return static_cast<cl::sycl::half>(ulp * multiplier);
+  return static_cast<sycl::half>(ulp * multiplier);
 }
 /**
  * @brief Provides ulp(x) by definition given in OpenCL 1.2 rev. 19, 7.4
@@ -37,16 +37,16 @@ inline cl::sycl::half get_ulp_std<cl::sycl::half>(cl::sycl::half x) {
  */
 template <typename T> T get_ulp_sycl(T x) {
   const T inf = std::numeric_limits<T>::infinity();
-  const T negative = cl::sycl::fabs(cl::sycl::nextafter(x, -inf) - x);
-  const T positive = cl::sycl::fabs(cl::sycl::nextafter(x, inf) - x);
-  return cl::sycl::fmin(negative, positive);
+  const T negative = sycl::fabs(sycl::nextafter(x, -inf) - x);
+  const T positive = sycl::fabs(sycl::nextafter(x, inf) - x);
+  return sycl::fmin(negative, positive);
 }
 template <>
-inline cl::sycl::half get_ulp_sycl<cl::sycl::half>(cl::sycl::half x) {
+inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   const auto ulp = get_ulp_sycl<float>(x);
   const float multiplier = 8192.0f;
   // Multiplier is set according to the difference in precision
-  return static_cast<cl::sycl::half>(ulp * multiplier);
+  return static_cast<sycl::half>(ulp * multiplier);
 }
 
 #endif // __SYCLCTS_UTIL_ACCURACY_H

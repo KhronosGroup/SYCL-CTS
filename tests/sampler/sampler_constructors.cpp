@@ -15,13 +15,13 @@ using namespace sycl_cts;
 
 /** Create a default sampler object
  */
-cl::sycl::sampler defaultSampler() {
-  return cl::sycl::sampler(
-      cl::sycl::coordinate_normalization_mode::unnormalized,
-      cl::sycl::addressing_mode::clamp, cl::sycl::filtering_mode::nearest);
+sycl::sampler defaultSampler() {
+  return sycl::sampler(
+      sycl::coordinate_normalization_mode::unnormalized,
+      sycl::addressing_mode::clamp, sycl::filtering_mode::nearest);
 }
 
-/** tests the constructors for cl::sycl::sampler
+/** tests the constructors for sycl::sampler
 */
 class TEST_NAME : public util::test_base {
  public:
@@ -39,23 +39,23 @@ class TEST_NAME : public util::test_base {
       * constructor and destructor
       */
       {
-        cl::sycl::sampler sampler(
-            cl::sycl::coordinate_normalization_mode::unnormalized,
-            cl::sycl::addressing_mode::clamp,
-            cl::sycl::filtering_mode::nearest);
+        sycl::sampler sampler(
+            sycl::coordinate_normalization_mode::unnormalized,
+            sycl::addressing_mode::clamp,
+            sycl::filtering_mode::nearest);
 
-        if (sampler.get_addressing_mode() != cl::sycl::addressing_mode::clamp) {
+        if (sampler.get_addressing_mode() != sycl::addressing_mode::clamp) {
           FAIL(log,
                "sampler was not constructed correctly. (get_addressing_mode)");
         }
 
-        if (sampler.get_filtering_mode() != cl::sycl::filtering_mode::nearest) {
+        if (sampler.get_filtering_mode() != sycl::filtering_mode::nearest) {
           FAIL(log,
                "sampler was not constructed correctly. (get_filtering_mode)");
         }
 
         if (sampler.get_coordinate_normalization_mode() !=
-            cl::sycl::coordinate_normalization_mode::unnormalized) {
+            sycl::coordinate_normalization_mode::unnormalized) {
           FAIL(log,
                "sampler was not constructed correctly. "
                "(get_coordinate_normalization_mode)");
@@ -65,8 +65,8 @@ class TEST_NAME : public util::test_base {
       /** check copy constructor
       */
       {
-        cl::sycl::sampler samplerA = defaultSampler();
-        cl::sycl::sampler samplerB(samplerA);
+        sycl::sampler samplerA = defaultSampler();
+        sycl::sampler samplerB(samplerA);
 
         if (samplerA.get_addressing_mode() != samplerB.get_addressing_mode()) {
           FAIL(log,
@@ -91,10 +91,10 @@ class TEST_NAME : public util::test_base {
       /** check assignment operator
       */
       {
-        cl::sycl::sampler samplerA = defaultSampler();
-        cl::sycl::sampler samplerB(
-            cl::sycl::coordinate_normalization_mode::normalized,
-            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
+        sycl::sampler samplerA = defaultSampler();
+        sycl::sampler samplerB(
+            sycl::coordinate_normalization_mode::normalized,
+            sycl::addressing_mode::none, sycl::filtering_mode::linear);
         samplerB = samplerA;
 
         if (samplerA.get_addressing_mode() != samplerB.get_addressing_mode()) {
@@ -116,28 +116,28 @@ class TEST_NAME : public util::test_base {
       /** check move constructor
       */
       {
-        cl::sycl::sampler samplerA(
-            cl::sycl::coordinate_normalization_mode::unnormalized,
-            cl::sycl::addressing_mode::clamp,
-            cl::sycl::filtering_mode::nearest);
-        cl::sycl::sampler samplerB(std::move(samplerA));
+        sycl::sampler samplerA(
+            sycl::coordinate_normalization_mode::unnormalized,
+            sycl::addressing_mode::clamp,
+            sycl::filtering_mode::nearest);
+        sycl::sampler samplerB(std::move(samplerA));
 
         if (samplerB.get_addressing_mode() !=
-            cl::sycl::addressing_mode::clamp) {
+            sycl::addressing_mode::clamp) {
           FAIL(log,
                "sampler was not move constructed correctly. "
                "(get_addressing_mode)");
         }
 
         if (samplerB.get_filtering_mode() !=
-            cl::sycl::filtering_mode::nearest) {
+            sycl::filtering_mode::nearest) {
           FAIL(log,
                "sampler was not move constructed correctly. "
                "(get_filtering_mode)");
         }
 
         if (samplerB.get_coordinate_normalization_mode() !=
-            cl::sycl::coordinate_normalization_mode::unnormalized) {
+            sycl::coordinate_normalization_mode::unnormalized) {
           FAIL(log,
                "sampler was not move constructed correctly. "
                "(get_coordinate_normalization_mode)");
@@ -147,30 +147,30 @@ class TEST_NAME : public util::test_base {
       /** check move assignment operator
       */
       {
-        cl::sycl::sampler samplerA(
-            cl::sycl::coordinate_normalization_mode::unnormalized,
-            cl::sycl::addressing_mode::clamp,
-            cl::sycl::filtering_mode::nearest);
-        cl::sycl::sampler samplerB(
-            cl::sycl::coordinate_normalization_mode::normalized,
-            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
+        sycl::sampler samplerA(
+            sycl::coordinate_normalization_mode::unnormalized,
+            sycl::addressing_mode::clamp,
+            sycl::filtering_mode::nearest);
+        sycl::sampler samplerB(
+            sycl::coordinate_normalization_mode::normalized,
+            sycl::addressing_mode::none, sycl::filtering_mode::linear);
         samplerB = std::move(samplerA);
 
         if (samplerB.get_addressing_mode() !=
-            cl::sycl::addressing_mode::clamp) {
+            sycl::addressing_mode::clamp) {
           FAIL(
               log,
               "sampler was not move assigned correctly. (get_addressing_mode)");
         }
 
         if (samplerB.get_filtering_mode() !=
-            cl::sycl::filtering_mode::nearest) {
+            sycl::filtering_mode::nearest) {
           FAIL(log,
                "sampler was not move assigned correctly. (get_filtering_mode)");
         }
 
         if (samplerB.get_coordinate_normalization_mode() !=
-            cl::sycl::coordinate_normalization_mode::unnormalized) {
+            sycl::coordinate_normalization_mode::unnormalized) {
           FAIL(log,
                "sampler was not move assigned correctly. "
                "(get_coordinate_normalization_mode)");
@@ -180,15 +180,15 @@ class TEST_NAME : public util::test_base {
       /* check equality operator
       */
       {
-        cl::sycl::sampler samplerA = defaultSampler();
-        cl::sycl::sampler samplerB(samplerA);
-        cl::sycl::sampler samplerC(
-            cl::sycl::coordinate_normalization_mode::normalized,
-            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
+        sycl::sampler samplerA = defaultSampler();
+        sycl::sampler samplerB(samplerA);
+        sycl::sampler samplerC(
+            sycl::coordinate_normalization_mode::normalized,
+            sycl::addressing_mode::none, sycl::filtering_mode::linear);
         samplerC = samplerA;
-        cl::sycl::sampler samplerD(
-            cl::sycl::coordinate_normalization_mode::normalized,
-            cl::sycl::addressing_mode::none, cl::sycl::filtering_mode::linear);
+        sycl::sampler samplerD(
+            sycl::coordinate_normalization_mode::normalized,
+            sycl::addressing_mode::none, sycl::filtering_mode::linear);
 
         if (!(samplerA == samplerB) &&
             ((samplerA.get_addressing_mode() !=
@@ -233,11 +233,11 @@ class TEST_NAME : public util::test_base {
       /* check hashing
       */
       {
-        cl::sycl::hash_class<cl::sycl::sampler> hasher;
+        std::hash<sycl::sampler> hasher;
 
-        cl::sycl::sampler samplerA = defaultSampler();
+        sycl::sampler samplerA = defaultSampler();
         auto hashA = hasher(samplerA);
-        cl::sycl::sampler samplerB = std::move(samplerA);
+        sycl::sampler samplerB = std::move(samplerA);
 
         if (hashA != hasher(samplerB)) {
           FAIL(log,
@@ -245,10 +245,10 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
       }
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
+      std::string errorMsg =
+          "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg.c_str());
     }
   }

@@ -29,18 +29,18 @@ class TEST_NAME : public util::test_base {
     try {
       auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has_extension("cl_khr_fp16")) {
+      if (!queue.get_device().has(sycl::aspect::fp16)) {
         log.note(
           "Device does not support half precision floating point operations");
         return;
       }
       // Test using queue constructed already
-      for_type_and_vectors<check_type, cl::sycl::half>(queue, log,
-          "cl::sycl::half");
-      for_type_and_vectors<check_type, cl::sycl::cl_half>(queue, log,
-          "cl::sycl::cl_half");
+      for_type_and_vectors<check_type, sycl::half>(queue, log,
+          "sycl::half");
+      for_type_and_vectors<check_type, sycl::cl_half>(queue, log,
+          "sycl::cl_half");
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
       FAIL(log, errorMsg);

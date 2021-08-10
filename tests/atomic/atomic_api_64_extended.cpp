@@ -8,32 +8,35 @@
 
 #include "../common/common.h"
 #include "atomic_api_common.h"
-#include <sstream>
+
+#include <climits>
+#include <string>
 
 #define TEST_NAME atomic_api_64_extended
 
 namespace TEST_NAMESPACE {
 
+using namespace atomic_api_common;
 using namespace sycl_cts;
 
 /** Check extended atomic operations
-*/
-template <typename T, cl::sycl::access::target target>
+ */
+template <typename T, sycl::target target>
 class check_extended_atomics {
-  cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> m_acc;
+  sycl::accessor<T, 1, sycl::access_mode::atomic, target> m_acc;
 
  public:
   check_extended_atomics(
-      cl::sycl::accessor<T, 1, cl::sycl::access::mode::atomic, target> acc)
+      sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {
     static constexpr auto addressSpace = target_map<target>::addressSpace;
-    cl::sycl::memory_order order = cl::sycl::memory_order::relaxed;
-    cl::sycl::atomic<T, addressSpace> a = m_acc[0];
+    sycl::memory_order order = sycl::memory_order::relaxed;
+    sycl::atomic<T, addressSpace> a = m_acc[0];
 
     /** Check atomic member functions with default order
-    */
+     */
     T old = a.load();
     (void)old;
     old = a.fetch_and(T{0xFFFFFFFF});
@@ -43,7 +46,7 @@ class check_extended_atomics {
     old = a.fetch_max(T{0});
 
     /** Check atomic member functions
-    */
+     */
     old = a.load(order);
     old = a.fetch_and(T{0xFFFFFFFF}, order);
     old = a.fetch_or(T{0}, order);
@@ -52,75 +55,68 @@ class check_extended_atomics {
     old = a.fetch_max(T{0}, order);
 
     /** Check atomic global functions with default order
-    */
-    old = cl::sycl::atomic_load(a);
-    old = cl::sycl::atomic_fetch_and(a, T{0xFFFFFFFF});
-    old = cl::sycl::atomic_fetch_or(a, T{0});
-    old = cl::sycl::atomic_fetch_xor(a, T{0xFFFFFFFE});
-    old = cl::sycl::atomic_fetch_min(a, T{0xFFFFFFFF});
-    old = cl::sycl::atomic_fetch_max(a, T{0});
+     */
+    old = sycl::atomic_load(a);
+    old = sycl::atomic_fetch_and(a, T{0xFFFFFFFF});
+    old = sycl::atomic_fetch_or(a, T{0});
+    old = sycl::atomic_fetch_xor(a, T{0xFFFFFFFE});
+    old = sycl::atomic_fetch_min(a, T{0xFFFFFFFF});
+    old = sycl::atomic_fetch_max(a, T{0});
 
     /** Check atomic global functions
-    */
-    old = cl::sycl::atomic_load(a, order);
-    old = cl::sycl::atomic_fetch_and(a, T{0xFFFFFFFF}, order);
-    old = cl::sycl::atomic_fetch_or(a, T{0}, order);
-    old = cl::sycl::atomic_fetch_xor(a, T{0xFFFFFFFE}, order);
-    old = cl::sycl::atomic_fetch_min(a, T{0xFFFFFFFF}, order);
-    old = cl::sycl::atomic_fetch_max(a, T{0}, order);
+     */
+    old = sycl::atomic_load(a, order);
+    old = sycl::atomic_fetch_and(a, T{0xFFFFFFFF}, order);
+    old = sycl::atomic_fetch_or(a, T{0}, order);
+    old = sycl::atomic_fetch_xor(a, T{0xFFFFFFFE}, order);
+    old = sycl::atomic_fetch_min(a, T{0xFFFFFFFF}, order);
+    old = sycl::atomic_fetch_max(a, T{0}, order);
   }
 };
 
-/** Check the api for cl::sycl::atomic
-*/
+/** Check the api for sycl::atomic
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** Return information about this test
-    */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  template <typename T,
-            typename std::enable_if<sizeof(T) == 8>::type * = nullptr>
-  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
+  template <typename T>
+  void check_atomics_for_type(util::logger &log, sycl::queue testQueue) {
     return generic_check_for_atomics<T, check_extended_atomics>(log, testQueue);
   }
 
-  template <typename T,
-            typename std::enable_if<sizeof(T) != 8>::type * = nullptr>
-  void check_atomics_for_type(util::logger &log, cl::sycl::queue testQueue) {
-    // generic_check_for_atomics assumes a 64-bit T type.
-    return;
-  }
-
   /** Execute the test
-    */
+   */
   void run(util::logger &log) override {
     try {
       auto testQueue = util::get_cts_object::queue();
       auto testDevice = testQueue.get_device();
 
-      /** Check cl::sycl::memory_order
-      */
-      check_enum_class_value(cl::sycl::memory_order::relaxed);
+      /** Check sycl::memory_order
+       */
+      check_enum_class_value(sycl::memory_order::relaxed);
 
       /** Check atomics for supported types
-      */
+       */
       if (testDevice.has_extension("cl_khr_int64_extended_atomics")) {
-        check_atomics_for_type<long>(log, testQueue);
-        check_atomics_for_type<unsigned long>(log, testQueue);
+        if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
+          check_atomics_for_type<long>(log, testQueue);
+          check_atomics_for_type<unsigned long>(log, testQueue);
+        }
         check_atomics_for_type<long long>(log, testQueue);
         check_atomics_for_type<unsigned long long>(log, testQueue);
       }
 
       testQueue.wait_and_throw();
 
-    } catch (const cl::sycl::exception &e) {
+    } catch (const sycl::exception &e) {
       log_exception(log, e);
-      cl::sycl::string_class errorMsg =
-          "a SYCL exception was caught: " + cl::sycl::string_class(e.what());
-      FAIL(log, errorMsg.c_str());
+      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
+      FAIL(log, errorMsg);
     }
   }
 };
@@ -128,4 +124,4 @@ class TEST_NAME : public util::test_base {
 // Construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace TEST_NAMESPACE */
+}  // namespace TEST_NAMESPACE
