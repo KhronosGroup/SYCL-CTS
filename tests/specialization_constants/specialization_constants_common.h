@@ -107,6 +107,8 @@ static const auto composite_types =
 
 }  // namespace testing_types
 
+// Flags that used to specify test type (test with kernel bundle or without
+// kernel bundle)
 struct sc_use_kernel_bundle = std::false_type;
 struct sc_no_kernel_bundle = std::false_type;
 
