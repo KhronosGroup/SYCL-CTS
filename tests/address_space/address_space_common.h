@@ -31,8 +31,9 @@ using namespace sycl_cts;
 template <typename T>
 struct address_space_core_kernel {};
 
-template <typename T> class check_types {
-public:
+template <typename T>
+class check_types {
+ public:
   template <sycl::access::address_space kAs>
   struct AddrSpace {
     constexpr T get_value() const { return static_cast<T>(to_integral(kAs)); }
@@ -72,9 +73,9 @@ public:
   }
 
   static bool test_duplication(sycl::global_ptr<T> globalPtr,
-                        sycl::local_ptr<T> localPtr,
-                        sycl::constant_ptr<T> constantPtr,
-                        sycl::private_ptr<T> privPtr) {
+                               sycl::local_ptr<T> localPtr,
+                               sycl::constant_ptr<T> constantPtr,
+                               sycl::private_ptr<T> privPtr) {
     bool result = true;
 
     result &= test_duplication(globalPtr);
@@ -91,9 +92,9 @@ public:
   }
 
   static bool test_return_type_deduction(sycl::global_ptr<T> globalPtr,
-                                  sycl::local_ptr<T> localPtr,
-                                  sycl::constant_ptr<T> constantPtr,
-                                  sycl::private_ptr<T> privPtr) {
+                                         sycl::local_ptr<T> localPtr,
+                                         sycl::constant_ptr<T> constantPtr,
+                                         sycl::private_ptr<T> privPtr) {
     using namespace sycl::access;
 
     // return type deduction
@@ -106,9 +107,9 @@ public:
   }
 
   static bool test_initialization(sycl::global_ptr<T> globalPtr,
-                           sycl::local_ptr<T> localPtr,
-                           sycl::constant_ptr<T> constantPtr,
-                           sycl::private_ptr<T> privPtr) {
+                                  sycl::local_ptr<T> localPtr,
+                                  sycl::constant_ptr<T> constantPtr,
+                                  sycl::private_ptr<T> privPtr) {
     using namespace sycl::access;
 
     T *p1 = globalPtr;
@@ -158,18 +159,15 @@ public:
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];
 
-          pass &= test_duplication(globalAcc.get_pointer(),
-                                   localAcc.get_pointer(),
-                                   constAcc.get_pointer(),
-                                   sycl::private_ptr<T>(&priv));
-          pass &= test_return_type_deduction(globalAcc.get_pointer(),
-                                             localAcc.get_pointer(),
-                                             constAcc.get_pointer(),
-                                             sycl::private_ptr<T>(&priv));
-          pass &= test_initialization(globalAcc.get_pointer(),
-                                      localAcc.get_pointer(),
-                                      constAcc.get_pointer(),
-                                      sycl::private_ptr<T>(&priv));
+          pass &= test_duplication(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+          pass &= test_return_type_deduction(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+          pass &= test_initialization(
+              globalAcc.get_pointer(), localAcc.get_pointer(),
+              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
           resAcc[0] = pass;
         });
       });
@@ -182,8 +180,7 @@ template <typename T>
 void test_types(util::logger &log) {
   try {
     check_types<T> verifier;
-    if (!verifier())
-      FAIL(log, "Device compiler failed address space tests");
+    if (!verifier()) FAIL(log, "Device compiler failed address space tests");
   } catch (const sycl::exception &e) {
     log_exception(log, e);
     auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
@@ -192,7 +189,6 @@ void test_types(util::logger &log) {
   return;
 }
 
-} // namespace TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE
 
-#endif // SYCL_CTS_TESTS_ADDRESS_SPACE_ADDRESS_SPACE_COMMON_H
-
+#endif  // SYCL_CTS_TESTS_ADDRESS_SPACE_ADDRESS_SPACE_COMMON_H

@@ -16,7 +16,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 class TEST_NAME : public sycl_cts::util::test_base {
-public:
+ public:
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
@@ -26,8 +26,7 @@ public:
 
     using availability =
         util::extensions::availability<util::extensions::tag::fp16>;
-    if (!availability::check(queue, log))
-      return;
+    if (!availability::check(queue, log)) return;
 
     test_types<sycl::half>(log);
   }
@@ -35,4 +34,4 @@ public:
 
 util::test_proxy<TEST_NAME> proxy;
 
-} // namespace TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE
