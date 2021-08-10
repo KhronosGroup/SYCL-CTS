@@ -125,8 +125,6 @@ public:
   }
 
   bool operator()() {
-    using namespace sycl::access;
-
     bool pass = false;
 
     std::array<T, 4> ASPValues = {
@@ -145,13 +143,15 @@ public:
       sycl::buffer<T, 1> constantBuff(&ASPValues[1], r);
 
       q.submit([&](sycl::handler &cgh) {
-        auto resAcc = resBuff.get_access<mode::read_write>(cgh);
-        auto initAcc = initBuff.template get_access<mode::read>(cgh);
-        auto globalAcc = globalBuff.template get_access<mode::read>(cgh);
-        sycl::accessor<T, 1, mode::read, target::constant_buffer> constAcc(
+        constexpr auto read_only = sycl::access_mode::read;
+        constexpr auto read_write = sycl::access_mode::read_write;
+
+        auto resAcc = resBuff.get_access<read_write>(cgh);
+        auto initAcc = initBuff.template get_access<read_only>(cgh);
+        auto globalAcc = globalBuff.template get_access<read_only>(cgh);
+        sycl::accessor<T, 1, read_only, sycl::target::constant_buffer> constAcc(
             constantBuff, cgh);
-        sycl::accessor<T, 1, mode::read_write, target::local> localAcc(
-            r, cgh);
+        sycl::accessor<T, 1, read_write, sycl::target::local> localAcc(r, cgh);
 
         cgh.single_task<address_space_core_kernel<T>>([=]() {
           bool pass = true;
