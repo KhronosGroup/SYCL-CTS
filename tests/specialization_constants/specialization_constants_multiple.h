@@ -12,6 +12,7 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "specialization_constants_common.h"
+#include <memory>
 
 template <typename T, int def_val>
 constexpr sycl::specialization_id<T> sc_multiple(
@@ -62,10 +63,12 @@ class check_specialization_constants_multiple_for_type {
     fill_init_values(ref1, val_A);
     fill_init_values(ref2, val_B);
     fill_init_values(ref3, val_C);
-    // to not initialize for struct with no default constructor
-    T *result_vec = (T *)malloc(size * sizeof(T));
+    auto tested_data_smart_storage = std::make_unique<
+        get_spec_const::testing_types::remove_initialization<T>[]>(size);
+    auto result_vec = tested_data_smart_storage.get();
     {
-      sycl::buffer<T, 1> result_buffer(result_vec, sycl::range<1>(size));
+      sycl::buffer<T, 1> result_buffer(result_vec->data(),
+                                       sycl::range<1>(size));
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
             result_buffer.template get_access<sycl::access_mode::write>(cgh);
@@ -110,19 +113,18 @@ class check_specialization_constants_multiple_for_type {
         }
       });
     }
-    if (!check_equal_values(ref1, result_vec[0]) ||
-        !check_equal_values(ref2, result_vec[1]) ||
-        !check_equal_values(ref3, result_vec[2]) ||
+    if (!check_equal_values(ref1, result_vec[0].value) ||
+        !check_equal_values(ref2, result_vec[1].value) ||
+        !check_equal_values(ref3, result_vec[2].value) ||
         !check_equal_values(T(get_init_value_helper<T>(def_values[3])),
-                            result_vec[3]) ||
+                            result_vec[3].value) ||
         !check_equal_values(T(get_init_value_helper<T>(def_values[4])),
-                            result_vec[4]) ||
+                            result_vec[4].value) ||
         !check_equal_values(T(get_init_value_helper<T>(def_values[5])),
-                            result_vec[5]))
+                            result_vec[5].value))
       FAIL(log,
            "multiple spec const for " + type_name_string<T>::get(type_name));
 
-    free(result_vec);
   }
 };
 
