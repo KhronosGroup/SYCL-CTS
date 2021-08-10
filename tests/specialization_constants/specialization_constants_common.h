@@ -87,27 +87,6 @@ class no_def_cnstr {
   }
 };
 
-template <typename T>
-union remove_initialization {
-  using value_type = T;
-  T value;
-  remove_initialization() {}
-
-  operator value_type &() { return value; }
-  operator const value_type &() const { return value; }
-  template <typename T>
-  void operator=(const T &v) {
-    this->value = v;
-  }
-
-  friend bool operator==(const remove_initialization &lhs, const remove_initialization &rhs) {
-    return lhs.value == rhs.value;
-  }
-
-  value_type *data() { return &value; }
-  const value_type *data() const { return &value; }
-};
-
 // C++ fundamental types that will be used in type coverage
 static const auto types = named_type_pack<
     bool, char, signed char, unsigned char, short, unsigned short, int,

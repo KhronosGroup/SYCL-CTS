@@ -12,6 +12,7 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "specialization_constants_common.h"
+#include "../../util/allocation.h"
 #include <memory>
 
 template <typename T, int def_val>
@@ -64,7 +65,7 @@ class check_specialization_constants_multiple_for_type {
     fill_init_values(ref2, val_B);
     fill_init_values(ref3, val_C);
     auto tested_data_smart_storage = std::make_unique<
-        get_spec_const::testing_types::remove_initialization<T>[]>(size);
+        util::remove_initialization<T>[]>(size);
     auto result_vec = tested_data_smart_storage.get();
     {
       sycl::buffer<T, 1> result_buffer(result_vec->data(),

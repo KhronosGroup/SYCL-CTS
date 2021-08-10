@@ -11,6 +11,7 @@
 
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
+#include "../../util/allocation.h"
 #include "specialization_constants_common.h"
 #include "specialization_constants_same_name_stress_helper.h"
 
@@ -59,19 +60,19 @@ class check_specialization_constants_same_name_stress_for_type {
       // Using malloc to not initialize for struct with no default constructor
       // Array of expected default values
       auto ref_def_smart_storage = std::make_unique<
-          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+          util::remove_initialization<T>[]>(size);
       auto ref_def_values_arr = ref_def_smart_storage.get();
       // Array of expected values
       auto ref_arr_smart_storage = std::make_unique<
-          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+          util::remove_initialization<T>[]>(size);
       auto ref_arr = ref_arr_smart_storage.get();
       // Array for real default values
       auto def_values_arr_smart_storage = std::make_unique<
-          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+          util::remove_initialization<T>[]>(size);
       auto def_values_arr = def_values_arr_smart_storage.get();
       // Array for real values
       auto result_arr_smart_storage = std::make_unique<
-          get_spec_const::testing_types::remove_initialization<T>[]>(size);
+          util::remove_initialization<T>[]>(size);
       auto result_arr = result_arr_smart_storage.get();
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
