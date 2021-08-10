@@ -109,8 +109,8 @@ static const auto composite_types =
 
 // Flags that used to specify test type (test with kernel bundle or without
 // kernel bundle)
-struct sc_use_kernel_bundle = std::false_type;
-struct sc_no_kernel_bundle = std::false_type;
+using sc_use_kernel_bundle = std::true_type;
+using sc_no_kernel_bundle = std::false_type;
 
 template <typename T>
 inline constexpr auto get_init_value_helper(int x) {
