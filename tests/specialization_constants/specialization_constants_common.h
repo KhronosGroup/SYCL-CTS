@@ -107,12 +107,8 @@ static const auto composite_types =
 
 }  // namespace testing_types
 
-struct sc_use_kernel_bundle {
-  static constexpr bool value = true;
-};
-struct sc_no_kernel_bundle {
-  static constexpr bool value = false;
-};
+struct sc_use_kernel_bundle = std::false_type;
+struct sc_no_kernel_bundle = std::false_type;
 
 template <typename T>
 inline constexpr auto get_init_value_helper(int x) {
