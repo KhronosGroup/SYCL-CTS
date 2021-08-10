@@ -29,7 +29,7 @@ public:
     if (!availability::check(queue, log))
       return;
 
-    test_types<cl::sycl::half>(log);
+    test_types<sycl::half>(log);
   }
 };
 

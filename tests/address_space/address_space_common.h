@@ -33,7 +33,7 @@ struct address_space_core_kernel {};
 
 template <typename T> class check_types {
 public:
-  template <cl::sycl::access::address_space kAs>
+  template <sycl::access::address_space kAs>
   struct AddrSpace {
     constexpr T get_value() const { return static_cast<T>(to_integral(kAs)); }
   };
@@ -57,8 +57,8 @@ public:
     T operator[](T &p) { return p; }
   };
 
-  template <cl::sycl::access::address_space AspSpace>
-  static bool test_duplication(cl::sycl::multi_ptr<T, AspSpace> ptr) {
+  template <sycl::access::address_space AspSpace>
+  static bool test_duplication(sycl::multi_ptr<T, AspSpace> ptr) {
     EXPECT_ADDRSPACE_EQUALS(readValue(ptr), AspSpace);
     EXPECT_ADDRSPACE_EQUALS(readValue(*ptr), AspSpace);
 
@@ -71,10 +71,10 @@ public:
     return true;
   }
 
-  static bool test_duplication(cl::sycl::global_ptr<T> globalPtr,
-                        cl::sycl::local_ptr<T> localPtr,
-                        cl::sycl::constant_ptr<T> constantPtr,
-                        cl::sycl::private_ptr<T> privPtr) {
+  static bool test_duplication(sycl::global_ptr<T> globalPtr,
+                        sycl::local_ptr<T> localPtr,
+                        sycl::constant_ptr<T> constantPtr,
+                        sycl::private_ptr<T> privPtr) {
     bool result = true;
 
     result &= test_duplication(globalPtr);
@@ -85,16 +85,16 @@ public:
     return result;
   }
 
-  template <cl::sycl::access::address_space AspSpace>
-  static T *id(cl::sycl::multi_ptr<T, AspSpace> p) {
+  template <sycl::access::address_space AspSpace>
+  static T *id(sycl::multi_ptr<T, AspSpace> p) {
     return p;
   }
 
-  static bool test_return_type_deduction(cl::sycl::global_ptr<T> globalPtr,
-                                  cl::sycl::local_ptr<T> localPtr,
-                                  cl::sycl::constant_ptr<T> constantPtr,
-                                  cl::sycl::private_ptr<T> privPtr) {
-    using namespace cl::sycl::access;
+  static bool test_return_type_deduction(sycl::global_ptr<T> globalPtr,
+                                  sycl::local_ptr<T> localPtr,
+                                  sycl::constant_ptr<T> constantPtr,
+                                  sycl::private_ptr<T> privPtr) {
+    using namespace sycl::access;
 
     // return type deduction
     EXPECT_ADDRSPACE_EQUALS(*id(globalPtr), address_space::global_space);
@@ -105,11 +105,11 @@ public:
     return true;
   }
 
-  static bool test_initialization(cl::sycl::global_ptr<T> globalPtr,
-                           cl::sycl::local_ptr<T> localPtr,
-                           cl::sycl::constant_ptr<T> constantPtr,
-                           cl::sycl::private_ptr<T> privPtr) {
-    using namespace cl::sycl::access;
+  static bool test_initialization(sycl::global_ptr<T> globalPtr,
+                           sycl::local_ptr<T> localPtr,
+                           sycl::constant_ptr<T> constantPtr,
+                           sycl::private_ptr<T> privPtr) {
+    using namespace sycl::access;
 
     T *p1 = globalPtr;
     T *p2 = localPtr;
@@ -125,7 +125,7 @@ public:
   }
 
   bool operator()() {
-    using namespace cl::sycl::access;
+    using namespace sycl::access;
 
     bool pass = false;
 
@@ -138,19 +138,19 @@ public:
     auto q = util::get_cts_object::queue();
 
     {
-      auto r = cl::sycl::range<1>(1);
-      cl::sycl::buffer<bool, 1> resBuff(&pass, r);
-      cl::sycl::buffer<T, 1> initBuff(ASPValues.data(), ASPValues.size());
-      cl::sycl::buffer<T, 1> globalBuff(&ASPValues[0], r);
-      cl::sycl::buffer<T, 1> constantBuff(&ASPValues[1], r);
+      auto r = sycl::range<1>(1);
+      sycl::buffer<bool, 1> resBuff(&pass, r);
+      sycl::buffer<T, 1> initBuff(ASPValues.data(), ASPValues.size());
+      sycl::buffer<T, 1> globalBuff(&ASPValues[0], r);
+      sycl::buffer<T, 1> constantBuff(&ASPValues[1], r);
 
-      q.submit([&](cl::sycl::handler &cgh) {
+      q.submit([&](sycl::handler &cgh) {
         auto resAcc = resBuff.get_access<mode::read_write>(cgh);
         auto initAcc = initBuff.template get_access<mode::read>(cgh);
         auto globalAcc = globalBuff.template get_access<mode::read>(cgh);
-        cl::sycl::accessor<T, 1, mode::read, target::constant_buffer> constAcc(
+        sycl::accessor<T, 1, mode::read, target::constant_buffer> constAcc(
             constantBuff, cgh);
-        cl::sycl::accessor<T, 1, mode::read_write, target::local> localAcc(
+        sycl::accessor<T, 1, mode::read_write, target::local> localAcc(
             r, cgh);
 
         cgh.single_task<address_space_core_kernel<T>>([=]() {
@@ -161,15 +161,15 @@ public:
           pass &= test_duplication(globalAcc.get_pointer(),
                                    localAcc.get_pointer(),
                                    constAcc.get_pointer(),
-                                   cl::sycl::private_ptr<T>(&priv));
+                                   sycl::private_ptr<T>(&priv));
           pass &= test_return_type_deduction(globalAcc.get_pointer(),
                                              localAcc.get_pointer(),
                                              constAcc.get_pointer(),
-                                             cl::sycl::private_ptr<T>(&priv));
+                                             sycl::private_ptr<T>(&priv));
           pass &= test_initialization(globalAcc.get_pointer(),
                                       localAcc.get_pointer(),
                                       constAcc.get_pointer(),
-                                      cl::sycl::private_ptr<T>(&priv));
+                                      sycl::private_ptr<T>(&priv));
           resAcc[0] = pass;
         });
       });
@@ -184,7 +184,7 @@ void test_types(util::logger &log) {
     check_types<T> verifier;
     if (!verifier())
       FAIL(log, "Device compiler failed address space tests");
-  } catch (const cl::sycl::exception &e) {
+  } catch (const sycl::exception &e) {
     log_exception(log, e);
     auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
     FAIL(log, errorMsg);
