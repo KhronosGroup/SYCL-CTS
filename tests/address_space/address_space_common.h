@@ -126,6 +126,8 @@ class check_types {
   }
 
   bool operator()() {
+    using namespace sycl::access;
+
     bool pass = false;
 
     std::array<T, 4> ASPValues = {
