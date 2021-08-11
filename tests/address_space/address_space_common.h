@@ -39,9 +39,9 @@ class check_types {
     constexpr T get_value() const { return static_cast<T>(to_integral(kAs)); }
   };
 
-  // the parameter has no address space specification, so it'll
+  // The parameter has no address space specification, so it'll
   // get duplicated based on the argument's address space
-  // it should call the appropiate overload of f(), and that will
+  // it should call the appropriate overload of f(), and that will
   // tell us the address space the parameter was in
 
   static T readValue(T *p) { return *p; }
