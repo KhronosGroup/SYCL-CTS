@@ -249,6 +249,18 @@ bool check_equal_values(const sycl::vec<T, numElements>& lhs,
   return result;
 }
 
+/**
+ * @brief Instantiation for marray with the same API as for scalar values
+ */
+template <typename T, std::size_t numElements>
+bool check_equal_values(const sycl::marray<T, numElements>& lhs,
+                        const sycl::marray<T, numElements>& rhs) {
+  auto perElement = lhs == rhs;
+  return std::all_of(perElement.begin(), perElement.end(), [](bool el){
+    return el;
+  });
+}
+
 /** helper function for retrieving an event from a submitted kernel
  */
 template <typename kernelT>
