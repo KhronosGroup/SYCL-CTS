@@ -18,7 +18,7 @@ namespace gsc = get_spec_const;
 namespace spec_const_help {
 
 enum class sc_st_id : int {
-  glob,
+  glob = 0,
   outer,
   outer_inner,
   outer_unnamed,
