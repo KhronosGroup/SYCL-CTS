@@ -2,7 +2,9 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Common expected exceptions catching for specialization constants
+//  Common expected exceptions catching for specialization constants. In this
+//  tests we add error message that check exception's type, but the exception
+//  logging in higher level.
 //
 *******************************************************************************/
 
@@ -22,6 +24,8 @@ class check_spec_constant_except_catch_for_type {
  public:
   void operator()(sycl_cts::util::logger &log, const std::string &type_name) {
     using namespace get_spec_const;
+    const std::string err_message_prefix{
+        "unexpected SYCL exception was caught in case "};
 
     // case 1: Try to get specialization constant via handler that bound to a
     // kernel_bundle
