@@ -12,6 +12,7 @@
 namespace sycl_cts {
 namespace util {
 
+// Use a union to avoid calling variable ​"value"'s default constructor
 template <typename T>
 union remove_initialization {
   using value_type = T;
