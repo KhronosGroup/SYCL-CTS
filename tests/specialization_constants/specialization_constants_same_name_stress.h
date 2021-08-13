@@ -55,25 +55,18 @@ class check_specialization_constants_same_name_stress_for_type {
         }
       }
       // Size for result arrays
-      std::size_t size = to_integral(sc_st_id::SIZE);
+      constexpr auto size = static_cast<size_t>(sc_st_id::SIZE);
       sycl::range<1> range(size);
       // Using malloc to not initialize for struct with no default constructor
       // Array of expected default values
-      auto ref_def_smart_storage = std::make_unique<
-          util::remove_initialization<T>[]>(size);
-      auto ref_def_values_arr = ref_def_smart_storage.get();
+      util::remove_initialization<T> ref_def_values_arr[size] {};
       // Array of expected values
-      auto ref_arr_smart_storage = std::make_unique<
-          util::remove_initialization<T>[]>(size);
-      auto ref_arr = ref_arr_smart_storage.get();
+      util::remove_initialization<T> ref_arr[size] {};
       // Array for real default values
-      auto def_values_arr_smart_storage = std::make_unique<
-          util::remove_initialization<T>[]>(size);
-      auto def_values_arr = def_values_arr_smart_storage.get();
+      util::remove_initialization<T> def_values_arr[size] {};
       // Array for real values
-      auto result_arr_smart_storage = std::make_unique<
-          util::remove_initialization<T>[]>(size);
-      auto result_arr = result_arr_smart_storage.get();
+      util::remove_initialization<T> result_arr[size] {};
+
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
         fill_init_values(ref_def_values_arr[i], i);
