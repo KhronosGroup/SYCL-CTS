@@ -76,11 +76,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     } catch (const sycl::exception &e) {
       log_exception(log, e);
-      std::string errorMsg =
+      auto errorMsg =
           "a SYCL exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg);
     } catch (const std::exception &e) {
-      std::string errorMsg =
+      auto errorMsg =
           "an exception was caught: " + std::string(e.what());
       FAIL(log, errorMsg);
     }
