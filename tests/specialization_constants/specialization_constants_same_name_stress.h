@@ -11,6 +11,7 @@
 
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
+#include "../../util/allocation.h"
 #include "specialization_constants_common.h"
 #include "specialization_constants_same_name_stress_helper.h"
 
@@ -54,25 +55,26 @@ class check_specialization_constants_same_name_stress_for_type {
         }
       }
       // Size for result arrays
-      std::size_t size = to_integral(sc_st_id::SIZE);
+      constexpr auto size = static_cast<size_t>(sc_st_id::SIZE);
       sycl::range<1> range(size);
       // Using malloc to not initialize for struct with no default constructor
       // Array of expected default values
-      T *ref_def_values_arr = (T *)malloc(size * sizeof(T));
+      util::remove_initialization<T> ref_def_values_arr[size] {};
       // Array of expected values
-      T *ref_arr = (T *)malloc(size * sizeof(T));
+      util::remove_initialization<T> ref_arr[size] {};
       // Array for real default values
-      T *def_values_arr = (T *)malloc(size * sizeof(T));
+      util::remove_initialization<T> def_values_arr[size] {};
       // Array for real values
-      T *result_arr = (T *)malloc(size * sizeof(T));
+      util::remove_initialization<T> result_arr[size] {};
+
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
-        init_values(ref_def_values_arr[i], i);
-        init_values(ref_arr[i], i + static_cast<int>(size));
+        fill_init_values(ref_def_values_arr[i], i);
+        fill_init_values(ref_arr[i], i + static_cast<int>(size));
       }
 
       {
-        sycl::buffer<T, 1> result_buffer(result_arr, range);
+        sycl::buffer<T, 1> result_buffer(result_arr->data(), range);
         queue.submit([&](sycl::handler &cgh) {
           // Kernel name
           using kernel_name = kernel<T, via_kb>;
@@ -142,7 +144,7 @@ class check_specialization_constants_same_name_stress_for_type {
             get_default_and_set(cgh);
             read_from_kernel_handler();
           } else {
-          // Via kernel_bundle
+            // Via kernel_bundle
             auto kernelId = sycl::get_kernel_id<kernel_name>();
             auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
                 ctx, {dev}, {kernelId});
@@ -168,10 +170,6 @@ class check_specialization_constants_same_name_stress_for_type {
                         get_hint(i) + "for type " + type_name);
         }
       }
-      free(ref_def_values_arr);
-      free(ref_arr);
-      free(def_values_arr);
-      free(result_arr);
     } catch (...) {
       std::string message{"for type " + type_name_string<T>::get(type_name)};
       log.note(message);

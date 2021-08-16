@@ -23,11 +23,17 @@ struct no_cnstr {
   float a;
   int b;
   char c;
-};
 
-inline bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
-  return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-}
+  void operator=(const int &v) {
+    this->a = v;
+    this->b = v;
+    this->c = v;
+  }
+
+  friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
+    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+  }
+};
 
 // A user-defined class with several scalar member variables, a user-defined
 //  default constructor, and some member functions that modify the member
@@ -46,7 +52,13 @@ struct def_cnstr {
     c = val;
   }
 
-  friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
+  void operator=(const int &v) {
+    this->a = v * 3.0;
+    this->b = v * 2;
+    this->c = v;
+  }
+
+  inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 };
@@ -66,8 +78,16 @@ class no_def_cnstr {
   friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
+
+  void operator=(const int &v) {
+    no_def_cnstr temp(v);
+    this->a = temp.a;
+    this->b = temp.b;
+    this->c = temp.c;
+  }
 };
 
+// C++ fundamental types that will be used in type coverage
 static const auto types = named_type_pack<
     bool, char, signed char, unsigned char, short, unsigned short, int,
     unsigned int, long, unsigned long, long long, unsigned long long, float,
@@ -80,22 +100,25 @@ static const auto types = named_type_pack<
     "std::int16_t", "std::uint16_t",  "std::int32_t", "std::uint32_t",
     "std::int64_t", "std::uint64_t",  "std::size_t"};
 
+// custom data types that will be used in type coverage
 static const auto composite_types =
     named_type_pack<no_cnstr, def_cnstr, no_def_cnstr>(
         {"no_cnstr", "def_cnstr", "no_def_cnstr"});
 
 }  // namespace testing_types
 
-struct sc_use_kernel_bundle { static constexpr bool value = true; };
-struct sc_no_kernel_bundle { static constexpr bool value = false; };
+// Flags that used to specify test type (test with kernel bundle or without
+// kernel bundle)
+using sc_use_kernel_bundle = std::true_type;
+using sc_no_kernel_bundle = std::false_type;
 
 template <typename T>
-inline constexpr auto value_helper(int x) {
+inline constexpr auto get_init_value_helper(int x) {
   return x;
 }
 
 template <>
-inline constexpr auto value_helper<testing_types::no_cnstr>(int x) {
+inline constexpr auto get_init_value_helper<testing_types::no_cnstr>(int x) {
   testing_types::no_cnstr instance{};
   instance.a = x;
   instance.b = x;
@@ -104,7 +127,7 @@ inline constexpr auto value_helper<testing_types::no_cnstr>(int x) {
 }
 
 template <>
-inline constexpr auto value_helper<testing_types::def_cnstr>(int x) {
+inline constexpr auto get_init_value_helper<testing_types::def_cnstr>(int x) {
   testing_types::def_cnstr instance;
   instance.assign(x);
   return instance;
@@ -113,15 +136,16 @@ inline constexpr auto value_helper<testing_types::def_cnstr>(int x) {
 constexpr int default_val = 20;
 
 template <typename T, int case_num>
-constexpr sycl::specialization_id<T> spec_const(value_helper<T>(default_val));
+constexpr sycl::specialization_id<T> spec_const(
+    get_init_value_helper<T>(default_val));
 
 template <typename T>
-void init_values(T &result, int val) {
-  result = value_helper<T>(val);
+void fill_init_values(T &result, int val) {
+  result = get_init_value_helper<T>(val);
 }
 
 template <typename T, int numElements>
-void init_values(sycl::vec<T, numElements> &result, int val) {
+void fill_init_values(sycl::vec<T, numElements> &result, int val) {
   // Fill manually because sycl::vec does not have iterators
   for (int i = 0; i < numElements; ++i) {
     result[i] = val + i;
@@ -129,11 +153,11 @@ void init_values(sycl::vec<T, numElements> &result, int val) {
 }
 
 template <typename T, std::size_t numElements>
-void init_values(sycl::marray<T, numElements> &result, int val) {
+void fill_init_values(sycl::marray<T, numElements> &result, int val) {
   std::iota(result.begin(), result.end(), val);
 }
 
-enum test_cases_external {
+enum class test_cases_external {
   by_reference_via_handler = 1,
   by_value_via_handler = 2,
   by_reference_via_bundle = 3,
