@@ -40,6 +40,14 @@ endif()
 # ------------------
 
 # ------------------
+# Debug-level verbose logging
+option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
+if(SYCL_CTS_ENABLE_VERBOSE_LOG)
+    add_definitions(-DSYCL_CTS_VERBOSE_LOG)
+endif()
+# ------------------
+
+# ------------------
 # Double and Half variables
 option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
 option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)

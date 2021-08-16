@@ -173,7 +173,7 @@ void for_all_types_and_vectors(const named_type_pack<types...>& typeList,
 
 
 /**
- * @brief Run action for type, vectors amd marrays of this type
+ * @brief Run action for type, vectors and marrays of this type
  * @tparam action Functor template for action to run
  * @tparam T Type to instantiate functor template with
  * @tparam actionArgsT Parameter pack to use for functor template instantiation
@@ -205,7 +205,7 @@ void for_type_vectors_marray(argsT&&... args) {
 }
 
 /**
- * @brief Run action for each of types, vectors amd marrays of types given by
+ * @brief Run action for each of types, vectors and marrays of types given by
  *        named_type_pack instance
  * @tparam action Functor template for action to run
  * @tparam actionArgsT Parameter pack to use for functor template instantiation
