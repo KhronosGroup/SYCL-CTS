@@ -76,7 +76,7 @@ void check_exception_api(util::logger &log) {
 void check_exception_usage(util::logger &log) {
   try {
     auto device = util::get_cts_object::device();
-    const auto partition = info::partition_property::partition_equally;
+    const auto partition = sycl::info::partition_property::partition_equally;
     const size_t count = std::numeric_limits<size_t>::max();
 
     // Either errc::feature_not_supported or errc::invalid should be thrown

@@ -48,14 +48,14 @@ class check_specialization_constants_same_name_inter_link_for_type {
         }
       }
       sycl::range<1> range(1);
-      T def_value = T(value_helper<T>(0));
-      T ref_def_value = T(value_helper<T>(0));
-      T result = T(value_helper<T>(0));
-      T ref = T(value_helper<T>(0));
+      T def_value{get_init_value_helper<T>(0)};
+      T ref_def_value{get_init_value_helper<T>(0)};
+      T result{get_init_value_helper<T>(0)};
+      T ref{get_init_value_helper<T>(0)};
       {
         // Setting ref values according to TU number
-        init_values(ref_def_value, TestConfig::tu);
-        init_values(ref, TestConfig::ref_val);
+        fill_init_values(ref_def_value, TestConfig::tu);
+        fill_init_values(ref, TestConfig::ref_val);
         sycl::buffer<T, 1> result_buffer(&result, range);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -68,8 +68,7 @@ class check_specialization_constants_same_name_inter_link_for_type {
                                                                    {kernelId});
             if (!k_bundle.has_kernel(kernelId)) {
               log.note("kernel_bundle doesn't contain target kernel for " +
-                       type_name_string<T>::get(type_name) +
-                       " (skipped)");
+                       type_name_string<T>::get(type_name) + " (skipped)");
               return;
             }
             // Get default value to make sure the spec const is valid

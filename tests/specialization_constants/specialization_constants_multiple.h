@@ -12,10 +12,11 @@
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "specialization_constants_common.h"
+#include "../../util/allocation.h"
 
 template <typename T, int def_val>
 constexpr sycl::specialization_id<T> sc_multiple(
-    get_spec_const::value_helper<T>(def_val));
+    get_spec_const::get_init_value_helper<T>(def_val));
 
 namespace specialization_constants_multiple {
 using namespace sycl_cts;
@@ -56,16 +57,16 @@ class check_specialization_constants_multiple_for_type {
     int val_A = 5;
     int val_B = 10;
     int val_C = 30;
-    T ref1 = T(value_helper<T>(0));
-    T ref2 = T(value_helper<T>(0));
-    T ref3 = T(value_helper<T>(0));
-    init_values(ref1, val_A);
-    init_values(ref2, val_B);
-    init_values(ref3, val_C);
-    // to not initialize for struct with no default constructor
-    T *result_vec = (T *)malloc(size * sizeof(T));
+    T ref1{get_init_value_helper<T>(0)};
+    T ref2{get_init_value_helper<T>(0)};
+    T ref3{get_init_value_helper<T>(0)};
+    fill_init_values(ref1, val_A);
+    fill_init_values(ref2, val_B);
+    fill_init_values(ref3, val_C);
+    util::remove_initialization<T> result_vec[size] {};
     {
-      sycl::buffer<T, 1> result_buffer(result_vec, sycl::range<1>(size));
+      sycl::buffer<T, 1> result_buffer(result_vec->data(),
+                                       sycl::range<1>(size));
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
             result_buffer.template get_access<sycl::access_mode::write>(cgh);
@@ -74,11 +75,12 @@ class check_specialization_constants_multiple_for_type {
           auto kernelId = sycl::get_kernel_id<sc_kernel_multiple<T, via_kb>>();
           sycl::kernel_bundle k_bundle =
               sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {dev},
-                                                                {kernelId});
-            if (!k_bundle.has_kernel(kernelId)) {
-            log.note("kernel_bundle doesn't contain target kernel;"
-                    "multiple spec const for " +
-                    type_name_string<T>::get(type_name) + "(skipped)");
+                                                                 {kernelId});
+          if (!k_bundle.has_kernel(kernelId)) {
+            log.note(
+                "kernel_bundle doesn't contain target kernel;"
+                "multiple spec const for " +
+                type_name_string<T>::get(type_name) + "(skipped)");
             return;
           }
 
@@ -109,16 +111,18 @@ class check_specialization_constants_multiple_for_type {
         }
       });
     }
-    if (!check_equal_values(ref1, result_vec[0]) ||
-        !check_equal_values(ref2, result_vec[1]) ||
-        !check_equal_values(ref3, result_vec[2]) ||
-        !check_equal_values(T(value_helper<T>(def_values[3])), result_vec[3]) ||
-        !check_equal_values(T(value_helper<T>(def_values[4])), result_vec[4]) ||
-        !check_equal_values(T(value_helper<T>(def_values[5])), result_vec[5]))
+    if (!check_equal_values(ref1, result_vec[0].value) ||
+        !check_equal_values(ref2, result_vec[1].value) ||
+        !check_equal_values(ref3, result_vec[2].value) ||
+        !check_equal_values(T(get_init_value_helper<T>(def_values[3])),
+                            result_vec[3].value) ||
+        !check_equal_values(T(get_init_value_helper<T>(def_values[4])),
+                            result_vec[4].value) ||
+        !check_equal_values(T(get_init_value_helper<T>(def_values[5])),
+                            result_vec[5].value))
       FAIL(log,
            "multiple spec const for " + type_name_string<T>::get(type_name));
 
-    free(result_vec);
   }
 };
 

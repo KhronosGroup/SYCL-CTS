@@ -12,6 +12,10 @@
 #include "stl.h"
 #include "test_base.h"
 
+#include <string>
+#include <string_view>
+#include <type_traits>
+
 namespace sycl_cts {
 namespace util {
 
@@ -62,6 +66,40 @@ class logger {
   /** output verbose information
    */
   void note(const char *fmt, ...);
+
+  /** @brief Output debug information
+   *  @detail Provides output only if the SYCL_CTS_VERBOSE_LOG macro was defined
+   *  during compilation.
+   *  Lambda can be used to make the message construction as lazy as possible.
+   *  Usage examples:
+   *
+   *      log.debug([&]{
+   *        std::string message{"Running test for "};
+   *        message += typeName;
+   *        return message;
+   *      });
+   *      log.debug("Message");
+   *      log.debug("String view instance"sv);
+   *
+   *  @param seed Either lambda returning the message to log or the message
+   *              itself
+   */
+  template <typename seedT>
+  void debug(const seedT &seed) {
+#ifdef SYCL_CTS_VERBOSE_LOG
+    if constexpr (std::is_invocable_v<seedT>) {
+      // Using factory method
+      const std::string message{seed()};
+      note(message);
+    } else {
+      // Using data value
+      const std::string message{seed};
+      note(message);
+    }
+#else
+    static_cast<void>(seed);
+#endif
+  }
 
   /** beginning of a test
    */

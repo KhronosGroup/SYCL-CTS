@@ -1,0 +1,242 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for exceptions
+
+This is a test plan for the APIs described in SYCL 2020 section 4.13.2.
+"Exception class interface"
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+
+== Tests
+
+Every method should be checked for accordance to spec:
+
+* Member function existence
+* Const correctness
+* Type of result
+* Result for `noexcept()` operator
+
+=== namespace sycl functions
+
+==== make_error_code
+
+For every `errc` value check that:
+
+* Result of the call should be equal to `std::error_code(errc)`
+* `error_code::value` is equal to errc value passed
+* `error_code::category` is equal to sycl_category()
+* `error_code::default_error_condition()` is equal to
+  `std::error_condition(errc, sycl::sycl_category())`
+
+==== sycl_category()
+
+For each of the following use-cases:
+
+* using reference of `error_category` retrieved at the function scope
+* using construction of some object instance at global static scope to
+  run checks and save their results for later check in `TEST_NAME::run()`
+
+provide checks under a separate test name:
+
+* `error_category::name()` should return "sycl"
+* For `sycl::errc::success` and any other one `errc` value `error_category::default_error_condition(errc)`
+  is equal to `std::err_condition(errc, sycl::sycl_category())`
+* For FULL conformance - same as bullet above but for all `errc` values
+
+==== error_category_for()
+
+* Check that function template exists.
+
+If `SYCL_BACKEND_OPENCL` is defined run same checks as for `sycl_category`, but:
+
+* `error_category::name()` should return "opencl"
+* for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
+  `error_category_for<>::default_error_condition(value)` should be equal to
+  `std::error_condition(value, sycl::error_category_for<sycl::backend::opencl>())`
+
+=== sycl::errc
+
+For all values of the enum class `sycl::errc`:
+
+* `runtime`
+* `kernel`
+* `accessor`
+* `nd_range`
+* `event`
+* `kernel_argument`
+* `build`
+* `invalid`
+* `memory_allocation`
+* `platform`
+* `profiling`
+* `feature_not_supported`
+* `kernel_not_supported`
+* `backend_mismatch`
+
+check that:
+
+* they exist
+* that all values are different
+
+Special cases:
+
+* Check that `std::is_error_code_enum` is `true` for `sycl::errc`
+* Check that `std::is_error_condition_enum` should be `false` for `sycl::errc`
+
+=== sycl::errc_for
+
+* Check that enum class template exists
+
+If SYCL_BACKEND_OPENCL is defined check that
+
+* enum class with `b == sycl::backend::opencl` exists and is a scoped enum
+* `std::is_error_code_enum` is `true`
+* `std::is_error_condition_enum` is `false`
+* for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
+  for `std::error_code(value, sycl::eror_category_for<sycl::backend::opencl>())`
+  `error_code::default_error_condition()` is equal to
+  `std::error_condition(value, sycl::error_category_for<sycl::backend::opencl>())`
+
+=== sycl::exception
+
+* Check that class is derived from `std::exception`
+
+==== exception(std::error_code ec)
+
+For `sycl::errc::success` and any other value
+(for FULL conformance - for all `errc` values) check:
+
+* `exception::code()` returns value passed
+* `exception::category()` returns sycl_category
+* `exception::what()` returns null-terminated string
+* `exception::has_context()` returns false
+* `exception::get_context()` throws with `errc::invalid`
+
+If SYCL_BACKEND_OPENCL defined
+for `value = static_cast<sycl::errc_for<sycl::backend::opencl>>(0)`
+for `error_code = std::error_code(value, sycl::eror_category_for<sycl::backend::opencl>())`
+for exception(error_code) check same as above.
+
+==== exception(int ev, const std::error_category& cat)
+
+For `sycl::errc::success` and any other value
+for `ev = static_cast<int>(value)` and for `cat = sycl_category()`
+check that exception(ev, cat) is same as exception(std::error_code ec)
+
+* `exception::code()` returns value passed
+* `exception::category()` returns sycl_category
+* `exception::what()` returns null-terminated string
+* `exception::has_context()` returns false
+* `exception::get_context()` throws with `errc::invalid`
+
+If SYCL_BACKEND_OPENCL defined
+for `ev = 0` and for `cat = sycl::eror_category_for<sycl::backend::opencl>()`
+check that exception(ev, cat) is same as exception(std::error_code ec)
+
+==== exception(context ctx, std::error_code ec)
+
+Same as `exception(std::error_code)`, but:
+
+* `exception::has_context()` should return true
+* `exception::get_context()` should return the ctx passed
+
+==== exception(context ctx, int ev, const std::error_category& cat)
+
+Same as `exception(int ev, const std::error_category& cat)`, but:
+
+* `exception::has_context()` should return true
+* `exception::get_context()` should return the ctx passed
+
+==== exception(std::error_code ec, const std::string& what_arg)
+
+Same as `exception(std::error_code)`, but:
+
+* for non-empty `what_arg` `exception::what()` should contain `what_arg` as substring
+* for empty `what_arg` `exception::what()` should return null-terminated string
+
+==== exception(std::error_code ec, const char* what_arg)
+
+Same as `exception(std::error_code ec, const std::string& what_arg)`.
+
+==== exception(int ev, const std::error_category& cat, const std::string& what_arg)
+
+Same as `exception(int ev, const std::error_category& cat)`, but
+same checks for `what_arg` as for
+`exception(std::error_code ec,  const std::string& what_arg)`
+
+==== exception(int ev, const std::error_category& cat, const char* what_arg)
+Same as `exception(int ev, const std::error_category& cat, const std::string& what_arg)`
+
+==== exception(context ctx, std::error_code ec, const std::string& what_arg)
+
+Same as `exception(context ctx, std::error_code ec)`, but:
+same checks for `what_arg` as for
+`exception(std::error_code ec,  const std::string& what_arg)`
+
+==== exception(context ctx, std::error_code ec, const char* what_arg)
+Same as `exception(context ctx, std::error_code ec, const std::string& what_arg)`
+
+==== exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)
+
+Same as `exception(context ctx, int ev, const std::error_category& cat)`, but:
+same checks for `what_arg` as for
+`exception(std::error_code ec,  const std::string& what_arg)`
+
+==== exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)
+
+Same as `exception(context ctx, int ev, const std::error_category& cat, const std::string& what_arg)`
+
+==== exception( const exception& other )
+
+For any constructor from 12 constructors above
+make same checks as for the original constructor
+
+==== operator = ()
+
+* For any constructor from 12 constructors above as SRC object:
+  for any second constructor from 12 constructors above as DST object:
+  make same checks as for the SRC constructor
+* ensure copy assignment doesn't throw
+
+=== sycl::exception_list
+
+Verify that:
+
+* `value_type` `std::is_same` with `std::exception_ptr`
+* `reference` `std::is_same` with `value_type&`
+* `const_reference` `std::is_same` with `const value_type&`
+* `size_type` `std::is_same` with `std::size_t`
+* `iterator` satisfies `LegacyForwardIterator`
+* `const_iterator` satisfies `LegacyForwardIterator`
+
+For default-constructed `exception_list` check that:
+
+* `exception_list::size()` is zero
+* `++exception_list::begin()` is equal to `exception_list::end()`
+
+=== sycl::async_handler
+
+Check that `sycl::async_handler` `std::is_same` with `std::function<void(sycl::exception_list)>`
+
+For cases:
+
+* `queue::wait_and_throw()`
+* `queue::throw_asynchronous()`
+* `event::wait_and_throw()`
+* on queue destruction
+* on context destruction
+* on buffer destruction
+
+check that when there are no exceptions expected then the async handler is not invoked.
+
+
+=== Synchronous exceptions mechanism
+
+Check an empty `queue::submit()` doesn't result in exceptions.
