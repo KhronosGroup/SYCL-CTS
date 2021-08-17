@@ -936,6 +936,7 @@ class image_accessor_api_sampled_r {
     return (v000 + v001 + v010 + v011 + v100 + v101 + v110 + v111) / 8;
   }
 
+  template <typename coordTag>
   T get_expected_value(image_id_t<dim, target> idx) const {
     const bool useLinear =
         m_sampler.filtering_mode == sycl::filtering_mode::linear;
@@ -943,7 +944,48 @@ class image_accessor_api_sampled_r {
     if (!useLinear) {
       return get_expected_value_nearest(idx);
     }
-    return get_expected_value_linear(idx);
+    constexpr bool useUpper =
+        std::is_same<coordTag, acc_coord_tag::use_normalized_upper>::value;
+    if constexpr (!useUpper) {
+      // Use simplified equation for lower coordinate values
+      return get_expected_value_linear(idx);
+    } else {
+      /** Upper value is exactly 1 ULP lower than the lower value for the next
+       *  coordinate. We can ignore this difference because:
+       *  - there is no actual precision requirements defined for linear
+       *    filtration mode in OpenCL spec.
+       *  - we have data values pre-defined for floating type to be relatively
+       *    not too big, so error propagation is relatively small
+       *
+       *  Currently we have the coordinate values
+       *  - "u" as the lower one and
+       *  - "u + 1 - 1ULP" as the upper one
+       *  for floating-point coordinates. Because it would be valuable to verify
+       *  also values
+       *  - "u - 0.5" and
+       *  - "u + 0.5 - 1 ULP"
+       *  as the border values for texel selection according to the OpenCL spec:
+       *    i0 = address_mode((int)floor(u - 0.5))
+       *    j0 = address_mode((int)floor(v - 0.5))
+       *    k0 = address_mode((int)floor(w - 0.5))
+       *    i1 = address_mode((int)floor(u - 0.5) + 1)
+       *    j1 = address_mode((int)floor(v - 0.5) + 1)
+       *    k1 = address_mode((int)floor(w - 0.5) + 1)
+       *  we may need to provide an exact reference values someday.
+       *
+       *  During future implementation of such reference functions we may gain
+       *  accuracy from using Priest's compensated summation to avoid possible
+       *  catastrophic cancellation.
+       *  See
+       *    Douglas M. Priest. "On Properties of Floating Point Arithmetics:
+       *    Numerical Stability and the Cost of Accurate Computations."
+       *    PhD thesis, Mathematics Department, University of California,
+       *    Berkeley, CA, USA, November 1992. 126 pp.
+       *    ftp://ftp.icsi.berkeley.edu/pub/theory/priest-thesis.ps.Z
+       *  for details
+       */
+      return get_expected_value_linear(idx + 1);
+    }
   }
 
   /**
@@ -1024,8 +1066,9 @@ class image_accessor_api_sampled_r {
   }
 
   template <typename coordT, int idDims>
-  bool check_read(sycl::id<idDims> idx, const T& expected) const {
-    T elem =
+  bool check_read(sycl::id<idDims> idx) const {
+    const T expected = get_expected_value<coordT>(idx);
+    const T elem =
         read_image_acc_sampled(m_acc, m_sampler.instance, idx, m_range,
                                coordT{});
 
@@ -1056,8 +1099,6 @@ class image_accessor_api_sampled_r {
         m_verificationRange(verificationRange) {}
 
   void operator()(image_id_t<dim, target> idx) const {
-    auto expected = get_expected_value(idx);
-
     /** check coordinates with sampler read syntax
      */
     const bool useNormalized =
@@ -1065,14 +1106,14 @@ class image_accessor_api_sampled_r {
             sycl::coordinate_normalization_mode::normalized;
     if (useNormalized) {
       const bool worksForLower =
-        check_read<acc_coord_tag::use_normalized_lower>(idx, expected);
+        check_read<acc_coord_tag::use_normalized_lower>(idx);
       if (worksForLower)
-        check_read<acc_coord_tag::use_normalized_upper>(idx, expected);
+        check_read<acc_coord_tag::use_normalized_upper>(idx);
     } else {
       const bool worksForInteger =
-        check_read<acc_coord_tag::use_int>(idx, expected);
+        check_read<acc_coord_tag::use_int>(idx);
       if (worksForInteger)
-        check_read<acc_coord_tag::use_float>(idx, expected);
+        check_read<acc_coord_tag::use_float>(idx);
     }
   }
 };
