@@ -39,11 +39,6 @@ class check_types {
     constexpr T get_value() const { return static_cast<T>(to_integral(kAs)); }
   };
 
-  // The parameter has no address space specification, so it'll
-  // get duplicated based on the argument's address space
-  // it should call the appropriate overload of f(), and that will
-  // tell us the address space the parameter was in
-
   static T readValue(T *p) { return *p; }
 
   static T readValue(T &p) { return p; }
@@ -58,8 +53,13 @@ class check_types {
     T operator[](T &p) { return p; }
   };
 
+  /** @brief Verify value in multi_ptr is the same one used for initialization
+   */
   template <sycl::access::address_space AspSpace>
   static bool test_duplication(sycl::multi_ptr<T, AspSpace> ptr) {
+    // Get pointer by calling “operator pointer() const” in a different ways
+    // Dereference raw pointer and verify value
+
     EXPECT_ADDRSPACE_EQUALS(readValue(ptr), AspSpace);
     EXPECT_ADDRSPACE_EQUALS(readValue(*ptr), AspSpace);
 
@@ -88,16 +88,20 @@ class check_types {
 
   template <sycl::access::address_space AspSpace>
   static T *id(sycl::multi_ptr<T, AspSpace> p) {
+    // Get pointer by calling “operator pointer() const” for multi_ptr instance
     return p;
   }
 
+  /** @brief Verify value in multi_ptr is the same one used for initialization
+   */
   static bool test_return_type_deduction(sycl::global_ptr<T> globalPtr,
                                          sycl::local_ptr<T> localPtr,
                                          sycl::constant_ptr<T> constantPtr,
                                          sycl::private_ptr<T> privPtr) {
     using namespace sycl::access;
 
-    // return type deduction
+    // Get pointer by calling id() function
+    // Dereference raw pointer and verify value
     EXPECT_ADDRSPACE_EQUALS(*id(globalPtr), address_space::global_space);
     EXPECT_ADDRSPACE_EQUALS(*id(localPtr), address_space::local_space);
     EXPECT_ADDRSPACE_EQUALS(*id(constantPtr), address_space::constant_space);
@@ -106,17 +110,21 @@ class check_types {
     return true;
   }
 
+  /** @brief Verify value in multi_ptr is the same one used for initialization
+   */
   static bool test_initialization(sycl::global_ptr<T> globalPtr,
                                   sycl::local_ptr<T> localPtr,
                                   sycl::constant_ptr<T> constantPtr,
                                   sycl::private_ptr<T> privPtr) {
     using namespace sycl::access;
 
+    // Get pointer by calling “operator pointer() const” for multi_ptr instance
     T *p1 = globalPtr;
     T *p2 = localPtr;
     T *p3 = constantPtr;
     T *p4 = privPtr;
 
+    // Dereference raw pointer and verify value
     EXPECT_ADDRSPACE_EQUALS(*p1, address_space::global_space);
     EXPECT_ADDRSPACE_EQUALS(*p2, address_space::local_space);
     EXPECT_ADDRSPACE_EQUALS(*p3, address_space::constant_space);
@@ -125,6 +133,13 @@ class check_types {
     return true;
   }
 
+  /** @brief Run checks for a specific type
+   *  @details Every check sequence is as follows:
+   *    - Initialize array with N integer values
+   *    - Create N multi_ptr instances pointing to N array elements
+   *    - Verify value in multi_ptr is the same one used for initialization
+   *  @todo We need to review and probably fix the logic of the checks
+   */
   bool operator()() {
     using namespace sycl::access;
 
