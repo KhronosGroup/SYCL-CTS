@@ -89,12 +89,24 @@ add_custom_target(generate_test_sources)
 
 # Test generation routine
 function(generate_cts_test)
-  cmake_parse_arguments(GEN_TEST "" "TESTS;GENERATOR;OUTPUT;INPUT" "EXTRA_ARGS" ${ARGN})
+  cmake_parse_arguments(
+    GEN_TEST
+    ""
+    "TESTS;GENERATOR;OUTPUT;INPUT"
+    "EXTRA_ARGS;DEPENDS"
+    ${ARGN}
+  )
   message(STATUS "Setup test generation rules for: " ${GEN_TEST_OUTPUT})
 
   set(GEN_TEST_FILE_NAME ${GEN_TEST_OUTPUT})
   set(GEN_TEST_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${GEN_TEST_OUTPUT})
   set(GEN_TEST_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/${GEN_TEST_INPUT})
+
+  set(extra_deps "")
+  foreach(filename ${GEN_TEST_DEPENDS})
+    list(APPEND extra_deps ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
+  endforeach()
+
   # Add the file to the out test list
   set(${GEN_TEST_TESTS} ${${GEN_TEST_TESTS}} ${GEN_TEST_OUTPUT} PARENT_SCOPE)
 
@@ -111,6 +123,7 @@ function(generate_cts_test)
     DEPENDS
       ${GEN_TEST_GENERATOR}
       ${GEN_TEST_INPUT}
+      ${extra_deps}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT "Generating test ${GEN_TEST_OUTPUT}..."
     )
