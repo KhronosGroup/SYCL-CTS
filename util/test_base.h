@@ -9,6 +9,8 @@
 #ifndef __SYCLCTS_UTIL_TEST_BASE_H
 #define __SYCLCTS_UTIL_TEST_BASE_H
 
+#include <string>
+
 // conformance test suite namespace
 namespace sycl_cts {
 namespace util {
@@ -41,15 +43,17 @@ class test_base {
   /** called before this test is executed
    *  @param log for emitting test notes and results
    */
-  virtual bool setup(class logger &) {
-    // stub
-    return true;
-  }
+  virtual bool setup(class logger &) { return true; }
 
-  /** execute this test
+  /** method that will be overriden in test file
    *  @param log for emitting test notes and results
    */
   virtual void run(class logger &log) = 0;
+
+  /** run overriden method with try-catch block
+   *  @param log for emitting test notes and results
+   */
+  void run_test(class logger &log);
 
   /** called after this test has executed
    *  @param log for emitting test notes and results
