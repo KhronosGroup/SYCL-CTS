@@ -52,7 +52,7 @@ bool executor::run_all() {
         // ask the test to set itself up
         if (test->setup(logger)) {
           // ask the test to execute
-          test->run(logger);
+          test->run_test(logger);
         }
         // enforce that each test must give a result
         assert(logger.get_result() != logger::epending);
