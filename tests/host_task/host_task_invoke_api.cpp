@@ -48,10 +48,9 @@ struct host_task_command_group {
   void operator()(sycl::handler& cgh) {
     int a = m_add;
     int container_size = m_bufRef.get().get_count();
-    auto acc_host =
-        m_bufRef.get()
-            .template get_access<sycl::access_mode::read_write,
-                                 sycl::target::host_buffer>(cgh);
+    auto acc_host = m_bufRef.get()
+                        .template get_access<sycl::access_mode::read_write,
+                                             sycl::target::host_buffer>(cgh);
     cgh.host_task([=]() {
       for (int i = 0; i < container_size; ++i) {
         acc_host[i] += a;
@@ -64,8 +63,7 @@ struct host_task_command_group {
 };
 
 template <typename T>
-void verify_results(std::vector<T>& data, T expected,
-                    util::logger& log) {
+void verify_results(std::vector<T>& data, T expected, util::logger& log) {
   for (T& d : data) {
     if (d != expected) {
       FAIL(log, "Data verification failed. Expected: " +
@@ -158,9 +156,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       sycl::buffer<int, 1> buffer(data.data(), sycl::range<1>{container_size});
 
       q.submit([&](sycl::handler& cgh) {
-        auto acc_host{
-            buffer.get_access<sycl::access_mode::read,
-                              sycl::target::host_buffer>(cgh)};
+        auto acc_host{buffer.get_access<sycl::access_mode::read,
+                                        sycl::target::host_buffer>(cgh)};
         auto acc_dev = buffer.get_access<sycl::access_mode::write>(cgh);
         cgh.host_task([=]() {
           for (int i = 0; i < container_size; ++i) {
@@ -239,15 +236,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute this test
    */
   void run(util::logger& log) override {
-    try {
-      sycl::queue q{util::get_cts_object::queue()};
-      check_execution_order(q, log);
-      check_different_contexts(q, log);
-      check_data_update(q, log);
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      FAIL(log, "An unexpected SYCL exception was caught");
-    }
+    sycl::queue q{util::get_cts_object::queue()};
+    check_execution_order(q, log);
+    check_different_contexts(q, log);
+    check_data_update(q, log);
   }
 };
 

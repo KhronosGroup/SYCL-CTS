@@ -18,51 +18,41 @@ using namespace sycl_cts;
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  */
+   */
   void run(util::logger &log) override {
-    try {
-      auto context = util::get_cts_object::context();
+    auto context = util::get_cts_object::context();
 
-      /** check get_info for info::context::reference_count
-       */
-      {
-        auto ref_count =
-            context.get_info<sycl::info::context::reference_count>();
-        check_return_type<cl_uint>(
-            log, ref_count,
-            "get_info<sycl::info::context::reference_count>()");
-        TEST_TYPE_TRAIT(context, reference_count, context);
-      }
+    /** check get_info for info::context::reference_count
+     */
+    {
+      auto ref_count = context.get_info<sycl::info::context::reference_count>();
+      check_return_type<cl_uint>(
+          log, ref_count, "get_info<sycl::info::context::reference_count>()");
+      TEST_TYPE_TRAIT(context, reference_count, context);
+    }
 
-      /** check get_info for info::context::platform
-       */
-      {
-        auto platform = context.get_info<sycl::info::context::platform>();
-        check_return_type<sycl::platform>(
-            log, platform, "get_info<sycl::info::context::platform>()");
-        TEST_TYPE_TRAIT(context, platform, context);
-      }
+    /** check get_info for info::context::platform
+     */
+    {
+      auto platform = context.get_info<sycl::info::context::platform>();
+      check_return_type<sycl::platform>(
+          log, platform, "get_info<sycl::info::context::platform>()");
+      TEST_TYPE_TRAIT(context, platform, context);
+    }
 
-      /** check get_info for info::context::devices
-       */
-      {
-        auto devs = context.get_info<sycl::info::context::devices>();
-        check_return_type<std::vector<sycl::device>>(
-            log, devs, "get_info<sycl::info::context::devices>()");
-        TEST_TYPE_TRAIT(context, devices, context);
-      }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    /** check get_info for info::context::devices
+     */
+    {
+      auto devs = context.get_info<sycl::info::context::devices>();
+      check_return_type<std::vector<sycl::device>>(
+          log, devs, "get_info<sycl::info::context::devices>()");
+      TEST_TYPE_TRAIT(context, devices, context);
     }
   }
 };
@@ -70,4 +60,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace context_info__ */
+}  // namespace contect_info__

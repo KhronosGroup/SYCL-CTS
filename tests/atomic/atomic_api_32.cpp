@@ -26,8 +26,7 @@ class check_atomics_32 {
   sycl::accessor<T, 1, sycl::access_mode::atomic, target> m_acc;
 
  public:
-  check_atomics_32(
-      sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
+  check_atomics_32(sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
   void operator()() const {
@@ -160,32 +159,25 @@ class TEST_NAME : public util::test_base {
   /** Execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto testQueue = util::get_cts_object::queue();
-      auto testDevice = testQueue.get_device();
+    auto testQueue = util::get_cts_object::queue();
+    auto testDevice = testQueue.get_device();
 
-      /** Check sycl::memory_order
-       */
-      check_enum_class_value(sycl::memory_order::relaxed);
+    /** Check sycl::memory_order
+     */
+    check_enum_class_value(sycl::memory_order::relaxed);
 
-      /** Check atomics for supported types
-       */
-      check_atomics_for_type<int>(log, testQueue);
-      check_atomics_for_type<unsigned int>(log, testQueue);
-      check_atomics_for_type<float>(log, testQueue);
+    /** Check atomics for supported types
+     */
+    check_atomics_for_type<int>(log, testQueue);
+    check_atomics_for_type<unsigned int>(log, testQueue);
+    check_atomics_for_type<float>(log, testQueue);
 
-      if constexpr (sizeof(long) * CHAR_BIT < 64 /*bits*/) {
-        check_atomics_for_type<long>(log, testQueue);
-        check_atomics_for_type<unsigned long>(log, testQueue);
-      }
-
-      testQueue.wait_and_throw();
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+    if constexpr (sizeof(long) * CHAR_BIT < 64 /*bits*/) {
+      check_atomics_for_type<long>(log, testQueue);
+      check_atomics_for_type<unsigned long>(log, testQueue);
     }
+
+    testQueue.wait_and_throw();
   }
 };
 

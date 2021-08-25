@@ -55,59 +55,52 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      /** check a custom selector for a device
-      */
-      {
-        call_selector selector;
-        auto device = util::get_cts_object::device(selector);
+    /** check a custom selector for a device
+     */
+    {
+      call_selector selector;
+      auto device = util::get_cts_object::device(selector);
 
-        /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a device");
-        }
+      /* check our device selector was used */
+      if (!selector.called) {
+        FAIL(log, "custom selector was never used for creating a device");
       }
+    }
 
-      /** check a custom selector for a platform
-      */
-      {
-        call_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
+    /** check a custom selector for a platform
+     */
+    {
+      call_selector selector;
+      auto platform = util::get_cts_object::platform(selector);
 
-        /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a platform");
-        }
+      /* check our device selector was used */
+      if (!selector.called) {
+        FAIL(log, "custom selector was never used for creating a platform");
       }
+    }
 
-      /** check a custom selector for a queue
-      */
-      {
-        call_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+    /** check a custom selector for a queue
+     */
+    {
+      call_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
 
-        /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a queue");
-        }
+      /* check our device selector was used */
+      if (!selector.called) {
+        FAIL(log, "custom selector was never used for creating a queue");
       }
+    }
 
-      /** check the ability to set negative scores
-      */
-      {
-        negative_selector selector;
-        auto device = util::get_cts_object::device(selector);
+    /** check the ability to set negative scores
+     */
+    {
+      negative_selector selector;
+      auto device = util::get_cts_object::device(selector);
 
-        /* check our device selector was used */
-        if (!device.is_host()) {
-          FAIL(log, "custom selector selected a device with a negative score");
-        }
+      /* check our device selector was used */
+      if (!device.is_host()) {
+        FAIL(log, "custom selector selected a device with a negative score");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

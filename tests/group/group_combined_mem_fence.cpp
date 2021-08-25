@@ -36,18 +36,16 @@ void test_mem_fence(util::logger &log, sycl::queue &queue) {
   using globalKernelT = combined_mem_fence_kernel_global<accessGroup, dim>;
 
   const auto fenceCallFactory = make_fence_call_factory(
-    [=](sycl::group<dim> item) {
-      item.mem_fence(fenceSpace);
-    },
-    [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access_mode::read_write>(fenceSpace);
-    },
-    [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access_mode::read>(fenceSpace);
-    },
-    [=](sycl::group<dim> item) {
-      item.template mem_fence<sycl::access_mode::write>(fenceSpace);
-  });
+      [=](sycl::group<dim> item) { item.mem_fence(fenceSpace); },
+      [=](sycl::group<dim> item) {
+        item.template mem_fence<sycl::access_mode::read_write>(fenceSpace);
+      },
+      [=](sycl::group<dim> item) {
+        item.template mem_fence<sycl::access_mode::read>(fenceSpace);
+      },
+      [=](sycl::group<dim> item) {
+        item.template mem_fence<sycl::access_mode::write>(fenceSpace);
+      });
   const auto access = std::integral_constant<access_group, accessGroup>{};
 
   const auto readFenceCall = fenceCallFactory.get_read(access);
@@ -74,34 +72,27 @@ void test_mem_fence(util::logger &log, sycl::queue &queue) {
 }
 
 /** test sycl::group mem_fence functions
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  *  @param info, test_base::info structure as output
-  */
+   *  @param info, test_base::info structure as output
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  *  @param log, test transcript logging class
-  */
+   *  @param log, test transcript logging class
+   */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      test_mem_fence<access_group::useDefault, 1>(log, queue);
-      test_mem_fence<access_group::useCombined, 1>(log, queue);
-      test_mem_fence<access_group::useSeparate, 1>(log, queue);
+    test_mem_fence<access_group::useDefault, 1>(log, queue);
+    test_mem_fence<access_group::useCombined, 1>(log, queue);
+    test_mem_fence<access_group::useSeparate, 1>(log, queue);
 
-      queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
+    queue.wait_and_throw();
   }
 };
 

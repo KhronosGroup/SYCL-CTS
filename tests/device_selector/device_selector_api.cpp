@@ -26,30 +26,21 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      /** check select_device() method
-       */
-      {
-        cts_selector selector;
-        auto selected_device = selector.select_device();
-        check_return_type<sycl::device>(log, selected_device,
-                                            "select_device()");
-      }
+    /** check select_device() method
+     */
+    {
+      cts_selector selector;
+      auto selected_device = selector.select_device();
+      check_return_type<sycl::device>(log, selected_device, "select_device()");
+    }
 
-      /** check ()(device) operator
-       */
-      {
-        sycl::device device;
-        cts_selector selector;
-        auto score = selector(device);
-        check_return_type<int>(log, score, "selector(sycl::device)");
-      }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    /** check ()(device) operator
+     */
+    {
+      sycl::device device;
+      cts_selector selector;
+      auto score = selector(device);
+      check_return_type<int>(log, score, "selector(sycl::device)");
     }
   }
 };

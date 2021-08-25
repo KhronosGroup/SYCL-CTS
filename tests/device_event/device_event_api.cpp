@@ -32,59 +32,47 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      /** check wait() member function
-       */
-      auto testQueue = util::get_cts_object::queue();
+    /** check wait() member function
+     */
+    auto testQueue = util::get_cts_object::queue();
 
-      constexpr size_t bufferSize = 512;
-      constexpr size_t sampleIndex = bufferSize / 2;
-      constexpr int referenceValue = 1234;
+    constexpr size_t bufferSize = 512;
+    constexpr size_t sampleIndex = bufferSize / 2;
+    constexpr int referenceValue = 1234;
 
-      std::array<int, bufferSize> data;
-      std::fill(data.begin(), data.end(), referenceValue);
+    std::array<int, bufferSize> data;
+    std::fill(data.begin(), data.end(), referenceValue);
 
-      bool error = false;
-      {
-        sycl::range<1> range(1);
-        sycl::range<1> dataRange(bufferSize);
-        sycl::buffer<int, 1> buf(data.data(), dataRange);
-        sycl::buffer<bool, 1> errBuf(&error, range);
+    bool error = false;
+    {
+      sycl::range<1> range(1);
+      sycl::range<1> dataRange(bufferSize);
+      sycl::buffer<int, 1> buf(data.data(), dataRange);
+      sycl::buffer<bool, 1> errBuf(&error, range);
 
-        testQueue.submit([&](sycl::handler &cgh) {
+      testQueue.submit([&](sycl::handler &cgh) {
+        auto globalAcc = buf.get_access<sycl::access_mode::read_write>(cgh);
+        auto errorAcc = errBuf.get_access<sycl::access_mode::write>(cgh);
+        auto localAcc = sycl::accessor<int, 1, sycl::access_mode::read_write,
+                                       sycl::target::local>(dataRange, cgh);
 
-          auto globalAcc = buf.get_access<sycl::access_mode::read_write>(cgh);
-          auto errorAcc = errBuf.get_access<sycl::access_mode::write>(cgh);
-          auto localAcc =
-              sycl::accessor<int, 1, sycl::access_mode::read_write,
-                  sycl::target::local>(dataRange, cgh);
+        cgh.parallel_for<class device_event_wait>(
+            sycl::nd_range<1>(range, range), [=](sycl::nd_item<1> ndItem) {
+              // Run asynchronous copy for full buffer
+              sycl::device_event deviceEvent = ndItem.async_work_group_copy(
+                  localAcc.get_pointer(), globalAcc.get_pointer(), bufferSize);
 
-          cgh.parallel_for<class device_event_wait>(
-              sycl::nd_range<1>(range, range),
-              [=](sycl::nd_item<1> ndItem) {
-                // Run asynchronous copy for full buffer
-                sycl::device_event deviceEvent =
-                    ndItem.async_work_group_copy(localAcc.get_pointer(),
-                                                 globalAcc.get_pointer(),
-                                                 bufferSize);
+              deviceEvent.wait();
 
-                deviceEvent.wait();
-
-                // Check sample was updated
-                if (localAcc[sampleIndex] != referenceValue) {
-                  errorAcc[0] = true;
-                }
-              });
-        });
-      }
-      if (error) {
-        FAIL(log, "sycl::device_event async_work_group_copy failed");
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      const auto errorMsg =
-          std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+              // Check sample was updated
+              if (localAcc[sampleIndex] != referenceValue) {
+                errorAcc[0] = true;
+              }
+            });
+      });
+    }
+    if (error) {
+      FAIL(log, "sycl::device_event async_work_group_copy failed");
     }
   }
 };

@@ -37,145 +37,137 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      /** check default constructor and destructor
-      */
-      {
-        sycl::event event;
+    /** check default constructor and destructor
+     */
+    {
+      sycl::event event;
 
-        if (!event.is_host()) {
-          FAIL(log, "event was not constructed correctly (is_host).");
-        }
+      if (!event.is_host()) {
+        FAIL(log, "event was not constructed correctly (is_host).");
       }
+    }
 
-      /** check copy constructor
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+    /** check copy constructor
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
 
-        auto eventA = get_queue_event<class event_constructors_0>(queue);
-        sycl::event eventB(eventA);
+      auto eventA = get_queue_event<class event_constructors_0>(queue);
+      sycl::event eventB(eventA);
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (eventA.get() != eventB.get())) {
-          FAIL(log, "event was not copied correctly.");
-        }
+      if (!selector.is_host() && (eventA.get() != eventB.get())) {
+        FAIL(log, "event was not copied correctly.");
+      }
 #endif
 
-        queue.wait_and_throw();
-      }
+      queue.wait_and_throw();
+    }
 
-      /** check assignment operator
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+    /** check assignment operator
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
 
-        auto eventA = get_queue_event<class event_constructors_1>(queue);
-        auto eventB = get_queue_event<class event_constructors_2>(queue);
-        eventB = eventA;
+      auto eventA = get_queue_event<class event_constructors_1>(queue);
+      auto eventB = get_queue_event<class event_constructors_2>(queue);
+      eventB = eventA;
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (eventA.get() != eventB.get())) {
-          FAIL(log, "event was not assigned correctly.");
-        }
+      if (!selector.is_host() && (eventA.get() != eventB.get())) {
+        FAIL(log, "event was not assigned correctly.");
+      }
 #endif
 
-        queue.wait_and_throw();
+      queue.wait_and_throw();
+    }
+
+    /** check move constructor
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
+
+      auto eventA = get_queue_event<class event_constructors_3>(queue);
+      sycl::event eventB(std::move(eventA));
+
+      queue.wait_and_throw();
+    }
+
+    /** check move assignment operator
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
+
+      auto eventA = get_queue_event<class event_constructors_4>(queue);
+      auto eventB = get_queue_event<class event_constructors_5>(queue);
+      eventB = std::move(eventA);
+
+      queue.wait_and_throw();
+    }
+
+    /** check equality operator
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
+
+      auto eventA = get_queue_event<class event_constructors_6>(queue);
+      sycl::event eventB(eventA);
+      auto eventC = get_queue_event<class event_constructors_7>(queue);
+      eventC = eventA;
+      auto eventD = get_queue_event<class event_constructors_8>(queue);
+
+      if (!(eventA == eventB)) {
+        FAIL(log, "event equality does not work correctly (copy constructed)");
+      }
+      if (!(eventA == eventC)) {
+        FAIL(log, "event equality does not work correctly (copy assigned)");
+      }
+      if (eventA != eventB) {
+        FAIL(log,
+             "event non-equality does not work correctly"
+             "(copy constructed)");
+      }
+      if (eventA != eventC) {
+        FAIL(log,
+             "event non-equality does not work correctly"
+             "(copy assigned)");
+      }
+      if (eventC == eventD) {
+        FAIL(log,
+             "event equality does not work correctly"
+             "(comparing same)");
+      }
+      if (!(eventC != eventD)) {
+        FAIL(log,
+             "event non-equality does not work correctly"
+             "(comparing same)");
       }
 
-      /** check move constructor
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+      queue.wait_and_throw();
+    }
 
-        auto eventA = get_queue_event<class event_constructors_3>(queue);
-        sycl::event eventB(std::move(eventA));
+    /** check hashing
+     */
+    {
+      cts_selector selector;
+      auto queue = util::get_cts_object::queue(selector);
 
-        queue.wait_and_throw();
+      auto eventA = get_queue_event<class event_constructors_9>(queue);
+      sycl::event eventB = eventA;
+      std::hash<sycl::event> hasher;
+
+      if (hasher(eventA) != hasher(eventB)) {
+        FAIL(log,
+             "event hashing does not work correctly (hashing of equals "
+             "failed)");
       }
 
-      /** check move assignment operator
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
-
-        auto eventA = get_queue_event<class event_constructors_4>(queue);
-        auto eventB = get_queue_event<class event_constructors_5>(queue);
-        eventB = std::move(eventA);
-
-        queue.wait_and_throw();
-      }
-
-      /** check equality operator
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
-
-        auto eventA = get_queue_event<class event_constructors_6>(queue);
-        sycl::event eventB(eventA);
-        auto eventC = get_queue_event<class event_constructors_7>(queue);
-        eventC = eventA;
-        auto eventD = get_queue_event<class event_constructors_8>(queue);
-
-        if (!(eventA == eventB)) {
-          FAIL(log,
-               "event equality does not work correctly (copy constructed)");
-        }
-        if (!(eventA == eventC)) {
-          FAIL(log, "event equality does not work correctly (copy assigned)");
-        }
-        if (eventA != eventB) {
-          FAIL(log,
-               "event non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (eventA != eventC) {
-          FAIL(log,
-               "event non-equality does not work correctly"
-               "(copy assigned)");
-        }
-        if (eventC == eventD) {
-          FAIL(log,
-               "event equality does not work correctly"
-               "(comparing same)");
-        }
-        if (!(eventC != eventD)) {
-          FAIL(log,
-               "event non-equality does not work correctly"
-               "(comparing same)");
-        }
-
-        queue.wait_and_throw();
-      }
-
-      /** check hashing
-      */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
-
-        auto eventA = get_queue_event<class event_constructors_9>(queue);
-        sycl::event eventB = eventA;
-        std::hash<sycl::event> hasher;
-
-        if (hasher(eventA) != hasher(eventB)) {
-          FAIL(log,
-               "event hashing does not work correctly (hashing of equals "
-               "failed)");
-        }
-
-        queue.wait_and_throw();
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      queue.wait_and_throw();
     }
   }
 };

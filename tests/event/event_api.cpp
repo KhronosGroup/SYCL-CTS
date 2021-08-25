@@ -23,7 +23,7 @@ class event_api_kernel_5;
 class event_api_kernel_6;
 
 /** test the api for sycl::event
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -35,89 +35,80 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-      /** check get()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_0>(queue);
+    /** check get()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_0>(queue);
 
-        if (!queue.is_host()) {
-          auto evt = event.get();
-          check_return_type<cl_event>(log, evt, "sycl::event::get()");
-        }
-        queue.wait_and_throw();
+      if (!queue.is_host()) {
+        auto evt = event.get();
+        check_return_type<cl_event>(log, evt, "sycl::event::get()");
       }
+      queue.wait_and_throw();
+    }
 #endif
 
-      /** check is_host()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_1>(queue);
+    /** check is_host()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_1>(queue);
 
-        auto isHost = event.is_host();
-        check_return_type<bool>(log, isHost, "sycl::event::is_host()");
-      }
+      auto isHost = event.is_host();
+      check_return_type<bool>(log, isHost, "sycl::event::is_host()");
+    }
 
-      /** check get_wait_list()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_2>(queue);
+    /** check get_wait_list()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_2>(queue);
 
-        auto events = event.get_wait_list();
-        check_return_type<std::vector<sycl::event>>(
-            log, events, "sycl::event::get_wait_list()");
-      }
+      auto events = event.get_wait_list();
+      check_return_type<std::vector<sycl::event>>(
+          log, events, "sycl::event::get_wait_list()");
+    }
 
-      /** check wait()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_3>(queue);
+    /** check wait()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_3>(queue);
 
-        event.wait();
-      }
+      event.wait();
+    }
 
-      /** check wait_and_throw()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_4>(queue);
+    /** check wait_and_throw()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_4>(queue);
 
-        event.wait_and_throw();
-      }
+      event.wait_and_throw();
+    }
 
-      /** check static wait()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_5>(queue);
-        std::vector<sycl::event> eventList;
-        eventList.push_back(event);
+    /** check static wait()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_5>(queue);
+      std::vector<sycl::event> eventList;
+      eventList.push_back(event);
 
-        sycl::event::wait(eventList);
-      }
+      sycl::event::wait(eventList);
+    }
 
-      /** check static wait_and_throw()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_6>(queue);
-        std::vector<sycl::event> eventList;
-        eventList.push_back(event);
+    /** check static wait_and_throw()
+     */
+    {
+      auto queue = util::get_cts_object::queue();
+      auto event = get_queue_event<class event_api_kernel_6>(queue);
+      std::vector<sycl::event> eventList;
+      eventList.push_back(event);
 
-        sycl::event::wait_and_throw(eventList);
-      }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      sycl::event::wait_and_throw(eventList);
     }
   }
 };

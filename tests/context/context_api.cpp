@@ -26,36 +26,28 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto context = util::get_cts_object::context();
+    auto context = util::get_cts_object::context();
 
-      /** check is_host() method
-       */
-      {
-        auto isHost = context.is_host();
-        check_return_type<bool>(log, isHost, "is_host()");
-      }
+    /** check is_host() method
+     */
+    {
+      auto isHost = context.is_host();
+      check_return_type<bool>(log, isHost, "is_host()");
+    }
 
-      /** check get_devices() method
-       */
-      {
-        auto deviceList = context.get_devices();
-        check_return_type<std::vector<sycl::device>>(
-            log, deviceList, "get_devices()");
-      }
+    /** check get_devices() method
+     */
+    {
+      auto deviceList = context.get_devices();
+      check_return_type<std::vector<sycl::device>>(log, deviceList,
+                                                   "get_devices()");
+    }
 
-      /** check get_platform() method
-       */
-      {
-        auto platform = context.get_platform();
-        check_return_type<sycl::platform>(log, platform, "get_platform()");
-      }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    /** check get_platform() method
+     */
+    {
+      auto platform = context.get_platform();
+      check_return_type<sycl::platform>(log, platform, "get_platform()");
     }
   }
 };
@@ -63,4 +55,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace context_api */
+}  // namespace context_api__

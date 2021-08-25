@@ -13,24 +13,27 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
-template <int dim> class kernel {
+template <int dim>
+class kernel {
   sycl::accessor<size_t, 1, sycl::access_mode::read_write,
-                     sycl::target::global_buffer> ptr;
+                 sycl::target::global_buffer>
+      ptr;
 
  public:
-   kernel(sycl::buffer<size_t, 1> buf, sycl::handler &cgh)
-       : ptr(buf.get_access<sycl::access_mode::read_write,
-                            sycl::target::global_buffer>(cgh)) {}
+  kernel(sycl::buffer<size_t, 1> buf, sycl::handler &cgh)
+      : ptr(buf.get_access<sycl::access_mode::read_write,
+                           sycl::target::global_buffer>(cgh)) {}
 
-   void operator()(sycl::group<dim> group_pid) const {
-     group_pid.parallel_for_work_item([&](sycl::h_item<dim> itemID) {
-       auto globalIdL = itemID.get_global().get_linear_id();
-       ptr[globalIdL] = globalIdL;
-     });
+  void operator()(sycl::group<dim> group_pid) const {
+    group_pid.parallel_for_work_item([&](sycl::h_item<dim> itemID) {
+      auto globalIdL = itemID.get_global().get_linear_id();
+      ptr[globalIdL] = globalIdL;
+    });
   }
 };
 
-template <int dim> void check_dim(util::logger &log) {
+template <int dim>
+void check_dim(util::logger &log) {
   constexpr size_t globalRange1d = 8;
   constexpr size_t globalRange2d = 2;
   constexpr size_t totalGlobalRange = 64;
@@ -41,8 +44,7 @@ template <int dim> void check_dim(util::logger &log) {
   // using this scope we ensure that the buffer will update the host values
   // after the wait_and_throw
   {
-    sycl::buffer<size_t, 1> buf(data.data(),
-                                    sycl::range<1>(totalGlobalRange));
+    sycl::buffer<size_t, 1> buf(data.data(), sycl::range<1>(totalGlobalRange));
 
     myQueue.submit([&](sycl::handler &cgh) {
       auto globalRange =
@@ -61,10 +63,9 @@ template <int dim> void check_dim(util::logger &log) {
     if (data[i] != i) {
       std::string errorMessage =
           std::string("Value for global id ") + std::to_string(i) +
-          std::string(" was not correct (") +
-          std::to_string(data[i]) + std::string(" instead of ") +
-          std::to_string(i) + std::string(". dim = ") +
-          std::to_string(dim);
+          std::string(" was not correct (") + std::to_string(data[i]) +
+          std::string(" instead of ") + std::to_string(i) +
+          std::string(". dim = ") + std::to_string(dim);
       FAIL(log, errorMessage);
     }
   }
@@ -83,20 +84,13 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      check_dim<1>(log);
-      check_dim<2>(log);
-      check_dim<3>(log);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
+    check_dim<1>(log);
+    check_dim<2>(log);
+    check_dim<3>(log);
   }
 };
 
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace id_api__ */
+}  // namespace TEST_NAMESPACE

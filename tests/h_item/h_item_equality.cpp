@@ -49,101 +49,92 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
-    try {
-      using item_t = sycl::h_item<numDims>;
+    using item_t = sycl::h_item<numDims>;
 
-      // h_item is not default constructible, store two objects
-      static constexpr size_t numItems = 2;
-      using item_array_t = std::array<item_t, numItems>;
-      char rawItems[sizeof(item_array_t)];
-      auto& items = *reinterpret_cast<item_array_t*>(rawItems);
+    // h_item is not default constructible, store two objects
+    static constexpr size_t numItems = 2;
+    using item_array_t = std::array<item_t, numItems>;
+    char rawItems[sizeof(item_array_t)];
+    auto& items = *reinterpret_cast<item_array_t*>(rawItems);
 
-      // Store comparison results from kernel into a success array
-      using success_array_t =
-          std::array<bool, static_cast<size_t>(current_check::SIZE)>;
-      success_array_t success;
-      std::fill(std::begin(success), std::end(success), true);
+    // Store comparison results from kernel into a success array
+    using success_array_t =
+        std::array<bool, static_cast<size_t>(current_check::SIZE)>;
+    success_array_t success;
+    std::fill(std::begin(success), std::end(success), true);
 
-      // First store two instances of h_item into the array
-      {
-        auto testQueue = util::get_cts_object::queue();
+    // First store two instances of h_item into the array
+    {
+      auto testQueue = util::get_cts_object::queue();
 
-        const auto oneElemRange =
-            util::get_cts_object::range<numDims>::get(1, 1, 1);
-        const auto itemRange =
-            util::get_cts_object::range<numDims>::get(numItems, 1, 1);
+      const auto oneElemRange =
+          util::get_cts_object::range<numDims>::get(1, 1, 1);
+      const auto itemRange =
+          util::get_cts_object::range<numDims>::get(numItems, 1, 1);
 
-        // Retrieve two h_item objects and store them
-        sycl::buffer<item_t> itemBuf(items.data(),
-                                         sycl::range<1>(items.size()));
-        testQueue.submit([&](sycl::handler& cgh) {
-          auto itemAcc =
-              itemBuf.template get_access<sycl::access_mode::write>(cgh);
+      // Retrieve two h_item objects and store them
+      sycl::buffer<item_t> itemBuf(items.data(), sycl::range<1>(items.size()));
+      testQueue.submit([&](sycl::handler& cgh) {
+        auto itemAcc =
+            itemBuf.template get_access<sycl::access_mode::write>(cgh);
 
-          cgh.parallel_for_work_group<h_item_setup_kernel<numDims>>(
-              oneElemRange, itemRange, [=](sycl::group<numDims> group) {
-                group.parallel_for_work_item([&](item_t item) {
-                  itemAcc[item.get_global().get_linear_id()] = item;
-                });
+        cgh.parallel_for_work_group<h_item_setup_kernel<numDims>>(
+            oneElemRange, itemRange, [=](sycl::group<numDims> group) {
+              group.parallel_for_work_item([&](item_t item) {
+                itemAcc[item.get_global().get_linear_id()] = item;
               });
+            });
+      });
+
+      // Perform comparisons on the stored h_item objects
+      sycl::buffer<bool> successBuf(success.data(),
+                                    sycl::range<1>(success.size()));
+      testQueue.submit([&](sycl::handler& cgh) {
+        auto itemAcc =
+            itemBuf.template get_access<sycl::access_mode::read>(cgh);
+        auto successAcc = successBuf.get_access<sycl::access_mode::write>(cgh);
+
+        cgh.single_task<h_item_equality_kernel<numDims>>([=]() {
+          const auto& item0 = itemAcc[0];
+          const auto& item1 = itemAcc[1];
+
+          {
+            auto& currentSuccess =
+                successAcc[static_cast<size_t>(current_check::equal_self)];
+            currentSuccess = (item0 == item0);
+          }
+          {
+            auto& currentSuccess =
+                successAcc[static_cast<size_t>(current_check::not_equal_self)];
+            currentSuccess = (item0 != item0);
+          }
+          {
+            auto& currentSuccess =
+                successAcc[static_cast<size_t>(current_check::equal_other)];
+            currentSuccess = (item0 == item1);
+          }
+          {
+            auto& currentSuccess =
+                successAcc[static_cast<size_t>(current_check::not_equal_other)];
+            currentSuccess = (item0 != item1);
+          }
         });
-
-        // Perform comparisons on the stored h_item objects
-        sycl::buffer<bool> successBuf(success.data(),
-                                          sycl::range<1>(success.size()));
-        testQueue.submit([&](sycl::handler& cgh) {
-          auto itemAcc =
-              itemBuf.template get_access<sycl::access_mode::read>(cgh);
-          auto successAcc =
-              successBuf.get_access<sycl::access_mode::write>(cgh);
-
-          cgh.single_task<h_item_equality_kernel<numDims>>([=]() {
-            const auto& item0 = itemAcc[0];
-            const auto& item1 = itemAcc[1];
-
-            {
-              auto& currentSuccess =
-                  successAcc[static_cast<size_t>(current_check::equal_self)];
-              currentSuccess = (item0 == item0);
-            }
-            {
-              auto& currentSuccess = successAcc[static_cast<size_t>(
-                  current_check::not_equal_self)];
-              currentSuccess = (item0 != item0);
-            }
-            {
-              auto& currentSuccess =
-                  successAcc[static_cast<size_t>(current_check::equal_other)];
-              currentSuccess = (item0 == item1);
-            }
-            {
-              auto& currentSuccess = successAcc[static_cast<size_t>(
-                  current_check::not_equal_other)];
-              currentSuccess = (item0 != item1);
-            }
-          });
-        });
-      }
-
-      // Check h_item equality operator
-      check_equality_comparable_generic(log, items[0],
-                                        "h_item " + std::to_string(numDims));
-      CHECK_VALUE(log, success[static_cast<size_t>(current_check::equal_self)],
-                  true, numDims);
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::not_equal_self)],
-                  false, numDims);
-      CHECK_VALUE(log, success[static_cast<size_t>(current_check::equal_other)],
-                  false, numDims);
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::not_equal_other)],
-                  true, numDims);
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+      });
     }
+
+    // Check h_item equality operator
+    check_equality_comparable_generic(log, items[0],
+                                      "h_item " + std::to_string(numDims));
+    CHECK_VALUE(log, success[static_cast<size_t>(current_check::equal_self)],
+                true, numDims);
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::not_equal_self)],
+                false, numDims);
+    CHECK_VALUE(log, success[static_cast<size_t>(current_check::equal_other)],
+                false, numDims);
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::not_equal_other)],
+                true, numDims);
   }
 
   /** execute the test

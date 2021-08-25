@@ -32,27 +32,27 @@ inline void precalculate(sycl::range<dims> &rangeIn,
                          size_t elementsIn, size_t elementsOut);
 
 template <>
-inline void precalculate<1>(sycl::range<1> &rangeIn,
-                            sycl::range<1> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<1>(sycl::range<1> &rangeIn, sycl::range<1> &rangeOut,
+                            size_t &elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<1>(elementsIn);
   rangeOut = sycl::range<1>(elementsOut);
   elementsCount = elementsOut;
 }
 
 template <>
-inline void precalculate<2>(sycl::range<2> &rangeIn,
-                            sycl::range<2> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<2>(sycl::range<2> &rangeIn, sycl::range<2> &rangeOut,
+                            size_t &elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<2>(elementsIn, elementsIn);
   rangeOut = sycl::range<2>(elementsOut, elementsIn);
   elementsCount = (elementsOut * elementsIn);
 }
 
 template <>
-inline void precalculate<3>(sycl::range<3> &rangeIn,
-                            sycl::range<3> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<3>(sycl::range<3> &rangeIn, sycl::range<3> &rangeOut,
+                            size_t &elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<3>(elementsIn, elementsIn, elementsIn);
   rangeOut = sycl::range<3>(elementsOut, elementsIn, elementsIn);
   elementsCount = (elementsOut * elementsIn * elementsIn);
@@ -71,7 +71,7 @@ class test_buffer_reinterpret {
   size_t elementsIn, elementsOut;
 
   template <size_t dims>
-  void check(TIn* data, util::logger& log) {
+  void check(TIn *data, util::logger &log) {
     auto rangeIn = util::get_cts_object::range<dims>::get(1, 1, 1);
     auto rangeOut = util::get_cts_object::range<dims>::get(1, 1, 1);
     size_t elementsCount = 0;
@@ -102,8 +102,8 @@ class test_buffer_reinterpret_no_range {
                 "Can only omit range when targetting 1D or when reinterpreting "
                 "to a type of same size");
 
-  static void check(TIn* data, const size_t inputElemsPerDim,
-                    util::logger& log) {
+  static void check(TIn *data, const size_t inputElemsPerDim,
+                    util::logger &log) {
     size_t size = sizeof(TOut) * inputElemsPerDim / sizeof(TIn);
     sycl::range<inputDim> rangeIn =
         sycl_cts::util::get_cts_object::range<inputDim>::get(size, size, size);
@@ -139,8 +139,8 @@ class test_buffer_reinterpret_no_range {
 template <typename TIn, typename TOut, int inputDim>
 class test_buffer_reinterpret_no_range<TIn, TOut, inputDim, 1> {
  public:
-  static void check(TIn* data, const size_t inputElemsPerDim,
-                    util::logger& log) {
+  static void check(TIn *data, const size_t inputElemsPerDim,
+                    util::logger &log) {
     size_t size = sizeof(TOut) * inputElemsPerDim / sizeof(TIn);
     sycl::range<inputDim> rangeIn =
         sycl_cts::util::get_cts_object::range<inputDim>::get(size, size, size);
@@ -209,230 +209,211 @@ using flip_signedness_t =
  * Generic buffer API test function
  */
 template <typename T, int size, int dims, typename alloc>
-void test_buffer(util::logger &log, sycl::range<dims> &r,
-                 sycl::id<dims> &i) {
-  try {
-    std::unique_ptr<T[]> data(new T[size]);
-    std::fill(data.get(), (data.get() + size), 0);
+void test_buffer(util::logger &log, sycl::range<dims> &r, sycl::id<dims> &i) {
+  std::unique_ptr<T[]> data(new T[size]);
+  std::fill(data.get(), (data.get() + size), 0);
 
-    // Create a default offset with indices 0.
-    sycl::id<dims> offset;
+  // Create a default offset with indices 0.
+  sycl::id<dims> offset;
 
-    /* create a SYCL buffer from the host buffer */
-    sycl::buffer<T, dims, alloc> buf(data.get(), r);
+  /* create a SYCL buffer from the host buffer */
+  sycl::buffer<T, dims, alloc> buf(data.get(), r);
 
-    /* check the buffer returns a range */
-    auto ret_range = buf.get_range();
-    check_return_type<sycl::range<dims>>(log, ret_range,
-                                             "sycl::buffer::get_range()");
+  /* check the buffer returns a range */
+  auto ret_range = buf.get_range();
+  check_return_type<sycl::range<dims>>(log, ret_range,
+                                       "sycl::buffer::get_range()");
 
-    /* Check alias types */
+  /* Check alias types */
+  {
     {
-      {
-        check_type_existence<typename sycl::buffer<T, dims>::value_type>
-            typeCheck;
-        (void)typeCheck;
-      }
-      {
-        check_type_existence<typename sycl::buffer<T, dims>::reference>
-            typeCheck;
-        (void)typeCheck;
-      }
-      {
-        check_type_existence<
-            typename sycl::buffer<T, dims>::const_reference>
-            typeCheck;
-        (void)typeCheck;
-      }
-      {
-        check_type_existence<typename sycl::buffer<
-            T, dims, sycl::buffer_allocator>::allocator_type>
-            typeCheck;
-        (void)typeCheck;
-      }
+      check_type_existence<typename sycl::buffer<T, dims>::value_type>
+          typeCheck;
+      (void)typeCheck;
     }
-
-    /* Check that ret_range is the correct size */
-    for (int i = 0; i < dims; ++i) {
-      if (ret_range[i] != r[i]) {
-        FAIL(log,
-             "sycl::buffer::get_range does not return "
-             "the correct range size!");
-      }
-    }
-
-    /* check the buffer returns the correct element count */
-    auto count = buf.get_count();
-    check_return_type<size_t>(log, count, "sycl::buffer::get_count()");
-
-    if (count != size) {
-      FAIL(log,
-           "sycl::buffer::get_count() does not return "
-           "the correct number of elements");
-    }
-
-    /* check the buffer returns the correct byte size */
-    auto ret_size = buf.get_size();
-    check_return_type<size_t>(log, ret_size, "sycl::buffer::get_size()");
-
-    if (ret_size != size * sizeof(T)) {
-      FAIL(log,
-           "sycl::buffer::get_size() does not return "
-           "the correct size of the buffer");
-    }
-
-    auto q = util::get_cts_object::queue();
-
-    /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
-      auto acc =
-          buf.template get_access<sycl::access_mode::read_write>(cgh);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
-          log, acc, "sycl::buffer::get_access<read_write>(handler&)");
-      cgh.single_task(empty_kernel());
-    });
-
-    /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
-      auto acc =
-          buf.template get_access<sycl::access_mode::read,
-                                  sycl::target::constant_buffer>(
-              cgh);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read,
-                             sycl::target::constant_buffer>>(
-          log, acc,
-          "sycl::buffer::get_access<read, constant_buffer>(handler&)");
-      cgh.single_task(empty_kernel());
-    });
-
-    /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<sycl::access_mode::read_write>();
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::host_buffer>>(
-          log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
+      check_type_existence<typename sycl::buffer<T, dims>::reference> typeCheck;
+      (void)typeCheck;
     }
-
-    /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
-      auto acc = buf.template get_access<sycl::access_mode::read_write>(
-          cgh, r, offset);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
-          log, acc,
-          "sycl::buffer::get_access<read_write, global_buffer>(handler&, "
-          "range<>, id<>)");
-      cgh.single_task(empty_kernel());
-    });
-
-    /* check the buffer returns the correct type of accessor */
     {
-      auto acc = buf.template get_access<sycl::access_mode::read_write>(
-          r, offset);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::host_buffer>>(
-          log, acc,
-          "sycl::buffer::get_access<read_write, host_buffer>(range<>, "
-          "id<>)");
+      check_type_existence<typename sycl::buffer<T, dims>::const_reference>
+          typeCheck;
+      (void)typeCheck;
     }
-
-    /* check get_allocator() */
     {
-      sycl::buffer<T, dims, alloc> bufAlloc(data.get(), r);
-
-      auto allocator = bufAlloc.get_allocator();
-
-      check_return_type<alloc>(log, allocator, "get_allocator()");
-
-      auto ptr = allocator.allocate(1);
-      if (ptr == nullptr) {
-        FAIL(log, "get_allocator() returned an invalid allocator ");
-      }
-      allocator.deallocate(ptr, 1);
+      check_type_existence<typename sycl::buffer<
+          T, dims, sycl::buffer_allocator>::allocator_type>
+          typeCheck;
+      (void)typeCheck;
     }
-
-    /* check is_sub_buffer() */
-    {
-      sycl::buffer<T, dims> buf(r);
-      sycl::range<dims> sub_r = r;
-      sub_r[0] = r[0] - i[0];
-      sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
-      auto isSubBuffer = buf_sub.is_sub_buffer();
-      auto isOrigSubBuffer = buf.is_sub_buffer();
-      check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
-      if (!isSubBuffer || isOrigSubBuffer) {
-        FAIL(log, "is_sub_buffer() return a wrong result");
-      }
-    }
-
-    /* check buffer properties */
-    {
-      std::mutex mutex;
-      auto context = util::get_cts_object::context();
-      const sycl::property_list pl{
-          sycl::property::buffer::use_mutex(mutex),
-          sycl::property::buffer::context_bound(context)};
-
-      sycl::buffer<T, dims> buf(r, pl);
-
-      /* check has_property() */
-
-      auto hasUseMutexProperty =
-          buf.template has_property<sycl::property::buffer::use_mutex>();
-      check_return_type<bool>(log, hasUseMutexProperty,
-                              "has_property<use_mutex>()");
-      if (!hasUseMutexProperty) {
-        FAIL(log, "has_property<use_mutex> return a wrong result ");
-      }
-
-      auto hasContentBoundProperty = buf.template has_property<
-          sycl::property::buffer::context_bound>();
-      check_return_type<bool>(log, hasContentBoundProperty,
-                              "has_property<context_bound>()");
-      if (!hasContentBoundProperty) {
-        FAIL(log, "has_property<context_bound> return a wrong result ");
-      }
-
-      /* check get_property() */
-
-      auto useMutexProperty =
-          buf.template get_property<sycl::property::buffer::use_mutex>();
-      check_return_type<sycl::property::buffer::use_mutex>(
-          log, useMutexProperty, "get_property<use_mutex>()");
-      check_return_type<std::mutex*>(
-          log, useMutexProperty.get_mutex_ptr(),
-          "sycl::property::buffer::use_mutex::get_mutex_ptr()");
-
-      auto contentBoundProperty = buf.template get_property<
-          sycl::property::buffer::context_bound>();
-      check_return_type<sycl::property::buffer::context_bound>(
-          log, contentBoundProperty, "get_property<context_bound>()");
-      check_return_type<sycl::context>(
-          log, contentBoundProperty.get_context(),
-          "sycl::property::buffer::context_bound::get_context()");
-    }
-
-    q.wait_and_throw();
-  } catch (const sycl::exception& e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
+
+  /* Check that ret_range is the correct size */
+  for (int i = 0; i < dims; ++i) {
+    if (ret_range[i] != r[i]) {
+      FAIL(log,
+           "sycl::buffer::get_range does not return "
+           "the correct range size!");
+    }
+  }
+
+  /* check the buffer returns the correct element count */
+  auto count = buf.get_count();
+  check_return_type<size_t>(log, count, "sycl::buffer::get_count()");
+
+  if (count != size) {
+    FAIL(log,
+         "sycl::buffer::get_count() does not return "
+         "the correct number of elements");
+  }
+
+  /* check the buffer returns the correct byte size */
+  auto ret_size = buf.get_size();
+  check_return_type<size_t>(log, ret_size, "sycl::buffer::get_size()");
+
+  if (ret_size != size * sizeof(T)) {
+    FAIL(log,
+         "sycl::buffer::get_size() does not return "
+         "the correct size of the buffer");
+  }
+
+  auto q = util::get_cts_object::queue();
+
+  /* check the buffer returns the correct type of accessor */
+  q.submit([&](sycl::handler &cgh) {
+    auto acc = buf.template get_access<sycl::access_mode::read_write>(cgh);
+    check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                     sycl::target::global_buffer>>(
+        log, acc, "sycl::buffer::get_access<read_write>(handler&)");
+    cgh.single_task(empty_kernel());
+  });
+
+  /* check the buffer returns the correct type of accessor */
+  q.submit([&](sycl::handler &cgh) {
+    auto acc = buf.template get_access<sycl::access_mode::read,
+                                       sycl::target::constant_buffer>(cgh);
+    check_return_type<sycl::accessor<T, dims, sycl::access_mode::read,
+                                     sycl::target::constant_buffer>>(
+        log, acc, "sycl::buffer::get_access<read, constant_buffer>(handler&)");
+    cgh.single_task(empty_kernel());
+  });
+
+  /* check the buffer returns the correct type of accessor */
+  {
+    auto acc = buf.template get_access<sycl::access_mode::read_write>();
+    check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                     sycl::target::host_buffer>>(
+        log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
+  }
+
+  /* check the buffer returns the correct type of accessor */
+  q.submit([&](sycl::handler &cgh) {
+    auto acc =
+        buf.template get_access<sycl::access_mode::read_write>(cgh, r, offset);
+    check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                     sycl::target::global_buffer>>(
+        log, acc,
+        "sycl::buffer::get_access<read_write, global_buffer>(handler&, "
+        "range<>, id<>)");
+    cgh.single_task(empty_kernel());
+  });
+
+  /* check the buffer returns the correct type of accessor */
+  {
+    auto acc =
+        buf.template get_access<sycl::access_mode::read_write>(r, offset);
+    check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                     sycl::target::host_buffer>>(
+        log, acc,
+        "sycl::buffer::get_access<read_write, host_buffer>(range<>, "
+        "id<>)");
+  }
+
+  /* check get_allocator() */
+  {
+    sycl::buffer<T, dims, alloc> bufAlloc(data.get(), r);
+
+    auto allocator = bufAlloc.get_allocator();
+
+    check_return_type<alloc>(log, allocator, "get_allocator()");
+
+    auto ptr = allocator.allocate(1);
+    if (ptr == nullptr) {
+      FAIL(log, "get_allocator() returned an invalid allocator ");
+    }
+    allocator.deallocate(ptr, 1);
+  }
+
+  /* check is_sub_buffer() */
+  {
+    sycl::buffer<T, dims> buf(r);
+    sycl::range<dims> sub_r = r;
+    sub_r[0] = r[0] - i[0];
+    sycl::buffer<T, dims> buf_sub(buf, i, sub_r);
+    auto isSubBuffer = buf_sub.is_sub_buffer();
+    auto isOrigSubBuffer = buf.is_sub_buffer();
+    check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
+    if (!isSubBuffer || isOrigSubBuffer) {
+      FAIL(log, "is_sub_buffer() return a wrong result");
+    }
+  }
+
+  /* check buffer properties */
+  {
+    std::mutex mutex;
+    auto context = util::get_cts_object::context();
+    const sycl::property_list pl{
+        sycl::property::buffer::use_mutex(mutex),
+        sycl::property::buffer::context_bound(context)};
+
+    sycl::buffer<T, dims> buf(r, pl);
+
+    /* check has_property() */
+
+    auto hasUseMutexProperty =
+        buf.template has_property<sycl::property::buffer::use_mutex>();
+    check_return_type<bool>(log, hasUseMutexProperty,
+                            "has_property<use_mutex>()");
+    if (!hasUseMutexProperty) {
+      FAIL(log, "has_property<use_mutex> return a wrong result ");
+    }
+
+    auto hasContentBoundProperty =
+        buf.template has_property<sycl::property::buffer::context_bound>();
+    check_return_type<bool>(log, hasContentBoundProperty,
+                            "has_property<context_bound>()");
+    if (!hasContentBoundProperty) {
+      FAIL(log, "has_property<context_bound> return a wrong result ");
+    }
+
+    /* check get_property() */
+
+    auto useMutexProperty =
+        buf.template get_property<sycl::property::buffer::use_mutex>();
+    check_return_type<sycl::property::buffer::use_mutex>(
+        log, useMutexProperty, "get_property<use_mutex>()");
+    check_return_type<std::mutex *>(
+        log, useMutexProperty.get_mutex_ptr(),
+        "sycl::property::buffer::use_mutex::get_mutex_ptr()");
+
+    auto contentBoundProperty =
+        buf.template get_property<sycl::property::buffer::context_bound>();
+    check_return_type<sycl::property::buffer::context_bound>(
+        log, contentBoundProperty, "get_property<context_bound>()");
+    check_return_type<sycl::context>(
+        log, contentBoundProperty.get_context(),
+        "sycl::property::buffer::context_bound::get_context()");
+  }
+
+  q.wait_and_throw();
 }
 
 /**
-* @brief Tests reinterpreting a buffer
-* @tparam T Underlying data type of the input buffer
-* @tparam numDims Number of input dimensions
-* @param log Logger object
-*/
+ * @brief Tests reinterpreting a buffer
+ * @tparam T Underlying data type of the input buffer
+ * @tparam numDims Number of input dimensions
+ * @param log Logger object
+ */
 template <typename T, int numDims>
 void test_type_reinterpret(util::logger &log) {
   static constexpr size_t inputElemsPerDim = 4;
@@ -453,12 +434,13 @@ void test_type_reinterpret(util::logger &log) {
 
   // Check reinterpreting without a range to the same dimension
   test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
-      reinterpret_cast<T *>(reinterpretInputData), inputElemsPerDim,
-      log);
+      reinterpret_cast<T *>(reinterpretInputData), inputElemsPerDim, log);
 }
 
-template <typename T> class check_buffer_api_for_type {
-  template <typename alloc> void check_with_alloc(util::logger &log) {
+template <typename T>
+class check_buffer_api_for_type {
+  template <typename alloc>
+  void check_with_alloc(util::logger &log) {
     const int size = 8;
     sycl::range<1> range1d(size);
     sycl::range<2> range2d(size, size);
@@ -478,7 +460,7 @@ template <typename T> class check_buffer_api_for_type {
     test_type_reinterpret<T, 3>(log);
   }
 
-public:
+ public:
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + type_name_string<T>::get(typeName));
     check_with_alloc<sycl::buffer_allocator>(log);
@@ -486,5 +468,5 @@ public:
   }
 };
 
-} // namespace
-#endif // __SYCLCTS_TESTS_BUFFER_API_COMMON_H
+}  // namespace buffer_api_common
+#endif  // __SYCLCTS_TESTS_BUFFER_API_COMMON_H

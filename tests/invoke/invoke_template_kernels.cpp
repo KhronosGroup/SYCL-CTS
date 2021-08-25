@@ -16,10 +16,10 @@ using namespace sycl_cts;
 template <typename T>
 class templated_functor {
   typedef sycl::accessor<T, 1, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                         sycl::target::global_buffer>
       read_t;
   typedef sycl::accessor<T, 1, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                         sycl::target::global_buffer>
       write_t;
 
   read_t m_in;
@@ -63,67 +63,59 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto sycl_queue = util::get_cts_object::queue();
+    auto sycl_queue = util::get_cts_object::queue();
 
-      static const float test_float_value = 10;
-      static const double test_double_value = 10;
+    static const float test_float_value = 10;
+    static const double test_double_value = 10;
 
-      if (!test_kernel_functor(test_float_value, log, sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(test_double_value, log, sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<int8_t>(INT8_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<int16_t>(INT16_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<int32_t>(INT32_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<int64_t>(INT64_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<uint8_t>(UINT8_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<uint16_t>(UINT16_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<uint32_t>(UINT32_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      if (!test_kernel_functor(static_cast<uint64_t>(UINT64_MAX), log,
-                               sycl_queue)) {
-        return;
-      }
-
-      sycl_queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    if (!test_kernel_functor(test_float_value, log, sycl_queue)) {
+      return;
     }
+
+    if (!test_kernel_functor(test_double_value, log, sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<int8_t>(INT8_MAX), log, sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<int16_t>(INT16_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<int32_t>(INT32_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<int64_t>(INT64_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<uint8_t>(UINT8_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<uint16_t>(UINT16_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<uint32_t>(UINT32_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    if (!test_kernel_functor(static_cast<uint64_t>(UINT64_MAX), log,
+                             sycl_queue)) {
+      return;
+    }
+
+    sycl_queue.wait_and_throw();
   }
 };
 

@@ -17,7 +17,6 @@ template <int dim> class kernel;
 using namespace sycl_cts;
 
 template <int dim> void check_dim(util::logger &log) {
-  try {
     constexpr size_t globalRange1d = 6;
     constexpr size_t globalRange2d = 2;
     constexpr size_t globalRangeTotal = 24;
@@ -69,13 +68,6 @@ template <int dim> void check_dim(util::logger &log) {
         FAIL(log, errorMessage);
       }
     }
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
-  }
 }
 /** test sycl::range::get(int index) return size_t
  */

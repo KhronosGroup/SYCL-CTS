@@ -12,7 +12,8 @@
 
 namespace TEST_NAMESPACE {
 
-template <int dim> class kernel;
+template <int dim>
+class kernel;
 
 static const int globalItems1d = 8;
 static const int globalItems2d = 4;
@@ -29,70 +30,62 @@ static const int groupRangeTotal = (groupItemsTotal / localItemsTotal);
 
 using namespace sycl_cts;
 
-template <int dim> void check_dim(util::logger &log) {
-  try {
-    int outputData[groupItemsTotal];
-    for (int i = 0; i < groupItemsTotal; i++) {
-      outputData[i] = 0;
-    }
+template <int dim>
+void check_dim(util::logger &log) {
+  int outputData[groupItemsTotal];
+  for (int i = 0; i < groupItemsTotal; i++) {
+    outputData[i] = 0;
+  }
 
-    {
-      sycl::buffer<int, 1> outputBuffer(
-          outputData, sycl::range<1>(groupItemsTotal));
+  {
+    sycl::buffer<int, 1> outputBuffer(outputData,
+                                      sycl::range<1>(groupItemsTotal));
 
-      sycl::queue myQueue(util::get_cts_object::queue());
+    sycl::queue myQueue(util::get_cts_object::queue());
 
-      myQueue.submit([&](sycl::handler &cgh) {
+    myQueue.submit([&](sycl::handler &cgh) {
+      auto groupRange =
+          sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
+              groupRangeTotal>(groupRange1d, groupRange2d);
+      auto localRange =
+          sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
+              localItemsTotal>(localItems1d, localItems2d);
 
-        auto groupRange =
-            sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
-                groupRangeTotal>(groupRange1d, groupRange2d);
-        auto localRange =
-            sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
-                localItemsTotal>(localItems1d, localItems2d);
+      auto outputPtr =
+          outputBuffer.get_access<sycl::access_mode::read_write>(cgh);
 
-        auto outputPtr =
-            outputBuffer.get_access<sycl::access_mode::read_write>(cgh);
+      cgh.parallel_for_work_group<kernel<dim>>(
+          groupRange, localRange, [=](sycl::group<dim> group) {
+            // Create a local variable to store the work item id.
+            int work_item_id;
 
-        cgh.parallel_for_work_group<kernel<dim>>(
-            groupRange, localRange, [=](sycl::group<dim> group) {
-              // Create a local variable to store the work item id.
-              int work_item_id;
-
-              group.parallel_for_work_item([&](sycl::h_item<dim> item) {
-                // Assign the work item id to a local variable.
-                work_item_id =
-                    group.get_linear_id() * item.get_local_range().size() +
-                    item.get_local().get_linear_id();
-              });
-
-              // Assign a value for the work item stored. Although this is
-              // not recommened behaviour for the hierarchical API as there
-              // is a data race on the itemIds accessor and there is no
-              // guarantee which work item id will be taken, this test makes
-              // sure that the assigment is only being done once.
-              outputPtr[work_item_id] += 2;
+            group.parallel_for_work_item([&](sycl::h_item<dim> item) {
+              // Assign the work item id to a local variable.
+              work_item_id =
+                  group.get_linear_id() * item.get_local_range().size() +
+                  item.get_local().get_linear_id();
             });
-      });
-    }
 
-    for (int j = 0; j < groupRangeTotal; j++) {
-      int sum = 0;
-      for (int i = 0; i < localItemsTotal; i++) {
-        sum += outputData[j * groupRangeTotal + i];
-      }
-      // Exactly one thread should have written the memory
-      // for the current work group
-      if (sum != 2) {
-        FAIL(log, "Result not as expected.");
-      }
-    }
+            // Assign a value for the work item stored. Although this is
+            // not recommened behaviour for the hierarchical API as there
+            // is a data race on the itemIds accessor and there is no
+            // guarantee which work item id will be taken, this test makes
+            // sure that the assigment is only being done once.
+            outputPtr[work_item_id] += 2;
+          });
+    });
+  }
 
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
+  for (int j = 0; j < groupRangeTotal; j++) {
+    int sum = 0;
+    for (int i = 0; i < localItemsTotal; i++) {
+      sum += outputData[j * groupRangeTotal + i];
+    }
+    // Exactly one thread should have written the memory
+    // for the current work group
+    if (sum != 2) {
+      FAIL(log, "Result not as expected.");
+    }
   }
 }
 
@@ -118,4 +111,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace hierarchical_implicit_conditional__ */
+}  // namespace TEST_NAMESPACE

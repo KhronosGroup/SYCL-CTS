@@ -44,8 +44,7 @@ class log_helper {
       result.dataType = "sycl::char2";
     if (std::is_same<dataT, sycl::short3>::value)
       result.dataType = "sycl::short3";
-    if (std::is_same<dataT, sycl::int4>::value)
-      result.dataType = "sycl::int4";
+    if (std::is_same<dataT, sycl::int4>::value) result.dataType = "sycl::int4";
     if (std::is_same<dataT, sycl::long8>::value)
       result.dataType = "sycl::long8";
     if (std::is_same<dataT, sycl::float8>::value)
@@ -511,10 +510,10 @@ class copy_test_context {
 
   template <int dim>
   static sycl::id<dim> reconstruct_index(sycl::range<dim> range,
-                                             size_t linearIndex) {
+                                         size_t linearIndex) {
     assert(range.size() > 0);
     const auto r3 = sycl::range<3>(range[0], dim > 1 ? range[1] : 1,
-                                       dim > 2 ? range[2] : 1);
+                                   dim > 2 ? range[2] : 1);
     const auto d0 = linearIndex / (r3[1] * r3[2]);
     const auto d1 = linearIndex % (r3[1] * r3[2]) / r3[2];
     const auto d2 = linearIndex % (r3[1] * r3[2]) % r3[2];
@@ -575,8 +574,8 @@ class copy_test_context {
     }
   }
 
-  static void log_error(const log_helper& lh, sycl::id<3> index,
-                        dataT received, dataT expected) {
+  static void log_error(const log_helper& lh, sycl::id<3> index, dataT received,
+                        dataT expected) {
     std::stringstream ss;
     ss << "Unexpected value at index ";
     ss << "[" << index[0] << "," << index[1] << "," << index[2] << "]: ";
@@ -713,8 +712,7 @@ class copy_test_context {
  */
 template <typename dataT, int dim, mode_t mode_src, target_t target,
           bool strided, bool transposed>
-static void test_read_acc_copy_functions(log_helper lh,
-                                         sycl::queue& queue) {
+static void test_read_acc_copy_functions(log_helper lh, sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_target(target);
   {
     // Check copy(accessor, shared_ptr_class)
@@ -762,8 +760,7 @@ static void test_read_acc_copy_functions(log_helper lh,
  */
 template <typename dataT, int dim_src, int dim_dst, mode_t mode_src,
           mode_t mode_dst, target_t target, bool strided, bool transposed>
-static void test_write_acc_copy_functions(log_helper lh,
-                                          sycl::queue& queue) {
+static void test_write_acc_copy_functions(log_helper lh, sycl::queue& queue) {
   lh = lh.set_mode_src(mode_src).set_mode_dst(mode_dst).set_target(target);
   {
     // Check copy(shared_ptr_class, accessor)
@@ -938,34 +935,26 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      log_helper lh(&log);
+    log_helper lh(&log);
 
-      test_all_variants<int>(lh, queue);
-      test_all_variants<double>(lh, queue);
-      test_all_variants<sycl::double16>(lh, queue);
+    test_all_variants<int>(lh, queue);
+    test_all_variants<double>(lh, queue);
+    test_all_variants<sycl::double16>(lh, queue);
 
 #if defined(SYCL_CTS_FULL_CONFORMANCE)
-      test_all_variants<char>(lh, queue);
-      test_all_variants<short>(lh, queue);
-      test_all_variants<long>(lh, queue);
-      test_all_variants<float>(lh, queue);
+    test_all_variants<char>(lh, queue);
+    test_all_variants<short>(lh, queue);
+    test_all_variants<long>(lh, queue);
+    test_all_variants<float>(lh, queue);
 
-      test_all_variants<sycl::char2>(lh, queue);
-      test_all_variants<sycl::short3>(lh, queue);
-      test_all_variants<sycl::int4>(lh, queue);
-      test_all_variants<sycl::long8>(lh, queue);
-      test_all_variants<sycl::float8>(lh, queue);
+    test_all_variants<sycl::char2>(lh, queue);
+    test_all_variants<sycl::short3>(lh, queue);
+    test_all_variants<sycl::int4>(lh, queue);
+    test_all_variants<sycl::long8>(lh, queue);
+    test_all_variants<sycl::float8>(lh, queue);
 #endif
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
   }
 };
 

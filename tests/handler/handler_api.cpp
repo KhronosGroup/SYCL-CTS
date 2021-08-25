@@ -33,42 +33,32 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
-      const auto range = sycl::range<1>(1);
-      int data[1]{0};
+    auto queue = util::get_cts_object::queue();
+    const auto range = sycl::range<1>(1);
+    int data[1]{0};
 
-      {
-        auto buffer = sycl::buffer<int, 1>(range);
+    {
+      auto buffer = sycl::buffer<int, 1>(range);
 
-        log.note("Check require() method");
-        sycl::buffer<int, 1> resultBuf(data, sycl::range<1>(1));
-        auto placeholder =
-            sycl::accessor<int, 1, sycl::access_mode::write,
-                               sycl::target::global_buffer,
-                               sycl::access::placeholder::true_t>(
-                resultBuf);
+      log.note("Check require() method");
+      sycl::buffer<int, 1> resultBuf(data, sycl::range<1>(1));
+      auto placeholder =
+          sycl::accessor<int, 1, sycl::access_mode::write,
+                         sycl::target::global_buffer,
+                         sycl::access::placeholder::true_t>(resultBuf);
 
-        queue.submit([&](sycl::handler &cgh) {
-          cgh.require(placeholder);
+      queue.submit([&](sycl::handler &cgh) {
+        cgh.require(placeholder);
 
-          cgh.single_task<class test_placeholder>(
-              [=]() { placeholder[0] = 1; });
-
-        });
-      }
-
-      if (data[0] != 1) {
-        FAIL(log, "requires method test did not set accessor data correctly");
-      }
-
-      queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+        cgh.single_task<class test_placeholder>([=]() { placeholder[0] = 1; });
+      });
     }
+
+    if (data[0] != 1) {
+      FAIL(log, "requires method test did not set accessor data correctly");
+    }
+
+    queue.wait_and_throw();
   }
 };
 

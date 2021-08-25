@@ -43,82 +43,77 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
 #ifdef SYCL_BACKEND_OPENCL
-    try {
-      sycl::queue q{util::get_cts_object::queue()};
-      if (q.get_backend() != sycl::backend::opencl) {
-        log.note("Interop part is not supported on OpenCL backend type");
-        return;
-      }
+    sycl::queue q{util::get_cts_object::queue()};
+    if (q.get_backend() != sycl::backend::opencl) {
+      log.note("Interop part is not supported on OpenCL backend type");
+      return;
+    }
 
-      // check get_native_queue
-      {
-        cl_command_queue cl_native_queue{nullptr};
-        q.submit([&](sycl::handler& cgh) {
-          cgh.host_task([=, &cl_native_queue](sycl::interop_handle ih) {
-            cl_native_queue = ih.get_native_queue();
-          });
+    // check get_native_queue
+    {
+      cl_command_queue cl_native_queue{nullptr};
+      q.submit([&](sycl::handler& cgh) {
+        cgh.host_task([=, &cl_native_queue](sycl::interop_handle ih) {
+          cl_native_queue = ih.get_native_queue();
         });
-        q.wait_and_throw();
+      });
+      q.wait_and_throw();
 
-        if (cl_native_queue != sycl::get_native<sycl::backend::opencl>(q))
-          FAIL(log, "get_native_queue query has failed.");
-      }
+      if (cl_native_queue != sycl::get_native<sycl::backend::opencl>(q))
+        FAIL(log, "get_native_queue query has failed.");
+    }
 
-      // check get_native_device
-      {
-        cl_device_id cl_native_device_id{nullptr};
-        q.submit([&](sycl::handler& cgh) {
-          cgh.host_task([=, &cl_native_device_id](sycl::interop_handle ih) {
-            cl_native_device_id = ih.get_native_device();
-          });
+    // check get_native_device
+    {
+      cl_device_id cl_native_device_id{nullptr};
+      q.submit([&](sycl::handler& cgh) {
+        cgh.host_task([=, &cl_native_device_id](sycl::interop_handle ih) {
+          cl_native_device_id = ih.get_native_device();
         });
-        q.wait_and_throw();
+      });
+      q.wait_and_throw();
 
-        if (cl_native_device_id !=
-            sycl::get_native<sycl::backend::opencl>(q.get_device()))
-          FAIL(log, "get_native_device query has failed.");
-      }
+      if (cl_native_device_id !=
+          sycl::get_native<sycl::backend::opencl>(q.get_device()))
+        FAIL(log, "get_native_device query has failed.");
+    }
 
-      // check get_native_context
-      {
-        cl_context cl_native_context{nullptr};
-        q.submit([&](sycl::handler& cgh) {
-          cgh.host_task([=, &cl_native_context](sycl::interop_handle ih) {
-            cl_native_context = ih.get_native_context();
-          });
+    // check get_native_context
+    {
+      cl_context cl_native_context{nullptr};
+      q.submit([&](sycl::handler& cgh) {
+        cgh.host_task([=, &cl_native_context](sycl::interop_handle ih) {
+          cl_native_context = ih.get_native_context();
         });
-        q.wait_and_throw();
+      });
+      q.wait_and_throw();
 
-        if (cl_native_context !=
-            sycl::get_native<sycl::backend::opencl>(q.get_context()))
-          FAIL(log, "get_native_context query has failed.");
-      }
+      if (cl_native_context !=
+          sycl::get_native<sycl::backend::opencl>(q.get_context()))
+        FAIL(log, "get_native_context query has failed.");
+    }
 
-      // execute OpenCL function
-      {
-        const size_t size{16};
-        const size_t pattern{13};
-        sycl::buffer<size_t, 1> buf(sycl::range<1>{size});
-        q.submit([&](sycl::handler& cgh) {
-          auto buf_acc_dev{buf.get_access<sycl::access_mode::read_write>(cgh)};
-          cgh.host_task([=](sycl::interop_handle ih) {
-            cl_command_queue native_queue = ih.get_native_queue();
-            cl_mem native_mem = ih.get_native_mem(buf_acc_dev);
-            call_opencl(native_queue, native_mem, size, pattern);
-          });
+    // execute OpenCL function
+    {
+      const size_t size{16};
+      const size_t pattern{13};
+      sycl::buffer<size_t, 1> buf(sycl::range<1>{size});
+      q.submit([&](sycl::handler& cgh) {
+        auto buf_acc_dev{buf.get_access<sycl::access_mode::read_write>(cgh)};
+        cgh.host_task([=](sycl::interop_handle ih) {
+          cl_command_queue native_queue = ih.get_native_queue();
+          cl_mem native_mem = ih.get_native_mem(buf_acc_dev);
+          call_opencl(native_queue, native_mem, size, pattern);
         });
+      });
 
-        {
-          auto buf_acc_host{buf.get_access<sycl::access_mode::read>()};
-          for (int i = 0; i < size; ++i) {
-            if (buf_acc_host[i] != pattern)
-              FAIL(log, "OpenCL invocation has failed.");
-          }
+      {
+        auto buf_acc_host{buf.get_access<sycl::access_mode::read>()};
+        for (int i = 0; i < size; ++i) {
+          if (buf_acc_host[i] != pattern)
+            FAIL(log, "OpenCL invocation has failed.");
         }
       }
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      FAIL(log, "An unexpected SYCL exception was caught");
     }
 #else
     log.note("The test is skipped because OpenCL back-end is not supported");

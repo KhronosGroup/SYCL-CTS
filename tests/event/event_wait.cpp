@@ -18,7 +18,7 @@ class add_kernel;
 class mul_kernel;
 
 /** test the wait api for sycl::event
-*/
+ */
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
@@ -28,10 +28,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
   }
 
   /* enqueue an add command and return the complete event */
-  sycl::event add_operation(sycl_cts::util::logger &log,
-                                sycl::queue &queue,
-                                sycl::buffer<float, 1> &d_data,
-                                const float operand) {
+  sycl::event add_operation(sycl_cts::util::logger &log, sycl::queue &queue,
+                            sycl::buffer<float, 1> &d_data,
+                            const float operand) {
     return queue.submit([&](sycl::handler &cgh) {
       auto a_data = d_data.get_access<sycl::access_mode::read_write>(cgh);
 
@@ -40,15 +39,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
   }
 
   /* enqueue a mul command and return the complete event */
-  sycl::event mul_operation(sycl_cts::util::logger &log,
-                                sycl::queue &queue,
-                                sycl::buffer<float, 1> &d_data,
-                                const float operand) {
+  sycl::event mul_operation(sycl_cts::util::logger &log, sycl::queue &queue,
+                            sycl::buffer<float, 1> &d_data,
+                            const float operand) {
     return queue.submit([&](sycl::handler &cgh) {
       auto a_data = d_data.get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.single_task<class mul_kernel>([=]() { a_data[0] *= operand; });
-
     });
   }
 
@@ -75,15 +72,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
             break;
           }
           case 2: {  // Test sycl::event::wait(std::vector<event>)
-            std::vector<sycl::event> evt_list =
-                complete.get_wait_list();
+            std::vector<sycl::event> evt_list = complete.get_wait_list();
             sycl::event::wait(evt_list);
             break;
           }
           case 3: {  // Test
             // sycl::event::wait_and_throw(std::vector<event>)
-            std::vector<sycl::event> evt_list =
-                complete.get_wait_list();
+            std::vector<sycl::event> evt_list = complete.get_wait_list();
             sycl::event::wait_and_throw(evt_list);
             break;
           }
@@ -101,22 +96,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(sycl_cts::util::logger &log) override {
-    try {
-      auto queueA = util::get_cts_object::queue();
-      auto queueB = util::get_cts_object::queue();
+    auto queueA = util::get_cts_object::queue();
+    auto queueB = util::get_cts_object::queue();
 
-      if (!wait_and_exec(log, queueA, queueB)) {
-        FAIL(log, "sycl::event::wait() tests failed");
-      }
-
-      queueA.wait_and_throw();
-      queueB.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    if (!wait_and_exec(log, queueA, queueB)) {
+      FAIL(log, "sycl::event::wait() tests failed");
     }
+
+    queueA.wait_and_throw();
+    queueB.wait_and_throw();
   }
 };
 

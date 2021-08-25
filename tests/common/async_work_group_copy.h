@@ -10,11 +10,11 @@
 #ifndef __SYCLCTS_TESTS_COMMON_ASYNC_WORK_GROUP_COPY_H
 #define __SYCLCTS_TESTS_COMMON_ASYNC_WORK_GROUP_COPY_H
 
+#include "../../util/array.h"
+#include "../../util/variadic.h"
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "../common/type_coverage.h"
-#include "../../util/array.h"
-#include "../../util/variadic.h"
 
 /**
  * @brief Initializes buffer given by pointer and size with series of 1 and 0
@@ -28,7 +28,6 @@ template <size_t bufferSize, typename T,
           sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
     sycl::multi_ptr<T, addressSpace> ptr) {
-
   sycl_cts::util::array<T, bufferSize> result;
 
   /** We use bool values because bool can be converted to the integral
@@ -61,13 +60,13 @@ template <size_t bufferSize, bool value, typename T,
           sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
     sycl::multi_ptr<T, addressSpace> ptr) {
-
   sycl_cts::util::array<T, bufferSize> result;
 
   auto iteratorPtr = ptr;
   for (size_t i = 0; i < bufferSize; ++i, ++iteratorPtr) {
     const T item{static_cast<T>(value)};
-    //In case of vec<> all elements of vector are initialized to the value given
+    // In case of vec<> all elements of vector are initialized to the value
+    // given
     result[i] = item;
     *iteratorPtr = item;
   }
@@ -103,10 +102,9 @@ inline size_t get_async_wg_copy_stride(sycl::global_ptr<T>) {
  * @param dstPtr Destination pointer to use for call
  */
 template <size_t bufferSize, size_t stride, typename instanceT,
-          typename srcPtrT, typename dstPtrT, typename ... callArgsT>
-bool check_async_wg_copy_impl(instanceT&& instance,
-                              srcPtrT srcPtr, dstPtrT dstPtr,
-                              callArgsT ... callArgs) {
+          typename srcPtrT, typename dstPtrT, typename... callArgsT>
+bool check_async_wg_copy_impl(instanceT&& instance, srcPtrT srcPtr,
+                              dstPtrT dstPtr, callArgsT... callArgs) {
   const size_t numElements = bufferSize / stride;
   const size_t srcStride = get_async_wg_copy_stride<stride>(srcPtr);
   const size_t dstStride = get_async_wg_copy_stride<stride>(dstPtr);
@@ -116,11 +114,11 @@ bool check_async_wg_copy_impl(instanceT&& instance,
       create_async_wg_copy_fixed<bufferSize, false>(dstPtr);
 
   // Force const-correctness
-  typename std::decay<instanceT>::type const & constInstance = instance;
+  typename std::decay<instanceT>::type const& constInstance = instance;
 
   // Use async_work_group_copy
-  auto event = constInstance.async_work_group_copy(dstPtr, srcPtr,
-                                                   numElements, callArgs...);
+  auto event = constInstance.async_work_group_copy(dstPtr, srcPtr, numElements,
+                                                   callArgs...);
   constInstance.wait_for(event);
 
   bool succeed = true;
@@ -138,8 +136,8 @@ bool check_async_wg_copy_impl(instanceT&& instance,
     succeed &= check_equal_values(*output, *input);
     ++output;
     for (size_t j = 1; j < dstStride; ++j) {
-      succeed &= check_equal_values(*output,
-                                    referenceOutput[i * dstStride + j]);
+      succeed &=
+          check_equal_values(*output, referenceOutput[i * dstStride + j]);
       ++output;
     }
     input += srcStride;
@@ -164,10 +162,10 @@ bool check_async_wg_copy_impl(instanceT&& instance,
  * @param srcPtr Source pointer to use for call
  * @param dstPtr Destination pointer to use for call
  */
-template <size_t bufferSize, typename instanceT,
-          typename srcPtrT, typename dstPtrT>
-bool check_async_wg_copy(instanceT&& instance,
-                         srcPtrT&& srcPtr, dstPtrT&& dstPtr) {
+template <size_t bufferSize, typename instanceT, typename srcPtrT,
+          typename dstPtrT>
+bool check_async_wg_copy(instanceT&& instance, srcPtrT&& srcPtr,
+                         dstPtrT&& dstPtr) {
   return check_async_wg_copy_impl<bufferSize, 1U>(instance, srcPtr, dstPtr);
 }
 
@@ -186,8 +184,8 @@ bool check_async_wg_copy(instanceT&& instance,
  */
 template <size_t bufferSize, size_t stride, typename instanceT,
           typename srcPtrT, typename dstPtrT>
-bool check_async_wg_copy(instanceT&& instance,
-                         srcPtrT&& srcPtr, dstPtrT&& dstPtr) {
+bool check_async_wg_copy(instanceT&& instance, srcPtrT&& srcPtr,
+                         dstPtrT&& dstPtr) {
   return check_async_wg_copy_impl<bufferSize, stride>(instance, srcPtr, dstPtr,
                                                       stride);
 }
@@ -211,15 +209,15 @@ struct check_wait_for {
    * @param dstPtr Pointer to the destination buffer to use for call
    * @param events Storage for device event instances
    */
-  template <typename instanceT, typename T, typename ... eventsT>
+  template <typename instanceT, typename T, typename... eventsT>
   returnT operator()(instanceT&& instance, sycl::local_ptr<T> srcPtr,
-                     sycl::global_ptr<T> dstPtr, eventsT ... events) const {
+                     sycl::global_ptr<T> dstPtr, eventsT... events) const {
     constexpr size_t nEvents = sizeof...(eventsT);
     constexpr size_t stride = nEvents;
     constexpr size_t numElements = bufferSize / stride;
 
     static_assert(numElements * stride == bufferSize,
-      "Invalid number of events for the given buffer size");
+                  "Invalid number of events for the given buffer size");
 
     // Initialize input and output
     const auto referenceInput =
@@ -227,19 +225,19 @@ struct check_wait_for {
     create_async_wg_copy_fixed<bufferSize, false>(dstPtr);
 
     // Force const-correctness
-    typename std::decay<instanceT>::type const & constInstance = instance;
+    typename std::decay<instanceT>::type const& constInstance = instance;
 
     // Create event objects
     auto source = srcPtr;
     auto destination = dstPtr;
 
     int packExpansion[nEvents] = {(
-      events = constInstance.async_work_group_copy(destination, source,
-                                                   numElements, stride),
-      source+= numElements, // local_ptr has no stride
-      ++destination,
-      0 // Dummy initialization value
-    )...};
+        events = constInstance.async_work_group_copy(destination, source,
+                                                     numElements, stride),
+        source += numElements,  // local_ptr has no stride
+        ++destination,
+        0  // Dummy initialization value
+        )...};
     /** Every initializer clause is sequenced before any initializer clause
      *  that follows it in the braced-init-list. Every expression in comma
      *  operator is also strictly sequnced. So we can use increment safely.
@@ -261,7 +259,7 @@ struct check_wait_for {
     }
     return succeed;
   }
-}; // check_wait_for
+};  // check_wait_for
 
 /**
  * @brief Common test logic for nd_item and group async_work_group_copy() calls
@@ -272,109 +270,108 @@ struct check_wait_for {
  * @param instanceName The string naming the nd_item or group instance for logs
  * @param typeName The string naming the type of data for logs
  */
-template<class kernelInvokeT, typename T>
-void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
+template <class kernelInvokeT, typename T>
+void test_async_wg_copy(sycl::queue& queue, sycl_cts::util::logger& log,
                         const std::string& instanceName,
                         const std::string& typeName) {
   constexpr int dim = kernelInvokeT::dimensions;
   using instanceT = typename kernelInvokeT::parameterT;
 
-  enum class check: size_t {
+  enum class check : size_t {
     local_to_global_no_stride = 0U,
     global_to_local_no_stride,
     local_to_global_with_stride,
     global_to_local_with_stride,
-    nChecks //should be the latest one
+    nChecks  // should be the latest one
   };
-  std::array<bool, to_integral(check::nChecks)> result =
-    {true, true, true, true};
+  std::array<bool, to_integral(check::nChecks)> result = {true, true, true,
+                                                          true};
 
   constexpr size_t RANGE_SIZE_TOTAL = 64;
   constexpr size_t RANGE_SIZE_1D = 2;
   constexpr size_t RANGE_SIZE_2D = 4;
-  constexpr size_t BUFFER_SIZE = 10; //enough to verify stride
+  constexpr size_t BUFFER_SIZE = 10;  // enough to verify stride
 
   const auto workItemRange =
       sycl_cts::util::get_cts_object::range<dim>::get(1, 1, 1);
   const auto workGroupRange =
-      sycl_cts::util::get_cts_object::range<dim>::
-          template get_fixed_size<RANGE_SIZE_TOTAL>(RANGE_SIZE_1D,
-                                                    RANGE_SIZE_2D);
+      sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
+          RANGE_SIZE_TOTAL>(RANGE_SIZE_1D, RANGE_SIZE_2D);
   {
     const size_t globalBufferSize = workGroupRange.size() * BUFFER_SIZE;
     auto buf = sycl::buffer<T, 1>(sycl::range<1>(globalBufferSize));
     auto resultBuffer =
-        sycl::buffer<bool, 1>(result.data(),
-                                  sycl::range<1>(result.size()));
+        sycl::buffer<bool, 1>(result.data(), sycl::range<1>(result.size()));
 
-    queue.submit([&](sycl::handler &cgh) {
-    auto accResult =
-        resultBuffer.template get_access<sycl::access_mode::write>(cgh);
-    auto accGlobal =
-        buf.template get_access<sycl::access_mode::read_write>(cgh);
-    auto accLocal =
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::local>(
-            sycl::range<1>(BUFFER_SIZE), cgh);
+    queue.submit([&](sycl::handler& cgh) {
+      auto accResult =
+          resultBuffer.template get_access<sycl::access_mode::write>(cgh);
+      auto accGlobal =
+          buf.template get_access<sycl::access_mode::read_write>(cgh);
+      auto accLocal =
+          sycl::accessor<T, 1, sycl::access_mode::read_write,
+                         sycl::target::local>(sycl::range<1>(BUFFER_SIZE), cgh);
 
-    kernelInvokeT{}(
-        cgh, workGroupRange, workItemRange,
-        [=](instanceT& instance, const size_t index) {
-          // Each work-group uses its own part of global buffer,
-          // single work-item per work-group
-          using difference_type =
-              typename sycl::global_ptr<T>::difference_type;
-          const auto globalBufferOffset =
-              static_cast<difference_type>(index * BUFFER_SIZE);
+      kernelInvokeT{}(cgh, workGroupRange, workItemRange,
+                      [=](instanceT& instance, const size_t index) {
+                        // Each work-group uses its own part of global buffer,
+                        // single work-item per work-group
+                        using difference_type =
+                            typename sycl::global_ptr<T>::difference_type;
+                        const auto globalBufferOffset =
+                            static_cast<difference_type>(index * BUFFER_SIZE);
 
-          auto ptrGlobal = accGlobal.get_pointer() + globalBufferOffset;
-          auto ptrLocal = accLocal.get_pointer();
+                        auto ptrGlobal =
+                            accGlobal.get_pointer() + globalBufferOffset;
+                        auto ptrLocal = accLocal.get_pointer();
 
-          if (!check_async_wg_copy<BUFFER_SIZE>(instance, ptrLocal, ptrGlobal)){
-            const size_t resultIndex =
-                to_integral(check::local_to_global_no_stride);
-            accResult[resultIndex] = false;
-          }
-          if (!check_async_wg_copy<BUFFER_SIZE>(instance, ptrGlobal, ptrLocal)){
-            const size_t resultIndex =
-                to_integral(check::global_to_local_no_stride);
-            accResult[resultIndex] = false;
-          }
-          constexpr size_t stride = 2;
-          if (!check_async_wg_copy<BUFFER_SIZE, stride>(instance,
-                                                        ptrLocal, ptrGlobal)){
-            const size_t resultIndex =
-                to_integral(check::local_to_global_with_stride);
-            accResult[resultIndex] = false;
-          }
-          if (!check_async_wg_copy<BUFFER_SIZE, stride>(instance,
-                                                        ptrGlobal, ptrLocal)){
-            const size_t resultIndex =
-                to_integral(check::global_to_local_with_stride);
-            accResult[resultIndex] = false;
-          }
-        });
+                        if (!check_async_wg_copy<BUFFER_SIZE>(
+                                instance, ptrLocal, ptrGlobal)) {
+                          const size_t resultIndex =
+                              to_integral(check::local_to_global_no_stride);
+                          accResult[resultIndex] = false;
+                        }
+                        if (!check_async_wg_copy<BUFFER_SIZE>(
+                                instance, ptrGlobal, ptrLocal)) {
+                          const size_t resultIndex =
+                              to_integral(check::global_to_local_no_stride);
+                          accResult[resultIndex] = false;
+                        }
+                        constexpr size_t stride = 2;
+                        if (!check_async_wg_copy<BUFFER_SIZE, stride>(
+                                instance, ptrLocal, ptrGlobal)) {
+                          const size_t resultIndex =
+                              to_integral(check::local_to_global_with_stride);
+                          accResult[resultIndex] = false;
+                        }
+                        if (!check_async_wg_copy<BUFFER_SIZE, stride>(
+                                instance, ptrGlobal, ptrLocal)) {
+                          const size_t resultIndex =
+                              to_integral(check::global_to_local_with_stride);
+                          accResult[resultIndex] = false;
+                        }
+                      });
     });
   }
   if (!result[to_integral(check::local_to_global_no_stride)]) {
     FAIL(log, instanceName + "<" + std::to_string(dim) +
-        ">: local_ptr to global_ptr without stride failed for " +
-        type_name_string<T>::get(typeName));
+                  ">: local_ptr to global_ptr without stride failed for " +
+                  type_name_string<T>::get(typeName));
   }
   if (!result[to_integral(check::global_to_local_no_stride)]) {
     FAIL(log, instanceName + "<" + std::to_string(dim) +
-        ">: global_ptr to local_ptr without stride failed for " +
-        type_name_string<T>::get(typeName));
+                  ">: global_ptr to local_ptr without stride failed for " +
+                  type_name_string<T>::get(typeName));
   }
   if (!result[to_integral(check::local_to_global_with_stride)]) {
     FAIL(log, instanceName + "<" + std::to_string(dim) +
-        ">: local_ptr to global_ptr with stride failed for " +
-        type_name_string<T>::get(typeName));
+                  ">: local_ptr to global_ptr with stride failed for " +
+                  type_name_string<T>::get(typeName));
   }
   if (!result[to_integral(check::global_to_local_with_stride)]) {
     FAIL(log, instanceName + "<" + std::to_string(dim) +
-        ">: global_ptr to local_ptr with stride failed for " +
-        type_name_string<T>::get(typeName));
+                  ">: global_ptr to local_ptr with stride failed for " +
+                  type_name_string<T>::get(typeName));
   }
 }
 
@@ -387,8 +384,8 @@ void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
  * @param instanceName The string naming the nd_item or group instance for logs
  * @param typeName The string naming the type of data for logs
  */
-template<class kernelInvokeT, typename T>
-void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
+template <class kernelInvokeT, typename T>
+void test_wait_for(sycl::queue& queue, sycl_cts::util::logger& log,
                    const std::string& instanceName) {
   constexpr int dim = kernelInvokeT::dimensions;
   using instanceT = typename kernelInvokeT::parameterT;
@@ -404,58 +401,53 @@ void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
   const auto workItemRange =
       sycl_cts::util::get_cts_object::range<dim>::get(1, 1, 1);
   const auto workGroupRange =
-      sycl_cts::util::get_cts_object::range<dim>::
-          template get_fixed_size<RANGE_SIZE_TOTAL>(RANGE_SIZE_1D,
-                                                    RANGE_SIZE_2D);
+      sycl_cts::util::get_cts_object::range<dim>::template get_fixed_size<
+          RANGE_SIZE_TOTAL>(RANGE_SIZE_1D, RANGE_SIZE_2D);
   {
     const size_t globalBufferSize = workGroupRange.size() * BUFFER_SIZE;
     auto buf = sycl::buffer<T, 1>(sycl::range<1>(globalBufferSize));
-    auto resultBuffer =
-        sycl::buffer<bool, 1>(&result, sycl::range<1>(1));
+    auto resultBuffer = sycl::buffer<bool, 1>(&result, sycl::range<1>(1));
 
-    queue.submit([&](sycl::handler &cgh) {
-    auto accResult =
-        resultBuffer.template get_access<sycl::access_mode::write>(cgh);
-    auto accGlobal =
-        buf.template get_access<sycl::access_mode::read_write>(cgh);
-    auto accLocal =
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::local>(
-            sycl::range<1>(BUFFER_SIZE), cgh);
+    queue.submit([&](sycl::handler& cgh) {
+      auto accResult =
+          resultBuffer.template get_access<sycl::access_mode::write>(cgh);
+      auto accGlobal =
+          buf.template get_access<sycl::access_mode::read_write>(cgh);
+      auto accLocal =
+          sycl::accessor<T, 1, sycl::access_mode::read_write,
+                         sycl::target::local>(sycl::range<1>(BUFFER_SIZE), cgh);
 
-    auto events =
-        sycl::accessor<sycl::device_event, 1,
-                           sycl::access_mode::read_write,
-                           sycl::target::local>(
-            sycl::range<1>(N_EVENTS_MAX), cgh);
+      auto events =
+          sycl::accessor<sycl::device_event, 1, sycl::access_mode::read_write,
+                         sycl::target::local>(sycl::range<1>(N_EVENTS_MAX),
+                                              cgh);
 
-    kernelInvokeT{}(
-        cgh, workGroupRange, workItemRange,
-        [=](instanceT& instance, const size_t index) {
+      kernelInvokeT{}(
+          cgh, workGroupRange, workItemRange,
+          [=](instanceT& instance, const size_t index) {
+            // Each work-group uses its own part of global buffer,
+            // single work-item per work-group
+            using difference_type =
+                typename sycl::global_ptr<T>::difference_type;
+            const auto globalBufferOffset =
+                static_cast<difference_type>(index * BUFFER_SIZE);
 
-          // Each work-group uses its own part of global buffer,
-          // single work-item per work-group
-          using difference_type =
-              typename sycl::global_ptr<T>::difference_type;
-          const auto globalBufferOffset =
-              static_cast<difference_type>(index * BUFFER_SIZE);
+            auto ptrGlobal = accGlobal.get_pointer() + globalBufferOffset;
+            auto ptrLocal = accLocal.get_pointer();
 
-          auto ptrGlobal = accGlobal.get_pointer() + globalBufferOffset;
-          auto ptrLocal = accLocal.get_pointer();
-
-          if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<1>(events,
-                  instance, ptrLocal, ptrGlobal)){
-            accResult[0] = false;
-          }
-          if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<2>(events,
-                  instance, ptrLocal, ptrGlobal)){
-            accResult[0] = false;
-          }
-          if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<N_EVENTS_MAX>(
-                  events, instance, ptrLocal, ptrGlobal)){
-            accResult[0] = false;
-          }
-        });
+            if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<1>(
+                    events, instance, ptrLocal, ptrGlobal)) {
+              accResult[0] = false;
+            }
+            if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<2>(
+                    events, instance, ptrLocal, ptrGlobal)) {
+              accResult[0] = false;
+            }
+            if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<N_EVENTS_MAX>(
+                    events, instance, ptrLocal, ptrGlobal)) {
+              accResult[0] = false;
+            }
+          });
     });
   }
   if (!result) {
@@ -473,14 +465,14 @@ void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
  * @param log Logger instance to use
  * @param args Arguments to forward into the call
  */
-template<template<int, typename...> class action,
-         typename ... actionArgsT, typename ... argsT>
-void check_all_dims(sycl::queue &queue, sycl_cts::util::logger &log,
-                    argsT&& ... args) {
-    action<1, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
-    action<2, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
-    action<3, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
-    queue.wait_and_throw();
+template <template <int, typename...> class action, typename... actionArgsT,
+          typename... argsT>
+void check_all_dims(sycl::queue& queue, sycl_cts::util::logger& log,
+                    argsT&&... args) {
+  action<1, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
+  action<2, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
+  action<3, actionArgsT...>{}(queue, log, std::forward<argsT>(args)...);
+  queue.wait_and_throw();
 }
 
 /**
@@ -492,19 +484,13 @@ void check_all_dims(sycl::queue &queue, sycl_cts::util::logger &log,
  * @param log Logger instance to use
  * @param args Arguments to forward into the call
  */
-template<template<int, typename...> class action,
-         typename ... actionArgsT, typename ... argsT>
-void check_all_dims(sycl_cts::util::logger &log, argsT&& ... args) {
-  try {
-    auto queue = once_per_unit::get_queue();
+template <template <int, typename...> class action, typename... actionArgsT,
+          typename... argsT>
+void check_all_dims(sycl_cts::util::logger& log, argsT&&... args) {
+  auto queue = once_per_unit::get_queue();
 
-    check_all_dims<action, actionArgsT...>(queue, log,
-                                           std::forward<argsT>(args)...);
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-    FAIL(log, errorMsg);
-  }
+  check_all_dims<action, actionArgsT...>(queue, log,
+                                         std::forward<argsT>(args)...);
 }
 
 #endif  // __SYCLCTS_TESTS_COMMON_ASYNC_WORK_GROUP_COPY_H

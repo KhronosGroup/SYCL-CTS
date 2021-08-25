@@ -18,18 +18,16 @@ using namespace sycl_cts;
 class custom_exception : public sycl::exception {
  public:
   struct reference {
-    static std::string what() {
-      return "custom_exception";
-    }
+    static std::string what() { return "custom_exception"; }
     static std::error_code code() {
       return sycl::make_error_code(sycl::errc::runtime);
     }
-    static const std::error_category& category() {
+    static const std::error_category &category() {
       return sycl::sycl_category();
     }
   };
-  custom_exception(sycl::context ctx) :
-      sycl::exception(ctx, reference::code(), reference::what()) {}
+  custom_exception(sycl::context ctx)
+      : sycl::exception(ctx, reference::code(), reference::what()) {}
 };
 
 /** @brief Verify exception propagation from command group
@@ -109,17 +107,11 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      check_exception_api(log);
-      check_exception_usage(log);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
-    }
+    check_exception_api(log);
+    check_exception_usage(log);
   }
 };
 
 util::test_proxy<TEST_NAME> proxy;
 
-}  // TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE

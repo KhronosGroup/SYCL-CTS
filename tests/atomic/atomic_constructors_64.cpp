@@ -43,29 +43,22 @@ class TEST_NAME : public util::test_base {
   /** Execute the test
    */
   virtual void run(util::logger &log) override {
-    try {
-      auto testQueue = util::get_cts_object::queue();
-      auto testDevice = testQueue.get_device();
+    auto testQueue = util::get_cts_object::queue();
+    auto testDevice = testQueue.get_device();
 
-      /** Check atomics for supported types
-       */
-      if (testDevice.has_extension("cl_khr_int64_base_atomics") ||
-          testDevice.has_extension("cl_khr_int64_extended_atomics")) {
-        if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
-          check_atomics_for_type<long>(log, testQueue);
-          check_atomics_for_type<unsigned long>(log, testQueue);
-        }
-        check_atomics_for_type<long long>(log, testQueue);
-        check_atomics_for_type<unsigned long long>(log, testQueue);
+    /** Check atomics for supported types
+     */
+    if (testDevice.has_extension("cl_khr_int64_base_atomics") ||
+        testDevice.has_extension("cl_khr_int64_extended_atomics")) {
+      if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
+        check_atomics_for_type<long>(log, testQueue);
+        check_atomics_for_type<unsigned long>(log, testQueue);
       }
-
-      testQueue.wait_and_throw();
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+      check_atomics_for_type<long long>(log, testQueue);
+      check_atomics_for_type<unsigned long long>(log, testQueue);
     }
+
+    testQueue.wait_and_throw();
   }
 };
 

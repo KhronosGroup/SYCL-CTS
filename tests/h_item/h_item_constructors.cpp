@@ -126,71 +126,61 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_constructors(util::logger& log) {
-    try {
-      success_array_t success;
-      std::fill(std::begin(success), std::end(success), true);
+    success_array_t success;
+    std::fill(std::begin(success), std::end(success), true);
 
-      {
-        auto testQueue = util::get_cts_object::queue();
+    {
+      auto testQueue = util::get_cts_object::queue();
 
-        const auto simpleRange =
-            util::get_cts_object::range<numDims>::get(1, 1, 1);
+      const auto simpleRange =
+          util::get_cts_object::range<numDims>::get(1, 1, 1);
 
-        sycl::buffer<bool> successBuf(success.data(),
-                                          sycl::range<1>(success.size()));
+      sycl::buffer<bool> successBuf(success.data(),
+                                    sycl::range<1>(success.size()));
 
-        testQueue.submit([&](sycl::handler& cgh) {
-          auto successAcc =
-              successBuf.get_access<sycl::access_mode::write>(cgh);
+      testQueue.submit([&](sycl::handler& cgh) {
+        auto successAcc = successBuf.get_access<sycl::access_mode::write>(cgh);
 
-          cgh.parallel_for_work_group<h_item_constructors_kernel<numDims>>(
-              simpleRange, simpleRange, [=](sycl::group<numDims> group) {
-                group.parallel_for_work_item(
-                    simpleRange, [&](sycl::h_item<numDims> item) {
-                      // Check copy constructor
-                      sycl::h_item<numDims> copied(item);
-                      check_equality(successAcc,
-                                     current_check::copy_constructor, copied,
-                                     item);
+        cgh.parallel_for_work_group<h_item_constructors_kernel<numDims>>(
+            simpleRange, simpleRange, [=](sycl::group<numDims> group) {
+              group.parallel_for_work_item(
+                  simpleRange, [&](sycl::h_item<numDims> item) {
+                    // Check copy constructor
+                    sycl::h_item<numDims> copied(item);
+                    check_equality(successAcc, current_check::copy_constructor,
+                                   copied, item);
 
-                      // Check move constructor
-                      sycl::h_item<numDims> moved(std::move(copied));
-                      check_equality(successAcc,
-                                     current_check::move_constructor, moved,
-                                     item);
+                    // Check move constructor
+                    sycl::h_item<numDims> moved(std::move(copied));
+                    check_equality(successAcc, current_check::move_constructor,
+                                   moved, item);
 
-                      // Check copy assignment
-                      copied = moved;
-                      check_equality(successAcc, current_check::copy_assignment,
-                                     copied, item);
+                    // Check copy assignment
+                    copied = moved;
+                    check_equality(successAcc, current_check::copy_assignment,
+                                   copied, item);
 
-                      // Check move assignment
-                      moved = std::move(copied);
-                      check_equality(successAcc, current_check::move_assignment,
-                                     moved, item);
-                    });
-              });
-        });
-      }
-
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::copy_constructor)],
-                  true, numDims);
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::move_constructor)],
-                  true, numDims);
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::copy_assignment)],
-                  true, numDims);
-      CHECK_VALUE(log,
-                  success[static_cast<size_t>(current_check::move_assignment)],
-                  true, numDims);
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+                    // Check move assignment
+                    moved = std::move(copied);
+                    check_equality(successAcc, current_check::move_assignment,
+                                   moved, item);
+                  });
+            });
+      });
     }
+
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::copy_constructor)],
+                true, numDims);
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::move_constructor)],
+                true, numDims);
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::copy_assignment)],
+                true, numDims);
+    CHECK_VALUE(log,
+                success[static_cast<size_t>(current_check::move_assignment)],
+                true, numDims);
   }
 
   /** execute the test

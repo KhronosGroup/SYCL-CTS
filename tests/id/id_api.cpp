@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include <vector>
 
 #define TEST_NAME id_api
 
@@ -17,12 +18,11 @@ template <int dims>
 class test_kernel {};
 
 template <int dims>
-void test_id_kernels(
-    sycl::id<dims> id,
-    sycl::accessor<int, 1, sycl::access_mode::read_write,
-                       sycl::target::global_buffer>
-        error_ptr,
-    int m_iteration) {
+void test_id_kernels(sycl::id<dims> id,
+                     sycl::accessor<int, 1, sycl::access_mode::read_write,
+                                    sycl::target::global_buffer>
+                         error_ptr,
+                     int m_iteration) {
   sycl::id<dims> id_two(id * 2);
   sycl::id<dims> id_three(id);
   size_t integer = 16;
@@ -95,7 +95,7 @@ void test_id_kernels(
   INDEX_KERNEL_TEST(|, id, id_two_const, id_three);
 
   //^
-  INDEX_KERNEL_TEST (^, id, id_two_const, id_three);
+  INDEX_KERNEL_TEST(^, id, id_two_const, id_three);
 
   // &&
   INDEX_KERNEL_TEST(&&, id, id_two_const, id_three);
@@ -149,7 +149,7 @@ void test_id_kernels(
   DUAL_SIZE_INDEX_KERNEL_TEST(|, id, integer, id_three);
 
   // ^
-  DUAL_SIZE_INDEX_KERNEL_TEST (^, id, integer, id_three);
+  DUAL_SIZE_INDEX_KERNEL_TEST(^, id, integer, id_three);
 
   // && id can only be lhs
   INDEX_SIZE_T_KERNEL_TEST(&&, id, integer, id_three);
@@ -221,8 +221,7 @@ class test_id {
     }
 
     {
-      sycl::buffer<int, 1> error_buffer(m_error,
-                                            sycl::range<1>(error_size));
+      sycl::buffer<int, 1> error_buffer(m_error, sycl::range<1>(error_size));
 
       q.submit([&](sycl::handler &cgh) {
         auto my_range = sycl::nd_range<dims>(global, local);
@@ -273,33 +272,26 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      // use across all the dimensions
-      auto my_queue = util::get_cts_object::queue();
-      // templated approach
-      {
-        sycl::range<1> range_1d_g(test_id<1>::m_x);
-        sycl::range<2> range_2d_g(test_id<2>::m_x, test_id<2>::m_y);
-        sycl::range<3> range_3d_g(test_id<3>::m_x, test_id<3>::m_y,
-                                      test_id<3>::m_z);
+    // use across all the dimensions
+    auto my_queue = util::get_cts_object::queue();
+    // templated approach
+    {
+      sycl::range<1> range_1d_g(test_id<1>::m_x);
+      sycl::range<2> range_2d_g(test_id<2>::m_x, test_id<2>::m_y);
+      sycl::range<3> range_3d_g(test_id<3>::m_x, test_id<3>::m_y,
+                                test_id<3>::m_z);
 
-        sycl::range<1> range_1d_l(test_id<1>::m_local);
-        sycl::range<2> range_2d_l(test_id<2>::m_local, test_id<2>::m_local);
-        sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
-                                      test_id<3>::m_local);
+      sycl::range<1> range_1d_l(test_id<1>::m_local);
+      sycl::range<2> range_2d_l(test_id<2>::m_local, test_id<2>::m_local);
+      sycl::range<3> range_3d_l(test_id<3>::m_local, test_id<3>::m_local,
+                                test_id<3>::m_local);
 
-        test_id<1> test1d;
-        test1d(log, range_1d_g, range_1d_l, my_queue);
-        test_id<2> test2d;
-        test2d(log, range_2d_g, range_2d_l, my_queue);
-        test_id<3> test3d;
-        test3d(log, range_3d_g, range_3d_l, my_queue);
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      test_id<1> test1d;
+      test1d(log, range_1d_g, range_1d_l, my_queue);
+      test_id<2> test2d;
+      test2d(log, range_2d_g, range_2d_l, my_queue);
+      test_id<3> test3d;
+      test3d(log, range_3d_g, range_3d_l, my_queue);
     }
   }
 };

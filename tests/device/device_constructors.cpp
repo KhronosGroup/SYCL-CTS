@@ -26,139 +26,130 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-      /** check default constructor and destructor
-       */
-      {
-        sycl::device device;
+    /** check default constructor and destructor
+     */
+    {
+      sycl::device device;
 
-        if (!device.is_host()) {
-          FAIL(log, "device was not constructed correctly (is_host)");
-        }
+      if (!device.is_host()) {
+        FAIL(log, "device was not constructed correctly (is_host)");
       }
+    }
 
-      /** check (device_selector) constructor
-       */
-      {
-        cts_selector selector;
-        sycl::device device(selector);
+    /** check (device_selector) constructor
+     */
+    {
+      cts_selector selector;
+      sycl::device device(selector);
 
-        if (device.is_host() != selector.is_host()) {
-          FAIL(log, "device was not constructed correctly (is_host)");
-        }
+      if (device.is_host() != selector.is_host()) {
+        FAIL(log, "device was not constructed correctly (is_host)");
       }
+    }
 
-      /** check copy constructor
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(deviceA);
+    /** check copy constructor
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB(deviceA);
 
-        if (deviceA.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not copied correctly (is_host)");
-        }
+      if (deviceA.is_host() != deviceB.is_host()) {
+        FAIL(log, "device was not copied correctly (is_host)");
+      }
 
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && deviceA.get() != deviceB.get()) {
-          FAIL(log, "device was not assigned correctly (get)");
-        }
-#endif
+      if (!selector.is_host() && deviceA.get() != deviceB.get()) {
+        FAIL(log, "device was not assigned correctly (get)");
       }
+#endif
+    }
 
-      /** check assignment operator
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB = deviceA;
+    /** check assignment operator
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB = deviceA;
 
-        if (deviceA.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not assigned correctly (is_host)");
-        }
+      if (deviceA.is_host() != deviceB.is_host()) {
+        FAIL(log, "device was not assigned correctly (is_host)");
+      }
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && deviceA.get() != deviceB.get()) {
-          FAIL(log, "device was not assigned correctly (get)");
-        }
+      if (!selector.is_host() && deviceA.get() != deviceB.get()) {
+        FAIL(log, "device was not assigned correctly (get)");
+      }
 #endif
+    }
+
+    /** check move constructor
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB(std::move(deviceA));
+
+      if (selector.is_host() != deviceB.is_host()) {
+        FAIL(log, "device was not move constructed correctly (is_host)");
       }
+    }
 
-      /** check move constructor
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(std::move(deviceA));
+    /** check move assignment operator
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB = std::move(deviceA);
 
-        if (selector.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not move constructed correctly (is_host)");
-        }
+      if (selector.is_host() != deviceB.is_host()) {
+        FAIL(log, "device was not move assigned correctly (is_host)");
       }
+    }
 
-      /** check move assignment operator
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB = std::move(deviceA);
+    /* check equality operator
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB(deviceA);
+      sycl::device deviceC(selector);
+      deviceC = deviceA;
 
-        if (selector.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not move assigned correctly (is_host)");
-        }
+      if (!(deviceA == deviceB)) {
+        FAIL(log, "device equality does not work correctly (copy constructed)");
       }
-
-      /* check equality operator
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(deviceA);
-        sycl::device deviceC(selector);
-        deviceC = deviceA;
-
-        if (!(deviceA == deviceB)) {
-          FAIL(log,
-               "device equality does not work correctly (copy constructed)");
-        }
-        if (!(deviceA == deviceC)) {
-          FAIL(log, "device equality does not work correctly (copy assigned)");
-        }
-        if (deviceA != deviceB) {
-          FAIL(log,
-               "device non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (deviceA != deviceC) {
-          FAIL(log,
-               "device non-equality does not work correctly"
-               "(copy assigned)");
-        }
+      if (!(deviceA == deviceC)) {
+        FAIL(log, "device equality does not work correctly (copy assigned)");
       }
-
-      /* check hash
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(deviceA);
-        sycl::device deviceC = deviceA;
-
-        std::hash<sycl::device> hasher;
-
-        if (hasher(deviceA) != hasher(deviceB)) {
-          FAIL(log,
-               "device hash_class does not work correctly (copy constructed)");
-        }
-        if (hasher(deviceA) != hasher(deviceC)) {
-          FAIL(log,
-               "device hash_class does not work correctly (copy assigned)");
-        }
+      if (deviceA != deviceB) {
+        FAIL(log,
+             "device non-equality does not work correctly"
+             "(copy constructed)");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      if (deviceA != deviceC) {
+        FAIL(log,
+             "device non-equality does not work correctly"
+             "(copy assigned)");
+      }
+    }
+
+    /* check hash
+     */
+    {
+      cts_selector selector;
+      sycl::device deviceA(selector);
+      sycl::device deviceB(deviceA);
+      sycl::device deviceC = deviceA;
+
+      std::hash<sycl::device> hasher;
+
+      if (hasher(deviceA) != hasher(deviceB)) {
+        FAIL(log,
+             "device hash_class does not work correctly (copy constructed)");
+      }
+      if (hasher(deviceA) != hasher(deviceC)) {
+        FAIL(log, "device hash_class does not work correctly (copy assigned)");
+      }
     }
   }
 };
@@ -166,4 +157,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace device_constructors__ */
+}  // namespace TEST_NAMESPACE
