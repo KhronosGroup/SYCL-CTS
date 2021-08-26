@@ -32,34 +32,28 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      auto types = named_type_pack<bool, float, double, char,   // types grouped
-                                   signed char, unsigned char,  // by sign
-                                   short, unsigned short,       //
-                                   int, unsigned int,           //
-                                   long, unsigned long,         //
-                                   long long, unsigned long long>{
-          "bool",        "float",
-          "double",      "char",
-          "signed char", "unsigned char",
-          "short",       "unsigned short",
-          "int",         "unsigned int",
-          "long",        "unsigned long",
-          "long long",   "unsigned long long"};
+    auto types = named_type_pack<bool, float, double, char,   // types grouped
+                                 signed char, unsigned char,  // by sign
+                                 short, unsigned short,       //
+                                 int, unsigned int,           //
+                                 long, unsigned long,         //
+                                 long long, unsigned long long>{
+        "bool",        "float",
+        "double",      "char",
+        "signed char", "unsigned char",
+        "short",       "unsigned short",
+        "int",         "unsigned int",
+        "long",        "unsigned long",
+        "long long",   "unsigned long long"};
 
-      for_all_types<check_void_pointer_api>(types, log, queue);
-      for_all_types<check_pointer_api>(types, log, queue);
+    for_all_types<check_void_pointer_api>(types, log, queue);
+    for_all_types<check_pointer_api>(types, log, queue);
 
-      check_pointer_api<user_struct>{}(log, queue, "user_struct");
+    check_pointer_api<user_struct>{}(log, queue, "user_struct");
 
-      queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
-    }
+    queue.wait_and_throw();
   }
 };
 

@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
 #include "../common/async_work_group_copy.h"
+#include "../common/common.h"
 #include "../common/invoke.h"
 
 #define TEST_NAME nd_item_wait_for
@@ -18,7 +18,7 @@ using namespace sycl_cts;
 template <int dim>
 class wait_for_kernel;
 
-template<int dim>
+template <int dim>
 struct check_dim {
   void operator()(sycl::queue &queue, sycl_cts::util::logger &log) {
     using dataT = int;
@@ -31,33 +31,26 @@ struct check_dim {
 };
 
 /** test sycl::nd_item wait_for
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  *  @param info, test_base::info structure as output
-  */
+   *  @param info, test_base::info structure as output
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  *  @param log, test transcript logging class
-  */
+   *  @param log, test transcript logging class
+   */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      check_all_dims<check_dim>(queue, log);
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
-    }
+    check_all_dims<check_dim>(queue, log);
   }
 };
 
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace nd_item_wait_for__ */
+}  // namespace TEST_NAMESPACE

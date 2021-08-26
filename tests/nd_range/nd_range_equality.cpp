@@ -63,85 +63,75 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
-    try {
-      // Prepare ranges
-      const auto range2 = util::get_cts_object::range<numDims>::get(2, 1, 1);
-      const auto range4 = util::get_cts_object::range<numDims>::get(4, 1, 1);
-      const auto range8 = util::get_cts_object::range<numDims>::get(8, 1, 1);
+    // Prepare ranges
+    const auto range2 = util::get_cts_object::range<numDims>::get(2, 1, 1);
+    const auto range4 = util::get_cts_object::range<numDims>::get(4, 1, 1);
+    const auto range8 = util::get_cts_object::range<numDims>::get(8, 1, 1);
 
-      // Prepare an array of nd_range
-      // The nd_range objects are designed so that:
-      //    0 and 1 have the same global range
-      //    1 and 2 have the same local range
-      //    0 and 2 are completely different
-      using nd_range_t = sycl::nd_range<numDims>;
-      std::array<nd_range_t, 3> objects = {nd_range_t(range8, range4),
-                                           nd_range_t(range8, range2),
-                                           nd_range_t(range4, range2)};
+    // Prepare an array of nd_range
+    // The nd_range objects are designed so that:
+    //    0 and 1 have the same global range
+    //    1 and 2 have the same local range
+    //    0 and 2 are completely different
+    using nd_range_t = sycl::nd_range<numDims>;
+    std::array<nd_range_t, 3> objects = {nd_range_t(range8, range4),
+                                         nd_range_t(range8, range2),
+                                         nd_range_t(range4, range2)};
 
-      // Store comparison results into a success array
-      success_array success;
+    // Store comparison results into a success array
+    success_array success;
 
-      // Perform comparisons on the stored nd_range objects
-      const auto& object0 = objects[0];
-      const auto& object1 = objects[1];
-      const auto& object2 = objects[2];
-      {
-        auto& currentSuccess = success[current_check::equal_self];
-        currentSuccess = (object0 == object0);
-      }
-      {
-        auto& currentSuccess = success[current_check::not_equal_self];
-        currentSuccess = (object0 != object0);
-      }
-      {
-        auto& currentSuccess = success[current_check::equal_other_same_global];
-        currentSuccess = (object0 == object1);
-      }
-      {
-        auto& currentSuccess =
-            success[current_check::not_equal_other_same_global];
-        currentSuccess = (object0 != object1);
-      }
-      {
-        auto& currentSuccess = success[current_check::equal_other_same_local];
-        currentSuccess = (object1 == object2);
-      }
-      {
-        auto& currentSuccess =
-            success[current_check::not_equal_other_same_local];
-        currentSuccess = (object1 != object2);
-      }
-      {
-        auto& currentSuccess = success[current_check::equal_other_different];
-        currentSuccess = (object0 == object2);
-      }
-      {
-        auto& currentSuccess =
-            success[current_check::not_equal_other_different];
-        currentSuccess = (object0 != object2);
-      }
-
-      // Check nd_range equality operator
-      check_equality_comparable_generic(log, objects[0],
-                                        "nd_range " + std::to_string(numDims));
-      CHECK_VALUE(log, success[current_check::equal_self], true, numDims);
-      CHECK_VALUE(log, success[current_check::not_equal_self], false, numDims);
-      CHECK_VALUE(log, success[current_check::equal_other_same_global], false,
-                  numDims);
-      CHECK_VALUE(log, success[current_check::not_equal_other_same_global],
-                  true, numDims);
-      CHECK_VALUE(log, success[current_check::equal_other_same_local], false,
-                  numDims);
-      CHECK_VALUE(log, success[current_check::not_equal_other_same_local], true,
-                  numDims);
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    // Perform comparisons on the stored nd_range objects
+    const auto& object0 = objects[0];
+    const auto& object1 = objects[1];
+    const auto& object2 = objects[2];
+    {
+      auto& currentSuccess = success[current_check::equal_self];
+      currentSuccess = (object0 == object0);
     }
+    {
+      auto& currentSuccess = success[current_check::not_equal_self];
+      currentSuccess = (object0 != object0);
+    }
+    {
+      auto& currentSuccess = success[current_check::equal_other_same_global];
+      currentSuccess = (object0 == object1);
+    }
+    {
+      auto& currentSuccess =
+          success[current_check::not_equal_other_same_global];
+      currentSuccess = (object0 != object1);
+    }
+    {
+      auto& currentSuccess = success[current_check::equal_other_same_local];
+      currentSuccess = (object1 == object2);
+    }
+    {
+      auto& currentSuccess = success[current_check::not_equal_other_same_local];
+      currentSuccess = (object1 != object2);
+    }
+    {
+      auto& currentSuccess = success[current_check::equal_other_different];
+      currentSuccess = (object0 == object2);
+    }
+    {
+      auto& currentSuccess = success[current_check::not_equal_other_different];
+      currentSuccess = (object0 != object2);
+    }
+
+    // Check nd_range equality operator
+    check_equality_comparable_generic(log, objects[0],
+                                      "nd_range " + std::to_string(numDims));
+    CHECK_VALUE(log, success[current_check::equal_self], true, numDims);
+    CHECK_VALUE(log, success[current_check::not_equal_self], false, numDims);
+    CHECK_VALUE(log, success[current_check::equal_other_same_global], false,
+                numDims);
+    CHECK_VALUE(log, success[current_check::not_equal_other_same_global], true,
+                numDims);
+    CHECK_VALUE(log, success[current_check::equal_other_same_local], false,
+                numDims);
+    CHECK_VALUE(log, success[current_check::not_equal_other_same_local], true,
+                numDims);
   }
 
   /** execute the test

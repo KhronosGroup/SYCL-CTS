@@ -13,26 +13,25 @@
 namespace test_nd_item__ {
 using namespace sycl_cts;
 
-size_t getIndex(sycl::id<1> Id, sycl::range<1> Range) {
-  return Id.get(0);
-}
+size_t getIndex(sycl::id<1> Id, sycl::range<1> Range) { return Id.get(0); }
 
 size_t getIndex(sycl::id<2> Id, sycl::range<2> Range) {
   return Id.get(1) + Id.get(0) * Range.get(1);
 }
 
 size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
-  return Id.get(2) + Id.get(1) * Range.get(0) + Id.get(0) * Range.get(0) * Range.get(1);
+  return Id.get(2) + Id.get(1) * Range.get(0) +
+         Id.get(0) * Range.get(0) * Range.get(1);
 }
 
 template <int dimensions>
 class kernel_nd_item {
  protected:
   typedef sycl::accessor<int, dimensions, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                         sycl::target::global_buffer>
       t_readAccess;
   typedef sycl::accessor<int, dimensions, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                         sycl::target::global_buffer>
       t_writeAccess;
 
   t_readAccess m_globalID;
@@ -153,12 +152,9 @@ class kernel_nd_item {
     size_t grlid = myitem.get_group_linear_id();
     size_t groupIndex = getIndex(group_id.get_id(), myitem.get_group_range());
 
-    if (glid != globalIndex)
-      failed = true;
-    if (llid != localIndex)
-      failed = true;
-    if (grlid != groupIndex)
-      failed = true;
+    if (glid != globalIndex) failed = true;
+    if (llid != localIndex) failed = true;
+    if (grlid != groupIndex) failed = true;
 
     /* write back success or failure*/
     m_o[global_id] = failed ? 0 : 1;
@@ -229,15 +225,12 @@ void test_item(util::logger &log, sycl::queue &queue) {
     sycl::buffer<int, 1> bufOut(dataOut.get(), globalRange);
 
     queue.submit([&](sycl::handler &cgh) {
-      auto accG =
-          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accG = bufGlob.template get_access<sycl::access_mode::read>(cgh);
       auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
-      auto accOut =
-          bufOut.template get_access<sycl::access_mode::write>(cgh);
+      auto accOut = bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<1> kernel_1d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_1d);
-
     });
   }
   /* check no errors are returned*/
@@ -259,11 +252,9 @@ void test_item(util::logger &log, sycl::queue &queue) {
     sycl::buffer<int, 2> bufOut(dataOut.get(), globalRange);
 
     queue.submit([&](sycl::handler &cgh) {
-      auto accG =
-          bufGlob.template get_access<sycl::access_mode::read>(cgh);
+      auto accG = bufGlob.template get_access<sycl::access_mode::read>(cgh);
       auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
-      auto accOut =
-          bufOut.template get_access<sycl::access_mode::write>(cgh);
+      auto accOut = bufOut.template get_access<sycl::access_mode::write>(cgh);
 
       kernel_nd_item<2> kernel_2d(accG, accL, accOut);
       cgh.parallel_for(dataRange, kernel_2d);
@@ -304,32 +295,25 @@ void test_item(util::logger &log, sycl::queue &queue) {
 }
 
 /** test sycl::nd_item
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  *  @param info, test_base::info structure as output
-  */
+   *  @param info, test_base::info structure as output
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  *  @param log, test transcript logging class
-  */
+   *  @param log, test transcript logging class
+   */
   void run(util::logger &log) override {
-    try {
-      auto cmd_queue = util::get_cts_object::queue();
+    auto cmd_queue = util::get_cts_object::queue();
 
-      test_item(log, cmd_queue);
+    test_item(log, cmd_queue);
 
-      cmd_queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
-    }
+    cmd_queue.wait_and_throw();
   }
 };
 

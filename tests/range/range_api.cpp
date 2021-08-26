@@ -17,12 +17,11 @@ template <int dims>
 class test_range_kernel {};
 
 template <int dims>
-void test_range_kernels(
-    sycl::range<dims> range,
-    sycl::accessor<int, 1, sycl::access_mode::read_write,
-                       sycl::target::global_buffer>
-        error_ptr,
-    int m_iteration) {
+void test_range_kernels(sycl::range<dims> range,
+                        sycl::accessor<int, 1, sycl::access_mode::read_write,
+                                       sycl::target::global_buffer>
+                            error_ptr,
+                        int m_iteration) {
   sycl::range<dims> range_two(range * 2);
   sycl::range<dims> range_three(range);
   size_t integer = 16;
@@ -95,7 +94,7 @@ void test_range_kernels(
   INDEX_KERNEL_TEST(|, range, range_two_const, range_three);
 
   //^
-  INDEX_KERNEL_TEST (^, range, range_two_const, range_three);
+  INDEX_KERNEL_TEST(^, range, range_two_const, range_three);
 
   // &&
   INDEX_KERNEL_TEST(&&, range, range_two_const, range_three);
@@ -149,7 +148,7 @@ void test_range_kernels(
   DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer, range_three);
 
   // ^
-  DUAL_SIZE_INDEX_KERNEL_TEST (^, range, integer, range_three);
+  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer, range_three);
 
   // && range can only be lhs
   INDEX_SIZE_T_KERNEL_TEST(&&, range, integer, range_three);
@@ -210,7 +209,7 @@ class test_range {
   static const int m_y = 32;
   static const int m_z = 64;
   static const int m_local = 2;
-  static const int error_size = 204; // up to 204 possible errors
+  static const int error_size = 204;  // up to 204 possible errors
   int m_error[error_size];
 
   void operator()(util::logger &log, sycl::range<dims> global,
@@ -221,8 +220,7 @@ class test_range {
     }
 
     {
-      sycl::buffer<int, 1> error_buffer(m_error,
-                                            sycl::range<1>(error_size));
+      sycl::buffer<int, 1> error_buffer(m_error, sycl::range<1>(error_size));
 
       q.submit([&](sycl::handler &cgh) {
         auto my_range = sycl::nd_range<dims>(global, local);
@@ -293,35 +291,26 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      // use across all the dimensions
-      auto my_queue = util::get_cts_object::queue();
-      // templated approach
-      {
-        sycl::range<1> range_1d_g(test_range<1>::m_x);
-        sycl::range<2> range_2d_g(test_range<2>::m_x, test_range<2>::m_y);
-        sycl::range<3> range_3d_g(test_range<3>::m_x, test_range<3>::m_y,
-                                      test_range<3>::m_z);
+    // use across all the dimensions
+    auto my_queue = util::get_cts_object::queue();
+    // templated approach
+    {
+      sycl::range<1> range_1d_g(test_range<1>::m_x);
+      sycl::range<2> range_2d_g(test_range<2>::m_x, test_range<2>::m_y);
+      sycl::range<3> range_3d_g(test_range<3>::m_x, test_range<3>::m_y,
+                                test_range<3>::m_z);
 
-        sycl::range<1> range_1d_l(test_range<1>::m_local);
-        sycl::range<2> range_2d_l(test_range<2>::m_local,
-                                      test_range<2>::m_local);
-        sycl::range<3> range_3d_l(test_range<3>::m_local,
-                                      test_range<3>::m_local,
-                                      test_range<3>::m_local);
+      sycl::range<1> range_1d_l(test_range<1>::m_local);
+      sycl::range<2> range_2d_l(test_range<2>::m_local, test_range<2>::m_local);
+      sycl::range<3> range_3d_l(test_range<3>::m_local, test_range<3>::m_local,
+                                test_range<3>::m_local);
 
-        test_range<1> test1d;
-        test1d(log, range_1d_g, range_1d_l, my_queue);
-        test_range<2> test2d;
-        test2d(log, range_2d_g, range_2d_l, my_queue);
-        test_range<3> test3d;
-        test3d(log, range_3d_g, range_3d_l, my_queue);
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      test_range<1> test1d;
+      test1d(log, range_1d_g, range_1d_l, my_queue);
+      test_range<2> test2d;
+      test2d(log, range_2d_g, range_2d_l, my_queue);
+      test_range<3> test3d;
+      test3d(log, range_3d_g, range_3d_l, my_queue);
     }
   }
 };

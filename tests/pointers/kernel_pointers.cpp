@@ -26,44 +26,36 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto my_queue = util::get_cts_object::queue();
+    auto my_queue = util::get_cts_object::queue();
 
-      typedef int res_type;
+    typedef int res_type;
 
-      res_type result = 0;
-      {
-        sycl::buffer<res_type, 1> buf_result(&result,
-                                                 sycl::range<1>(1));
+    res_type result = 0;
+    {
+      sycl::buffer<res_type, 1> buf_result(&result, sycl::range<1>(1));
 
-        uint32_t outer_index = 2;
+      uint32_t outer_index = 2;
 
-        my_queue.submit([&](sycl::handler &cgh) {
-          auto acc_result =
-              buf_result.get_access<sycl::access_mode::read_write>(cgh);
+      my_queue.submit([&](sycl::handler &cgh) {
+        auto acc_result =
+            buf_result.get_access<sycl::access_mode::read_write>(cgh);
 
-          cgh.single_task<TEST_NAME>([acc_result, outer_index]() {
-            uint8_t my_array[] = {0, 1, 2, 3, 4};
+        cgh.single_task<TEST_NAME>([acc_result, outer_index]() {
+          uint8_t my_array[] = {0, 1, 2, 3, 4};
 
-            uint8_t *ptr = my_array + outer_index;
-            ptr++;
+          uint8_t *ptr = my_array + outer_index;
+          ptr++;
 
-            acc_result[0] = *ptr;
-          });
+          acc_result[0] = *ptr;
         });
-      }
-      if (result != 3) {
-        FAIL(log, "Pointer in kernel not working correctly");
-        log.note("wanted: 3, got:" + std::to_string(result));
-      }
-
-      my_queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      });
     }
+    if (result != 3) {
+      FAIL(log, "Pointer in kernel not working correctly");
+      log.note("wanted: 3, got:" + std::to_string(result));
+    }
+
+    my_queue.wait_and_throw();
   }
 };
 

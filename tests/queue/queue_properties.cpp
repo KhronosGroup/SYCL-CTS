@@ -25,38 +25,28 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute this test
-  */
+   */
   virtual void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      /** check property::queue::enable_profiling
-      */
-      {
-        sycl::queue queue(
-            util::get_cts_object::device(),
-            sycl::property_list{
-                sycl::property::queue::enable_profiling()});
+    /** check property::queue::enable_profiling
+     */
+    {
+      sycl::queue queue(
+          util::get_cts_object::device(),
+          sycl::property_list{sycl::property::queue::enable_profiling()});
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with enable_profiling property was not constructed "
-               "correctly");
-        }
-
-        auto prop =
-            queue.get_property<sycl::property::queue::enable_profiling>();
-        check_return_type<sycl::property::queue::enable_profiling>(
-            log, prop,
-            "sycl::queue::has_property<sycl::property::queue::"
-            "enable_profiling>()");
+      if (!queue.has_property<sycl::property::queue::enable_profiling>()) {
+        FAIL(log,
+             "queue with enable_profiling property was not constructed "
+             "correctly");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+
+      auto prop = queue.get_property<sycl::property::queue::enable_profiling>();
+      check_return_type<sycl::property::queue::enable_profiling>(
+          log, prop,
+          "sycl::queue::has_property<sycl::property::queue::"
+          "enable_profiling>()");
     }
   }
 };

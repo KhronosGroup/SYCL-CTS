@@ -30,25 +30,24 @@ static constexpr int inputSize = 59;
 
 using namespace sycl_cts;
 
-template <typename T, int dim> class sth {};
-
-template <typename T, int dim> class sth_else {};
+template <typename T, int dim>
+class sth {};
 
 template <typename T, int dim>
-T reduce(T input[inputSize], sycl::device_selector *selector) {
+class sth_else {};
+
+template <typename T, int dim>
+T reduce(T input[inputSize], sycl::device_selector* selector) {
   T mGroupSums[numGroups];
 
   auto myQueue = util::get_cts_object::queue(*selector);
   sycl::buffer<T, 1> input_buf(input, sycl::range<1>(inputSize));
-  sycl::buffer<T, 1> group_sums_buf(mGroupSums,
-                                        sycl::range<1>(numGroups));
+  sycl::buffer<T, 1> group_sums_buf(mGroupSums, sycl::range<1>(numGroups));
 
   myQueue.submit([&](sycl::handler& cgh) {
-    sycl::accessor<T, 1, sycl::access_mode::read,
-                       sycl::target::global_buffer>
+    sycl::accessor<T, 1, sycl::access_mode::read, sycl::target::global_buffer>
         input_ptr(input_buf, cgh);
-    sycl::accessor<T, 1, sycl::access_mode::write,
-                       sycl::target::global_buffer>
+    sycl::accessor<T, 1, sycl::access_mode::write, sycl::target::global_buffer>
         groupSumsPtr(group_sums_buf, cgh);
     auto groupRange = sycl_cts::util::get_cts_object::range<
         dim>::template get_fixed_size<numGroups>(groupItems1d, groupItems2d);
@@ -62,28 +61,27 @@ T reduce(T input[inputSize], sycl::device_selector *selector) {
           T localSums[localItemsTotal];
 
           // process items in each work item
-          group.parallel_for_work_item(
-              [=, &localSums](sycl::h_item<dim> item) {
-                int globalId = item.get_global().get_linear_id();
-                int localId = item.get_local().get_linear_id();
-                /* Split the array into work-group-size different arrays */
-                int valuesPerItem = (inputSize / globalItemsTotal);
-                valuesPerItem = (valuesPerItem == 0) ? 1 : valuesPerItem;
-                int idStart = valuesPerItem * globalId;
-                int idEnd = valuesPerItem * (globalId + 1);
+          group.parallel_for_work_item([=, &localSums](sycl::h_item<dim> item) {
+            int globalId = item.get_global().get_linear_id();
+            int localId = item.get_local().get_linear_id();
+            /* Split the array into work-group-size different arrays */
+            int valuesPerItem = (inputSize / globalItemsTotal);
+            valuesPerItem = (valuesPerItem == 0) ? 1 : valuesPerItem;
+            int idStart = valuesPerItem * globalId;
+            int idEnd = valuesPerItem * (globalId + 1);
 
-                /* Handle the case where the number of input values is not
-                 * divisible
-                 * by the number of items. */
-                if (idEnd > inputSize - 1) {
-                  idEnd = inputSize;
-                }
+            /* Handle the case where the number of input values is not
+             * divisible
+             * by the number of items. */
+            if (idEnd > inputSize - 1) {
+              idEnd = inputSize;
+            }
 
-                localSums[localId] = T{};
-                for (int i = idStart; i < idEnd; i++) {
-                  localSums[localId].increment(input_ptr[i]);
-                }
-              });
+            localSums[localId] = T{};
+            for (int i = idStart; i < idEnd; i++) {
+              localSums[localId].increment(input_ptr[i]);
+            }
+          });
 
           /* Sum items in each work group */
           int groupId = group.get_linear_id();
@@ -98,11 +96,10 @@ T reduce(T input[inputSize], sycl::device_selector *selector) {
   {
     sycl::buffer<T, 1> total_buf(&mTotal, sycl::range<1>(1));
     myQueue.submit([&](sycl::handler& cgh) {
-      sycl::accessor<T, 1, sycl::access_mode::read,
-                         sycl::target::global_buffer>
+      sycl::accessor<T, 1, sycl::access_mode::read, sycl::target::global_buffer>
           groupSumsPtr(group_sums_buf, cgh);
       sycl::accessor<T, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer>
+                     sycl::target::global_buffer>
           totalPtr(total_buf, cgh);
 
         cgh.single_task<class sth_else<T, dim> >([=]() {
@@ -146,61 +143,55 @@ class Multiplier {
   type value;
 };
 
-template <int dim> void check_dim(util::logger &log) {
-  try {
-      cts_selector sel;
-      {
-        Adder data[inputSize];
-        for (int i = 0; i < inputSize; i++) data[i] = Adder(2);
+template <int dim>
+void check_dim(util::logger& log) {
+  cts_selector sel;
+  {
+    Adder data[inputSize];
+    for (int i = 0; i < inputSize; i++) data[i] = Adder(2);
 
-        Adder result = reduce<Adder, dim>(data, &sel);
+    Adder result = reduce<Adder, dim>(data, &sel);
 
-        int expectedResult = inputSize * 2;
+    int expectedResult = inputSize * 2;
 
-        if (result.value != expectedResult) {
-          const auto msg =
-              "Incorrect result in Adder: " + std::to_string(result.value) +
-              " != " + std::to_string(expectedResult);
-          FAIL(log, msg);
-        }
-      }
-
-      {
-        Multiplier data[inputSize];
-        for (int i = 0; i < inputSize; i++) data[i] = Multiplier(2);
-
-        Multiplier result = reduce<Multiplier, dim>(data, &sel);
-
-        auto expectedResult = std::int64_t{1} << inputSize;
-
-        if (result.value != expectedResult) {
-          const auto msg = "Incorrect result in Multiplier: " +
-                           std::to_string(result.value) +
-                           " != " + std::to_string(expectedResult);
-          FAIL(log, msg);
-        }
-      }
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    if (result.value != expectedResult) {
+      const auto msg =
+          "Incorrect result in Adder: " + std::to_string(result.value) +
+          " != " + std::to_string(expectedResult);
+      FAIL(log, msg);
     }
+  }
+
+  {
+    Multiplier data[inputSize];
+    for (int i = 0; i < inputSize; i++) data[i] = Multiplier(2);
+
+    Multiplier result = reduce<Multiplier, dim>(data, &sel);
+
+    auto expectedResult = std::int64_t{1} << inputSize;
+
+    if (result.value != expectedResult) {
+      const auto msg =
+          "Incorrect result in Multiplier: " + std::to_string(result.value) +
+          " != " + std::to_string(expectedResult);
+      FAIL(log, msg);
+    }
+  }
 }
 
 /** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     check_dim<1>(log);
     check_dim<2>(log);
     check_dim<3>(log);

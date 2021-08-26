@@ -34,181 +34,165 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-      cts_selector ctsSelector;
-      const auto ctsContext = util::get_cts_object::context(ctsSelector);
-      const auto ctsDevice = ctsContext.get_devices()[0];
+    cts_selector ctsSelector;
+    const auto ctsContext = util::get_cts_object::context(ctsSelector);
+    const auto ctsDevice = ctsContext.get_devices()[0];
 
-      if (ctsContext.is_host()) {
-        log.note("OpenCL interop doesn't work on host");
-        return;
+    if (ctsContext.is_host()) {
+      log.note("OpenCL interop doesn't work on host");
+      return;
+    }
+
+    /** check platform get() method
+     */
+    {
+      auto platform = util::get_cts_object::platform(ctsSelector);
+      if (!platform.is_host()) {
+        auto interopPlatformID = platform.get();
+        check_return_type<cl_platform_id>(log, interopPlatformID,
+                                          "sycl::platform::get()");
+
+        if (interopPlatformID == 0) {
+          FAIL(log,
+               "sycl::platform::get() did not return a valid "
+               "cl_platform_id");
+        }
       }
+    }
 
-      /** check platform get() method
-       */
-      {
-        auto platform = util::get_cts_object::platform(ctsSelector);
-        if (!platform.is_host()) {
-          auto interopPlatformID = platform.get();
-          check_return_type<cl_platform_id>(log, interopPlatformID,
-                                            "sycl::platform::get()");
+    /** check device get() method
+     */
+    {
+      auto device = util::get_cts_object::device(ctsSelector);
+      if (!device.is_host()) {
+        auto interopDeviceID = device.get();
+        check_return_type<cl_device_id>(log, interopDeviceID,
+                                        "sycl::device::get()");
 
-          if (interopPlatformID == 0) {
-            FAIL(log,
-                 "sycl::platform::get() did not return a valid "
-                 "cl_platform_id");
+        if (interopDeviceID == 0) {
+          FAIL(log, "sycl::device::get() did not return a valid cl_device_id");
+        }
+      }
+    }
+
+    /** check context get() method
+     */
+    {
+      auto context = util::get_cts_object::context(ctsSelector);
+      if (!context.is_host()) {
+        auto interopContext = context.get();
+        check_return_type<cl_context>(log, interopContext,
+                                      "sycl::context::get()");
+
+        if (interopContext == nullptr) {
+          FAIL(log, "sycl::context::get() did not return a valid cl_context");
+        }
+      }
+    }
+
+    /** check queue get() method
+     */
+    {
+      auto queue = util::get_cts_object::queue(ctsSelector);
+      if (!queue.is_host()) {
+        auto interopQueue = queue.get();
+        check_return_type<cl_command_queue>(log, interopQueue,
+                                            "sycl::queue::get()");
+
+        if (interopQueue == nullptr) {
+          FAIL(log,
+               "sycl::queue::get() did not return a valid "
+               "cl_command_queue");
+        }
+      }
+    }
+
+    /** check program get() method
+     */
+    {
+      if (!util::get_cts_object::queue(ctsSelector)
+               .get_device()
+               .get_info<sycl::info::device::is_compiler_available>()) {
+        log.note("online compiler not available -- skipping check");
+      } else {
+        auto program =
+            util::get_cts_object::program::compiled<program_get_kernel>(
+                ctsContext);
+        if (!program.is_host()) {
+          auto interopProgram = program.get();
+          check_return_type<cl_program>(log, interopProgram,
+                                        "sycl::program::get()");
+
+          if (interopProgram == nullptr) {
+            FAIL(log, "sycl::program::get() did not return a valid cl_program");
           }
         }
       }
+    }
 
-      /** check device get() method
-       */
-      {
-        auto device = util::get_cts_object::device(ctsSelector);
-        if (!device.is_host()) {
-          auto interopDeviceID = device.get();
-          check_return_type<cl_device_id>(log, interopDeviceID,
-                                          "sycl::device::get()");
-
-          if (interopDeviceID == 0) {
-            FAIL(log,
-                 "sycl::device::get() did not return a valid cl_device_id");
-          }
-        }
-      }
-
-      /** check context get() method
-       */
-      {
-        auto context = util::get_cts_object::context(ctsSelector);
-        if (!context.is_host()) {
-          auto interopContext = context.get();
-          check_return_type<cl_context>(log, interopContext,
-                                        "sycl::context::get()");
-
-          if (interopContext == nullptr) {
-            FAIL(log,
-                 "sycl::context::get() did not return a valid cl_context");
-          }
-        }
-      }
-
-      /** check queue get() method
-       */
-      {
-        auto queue = util::get_cts_object::queue(ctsSelector);
-        if (!queue.is_host()) {
-          auto interopQueue = queue.get();
-          check_return_type<cl_command_queue>(log, interopQueue,
-                                              "sycl::queue::get()");
-
-          if (interopQueue == nullptr) {
-            FAIL(log,
-                 "sycl::queue::get() did not return a valid "
-                 "cl_command_queue");
-          }
-        }
-      }
-
-      /** check program get() method
-       */
-      {
-        if (!util::get_cts_object::queue(ctsSelector)
-                 .get_device()
-                 .get_info<sycl::info::device::is_compiler_available>()) {
-          log.note("online compiler not available -- skipping check");
-        } else {
-          auto program =
-              util::get_cts_object::program::compiled<program_get_kernel>(
-                  ctsContext);
-          if (!program.is_host()) {
-            auto interopProgram = program.get();
-            check_return_type<cl_program>(log, interopProgram,
-                                          "sycl::program::get()");
-
-            if (interopProgram == nullptr) {
-              FAIL(
-                  log,
-                  "sycl::program::get() did not return a valid cl_program");
-            }
-          }
-        }
-      }
-
-      /** check kernel get() method
-       */
-      {
-        if (!ctsContext.is_host()) {
-          cl_program clProgram{};
-          if (online_compiler_supported(ctsDevice.get(), log)) {
-            std::string kernelSource = R"(
+    /** check kernel get() method
+     */
+    {
+      if (!ctsContext.is_host()) {
+        cl_program clProgram{};
+        if (online_compiler_supported(ctsDevice.get(), log)) {
+          std::string kernelSource = R"(
             __kernel void opencl_interop_get_kernel() {}
             )";
 
-            if (!create_built_program(kernelSource, ctsContext.get(),
-                                      ctsDevice.get(), clProgram, log)) {
-              FAIL(log, "create_built_program failed");
-            }
-          } else {
-            std::string programBinaryFile = "opencl_interop_get.bin";
-
-            if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
-                                            ctsDevice.get(), clProgram, log)) {
-              std::string errorMsg =
-                  "create_program_with_binary failed.";
-              errorMsg +=
-                  " Since online compile is not supported, expecting to find " +
-                  programBinaryFile + " in same path as the executable binary";
-              FAIL(log, errorMsg.c_str());
-            }
+          if (!create_built_program(kernelSource, ctsContext.get(),
+                                    ctsDevice.get(), clProgram, log)) {
+            FAIL(log, "create_built_program failed");
           }
+        } else {
+          std::string programBinaryFile = "opencl_interop_get.bin";
 
-          cl_kernel clKernel{};
-          if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
-                             log)) {
-            FAIL(log, "create_kernel failed");
-          }
-
-          sycl::kernel kernel(clKernel, ctsContext);
-
-          auto interopKernel = kernel.get();
-          check_return_type<cl_kernel>(log, interopKernel,
-                                       "sycl::kernel::get()");
-
-          if (interopKernel == nullptr) {
-            FAIL(log,
-                 "sycl::kernel::get() did not return a valid cl_kernel");
-          }
-        }
-      }
-
-      /** check event get() method
-       */
-      {
-        auto ctsQueue = util::get_cts_object::queue(ctsSelector);
-
-        sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
-          cgh.single_task<class event_kernel>([]() {});
-        });
-
-        if (!event.is_host()) {
-          auto interopEvent = event.get();
-          check_return_type<cl_event>(log, interopEvent,
-                                      "sycl::event::get()");
-
-          if (interopEvent == nullptr) {
-            FAIL(log, "sycl::event::get() did not return a valid cl_event");
+          if (!create_program_with_binary(programBinaryFile, ctsContext.get(),
+                                          ctsDevice.get(), clProgram, log)) {
+            std::string errorMsg = "create_program_with_binary failed.";
+            errorMsg +=
+                " Since online compile is not supported, expecting to find " +
+                programBinaryFile + " in same path as the executable binary";
+            FAIL(log, errorMsg.c_str());
           }
         }
 
-        ctsQueue.wait_and_throw();
+        cl_kernel clKernel{};
+        if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
+                           log)) {
+          FAIL(log, "create_kernel failed");
+        }
+
+        sycl::kernel kernel(clKernel, ctsContext);
+
+        auto interopKernel = kernel.get();
+        check_return_type<cl_kernel>(log, interopKernel, "sycl::kernel::get()");
+
+        if (interopKernel == nullptr) {
+          FAIL(log, "sycl::kernel::get() did not return a valid cl_kernel");
+        }
+      }
+    }
+
+    /** check event get() method
+     */
+    {
+      auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+
+      sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
+        cgh.single_task<class event_kernel>([]() {});
+      });
+
+      if (!event.is_host()) {
+        auto interopEvent = event.get();
+        check_return_type<cl_event>(log, interopEvent, "sycl::event::get()");
+
+        if (interopEvent == nullptr) {
+          FAIL(log, "sycl::event::get() did not return a valid cl_event");
+        }
       }
 
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      ctsQueue.wait_and_throw();
     }
   }
 };

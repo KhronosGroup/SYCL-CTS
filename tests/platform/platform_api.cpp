@@ -24,73 +24,64 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute this test
-  */
+   */
   void run(util::logger &log) override {
-    try {
-      /** check get_devices() member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto devs = plt.get_devices();
+    /** check get_devices() member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto devs = plt.get_devices();
+      check_return_type<std::vector<sycl::device>>(log, devs,
+                                                   "platform::get_devices()");
+    }
+
+    /** check get_devices(info::device_type::all) member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto devs = plt.get_devices(sycl::info::device_type::all);
+      if (devs.size() != 0) {
         check_return_type<std::vector<sycl::device>>(
-            log, devs, "platform::get_devices()");
+            log, devs, "platform::get_devices(info::device_type::all)");
       }
+    }
 
-      /** check get_devices(info::device_type::all) member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto devs = plt.get_devices(sycl::info::device_type::all);
-        if (devs.size() != 0) {
-          check_return_type<std::vector<sycl::device>>(
-              log, devs, "platform::get_devices(info::device_type::all)");
-        }
-      }
+    /** check has_extensions() member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto extensionSupported = plt.has_extension(std::string("cl_khr_icd"));
+      check_return_type<bool>(log, extensionSupported,
+                              "platform::has_extension(string_class)");
+    }
 
-      /** check has_extensions() member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto extensionSupported =
-            plt.has_extension(std::string("cl_khr_icd"));
-        check_return_type<bool>(log, extensionSupported,
-                                "platform::has_extension(string_class)");
-      }
+    /** check get_info() member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto platformName = plt.get_info<sycl::info::platform::name>();
+      check_return_type<std::string>(log, platformName, "platform::get_info()");
+    }
 
-      /** check get_info() member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto platformName = plt.get_info<sycl::info::platform::name>();
-        check_return_type<std::string>(log, platformName,
-                                                  "platform::get_info()");
-      }
+    /** check is_host() member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto isHost = plt.is_host();
+      check_return_type<bool>(log, isHost, "platform::is_host()");
+    }
 
-      /** check is_host() member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto isHost = plt.is_host();
-        check_return_type<bool>(log, isHost, "platform::is_host()");
-      }
-
-      /** check get_platforms() static method
-      */
-      {
-        auto plt = sycl::platform::get_platforms();
-        check_return_type<std::vector<sycl::platform>>(
-            log, plt, "platform::get_platform()");
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    /** check get_platforms() static method
+     */
+    {
+      auto plt = sycl::platform::get_platforms();
+      check_return_type<std::vector<sycl::platform>>(
+          log, plt, "platform::get_platform()");
     }
   }
 };

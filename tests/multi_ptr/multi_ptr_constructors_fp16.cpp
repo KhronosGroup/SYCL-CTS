@@ -30,24 +30,23 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
+    auto queue = util::get_cts_object::queue();
 
-      if (!queue.get_device().has(sycl::aspect::fp16)) {
-        log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
-
-      check_void_pointer_ctors<sycl::half>{}(queue, "sycl::half");
-      check_pointer_ctors<sycl::half>{}(queue, "sycl::half");
-
-      queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
+    if (!queue.get_device().has(sycl::aspect::fp16)) {
+      log.note(
+          "Device does not support half precision floating point operations");
+      return;
     }
+
+    check_void_pointer_ctors<sycl::half>{}(queue, "sycl::half");
+    check_pointer_ctors<sycl::half>{}(queue, "sycl::half");
+
+    queue.wait_and_throw();
+
+    check_void_pointer_ctors<half>{}(queue, "half");
+    check_pointer_ctors<half>{}(queue, "half");
+
+    queue.wait_and_throw();
   }
 };
 

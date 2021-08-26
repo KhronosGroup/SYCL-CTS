@@ -29,146 +29,136 @@ class TEST_NAME : public util::test_base {
    *  @param log, test transcript logging class
    */
   void run(util::logger &log) override {
-    try {
-      // use across all the dimensions
-      size_t sizes[] = {16, 8, 4};
+    // use across all the dimensions
+    size_t sizes[] = {16, 8, 4};
 
-      // construct from a range, explicit dimensions perform deep copy and a
-      // move
+    // construct from a range, explicit dimensions perform deep copy and a
+    // move
 
-      // dim 1
-      {
-        sycl::range<1> range_explicit(sizes[0]);
-        if ((range_explicit[0] != sizes[0]) ||
-            (range_explicit.get(0) != sizes[0])) {
-          FAIL(log,
-               "range with size_t was not constructed correctly for dim = 1");
-        }
-
-        sycl::range<1> range_deep(
-            const_cast<const sycl::range<1> &>(range_explicit));
-        if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0])) {
-          FAIL(log,
-               "range with range was not constructed correctly for dim = 1");
-        }
-
-        sycl::range<1> range_moved_constr(std::move(range_explicit));
-        if ((range_moved_constr[0] != sizes[0]) ||
-            (range_moved_constr.get(0) != sizes[0])) {
-          FAIL(log,
-               "range with range was not move constructed correctly for dim = "
-               "1");
-        }
-
-        sycl::range<1> range_move_assign{0};
-        range_move_assign = std::move(range_deep);
-        if ((range_move_assign[0] != sizes[0]) ||
-            (range_move_assign.get(0) != sizes[0])) {
-          FAIL(log,
-               "range with range was not move assigned correctly for dim = 1");
-        }
-
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+    // dim 1
+    {
+      sycl::range<1> range_explicit(sizes[0]);
+      if ((range_explicit[0] != sizes[0]) ||
+          (range_explicit.get(0) != sizes[0])) {
+        FAIL(log,
+             "range with size_t was not constructed correctly for dim = 1");
       }
 
-      // dim 2
-      {
-        sycl::range<2> range_explicit(sizes[0], sizes[1]);
-        if ((range_explicit[0] != sizes[0]) ||
-            (range_explicit.get(0) != sizes[0]) ||
-            (range_explicit[1] != sizes[1]) ||
-            (range_explicit.get(1) != sizes[1])) {
-          FAIL(log,
-               "range with size_t was not constructed correctly for dim = 2");
-        }
-
-        sycl::range<2> range_deep(
-            const_cast<const sycl::range<2> &>(range_explicit));
-        if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0]) ||
-            (range_deep[1] != sizes[1]) || (range_deep.get(1) != sizes[1])) {
-          FAIL(log,
-               "range with range was not constructed correctly for dim = 2");
-        }
-
-        sycl::range<2> range_moved_constr(std::move(range_explicit));
-        if ((range_moved_constr[0] != sizes[0]) ||
-            (range_moved_constr.get(0) != sizes[0]) ||
-            (range_moved_constr[1] != sizes[1]) ||
-            (range_moved_constr.get(1) != sizes[1])) {
-          FAIL(log,
-               "range with range was not move constructed correctly for dim = "
-               "2");
-        }
-
-        sycl::range<2> range_move_assign{0, 0};
-        range_move_assign = std::move(range_deep);
-        if ((range_move_assign[0] != sizes[0]) ||
-            (range_move_assign.get(0) != sizes[0]) ||
-            (range_move_assign[1] != sizes[1]) ||
-            (range_move_assign.get(1) != sizes[1])) {
-          FAIL(log,
-               "range with range was not move assigned correctly for dim = 2");
-        }
-
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+      sycl::range<1> range_deep(
+          const_cast<const sycl::range<1> &>(range_explicit));
+      if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0])) {
+        FAIL(log, "range with range was not constructed correctly for dim = 1");
       }
 
-      // dim 3
-      {
-        sycl::range<3> range_explicit(sizes[0], sizes[1], sizes[2]);
-        if ((range_explicit[0] != sizes[0]) ||
-            (range_explicit.get(0) != sizes[0]) ||
-            (range_explicit[1] != sizes[1]) ||
-            (range_explicit.get(1) != sizes[1]) ||
-            (range_explicit[2] != sizes[2]) ||
-            (range_explicit.get(2) != sizes[2])) {
-          FAIL(log,
-               "range with size_t was not constructed correctly for dim = 3");
-        }
-
-        sycl::range<3> range_deep(
-            const_cast<const sycl::range<3> &>(range_explicit));
-        if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0]) ||
-            (range_deep[1] != sizes[1]) || (range_deep.get(1) != sizes[1]) ||
-            (range_deep[2] != sizes[2]) || (range_deep.get(2) != sizes[2])) {
-          FAIL(log,
-               "range with range was not constructed correctly for dim = 3");
-        }
-
-        sycl::range<3> range_moved_constr(std::move(range_explicit));
-        if ((range_moved_constr[0] != sizes[0]) ||
-            (range_moved_constr.get(0) != sizes[0]) ||
-            (range_moved_constr[1] != sizes[1]) ||
-            (range_moved_constr.get(1) != sizes[1]) ||
-            (range_moved_constr[2] != sizes[2]) ||
-            (range_moved_constr.get(2) != sizes[2])) {
-          FAIL(log,
-               "range with range was not move constructed correctly for dim = "
-               "3");
-        }
-
-        sycl::range<3> range_move_assign{0, 0, 0};
-        range_move_assign = std::move(range_deep);
-        if ((range_move_assign[0] != sizes[0]) ||
-            (range_move_assign.get(0) != sizes[0]) ||
-            (range_move_assign[1] != sizes[1]) ||
-            (range_move_assign.get(1) != sizes[1]) ||
-            (range_move_assign[2] != sizes[2]) ||
-            (range_move_assign.get(2) != sizes[2])) {
-          FAIL(log,
-               "range with range was not move assigned correctly for dim = 3");
-        }
-
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+      sycl::range<1> range_moved_constr(std::move(range_explicit));
+      if ((range_moved_constr[0] != sizes[0]) ||
+          (range_moved_constr.get(0) != sizes[0])) {
+        FAIL(log,
+             "range with range was not move constructed correctly for dim = "
+             "1");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+
+      sycl::range<1> range_move_assign{0};
+      range_move_assign = std::move(range_deep);
+      if ((range_move_assign[0] != sizes[0]) ||
+          (range_move_assign.get(0) != sizes[0])) {
+        FAIL(log,
+             "range with range was not move assigned correctly for dim = 1");
+      }
+
+      check_equality_comparable_generic(log, range_explicit,
+                                        std::string("range"));
+    }
+
+    // dim 2
+    {
+      sycl::range<2> range_explicit(sizes[0], sizes[1]);
+      if ((range_explicit[0] != sizes[0]) ||
+          (range_explicit.get(0) != sizes[0]) ||
+          (range_explicit[1] != sizes[1]) ||
+          (range_explicit.get(1) != sizes[1])) {
+        FAIL(log,
+             "range with size_t was not constructed correctly for dim = 2");
+      }
+
+      sycl::range<2> range_deep(
+          const_cast<const sycl::range<2> &>(range_explicit));
+      if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0]) ||
+          (range_deep[1] != sizes[1]) || (range_deep.get(1) != sizes[1])) {
+        FAIL(log, "range with range was not constructed correctly for dim = 2");
+      }
+
+      sycl::range<2> range_moved_constr(std::move(range_explicit));
+      if ((range_moved_constr[0] != sizes[0]) ||
+          (range_moved_constr.get(0) != sizes[0]) ||
+          (range_moved_constr[1] != sizes[1]) ||
+          (range_moved_constr.get(1) != sizes[1])) {
+        FAIL(log,
+             "range with range was not move constructed correctly for dim = "
+             "2");
+      }
+
+      sycl::range<2> range_move_assign{0, 0};
+      range_move_assign = std::move(range_deep);
+      if ((range_move_assign[0] != sizes[0]) ||
+          (range_move_assign.get(0) != sizes[0]) ||
+          (range_move_assign[1] != sizes[1]) ||
+          (range_move_assign.get(1) != sizes[1])) {
+        FAIL(log,
+             "range with range was not move assigned correctly for dim = 2");
+      }
+
+      check_equality_comparable_generic(log, range_explicit,
+                                        std::string("range"));
+    }
+
+    // dim 3
+    {
+      sycl::range<3> range_explicit(sizes[0], sizes[1], sizes[2]);
+      if ((range_explicit[0] != sizes[0]) ||
+          (range_explicit.get(0) != sizes[0]) ||
+          (range_explicit[1] != sizes[1]) ||
+          (range_explicit.get(1) != sizes[1]) ||
+          (range_explicit[2] != sizes[2]) ||
+          (range_explicit.get(2) != sizes[2])) {
+        FAIL(log,
+             "range with size_t was not constructed correctly for dim = 3");
+      }
+
+      sycl::range<3> range_deep(
+          const_cast<const sycl::range<3> &>(range_explicit));
+      if ((range_deep[0] != sizes[0]) || (range_deep.get(0) != sizes[0]) ||
+          (range_deep[1] != sizes[1]) || (range_deep.get(1) != sizes[1]) ||
+          (range_deep[2] != sizes[2]) || (range_deep.get(2) != sizes[2])) {
+        FAIL(log, "range with range was not constructed correctly for dim = 3");
+      }
+
+      sycl::range<3> range_moved_constr(std::move(range_explicit));
+      if ((range_moved_constr[0] != sizes[0]) ||
+          (range_moved_constr.get(0) != sizes[0]) ||
+          (range_moved_constr[1] != sizes[1]) ||
+          (range_moved_constr.get(1) != sizes[1]) ||
+          (range_moved_constr[2] != sizes[2]) ||
+          (range_moved_constr.get(2) != sizes[2])) {
+        FAIL(log,
+             "range with range was not move constructed correctly for dim = "
+             "3");
+      }
+
+      sycl::range<3> range_move_assign{0, 0, 0};
+      range_move_assign = std::move(range_deep);
+      if ((range_move_assign[0] != sizes[0]) ||
+          (range_move_assign.get(0) != sizes[0]) ||
+          (range_move_assign[1] != sizes[1]) ||
+          (range_move_assign.get(1) != sizes[1]) ||
+          (range_move_assign[2] != sizes[2]) ||
+          (range_move_assign.get(2) != sizes[2])) {
+        FAIL(log,
+             "range with range was not move assigned correctly for dim = 3");
+      }
+
+      check_equality_comparable_generic(log, range_explicit,
+                                        std::string("range"));
     }
   }
 };

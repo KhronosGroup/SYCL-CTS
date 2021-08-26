@@ -35,18 +35,17 @@ template <int dims>
 void check_nd_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range2) {
   auto testQueue = util::get_cts_object::queue();
   testQueue.submit([&](sycl::handler &cgh) {
-
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for<class test_kernel_2<dims>>(
         sycl::nd_range<dims>(range1, range2),
         [=](sycl::nd_item<dims> ndItem) {
-          /** check stream operator for nd_item
-          */
-          check_type(os, ndItem);
+      /** check stream operator for nd_item
+       */
+      check_type(os, ndItem);
 
-          // check stream operator for nd_range
-          check_type(os, ndItem.get_nd_range());
+      // check stream operator for nd_range
+      check_type(os, ndItem.get_nd_range());
         });
   });
 
@@ -57,18 +56,17 @@ void check_nd_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range2) {
  * Function that create a sycl::stream object and streams item.
  */
 template <int dims>
-void check_item_dims(sycl::range<dims> &range){
+void check_item_dims(sycl::range<dims> &range) {
   auto testQueue = util::get_cts_object::queue();
   testQueue.submit([&](sycl::handler &cgh) {
-
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for<class test_kernel_3<dims>>(range,
                                           [=](sycl::item<dims> it) {
-                                            /** check stream operator for
-                                              * item
-                                            */
-                                            check_type(os, it);
+      /** check stream operator for
+       * item
+       */
+      check_type(os, it);
                                           });
   });
 
@@ -79,23 +77,23 @@ void check_item_dims(sycl::range<dims> &range){
  * Function that create a sycl::stream object and streams group and h_item.
  */
 template <int dims>
-void check_group_h_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range2) {
+void check_group_h_item_dims(sycl::range<dims> &range1,
+                             sycl::range<dims> &range2) {
   auto testQueue = util::get_cts_object::queue();
   testQueue.submit([&](sycl::handler &cgh) {
-
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for_work_group<class test_kernel_4<dims>>(range1, range2,
         [=](const sycl::group<dims> gp) {
-          /** check stream operator for sycl::group
-          */
-          check_type(os, gp);
+      /** check stream operator for sycl::group
+       */
+      check_type(os, gp);
 
-          gp.parallel_for_work_item([&](sycl::h_item<dims> hit) {
-            /** check stream operator for sycl::h_item
-            */
-            check_type(os, hit);
-          });
+      gp.parallel_for_work_item([&](sycl::h_item<dims> hit) {
+        /** check stream operator for sycl::h_item
+         */
+        check_type(os, hit);
+      });
         });
   });
 
@@ -103,7 +101,7 @@ void check_group_h_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range
 }
 
 /** test sycl::stream interface
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -115,198 +113,184 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      /** check sycl::stream_manipulator
-      */
-      check_enum_class_value(sycl::stream_manipulator::dec);
-      check_enum_class_value(sycl::stream_manipulator::hex);
-      check_enum_class_value(sycl::stream_manipulator::oct);
-      check_enum_class_value(sycl::stream_manipulator::noshowbase);
-      check_enum_class_value(sycl::stream_manipulator::showbase);
-      check_enum_class_value(sycl::stream_manipulator::noshowpos);
-      check_enum_class_value(sycl::stream_manipulator::showpos);
-      check_enum_class_value(sycl::stream_manipulator::endl);
-      check_enum_class_value(sycl::stream_manipulator::fixed);
-      check_enum_class_value(sycl::stream_manipulator::scientific);
-      check_enum_class_value(sycl::stream_manipulator::hexfloat);
-      check_enum_class_value(sycl::stream_manipulator::defaultfloat);
-      check_enum_class_value(sycl::stream_manipulator::flush);
+    /** check sycl::stream_manipulator
+     */
+    check_enum_class_value(sycl::stream_manipulator::dec);
+    check_enum_class_value(sycl::stream_manipulator::hex);
+    check_enum_class_value(sycl::stream_manipulator::oct);
+    check_enum_class_value(sycl::stream_manipulator::noshowbase);
+    check_enum_class_value(sycl::stream_manipulator::showbase);
+    check_enum_class_value(sycl::stream_manipulator::noshowpos);
+    check_enum_class_value(sycl::stream_manipulator::showpos);
+    check_enum_class_value(sycl::stream_manipulator::endl);
+    check_enum_class_value(sycl::stream_manipulator::fixed);
+    check_enum_class_value(sycl::stream_manipulator::scientific);
+    check_enum_class_value(sycl::stream_manipulator::hexfloat);
+    check_enum_class_value(sycl::stream_manipulator::defaultfloat);
+    check_enum_class_value(sycl::stream_manipulator::flush);
 
-      /** Check stream interface
-      */
-      {
-        auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](sycl::handler &cgh) {
+    /** Check stream interface
+     */
+    {
+      auto testQueue = util::get_cts_object::queue();
+      testQueue.submit([&](sycl::handler &cgh) {
+        sycl::stream os(2048, 80, cgh);
 
-          sycl::stream os(2048, 80, cgh);
+        /** check get_size()
+         */
+        {
+          auto size = os.get_size();
+          check_return_type<size_t>(log, size, "sycl::context::get_size()");
+        }
 
-          /** check get_size()
-          */
-          {
-            auto size = os.get_size();
-            check_return_type<size_t>(log, size,
-                                      "sycl::context::get_size()");
-          }
+        /** check get_max_statement_size()
+         */
+        {
+          auto maxStatementSize = os.get_max_statement_size();
+          check_return_type<size_t>(log, maxStatementSize,
+                                    "sycl::context::get_max_statement_size()");
+        }
 
-          /** check get_max_statement_size()
-          */
-          {
-            auto maxStatementSize = os.get_max_statement_size();
-            check_return_type<size_t>(
-                log, maxStatementSize,
-                "sycl::context::get_max_statement_size()");
-          }
+        cgh.single_task<class test_kernel_0>([=]() {});
+      });
 
-          cgh.single_task<class test_kernel_0>([=]() {});
+      testQueue.wait_and_throw();
+    }
+
+    /** check stream operator for supported types
+     */
+    {
+      auto testQueue = util::get_cts_object::queue();
+      testQueue.submit([&](sycl::handler &cgh) {
+        sycl::stream os(2048, 80, cgh);
+
+        cgh.single_task<class test_kernel_1>([=]() {
+          /** check stream operator for basic types
+           */
+          check_type(os, "hello world!");
+          check_type(os, const_cast<char *>("hello world!"));
+          check_all_vec_dims(os, char('c'));
+          check_all_vec_dims(os, static_cast<signed char>('c'));
+          check_all_vec_dims(os, static_cast<unsigned char>('c'));
+          check_all_vec_dims(os, int(5));
+          check_all_vec_dims(os, static_cast<unsigned int>(5));
+          check_all_vec_dims(os, short(5));
+          check_all_vec_dims(os, static_cast<unsigned short>(5));
+          check_all_vec_dims(os, long(5));
+          check_all_vec_dims(os, static_cast<unsigned long>(5));
+          check_all_vec_dims(os, static_cast<long long>(5));
+          check_all_vec_dims(os, static_cast<unsigned long long>(5));
+          check_all_vec_dims(os, float(5.5f));
+          check_type(os, true);
+          check_type(os, size_t(5));
+
+          // check stream operator for pointers
+          int a = 5;
+          int *aPtr = &a;
+          check_type(os, aPtr);
+          const int *aConstPtr = &a;
+          check_type(os, aConstPtr);
+          auto multiPtr = sycl::private_ptr<int>(aPtr);
+          check_type(os, multiPtr);
+
+          /** check stream operator for cl types
+           */
+          check_all_vec_dims(os, cl_char('c'));
+          check_all_vec_dims(os, static_cast<cl_uchar>('c'));
+          check_all_vec_dims(os, cl_int(5));
+          check_all_vec_dims(os, static_cast<cl_uint>(5));
+          check_all_vec_dims(os, cl_short(5));
+          check_all_vec_dims(os, static_cast<cl_ushort>(5));
+          check_all_vec_dims(os, cl_long(5));
+          check_all_vec_dims(os, static_cast<cl_ulong>(5));
+          check_all_vec_dims(os, cl_float(5.5f));
+          check_type(os, static_cast<cl_bool>(true));
+
+          /** check stream operator for sycl types
+           */
+          check_all_vec_dims(os, sycl::byte(72));
+
+          check_type(os, sycl::id<1>(1));
+          check_type(os, sycl::id<2>(1, 2));
+          check_type(os, sycl::id<3>(1, 2, 3));
+
+          check_type(os, sycl::range<1>(1));
+          check_type(os, sycl::range<2>(1, 2));
+          check_type(os, sycl::range<3>(1, 2, 3));
+
+          check_type(os,
+                     sycl::nd_range<1>(sycl::range<1>(2), sycl::range<1>(1)));
+          check_type(os, sycl::nd_range<2>(sycl::range<2>(2, 4),
+                                           sycl::range<2>(1, 2)));
+          check_type(os, sycl::nd_range<3>(sycl::range<3>(2, 4, 1),
+                                           sycl::range<3>(1, 2, 1)));
+
+          /** check stream operator for manipulators
+           */
+          os << sycl::endl;
+          os << sycl::setprecision(5) << float(5.0f);
+          os << sycl::setw(3) << float(5.0f);
+          os << sycl::hex << float(5.0f);
+          os << sycl::oct << float(5.0f);
+          os << sycl::dec << float(5.0f);
+          os << sycl::showbase << int(5);
+          os << sycl::noshowbase << int(5);
+          os << sycl::showpos << int(-5) << int(5);
+          os << sycl::noshowpos << int(-5) << int(5);
+          os << sycl::fixed << float(5.0f);
+          os << sycl::scientific << float(5.0f);
+          os << sycl::hexfloat << float(5.0f);
+          os << sycl::defaultfloat << float(5.0f);
+          os << sycl::flush;
         });
+      });
 
-        testQueue.wait_and_throw();
-      }
+      testQueue.wait_and_throw();
+    }
 
-      /** check stream operator for supported types
-      */
-      {
-        auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](sycl::handler &cgh) {
+    /** check stream operator for sycl::nd_item
+     */
+    {
+      sycl::range<1> r11(2);
+      sycl::range<1> r12(1);
+      check_nd_item_dims(r11, r12);
 
-          sycl::stream os(2048, 80, cgh);
+      sycl::range<2> r21(2, 4);
+      sycl::range<2> r22(1, 2);
+      check_nd_item_dims(r21, r22);
 
-          cgh.single_task<class test_kernel_1>([=]() {
+      sycl::range<3> r31(2, 4, 1);
+      sycl::range<3> r32(1, 2, 1);
+      check_nd_item_dims(r31, r32);
+    }
 
-            /** check stream operator for basic types
-            */
-            check_type(os, "hello world!");
-            check_type(os, const_cast<char *>("hello world!"));
-            check_all_vec_dims(os, char('c'));
-            check_all_vec_dims(os, static_cast<signed char>('c'));
-            check_all_vec_dims(os, static_cast<unsigned char>('c'));
-            check_all_vec_dims(os, int(5));
-            check_all_vec_dims(os, static_cast<unsigned int>(5));
-            check_all_vec_dims(os, short(5));
-            check_all_vec_dims(os, static_cast<unsigned short>(5));
-            check_all_vec_dims(os, long(5));
-            check_all_vec_dims(os, static_cast<unsigned long>(5));
-            check_all_vec_dims(os, static_cast<long long>(5));
-            check_all_vec_dims(os, static_cast<unsigned long long>(5));
-            check_all_vec_dims(os, float(5.5f));
-            check_type(os, true);
-            check_type(os, size_t(5));
+    /** check stream operator for sycl::item
+     */
+    {
+      sycl::range<1> r1(4);
+      check_item_dims(r1);
 
-            // check stream operator for pointers
-            int a = 5;
-            int *aPtr = &a;
-            check_type(os, aPtr);
-            const int * aConstPtr = &a;
-            check_type(os, aConstPtr);
-            auto multiPtr = sycl::private_ptr<int>(aPtr);
-            check_type(os, multiPtr);
+      sycl::range<2> r2(4, 2);
+      check_item_dims(r2);
 
-            /** check stream operator for cl types
-            */
-            check_all_vec_dims(os, cl_char('c'));
-            check_all_vec_dims(os, static_cast<cl_uchar>('c'));
-            check_all_vec_dims(os, cl_int(5));
-            check_all_vec_dims(os, static_cast<cl_uint>(5));
-            check_all_vec_dims(os, cl_short(5));
-            check_all_vec_dims(os, static_cast<cl_ushort>(5));
-            check_all_vec_dims(os, cl_long(5));
-            check_all_vec_dims(os, static_cast<cl_ulong>(5));
-            check_all_vec_dims(os, cl_float(5.5f));
-            check_type(os, static_cast<cl_bool>(true));
+      sycl::range<3> r3(4, 2, 1);
+      check_item_dims(r3);
+    }
 
-            /** check stream operator for sycl types
-            */
-            check_all_vec_dims(os, sycl::byte(72));
+    /** check stream operator for sycl::group and sycl::h_item
+     */
+    {
+      sycl::range<1> r11(4);
+      sycl::range<1> r12(1);
+      check_group_h_item_dims(r11, r12);
 
-            check_type(os, sycl::id<1>(1));
-            check_type(os, sycl::id<2>(1, 2));
-            check_type(os, sycl::id<3>(1, 2, 3));
+      sycl::range<2> r21(4, 2);
+      sycl::range<2> r22(1, 1);
+      check_group_h_item_dims(r21, r22);
 
-            check_type(os, sycl::range<1>(1));
-            check_type(os, sycl::range<2>(1, 2));
-            check_type(os, sycl::range<3>(1, 2, 3));
-
-            check_type(os, sycl::nd_range<1>(sycl::range<1>(2),
-                                        sycl::range<1>(1)));
-            check_type(os, sycl::nd_range<2>(sycl::range<2>(2, 4),
-                                        sycl::range<2>(1, 2)));
-            check_type(os, sycl::nd_range<3>(sycl::range<3>(2, 4, 1),
-                                        sycl::range<3>(1, 2, 1)));
-
-            /** check stream operator for manipulators
-            */
-            os << sycl::endl;
-            os << sycl::setprecision(5) << float(5.0f);
-            os << sycl::setw(3) << float(5.0f);
-            os << sycl::hex << float(5.0f);
-            os << sycl::oct << float(5.0f);
-            os << sycl::dec << float(5.0f);
-            os << sycl::showbase << int(5);
-            os << sycl::noshowbase << int(5);
-            os << sycl::showpos << int(-5) << int(5);
-            os << sycl::noshowpos << int(-5) << int(5);
-            os << sycl::fixed << float(5.0f);
-            os << sycl::scientific << float(5.0f);
-            os << sycl::hexfloat << float(5.0f);
-            os << sycl::defaultfloat << float(5.0f);
-            os << sycl::flush;
-          });
-        });
-
-        testQueue.wait_and_throw();
-      }
-
-      /** check stream operator for sycl::nd_item
-      */
-      {
-        sycl::range<1> r11(2);
-        sycl::range<1> r12(1);
-        check_nd_item_dims(r11, r12);
-
-        sycl::range<2> r21(2, 4);
-        sycl::range<2> r22(1, 2);
-        check_nd_item_dims(r21, r22);
-
-        sycl::range<3> r31(2, 4, 1);
-        sycl::range<3> r32(1, 2, 1);
-        check_nd_item_dims(r31, r32);
-
-      }
-
-      /** check stream operator for sycl::item
-      */
-      {
-        sycl::range<1> r1(4);
-        check_item_dims(r1);
-
-        sycl::range<2> r2(4, 2);
-        check_item_dims(r2);
-
-        sycl::range<3> r3(4, 2, 1);
-        check_item_dims(r3);
-      }
-
-      /** check stream operator for sycl::group and sycl::h_item
-      */
-      {
-        sycl::range<1> r11(4);
-        sycl::range<1> r12(1);
-        check_group_h_item_dims(r11, r12);
-
-        sycl::range<2> r21(4, 2);
-        sycl::range<2> r22(1, 1);
-        check_group_h_item_dims(r21, r22);
-
-        sycl::range<3> r31(4, 2, 1);
-        sycl::range<3> r32(1, 1, 1);
-        check_group_h_item_dims(r31, r32);
-
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      sycl::range<3> r31(4, 2, 1);
+      sycl::range<3> r32(1, 1, 1);
+      check_group_h_item_dims(r31, r32);
     }
   }
 };

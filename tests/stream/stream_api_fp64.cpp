@@ -17,7 +17,7 @@ using namespace sycl_cts;
 class test_kernel;
 
 /** test sycl::stream interface
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -29,34 +29,25 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      // Check stream operator for sycl::cl_double and double
-      auto testQueue = util::get_cts_object::queue();
+    // Check stream operator for sycl::cl_double and double
+    auto testQueue = util::get_cts_object::queue();
 
-      if (!testQueue.get_device().has(sycl::aspect::fp64)) {
-        log.note(
-            "Device does not support double precision floating point operations");
-        return;
-      }
-
-      testQueue.submit([&](sycl::handler &cgh) {
-
-        sycl::stream os(2048, 80, cgh);
-
-        cgh.single_task<class test_kernel>([=]() {
-          check_all_vec_dims(os, double(5.5));
-          check_all_vec_dims(os, sycl::cl_double(5.5));
-        });
-      });
-
-      testQueue.wait_and_throw();
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+    if (!testQueue.get_device().has(sycl::aspect::fp64)) {
+      log.note(
+          "Device does not support double precision floating point operations");
+      return;
     }
+
+    testQueue.submit([&](sycl::handler &cgh) {
+      sycl::stream os(2048, 80, cgh);
+
+      cgh.single_task<class test_kernel>([=]() {
+        check_all_vec_dims(os, double(5.5));
+        check_all_vec_dims(os, sycl::cl_double(5.5));
+      });
+    });
+
+    testQueue.wait_and_throw();
   }
 };
 

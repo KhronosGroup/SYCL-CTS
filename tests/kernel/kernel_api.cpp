@@ -30,41 +30,33 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      auto ctsQueue = util::get_cts_object::queue();
-      const auto isHostCtx = ctsQueue.is_host();
-      auto deviceList = ctsQueue.get_context().get_devices();
+    auto ctsQueue = util::get_cts_object::queue();
+    const auto isHostCtx = ctsQueue.is_host();
+    auto deviceList = ctsQueue.get_context().get_devices();
 
-      // Create kernel
-      if (!is_compiler_available(deviceList)) {
-        log.note(
-            "online compiler is not available -- skipping test of kernel api");
-      } else {
-        sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<kernel_name_api>();
-        auto k = prog.get_kernel<kernel_name_api>();
-        ctsQueue.submit(
-            [&](sycl::handler &h) { h.single_task(kernel_name_api{}); });
-        ctsQueue.wait_and_throw();
+    // Create kernel
+    if (!is_compiler_available(deviceList)) {
+      log.note(
+          "online compiler is not available -- skipping test of kernel api");
+    } else {
+      sycl::program prog(ctsQueue.get_context());
+      prog.build_with_kernel_type<kernel_name_api>();
+      auto k = prog.get_kernel<kernel_name_api>();
+      ctsQueue.submit(
+          [&](sycl::handler &h) { h.single_task(kernel_name_api{}); });
+      ctsQueue.wait_and_throw();
 
-        // Check is_host()
-        bool isHost = k.is_host();
+      // Check is_host()
+      bool isHost = k.is_host();
 
-        // Check get_context()
-        auto cxt = k.get_context();
-        check_return_type<sycl::context>(log, cxt,
-                                             "sycl::kernel::get_context()");
+      // Check get_context()
+      auto cxt = k.get_context();
+      check_return_type<sycl::context>(log, cxt, "sycl::kernel::get_context()");
 
-        // Check get_program()
-        auto prgrm = k.get_program();
-        check_return_type<sycl::program>(log, prgrm,
-                                             "sycl::kernel::get_program()");
-      }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
+      // Check get_program()
+      auto prgrm = k.get_program();
+      check_return_type<sycl::program>(log, prgrm,
+                                       "sycl::kernel::get_program()");
     }
   }
 };
