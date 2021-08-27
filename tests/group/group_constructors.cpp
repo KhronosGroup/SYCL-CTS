@@ -6,10 +6,10 @@
 //
 *******************************************************************************/
 
-#include "../../util/array.h"
 #include "../common/common.h"
 #include "../common/common_by_value.h"
 #include "../common/invoke.h"
+#include "../../util/array.h"
 
 #include <array>
 

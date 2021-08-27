@@ -11,6 +11,9 @@
 #ifndef __SYCLCTS_UTIL_ARRAY_H
 #define __SYCLCTS_UTIL_ARRAY_H
 
+//to use std::size_t
+#include <cstddef>
+
 namespace sycl_cts {
 namespace util {
 

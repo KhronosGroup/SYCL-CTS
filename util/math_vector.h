@@ -9,6 +9,8 @@
 #ifndef SYCL_CONFORMANCE_SUITE_MATH_VECTOR_H
 #define SYCL_CONFORMANCE_SUITE_MATH_VECTOR_H
 
+#include "../tests/common/sycl.h"
+
 template <typename T, int dim>
 T getElement(const sycl::vec<T, dim> f, int ix);
 

@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
-#include "../../util/array.h"
 #include "../common/common.h"
+#include "../../util/array.h"
 
 #define TEST_NAME group_api
 

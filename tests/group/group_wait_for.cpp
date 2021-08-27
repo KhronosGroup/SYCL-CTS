@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
-#include "../common/async_work_group_copy.h"
 #include "../common/common.h"
+#include "../common/async_work_group_copy.h"
 #include "../common/invoke.h"
 
 #define TEST_NAME group_wait_for

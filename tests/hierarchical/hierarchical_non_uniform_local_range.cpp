@@ -14,8 +14,8 @@
 //
 *******************************************************************************/
 
-#include "../../util/math_vector.h"
 #include "../common/common.h"
+#include "../../util/math_vector.h"
 
 #define TEST_NAME hierarchical_non_uniform_local_range
 
