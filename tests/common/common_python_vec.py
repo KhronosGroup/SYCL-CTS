@@ -385,7 +385,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(swizzledVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}, ${size}>(swizzledVec)) {
+            if (!check_vector_size_byte_size<${type}, ${size}>(swizzledVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -433,7 +433,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderSwizzleFunctionVec, in_order_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
+            if (!check_vector_size_byte_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -453,7 +453,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderSwizzleFunctionVec, reversed_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
+            if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -473,7 +473,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec, in_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_size_byte_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE
@@ -493,7 +493,7 @@ class SwizzleData:
             if (!check_vector_values<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec, reverse_order_reversed_pair_vals)) {
                 resAcc[0] = false;
             }
-            if (!check_vector_get_count_get_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
+            if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
 #ifdef SYCL_CTS_EXTENSIVE_MODE

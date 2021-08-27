@@ -35,8 +35,8 @@ namespace {
  */
 template <typename vecType, int numOfElems>
 bool check_vector_size(sycl::vec<vecType, numOfElems> vector) {
-  int count = (vector.get_count() == 3) ? 4 : vector.get_count();
-  return ((sizeof(vecType) * count) == vector.get_size());
+  int count = (vector.size() == 3) ? 4 : vector.size();
+  return ((sizeof(vecType) * count) == vector.byte_size());
 }
 
 /**
@@ -356,28 +356,28 @@ struct vector_swizzle_check<T, 16> {
 
 /**
  * @brief Helper function to test the following functions of a vec
- * get_count()
- * get_size()
+ * size()
+ * byte_size()
  */
 template <typename vecType, int N>
-bool check_vector_get_count_get_size(sycl::vec<vecType, N> inputVec) {
-  // get_count()
-  size_t count = inputVec.get_count();
+bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
+  // size()
+  size_t count = inputVec.size();
   if (count != N) {
     return false;
   }
-  count = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_count();
+  count = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).size();
   if (count != N) {
     return false;
   }
 
-  // get_size()
-  size_t size = inputVec.get_size();
+  // byte_size()
+  size_t size = inputVec.byte_size();
   size_t M = (N == 3) ? 4 : N;
   if (size != sizeof(vecType) * M) {
     return false;
   }
-  size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_size();
+  size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).byte_size();
   if (size != sizeof(vecType) * M) {
     return false;
   }
