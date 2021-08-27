@@ -31,9 +31,9 @@ class TEST_NAME : public util::test_base {
 
   template <typename T>
   void check_atomics_for_type(util::logger &log, sycl::queue testQueue) {
-    /** Check atomic constructors for sycl::target::global_buffer
+    /** Check atomic constructors for sycl::target::device
      */
-    check_atomics<T, sycl::target::global_buffer>{}(log, testQueue);
+    check_atomics<T, sycl::target::device>{}(log, testQueue);
 
     /** Check atomic constructors for sycl::target::local
      */

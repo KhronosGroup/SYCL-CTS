@@ -33,10 +33,10 @@ struct explicit_pointer<T, sycl::target::local> {
   using type = sycl::local_ptr<T>;
 };
 
-/** explicit pointer type (specialization for global_buffer)
+/** explicit pointer type (specialization for device)
 */
 template <typename T>
-struct explicit_pointer<T, sycl::target::global_buffer> {
+struct explicit_pointer<T, sycl::target::device> {
   using type = sycl::global_ptr<T>;
 };
 

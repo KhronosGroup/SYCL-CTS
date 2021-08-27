@@ -45,7 +45,7 @@ class TEST_NAME : public util::test_base {
         sycl::buffer<int, 1> resultBuf(data, sycl::range<1>(1));
         auto placeholder =
             sycl::accessor<int, 1, sycl::access_mode::write,
-                               sycl::target::global_buffer,
+                               sycl::target::device,
                                sycl::access::placeholder::true_t>(
                 resultBuf);
 

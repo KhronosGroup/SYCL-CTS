@@ -289,7 +289,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           buf.template get_access<sycl::access_mode::read_write>(cgh);
       check_return_type<
           sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
+                             sycl::target::device>>(
           log, acc, "sycl::buffer::get_access<read_write>(handler&)");
       cgh.single_task(empty_kernel());
     });
@@ -323,9 +323,9 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           cgh, r, offset);
       check_return_type<
           sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
+                             sycl::target::device>>(
           log, acc,
-          "sycl::buffer::get_access<read_write, global_buffer>(handler&, "
+          "sycl::buffer::get_access<read_write, device>(handler&, "
           "range<>, id<>)");
       cgh.single_task(empty_kernel());
     });

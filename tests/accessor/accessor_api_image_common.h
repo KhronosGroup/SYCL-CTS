@@ -1398,7 +1398,7 @@ class check_image_accessor_api_reads {
                                  samplerT ... sampler) {
     queue.submit([&](sycl::handler &handler) {
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
       auto accessor =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               image, handler);

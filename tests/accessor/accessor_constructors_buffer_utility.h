@@ -401,7 +401,7 @@ private:
   offset_t offset;
 };
 
-/** @brief Used to test the buffer accessor combinations for global_buffer and
+/** @brief Used to test the buffer accessor combinations for device and
  *         constant_buffer
  */
 template <typename T, typename kernelName, size_t dims,
@@ -422,17 +422,17 @@ public:
     const auto r = input.getRange();
     const auto offset = input.getOffset();
 
-    /** check buffer accessor constructors for global_buffer
+    /** check buffer accessor constructors for device
      */
     {
-      constexpr auto target = sycl::target::global_buffer;
+      constexpr auto target = sycl::target::device;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
           check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
 
       queue.submit([&](sycl::handler &h) {
-        /** check global_buffer constructors for different modes
+        /** check device constructors for different modes
          */
         {
           constexpr auto mode = sycl::access_mode::read;
@@ -467,7 +467,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::target::global_buffer>;
+            dummy_functor<kernelName, sycl::target::device>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
@@ -568,7 +568,7 @@ class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::true_t,
 };
 
 /** @brief Used to test the buffer accessor combinations for placeholder
- *         global_buffer and placeholder constant_buffer
+ *         device and placeholder constant_buffer
  */
 template <typename T, typename kernelName, size_t dims, typename ... allocatorT>
 class buffer_accessor_dims<T, kernelName, dims, is_host_buffer::false_t,
@@ -587,17 +587,17 @@ public:
     const auto r = input.getRange();
     const auto offset = input.getOffset();
 
-    /** check buffer accessor constructors for global_buffer
+    /** check buffer accessor constructors for device
      */
     {
-      constexpr auto target = sycl::target::global_buffer;
+      constexpr auto target = sycl::target::device;
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
           check_accessor_common_by_reference_buffer<T, dims, target,
                                                     placeholder>;
 
-      /** check global_buffer constructors for different modes
+      /** check device constructors for different modes
        */
       {
         constexpr auto mode = sycl::access_mode::read;
@@ -634,7 +634,7 @@ public:
         /** dummy kernel as no kernel is required for these checks
          */
         using dummy =
-            dummy_functor<kernelName, sycl::target::global_buffer>;
+            dummy_functor<kernelName, sycl::target::device>;
         h.single_task(dummy{});
       });
       queue.wait_and_throw();
