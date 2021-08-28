@@ -17,7 +17,7 @@ namespace util {
 
 void test_base::run_test(class logger &log) {
   try {
-    run(log);
+    this->run(log);
   } catch (const sycl::exception &e) {
     log_exception(log, e);
     auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
