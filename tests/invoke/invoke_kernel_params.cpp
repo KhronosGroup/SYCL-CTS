@@ -33,7 +33,7 @@ struct array_type_t {
 struct test_kernel {
  private:
   typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer>
+                             sycl::target::global_buffer>
       acc_uint32_t;
 
   uint32_t var_a;
@@ -72,7 +72,7 @@ class test_kernel_name;
 class TEST_NAME : public util::test_base {
  public:
   typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer>
+                             sycl::target::global_buffer>
       acc_uint32_t;
 
   /** return information about this test
@@ -87,39 +87,47 @@ class TEST_NAME : public util::test_base {
     {
       uint32_t result = 0;
 
-      auto my_queue = util::get_cts_object::queue();
+      try {
+        auto my_queue = util::get_cts_object::queue();
 
-      sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
+        sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
 
-      my_queue.submit([&](sycl::handler &cgh) {
-        // access the output
-        auto acc_pass =
-            buf_result.template get_access<sycl::access_mode::write>(cgh);
+        my_queue.submit([&](sycl::handler &cgh) {
+          // access the output
+          auto acc_pass =
+              buf_result.template get_access<sycl::access_mode::write>(
+                  cgh);
 
-        const uint32_t var_a = ref_a;
-        const basic_type_t var_b = {ref_b_a, ref_b_b, ref_b_c};
+          const uint32_t var_a = ref_a;
+          const basic_type_t var_b = {ref_b_a, ref_b_b, ref_b_c};
 
-        array_type_t my_array;
-        for (uint32_t i = 0; i < 8; i++) {
-          my_array.int_array[i] = i;
-        }
-
-        cgh.single_task<class test_kernel_name>([=]() {
-          uint32_t pass = 1;
-          pass &= (var_a == ref_a);
-          pass &= (var_b.a == ref_b_a);
-          pass &= (var_b.b == ref_b_b);
-          pass &= (var_b.c == ref_b_c);
-
-          for (int32_t i = 0; i < 8; i++) {
-            pass &= (my_array.int_array[i] == i);
+          array_type_t my_array;
+          for (uint32_t i = 0; i < 8; i++) {
+            my_array.int_array[i] = i;
           }
 
-          acc_pass[0] = pass;
-        });
-      });
+          cgh.single_task<class test_kernel_name>([=]() {
+            uint32_t pass = 1;
+            pass &= (var_a == ref_a);
+            pass &= (var_b.a == ref_b_a);
+            pass &= (var_b.b == ref_b_b);
+            pass &= (var_b.c == ref_b_c);
 
-      my_queue.wait_and_throw();
+            for (int32_t i = 0; i < 8; i++) {
+              pass &= (my_array.int_array[i] == i);
+            }
+
+            acc_pass[0] = pass;
+          });
+        });
+
+        my_queue.wait_and_throw();
+      } catch (const sycl::exception &e) {
+        log_exception(log, e);
+        std::string errorMsg =
+            "a SYCL exception was caught: " + std::string(e.what());
+        FAIL(log, errorMsg.c_str());
+      }
 
       if (!CHECK_VALUE_SCALAR(log, result, static_cast<decltype(result)>(1))) {
         FAIL(log, "incorrect values passed to lambda kernel");
@@ -129,31 +137,40 @@ class TEST_NAME : public util::test_base {
     {
       uint32_t result = 0;
 
-      auto my_queue = util::get_cts_object::queue();
+      try {
+        auto my_queue = util::get_cts_object::queue();
 
-      sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
+        sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
 
-      my_queue.submit([&](sycl::handler &cgh) {
-        // construct a basic type
-        basic_type_t my_type = {ref_b_a, ref_b_b, ref_b_c};
+        my_queue.submit([&](sycl::handler &cgh) {
+          // construct a basic type
+          basic_type_t my_type = {ref_b_a, ref_b_b, ref_b_c};
 
-        // access the output
-        auto acc_pass =
-            buf_result.template get_access<sycl::access_mode::write,
-                                           sycl::target::global_buffer>(cgh);
+          // access the output
+          auto acc_pass =
+              buf_result
+                  .template get_access<sycl::access_mode::write,
+                                       sycl::target::global_buffer>(
+                      cgh);
 
-        // instantiate the kernel
-        test_kernel my_kernel(ref_a, my_type, acc_pass);
+          // instantiate the kernel
+          test_kernel my_kernel(ref_a, my_type, acc_pass);
 
-        for (int i = 0; i < 8; i++) {
-          my_kernel.set(i, i);
-        }
+          for (int i = 0; i < 8; i++) {
+            my_kernel.set(i, i);
+          }
 
-        // execute the kernel
-        cgh.single_task(my_kernel);
-      });
+          // execute the kernel
+          cgh.single_task(my_kernel);
+        });
 
-      my_queue.wait_and_throw();
+        my_queue.wait_and_throw();
+      } catch (const sycl::exception &e) {
+        log_exception(log, e);
+        std::string errorMsg =
+            "a SYCL exception was caught: " + std::string(e.what());
+        FAIL(log, errorMsg.c_str());
+      }
 
       if (!CHECK_VALUE_SCALAR(log, result, static_cast<decltype(result)>(1))) {
         FAIL(log, "incorrect values passed to functor kernel");
