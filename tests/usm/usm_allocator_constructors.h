@@ -9,8 +9,8 @@
 #ifndef __SYCLCTS_TESTS_USM_ALLOCATOR_CONSTRUCTORS_H
 #define __SYCLCTS_TESTS_USM_ALLOCATOR_CONSTRUCTORS_H
 
+#include "../../util/usm_helper.h"
 #include "../common/common.h"
-#include "usm.h"
 #include "usm_allocations_helper.h"
 #include <memory>
 
@@ -20,13 +20,13 @@ using namespace sycl_cts;
 /** @brief Run tests for given usm::alloc
  */
 template <typename T, sycl::usm::alloc kind>
-static void run_ctors_test_for_kind(util::logger &log) {
+static void run_ctors_test_for_kind(util::logger& log) {
   using namespace usm_alloc_help;
   auto queue = util::get_cts_object::queue();
 
   if (!usm_alloc_help::allocation_supported<kind>(log, queue)) {
     log.note(" (test skipped) for kind: " +
-             std::string(usm::get_allocation_description<kind>()));
+             std::string(usm_helper::get_allocation_description<kind>()));
     return;
   }
   auto ctx = queue.get_context();
@@ -49,8 +49,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     AllocatorT allctr(ctx, dev);
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
     if (!check_ptr_kind(ptr, ctx, kind)) {
-      FAIL(log, "Constructor (context, device) for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Constructor (context, device) for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -62,8 +63,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     AllocatorT allctr(queue);
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
     if (!check_ptr_kind(ptr, ctx, kind)) {
-      FAIL(log, "Constructor (queue) for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Constructor (queue) for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -79,8 +81,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
 
     if (!compare_ptrs_kind(ptr, ptr_other, ctx)) {
-      FAIL(log, "Copy constructor for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Copy constructor for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -96,8 +99,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
 
     if (!compare_ptrs_kind(ptr, ptr_other, ctx)) {
-      FAIL(log, "Move constructor for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Move constructor for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -116,8 +120,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
 
     if (!compare_ptrs_kind(ptr, ptr_other, ctx)) {
-      FAIL(log, "Copy constructor (usm_allocator<U,...>) for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Copy constructor (usm_allocator<U,...>) for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -134,8 +139,9 @@ static void run_ctors_test_for_kind(util::logger &log) {
     PtrType ptr(allctr.allocate(count), DeleterT{allctr});
 
     if (!compare_ptrs_kind(ptr, ptr_other, ctx)) {
-      FAIL(log, "Move assignment for kind: " +
-                std::string(usm::get_allocation_description<kind>()));
+      FAIL(log,
+           "Move assignment for kind: " +
+               std::string(usm_helper::get_allocation_description<kind>()));
     }
   }
 
@@ -148,7 +154,7 @@ static void run_ctors_test_for_kind(util::logger &log) {
     AllocatorT allctrC(queue);
     allctrC = allctrA;
     AllocatorDiffT allctrD(ctx, dev);
-    std::string kind_hint{usm::get_allocation_description<kind>()};
+    std::string kind_hint{usm_helper::get_allocation_description<kind>()};
 
     if (!(allctrA == allctrB)) {
       FAIL(log,
@@ -195,7 +201,7 @@ static void run_ctors_test_for_kind(util::logger &log) {
 template <typename T>
 class check_usm_allocator_constructors {
  public:
-  void operator()(util::logger &log) {
+  void operator()(util::logger& log) {
     run_ctors_test_for_kind<T, sycl::usm::alloc::host>(log);
     run_ctors_test_for_kind<T, sycl::usm::alloc::shared>(log);
   }
