@@ -5,8 +5,8 @@
 //  Provides different tools for usm allocation/free/usm_allocator tests
 //
 *******************************************************************************/
+#include "../../util/usm_helper.h"
 #include "../common/common.h"
-#include "usm.h"
 #include <cstddef>
 
 namespace usm_alloc_help {
@@ -77,9 +77,9 @@ static bool compare_ptrs_kind(const UPtrT &lhs, const UPtrU &rhs,
  */
 template <sycl::usm::alloc kind>
 static bool allocation_supported(util::logger &log, sycl::queue &q) {
-  if (!q.get_device().has(usm::get_aspect<kind>())) {
+  if (!q.get_device().has(usm_helper::get_aspect<kind>())) {
     log.note("Device does not support " +
-             std::string(usm::get_allocation_description<kind>()) +
+             std::string(usm_helper::get_allocation_description<kind>()) +
              " allocations");
     return false;
   }
@@ -135,9 +135,10 @@ bool check_simple(util::logger &log, T *ptr, sycl::queue &q) {
 template <typename T, memb_func_index index>
 auto allocate_by_index(sycl::queue &q, std::size_t count) {
   if constexpr (index == memb_func_index::device) {
-    return usm::allocate_usm_memory<sycl::usm::alloc::device, T>(q, count);
+    return usm_helper::allocate_usm_memory<sycl::usm::alloc::device, T>(q,
+                                                                        count);
   } else if constexpr (index == memb_func_index::host) {
-    return usm::allocate_usm_memory<sycl::usm::alloc::host, T>(q, count);
+    return usm_helper::allocate_usm_memory<sycl::usm::alloc::host, T>(q, count);
   } else {
     static_assert(index != index,
                   "'index' is supposed to be 'host' or 'device'");
@@ -192,13 +193,12 @@ bool check_alignment(T *ptr, std::size_t align) {
  */
 template <typename T, typename Allocator, std::size_t count>
 class usm_custom_deleter {
-  Allocator& allocator;
- public:
-  usm_custom_deleter(Allocator& allctr) : allocator(allctr) {}
+  Allocator &allocator;
 
-  void operator()(T* ptr) {
-    allocator.deallocate(ptr, count);
-  }
+ public:
+  usm_custom_deleter(Allocator &allctr) : allocator(allctr) {}
+
+  void operator()(T *ptr) { allocator.deallocate(ptr, count); }
 };
 
 }  // namespace usm_alloc_help

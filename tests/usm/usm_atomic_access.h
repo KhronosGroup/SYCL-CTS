@@ -9,8 +9,8 @@
 #ifndef __SYCL_CTS_TEST_USM_ATOMIC_ACCESS_H
 #define __SYCL_CTS_TEST_USM_ATOMIC_ACCESS_H
 
+#include "../../util/usm_helper.h"
 #include "../common/type_coverage.h"
-#include "usm.h"
 #include <chrono>
 #include <cstring>
 #include <limits.h>
@@ -106,13 +106,13 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
                 "This test can't be launched on USM device memory");
   if (!queue.get_device().has(get_atomic_memory<AllocMemT>())) {
     log.note("Device does not support atomic access to the unified " +
-             std::string(usm::get_allocation_description<AllocMemT>()) +
+             std::string(usm_helper::get_allocation_description<AllocMemT>()) +
              " memory allocation");
     return;
   }
 
-  auto flag{usm::allocate_usm_memory<AllocMemT, int>(queue)};
-  auto counter{usm::allocate_usm_memory<AllocMemT, CounterT>(queue)};
+  auto flag{usm_helper::allocate_usm_memory<AllocMemT, int>(queue)};
+  auto counter{usm_helper::allocate_usm_memory<AllocMemT, CounterT>(queue)};
 
   int increment_value{1};
   // For stable test results we limited counter increase number to int16_t value
@@ -162,7 +162,7 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
   if (!CHECK_VALUE_SCALAR(log, *counter_ptr,
                           2 * (number_of_repetitions * increment_value))) {
     log.note("Test for the USM " +
-             std::string(usm::get_allocation_description<AllocMemT>()) +
+             std::string(usm_helper::get_allocation_description<AllocMemT>()) +
              " memory allocation failed for \"" + typeName +
              "\" underlying type");
   }
