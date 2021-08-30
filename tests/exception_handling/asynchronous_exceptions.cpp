@@ -21,15 +21,27 @@ void check_exception_list_types() {
   static_assert(std::is_same<value_type, std::exception_ptr>::value,
                 "exception_list::value_type is of wrong type");
 
-  { check_type_existence<sycl::exception_list::reference> typeCheck; }
-  { check_type_existence<sycl::exception_list::const_reference> typeCheck; }
+  {
+    check_type_existence<sycl::exception_list::reference> typeCheck;
+    (void)typeCheck;
+  }
+  {
+    check_type_existence<sycl::exception_list::const_reference> typeCheck;
+    (void)typeCheck;
+  }
 
   using size_type = sycl::exception_list::size_type;
   static_assert(std::is_same<size_type, std::size_t>::value,
                 "exception_list::size_type is of wrong type");
 
-  { check_type_existence<sycl::exception_list::iterator> typeCheck; }
-  { check_type_existence<sycl::exception_list::const_iterator> typeCheck; }
+  {
+    check_type_existence<sycl::exception_list::iterator> typeCheck;
+    (void)typeCheck;
+  }
+  {
+    check_type_existence<sycl::exception_list::const_iterator> typeCheck;
+    (void)typeCheck;
+  }
 }
 
 /**
@@ -83,8 +95,10 @@ class TEST_NAME : public util::test_base {
         std::string sc = e.what();
         if (e.has_context()) {
           sycl::context c = e.get_context();
+          (void)c;
         }
-        sycl::cl_int ci = e.get_cl_code();
+        std::error_code ci = e.code();
+        (void)ci;
 
         log_exception(log, e);
         FAIL(log, "An exception should not really have been thrown");
