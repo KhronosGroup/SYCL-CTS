@@ -123,7 +123,7 @@ struct custom_type {
   custom_type() = default;
 
   bool operator==(const custom_type& c_t) const {
-    return m_int_field == c_t.m_int_field and m_char_field == c_t.m_char_field;
+    return m_int_field == c_t.m_int_field && m_char_field == c_t.m_char_field;
   }
 
   operator int() const { return m_int_field; }
