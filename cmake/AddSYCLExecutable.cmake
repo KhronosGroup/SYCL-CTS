@@ -58,3 +58,18 @@ function(add_sycl_executable)
         OBJECT_LIBRARY "${args_OBJECT_LIBRARY}"
         TESTS          "${args_TESTS}")
 endfunction()
+
+# Adds preprocessor definitions to the device compiler,
+# to mimic the add_definitions CMake function, but only for the device compiler
+# If the implementation uses a single compiler for host and device code,
+# then this function is expected to be a no-op
+# because add_definitions should take care of everything
+function(add_device_compiler_definitions)
+    add_device_compiler_definitions_implementation(${ARGN})
+endfunction()
+
+# Adds preprocessor definitions to both host and device compilers
+function(add_host_and_device_compiler_definitions)
+    add_definitions(${ARGN})
+    add_device_compiler_definitions(${ARGN})
+endfunction()
