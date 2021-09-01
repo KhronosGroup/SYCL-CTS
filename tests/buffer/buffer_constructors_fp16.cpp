@@ -18,7 +18,7 @@ using namespace sycl_cts;
 /** test sycl::buffer initialization
  */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
    */
   void get_info(test_base::info &out) const override {
@@ -35,17 +35,17 @@ public:
       return;
     }
     for_type_and_vectors<
-        buffer_constructors_common::check_buffer_ctors_for_type,
-        sycl::half>(log, "sycl::half");
+        buffer_constructors_common::check_buffer_ctors_for_type, sycl::half>(
+        log, "sycl::half");
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<
-        buffer_constructors_common::check_buffer_ctors_for_type,
-        sycl::cl_half>(log, "sycl::cl_half");
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+        buffer_constructors_common::check_buffer_ctors_for_type, sycl::cl_half>(
+        log, "sycl::cl_half");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };
 
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} // namespace TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE

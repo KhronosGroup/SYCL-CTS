@@ -58,4 +58,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace header_test_2__ */
+}  // namespace error_types

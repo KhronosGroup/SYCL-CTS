@@ -20,7 +20,7 @@ using namespace sycl_cts;
 /** test sycl::buffer API
  */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
    */
   void get_info(test_base::info &out) const override {
@@ -68,7 +68,7 @@ public:
 #else
     for_all_types_and_vectors<buffer_api_common::check_buffer_api_for_type>(
         get_buffer_types::vector_types, log);
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_all_types<buffer_api_common::check_buffer_api_for_type>(
         get_buffer_types::scalar_types, log);
   }
@@ -77,4 +77,4 @@ public:
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} // namespace TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE

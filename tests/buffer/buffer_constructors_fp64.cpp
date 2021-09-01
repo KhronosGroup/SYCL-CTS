@@ -18,7 +18,7 @@ using namespace sycl_cts;
 /** test sycl::buffer initialization
  */
 class TEST_NAME : public util::test_base {
-public:
+ public:
   /** return information about this test
    */
   void get_info(test_base::info &out) const override {
@@ -41,11 +41,11 @@ public:
     for_type_and_vectors<
         buffer_constructors_common::check_buffer_ctors_for_type,
         sycl::cl_double>(log, "sycl::cl_double");
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   }
 };
 
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} // namespace TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE
