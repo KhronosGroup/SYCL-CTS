@@ -185,7 +185,7 @@ namespace accessor_members {
     }
   };
 
-  /** @brief Helper struct to verify get_count() call for all accessors
+  /** @brief Helper struct to verify size() call for all accessors
    */
   class count {
   public:
@@ -196,17 +196,17 @@ namespace accessor_members {
      */
     template <typename accTag>
     static count from(const typename accTag::type& a) {
-      return count{a.get_count()};
+      return count{a.size()};
     }
 
-    /** @brief Test for get_count() call
+    /** @brief Test for size() call
      */
     template <typename accTag>
     void check(const typename accTag::type& a, sycl_cts::util::logger &log,
                const std::string& operation, const std::string& typeName) {
-      if (a.get_count() != value) {
+      if (a.size() != value) {
         fail_for_accessor<accTag>(log, typeName,
-                                  operation + " check(get_count)");
+                                  operation + " check(size)");
       }
     }
   };

@@ -47,8 +47,8 @@ public:
     // check the accessor
     check_accessor_members<accTag>::check(
         log, accessor, constructorName, typeName,
-        accessor_members::size{buffer.get_size()},
-        accessor_members::count{buffer.get_count()},
+        accessor_members::size{buffer.byte_size()},
+        accessor_members::count{buffer.size()},
         accessor_members::offset<accTag::dataDims>{offset},
         accessor_members::range<accTag::dataDims>{buffer.get_range()},
         accessor_members::placeholder{accTag::placeholder});
