@@ -49,8 +49,7 @@ class TEST_NAME : public util::test_base {
 
       /** Check atomics for supported types
        */
-      if (testDevice.has_extension("cl_khr_int64_base_atomics") ||
-          testDevice.has_extension("cl_khr_int64_extended_atomics")) {
+      if (testDevice.has(sycl::aspect::atomic64)) {
         if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
           check_atomics_for_type<long>(log, testQueue);
           check_atomics_for_type<unsigned long>(log, testQueue);
