@@ -19,7 +19,7 @@ struct stream_kernel {
 };
 
 /** tests the constructors for sycl::stream
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -42,218 +42,213 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-      auto queue = util::get_cts_object::queue();
-      size_t bufferSize = 2048;
-      size_t maxStatementSize = 80;
+    auto queue = util::get_cts_object::queue();
+    size_t bufferSize = 2048;
+    size_t maxStatementSize = 80;
 
-      /** check (size_t, size_t, sycl::handler&) constructor
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
-          sycl::stream os(bufferSize, maxStatementSize, handler);
+    /** check (size_t, size_t, sycl::handler&) constructor
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream os(bufferSize, maxStatementSize, handler);
 
-          if (os.get_size() != bufferSize) {
-            FAIL(log,
-                 "sycl::context::get_size() returned an incorrect value.");
-          }
-          if (os.get_max_statement_size() != maxStatementSize) {
-            FAIL(log,
-                 "sycl::context::get_max_statement_size() returned an  "
-                 "incorrect value.");
-          }
+        if (os.get_size() != bufferSize) {
+          FAIL(log, "sycl::context::get_size() returned an incorrect value.");
+        }
+        if (os.get_max_statement_size() != maxStatementSize) {
+          FAIL(log,
+               "sycl::context::get_max_statement_size() returned an  "
+               "incorrect value.");
+        }
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-      /** check copy constructor
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB(osA);
+    /** check copy constructor
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB(osA);
 
-          if (osA.get_max_statement_size() != osB.get_max_statement_size()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. "
-                 "(get_max_statement_size)");
-          }
-          if (osA.get_precision() != osB.get_precision()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. (get_precision)");
-          }
-          if (osA.get_size() != osB.get_size()) {
-            FAIL(log, "stream is not copy constructed correctly. (get_size)");
-          }
-          if (osA.get_stream_mode() != osB.get_stream_mode()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. (get_stream_mode)");
-          }
-          if (osB.get_size() != bufferSize) {
-            FAIL(log,
-                 "sycl::context::get_size() returned an incorrect value "
-                 "after copy constructed.");
-          }
-          if (osB.get_max_statement_size() != maxStatementSize) {
-            FAIL(log,
-                 "sycl::context::get_max_statement_size() returned an  "
-                 "incorrect value after copy constructed.");
-          }
+        if (osA.get_max_statement_size() != osB.get_max_statement_size()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. "
+               "(get_max_statement_size)");
+        }
+        if (osA.get_precision() != osB.get_precision()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. (get_precision)");
+        }
+        if (osA.get_size() != osB.get_size()) {
+          FAIL(log, "stream is not copy constructed correctly. (get_size)");
+        }
+        if (osA.get_stream_mode() != osB.get_stream_mode()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. (get_stream_mode)");
+        }
+        if (osB.get_size() != bufferSize) {
+          FAIL(log,
+               "sycl::context::get_size() returned an incorrect value "
+               "after copy constructed.");
+        }
+        if (osB.get_max_statement_size() != maxStatementSize) {
+          FAIL(log,
+               "sycl::context::get_max_statement_size() returned an  "
+               "incorrect value after copy constructed.");
+        }
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-      /** check assignment operator
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
+    /** check assignment operator
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
+        osB = osA;
 
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
-          osB = osA;
+        if (osA.get_max_statement_size() != osB.get_max_statement_size()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. "
+               "(get_max_statement_size)");
+        }
+        if (osA.get_precision() != osB.get_precision()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. (get_precision)");
+        }
+        if (osA.get_size() != osB.get_size()) {
+          FAIL(log, "stream is not copy constructed correctly. (get_size)");
+        }
+        if (osA.get_stream_mode() != osB.get_stream_mode()) {
+          FAIL(log,
+               "stream is not copy constructed correctly. (get_stream_mode)");
+        }
+        if (osB.get_size() != bufferSize) {
+          FAIL(log,
+               "sycl::context::get_size() returned an incorrect value "
+               "after copy assigned.");
+        }
+        if (osB.get_max_statement_size() != maxStatementSize) {
+          FAIL(log,
+               "sycl::context::get_max_statement_size() returned an  "
+               "incorrect value after copy assigned.");
+        }
 
-          if (osA.get_max_statement_size() != osB.get_max_statement_size()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. "
-                 "(get_max_statement_size)");
-          }
-          if (osA.get_precision() != osB.get_precision()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. (get_precision)");
-          }
-          if (osA.get_size() != osB.get_size()) {
-            FAIL(log, "stream is not copy constructed correctly. (get_size)");
-          }
-          if (osA.get_stream_mode() != osB.get_stream_mode()) {
-            FAIL(log,
-                 "stream is not copy constructed correctly. (get_stream_mode)");
-          }
-          if (osB.get_size() != bufferSize) {
-            FAIL(log,
-                 "sycl::context::get_size() returned an incorrect value "
-                 "after copy assigned.");
-          }
-          if (osB.get_max_statement_size() != maxStatementSize) {
-            FAIL(log,
-                 "sycl::context::get_max_statement_size() returned an  "
-                 "incorrect value after copy assigned.");
-          }
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+    /* check move constructor
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB(std::move(osA));
 
-      /* check move constructor
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
+        if (osB.get_size() != bufferSize) {
+          FAIL(log,
+               "sycl::context::get_size() returned an incorrect value "
+               "after move constructed.");
+        }
+        if (osB.get_max_statement_size() != maxStatementSize) {
+          FAIL(log,
+               "sycl::context::get_max_statement_size() returned an  "
+               "incorrect value after move constructed.");
+        }
 
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB(std::move(osA));
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-          if (osB.get_size() != bufferSize) {
-            FAIL(log,
-                 "sycl::context::get_size() returned an incorrect value "
-                 "after move constructed.");
-          }
-          if (osB.get_max_statement_size() != maxStatementSize) {
-            FAIL(log,
-                 "sycl::context::get_max_statement_size() returned an  "
-                 "incorrect value after move constructed.");
-          }
+    /* check move assignment operator
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
+        osB = std::move(osA);
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+        if (osB.get_size() != bufferSize) {
+          FAIL(log,
+               "sycl::context::get_size() returned an incorrect value "
+               "after move assigned.");
+        }
+        if (osB.get_max_statement_size() != maxStatementSize) {
+          FAIL(log,
+               "sycl::context::get_max_statement_size() returned an  "
+               "incorrect value after move assigned.");
+        }
 
-      /* check move assignment operator
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB(bufferSize / 2, maxStatementSize / 2, handler);
-          osB = std::move(osA);
+    /** check equality operator
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB(osA);
+        sycl::stream osC(bufferSize * 2, maxStatementSize * 2, handler);
+        osC = osA;
+        sycl::stream osD(bufferSize * 2, maxStatementSize * 2, handler);
 
-          if (osB.get_size() != bufferSize) {
-            FAIL(log,
-                 "sycl::context::get_size() returned an incorrect value "
-                 "after move assigned.");
-          }
-          if (osB.get_max_statement_size() != maxStatementSize) {
-            FAIL(log,
-                 "sycl::context::get_max_statement_size() returned an  "
-                 "incorrect value after move assigned.");
-          }
+        if (!(osA == osB) && areEqual(osA, osB)) {
+          FAIL(log,
+               "stream equality does not work correctly (copy constructed)");
+        }
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+        if (!(osA == osC) && areEqual(osA, osC)) {
+          FAIL(log, "stream equality does not work correctly (copy assigned)");
+        }
+        if (osA != osB) {
+          FAIL(log,
+               "stream non-equality does not work correctly"
+               "(copy constructed)");
+        }
+        if (osA != osC) {
+          FAIL(log,
+               "stream non-equality does not work correctly"
+               "(copy assigned)");
+        }
+        if (osC == osD) {
+          FAIL(log,
+               "stream equality does not work correctly"
+               "(comparing same)");
+        }
+        if (!(osC != osD)) {
+          FAIL(log,
+               "stream non-equality does not work correctly"
+               "(comparing same)");
+        }
 
-      /** check equality operator
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB(osA);
-          sycl::stream osC(bufferSize * 2, maxStatementSize * 2, handler);
-          osC = osA;
-          sycl::stream osD(bufferSize * 2, maxStatementSize * 2, handler);
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-          if (!(osA == osB) && areEqual(osA, osB)) {
-            FAIL(log,
-                 "stream equality does not work correctly (copy constructed)");
-          }
+    /** check hashing
+     */
+    {
+      queue.submit([&](sycl::handler &handler) {
+        sycl::stream osA(bufferSize, maxStatementSize, handler);
+        sycl::stream osB = osA;
 
-          if (!(osA == osC) && areEqual(osA, osC)) {
-            FAIL(log,
-                 "stream equality does not work correctly (copy assigned)");
-          }
-          if (osA != osB) {
-            FAIL(log,
-                 "stream non-equality does not work correctly"
-                 "(copy constructed)");
-          }
-          if (osA != osC) {
-            FAIL(log,
-                 "stream non-equality does not work correctly"
-                 "(copy assigned)");
-          }
-          if (osC == osD) {
-            FAIL(log,
-                 "stream equality does not work correctly"
-                 "(comparing same)");
-          }
-          if (!(osC != osD)) {
-            FAIL(log,
-                 "stream non-equality does not work correctly"
-                 "(comparing same)");
-          }
+        std::hash<sycl::stream> hasher;
 
-          handler.single_task(stream_kernel{});
-        });
-      }
+        if (hasher(osA) != hasher(osB)) {
+          FAIL(log,
+               "stream hashing does not work correctly (hashing of equal "
+               "failed)");
+        }
+        handler.single_task(stream_kernel{});
+      });
+    }
 
-      /** check hashing
-      */
-      {
-        queue.submit([&](sycl::handler &handler) {
-          sycl::stream osA(bufferSize, maxStatementSize, handler);
-          sycl::stream osB = osA;
-
-          std::hash<sycl::stream> hasher;
-
-          if (hasher(osA) != hasher(osB)) {
-            FAIL(log,
-                 "stream hashing does not work correctly (hashing of equal "
-                 "failed)");
-          }
-          handler.single_task(stream_kernel{});
-        });
-      }
-
-      queue.wait_and_throw();
+    queue.wait_and_throw();
   }
 };
 
