@@ -11,7 +11,7 @@
 #ifndef __SYCLCTS_UTIL_ARRAY_H
 #define __SYCLCTS_UTIL_ARRAY_H
 
-//to use std::size_t
+// to use std::size_t
 #include <cstddef>
 
 namespace sycl_cts {
@@ -39,44 +39,24 @@ struct array {
    */
   value_type values[N];
 
-  constexpr reference operator[](size_type pos) noexcept {
-    return values[pos];
-  }
+  constexpr reference operator[](size_type pos) noexcept { return values[pos]; }
   constexpr const_reference operator[](size_type pos) const noexcept {
     return values[pos];
   }
 
-  constexpr size_type size() const noexcept {
-    return N;
-  }
+  constexpr size_type size() const noexcept { return N; }
 
-  constexpr reference front() noexcept {
-    return values[0];
-  }
-  constexpr const_reference front() const noexcept {
-    return values[0];
-  }
-  constexpr reference back() noexcept {
-    return values[N-1];
-  }
-  constexpr const_reference back() const noexcept {
-    return values[N-1];
-  }
+  constexpr reference front() noexcept { return values[0]; }
+  constexpr const_reference front() const noexcept { return values[0]; }
+  constexpr reference back() noexcept { return values[N - 1]; }
+  constexpr const_reference back() const noexcept { return values[N - 1]; }
 
   /** @brief Support for C++ ranged-for syntax
    */
-  constexpr iterator begin() noexcept {
-    return &front();
-  }
-  constexpr const_iterator begin() const noexcept {
-    return &front();
-  }
-  constexpr iterator end() noexcept {
-    return &back();
-  }
-  constexpr const_iterator end() const noexcept {
-    return &back();
-  }
+  constexpr iterator begin() noexcept { return &front(); }
+  constexpr const_iterator begin() const noexcept { return &front(); }
+  constexpr iterator end() noexcept { return &back(); }
+  constexpr const_iterator end() const noexcept { return &back(); }
 };
 
 }  // namespace util
