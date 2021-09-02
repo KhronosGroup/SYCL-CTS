@@ -11,6 +11,8 @@
 
 #include "reduction_common.h"
 #include <functional>
+// to use size_t
+#include <cstddef>
 
 namespace reduction_get_lambda {
 
@@ -138,40 +140,40 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
                                     size_t number_elements) {
   if constexpr (UseCombineFlagT::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i].combine(accessor[idx]);
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::multiplies<VariableT>>::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] *= accessor[idx];
       }
     };
   } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] += accessor[idx];
       }
     };
   } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] |= accessor[idx];
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::bit_and<VariableT>>::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] &= accessor[idx];
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::bit_xor<VariableT>>::value) {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] ^= accessor[idx];
       }
     };
@@ -196,40 +198,40 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
                                        size_t number_elements) {
   if constexpr (UseCombineFlagT::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i].combine(accessor[nd_item.get_global_id()]);
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::multiplies<VariableT>>::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] *= accessor[nd_item.get_global_id()];
       }
     };
   } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] += accessor[nd_item.get_global_id()];
       }
     };
   } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] |= accessor[nd_item.get_global_id()];
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::bit_and<VariableT>>::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] &= accessor[nd_item.get_global_id()];
       }
     };
   } else if constexpr (std::is_same<FunctorT,
                                     sycl::bit_xor<VariableT>>::value) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (int i{}; i < number_elements; i++) {
+      for (size_t i = 0; i < number_elements; i++) {
         reducer[i] ^= accessor[nd_item.get_global_id()];
       }
     };

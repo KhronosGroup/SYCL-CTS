@@ -11,6 +11,8 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+// to use size_t
+#include <cstddef>
 
 namespace reduction_common {
 
@@ -51,7 +53,7 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
   VariableT expected_value{value_for_initialization};
   auto buf_accessor =
       buffer.template get_access<sycl::access_mode::read>(range);
-  for (int i{}; i < number_iterations; i++) {
+  for (size_t i = 0; i < number_iterations; i++) {
     expected_value = functor(buf_accessor[i], expected_value);
   }
   return expected_value;
@@ -153,11 +155,11 @@ void fill_buffer(BufferT& buffer) {
   // TODO: replace the loop with std::fill and std::iota
   bool value_for_filling_bool_buf{true};
   if (std::is_same<VariableT, bool>::value) {
-    for (int i{}; i < buffer.size(); i++) {
+    for (size_t i = 0; i < buffer.size(); i++) {
       buf_accessor[i] = value_for_filling_bool_buf;
     }
   } else {
-    for (int i{}; i < buffer.size(); i++) {
+    for (size_t i = 0; i < buffer.size(); i++) {
       buf_accessor[i] = i + 1;
     }
   }
