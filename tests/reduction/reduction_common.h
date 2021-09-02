@@ -14,7 +14,14 @@
 
 namespace reduction_common {
 
+using with_property = std::true_type;
+using without_property = std::false_type;
+
 static constexpr size_t number_iterations{10};
+
+static constexpr int identity_value = 5;
+
+constexpr int init_value_without_property_case{99};
 
 static sycl::range<1> range{number_iterations};
 static sycl::nd_range<1> nd_range{range, range};
@@ -48,6 +55,89 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
     expected_value = functor(buf_accessor[i], expected_value);
   }
   return expected_value;
+}
+
+/** @brief This function contained common cases from two get_init_value*
+ *         functions using property cases and functor type
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
+ *          let switch between using and don't using
+ *          sycl::property::reduction::initialize_to_identity
+ *  @retval Value for initialization
+ */
+template <typename VariableT, typename FunctorT, typename UsePropertyFlagT>
+void get_init_value_common_logic(VariableT& init_value) {
+  if constexpr (UsePropertyFlagT::value &&
+                (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
+                 std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
+                 std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
+    init_value = 0x87654321;
+  } else if constexpr (std::is_same<VariableT, bool>::value &&
+                       UsePropertyFlagT::value) {
+    init_value = !sycl::known_identity<FunctorT, VariableT>::value;
+  } else if constexpr (std::is_same<VariableT, bool>::value &&
+                       !UsePropertyFlagT::value) {
+    init_value = sycl::known_identity<FunctorT, VariableT>::value;
+  }
+}
+
+/** @brief Initialize value for reductions. If UsePropertyFlagT is true and
+ *         sycl::has_known_identity for current functor and variable type is
+ *         true then we using value that will not be equal to default reduction
+ *         value and this value should be ignored if we don't using property or
+ *         sycl::has_known_identity is false then we using common value with
+ *         value that will be using in expected value initializations
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
+ *          let switch between using and don't using
+ *          sycl::property::reduction::initialize_to_identity
+ *  @retval Value for reduction initialization
+ */
+template <typename VariableT, typename FunctorT,
+          typename UsePropertyFlagT = std::false_type>
+VariableT get_init_value_for_reduction() {
+  VariableT init_value{};
+  if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
+                UsePropertyFlagT::value) {
+    init_value = 50;
+  } else {
+    init_value = init_value_without_property_case;
+  }
+  get_init_value_common_logic<VariableT, FunctorT, UsePropertyFlagT>(
+      init_value);
+  return init_value;
+}
+
+/** @brief Initialize value for calculating expected value. If UsePropertyFlagT
+ *         is true and sycl::has_known_identity for current functor and variable
+ *         type is true then we using value that will not be equal to default
+ *         reduction value and this value should be ignored if we don't using
+ *         property or sycl::has_known_identity is false then we using common
+ *         value with value that will be using in value for reductions
+ *         initializations
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
+ *          let switch between using and don't using
+ *          sycl::property::reduction::initialize_to_identity
+ *  @retval Value for expected value initialization
+ */
+template <typename VariableT, typename FunctorT,
+          typename UsePropertyFlagT = std::false_type>
+VariableT get_init_value_for_expected_value() {
+  VariableT init_value{};
+  if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
+                UsePropertyFlagT::value) {
+    // case when we using reduction with initialize_to_identity
+    init_value = sycl::known_identity<FunctorT, VariableT>::value;
+  } else {
+    init_value = init_value_without_property_case;
+  }
+  get_init_value_common_logic<VariableT, FunctorT, UsePropertyFlagT>(
+      init_value);
+  return init_value;
 }
 
 /** @brief Filling buffer for using it in parallel_for and for calculate
