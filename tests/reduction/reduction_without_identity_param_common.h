@@ -240,7 +240,7 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
           queue, number_elements)};
   auto value_for_filling{
       reduction_common::get_init_value_for_reduction<VariableT, FunctorT, UsePropertyFlagT>()};
-  for (int i{}; i < number_elements; i++) {
+  for (size_t i = 0; i < number_elements; i++) {
     allocated_memory.get()[i] = value_for_filling;
   }
 
@@ -255,7 +255,7 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
             number_elements)};
     cgh.parallel_for<kernel<VariableT, 3>>(range, reduction, lambda);
   });
-  for (int i{}; i < number_elements; i++) {
+  for (size_t i = 0; i < number_elements; i++) {
     if (allocated_memory.get()[i] != expected_value) {
       log.fail(get_fail_message(type_name, allocated_memory.get()[i],
                                 expected_value),
