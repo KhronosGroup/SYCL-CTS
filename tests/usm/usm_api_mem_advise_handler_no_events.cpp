@@ -2,7 +2,8 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for overload of the handler::mem_advise() method with no events
+//  Provides tests for overload of the handler::mem_advise() member function
+//  with no events
 //
 *******************************************************************************/
 

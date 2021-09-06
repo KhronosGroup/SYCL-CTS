@@ -2,7 +2,8 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for overload of the handler::fill() method with no events
+//  Provides tests for overload of the handler::fill() member function with no
+//  events
 //
 *******************************************************************************/
 
