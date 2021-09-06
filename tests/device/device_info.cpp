@@ -82,8 +82,6 @@ class TEST_NAME : public util::test_base {
           sycl::info::device::global_mem_cache_line_size);
       check_enum_class_value(sycl::info::device::global_mem_cache_size);
       check_enum_class_value(sycl::info::device::global_mem_size);
-      check_enum_class_value(sycl::info::device::max_constant_buffer_size);
-      check_enum_class_value(sycl::info::device::max_constant_args);
       check_enum_class_value(sycl::info::device::local_mem_type);
       check_enum_class_value(sycl::info::device::local_mem_size);
       check_enum_class_value(sycl::info::device::error_correction_support);
@@ -316,12 +314,6 @@ class TEST_NAME : public util::test_base {
             log, dev);
         check_get_info_param<sycl::info::device, sycl::cl_ulong,
                              sycl::info::device::global_mem_size>(log, dev);
-        check_get_info_param<sycl::info::device, sycl::cl_ulong,
-                             sycl::info::device::max_constant_buffer_size>(
-            log, dev);
-        check_get_info_param<sycl::info::device, sycl::cl_uint,
-                             sycl::info::device::max_constant_args>(log,
-                                                                        dev);
         check_get_info_param<sycl::info::device,
                              sycl::info::local_mem_type,
                              sycl::info::device::local_mem_type>(log, dev);
