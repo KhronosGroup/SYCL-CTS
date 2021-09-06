@@ -492,7 +492,7 @@ class event_generator {
       auto acc_src = buf_src.template get_access<sycl::access_mode::write>(cgh);
       // single_task is used to make process long enough for testing purpose
       // The function being tested must wait for this task to complete.
-      cgh.single_task<init_kernel_name<T, buf_size>>([=]() {
+      cgh.single_task<init_kernel_name<T, buf_size>>([=] {
         for (size_t i = 0; i < buf_size; ++i) {
           acc_src[i] = value;
         }
