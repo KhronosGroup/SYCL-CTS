@@ -131,7 +131,7 @@ public:
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + typeName);
     check_with_alloc<custom_alloc<T>>(log);
-    check_with_alloc<sycl::buffer_allocator>(log);
+    check_with_alloc<sycl::buffer_allocator<T>>(log);
   }
 };
 
