@@ -56,7 +56,7 @@ struct run_all_tests {
   void operator()(sycl::queue &queue, sycl_cts::util::logger &log,
                   const std::string &typeName) {
     if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
-      if (!UseAtomic64Flag::value) {
+      if constexpr (!UseAtomic64Flag::value) {
         return;
       }
       if (!queue.get_device().has(sycl::aspect::atomic64)) {
@@ -64,7 +64,7 @@ struct run_all_tests {
         return;
       }
     } else {
-      if (UseAtomic64Flag::value) {
+      if constexpr (UseAtomic64Flag::value) {
         return;
       }
     }
