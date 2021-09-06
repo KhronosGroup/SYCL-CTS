@@ -203,7 +203,7 @@ class TEST_NAME : public util::test_base {
           q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
                 b.get_access<sycl::access_mode::read_write,
-                             sycl::target::global_buffer>(cgh);
+                             sycl::target::device>(cgh);
 
             auto my_range = sycl::range<1>(sizes[0]);
 
@@ -232,7 +232,7 @@ class TEST_NAME : public util::test_base {
           q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
                 b.get_access<sycl::access_mode::read_write,
-                             sycl::target::global_buffer>(cgh);
+                             sycl::target::device>(cgh);
 
             auto my_range = sycl::range<2>(sizes[0], sizes[1]);
 
@@ -263,7 +263,7 @@ class TEST_NAME : public util::test_base {
           q.submit([&](sycl::handler &cgh) {
             auto hasSucceded =
                 b.get_access<sycl::access_mode::read_write,
-                             sycl::target::global_buffer>(cgh);
+                             sycl::target::device>(cgh);
 
             auto my_range = sycl::range<3>(sizes[0], sizes[1], sizes[2]);
 

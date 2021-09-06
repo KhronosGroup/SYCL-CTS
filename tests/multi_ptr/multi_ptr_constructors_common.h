@@ -45,7 +45,7 @@ class pointer_ctors {
 
     queue.submit([&](sycl::handler &handler) {
       sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::global_buffer>
+                         sycl::target::device>
           globalAccessor(buffer, handler);
       sycl::accessor<T, 1, sycl::access_mode::read,
                          sycl::target::constant_buffer>

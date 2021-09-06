@@ -16,10 +16,10 @@ using namespace sycl_cts;
 class kernel_item_1d {
  protected:
   typedef sycl::accessor<int, 1, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_readAccess;
   typedef sycl::accessor<int, 1, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_writeAccess;
 
   t_readAccess m_x;

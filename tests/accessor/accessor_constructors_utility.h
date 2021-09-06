@@ -79,7 +79,7 @@ struct acc_data_dims<sycl::target::image_array, dims> {
 template <sycl::target target>
 constexpr bool is_buffer_accessor() {
   return
-      (target == sycl::target::global_buffer) ||
+      (target == sycl::target::device) ||
       (target == sycl::target::constant_buffer) ||
       (target == sycl::target::host_buffer);
 }

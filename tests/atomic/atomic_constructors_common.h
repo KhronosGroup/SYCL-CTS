@@ -47,10 +47,10 @@ class check_atomics {
      */
     testQueue.submit([&](sycl::handler &cgh) {
       sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::global_buffer>
+                         sycl::target::device>
           acc(buf, cgh);
 
-      check_atomic_constructors<T, sycl::target::global_buffer,
+      check_atomic_constructors<T, sycl::target::device,
                                 sycl::access::address_space::global_space>
           f(acc);
 
