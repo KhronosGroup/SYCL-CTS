@@ -51,7 +51,7 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
 }
 
 /** @brief Filling buffer for using it in parallel_for and for calculate
- * expected value
+ *         expected value
  *  @tparam VariableT Variable type from type coverage
  *  @tparam BufferT type sycl::buffer object
  *  @param buffer sycl::buffer object
