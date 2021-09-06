@@ -606,8 +606,7 @@ struct test {
           // initialized 'src_arr' will be copied to 'dst_arr' and the test
           // will fail during validation. Reverse order is used to increase
           // probability of data race.
-          for (size_t i = numEvents; i > 0; --i) {
-            const size_t idx = i - 1;
+          for (size_t i = numEvents - 1; i + 1 > 0; --i) {
             gens[idx].copy_arrays(parent);
           }
         }
