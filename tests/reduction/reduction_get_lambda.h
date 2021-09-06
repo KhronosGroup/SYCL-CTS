@@ -19,7 +19,7 @@ namespace reduction_get_lambda {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -55,7 +55,7 @@ auto get_lambda_with_range(AccessorT accessor) {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -101,7 +101,7 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -125,7 +125,7 @@ auto get_lambda(AccessorT accessor) {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -183,7 +183,7 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -242,7 +242,7 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
- *          calling .combine() function or operator +, *, ^= e.t.c.
+ *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
