@@ -74,7 +74,7 @@ bool check_device_support(sycl_cts::util::logger &log,
   return true;
 }
 
-/** @brief Syntax sugar for the number of events
+/** @brief Syntactic sugar for the number of events
  */
 constexpr size_t operator"" _events(unsigned long long value) {
   if (value > std::numeric_limits<size_t>::max()) {
