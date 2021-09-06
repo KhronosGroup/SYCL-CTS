@@ -524,10 +524,9 @@ class event_generator {
     bool result = true;
     auto acc_src = buf_src.template get_access<sycl::access_mode::read>(rng);
     auto acc_dst = buf_dst.template get_access<sycl::access_mode::read>(rng);
-    for (size_t i = buf_size; i > 0; --i) {
-      const size_t idx{i - 1};
-      result = result && (acc_src[idx] == acc_dst[idx]);
-      result = result && (acc_dst[idx] == value);
+    for (size_t i = buf_size - 1; i + 1 > 0; --i) {
+      result = result && (acc_src[i] == acc_dst[i]);
+      result = result && (acc_dst[i] == value);
     }
     return result;
   }
