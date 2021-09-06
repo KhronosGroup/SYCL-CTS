@@ -33,7 +33,7 @@ static const auto scalar_types =
  *  @tparam VariableT The type of the variable with which the test runs
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam BufferT The type of the buffer with which the test runs
- *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
+ *  @param functor The functor (plus, multiplies, etc) with which the test runs
  *  @param buffer The buffer that will used in parallel_for() function
  *  @param value_for_initialization The value for initialization output variable
  *  @retval Expected value after test will running
