@@ -544,7 +544,7 @@ class event_generator {
 template <typename T, size_t count, template <typename, size_t> class checkT,
           typename caller, allocation alloc, size_t numEvents>
 struct test {
-  static void run(sycl_cts::util::logger &log, const std::string &typeName) {
+  static void run(sycl_cts::util::logger &log) {
     using verifier_t = checkT<T, count>;
     using storage_t = storage<T, count, alloc>;
     using events_t = std::vector<sycl::event>;
@@ -556,7 +556,7 @@ struct test {
     log.debug([&] {
       std::string message("Running test for ");
       message += verifier_t::template description<alloc>() + " for ";
-      message += type_name_string<T>::get(typeName) + " ...";
+      message += std::string(typeid(T).name()) + " ...";
       return message;
     });
 
@@ -641,13 +641,13 @@ struct test {
       log.debug("... destruct the queue");
     } catch (sycl_cts::util::fail_check &ex) {
       std::string message{verifier_t::template description<alloc>()};
-      message += " failed for " + type_name_string<T>::get(typeName);
+      message += std::string(" failed for ") + typeid(T).name();
       message += ". ";
       message += ex.what();
       FAIL(log, message);
     } catch (...) {
       std::string message{verifier_t::template description<alloc>()};
-      message += " got an exception for " + type_name_string<T>::get(typeName);
+      message += std::string(" got an exception for ") + typeid(T).name();
       log.note(message);
       throw;
     }
