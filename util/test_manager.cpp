@@ -242,17 +242,10 @@ void test_manager::dump_device_info() {
     auto doesDeviceSupportDouble = chosenDevice.has(sycl::aspect::fp64)
                                        ? "Supported"
                                        : "Not Supported";
-    auto doesDeviceSupportBaseAtomics =
-        chosenDevice.has_extension("cl_khr_int64_base_atomics")
+    auto doesDeviceSupportAtomics =
+        chosenDevice.has(sycl::aspect::atomic64)
             ? "Supported"
             : "Not Supported";
-    auto doesDeviceSupportExtendedAtomics =
-        chosenDevice.has_extension("cl_khr_int64_extended_atomics")
-            ? "Supported"
-            : "Not Supported";
-    auto doesDeviceSupport3DImageWrites =
-        chosenDevice.has_extension("cl_khr_3d_image_writes") ? "Supported"
-                                                             : "Not Supported";
     auto platformNameStr =
         chosenPlatform.get_info<sycl::info::platform::name>();
     auto platformVendorStr =
@@ -266,10 +259,7 @@ void test_manager::dump_device_info() {
              << "\", \"device-version\": \"" << deviceVersionStr
              << "\", \"device-fp16\": \"" << doesDeviceSupportHalf
              << "\", \"device-fp64\": \"" << doesDeviceSupportDouble
-             << "\", \"device-int64-base\": \"" << doesDeviceSupportBaseAtomics
-             << "\", \"device-int64-extended\": \""
-             << doesDeviceSupportExtendedAtomics
-             << "\", \"device-3d-writes\": \"" << doesDeviceSupport3DImageWrites
+             << "\", \"device-atomic64\": \"" << doesDeviceSupportAtomics
              << "\", \"platform-name\": \"" << platformNameStr
              << "\", \"platform-vendor\": \"" << platformVendorStr
              << "\", \"platform-version\": \"" << platformVersionStr << "\"}";

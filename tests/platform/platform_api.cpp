@@ -49,15 +49,14 @@ class TEST_NAME : public util::test_base {
         }
       }
 
-      /** check has_extensions() member function
+      /** check has() member function
       */
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        auto extensionSupported =
-            plt.has_extension(std::string("cl_khr_icd"));
+        auto extensionSupported = plt.has(sycl::aspect::cpu);
         check_return_type<bool>(log, extensionSupported,
-                                "platform::has_extension(string_class)");
+                                "platform::has(sycl::aspect)");
       }
 
       /** check get_info() member function
