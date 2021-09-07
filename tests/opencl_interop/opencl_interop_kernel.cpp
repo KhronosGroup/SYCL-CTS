@@ -144,7 +144,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::global_buffer>(
+                                sycl::target::device>(
                   handler);
 
           simple_struct simpleStruct{19, 13.37f};
@@ -169,7 +169,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::global_buffer>(
+                                sycl::target::device>(
                   handler);
 
           simple_struct simpleStruct{19, 13.37f};

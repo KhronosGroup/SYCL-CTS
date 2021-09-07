@@ -18,13 +18,13 @@ struct program_ctrs_kernel {
 
 class test_functor_1 {
   sycl::accessor<float, 1, sycl::access_mode::read_write,
-                     sycl::target::global_buffer>
+                     sycl::target::device>
       m_acc;
 
  public:
   test_functor_1(
       sycl::accessor<float, 1, sycl::access_mode::read_write,
-                         sycl::target::global_buffer>
+                         sycl::target::device>
           acc)
       : m_acc(acc) {}
 

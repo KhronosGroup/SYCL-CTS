@@ -265,7 +265,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         queue.submit([&](sycl::handler &handler) {
           auto accessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::global_buffer>(
+                                sycl::target::device>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_no_event>([]() {});
         });
@@ -331,7 +331,7 @@ class TEST_NAME : public sycl_cts::util::test_base_opencl {
         queue.submit([&](sycl::handler &handler) {
           auto accessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::global_buffer>(
+                                sycl::target::device>(
                   handler);
           handler.single_task<class buffer_interop_constructor_kernel_with_event>([]() {});
         });

@@ -27,7 +27,7 @@ class kernel_test_class5;
 
 using accessor_t =
     sycl::accessor<int, 1, sycl::access_mode::read_write,
-                       sycl::target::global_buffer>;
+                       sycl::target::device>;
 
 struct single_task_functor {
   single_task_functor(accessor_t acc, size_t range) : acc(acc), range(range) {}
