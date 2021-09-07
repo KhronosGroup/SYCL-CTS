@@ -35,10 +35,10 @@ void perform_test(util::logger &log, const std::string &type_name,
     }
   }
   sycl::range<1> range(1);
-  T result = T(value_helper<T>(0));
-  T ref = T(value_helper<T>(0));
+  T result = T(get_init_value_helper<T>(0));
+  T ref = T(get_init_value_helper<T>(0));
   {
-    init_values(ref, case_num);
+    fill_init_values(ref, case_num);
     sycl::buffer<T, 1> result_buffer(&result, range);
     queue.submit([&](sycl::handler &cgh) {
       auto res_acc =

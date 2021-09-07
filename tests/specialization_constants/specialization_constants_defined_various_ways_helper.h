@@ -57,47 +57,47 @@ static std::string get_hint(sc_vw_id test_id) {
 
 // Defined in a non-global named namespace
 template <typename T, int case_num>
-constexpr sycl::specialization_id<T> sc_nonglob(gsc::value_helper<T>(case_num));
+constexpr sycl::specialization_id<T> sc_nonglob(gsc::get_init_value_helper<T>(case_num));
 
 // A static member variable of a struct in a non-global namespace
 struct struct_nonglob {
   constexpr struct_nonglob() {}
   template <typename T, int case_num>
   static constexpr sycl::specialization_id<T> sc{
-      gsc::value_helper<T>(case_num)};
+      gsc::get_init_value_helper<T>(case_num)};
 };
 }  // namespace spec_const_help
 
 namespace {
 // Defined in an unnamed namespace
 template <typename T, int case_num>
-constexpr sycl::specialization_id<T> sc_unnamed(gsc::value_helper<T>(case_num));
+constexpr sycl::specialization_id<T> sc_unnamed(gsc::get_init_value_helper<T>(case_num));
 
 // A static member variable of a struct in an unnamed namespace
 struct struct_unnamed {
   constexpr struct_unnamed() {}
   template <typename T, int case_num>
   static constexpr sycl::specialization_id<T> sc{
-      gsc::value_helper<T>(case_num)};
+      gsc::get_init_value_helper<T>(case_num)};
 };
 }  // unnamed namespace
 
 // Defined in the global namespace as inline constexpr
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> sc_glob_inl(
-    gsc::value_helper<T>(case_num));
+    gsc::get_init_value_helper<T>(case_num));
 
 // Defined in the global namespace as static constexpr
 template <typename T, int case_num>
 static constexpr sycl::specialization_id<T> sc_glob_static(
-    gsc::value_helper<T>(case_num));
+    gsc::get_init_value_helper<T>(case_num));
 
 // A static member variable of a struct in the global namespace
 struct struct_glob {
   constexpr struct_glob() {}
   template <typename T, int case_num>
   static constexpr sycl::specialization_id<T> sc{
-      gsc::value_helper<T>(case_num)};
+      gsc::get_init_value_helper<T>(case_num)};
 };
 
 // A static member variable declared inline constexpr of a struct in the global
@@ -106,7 +106,7 @@ struct struct_glob_inl {
   constexpr struct_glob_inl() {}
   template <typename T, int case_num>
   static inline constexpr sycl::specialization_id<T> sc{
-      gsc::value_helper<T>(case_num)};
+      gsc::get_init_value_helper<T>(case_num)};
 };
 
 // A static member variable of a templated struct in the global namespace
@@ -115,7 +115,7 @@ struct struct_glob_tmpl {
   constexpr struct_glob_tmpl() {}
   template <int case_num>
   static constexpr sycl::specialization_id<T> sc{
-      gsc::value_helper<T>(case_num)};
+      gsc::get_init_value_helper<T>(case_num)};
 };
 
 #endif  // __SYCLCTS_TESTS_SPEC_CONST_DEFINED_VARIOUS_WAYS_HELPER_H
