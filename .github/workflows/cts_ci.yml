@@ -1,0 +1,31 @@
+name: SYCL CTS CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  compile-cts-support-libraries:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        sycl-impl: [computecpp, dpcpp, hipsycl]
+    env:
+      container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+    container:
+      image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Configure CMake
+        working-directory: ${{ env.container-workspace }}
+        run: bash /scripts/configure.sh
+      - name: Build 'oclmath'
+        working-directory: ${{ env.container-workspace }}/build
+        run: cmake --build . --target oclmath
+      - name: Build 'util'
+        working-directory: ${{ env.container-workspace }}/build
+        run: cmake --build . --target util
