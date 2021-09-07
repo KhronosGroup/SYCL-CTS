@@ -19,8 +19,8 @@ union remove_initialization {
   T value;
   remove_initialization() {}
 
-  template <typename T>
-  void operator=(const T &val) {
+  template <typename ValT>
+  void operator=(const ValT &val) {
     this->value = val;
   }
 
