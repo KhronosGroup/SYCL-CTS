@@ -21,6 +21,7 @@ using namespace sycl_cts;
 void check_sycl_working(sycl::errc err_c, util::logger &log) {
   std::error_code make_err_c_result{sycl::make_error_code(err_c)};
 
+  CHECK_TYPE(log, make_err_c_result, std::error_code());
   if (!noexcept(sycl::make_error_code(err_c))) {
     FAIL(log, "sycl::make_error_code function are not marked as \"noexcept\"");
   }
