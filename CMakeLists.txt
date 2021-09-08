@@ -68,10 +68,6 @@ if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
 endif()
 # ------------------
 
-if(${INTEL_SYCL_TRIPLE} MATCHES ".*-nvidia-cuda-.*")
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_INTEL_PI_CUDA)
-endif()
-
 enable_testing()
 
 add_subdirectory(util)
