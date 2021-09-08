@@ -130,19 +130,16 @@ class kernel_nd_item {
       }
     }
 
-    /* test NDrange and offset*/
-    sycl::id<dimensions> offset = myitem.get_offset();
+    /* test NDrange*/
     sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
 
     sycl::range<dimensions> ndGlobal = NDRange.get_global_range();
     sycl::range<dimensions> ndLocal = NDRange.get_local_range();
-    sycl::id<dimensions> ndOffset = NDRange.get_offset();
 
     for (int i = 0; i < dimensions; ++i) {
       bool are_same = true;
       are_same &= globalRange.get(i) == ndGlobal.get(i);
       are_same &= localRange.get(i) == ndLocal.get(i);
-      are_same &= offset.get(i) == ndOffset.get(i);
 
       failed = !are_same ? true : failed;
     }
