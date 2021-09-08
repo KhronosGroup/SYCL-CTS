@@ -242,10 +242,17 @@ void test_manager::dump_device_info() {
     auto doesDeviceSupportDouble = chosenDevice.has(sycl::aspect::fp64)
                                        ? "Supported"
                                        : "Not Supported";
+#if !defined(__COMPUTECPP__)
+    auto doesDeviceSupportAtomics = chosenDevice.has(sycl::aspect::atomic64)
+                                        ? "Supported"
+                                        : "Not Supported";
+#else
     auto doesDeviceSupportAtomics =
-        chosenDevice.has(sycl::aspect::atomic64)
+        (chosenDevice.has_extension("cl_khr_int64_base_atomics") &&
+         chosenDevice.has_extension("cl_khr_int64_extended_atomics"))
             ? "Supported"
             : "Not Supported";
+#endif
     auto platformNameStr =
         chosenPlatform.get_info<sycl::info::platform::name>();
     auto platformVendorStr =
