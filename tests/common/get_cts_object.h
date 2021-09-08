@@ -63,7 +63,12 @@ struct get_cts_object {
   static sycl::queue queue(
       const sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
-    return sycl::queue(selector, asyncHandler);
+#if !defined(__HIPSYCL__)
+    return sycl::queue(selector, asyncHandler, sycl::property_list{});
+#else
+    return sycl::queue(selector.select_device(), asyncHandler,
+                       sycl::property_list{});
+#endif
   }
 
   /**
