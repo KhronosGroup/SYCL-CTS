@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#include "usm.h"
+#include "../../util/usm_helper.h"
 #include <cstring>
 
 #define TEST_NAME usm_fill_memset_memcpy
@@ -41,8 +41,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
       constexpr auto value_for_filling{1};
       constexpr auto value_for_first_element_overwriting{10};
 
-      auto src {usm::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
-      auto output {usm::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
+      auto src {usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
+      auto output {usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, int>(q, count)};
 
       sycl::event init_fill = q.submit([&](sycl::handler &cgh) {
         cgh.fill(src.get(), value_for_filling, count);

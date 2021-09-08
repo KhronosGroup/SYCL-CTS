@@ -8,7 +8,7 @@
 //
 *******************************************************************************/
 
-#include "usm.h"
+#include "../../util/usm_helper.h"
 #include <cstring>
 
 #define TEST_NAME usm_get_pointer_queries
@@ -21,10 +21,10 @@ void run_check(const sycl::queue &queue, sycl_cts::util::logger &log) {
   const auto &device{queue.get_device()};
   const auto &context{queue.get_context()};
 
-  auto str_usm_alloc_type{usm::get_allocation_description<alloc>()};
+  auto str_usm_alloc_type{usm_helper::get_allocation_description<alloc>()};
 
-  if (device.has(usm::get_aspect<alloc>())) {
-    auto allocated_memory = usm::allocate_usm_memory<alloc, int>(queue);
+  if (device.has(usm_helper::get_aspect<alloc>())) {
+    auto allocated_memory = usm_helper::allocate_usm_memory<alloc, int>(queue);
     const auto value = sycl::get_pointer_type(allocated_memory.get(), context);
 
     if (alloc != value) {

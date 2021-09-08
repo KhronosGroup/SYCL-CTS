@@ -9,8 +9,8 @@
 #ifndef __SYCLCTS_TESTS_USM_ALLOCATOR_API_H
 #define __SYCLCTS_TESTS_USM_ALLOCATOR_API_H
 
+#include "../../util/usm_helper.h"
 #include "../common/common.h"
-#include "usm.h"
 #include "usm_allocations_helper.h"
 
 namespace usm_allocator_api {
@@ -77,7 +77,7 @@ std::string log_message(const char *check) {
   return "case for 'allocate' (usm_allocator is " +
          std::string(creation_way_hint<c_id::way>()) + ") - " +
          std::string(check) + " for kind: " +
-         std::string(usm::get_allocation_description<c_id::kind>());
+         std::string(usm_helper::get_allocation_description<c_id::kind>());
 }
 
 /** @brief Perform check for allocated memory
@@ -133,7 +133,7 @@ static void run_api_test_for_kind(util::logger &log) {
 
   if (!usm_alloc_help::allocation_supported<kind>(log, queue)) {
     log.note(" (test skipped) for kind: " +
-             std::string(usm::get_allocation_description<kind>()));
+             std::string(usm_helper::get_allocation_description<kind>()));
     return;
   }
   auto ctx = queue.get_context();
