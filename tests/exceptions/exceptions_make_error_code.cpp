@@ -14,7 +14,7 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-/** @brief Provide verification for sycl::make_error_code function vorking
+/** @brief Provide verification for sycl::make_error_code function
  *  @param err_c Error code from sycl::errc enumeration
  *  @param log sycl_cts::util::logger class object
  */
