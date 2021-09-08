@@ -9,9 +9,10 @@
 #ifndef __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 #define __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 
-#include "../common/sycl.h"
 #include <string>
 #include <utility>
+
+#include <sycl/sycl.hpp>
 
 /**
  * @brief Retrieve type name; by default just forward the given one

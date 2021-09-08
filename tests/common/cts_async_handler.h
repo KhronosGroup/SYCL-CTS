@@ -9,7 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_CTS_ASYNC_HANDLER_H
 #define __SYCLCTS_TESTS_COMMON_CTS_ASYNC_HANDLER_H
 
-#include "sycl.h"
+#include <sycl/sycl.hpp>
 
 struct cts_async_handler {
   void operator()(sycl::exception_list l) {

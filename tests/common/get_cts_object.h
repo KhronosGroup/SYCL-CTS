@@ -9,8 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
 #define __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
 
-// include our proxy to the real sycl header
-#include "sycl.h"
+#include <sycl/sycl.hpp>
 
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
