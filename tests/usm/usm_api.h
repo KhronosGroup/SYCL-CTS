@@ -426,7 +426,7 @@ class mem_advise {
   }
 
   void check(const T *) const {
-    // Results are implementation-defined
+    // Effects are implementation-defined
   }
 };
 
