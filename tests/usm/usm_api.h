@@ -508,7 +508,8 @@ class event_generator {
       auto acc_src = buf_src.template get_access<sycl::access_mode::read>(cgh);
       auto acc_dst = buf_dst.template get_access<sycl::access_mode::write>(cgh);
       // Copy should be much faster then algorithm in 'init()' member function
-      // to detect situation when tested function doesn't wait for passed events
+      // to detect situation when tested function doesn't wait for events
+      // provided as arguments
       cgh.parallel_for<kernel_name>(rng, [=](sycl::id<1> idx) {
         const size_t i = idx[0];
         acc_dst[i] = acc_src[i];
