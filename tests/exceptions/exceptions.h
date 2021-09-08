@@ -12,6 +12,8 @@
 #include "../common/common.h"
 #include <vector>
 
+/** @brief Provide common code for all tests for exceptions
+ */
 namespace exceptions {
 
 static const std::vector<sycl::errc> all_err_codes{
