@@ -432,6 +432,9 @@ sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
 float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
 double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
+// ComputeCpp and hipSYCL do not yet support sycl::bit_cast,
+// which is used in `nextafter`.
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -450,6 +453,7 @@ sycl::half fdim(sycl::half a, sycl::half b) {
   }
   return +0;
 }
+#endif
 
 float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
 double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
@@ -462,6 +466,8 @@ sycl::half modf(sycl::half a, sycl::half *b) {
   return res;
 }
 
+// ComputeCpp and hipSYCL do not yet support sycl::bit_cast
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x))
     return x;
@@ -492,6 +498,7 @@ sycl::half nextafter(sycl::half x, sycl::half y) {
 
   return sycl::bit_cast<sycl::half>(a);
 }
+#endif
 
 sycl::half sinpi(sycl::half a) { return reference_sinpi(a); }
 float sinpi(float a) { return reference_sinpi(a); }

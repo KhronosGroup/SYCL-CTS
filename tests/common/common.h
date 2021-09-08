@@ -248,6 +248,8 @@ bool check_equal_values(const sycl::vec<T, numElements>& lhs,
   return result;
 }
 
+// ComputeCpp and hipSYCL do not yet support sycl::marray
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 /**
  * @brief Instantiation for marray with the same API as for scalar values
  */
@@ -268,6 +270,7 @@ sycl::event get_queue_event(sycl::queue& queue) {
     handler.single_task<kernelT>([=]() {});
   });
 }
+#endif
 
 #define TEST_TYPE_TRAIT(syclType, param, syclObject)                    \
   if (typeid(sycl::info::param_traits<                              \
@@ -382,6 +385,10 @@ namespace pixel_tag {
    */
   struct upper: generic {};
 };
+
+// ComputeCpp does not yet support operator[] on sycl::vec
+// hipSYCL does not yet support images
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
@@ -504,6 +511,8 @@ struct image_access<3> {
                       sycl::nextafter(next[2], negative_inf), .0f);
   }
 };
+
+#endif
 
 /**
  * @brief Dummy template function to check type existence without generating warnings.
