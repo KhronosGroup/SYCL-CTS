@@ -47,7 +47,7 @@ struct host_task_command_group {
   host_task_command_group(bufferT& buf, int a) : m_bufRef{buf}, m_add(a) {}
   void operator()(sycl::handler& cgh) {
     int a = m_add;
-    int container_size = m_bufRef.get().get_count();
+    int container_size = m_bufRef.get().size();
     auto acc_host =
         m_bufRef.get()
             .template get_access<sycl::access_mode::read_write,

@@ -89,10 +89,10 @@ class check_buffer_accessor_api_methods {
       }
     }
     {
-      /** check get_count() method
+      /** check size() method
        */
-      auto accessorCount = accessor.get_count();
-      check_acc_return_type<size_t>(log, accessorCount, "get_count()",
+      auto accessorCount = accessor.size();
+      check_acc_return_type<size_t>(log, accessorCount, "size()",
                                     typeName);
       if (accessorCount != accessedCount) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,

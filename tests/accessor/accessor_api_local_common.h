@@ -58,10 +58,10 @@ class check_local_accessor_api_methods {
       queue.submit([&](sycl::handler &h) {
         auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
         {
-          /** check get_count() method
+          /** check size() method
           */
-          auto accessorCount = acc.get_count();
-          check_return_type<size_t>(log, accessorCount, "get_count()");
+          auto accessorCount = acc.size();
+          check_return_type<size_t>(log, accessorCount, "size()");
           const auto expectedCount = ((dims == 0) ? 1 : count);
           if (accessorCount != expectedCount) {
             fail_for_accessor<T, dims, mode, target>(log, typeName,
