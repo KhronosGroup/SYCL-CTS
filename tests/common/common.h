@@ -511,7 +511,7 @@ struct image_access<3> {
  */
 template <typename T>
 struct check_type_existence {
-  check_type_existence() = default;
+  constexpr check_type_existence() = default;
 };
 
 /**

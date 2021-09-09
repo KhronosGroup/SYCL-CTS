@@ -22,12 +22,10 @@ void check_exception_list_types() {
                 "exception_list::value_type is of wrong type");
 
   {
-    check_type_existence<sycl::exception_list::reference> typeCheck;
-    (void)typeCheck;
+    check_type_existence<sycl::exception_list::reference>();
   }
   {
-    check_type_existence<sycl::exception_list::const_reference> typeCheck;
-    (void)typeCheck;
+    check_type_existence<sycl::exception_list::const_reference>();
   }
 
   using size_type = sycl::exception_list::size_type;
@@ -35,12 +33,10 @@ void check_exception_list_types() {
                 "exception_list::size_type is of wrong type");
 
   {
-    check_type_existence<sycl::exception_list::iterator> typeCheck;
-    (void)typeCheck;
+    check_type_existence<sycl::exception_list::iterator>();
   }
   {
-    check_type_existence<sycl::exception_list::const_iterator> typeCheck;
-    (void)typeCheck;
+    check_type_existence<sycl::exception_list::const_iterator>();
   }
 }
 
