@@ -74,7 +74,7 @@ bool check_device_support(sycl_cts::util::logger &log,
   return true;
 }
 
-/** @brief Syntax sugar for the number of events
+/** @brief Syntactic sugar for the number of events
  */
 constexpr size_t operator"" _events(unsigned long long value) {
   if (value > std::numeric_limits<size_t>::max()) {
@@ -87,7 +87,7 @@ constexpr size_t operator"" _events(unsigned long long value) {
  */
 namespace caller {
 
-/** @brief Caller to use for the queue methods' tests
+/** @brief Caller to use for the queue member functions' tests
  */
 struct queue {
   using type = sycl::queue;
@@ -98,7 +98,7 @@ struct queue {
   }
 };
 
-/** @brief Caller to use for the handler methods' tests
+/** @brief Caller to use for the handler member functions' tests
  */
 struct handler {
   using type = sycl::handler;
@@ -161,7 +161,7 @@ struct storage {
     return storage;
   }
 
-  /** @brief Type of allocation the get() method will return
+  /** @brief Type of allocation the get() member function will return
    */
   using type = decltype(get(std::declval<sycl::queue &>()));
 
@@ -191,8 +191,8 @@ struct storage {
   }
 };
 
-/** @brief Encapsulates the method-specific logic, for example logic specific
- *         to the memcpy() and memset() tests
+/** @brief Encapsulates the member function-specific logic, for example logic
+ *         specific to the memcpy() and memset() tests
  */
 namespace tests {
 
@@ -237,7 +237,7 @@ class copyGeneric {
   void check(const T *ptr) { check_values<count>(ptr, reference.begin()); }
 };
 
-/** @brief Provides generic test logic for the copy() method tests
+/** @brief Provides generic test logic for the copy() member function tests
  */
 template <typename T, size_t count, allocation sourceAllocation>
 class copy : public copyGeneric<T, count, sourceAllocation> {
@@ -246,7 +246,7 @@ class copy : public copyGeneric<T, count, sourceAllocation> {
  public:
   copy(sycl::queue &queue, int seed) : baseT(queue, seed) {}
 
-  /** @brief The copy() method supports non-USM pointers
+  /** @brief The copy() member function supports non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return true; }
 
@@ -262,7 +262,7 @@ class copy : public copyGeneric<T, count, sourceAllocation> {
   }
 };
 
-/** @brief Provides generic test logic for the memcpy() method tests
+/** @brief Provides generic test logic for the memcpy() member function tests
  */
 template <typename T, size_t count, allocation sourceAllocation>
 class memcpy : public copyGeneric<T, count, sourceAllocation> {
@@ -271,7 +271,7 @@ class memcpy : public copyGeneric<T, count, sourceAllocation> {
  public:
   memcpy(sycl::queue &queue, int seed) : baseT(queue, seed) {}
 
-  /** @brief The memcpy() method supports non-USM pointers
+  /** @brief The memcpy() member function supports non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return true; }
 
@@ -308,7 +308,7 @@ using memcpy_from_device = detail::memcpy<T, count, allocation::device>;
 template <typename T, size_t count>
 using memcpy_from_shared = detail::memcpy<T, count, allocation::shared>;
 
-/** @brief Provides test logic for the fill() method tests
+/** @brief Provides test logic for the fill() member function tests
  */
 template <typename T, size_t count>
 class fill {
@@ -317,7 +317,7 @@ class fill {
  public:
   fill(sycl::queue &, int seed) : value{seed} {}
 
-  /** @brief The fill() method doesn't support non-USM pointers
+  /** @brief The fill() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
 
@@ -339,7 +339,7 @@ class fill {
   }
 };
 
-/** @brief Provides test logic for the memset() method tests
+/** @brief Provides test logic for the memset() member function tests
  */
 template <typename T, size_t count>
 class memset {
@@ -350,7 +350,7 @@ class memset {
 
   memset(sycl::queue &, int seed) : value(seed) {}
 
-  /** @brief The memset() method doesn't support non-USM pointers
+  /** @brief The memset() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
 
@@ -372,7 +372,7 @@ class memset {
   }
 };
 
-/** @brief Provides test logic for the prefetch() method tests
+/** @brief Provides test logic for the prefetch() member function tests
  */
 template <typename T, size_t count>
 class prefetch {
@@ -381,7 +381,7 @@ class prefetch {
 
   prefetch(sycl::queue &, int) {}
 
-  /** @brief The prefetch() method doesn't support non-USM pointers
+  /** @brief The prefetch() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
 
@@ -400,7 +400,7 @@ class prefetch {
   }
 };
 
-/** @brief Provides test logic for the mem_advise() method tests
+/** @brief Provides test logic for the mem_advise() member function tests
  */
 template <typename T, size_t count>
 class mem_advise {
@@ -409,7 +409,7 @@ class mem_advise {
 
   mem_advise(sycl::queue &, int) {}
 
-  /** @brief The mem_advise() method doesn't support non-USM pointers
+  /** @brief The mem_advise() member function doesn't support non-USM pointers
    */
   static constexpr bool has_non_usm_support() { return false; }
 
@@ -426,18 +426,18 @@ class mem_advise {
   }
 
   void check(const T *) const {
-    // Results are implementation-defined
+    // Effects are implementation-defined
   }
 };
 
 }  // namespace tests
 
-/** @brief Kernel name for event_generator::init() method
+/** @brief Kernel name for event_generator::init() member function
  */
 template <typename T, size_t gen_buf_size>
 struct init_kernel_name;
 
-/** @brief Kernel name for event_generator::copy_arrays() method
+/** @brief Kernel name for event_generator::copy_arrays() member function
  */
 template <typename T, size_t gen_buf_size>
 struct copy_arrays_kernel_name;
@@ -492,7 +492,7 @@ class event_generator {
       auto acc_src = buf_src.template get_access<sycl::access_mode::write>(cgh);
       // single_task is used to make process long enough for testing purpose
       // The function being tested must wait for this task to complete.
-      cgh.single_task<init_kernel_name<T, buf_size>>([=]() {
+      cgh.single_task<init_kernel_name<T, buf_size>>([=] {
         for (size_t i = 0; i < buf_size; ++i) {
           acc_src[i] = value;
         }
@@ -507,8 +507,9 @@ class event_generator {
       using kernel_name = copy_arrays_kernel_name<T, buf_size>;
       auto acc_src = buf_src.template get_access<sycl::access_mode::read>(cgh);
       auto acc_dst = buf_dst.template get_access<sycl::access_mode::write>(cgh);
-      // Copy should be much faster then algorithm in 'init()' method to detect
-      // situation when tested function doesn't wait for passed events
+      // Copy should be much faster then algorithm in 'init()' member function
+      // to detect situation when tested function doesn't wait for events
+      // provided as arguments
       cgh.parallel_for<kernel_name>(rng, [=](sycl::id<1> idx) {
         const size_t i = idx[0];
         acc_dst[i] = acc_src[i];
@@ -518,34 +519,33 @@ class event_generator {
 
   /** @brief Check that elements of arrays are equal to each other and to
    *         value
-   *  @param value The same value as value passed to init() method
+   *  @param value The same value as value passed to init() member function
    */
   bool check(T value) {
     bool result = true;
     auto acc_src = buf_src.template get_access<sycl::access_mode::read>(rng);
     auto acc_dst = buf_dst.template get_access<sycl::access_mode::read>(rng);
-    for (size_t i = buf_size; i > 0; --i) {
-      const size_t idx{i - 1};
-      result = result && (acc_src[idx] == acc_dst[idx]);
-      result = result && (acc_dst[idx] == value);
+    for (size_t i = buf_size - 1; i + 1 > 0; --i) {
+      result = result && (acc_src[i] == acc_dst[i]);
+      result = result && (acc_dst[i] == value);
     }
     return result;
   }
 };
 
-/** @brief Provides the root test logic for every method, caller, number of
- *         events and allocation type
+/** @brief Provides the root test logic for every member function, caller,
+ *         number of events and allocation type
  *  @tparam count Size of the allocation, in number of items
- *  @tparam alloc Allocation to use for the pointer. In case the method we
- *          should test requires more than a single pointer allocation, this
+ *  @tparam alloc Allocation to use for the pointer. In case the member function
+ *          we should test requires more than a single pointer allocation, this
  *          parameter defines allocation to use for the pointer we will use to
- *          check the method results (target pointer for the copy operations for
- *          example)
+ *          check the member function results (target pointer for the copy
+ *          operations for example)
  */
 template <typename T, size_t count, template <typename, size_t> class checkT,
           typename caller, allocation alloc, size_t numEvents>
 struct test {
-  static void run(sycl_cts::util::logger &log, const std::string &typeName) {
+  static void run(sycl_cts::util::logger &log) {
     using verifier_t = checkT<T, count>;
     using storage_t = storage<T, count, alloc>;
     using events_t = std::vector<sycl::event>;
@@ -557,7 +557,7 @@ struct test {
     log.debug([&] {
       std::string message("Running test for ");
       message += verifier_t::template description<alloc>() + " for ";
-      message += type_name_string<T>::get(typeName) + " ...";
+      message += std::string(typeid(T).name()) + " ...";
       return message;
     });
 
@@ -607,8 +607,7 @@ struct test {
           // initialized 'src_arr' will be copied to 'dst_arr' and the test
           // will fail during validation. Reverse order is used to increase
           // probability of data race.
-          for (size_t i = numEvents; i > 0; --i) {
-            const size_t idx = i - 1;
+          for (size_t i = numEvents - 1; i + 1 > 0; --i) {
             gens[idx].copy_arrays(parent);
           }
         }
@@ -642,13 +641,13 @@ struct test {
       log.debug("... destruct the queue");
     } catch (sycl_cts::util::fail_check &ex) {
       std::string message{verifier_t::template description<alloc>()};
-      message += " failed for " + type_name_string<T>::get(typeName);
+      message += std::string(" failed for ") + typeid(T).name();
       message += ". ";
       message += ex.what();
       FAIL(log, message);
     } catch (...) {
       std::string message{verifier_t::template description<alloc>()};
-      message += " got an exception for " + type_name_string<T>::get(typeName);
+      message += std::string(" got an exception for ") + typeid(T).name();
       log.note(message);
       throw;
     }
@@ -657,12 +656,13 @@ struct test {
 
 /** @brief Functor used as the entry point to run every test
  *  @tparam T Underlying data type for USM or non-USM pointer
- *  @tparam checkT Defines the actual method to check and the specific test to
- *          run, for example memcpy() with the specific source allocation
- *  @tparam caller Defines caller to use for the method calls, so for example we
- *          can either test queue::memcpy() or handler::memcpy()
+ *  @tparam checkT Defines the actual member function to check and the specific
+ *          test to run, for example memcpy() with the specific source
+ *          allocation
+ *  @tparam caller Defines caller to use for the member function calls, so for
+ *          example we can either test queue::memcpy() or handler::memcpy()
  *  @tparam numEvents Number of events to use for the test; defines an exact
- *          overload of the method given
+ *          overload of the member function given
  */
 template <typename T, template <typename, size_t> class checkT, typename caller,
           size_t numEvents>
