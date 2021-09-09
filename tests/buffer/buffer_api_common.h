@@ -229,26 +229,18 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* Check alias types */
     {
       {
-        check_type_existence<typename sycl::buffer<T, dims>::value_type>
-            typeCheck;
-        (void)typeCheck;
+        check_type_existence<typename sycl::buffer<T, dims>::value_type>();
       }
       {
-        check_type_existence<typename sycl::buffer<T, dims>::reference>
-            typeCheck;
-        (void)typeCheck;
+        check_type_existence<typename sycl::buffer<T, dims>::reference>();
       }
       {
         check_type_existence<
-            typename sycl::buffer<T, dims>::const_reference>
-            typeCheck;
-        (void)typeCheck;
+            typename sycl::buffer<T, dims>::const_reference>();
       }
       {
         check_type_existence<typename sycl::buffer<
-            T, dims, sycl::buffer_allocator<T>>::allocator_type>
-            typeCheck;
-        (void)typeCheck;
+            T, dims, sycl::buffer_allocator<T>>::allocator_type>();
       }
     }
 

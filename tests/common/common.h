@@ -507,12 +507,12 @@ struct image_access<3> {
 };
 
 /**
- * @brief Dummy template to check type existence without generating warnings.
+ * @brief Dummy template function to check type existence without generating warnings.
  */
 template <typename T>
-struct check_type_existence {
-  check_type_existence() = default;
+void constexpr check_type_existence() {
 };
+
 
 /**
  * @brief Helper function to check if all devices support online compiler.
