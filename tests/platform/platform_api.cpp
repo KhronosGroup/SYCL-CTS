@@ -59,6 +59,17 @@ class TEST_NAME : public util::test_base {
                                 "platform::has(sycl::aspect)");
       }
 
+      /** check has_extensions() member function
+      */
+      {
+        cts_selector selector;
+        auto plt = util::get_cts_object::platform(selector);
+        auto extensionSupported =
+            plt.has_extension(std::string("cl_khr_icd"));
+        check_return_type<bool>(log, extensionSupported,
+                                "platform::has_extension(string_class)");
+      }
+
       /** check get_info() member function
       */
       {
