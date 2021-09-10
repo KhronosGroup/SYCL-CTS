@@ -358,6 +358,8 @@ struct vector_swizzle_check<T, 16> {
  * @brief Helper function to test the following functions of a vec
  * size()
  * byte_size()
+ * get_count()
+ * get_size()
  */
 template <typename vecType, int N>
 bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
@@ -371,6 +373,17 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
     return false;
   }
 
+  // get_count()
+  size_t count_depr = inputVec.get_count();
+  if (count_depr != N) {
+    return false;
+  }
+  count_depr =
+      vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_count();
+  if (count_depr != N) {
+    return false;
+  }
+
   // byte_size()
   size_t size = inputVec.byte_size();
   size_t M = (N == 3) ? 4 : N;
@@ -379,6 +392,17 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
   size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).byte_size();
   if (size != sizeof(vecType) * M) {
+    return false;
+  }
+
+  // get_size()
+  size_t size_depr = inputVec.get_size();
+  if (size_depr != sizeof(vecType) * M) {
+    return false;
+  }
+  size_depr =
+      vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_size();
+  if (size_depr != sizeof(vecType) * M) {
     return false;
   }
   return true;

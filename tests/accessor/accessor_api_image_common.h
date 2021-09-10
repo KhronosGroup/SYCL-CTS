@@ -1164,6 +1164,16 @@ class check_image_accessor_api_methods {
       }
     }
     {
+      // check get_count() method
+      auto accessorCount = accessor.get_count();
+      check_acc_return_type<size_t>(log, accessor.get_count(), "get_count",
+                                    typeName);
+      if (accessorCount != count) {
+        fail_for_accessor<T, dims, mode, target>(
+            log, typeName, "accessor does not return the correct count");
+      }
+    }
+    {
       // check get_range() method
       auto accessorRange = accessor.get_range();
 #ifdef VERBOSE_LOG
