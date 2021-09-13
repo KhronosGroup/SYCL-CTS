@@ -43,13 +43,13 @@ public:
 template <typename T> class check_specialization_constants_same_command_group {
 public:
   void operator()(util::logger &log, const std::string &type_name) {
-    T ref_A = T(value_helper<T>(5));
-    T ref_B = T(value_helper<T>(10));
+    T ref_A { get_init_value_helper<T>(5) };
+    T ref_B { get_init_value_helper<T>(10) };
     auto queue = util::get_cts_object::queue();
     sycl::range<1> range(1);
     {
-      T result1 = T(value_helper<T>(0));
-      T result2 = T(value_helper<T>(0));
+      T result1 { get_init_value_helper<T>(0) };
+      T result2 = { get_init_value_helper<T>(0) };
       {
         command_group_object<T, 1> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
@@ -70,8 +70,8 @@ public:
     }
 
     {
-      T result1 = T(value_helper<T>(0));
-      T result2 = T(value_helper<T>(0));
+      T result1 = { get_init_value_helper<T>(0) };
+      T result2 = { get_init_value_helper<T>(0) };
       {
         command_group_object<T, 2> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
@@ -87,7 +87,7 @@ public:
       }
       if (!check_equal_values(ref_A, result1))
         FAIL(log, "case 2 failed for value A for " + type_name);
-      if (!check_equal_values(T(value_helper<T>(default_val)), result2))
+      if (!check_equal_values(T(get_init_value_helper<T>(default_val)), result2))
         FAIL(log, "case 2 failed for default value for " + type_name);
     }
   }
