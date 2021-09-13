@@ -74,7 +74,7 @@ class check_specialization_constants_external {
     bool func_result = false;
     {
       T ref = T(value_helper<T>(5));
-      const int case_num = by_reference_via_handler;
+      const int case_num = (int)test_cases_external::by_reference_via_handler;
       sycl::buffer<bool, 1> result_buffer(&func_result, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
@@ -97,7 +97,7 @@ class check_specialization_constants_external {
     func_result = false;
     {
       T ref = T(value_helper<T>(10));
-      const int case_num = by_value_via_handler;
+      const int case_num = (int)test_cases_external::by_value_via_handler;
       sycl::buffer<bool, 1> result_buffer(&func_result, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
@@ -122,7 +122,7 @@ class check_specialization_constants_external {
       func_result = false;
       {
         T ref = T(value_helper<T>(15));
-        const int case_num = by_reference_via_bundle;
+        const int case_num = (int)test_cases_external::by_reference_via_bundle;
         sycl::buffer<bool, 1> result_buffer(&func_result, range);
 
         auto context = queue.get_context();
@@ -159,7 +159,7 @@ class check_specialization_constants_external {
       func_result = false;
       {
         T ref = T(value_helper<T>(20));
-        const int case_num = by_value_via_bundle;
+        const int case_num = (int)test_cases_external::by_value_via_bundle;
         sycl::buffer<bool, 1> result_buffer(&func_result, range);
 
         auto context = queue.get_context();
