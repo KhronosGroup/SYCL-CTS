@@ -609,7 +609,7 @@ struct test {
           // will fail during validation. Reverse order is used to increase
           // probability of data race.
           for (size_t i = numEvents - 1; i + 1 > 0; --i) {
-            gens[idx].copy_arrays(parent);
+            gens[i].copy_arrays(parent);
           }
         }
       };
