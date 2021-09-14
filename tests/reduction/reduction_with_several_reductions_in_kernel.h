@@ -87,8 +87,7 @@ auto get_ptr_to_variable(sycl::queue& queue) {
  */
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_2_reductions(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT,
-                             decltype(reduction_common::range)>::value) {
+  if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
     return [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2) {
       reducer_1.combine(accessor[idx]);
       reducer_2.combine(accessor[idx]);
@@ -110,8 +109,7 @@ auto get_lambda_for_2_reductions(AccessorT accessor) {
  */
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_3_reductions(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT,
-                             decltype(reduction_common::range)>::value) {
+  if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
     return [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2,
                auto& reducer_3) {
       reducer_1.combine(accessor[idx]);
@@ -137,8 +135,7 @@ auto get_lambda_for_3_reductions(AccessorT accessor) {
  */
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_4_reductions(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT,
-                             decltype(reduction_common::range)>::value) {
+  if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
     return [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2,
                auto& reducer_3, auto& reducer_4) {
       reducer_1.combine(accessor[idx]);
@@ -166,8 +163,7 @@ auto get_lambda_for_4_reductions(AccessorT accessor) {
  */
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_5_reductions(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT,
-                             decltype(reduction_common::range)>::value) {
+  if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
     return [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2,
                auto& reducer_3, auto& reducer_4, auto& reducer_5) {
       reducer_1.combine(accessor[idx]);
@@ -197,8 +193,7 @@ auto get_lambda_for_5_reductions(AccessorT accessor) {
  */
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_6_reductions(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT,
-                             decltype(reduction_common::range)>::value) {
+  if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
     return
         [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2, auto& reducer_3,
             auto& reducer_4, auto& reducer_5, auto& reducer_6) {

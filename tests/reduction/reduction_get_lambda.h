@@ -36,18 +36,15 @@ auto get_lambda_with_range(AccessorT accessor) {
   if constexpr (UseCombineFlagT::value) {
     return
         [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::multiplies<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) { reducer *= accessor[idx]; };
-  } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) { reducer += accessor[idx]; };
-  } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) { reducer |= accessor[idx]; };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_and<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) { reducer &= accessor[idx]; };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_xor<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) { reducer ^= accessor[idx]; };
   }
 }
@@ -71,26 +68,23 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer.combine(accessor[nd_item.get_global_id()]);
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::multiplies<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer *= accessor[nd_item.get_global_id()];
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer += accessor[nd_item.get_global_id()];
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer |= accessor[nd_item.get_global_id()];
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_and<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer &= accessor[nd_item.get_global_id()];
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_xor<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer ^= accessor[nd_item.get_global_id()];
     };
@@ -113,10 +107,10 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
 template <typename VariableT, typename RangeT, typename UseCombineFlagT,
           typename FunctorT = void, typename AccessorT>
 auto get_lambda(AccessorT accessor) {
-  if constexpr (std::is_same<RangeT, sycl::range<1>>::value) {
+  if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
     return get_lambda_with_range<VariableT, FunctorT, UseCombineFlagT>(
         accessor);
-  } else if constexpr (std::is_same<RangeT, sycl::nd_range<1>>::value) {
+  } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
     return get_lambda_with_nd_range<VariableT, FunctorT, UseCombineFlagT>(
         accessor);
   }
@@ -144,34 +138,31 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
         reducer[i].combine(accessor[idx]);
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::multiplies<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] *= accessor[idx];
       }
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] += accessor[idx];
       }
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] |= accessor[idx];
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_and<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] &= accessor[idx];
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_xor<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] ^= accessor[idx];
@@ -202,34 +193,31 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
         reducer[i].combine(accessor[nd_item.get_global_id()]);
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::multiplies<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] *= accessor[nd_item.get_global_id()];
       }
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::plus<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] += accessor[nd_item.get_global_id()];
       }
     };
-  } else if constexpr (std::is_same<FunctorT, sycl::bit_or<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] |= accessor[nd_item.get_global_id()];
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_and<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] &= accessor[nd_item.get_global_id()];
       }
     };
-  } else if constexpr (std::is_same<FunctorT,
-                                    sycl::bit_xor<VariableT>>::value) {
+  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i] ^= accessor[nd_item.get_global_id()];
@@ -254,10 +242,10 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
 template <typename VariableT, typename RangeT, typename UseCombineFlagT,
           typename FunctorT = void, typename AccessorT>
 auto get_lambda_for_span(AccessorT accessor, size_t number_elements) {
-  if constexpr (std::is_same<RangeT, sycl::range<1>>::value) {
+  if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
     return get_lambda_with_range_for_span<VariableT, FunctorT, UseCombineFlagT>(
         accessor, number_elements);
-  } else if constexpr (std::is_same<RangeT, sycl::nd_range<1>>::value) {
+  } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
     return get_lambda_with_nd_range_for_span<VariableT, FunctorT,
                                              UseCombineFlagT>(accessor,
                                                               number_elements);

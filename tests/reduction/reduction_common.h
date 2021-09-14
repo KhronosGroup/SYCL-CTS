@@ -71,14 +71,14 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
 template <typename VariableT, typename FunctorT, typename UsePropertyFlagT>
 void get_init_value_common_logic(VariableT& init_value) {
   if constexpr (UsePropertyFlagT::value &&
-                (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
-                 std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
-                 std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
+                (std::is_same_v<FunctorT, sycl::bit_and<VariableT>> ||
+                 std::is_same_v<FunctorT, sycl::bit_or<VariableT>> ||
+                 std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>)) {
     init_value = 0x87654321;
-  } else if constexpr (std::is_same<VariableT, bool>::value &&
+  } else if constexpr (std::is_same_v<VariableT, bool> &&
                        UsePropertyFlagT::value) {
     init_value = !sycl::known_identity<FunctorT, VariableT>::value;
-  } else if constexpr (std::is_same<VariableT, bool>::value &&
+  } else if constexpr (std::is_same_v<VariableT, bool> &&
                        !UsePropertyFlagT::value) {
     init_value = sycl::known_identity<FunctorT, VariableT>::value;
   }
@@ -154,7 +154,7 @@ void fill_buffer(BufferT& buffer) {
 
   // TODO: replace the loop with std::fill and std::iota
   bool value_for_filling_bool_buf{true};
-  if (std::is_same<VariableT, bool>::value) {
+  if (std::is_same_v<VariableT, bool>::value) {
     for (size_t i = 0; i < buffer.size(); i++) {
       buf_accessor[i] = value_for_filling_bool_buf;
     }
