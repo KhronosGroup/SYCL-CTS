@@ -20,7 +20,7 @@ namespace reduction_get_lambda {
  *         sycl::handler.parallel_for used sycl::range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
@@ -53,7 +53,7 @@ auto get_lambda_with_range(AccessorT accessor) {
  *         sycl::handler.parallel_for used sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
@@ -96,7 +96,7 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
@@ -120,7 +120,7 @@ auto get_lambda(AccessorT accessor) {
  *         sycl::handler.parallel_for used sycl::range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
@@ -175,7 +175,7 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
  *         sycl::handler.parallel_for used sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
@@ -231,7 +231,7 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
- *  @tparam UseCombineFlagT std::integral_constant type that let switch between
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
  *          calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
