@@ -42,7 +42,7 @@ bool check_kernel_handler_by_value_external(sycl::kernel_handler h,
                                                                                \
   SYCL_EXTERNAL bool check_kernel_handler_by_value_external_handler(           \
       sycl::kernel_handler h, TYPE expected) {                                 \
-    return check_kernel_handler_by_value_external<
+    return check_kernel_handler_by_value_external<                             \
         TYPE, (int)test_cases_external::by_value_via_handler>(h, expected);    \
   }                                                                            \
                                                                                \
@@ -54,7 +54,7 @@ bool check_kernel_handler_by_value_external(sycl::kernel_handler h,
                                                                                \
   SYCL_EXTERNAL bool check_kernel_handler_by_value_external_bundle(            \
       sycl::kernel_handler h, TYPE expected) {                                 \
-    return check_kernel_handler_by_value_external<
+    return check_kernel_handler_by_value_external<                             \
         TYPE, (int)test_cases_external::by_value_via_bundle>(h, expected);     \
   }
 
