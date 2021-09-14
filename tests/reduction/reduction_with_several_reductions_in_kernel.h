@@ -27,7 +27,7 @@ class kernel;
  *  @param got Value after test running
  *  @param expected Expected value after test running
  *  @param line Line from which checking was called
- *  @param number_test_case Test case numbed e.g.: 1, 2, 3 e.t.c.
+ *  @param number_test_case Test case numbed e.g.: 1, 2, 3, etc.
  *  @param log sycl_cts::util::logger class object
  */
 void check_output_value(int got, int expected, int line, int number_test_case,
@@ -47,7 +47,7 @@ void check_output_value(int got, int expected, int line, int number_test_case,
  *          sycl::property::reduction::initialize_to_identity
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam PtrForMemT The type of the smart poiner to USM allocation
- *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
+ *  @param functor The functor (plus, multiplies, etc) with which the test runs
  *  @param ptr_for_mem Link on the allocated USM
  */
 template <typename UsePropertyFlagT, typename FunctorT, typename PtrForMemT>
