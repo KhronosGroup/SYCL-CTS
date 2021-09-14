@@ -86,10 +86,10 @@ void get_init_value_common_logic(VariableT& init_value) {
 
 /** @brief Initialize value for reductions. If UsePropertyFlagT is true and
  *         sycl::has_known_identity for current functor and variable type is
- *         true then we using value that will not be equal to default reduction
- *         value and this value should be ignored if we don't using property or
- *         sycl::has_known_identity is false then we using common value with
- *         value that will be using in expected value initializations
+ *         true then we use value that will not be equal to default reduction
+ *         value and this value should be ignored if we don't use property or
+ *         sycl::has_known_identity is false then we use common value with
+ *         value that will be use in expected value initializations
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
@@ -114,10 +114,10 @@ VariableT get_init_value_for_reduction() {
 
 /** @brief Initialize value for calculating expected value. If UsePropertyFlagT
  *         is true and sycl::has_known_identity for current functor and variable
- *         type is true then we using value that will not be equal to default
- *         reduction value and this value should be ignored if we don't using
- *         property or sycl::has_known_identity is false then we using common
- *         value with value that will be using in value for reductions
+ *         type is true then we use value that will not be equal to default
+ *         reduction value and this value should be ignored if we don't use
+ *         property or sycl::has_known_identity is false then we use common
+ *         value with value that will be used in value for reductions
  *         initializations
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
