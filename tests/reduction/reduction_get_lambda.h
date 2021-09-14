@@ -16,6 +16,19 @@
 
 namespace reduction_get_lambda {
 
+/** @brief Apply provided functor to with provided values
+ *  @tparam FunctorT The type of the functor that will be applied
+ *  @tparam FirstValueT The first value type that will be used in functor
+ *  @tparam SecondValueT The second value type that will be used in functor
+ *  @param first_val First value that will be used in fuctor
+ *  @param second_val Second value that will be used in fuctor
+ *  @retval Result value after applying chosed functor to two provided values
+ */
+template <typename FunctorT, typename FirstValueT, typename SecondValueT>
+auto apply_chosen_functor(FirstValueT first_val, SecondValueT second_val) {
+  return FunctorT(first_val, second_val);
+}
+
 /** @brief Construct lambda for interacting with reducer while
  *         sycl::handler.parallel_for uses sycl::range
  *  @tparam VariableT Variable type from type coverage
@@ -36,16 +49,10 @@ auto get_lambda_with_range(AccessorT accessor) {
   if constexpr (UseCombineFlagT::value) {
     return
         [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) { reducer *= accessor[idx]; };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) { reducer += accessor[idx]; };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) { reducer |= accessor[idx]; };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) { reducer &= accessor[idx]; };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) { reducer ^= accessor[idx]; };
+  } else {
+    return [=](sycl::id<1> idx, auto &reducer) {
+      reducer = apply_chosen_functor<FunctorT>(reducer, accessor[idx]);
+    };
   }
 }
 
@@ -53,8 +60,8 @@ auto get_lambda_with_range(AccessorT accessor) {
  *         sycl::handler.parallel_for uses sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
- *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -68,25 +75,10 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer.combine(accessor[nd_item.get_global_id()]);
     };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
+  } else {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer *= accessor[nd_item.get_global_id()];
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer += accessor[nd_item.get_global_id()];
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer |= accessor[nd_item.get_global_id()];
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer &= accessor[nd_item.get_global_id()];
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer ^= accessor[nd_item.get_global_id()];
+      reducer = apply_chosen_functor<FunctorT>(
+          reducer, accessor[nd_item.get_global_id()]);
     };
   }
 }
@@ -96,8 +88,8 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
- *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
- *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -120,8 +112,8 @@ auto get_lambda(AccessorT accessor) {
  *         sycl::handler.parallel_for uses sycl::range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
- *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -138,34 +130,10 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
         reducer[i].combine(accessor[idx]);
       }
     };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
+  } else {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] *= accessor[idx];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] += accessor[idx];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] |= accessor[idx];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] &= accessor[idx];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] ^= accessor[idx];
+        reducer[i] = apply_chosen_functor<FunctorT>(reducer[i], accessor[idx]);
       }
     };
   }
@@ -175,8 +143,8 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
  *         sycl::handler.parallel_for uses sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
- *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
- *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
@@ -193,34 +161,11 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
         reducer[i].combine(accessor[nd_item.get_global_id()]);
       }
     };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
+  } else {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] *= accessor[nd_item.get_global_id()];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] += accessor[nd_item.get_global_id()];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] |= accessor[nd_item.get_global_id()];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] &= accessor[nd_item.get_global_id()];
-      }
-    };
-  } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] ^= accessor[nd_item.get_global_id()];
+        reducer[i] = apply_chosen_functor<FunctorT>(
+            reducer[i], accessor[nd_item.get_global_id()]);
       }
     };
   }
@@ -231,8 +176,8 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
- *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
- *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
  *  @tparam AccessorT buffer accessor type
  *  @param accessor Accessor to the buffer
  *  @param number_elements Number elements in sycl::span, used only when
