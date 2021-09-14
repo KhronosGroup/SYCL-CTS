@@ -945,7 +945,7 @@ class image_accessor_api_sampled_r {
       return get_expected_value_nearest(idx);
     }
     constexpr bool useUpper =
-        std::is_same<coordTag, acc_coord_tag::use_normalized_upper>::value;
+        std::is_same_v<coordTag, acc_coord_tag::use_normalized_upper>;
     if constexpr (!useUpper) {
       // Use simplified equation for lower coordinate values
       return get_expected_value_linear(idx);
