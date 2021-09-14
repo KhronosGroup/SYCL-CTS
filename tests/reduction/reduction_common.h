@@ -165,7 +165,7 @@ void fill_buffer(BufferT& buffer) {
   }
 }
 
-/** @brief Construct new sycl::buffer object and filling it with default values
+/** @brief Construct new sycl::buffer object and fill it with default values
  *  @tparam VariableT Variable type from type coverage
  *  @retval Constructed and filled buffer
  */
