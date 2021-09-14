@@ -142,7 +142,7 @@ VariableT get_init_value_for_expected_value() {
   return init_value;
 }
 
-/** @brief Filling buffer for using it in parallel_for and for calculate
+/** @brief Filling buffer for using it in parallel_for and computing
  * expected value
  *  @tparam VariableT Variable type from type coverage
  *  @tparam BufferT type sycl::buffer object
