@@ -17,7 +17,7 @@
 namespace reduction_get_lambda {
 
 /** @brief Construct lambda for interacting with reducer while
- *         sycl::handler.parallel_for used sycl::range
+ *         sycl::handler.parallel_for uses sycl::range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
@@ -50,7 +50,7 @@ auto get_lambda_with_range(AccessorT accessor) {
 }
 
 /** @brief Construct lambda for interacting with reducer while
- *         sycl::handler.parallel_for used sycl::nd_range
+ *         sycl::handler.parallel_for uses sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
@@ -117,7 +117,7 @@ auto get_lambda(AccessorT accessor) {
 }
 
 /** @brief Construct lambda for interacting with reducer while
- *         sycl::handler.parallel_for used sycl::range
+ *         sycl::handler.parallel_for uses sycl::range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
@@ -172,7 +172,7 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
 }
 
 /** @brief Construct lambda for interacting with reducer while
- *         sycl::handler.parallel_for used sycl::nd_range
+ *         sycl::handler.parallel_for uses sycl::nd_range
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
