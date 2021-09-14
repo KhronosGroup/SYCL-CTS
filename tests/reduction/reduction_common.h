@@ -132,7 +132,7 @@ VariableT get_init_value_for_expected_value() {
   VariableT init_value{};
   if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
                 UsePropertyFlagT::value) {
-    // case when we using reduction with initialize_to_identity
+    // case when using reduction with initialize_to_identity
     init_value = sycl::known_identity<FunctorT, VariableT>::value;
   } else {
     init_value = init_value_without_property_case;
