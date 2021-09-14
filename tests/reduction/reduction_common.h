@@ -45,7 +45,7 @@ static const auto scalar_types =
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param buffer The buffer that will used in parallel_for() function
  *  @param value_for_initialization The value for initialization output variable
- *  @retval Expected value after test will running
+ *  @retval Expected value after test execution
  */
 template <typename VariableT, typename FunctorT, typename BufferT>
 VariableT get_expected_value(FunctorT functor, BufferT& buffer,
