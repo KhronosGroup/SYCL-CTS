@@ -176,7 +176,7 @@ auto get_buffer() {
   return initial_buf;
 }
 
-/** @brief Check that current device have sycl::aspect::usm_shared_allocations
+/** @brief Check that current device has sycl::aspect::usm_shared_allocations
  *         aspect
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
