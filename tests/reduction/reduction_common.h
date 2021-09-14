@@ -154,7 +154,7 @@ void fill_buffer(BufferT& buffer) {
 
   // TODO: replace the loop with std::fill and std::iota
   bool value_for_filling_bool_buf{true};
-  if (std::is_same_v<VariableT, bool>::value) {
+  if (std::is_same_v<VariableT, bool>) {
     for (size_t i = 0; i < buffer.size(); i++) {
       buf_accessor[i] = value_for_filling_bool_buf;
     }
