@@ -30,9 +30,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
     try {
       auto queue{util::get_cts_object::queue()};
 
-      for_all_types<usm_atomic_access::run_all_tests,
-                    usm_atomic_access::without_atomic64>(
-          usm_atomic_access::get_scalar_types(), queue, log);
+      for_all_types<usm_atomic_access::run_all_tests>(
+          usm_atomic_access::get_scalar_types(), queue, log,
+          usm_atomic_access::without_atomic64);
     } catch (const cl::sycl::exception &e) {
       log_exception(log, e);
       auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());

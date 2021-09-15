@@ -45,18 +45,18 @@ auto get_atomic_memory() {
   }
 }
 
-using with_atomic64 = std::true_type;
-using without_atomic64 = std::false_type;
+constexpr bool with_atomic64 = true;
+constexpr bool without_atomic64 = false;
 /** @brief Dummy functor that use in type coverage
  *  @tparam CounterT Variable type from type coverage
  *  @tparam UseAtomic64Flag std::integral_constant type
  */
-template <typename CounterT, typename UseAtomic64Flag>
+template <typename CounterT>
 struct run_all_tests {
-  void operator()(sycl::queue &queue, sycl_cts::util::logger &log,
+  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
                   const std::string &typeName) {
     if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
-      if constexpr (!UseAtomic64Flag::value) {
+      if (!use_atomic_flag) {
         return;
       }
       if (!queue.get_device().has(sycl::aspect::atomic64)) {
@@ -64,7 +64,7 @@ struct run_all_tests {
         return;
       }
     } else {
-      if constexpr (UseAtomic64Flag::value) {
+      if (use_atomic_flag) {
         return;
       }
     }
