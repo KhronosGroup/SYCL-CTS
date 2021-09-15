@@ -41,8 +41,8 @@ auto apply_chosen_functor(FirstValueT first_val, SecondValueT second_val) {
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-using with_combine = std::true_type;
-using without_combine = std::false_type;
+static constexpr bool with_combine{true};
+static constexpr bool without_combine{false};
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range(AccessorT accessor) {
