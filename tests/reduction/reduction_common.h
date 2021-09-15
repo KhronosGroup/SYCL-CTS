@@ -95,7 +95,8 @@ void get_init_value_common_logic(VariableT& init_value) {
  *          sycl::property::reduction::initialize_to_identity
  *  @retval Value for reduction initializing
  */
-template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
+template <typename VariableT, typename FunctorT,
+          bool UsePropertyFlagT = without_property>
 VariableT get_init_value_for_reduction() {
   VariableT init_value{};
   if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
