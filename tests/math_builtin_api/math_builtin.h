@@ -202,7 +202,7 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
       auto resultPtr =
           buffer.template get_access<sycl::access_mode::write>(h);
       sycl::accessor<argT, 1, sycl::access_mode::read_write,
-                         sycl::target::global_buffer>
+                         sycl::target::device>
           globalAccessor(ptrBuffer, h);
       h.single_task<kernel<N>>([=]() { resultPtr[0] = fun(globalAccessor); });
     });
@@ -289,7 +289,7 @@ void test_function_multi_ptr_global(funT fun, argT arg) {
     sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access_mode::read_write, sycl::target::global_buffer> globalAccessor(ptrBuffer, h);
+      sycl::accessor<argT, 1, sycl::access_mode::read_write, sycl::target::device> globalAccessor(ptrBuffer, h);
         h.single_task<kernel<T>>([=](){
           resultPtr[0] = fun(globalAccessor);
         });

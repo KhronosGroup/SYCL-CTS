@@ -144,8 +144,8 @@ class log_helper {
 
   static std::string get_target_string(target_t target) {
     switch (target) {
-      case target_t::global_buffer:
-        return "global_buffer";
+      case target_t::device:
+        return "device";
       case target_t::constant_buffer:
         return "constant_buffer";
       default:
@@ -829,7 +829,7 @@ static void test_all_read_acc_copy_functions(log_helper lh,
                                              sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src);
   {
-    constexpr auto target = target_t::global_buffer;
+    constexpr auto target = target_t::device;
     test_read_acc_copy_functions<dataT, dim_src, mode_t::read, target, strided,
                                  transposed>(lh, queue);
     test_read_acc_copy_functions<dataT, dim_src, mode_t::read_write, target,
@@ -850,7 +850,7 @@ template <typename dataT, int dim_src, int dim_dst, bool strided,
 static void test_all_write_acc_copy_functions(log_helper lh,
                                               sycl::queue& queue) {
   lh = lh.set_dim_src(dim_src).set_dim_dst(dim_dst);
-  constexpr auto target = target_t::global_buffer;
+  constexpr auto target = target_t::device;
 
   constexpr auto st = strided;
   constexpr auto tr = transposed;

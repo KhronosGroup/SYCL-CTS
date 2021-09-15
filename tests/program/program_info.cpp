@@ -36,7 +36,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
         /** check types
          */
-        { check_type_existence<sycl::info::program> typeCheck; }
+        { check_type_existence<sycl::info::program>(); }
         using vectorDevicesInfo = std::vector<sycl::device>;
 
         /** check program info parameters

@@ -240,7 +240,7 @@ struct get_helper {
   using type = generic;
 };
 template <sycl::access::placeholder placeholder>
-struct get_helper<sycl::target::global_buffer, placeholder> {
+struct get_helper<sycl::target::device, placeholder> {
   using type = buffer;
 };
 template <sycl::access::placeholder placeholder>
@@ -277,7 +277,7 @@ struct get_helper<target, sycl::access::placeholder::true_t> {
   using type = invalid;
 };
 template <>
-struct get_helper<sycl::target::global_buffer,
+struct get_helper<sycl::target::device,
                   sycl::access::placeholder::true_t> {
   using type = global_placeholder;
 };

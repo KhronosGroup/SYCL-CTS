@@ -81,7 +81,7 @@ class test_buffer_reinterpret {
     sycl::buffer<TIn, dims> a(data, rangeIn);
     auto r = a.template reinterpret<TOut, dims>(rangeOut);
 
-    if (r.get_size() != (elementsCount * sizeof(TOut))) {
+    if (r.byte_size() != (elementsCount * sizeof(TOut))) {
       FAIL(log, "Reinterpretation failed! The buffers have different size");
     }
   }
@@ -111,16 +111,16 @@ class test_buffer_reinterpret_no_range {
 
     auto buf2 = buf1.template reinterpret<TOut>();
 
-    if (buf2.get_count() != buf1.get_count()) {
+    if (buf2.size() != buf1.size()) {
       const auto msg = "Reinterpret buffer has wrong count: " +
-                       std::to_string(buf2.get_count()) +
-                       " != " + std::to_string(buf1.get_count());
+                       std::to_string(buf2.size()) +
+                       " != " + std::to_string(buf1.size());
       FAIL(log, msg);
     }
-    if (buf2.get_size() != buf1.get_size()) {
+    if (buf2.byte_size() != buf1.byte_size()) {
       const auto msg = "Reinterpret buffer has wrong size: " +
-                       std::to_string(buf2.get_size()) +
-                       " != " + std::to_string(buf1.get_size());
+                       std::to_string(buf2.byte_size()) +
+                       " != " + std::to_string(buf1.byte_size());
       FAIL(log, msg);
     }
     if (buf2.get_range() != buf1.get_range()) {
@@ -145,20 +145,20 @@ class test_buffer_reinterpret_no_range<TIn, TOut, inputDim, 1> {
     sycl::range<inputDim> rangeIn =
         sycl_cts::util::get_cts_object::range<inputDim>::get(size, size, size);
     sycl::buffer<TIn, inputDim> buf1{data, rangeIn};
-    const auto expectedOutputCount = buf1.get_size() / sizeof(TOut);
+    const auto expectedOutputCount = buf1.byte_size() / sizeof(TOut);
 
     auto buf2 = buf1.template reinterpret<TOut, 1>();
 
-    if (buf2.get_count() != expectedOutputCount) {
+    if (buf2.size() != expectedOutputCount) {
       const auto msg = "Reinterpret buffer has wrong count: " +
-                       std::to_string(buf2.get_count()) +
+                       std::to_string(buf2.size()) +
                        " != " + std::to_string(expectedOutputCount);
       FAIL(log, msg);
     }
-    if (buf2.get_size() != buf1.get_size()) {
+    if (buf2.byte_size() != buf1.byte_size()) {
       const auto msg = "Reinterpret buffer has wrong size: " +
-                       std::to_string(buf2.get_size()) +
-                       " != " + std::to_string(buf1.get_size());
+                       std::to_string(buf2.byte_size()) +
+                       " != " + std::to_string(buf1.byte_size());
       FAIL(log, msg);
     }
     if (buf2.get_range() != sycl::range<1>{expectedOutputCount}) {
@@ -229,26 +229,18 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* Check alias types */
     {
       {
-        check_type_existence<typename sycl::buffer<T, dims>::value_type>
-            typeCheck;
-        (void)typeCheck;
+        check_type_existence<typename sycl::buffer<T, dims>::value_type>();
       }
       {
-        check_type_existence<typename sycl::buffer<T, dims>::reference>
-            typeCheck;
-        (void)typeCheck;
+        check_type_existence<typename sycl::buffer<T, dims>::reference>();
       }
       {
         check_type_existence<
-            typename sycl::buffer<T, dims>::const_reference>
-            typeCheck;
-        (void)typeCheck;
+            typename sycl::buffer<T, dims>::const_reference>();
       }
       {
         check_type_existence<typename sycl::buffer<
-            T, dims, sycl::buffer_allocator>::allocator_type>
-            typeCheck;
-        (void)typeCheck;
+            T, dims, sycl::buffer_allocator<T>>::allocator_type>();
       }
     }
 
@@ -262,22 +254,22 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     }
 
     /* check the buffer returns the correct element count */
-    auto count = buf.get_count();
-    check_return_type<size_t>(log, count, "sycl::buffer::get_count()");
+    auto count = buf.size();
+    check_return_type<size_t>(log, count, "sycl::buffer::size()");
 
     if (count != size) {
       FAIL(log,
-           "sycl::buffer::get_count() does not return "
+           "sycl::buffer::size() does not return "
            "the correct number of elements");
     }
 
     /* check the buffer returns the correct byte size */
-    auto ret_size = buf.get_size();
-    check_return_type<size_t>(log, ret_size, "sycl::buffer::get_size()");
+    auto ret_size = buf.byte_size();
+    check_return_type<size_t>(log, ret_size, "sycl::buffer::byte_size()");
 
     if (ret_size != size * sizeof(T)) {
       FAIL(log,
-           "sycl::buffer::get_size() does not return "
+           "sycl::buffer::byte_size() does not return "
            "the correct size of the buffer");
     }
 
@@ -289,7 +281,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           buf.template get_access<sycl::access_mode::read_write>(cgh);
       check_return_type<
           sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
+                             sycl::target::device>>(
           log, acc, "sycl::buffer::get_access<read_write>(handler&)");
       cgh.single_task(empty_kernel());
     });
@@ -323,9 +315,9 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           cgh, r, offset);
       check_return_type<
           sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::global_buffer>>(
+                             sycl::target::device>>(
           log, acc,
-          "sycl::buffer::get_access<read_write, global_buffer>(handler&, "
+          "sycl::buffer::get_access<read_write, device>(handler&, "
           "range<>, id<>)");
       cgh.single_task(empty_kernel());
     });
@@ -481,7 +473,7 @@ template <typename T> class check_buffer_api_for_type {
 public:
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + type_name_string<T>::get(typeName));
-    check_with_alloc<sycl::buffer_allocator>(log);
+    check_with_alloc<sycl::buffer_allocator<T>>(log);
     check_with_alloc<std::allocator<T>>(log);
   }
 };

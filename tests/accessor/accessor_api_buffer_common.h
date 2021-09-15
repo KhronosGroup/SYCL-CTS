@@ -89,10 +89,10 @@ class check_buffer_accessor_api_methods {
       }
     }
     {
-      /** check get_count() method
+      /** check size() method
        */
-      auto accessorCount = accessor.get_count();
-      check_acc_return_type<size_t>(log, accessorCount, "get_count()",
+      auto accessorCount = accessor.size();
+      check_acc_return_type<size_t>(log, accessorCount, "size()",
                                     typeName);
       if (accessorCount != accessedCount) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
@@ -171,7 +171,7 @@ class check_buffer_accessor_api_methods {
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::device", typeName, log);
 #endif  // VERBOSE_LOG
-    static constexpr auto errorTarget = sycl::target::global_buffer;
+    static constexpr auto errorTarget = sycl::target::device;
 
     auto errors = get_error_data(2);
     {
@@ -446,7 +446,7 @@ class check_buffer_accessor_api {
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
@@ -529,7 +529,7 @@ class check_buffer_accessor_api {
       h.require(a2);
 
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -807,7 +807,7 @@ class check_buffer_accessor_api {
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
@@ -892,7 +892,7 @@ class check_buffer_accessor_api {
       h.require(a1);
       h.require(a2);
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -1192,10 +1192,10 @@ void check_buffer_accessor_api_placeholder(argsT&& ... args) {
 */
 template <typename T, typename kernelName, int dims, typename ... argsT>
 void check_buffer_accessor_api_dim(argsT&& ... args) {
-  /** check buffer accessor api for global_buffer
+  /** check buffer accessor api for device
   */
   check_buffer_accessor_api_placeholder<
-      T, kernelName, dims, sycl::target::global_buffer>(
+      T, kernelName, dims, sycl::target::device>(
           std::forward<argsT>(args)...);
 
   /** check buffer accessor api for constant_buffer

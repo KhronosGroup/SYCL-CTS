@@ -52,6 +52,11 @@ set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
+# Device compiler definitions, should not be set by the user on the command line
+# Must be a cache entry because that's the only way
+# it can be modified in a function
+set(computecpp_device_compiler_defs "" CACHE STRING "")
+
 # build_spir
 # Runs the device compiler on a single source file, creating the stub and the bc files.
 function(build_spir exe_name spir_target_name source_file output_path)
@@ -78,6 +83,7 @@ function(build_spir exe_name spir_target_name source_file output_path)
             -O2
             -mllvm -inline-threshold=1000
             -intelspirmetadata
+            ${computecpp_device_compiler_defs}
             ${COMPUTECPP_USER_FLAGS}
             ${platform_specific_args}
             $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">
@@ -135,4 +141,12 @@ function(add_sycl_executable_implementation)
         FOLDER         "Tests/${exe_name}"
         LINK_LIBRARIES "ComputeCpp::Runtime;$<$<BOOL:${WIN32}>:-SAFESEH:NO>"
         BUILD_RPATH    "$<TARGET_FILE_DIR:ComputeCpp::Runtime>")
+endfunction()
+
+# Adds preprocessor definitions to the device compiler
+function(add_device_compiler_definitions_implementation)
+    set(computecpp_device_compiler_defs
+        ${computecpp_device_compiler_defs} ${ARGN}
+        CACHE STRING "" FORCE
+    )
 endfunction()
