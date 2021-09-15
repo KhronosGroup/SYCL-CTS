@@ -18,7 +18,7 @@
 
 namespace reduction_with_several_reductions_in_kernel_h {
 
-static constexpr size_t number_elements{2};
+constexpr size_t number_elements{2};
 template <int TestCase>
 class kernel;
 

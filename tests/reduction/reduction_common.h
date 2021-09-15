@@ -16,19 +16,19 @@
 
 namespace reduction_common {
 
-static constexpr bool with_property{true};
-static constexpr bool without_property{false};
+constexpr bool with_property{true};
+constexpr bool without_property{false};
 
-static constexpr size_t number_iterations{10};
+constexpr size_t number_iterations{10};
 
-static constexpr int identity_value{5};
+constexpr int identity_value{5};
 
 constexpr int init_value_without_property_case{99};
 
 static sycl::range<1> range{number_iterations};
 static sycl::nd_range<1> nd_range{range, range};
 
-static const auto scalar_types =
+const auto scalar_types =
     named_type_pack<char, signed char, unsigned char, short int,
                     unsigned short int, int, unsigned int, long int,
                     unsigned long int, float, long long int,
