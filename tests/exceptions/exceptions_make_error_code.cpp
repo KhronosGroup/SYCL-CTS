@@ -19,7 +19,7 @@ using namespace sycl_cts;
  *  @param log sycl_cts::util::logger class object
  */
 void check_sycl_working(sycl::errc err_c, util::logger &log) {
-  std::error_code make_err_c_result{sycl::make_error_code(err_c)};
+  auto make_err_c_result{sycl::make_error_code(err_c)};
 
   CHECK_TYPE(log, make_err_c_result, std::error_code());
   if (!noexcept(sycl::make_error_code(err_c))) {
@@ -39,8 +39,7 @@ void check_sycl_working(sycl::errc err_c, util::logger &log) {
  *  @param log sycl_cts::util::logger class object
  */
 void compare_sycl_and_std_working(sycl::errc err_c, util::logger &log) {
-  auto err_c_result{
-      std::error_code(static_cast<int>(err_c), sycl::sycl_category())};
+  std::error_code err_c_result{static_cast<int>(err_c), sycl::sycl_category()};
   auto make_err_c_result{sycl::make_error_code(err_c)};
 
   if (err_c_result.value() != make_err_c_result.value()) {
@@ -97,7 +96,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      for (auto &err_c : exceptions::all_err_codes) {
+      for (auto &err_c : all_err_codes) {
         compare_sycl_and_std_working(err_c, log);
         check_sycl_working(err_c, log);
       }

@@ -14,9 +14,9 @@
 
 /** @brief Provide common code for all tests for exceptions
  */
-namespace exceptions {
+namespace {
 
-static const std::vector<sycl::errc> all_err_codes{
+inline const std::vector<sycl::errc> all_err_codes{
     sycl::errc::success,
     sycl::errc::runtime,
     sycl::errc::kernel,
@@ -33,6 +33,6 @@ static const std::vector<sycl::errc> all_err_codes{
     sycl::errc::kernel_not_supported,
     sycl::errc::backend_mismatch};
 
-}  // namespace exceptions
+}  // namespace
 
 #endif  // __SYCL_CTS_TEST_EXCEPTIONS_H
