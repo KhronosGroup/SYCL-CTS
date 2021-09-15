@@ -50,7 +50,7 @@ void check_output_value(int got, int expected, int line, int number_test_case,
  *  @param functor The functor (plus, multiplies, etc) with which the test runs
  *  @param ptr_for_mem Link on the allocated USM
  */
-template <typename UsePropertyFlagT, typename FunctorT, typename PtrForMemT>
+template <bool UsePropertyFlagT, typename FunctorT, typename PtrForMemT>
 void fill_mem_for_span(FunctorT functor, PtrForMemT& ptr_for_mem) {
   auto value_for_filling{
       reduction_common::get_init_value_for_reduction<int, FunctorT,
@@ -68,7 +68,7 @@ void fill_mem_for_span(FunctorT functor, PtrForMemT& ptr_for_mem) {
  *  @param queue sycl::queue class object
  *  @retval Allocated and filled USM
  */
-template <typename FunctorT, typename UsePropertyFlagT>
+template <typename FunctorT, bool UsePropertyFlagT>
 auto get_ptr_to_variable(sycl::queue& queue) {
   auto variable_for_first_reduction{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, int>(queue)};

@@ -16,8 +16,8 @@
 
 namespace reduction_common {
 
-using with_property = std::true_type;
-using without_property = std::false_type;
+static constexpr bool with_property = true;
+static constexpr bool without_property = false;
 
 static constexpr size_t number_iterations{10};
 
@@ -68,18 +68,16 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
  *          sycl::property::reduction::initialize_to_identity
  *  @retval Value for initialization
  */
-template <typename VariableT, typename FunctorT, typename UsePropertyFlagT>
+template <typename VariableT, typename FunctorT, bool UsePropertyFlagT>
 void get_init_value_common_logic(VariableT& init_value) {
-  if constexpr (UsePropertyFlagT::value &&
+  if constexpr (UsePropertyFlagT &&
                 (std::is_same_v<FunctorT, sycl::bit_and<VariableT>> ||
                  std::is_same_v<FunctorT, sycl::bit_or<VariableT>> ||
                  std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>)) {
     init_value = 0x87654321;
-  } else if constexpr (std::is_same_v<VariableT, bool> &&
-                       UsePropertyFlagT::value) {
+  } else if constexpr (std::is_same_v<VariableT, bool> && UsePropertyFlagT) {
     init_value = !sycl::known_identity<FunctorT, VariableT>::value;
-  } else if constexpr (std::is_same_v<VariableT, bool> &&
-                       !UsePropertyFlagT::value) {
+  } else if constexpr (std::is_same_v<VariableT, bool> && !UsePropertyFlagT) {
     init_value = sycl::known_identity<FunctorT, VariableT>::value;
   }
 }
@@ -89,7 +87,7 @@ void get_init_value_common_logic(VariableT& init_value) {
  *         true then we use value that will not be equal to default reduction
  *         value and this value should be ignored if we don't use property or
  *         sycl::has_known_identity is false then we use common value with
- *         value that will be use in expected value initializations
+ *         value that will be used in expected value initializations
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
@@ -97,12 +95,11 @@ void get_init_value_common_logic(VariableT& init_value) {
  *          sycl::property::reduction::initialize_to_identity
  *  @retval Value for reduction initialization
  */
-template <typename VariableT, typename FunctorT,
-          typename UsePropertyFlagT = std::false_type>
+template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_reduction() {
   VariableT init_value{};
   if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
-                UsePropertyFlagT::value) {
+                UsePropertyFlagT) {
     init_value = 50;
   } else {
     init_value = init_value_without_property_case;
@@ -116,7 +113,7 @@ VariableT get_init_value_for_reduction() {
  *         is true and sycl::has_known_identity for current functor and variable
  *         type is true then we use value that will not be equal to default
  *         reduction value and this value should be ignored if we don't use
- *         property or sycl::has_known_identity is false then we use common
+ *         property or sycl::has_known_identity is false then we will use common
  *         value with value that will be used in value for reductions
  *         initializations
  *  @tparam VariableT Variable type from type coverage
@@ -126,12 +123,11 @@ VariableT get_init_value_for_reduction() {
  *          sycl::property::reduction::initialize_to_identity
  *  @retval Value for expected value initialization
  */
-template <typename VariableT, typename FunctorT,
-          typename UsePropertyFlagT = std::false_type>
+template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_expected_value() {
   VariableT init_value{};
   if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
-                UsePropertyFlagT::value) {
+                UsePropertyFlagT) {
     // case when using reduction with initialize_to_identity
     init_value = sycl::known_identity<FunctorT, VariableT>::value;
   } else {

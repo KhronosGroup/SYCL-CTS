@@ -43,10 +43,10 @@ auto apply_chosen_functor(FirstValueT first_val, SecondValueT second_val) {
  */
 using with_combine = std::true_type;
 using without_combine = std::false_type;
-template <typename VariableT, typename FunctorT, typename UseCombineFlagT,
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range(AccessorT accessor) {
-  if constexpr (UseCombineFlagT::value) {
+  if constexpr (UseCombineFlagT) {
     return
         [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
   } else {
@@ -68,10 +68,10 @@ auto get_lambda_with_range(AccessorT accessor) {
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-template <typename VariableT, typename FunctorT, typename UseCombineFlagT,
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
-  if constexpr (UseCombineFlagT::value) {
+  if constexpr (UseCombineFlagT) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       reducer.combine(accessor[nd_item.get_global_id()]);
     };
@@ -96,7 +96,7 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-template <typename VariableT, typename RangeT, typename UseCombineFlagT,
+template <typename VariableT, typename RangeT, bool UseCombineFlagT,
           typename FunctorT = void, typename AccessorT>
 auto get_lambda(AccessorT accessor) {
   if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
@@ -120,11 +120,11 @@ auto get_lambda(AccessorT accessor) {
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-template <typename VariableT, typename FunctorT, typename UseCombineFlagT,
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_for_span(AccessorT accessor,
                                     size_t number_elements) {
-  if constexpr (UseCombineFlagT::value) {
+  if constexpr (UseCombineFlagT) {
     return [=](sycl::id<1> idx, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i].combine(accessor[idx]);
@@ -151,11 +151,11 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-template <typename VariableT, typename FunctorT, typename UseCombineFlagT,
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_for_span(AccessorT accessor,
                                        size_t number_elements) {
-  if constexpr (UseCombineFlagT::value) {
+  if constexpr (UseCombineFlagT) {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i].combine(accessor[nd_item.get_global_id()]);
@@ -184,7 +184,7 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
  *         constructing reducer with span
  *  @retval Lambda with chosen operator
  */
-template <typename VariableT, typename RangeT, typename UseCombineFlagT,
+template <typename VariableT, typename RangeT, bool UseCombineFlagT,
           typename FunctorT = void, typename AccessorT>
 auto get_lambda_for_span(AccessorT accessor, size_t number_elements) {
   if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
