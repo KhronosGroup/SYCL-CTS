@@ -1,31 +1,19 @@
-set(tests_dir ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(SYCL_CTS_TEST_FILTER "" CACHE FILEPATH "Path to the SYCL CTS test filter for building.")
-
-# Get the list of test categories to build
-# All test categories are built unless a test filter was given
 if(SYCL_CTS_TEST_FILTER)
-    message(WARNING "A filter file has been given to cts, only tests matching the ones on the file will be build.")
-    message(STATUS "SYCL_CTS_TEST_FILTER='${SYCL_CTS_TEST_FILTER}'")
-    file(STRINGS "${SYCL_CTS_TEST_FILTER}" test_projects_dir_list)
-else()
-    # create separate targets for each test project
-    set(test_projects_dir_list "")
-    file(GLOB subdirectories RELATIVE ${tests_dir} ${tests_dir}/*)
-    foreach(dir ${subdirectories})
-        if(${dir} MATCHES "common")
-            # The common folder is always included
-            continue()
-        endif()
-        if(EXISTS "${tests_dir}/${dir}/CMakeLists.txt")
-            list(APPEND test_projects_dir_list ${dir})
-        endif()
-    endforeach()
+  message(FATAL_ERROR "SYCL_CTS_TEST_FILTER is no longer supported. Use SYCL_CTS_EXCLUDE_TEST_CATEGORIES instead.")
 endif()
-list(REMOVE_DUPLICATES test_projects_dir_list)
+set(SYCL_CTS_EXCLUDE_TEST_CATEGORIES "" CACHE FILEPATH "Optional filter specifying test categories to be excluded from build.")
 
-# The common folder is always included
+set(exclude_categories "")
+if(SYCL_CTS_EXCLUDE_TEST_CATEGORIES)
+  if(NOT EXISTS "${SYCL_CTS_EXCLUDE_TEST_CATEGORIES}" OR IS_DIRECTORY "${SYCL_CTS_EXCLUDE_TEST_CATEGORIES}")
+    message(FATAL_ERROR "Invalid filter file '${SYCL_CTS_EXCLUDE_TEST_CATEGORIES}'.")
+  endif()
+  message(STATUS "Using test category filter '${SYCL_CTS_EXCLUDE_TEST_CATEGORIES}'.")
+  file(STRINGS "${SYCL_CTS_EXCLUDE_TEST_CATEGORIES}" exclude_categories)
+endif()
+
 add_subdirectory("common")
 
 function(get_std_type OUT_LIST)
@@ -96,6 +84,11 @@ function(generate_cts_test)
     "EXTRA_ARGS;DEPENDS"
     ${ARGN}
   )
+  get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+  if(${test_dir} IN_LIST exclude_categories)
+    return()
+  endif()
+
   message(STATUS "Setup test generation rules for: " ${GEN_TEST_OUTPUT})
 
   set(GEN_TEST_FILE_NAME ${GEN_TEST_OUTPUT})
@@ -141,14 +134,19 @@ function(add_cts_test)
   set(test_exe_name test_${test_dir})
   set(test_cases_list ${ARGN})
 
+  if(NOT ${test_dir} IN_LIST exclude_categories)
+    message(STATUS "Adding test: " ${test_exe_name})
+  else()
+    message(STATUS "Skipping excluded test: " ${test_exe_name})
+    return()
+  endif()
+
   if(NOT SYCL_CTS_ENABLE_HALF_TESTS)
     list(FILTER test_cases_list EXCLUDE REGEX .*_fp16\\.cpp$)
   endif()
   if(NOT SYCL_CTS_ENABLE_DOUBLE_TESTS)
     list(FILTER test_cases_list EXCLUDE REGEX .*_fp64\\.cpp$)
   endif()
-
-  message(STATUS "Adding test: " ${test_exe_name})
 
   add_sycl_executable(NAME           ${test_exe_name}
                       OBJECT_LIBRARY ${test_exe_name}_objects
@@ -178,8 +176,12 @@ function(add_cts_test)
   target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
 endfunction()
 
-foreach(dir ${test_projects_dir_list})
-  add_subdirectory(${dir})
+file(GLOB test_category_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
+list(REMOVE_ITEM test_category_dirs "common")
+foreach(dir ${test_category_dirs})
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/CMakeLists.txt")
+    add_subdirectory(${dir})
+  endif()
 endforeach()
 
 target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
