@@ -16,12 +16,12 @@
 
 namespace reduction_common {
 
-static constexpr bool with_property = true;
-static constexpr bool without_property = false;
+static constexpr bool with_property{true};
+static constexpr bool without_property{false};
 
 static constexpr size_t number_iterations{10};
 
-static constexpr int identity_value = 5;
+static constexpr int identity_value{5};
 
 constexpr int init_value_without_property_case{99};
 
