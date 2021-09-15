@@ -210,8 +210,9 @@ struct custom_type {
 
   custom_type() = default;
 
-  bool operator==(const custom_type& c_t) const {
-    return m_int_field == c_t.m_int_field && m_char_field == c_t.m_char_field;
+  friend bool operator==(const custom_type& c_t_l, const custom_type& c_t_r) {
+    return c_t_l.m_int_field == c_t_r.m_int_field &&
+           c_t_l.m_char_field == c_t_r.m_char_field;
   }
 
   operator int() const { return m_int_field; }
@@ -220,15 +221,15 @@ struct custom_type {
     m_int_field = value;
     m_char_field = value;
   }
-};
 
-static custom_type operator+(const custom_type& c_t_l,
-                             const custom_type& c_t_r) {
-  custom_type temp;
-  temp.m_int_field = c_t_l.m_int_field + c_t_r.m_int_field;
-  temp.m_char_field = c_t_l.m_char_field + c_t_r.m_char_field;
-  return temp;
-}
+  friend custom_type operator+(const custom_type& c_t_l,
+                               const custom_type& c_t_r) {
+    custom_type temp;
+    temp.m_int_field = c_t_l.m_int_field + c_t_r.m_int_field;
+    temp.m_char_field = c_t_l.m_char_field + c_t_r.m_char_field;
+    return temp;
+  }
+};
 
 }  // namespace reduction_common
 
