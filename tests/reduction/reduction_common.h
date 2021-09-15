@@ -43,8 +43,8 @@ const auto scalar_types =
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam BufferT The type of the buffer with which the test runs
  *  @param functor The functor (plus, multiplies, etc.) with which the test runs
- *  @param buffer The buffer that will used in parallel_for() function
- *  @param value_for_initialization The value for initialization output variable
+ *  @param buffer The buffer to be used in parallel_for() function
+ *  @param value_for_initialization The value for initializing output variable
  *  @retval Expected value after test execution
  */
 template <typename VariableT, typename FunctorT, typename BufferT>
@@ -66,7 +66,7 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
- *  @retval Value for initialization
+ *  @retval Value for initializing
  */
 template <typename VariableT, typename FunctorT, bool UsePropertyFlagT>
 void get_init_value_common_logic(VariableT& init_value) {
@@ -93,7 +93,7 @@ void get_init_value_common_logic(VariableT& init_value) {
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
- *  @retval Value for reduction initialization
+ *  @retval Value for reduction initializing
  */
 template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_reduction() {
@@ -121,7 +121,7 @@ VariableT get_init_value_for_reduction() {
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
- *  @retval Value for expected value initialization
+ *  @retval Value for expected value initializing
  */
 template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_expected_value() {
