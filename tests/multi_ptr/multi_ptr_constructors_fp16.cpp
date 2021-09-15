@@ -39,8 +39,8 @@ class TEST_NAME : public util::test_base {
         return;
       }
 
-      check_void_pointer_ctors<half>{}(queue, "half");
-      check_pointer_ctors<half>{}(queue, "half");
+      check_void_pointer_ctors<sycl::half>{}(queue, "sycl::half");
+      check_pointer_ctors<sycl::half>{}(queue, "sycl::half");
 
       queue.wait_and_throw();
     } catch (const sycl::exception &e) {

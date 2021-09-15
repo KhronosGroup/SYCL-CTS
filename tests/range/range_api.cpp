@@ -20,7 +20,7 @@ template <int dims>
 void test_range_kernels(
     sycl::range<dims> range,
     sycl::accessor<int, 1, sycl::access_mode::read_write,
-                       sycl::target::global_buffer>
+                       sycl::target::device>
         error_ptr,
     int m_iteration) {
   sycl::range<dims> range_two(range * 2);

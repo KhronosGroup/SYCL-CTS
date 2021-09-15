@@ -15,20 +15,19 @@ using namespace sycl_cts;
 class kernel_item_3d {
  protected:
   typedef sycl::accessor<int, 3, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_readAccess;
   typedef sycl::accessor<int, 3, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_writeAccess;
 
   t_readAccess m_x;
   t_writeAccess m_o;
   sycl::range<3> r_exp;
-  sycl::id<3> offset_exp;
 
  public:
   kernel_item_3d(t_readAccess in_, t_writeAccess out_, sycl::range<3> r)
-      : m_x(in_), m_o(out_), r_exp(r), offset_exp(sycl::id<3>(0, 0, 0)) {}
+      : m_x(in_), m_o(out_), r_exp(r) {}
 
   void operator()(sycl::item<3> item) const {
     bool result = true;
@@ -41,9 +40,6 @@ class kernel_item_3d {
 
     sycl::range<3> localRange = item.get_range();
     result &= localRange == r_exp;
-
-    sycl::id<3> offset = item.get_offset();
-    result &= offset == offset_exp;
 
     /* get work item range */
     const size_t nWidth = localRange.get(0);

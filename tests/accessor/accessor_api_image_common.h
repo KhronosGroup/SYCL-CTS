@@ -1154,10 +1154,10 @@ class check_image_accessor_api_methods {
                      image_range_t<dims, target> range,
                      const std::string& typeName) const {
     {
-      // check get_count() method
-      auto accessorCount = accessor.get_count();
+      // check size() method
+      auto accessorCount = accessor.size();
       check_acc_return_type<size_t>(
-          log, accessor.get_count(), "get_count", typeName);
+          log, accessor.size(), "size", typeName);
       if (accessorCount != count) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "accessor does not return the correct count");
@@ -1398,7 +1398,7 @@ class check_image_accessor_api_reads {
                                  samplerT ... sampler) {
     queue.submit([&](sycl::handler &handler) {
       static constexpr auto errorTarget =
-          sycl::target::global_buffer;
+          sycl::target::device;
       auto accessor =
           make_accessor<T, dims, mode, target, acc_placeholder::image>(
               image, handler);
