@@ -8,4 +8,7 @@ ARG IMPL_VERSION
 
 FROM khronosgroup/sycl-cts-ci:ccpp-base-$IMPL_VERSION
 
+ARG IMPL_VERSION
+RUN test -n "$IMPL_VERSION" || ( echo "Error: IMPL_VERSION is not set"; exit 1 )
+
 COPY configure.sh /scripts/

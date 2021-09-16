@@ -3,6 +3,9 @@ ARG IMPL_VERSION
 
 FROM khronosgroup/sycl-cts-ci:common
 
+ARG IMPL_VERSION
+RUN test -n "$IMPL_VERSION" || ( echo "Error: IMPL_VERSION is not set"; exit 1 )
+
 RUN git clone https://github.com/intel/llvm.git \
       --branch=sycl --single-branch --shallow-since=2021-09-01 \
       --recurse-submodules /tmp/dpcpp && \
