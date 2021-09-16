@@ -259,34 +259,41 @@ struct buffer_accessor_get_pointer_w {
 /**
  *  @brief Tests buffer accessors pointer value with read-write data access
  */
-template <typename T, int dim, sycl::target target>
+template <typename T, int dim, sycl::access_mode mode, sycl::target target>
 struct buffer_accessor_get_pointer_rw {
   using error_code_t = buffer_accessor_api_pointer_error_code;
   using expected_value_t = buffer_accessor_expected_value<T, dim>;
 
-  template <typename accT, typename errorAccT>
-  static void check(const accT& acc, const errorAccT& errorAccessor,
+  template <sycl::access::placeholder placeholder>
+  using acc_t = sycl::accessor<T, dim, mode, target, placeholder>;
+
+  template <sycl::access::placeholder placeholder, typename errorAccT>
+  static void check(const acc_t<placeholder>& acc,
+                    const errorAccT& errorAccessor,
                     const sycl_id_t<dim>& offset) {
     const auto expectedRead = expected_value_t::expected_read(offset);
     const auto expectedWrite = expected_value_t::expected_write(offset);
+    constexpr bool noInitExpected =
+        (target == sycl::target::local) ||
+        (mode == sycl::access_mode::discard_read_write);
 
     auto ptr = acc.get_pointer();
     T elem;
 
-    if (target != sycl::target::local) {
+    if constexpr (!noInitExpected) {
       /** check read syntax
-      */
+       */
       elem = *ptr;
       if (!check_elems_equal(elem, expectedRead)) {
         errorAccessor[error_code_t::pointer_read_access] = 1;
       }
     }
     /** check write syntax
-    */
+     */
     *ptr = expectedWrite;
 
     /** validate write syntax
-    */
+     */
     elem = *ptr;
     if (!check_elems_equal(elem, expectedWrite)) {
       errorAccessor[error_code_t::pointer_write_access] = 1;
@@ -329,9 +336,8 @@ class buffer_accessor_get_pointer {
 
  private:
   void check_get_pointer(acc_mode_tag::generic) const {
-    buffer_accessor_get_pointer_rw<T, dim, target>::check(m_acc,
-                                                          m_errorAccessor,
-                                                          m_offset);
+    buffer_accessor_get_pointer_rw<T, dim, mode, target>::check(
+        m_acc, m_errorAccessor, m_offset);
   }
   void check_get_pointer(acc_mode_tag::write_only) const {
     buffer_accessor_get_pointer_w<T, dim>::check(m_acc, m_errorAccessor,
