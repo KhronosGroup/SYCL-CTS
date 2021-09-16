@@ -30,16 +30,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(sycl_cts::util::logger &log) override {
-    try {
-      run_tests<int>{}(log);
-    } catch (const sycl::exception &ex) {
-      log_exception(log, ex);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(ex.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &ex) {
-      auto errorMsg = "an exception was caught: " + std::string(ex.what());
-      FAIL(log, errorMsg);
-    }
+    run_tests<int>{}(log);
+
   }
 };
 
