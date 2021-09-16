@@ -591,9 +591,9 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
     return false;
   }
 
-  sycl::program program(context, devicesToCheck);
-  program.build_with_kernel_type<kernelT>("");
-  auto kernel = program.get_kernel<kernelT>();
+  auto kb =
+      sycl::get_kernel_bundle<kernelT, sycl::bundle_state::executable>(context);
+  auto kernel = kb.get_kernel(sycl::get_kernel_id<kernelT>());
   auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
       sycl::info::kernel_work_group::work_group_size>(device);
 

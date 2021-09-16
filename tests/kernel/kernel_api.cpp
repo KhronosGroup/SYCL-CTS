@@ -34,32 +34,23 @@ class TEST_NAME : public sycl_cts::util::test_base {
       auto ctsQueue = util::get_cts_object::queue();
       const auto isHostCtx = ctsQueue.is_host();
       auto deviceList = ctsQueue.get_context().get_devices();
+      auto ctx = ctsQueue.get_context();
 
       // Create kernel
-      if (!is_compiler_available(deviceList)) {
-        log.note(
-            "online compiler is not available -- skipping test of kernel api");
-      } else {
-        sycl::program prog(ctsQueue.get_context());
-        prog.build_with_kernel_type<kernel_name_api>();
-        auto k = prog.get_kernel<kernel_name_api>();
-        ctsQueue.submit(
-            [&](sycl::handler &h) { h.single_task(kernel_name_api{}); });
-        ctsQueue.wait_and_throw();
+      using k_name = kernel_name_api;
+      auto kb =
+          sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
+      auto kernel = kb.get_kernel(sycl::get_kernel_id<k_name>());
+      ctsQueue.submit(
+          [&](sycl::handler &h) { h.single_task(k_name{}); });
+      ctsQueue.wait_and_throw();
 
-        // Check is_host()
-        bool isHost = k.is_host();
+      // Check is_host()
+      bool isHost = kernel.is_host();
 
-        // Check get_context()
-        auto cxt = k.get_context();
-        check_return_type<sycl::context>(log, cxt,
-                                             "sycl::kernel::get_context()");
-
-        // Check get_program()
-        auto prgrm = k.get_program();
-        check_return_type<sycl::program>(log, prgrm,
-                                             "sycl::kernel::get_program()");
-      }
+      // Check get_context()
+      auto cxt = kernel.get_context();
+      check_return_type<sycl::context>(log, cxt, "sycl::kernel::get_context()");
     } catch (const sycl::exception &e) {
       log_exception(log, e);
       std::string errorMsg =

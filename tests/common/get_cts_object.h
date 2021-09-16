@@ -92,68 +92,10 @@ struct get_cts_object {
     */
     template <class kernel_name>
     static sycl::kernel prebuilt(sycl::queue &queue) {
-      sycl::program program(queue.get_context());
-      program.build_with_kernel_type<kernel_name>();
-      return program.get_kernel<kernel_name>();
-    }
-  };
-
-  /**
-    @brief Helper class that holds different methods for creating different
-    programs
-  */
-  struct program {
-    /**
-      @brief Creates and compiles a SYCL program
-      @param ctx Context to create the program from
-      @param compileOptions Options passed to the compilation of the program
-      @param selector Device selector to use to create the queue where the
-      program will be compiled on. Uses the CTS selector by default. Should use
-      the same selector as the one used for the context.
-      @return Compiled SYCL program
-    */
-    template <class kernel_name>
-    static sycl::program compiled(
-        const sycl::context &ctx,
-        const std::string &compileOptions = "",
-        const sycl::device_selector &selector = cts_selector()) {
-      sycl::program program(ctx);
-
-      auto q = queue(selector);
-      q.submit([](sycl::handler &cgh) {
-        cgh.single_task(dummy_functor<kernel_name>());
-      });
-      q.wait_and_throw();
-      program.compile_with_kernel_type<dummy_functor<kernel_name>>(
-          compileOptions);
-
-      return program;
-    }
-
-    /**
-      @brief Creates and builds a SYCL program
-      @param ctx Context to create the program from
-      @param buildOptions Options passed when building the program
-      @param selector Device selector to use to create the queue where the
-      program will be built on. Uses the CTS selector by default. Should use the
-      same selector as the one used for the context.
-      @return Compiled SYCL program
-    */
-    template <class kernel_name>
-    static sycl::program built(
-        const sycl::context &ctx,
-        const std::string &buildOptions = "",
-        const sycl::device_selector &selector = cts_selector()) {
-      sycl::program program(ctx);
-
-      auto q = queue(selector);
-      q.submit([](sycl::handler &cgh) {
-        cgh.single_task(dummy_functor<kernel_name>());
-      });
-      q.wait_and_throw();
-      program.build_with_kernel_type<dummy_functor<kernel_name>>(buildOptions);
-
-      return program;
+      auto ctx = queue.get_context();
+      auto kb_exe = sycl::get_kernel_bundle<
+                      kernel_name, sycl::bundle_state::executable>(ctx);
+      return kb_exe.get_kernel(sycl::get_kernel_id<kernel_name>());
     }
   };
 
