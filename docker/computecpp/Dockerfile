@@ -3,7 +3,7 @@ ARG IMPL_VERSION
 
 # NOTE: This file is currently mostly a no-op because Codeplay
 # does not yet offer a way of obtaining ComputeCpp binaries
-# progammatically. To work around this, we rely on a manually
+# programmatically. To work around this, we rely on a manually
 # created base container image instead.
 
 FROM khronosgroup/sycl-cts-ci:ccpp-base-$IMPL_VERSION
