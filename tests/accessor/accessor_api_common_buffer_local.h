@@ -531,8 +531,12 @@ class buffer_accessor_api_rw {
   void check_subscripts(sycl_id_t<dim> idx, generic_dim_tag) const {
     T elem;
 
-    // A local accessor doesn't have any valid information at this point
-    if (target != sycl::target::local) {
+    constexpr bool noInitExpected =
+        (target == sycl::target::local) ||
+        (mode == sycl::access_mode::discard_read_write);
+
+    // Ensure we can expect any valid information at this point
+    if constexpr (!noInitExpected) {
       const auto expectedRead = expected_value_t::expected_read(idx, m_range);
 
       /** check id read syntax
