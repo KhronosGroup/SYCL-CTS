@@ -17,7 +17,6 @@
 namespace reduction_get_lambda {
 
 /** @brief Apply provided functor to with provided values
- *
  *  @tparam FunctorT The type of the functor that will be applied
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FirstValueT The first value type that will be used in functor
