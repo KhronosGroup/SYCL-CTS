@@ -3,7 +3,15 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provide adapter for safely using different types with kernel names in
-//  generic code
+//  generic code.
+//
+//  For example, according to the SYCL 2020 for any type T that we cannot
+//  forward-declare we are unable to have
+//    single_task<kernel_name<T>>,
+//  but we are able to have
+//    using U = typename kernel_name::adapter<T>::type
+//    single_task<kernel_name<U>>
+//  in case we have a proper implementation of the kernel_name::adapter
 //
 *******************************************************************************/
 
