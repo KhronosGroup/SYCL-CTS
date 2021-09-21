@@ -68,6 +68,11 @@ if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
 endif()
 # ------------------
 
+# ------------------
+# Device used for running with CTest (e.g. during conformance report generation)
+set(SYCL_CTS_CTEST_DEVICE "" CACHE STRING "Device used when running with CTest")
+# ------------------
+
 enable_testing()
 
 add_subdirectory(util)

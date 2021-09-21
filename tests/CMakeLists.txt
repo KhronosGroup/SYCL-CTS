@@ -157,16 +157,12 @@ function(add_cts_test)
   target_include_directories(${test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   set(info_dump_dir "${CMAKE_BINARY_DIR}/Testing")
-  add_test(NAME ${test_exe_name}_host
+  # FIXME: run_conformance_tests.py does not yet set SYCL_CTS_CTEST_DEVICE.
+  # The script is currently broken in more than one way and in need of an overhaul.
+  add_test(NAME ${test_exe_name}
            COMMAND ${test_exe_name}
-                   --platform ${host_platform_name}
-                   --device ${host_device_name}
-                   --info-dump "${info_dump_dir}/${test_exe_name}_host.info")
-  add_test(NAME ${test_exe_name}_opencl
-           COMMAND ${test_exe_name}
-                   --platform ${opencl_platform_name}
-                   --device ${opencl_device_name}
-                   --info-dump "${info_dump_dir}/${test_exe_name}_opencl.info")
+                   --device ${SYCL_CTS_CTEST_DEVICE}
+                   --info-dump "${info_dump_dir}/${test_exe_name}.info")
 
   target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 

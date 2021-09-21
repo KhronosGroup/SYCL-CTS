@@ -11,6 +11,9 @@
 
 #include "singleton.h"
 
+#include <optional>
+#include <regex>
+
 namespace sycl_cts {
 namespace util {
 
@@ -25,7 +28,7 @@ class test_manager : public singleton<test_manager> {
 
   /** parse the command line options
    */
-  bool parse(const int argc, const char **args);
+  bool parse(const int argc, const char** args);
 
   /** run the tests themselves
    */
@@ -43,6 +46,12 @@ class test_manager : public singleton<test_manager> {
    */
   bool wimpy_mode_enabled() const;
 
+  /**
+   * @return The regex set by the `--device` CLI parameter, used for selecting
+   * the CTS device.
+   */
+  const std::optional<std::regex>& get_device_regex() { return device_regex; }
+
   void dump_device_info();
 
   /** program lifetime hooks
@@ -55,6 +64,7 @@ class test_manager : public singleton<test_manager> {
   bool m_wimpyMode;
   bool m_infoDump;
   std::string m_infoDumpFile;
+  std::optional<std::regex> device_regex;
 };
 
 }  // namespace util

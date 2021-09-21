@@ -24,8 +24,7 @@ g_csv_path      = None
 g_packets       = {}
 g_list_tests    = False
 g_junit_path    = None
-g_platform      = "intel"
-g_device        = "opencl_cpu"
+g_device        = ""
 
 g_types = \
     [
@@ -261,11 +260,11 @@ def print_summary( ):
 #
 def dispatch_packet( id, type, data ):
 
-    if ( type is "test_start" ):
+    if ( type == "test_start" ):
         print("--- " + find_packet_data( id, 'name' )[0])
         pass
 
-    if ( type is "test_end" ):
+    if ( type == "test_end" ):
 
         l_notes = find_packet_data( id, 'note' )
         l_result = g_results[ int( find_packet_data( id, 'result' )[0] ) ]
@@ -347,7 +346,7 @@ def find_packet( in_buffer ):
                 l_scope += 1
             if in_buffer[x] == '}':
                 l_scope -= 1
-            if l_scope is 0:
+            if l_scope == 0:
                 l_end = x+1
                 break
 
@@ -360,7 +359,7 @@ def dispatch_buffer( in_buffer ):
 
     # try to extract a single packet
     (l_start,l_end) = find_packet( in_buffer )
-    if l_start is -1 or l_end is -1:
+    if l_start == -1 or l_end == -1:
         return in_buffer
     l_packet  = in_buffer[ l_start : l_end ]
     # work out the remainder of the packet
@@ -395,7 +394,6 @@ def get_temp_filename( ):
 def launch_cts_binary( list ):
     global g_binary_path
     global g_csv_path
-    global g_platform
     global g_device
 
     if not g_binary_path:
@@ -405,9 +403,6 @@ def launch_cts_binary( list ):
     l_args = " --json"
     if g_csv_path:
         l_args = l_args + " --csv " + g_csv_path
-
-    if g_platform:
-        l_args += " --platform " + g_platform
 
     if g_device:
         l_args += " --device " + g_device
@@ -494,11 +489,7 @@ def parse_args( ):
     global g_csv_path
     global g_junit_path
     global g_list_tests
-    global g_platform
     global g_device
-
-    devices = ['host', 'opencl_cpu', 'opencl_gpu', 'opencl_accelerator']
-    platforms = ['host', 'amd', 'arm', 'intel', 'nvidia']
 
     parser = argparse.ArgumentParser( description="Khronos SYCL CTS" )
 
@@ -507,8 +498,7 @@ def parse_args( ):
     parser.add_argument( "--csvpath", help="specify path to csv file for filtering tests" )
     parser.add_argument( "--list", help="list all tests in a test binary", action="store_true" )
     parser.add_argument( "-j", "--junit", help="specify output path for a junit xml file" )
-    parser.add_argument( "-p", "--platform", choices=platforms, help="The platform to run on " )
-    parser.add_argument( "-d", "--device", choices=devices, help="The device to run on " )
+    parser.add_argument( "--device", help="The device to run on" )
 
     args = parser.parse_args()
 
@@ -526,9 +516,6 @@ def parse_args( ):
 
     if 'junit' in args:
         g_junit_path = args.junit
-
-    if 'platform' in args:
-        g_platform = args.platform
 
     if 'device' in args:
         g_device = args.device

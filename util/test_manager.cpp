@@ -13,7 +13,6 @@
 #include "collection.h"
 #include "executor.h"
 #include "printer.h"
-#include "selector.h"
 #include "test_manager.h"
 
 #if defined(_MSC_VER)
@@ -25,8 +24,11 @@ namespace util {
 
 /**
  */
-test_manager::test_manager() : m_willExecute(false), m_wimpyMode(false),
-  m_infoDump(false), m_infoDumpFile{""} {}
+test_manager::test_manager()
+    : m_willExecute(false),
+      m_wimpyMode(false),
+      m_infoDump(false),
+      m_infoDumpFile{""} {}
 
 /**
  */
@@ -50,6 +52,52 @@ void test_manager::on_exit() {
 #endif
 }
 
+static std::string get_device_type_str(const sycl::device &d) {
+  const auto deviceType = d.get_info<sycl::info::device::device_type>();
+  switch (deviceType) {
+    case sycl::info::device_type::host:
+      return "host";
+    case sycl::info::device_type::cpu:
+      return "cpu";
+    case sycl::info::device_type::gpu:
+      return "gpu";
+    case sycl::info::device_type::accelerator:
+      return "accelerator";
+    case sycl::info::device_type::custom:
+      return "custom";
+    case sycl::info::device_type::automatic:
+      return "automatic";
+    case sycl::info::device_type::all:
+      return "all";
+    default:
+      assert(false);
+      return "(unknown)";
+  };
+}
+
+static void list_devices() {
+  const auto all_devices = sycl::device::get_devices();
+  const auto cts_device = cts_selector{}.select_device();
+
+  if (all_devices.empty()) {
+    printf("No devices available.\n");
+    return;
+  }
+
+  printf("%zu devices available (> = currently selected):\n",
+         all_devices.size());
+  printf("  %-12s %s\n", "Type", "Platform / Device");
+  for (auto &d : all_devices) {
+    const auto deviceType = get_device_type_str(d);
+    const auto deviceName = d.get_info<sycl::info::device::name>();
+    const auto platformName =
+        d.get_platform().get_info<sycl::info::platform::name>();
+    printf("%c ", d == cts_device ? '>' : ' ');
+    printf("%-12s %s / %s\n", deviceType.c_str(), platformName.c_str(),
+           deviceName.c_str());
+  }
+}
+
 /**
  */
 bool test_manager::parse(const int argc, const char **args) {
@@ -57,7 +105,6 @@ bool test_manager::parse(const int argc, const char **args) {
   util::cmdarg &cmdarg = get<util::cmdarg>();
   util::printer &printer = get<util::printer>();
   util::collection &collection = get<util::collection>();
-  util::selector &selector = get<util::selector>();
 
   // try to parse all of the command line arguments
   if (!cmdarg.parse(argc, args)) {
@@ -110,18 +157,17 @@ bool test_manager::parse(const int argc, const char **args) {
     printer.set_format(sycl_cts::util::printer::etext);
   }
 
-  // set the default sycl cts platform
-  std::string platformName;
-  if (cmdarg.get_value("--platform", platformName) ||
-      cmdarg.get_value("-p", platformName)) {
-    selector.set_default_platform(platformName);
-  }
-
   // set the default sycl cts device
   std::string deviceName;
-  if (cmdarg.get_value("--device", deviceName) ||
-      cmdarg.get_value("-d", deviceName)) {
-    selector.set_default_device(deviceName);
+  if (cmdarg.get_value("--device", deviceName) && !deviceName.empty()) {
+    device_regex = std::regex(deviceName);
+  }
+
+  // list all available devices
+  // this has to happen after --device has been parsed
+  if (cmdarg.find_key("--list-devices")) {
+    list_devices();
+    return true;
   }
 
   // filter by the given test name
@@ -167,22 +213,14 @@ Usage:
     --csv       -c         CSV file for specifying tests to run
     --list      -l         List the tests compiled in this executable
     --wimpy     -w         Run with reduced test complexity (faster)
-    --platform  -p [name]  Set a platform to target:
-                   'host'
-                   'amd'
-                   'arm'
-                   'intel'
-                   'nvidia'
-    --device    -d [name]  Select a device to target:
-                   'host'
-                   'opencl_cpu'
-                   'opencl_gpu'
-                   'opencl_accelerator'
-    --info-dump -i [file]  Dumps information about the device and platform
+    --device       <name>  Select SYCL device to run CTS on.
+                           ECMAScript regular expression syntax can be used.
+    --list-devices         List all available devices.
+    --info-dump -i <file>  Dumps information about the device and platform
                            the tests were executed on to the file specified.
-    --test         [name]  Specify a specific test to run by name, eg.
+    --test         <name>  Specify a specific test to run by name, eg.
                            'unary_math_sin'
-    --file      -f [path]  Redirect test output to a file
+    --file      -f <path>  Redirect test output to a file
 
 )";
   std::cout << usage << std::endl;
