@@ -9,6 +9,7 @@
 #ifndef SYCL_CTS_TESTS_ADDRESS_SPACE_ADDRESS_SPACE_COMMON_H
 #define SYCL_CTS_TESTS_ADDRESS_SPACE_ADDRESS_SPACE_COMMON_H
 
+#include "../../util/kernel_names.h"
 #include "../common/common.h"
 
 #include <array>
@@ -29,10 +30,13 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 template <typename T>
-struct address_space_core_kernel {};
+struct address_space_kernel {};
 
 template <typename T>
 class check_types {
+  using kernel_name =
+      address_space_kernel<sycl_cts::util::kernel_name::adapter_t<T>>;
+
  public:
   template <sycl::access::address_space kAs>
   struct AddrSpace {
@@ -171,7 +175,7 @@ class check_types {
             constantBuff, cgh);
         sycl::accessor<T, 1, read_write, sycl::target::local> localAcc(r, cgh);
 
-        cgh.single_task<address_space_core_kernel<T>>([=]() {
+        cgh.single_task<kernel_name>([=]() {
           bool pass = true;
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];
