@@ -96,6 +96,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
+      const auto all_err_codes {get_err_codes()};
       for (auto &err_c : all_err_codes) {
         compare_sycl_and_std_working(err_c, log);
         check_sycl_working(err_c, log);
