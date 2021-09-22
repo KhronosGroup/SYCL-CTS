@@ -16,8 +16,8 @@
  */
 namespace {
 
-const std::vector<sycl::errc>& get_err_codes() {
-  static const std::vector<sycl::errc> all_err_codes{
+const std::array<sycl::errc, 15>& get_err_codes() {
+  static const std::array<sycl::errc, 15> all_err_codes{
       sycl::errc::success,
       sycl::errc::runtime,
       sycl::errc::kernel,
