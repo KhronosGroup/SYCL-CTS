@@ -2,19 +2,12 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides test_result_checker memeber functions definitions
+// Provides test_result_checker member function definitions
 //
 *******************************************************************************/
 #include "exceptions_sycl_category_common.h"
 
 using namespace exceptions_sycl_category_common;
-
-void test_result_checker::compare_sycl(
-    const std::error_category &error_category, sycl::errc err_c) {
-  m_tests_results[err_c] =
-      std::error_condition(static_cast<int>(err_c), sycl::sycl_category()) ==
-      error_category.default_error_condition(static_cast<int>(err_c));
-}
 
 void test_result_checker::check_results(const std::string_view &error_msg,
                                         sycl_cts::util::logger &log) const {

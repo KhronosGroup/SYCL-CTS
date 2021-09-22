@@ -43,7 +43,7 @@ class TEST_NAME : public util::test_base {
         FAIL(log, "error category message are empty");
       }
       if (strcmp(error_category_local_usage.name(), "sycl") != 0) {
-        FAIL(log, "sycl category name is not equal to \"sycl\"");
+        FAIL(log, "sycl::sycl_category name is not equal to \"sycl\"");
       }
       if (!std::is_same<decltype(sycl::sycl_category()),
                         const std::error_category &>::value) {

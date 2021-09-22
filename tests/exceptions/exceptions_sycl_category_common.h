@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Common code for exceptions sycl category tests
+// Common code for exceptions sycl_category tests
 //
 *******************************************************************************/
 
@@ -18,13 +18,6 @@ namespace exceptions_sycl_category_common {
 /** @brief Class for unite functions that used in test results check
  */
 class test_result_checker {
-  /** @brief Save the compare result between std::error_condition and
-   *         error_category::default_error_condition in static dictionary
-   *  @param error_category std::error_category class object
-   *  @param err_c Error code from sycl::errc enumeration
-   */
-  void compare_sycl(const std::error_category &error_category,
-                    sycl::errc err_c);
 
   std::map<sycl::errc, bool> m_tests_results{};
 
@@ -32,7 +25,10 @@ class test_result_checker {
   test_result_checker(const std::error_category &error_category) {
     const auto all_err_codes {get_err_codes()};
     for (auto &err_c : all_err_codes) {
-      test_result_checker::compare_sycl(error_category, err_c);
+      m_tests_results[err_c] =
+          std::error_condition(static_cast<int>(err_c),
+                               sycl::sycl_category()) ==
+          error_category.default_error_condition(static_cast<int>(err_c));
     }
   }
 
