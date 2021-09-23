@@ -73,6 +73,20 @@ endif()
 set(SYCL_CTS_CTEST_DEVICE "" CACHE STRING "Device used when running with CTest")
 # ------------------
 
+# ------------------
+# Measure build times
+option(SYCL_CTS_MEASURE_BUILD_TIMES "Measure build time for each translation unit and write it to 'build_times.log'" OFF)
+if(SYCL_CTS_MEASURE_BUILD_TIMES)
+    if(CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
+        # In case the user already specified a compiler launcher, make sure ours comes first.
+        list(PREPEND CMAKE_CXX_COMPILER_LAUNCHER "${CMAKE_SOURCE_DIR}/tools/measure_build_time.py")
+    else()
+        # Only Makefiles and Ninja support CMake compiler launchers
+        message(FATAL_ERROR "Build time measurements are only supported for the 'Unix Makefiles' and 'Ninja' generators.")
+    endif()
+endif()
+# ------------------
+
 enable_testing()
 
 add_subdirectory(util)
