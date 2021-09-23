@@ -45,8 +45,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     try {
-      const auto all_err_codes {get_err_codes()};
-      for (auto &err_c : all_err_codes) {
+      for (const auto &err_c : get_err_codes()) {
         check_unique_enum_values(err_c, log);
       }
       if (!std::is_error_code_enum<sycl::errc>::value) {
