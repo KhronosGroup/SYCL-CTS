@@ -263,6 +263,18 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "the correct number of elements");
     }
 
+    /* check the buffer returns the correct element count
+       with deprecated get_count */
+    // TODO: mark this check as testing deprecated functionality
+    auto count_depr = buf.get_count();
+    check_return_type<size_t>(log, count_depr, "sycl::buffer::get_count()");
+
+    if (count_depr != size) {
+      FAIL(log,
+           "sycl::buffer::get_count() does not return "
+           "the correct number of elements");
+    }
+
     /* check the buffer returns the correct byte size */
     auto ret_size = buf.byte_size();
     check_return_type<size_t>(log, ret_size, "sycl::buffer::byte_size()");
@@ -270,6 +282,18 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     if (ret_size != size * sizeof(T)) {
       FAIL(log,
            "sycl::buffer::byte_size() does not return "
+           "the correct size of the buffer");
+    }
+
+    /* check the buffer returns the correct byte size
+     with deprecated get_size*/
+    // TODO: mark this check as testing deprecated functionality
+    auto ret_size_depr = buf.get_size();
+    check_return_type<size_t>(log, ret_size_depr, "sycl::buffer::get_size()");
+
+    if (ret_size_depr != size * sizeof(T)) {
+      FAIL(log,
+           "sycl::buffer::get_size() does not return "
            "the correct size of the buffer");
     }
 

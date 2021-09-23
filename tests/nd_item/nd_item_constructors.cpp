@@ -57,6 +57,7 @@ private:
   sycl_cts::util::array<size_t, numDims> m_globalRange;
   sycl_cts::util::array<size_t, numDims> m_groupRange;
   sycl_cts::util::array<size_t, numDims> m_localRange;
+  sycl_cts::util::array<size_t, numDims> m_offset;
 public:
   state_storage(const sycl::nd_item<numDims>& state)
   {
@@ -70,6 +71,7 @@ public:
       m_globalRange[dim] = state.get_global_range(dim);
       m_groupRange[dim] = state.get_group_range(dim);
       m_localRange[dim] = state.get_local_range(dim);
+      m_offset[dim] = state.get_offset().get(dim);
     }
   }
 
@@ -109,6 +111,9 @@ public:
     return m_localRange[dim];
   }
 
+  size_t get_offset(int dim) const {
+    return m_offset[dim];
+  }
 };
 
 template <int index, int numDims, typename success_acc_t>
@@ -127,6 +132,9 @@ inline void check_equality_helper(success_acc_t& success,
                         expected.get_group_range(index));
   CHECK_EQUALITY_HELPER(success, actual.get_local_range(index),
                         expected.get_local_range(index));
+  // TODO: mark this check as testing deprecated functionality
+  CHECK_EQUALITY_HELPER(success, actual.get_offset().get(index),
+                        expected.get_offset(index));
 }
 
 template <int numDims, typename success_acc_t>

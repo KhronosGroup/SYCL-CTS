@@ -25,10 +25,11 @@ class kernel_item_2d {
   t_readAccess m_x;
   t_writeAccess m_o;
   sycl::range<2> r_exp;
+  sycl::id<2> offset_exp;
 
  public:
   kernel_item_2d(t_readAccess in_, t_writeAccess out_, sycl::range<2> r)
-      : m_x(in_), m_o(out_), r_exp(r) {}
+      : m_x(in_), m_o(out_), r_exp(r), offset_exp(sycl::id<2>(0, 0)) {}
 
   void operator()(sycl::item<2> item) const {
     bool result = true;
@@ -42,6 +43,10 @@ class kernel_item_2d {
 
     sycl::range<2> localRange = item.get_range();
     result &= localRange == r_exp;
+
+    // TODO: mark this check as testing deprecated functionality
+    sycl::id<2> offset = item.get_offset();
+    result &= offset == offset_exp;
 
     /* get work item range */
     const size_t nWidth = item.get_range(0);
