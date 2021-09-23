@@ -45,12 +45,12 @@ class test_base {
    */
   virtual bool setup(class logger &) { return true; }
 
-  /** method that will be overriden in test file
+  /** member function that will be overridden in test file
    *  @param log for emitting test notes and results
    */
   virtual void run(class logger &log) = 0;
 
-  /** run overriden method with try-catch block
+  /** overridden member function with try-catch block
    *  @param log for emitting test notes and results
    */
   void run_test(class logger &log);
