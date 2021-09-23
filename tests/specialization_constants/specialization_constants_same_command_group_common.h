@@ -49,7 +49,7 @@ public:
     sycl::range<1> range(1);
     {
       T result1 { get_init_value_helper<T>(0) };
-      T result2 = { get_init_value_helper<T>(0) };
+      T result2 { get_init_value_helper<T>(0) };
       {
         command_group_object<T, 1> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
@@ -70,8 +70,8 @@ public:
     }
 
     {
-      T result1 = { get_init_value_helper<T>(0) };
-      T result2 = { get_init_value_helper<T>(0) };
+      T result1 { get_init_value_helper<T>(0) };
+      T result2 { get_init_value_helper<T>(0) };
       {
         command_group_object<T, 2> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
