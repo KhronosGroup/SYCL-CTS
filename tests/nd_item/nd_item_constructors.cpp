@@ -132,6 +132,7 @@ inline void check_equality_helper(success_acc_t& success,
                         expected.get_group_range(index));
   CHECK_EQUALITY_HELPER(success, actual.get_local_range(index),
                         expected.get_local_range(index));
+  // TODO: mark this check as testing deprecated functionality
   CHECK_EQUALITY_HELPER(success, actual.get_offset().get(index),
                         expected.get_offset(index));
 }

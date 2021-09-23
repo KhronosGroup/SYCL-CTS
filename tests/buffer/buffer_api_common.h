@@ -265,6 +265,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct element count
        with deprecated get_count */
+    // TODO: mark this check as testing deprecated functionality
     auto count_depr = buf.get_count();
     check_return_type<size_t>(log, count_depr, "sycl::buffer::get_count()");
 
@@ -286,6 +287,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct byte size
      with deprecated get_size*/
+    // TODO: mark this check as testing deprecated functionality
     auto ret_size_depr = buf.get_size();
     check_return_type<size_t>(log, ret_size_depr, "sycl::buffer::get_size()");
 

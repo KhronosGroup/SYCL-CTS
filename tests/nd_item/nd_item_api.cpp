@@ -131,6 +131,7 @@ class kernel_nd_item {
     }
 
     /* test NDrange and offset*/
+    // TODO: mark this check as testing deprecated functionality
     sycl::id<dimensions> offset = myitem.get_offset();
     sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
 
@@ -142,6 +143,7 @@ class kernel_nd_item {
       bool are_same = true;
       are_same &= globalRange.get(i) == ndGlobal.get(i);
       are_same &= localRange.get(i) == ndLocal.get(i);
+      // TODO: mark this check as testing deprecated functionality
       are_same &= offset.get(i) == ndOffset.get(i);
 
       failed = !are_same ? true : failed;

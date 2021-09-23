@@ -42,6 +42,7 @@ class kernel_item_3d {
     sycl::range<3> localRange = item.get_range();
     result &= localRange == r_exp;
 
+    // TODO: mark this check as testing deprecated functionality
     sycl::id<3> offset = item.get_offset();
     result &= offset == offset_exp;
 

@@ -102,6 +102,7 @@ class check_buffer_accessor_api_methods {
     {
       /** check get_count() method
        */
+      // TODO: mark this check as testing deprecated functionality
       auto accessorCount = accessor.get_count();
       check_acc_return_type<size_t>(log, accessorCount, "get_count()",
                                     typeName);

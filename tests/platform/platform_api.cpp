@@ -61,6 +61,7 @@ class TEST_NAME : public util::test_base {
 
       /** check has_extensions() member function
       */
+      // TODO: mark this check as testing deprecated functionality
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);

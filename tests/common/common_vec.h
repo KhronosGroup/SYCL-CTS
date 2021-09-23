@@ -374,6 +374,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_count()
+  // TODO: mark this check as testing deprecated functionality
   size_t count_depr = inputVec.get_count();
   if (count_depr != N) {
     return false;
@@ -396,6 +397,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_size()
+  // TODO: mark this check as testing deprecated functionality
   size_t size_depr = inputVec.get_size();
   if (size_depr != sizeof(vecType) * M) {
     return false;
