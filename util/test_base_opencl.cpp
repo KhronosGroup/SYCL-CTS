@@ -17,7 +17,7 @@
 #else
 #include <unistd.h>
 #endif
-
+#ifdef SYCL_BACKEND_OPENCL
 // conformance test suite namespace
 namespace sycl_cts {
 namespace util {
@@ -52,11 +52,9 @@ bool test_base_opencl::setup(logger &log) {
   }
   const auto ctsDevice = ctsContext.get_devices()[0];
 
-  // There is nothing else to do for a host device
-  if (ctsDevice.is_host()) return true;
-
-  m_cl_platform_id = ctsDevice.get_platform().get();
-  m_cl_device_id = ctsDevice.get();
+  m_cl_platform_id =
+      sycl::get_native<sycl::backend::opencl>(ctsDevice.get_platform());
+  m_cl_device_id = sycl::get_native<sycl::backend::opencl>(ctsDevice);
 
   cl_context_properties properties[3] = {
       CL_CONTEXT_PLATFORM, (cl_context_properties)m_cl_platform_id, 0};
@@ -304,3 +302,4 @@ void test_base_opencl::cleanup() {
 
 }  // namespace util
 }  // namespace sycl_cts
+#endif

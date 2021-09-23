@@ -118,6 +118,11 @@ inline constexpr auto get_init_value_helper(int x) {
 }
 
 template <>
+inline constexpr auto get_init_value_helper<bool>(int x) {
+  return (x%2 != 0);
+}
+
+template <>
 inline constexpr auto get_init_value_helper<testing_types::no_cnstr>(int x) {
   testing_types::no_cnstr instance{};
   instance.a = x;

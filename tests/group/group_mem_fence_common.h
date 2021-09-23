@@ -60,7 +60,7 @@ bool test_rw_mem_fence_global_space(sycl_cts::util::logger& log,
     // Initialize data state
     {
       auto ptr = data.get_access<sycl::access_mode::write>();
-      for (size_t i = 0; i < ptr.get_count(); ++i)
+      for (size_t i = 0; i < ptr.size(); ++i)
         ptr[i] = -1;
     }
     queue.submit([&](sycl::handler &cgh) {

@@ -22,11 +22,11 @@ template <sycl::target target>
 struct target_map;
 
 /**
- * @brief Helper struct for performing operations using a global_buffer target
+ * @brief Helper struct for performing operations using a device target
  */
 template <>
-struct target_map<sycl::target::global_buffer> {
-  static constexpr auto target = sycl::target::global_buffer;
+struct target_map<sycl::target::device> {
+  static constexpr auto target = sycl::target::device;
 
   static constexpr auto addressSpace =
       sycl::access::address_space::global_space;
@@ -96,9 +96,9 @@ template <typename T, template <class, sycl::target>
                       class check_atomics_functor>
 void generic_check_for_atomics(sycl_cts::util::logger &log,
                                sycl::queue testQueue) {
-  /** Check atomics for sycl::target::global_buffer
+  /** Check atomics for sycl::target::device
    */
-  check_atomics<T, sycl::target::global_buffer,
+  check_atomics<T, sycl::target::device,
                 check_atomics_functor>{}(log, testQueue);
 
   /** Check atomics for sycl::target::local

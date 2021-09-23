@@ -16,10 +16,10 @@ using namespace sycl_cts;
 class kernel_item_1d {
  protected:
   typedef sycl::accessor<int, 1, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_readAccess;
   typedef sycl::accessor<int, 1, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_writeAccess;
 
   t_readAccess m_x;
@@ -43,6 +43,7 @@ class kernel_item_1d {
     sycl::range<1> localRange = item.get_range();
     result &= localRange == r_exp;
 
+    // TODO: mark this check as testing deprecated functionality
     sycl::id<1> offset = item.get_offset();
     (void)offset; // silent warning
     result &= offset == offset_exp;

@@ -630,7 +630,7 @@ class pointer_apis {
         auto resAcc =
               resBuff.get_access<sycl::access_mode::read_write>(handler);
         sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::global_buffer>
+                           sycl::target::device>
             globalAccessor(buffer, handler);
         sycl::accessor<T, 1, sycl::access_mode::read,
                            sycl::target::constant_buffer>

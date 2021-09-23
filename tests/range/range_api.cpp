@@ -17,11 +17,11 @@ template <int dims>
 class test_range_kernel {};
 
 template <int dims>
-void test_range_kernels(sycl::range<dims> range,
-                        sycl::accessor<int, 1, sycl::access_mode::read_write,
-                                       sycl::target::global_buffer>
-                            error_ptr,
-                        int m_iteration) {
+void test_range_kernels(
+    sycl::range<dims> range,
+    sycl::accessor<int, 1, sycl::access_mode::read_write, sycl::target::device>
+        error_ptr,
+    int m_iteration) {
   sycl::range<dims> range_two(range * 2);
   sycl::range<dims> range_three(range);
   size_t integer = 16;

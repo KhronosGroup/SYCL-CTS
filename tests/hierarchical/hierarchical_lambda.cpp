@@ -38,8 +38,9 @@ void check_dim(util::logger &log) {
       auto localRange =
           sycl_cts::util::get_cts_object::range<dim>::get(local, local, local);
       auto groupRange = globalRange / localRange;
-      auto ptr = buf.get_access<sycl::access_mode::read_write,
-                                sycl::target::global_buffer>(cgh);
+      auto ptr =
+          buf.get_access<sycl::access_mode::read_write, sycl::target::device>(
+              cgh);
       cgh.parallel_for_work_group<kernel<dim>>(
           groupRange, localRange, [ptr](sycl::group<dim> group_pid) {
             // Assign global linear id to captured varible

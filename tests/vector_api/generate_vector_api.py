@@ -20,7 +20,7 @@ TEST_NAME = 'API'
 vector_api_template = Template("""
         auto inputVec = sycl::vec<${type}, ${size}>(${vals});
         ${type} reversed_vals[] = {${reversed_vals}};
-        if (!check_vector_get_count_get_size<${type}, ${size}>(inputVec)) {
+        if (!check_vector_size_byte_size<${type}, ${size}>(inputVec)) {
           resAcc[0] = false;
         }
         sycl::vec<${type}, ${size}> swizzledVec {inputVec.template swizzle<${swizIndexes}>()};

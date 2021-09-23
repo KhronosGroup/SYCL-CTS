@@ -33,7 +33,7 @@ struct array_type_t {
 struct test_kernel {
  private:
   typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer>
+                         sycl::target::device>
       acc_uint32_t;
 
   uint32_t var_a;
@@ -72,8 +72,12 @@ class test_kernel_name;
 class TEST_NAME : public util::test_base {
  public:
   typedef sycl::accessor<uint32_t, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer>
-      acc_uint32_t;
+<<<<<<< HEAD
+                         sycl::target::global_buffer> == ==
+      ==
+      = sycl::target::device >
+>>>>>>> SYCL-2020
+        acc_uint32_t;
 
   /** return information about this test
    */
@@ -147,8 +151,12 @@ class TEST_NAME : public util::test_base {
 
           // access the output
           auto acc_pass =
+<<<<<<< HEAD
               buf_result.template get_access<sycl::access_mode::write,
                                              sycl::target::global_buffer>(cgh);
+          == == == = buf_result.template get_access<sycl::access_mode::write,
+                                                    sycl::target::device>(cgh);
+>>>>>>> SYCL-2020
 
           // instantiate the kernel
           test_kernel my_kernel(ref_a, my_type, acc_pass);

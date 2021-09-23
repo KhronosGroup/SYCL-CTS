@@ -2,18 +2,18 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Common code for USM tests
+//  Common code to simplify the interaction with USM
 //
 *******************************************************************************/
 
-#ifndef __SYCL_CTS_TEST_USM_USM_H
-#define __SYCL_CTS_TEST_USM_USM_H
+#ifndef __SYCL_CTS_UTIL_USM_HELPER_H
+#define __SYCL_CTS_UTIL_USM_HELPER_H
 
 #include "../common/common.h"
 #include <memory>
 #include <string_view>
 
-namespace usm {
+namespace usm_helper {
 
 /** @brief Return std::unique_ptr with allocated USM object
  *  @tparam USM allocation type
@@ -78,6 +78,6 @@ constexpr std::string_view get_allocation_description() {
   }
 }
 
-}  // namespace usm
+}  // namespace usm_helper
 
-#endif  // __SYCL_CTS_TEST_USM_USM_H
+#endif  // __SYCL_CTS_UTIL_USM_HELPER_H

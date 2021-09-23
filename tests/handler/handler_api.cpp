@@ -43,8 +43,7 @@ class TEST_NAME : public util::test_base {
       log.note("Check require() method");
       sycl::buffer<int, 1> resultBuf(data, sycl::range<1>(1));
       auto placeholder =
-          sycl::accessor<int, 1, sycl::access_mode::write,
-                         sycl::target::global_buffer,
+          sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device,
                          sycl::access::placeholder::true_t>(resultBuf);
 
       queue.submit([&](sycl::handler &cgh) {

@@ -37,18 +37,18 @@ struct fp64 : generic {};
  * @brief Retrieve extension name by tag
  */
 template <typename tagT>
-inline const char* name();
+inline const sycl::aspect aspect();
 template <>
-inline const char* name<tag::atomic64>() {
-  return "cl_khr_int64_base_atomics";
+inline const sycl::aspect aspect<tag::atomic64>() {
+  return sycl::aspect::atomic64;
 }
 template <>
-inline const char* name<tag::fp16>() {
-  return "cl_khr_fp16";
+inline const sycl::aspect aspect<tag::fp16>() {
+  return sycl::aspect::fp16;
 }
 template <>
-inline const char* name<tag::fp64>() {
-  return "cl_khr_fp64";
+inline const sycl::aspect aspect<tag::fp64>() {
+  return sycl::aspect::fp64;
 }
 
 /**
@@ -58,7 +58,7 @@ template <typename tagT>
 inline std::string description();
 template <>
 inline std::string description<tag::atomic64>() {
-  return "64-bit base atomic operations";
+  return "64-bit atomic operations";
 }
 template <>
 inline std::string description<tag::fp16>() {
@@ -78,7 +78,7 @@ struct availability {
    *  @brief Verify extension availability without log messages
    */
   static inline bool check(const sycl::queue& queue) {
-    return queue.get_device().has_extension(name<tagT>());
+    return queue.get_device().has(aspect<tagT>());
   }
   /**
    *  @brief Verify extension availability with default log messages

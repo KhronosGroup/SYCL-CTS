@@ -37,11 +37,13 @@ void test_nd_range_constructors(util::logger &log, sycl::range<dim> gs,
     for (int i = 0; i < dim; i++) {
       CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
       CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
+      // TODO: mark this check as testing deprecated functionality
       CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
       CHECK_VALUE(log, defaultRange.get_group_range()[i], gs[i] / ls[i], i);
     }
   }
   {  // Copy assignment, with offset
+     // TODO: mark this check as testing deprecated functionality
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = with_offset;
     for (int i = 0; i < dim; i++) {
@@ -57,12 +59,13 @@ void test_nd_range_constructors(util::logger &log, sycl::range<dim> gs,
     for (int i = 0; i < dim; i++) {
       CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
       CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
-
+      // TODO: mark this check as testing deprecated functionality
       CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
       CHECK_VALUE(log, defaultRange.get_group_range()[i], gs[i] / ls[i], i);
     }
   }
   {  // Move assignment, with offset
+     // TODO: mark this check as testing deprecated functionality
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(with_offset);
     for (int i = 0; i < dim; i++) {

@@ -25,8 +25,10 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, no_offset.get_local_range()[i], sizes[i] / 4, i);
 
+    // TODO: mark this check as testing deprecated functionality
     CHECK_TYPE(log, no_offset.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, no_offset.get_offset()[i], (size_t)0, i);
+
     CHECK_TYPE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4),
                 i);
@@ -38,12 +40,15 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_TYPE(log, deep_copy.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, deep_copy.get_local_range()[i], sizes[i] / 4, i);
 
+    // TODO: mark this check as testing deprecated functionality
     CHECK_TYPE(log, deep_copy.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, deep_copy.get_offset()[i], (size_t)0, i);
+
     CHECK_TYPE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4));
     CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4),
                 i);
 
+    // TODO: mark this check as testing deprecated functionality
     sycl::nd_range<dim> with_offset(gs, ls, offset);
     CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);
@@ -56,6 +61,7 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_VALUE(log, with_offset.get_group_range()[i],
                 sizes[i] / (sizes[i] / 4), i);
 
+    // TODO: mark this check as testing deprecated functionality
     sycl::nd_range<dim> deep_copy_offset(with_offset);
     CHECK_TYPE(log, deep_copy_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, deep_copy_offset.get_global_range()[i], sizes[i], i);

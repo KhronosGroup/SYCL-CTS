@@ -35,8 +35,8 @@ namespace {
  */
 template <typename vecType, int numOfElems>
 bool check_vector_size(sycl::vec<vecType, numOfElems> vector) {
-  int count = (vector.get_count() == 3) ? 4 : vector.get_count();
-  return ((sizeof(vecType) * count) == vector.get_size());
+  int count = (vector.size() == 3) ? 4 : vector.size();
+  return ((sizeof(vecType) * count) == vector.byte_size());
 }
 
 /**
@@ -356,29 +356,55 @@ struct vector_swizzle_check<T, 16> {
 
 /**
  * @brief Helper function to test the following functions of a vec
+ * size()
+ * byte_size()
  * get_count()
  * get_size()
  */
 template <typename vecType, int N>
-bool check_vector_get_count_get_size(sycl::vec<vecType, N> inputVec) {
-  // get_count()
-  size_t count = inputVec.get_count();
+bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
+  // size()
+  size_t count = inputVec.size();
   if (count != N) {
     return false;
   }
-  count = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_count();
+  count = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).size();
   if (count != N) {
     return false;
   }
 
-  // get_size()
-  size_t size = inputVec.get_size();
+  // get_count()
+  // TODO: mark this check as testing deprecated functionality
+  size_t count_depr = inputVec.get_count();
+  if (count_depr != N) {
+    return false;
+  }
+  count_depr =
+      vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_count();
+  if (count_depr != N) {
+    return false;
+  }
+
+  // byte_size()
+  size_t size = inputVec.byte_size();
   size_t M = (N == 3) ? 4 : N;
   if (size != sizeof(vecType) * M) {
     return false;
   }
-  size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_size();
+  size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).byte_size();
   if (size != sizeof(vecType) * M) {
+    return false;
+  }
+
+  // get_size()
+  // TODO: mark this check as testing deprecated functionality
+  size_t size_depr = inputVec.get_size();
+  if (size_depr != sizeof(vecType) * M) {
+    return false;
+  }
+  size_depr =
+      vector_swizzle_check<vecType, N>::get_swizzle(inputVec).get_size();
+  if (size_depr != sizeof(vecType) * M) {
     return false;
   }
   return true;

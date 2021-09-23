@@ -195,23 +195,30 @@ class TEST_NAME : public util::test_base {
       auto q = util::get_cts_object::queue();
       bool success = true;
       {
-        sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
-        q.submit([&](sycl::handler &cgh) {
-          auto hasSucceded = b.get_access<sycl::access_mode::read_write,
-                                          sycl::target::global_buffer>(cgh);
+        auto q = util::get_cts_object::queue();
+        bool success = true;
+        {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
-          auto my_range = sycl::range<1>(sizes[0]);
+            auto my_range = sycl::range<1>(sizes[0]);
 
-          auto my_kernel = [=](sycl::item<1> item) {
-            sycl::id<1> id(item);
-            if (id.get(0) != item.get_id(0)) {
-              hasSucceded[0] = false;
-            }
-          };
-          cgh.parallel_for<class id_it1>(my_range, my_kernel);
-        });
+            auto my_kernel = [=](sycl::item<1> item) {
+              sycl::id<1> id(item);
+              if (id.get(0) != item.get_id(0)) {
+                hasSucceded[0] = false;
+              }
+            };
+            cgh.parallel_for<class id_it1>(my_range, my_kernel);
+          });
 
-        q.wait_and_throw();
+          q.wait_and_throw();
+        }
+        if (!success) {
+          FAIL(log, "id with item was not constructed correctly for dim = 1");
+        }
       }
       if (!success) {
         FAIL(log, "id with item was not constructed correctly for dim = 1");
@@ -223,27 +230,31 @@ class TEST_NAME : public util::test_base {
       auto q = util::get_cts_object::queue();
       bool success = true;
       {
-        sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
-        q.submit([&](sycl::handler &cgh) {
-          auto hasSucceded = b.get_access<sycl::access_mode::read_write,
-                                          sycl::target::global_buffer>(cgh);
+        auto q = util::get_cts_object::queue();
+        bool success = true;
+        {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
-          auto my_range = sycl::range<2>(sizes[0], sizes[1]);
+            auto my_range = sycl::range<2>(sizes[0], sizes[1]);
 
-          auto my_kernel = [=](sycl::item<2> item) {
-            sycl::id<2> id(item);
-            if ((id.get(0) != item.get_id(0)) ||
-                (id.get(1) != item.get_id(1))) {
-              hasSucceded[0] = false;
-            }
-          };
-          cgh.parallel_for<class id_it2>(my_range, my_kernel);
-        });
+            auto my_kernel = [=](sycl::item<2> item) {
+              sycl::id<2> id(item);
+              if ((id.get(0) != item.get_id(0)) ||
+                  (id.get(1) != item.get_id(1))) {
+                hasSucceded[0] = false;
+              }
+            };
+            cgh.parallel_for<class id_it2>(my_range, my_kernel);
+          });
 
-        q.wait_and_throw();
-      }
-      if (!success) {
-        FAIL(log, "id with item was not constructed correctly for dim = 2");
+          q.wait_and_throw();
+        }
+        if (!success) {
+          FAIL(log, "id with item was not constructed correctly for dim = 2");
+        }
       }
     }
 
@@ -252,28 +263,32 @@ class TEST_NAME : public util::test_base {
       auto q = util::get_cts_object::queue();
       bool success = true;
       {
-        sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
-        q.submit([&](sycl::handler &cgh) {
-          auto hasSucceded = b.get_access<sycl::access_mode::read_write,
-                                          sycl::target::global_buffer>(cgh);
+        auto q = util::get_cts_object::queue();
+        bool success = true;
+        {
+          sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
+          q.submit([&](sycl::handler &cgh) {
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
-          auto my_range = sycl::range<3>(sizes[0], sizes[1], sizes[2]);
+            auto my_range = sycl::range<3>(sizes[0], sizes[1], sizes[2]);
 
-          auto my_kernel = [=](sycl::item<3> item) {
-            sycl::id<3> id(item);
-            if ((id.get(0) != item.get_id(0)) ||
-                (id.get(1) != item.get_id(1)) ||
-                (id.get(2) != item.get_id(2))) {
-              hasSucceded[0] = false;
-            }
-          };
-          cgh.parallel_for<class id_it3>(my_range, my_kernel);
-        });
+            auto my_kernel = [=](sycl::item<3> item) {
+              sycl::id<3> id(item);
+              if ((id.get(0) != item.get_id(0)) ||
+                  (id.get(1) != item.get_id(1)) ||
+                  (id.get(2) != item.get_id(2))) {
+                hasSucceded[0] = false;
+              }
+            };
+            cgh.parallel_for<class id_it3>(my_range, my_kernel);
+          });
 
-        q.wait_and_throw();
-      }
-      if (!success) {
-        FAIL(log, "id with item was not constructed correctly for dim = 3");
+          q.wait_and_throw();
+        }
+        if (!success) {
+          FAIL(log, "id with item was not constructed correctly for dim = 3");
+        }
       }
     }
   }

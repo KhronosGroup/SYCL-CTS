@@ -48,8 +48,19 @@ class TEST_NAME : public util::test_base {
       }
     }
 
+    /** check has() member function
+     */
+    {
+      cts_selector selector;
+      auto plt = util::get_cts_object::platform(selector);
+      auto extensionSupported = plt.has(sycl::aspect::cpu);
+      check_return_type<bool>(log, extensionSupported,
+                              "platform::has(sycl::aspect)");
+    }
+
     /** check has_extensions() member function
      */
+    // TODO: mark this check as testing deprecated functionality
     {
       cts_selector selector;
       auto plt = util::get_cts_object::platform(selector);

@@ -104,6 +104,21 @@ class TEST_NAME : public util::test_base {
 
     /** Check atomics for supported types
      */
+    if (testDevice.has(sycl::aspect::atomic64)) {
+      if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
+        check_atomics_for_type<long>(log, testQueue);
+        check_atomics_for_type<unsigned long>(log, testQueue);
+      }
+      check_atomics_for_type<long long>(log, testQueue);
+      check_atomics_for_type<unsigned long long>(log, testQueue);
+    }
+
+    /** Check sycl::memory_order
+     */
+    check_enum_class_value(sycl::memory_order::relaxed);
+
+    /** Check atomics for supported types
+     */
     if (testDevice.has_extension("cl_khr_int64_base_atomics")) {
       if constexpr (sizeof(long) * CHAR_BIT == 64 /*bits*/) {
         check_atomics_for_type<long>(log, testQueue);

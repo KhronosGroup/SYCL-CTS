@@ -10,7 +10,6 @@
 #define __SYCLCTS_TESTS_USM_ALLOC_FREE_H
 
 #include "../common/common.h"
-#include "usm.h"
 #include "usm_allocations_helper.h"
 
 namespace usm_allocate_free {

@@ -15,10 +15,10 @@ using namespace sycl_cts;
 class kernel_item_3d {
  protected:
   typedef sycl::accessor<int, 3, sycl::access_mode::read,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_readAccess;
   typedef sycl::accessor<int, 3, sycl::access_mode::write,
-                             sycl::target::global_buffer>
+                             sycl::target::device>
       t_writeAccess;
 
   t_readAccess m_x;
@@ -42,6 +42,7 @@ class kernel_item_3d {
     sycl::range<3> localRange = item.get_range();
     result &= localRange == r_exp;
 
+    // TODO: mark this check as testing deprecated functionality
     sycl::id<3> offset = item.get_offset();
     result &= offset == offset_exp;
 

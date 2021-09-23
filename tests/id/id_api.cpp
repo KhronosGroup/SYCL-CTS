@@ -18,11 +18,11 @@ template <int dims>
 class test_kernel {};
 
 template <int dims>
-void test_id_kernels(sycl::id<dims> id,
-                     sycl::accessor<int, 1, sycl::access_mode::read_write,
-                                    sycl::target::global_buffer>
-                         error_ptr,
-                     int m_iteration) {
+void test_id_kernels(
+    sycl::id<dims> id,
+    sycl::accessor<int, 1, sycl::access_mode::read_write, sycl::target::device>
+        error_ptr,
+    int m_iteration) {
   sycl::id<dims> id_two(id * 2);
   sycl::id<dims> id_three(id);
   size_t integer = 16;
