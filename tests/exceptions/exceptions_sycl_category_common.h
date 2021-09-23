@@ -23,8 +23,7 @@ class test_result_checker {
 
  public:
   test_result_checker(const std::error_category &error_category) {
-    const auto all_err_codes {get_err_codes()};
-    for (auto &err_c : all_err_codes) {
+    for (const auto &err_c : get_err_codes()) {
       m_tests_results[err_c] =
           std::error_condition(static_cast<int>(err_c),
                                sycl::sycl_category()) ==
