@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sycl-impl: [computecpp, dpcpp, hipsycl]
+        sycl-impl: [dpcpp, hipsycl]
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
     container:
