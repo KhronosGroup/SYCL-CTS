@@ -50,7 +50,7 @@ class test_base {
    */
   virtual void run(class logger &log) = 0;
 
-  /** overridden member function with try-catch block
+  /** run overridden member function with try-catch block
    *  @param log for emitting test notes and results
    */
   void run_test(class logger &log);
