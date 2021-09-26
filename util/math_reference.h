@@ -12,6 +12,8 @@
 #include "../tests/common/sycl.h"
 #include "./math_helper.h"
 
+#include <cmath>
+
 namespace reference {
 /* two argument relational reference */
 template <typename T>
