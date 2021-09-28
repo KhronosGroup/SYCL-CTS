@@ -115,7 +115,7 @@ template <int tu_num, typename via_kb>
 static void sc_run_test_core(util::logger &log) {
   using namespace spec_const_help;
   {
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_all_types<check_specialization_constants_same_name_inter_link_for_type,
                   sc_sn_il_config<tu_num>, via_kb>(
         get_spec_const::testing_types::types, log);
@@ -143,7 +143,7 @@ static void sc_run_test_fp16(util::logger &log) {
           "operations");
       return;
     }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     check_specialization_constants_same_name_inter_link_for_type<
         sycl::half, sc_sn_il_config<tu_num>, via_kb>
         fp16_test{};
@@ -168,7 +168,7 @@ static void sc_run_test_fp64(util::logger &log) {
           "operations");
       return;
     }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     check_specialization_constants_same_name_inter_link_for_type<
         double, sc_sn_il_config<tu_num>, via_kb>
         fp64_test{};

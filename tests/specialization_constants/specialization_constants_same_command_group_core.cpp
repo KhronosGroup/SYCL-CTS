@@ -31,7 +31,7 @@ public:
   void run(util::logger &log) override {
     using namespace specialization_constants_same_command_group_common;
     {
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<
           check_specialization_constants_same_command_group>(
           get_spec_const::testing_types::types, log);

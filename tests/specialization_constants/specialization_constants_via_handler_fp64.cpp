@@ -36,7 +36,7 @@ public:
                  "operations");
         return;
       }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_spec_constant_with_handler_for_type<double> fp64_test{};
       fp64_test(log, "double");
 #else

@@ -31,7 +31,7 @@ option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
        "Enable full conformance mode with extensive tests" OFF)
 if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
     message(STATUS "Full conformance mode: ON")
-    add_definitions(-DSYCL_CTS_FULL_CONFORMANCE)
+    add_definitions(-DSYCL_CTS_ENABLE_FULL_CONFORMANCE)
 else()
     message(STATUS "Full conformance mode: OFF")
     message(WARNING

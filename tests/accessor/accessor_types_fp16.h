@@ -42,7 +42,7 @@ public:
     if (!availability::check(queue, log))
       return;
 
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     // Specific set of types to cover during ordinary compilation
 
     /** check specific accessor api for half
@@ -58,7 +58,7 @@ public:
     for_type_and_vectors<check_type, sycl::cl_half>(
         log, queue, "sycl::cl_half");
 
-#endif // SYCL_CTS_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
     queue.wait_and_throw();
   }
