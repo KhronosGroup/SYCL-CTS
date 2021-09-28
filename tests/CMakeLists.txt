@@ -155,8 +155,6 @@ function(add_cts_test)
   target_include_directories(${test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   set(info_dump_dir "${CMAKE_BINARY_DIR}/Testing")
-  # FIXME: run_conformance_tests.py does not yet set SYCL_CTS_CTEST_DEVICE.
-  # The script is currently broken in more than one way and in need of an overhaul.
   add_test(NAME ${test_exe_name}
            COMMAND ${test_exe_name}
                    --device ${SYCL_CTS_CTEST_DEVICE}
