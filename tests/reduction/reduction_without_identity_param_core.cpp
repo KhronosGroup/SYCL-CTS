@@ -95,15 +95,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
-      run_tests_for_identity_type<without_property>(queue, log);
-      run_tests_for_identity_type<with_property>(queue, log);
-    } catch (const cl::sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    }
+    auto queue = util::get_cts_object::queue();
+    run_tests_for_identity_type<without_property>(queue, log);
+    run_tests_for_identity_type<with_property>(queue, log);
   }
 };
 

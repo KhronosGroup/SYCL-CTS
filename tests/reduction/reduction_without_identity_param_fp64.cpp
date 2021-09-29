@@ -29,23 +29,16 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-    try {
-      auto queue = util::get_cts_object::queue();
-      if (!queue.get_device().has(sycl::aspect::fp64)) {
-        log.note(
-            "Device does not support double precision floating point "
-            "operations");
-        return;
-      }
-      run_tests_for_all_functors<double, without_property>()(range, queue, log,
-                                                             "double");
-      run_tests_for_all_functors<double, with_property>()(nd_range, queue, log,
-                                                          "double");
-    } catch (const cl::sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
+    auto queue = util::get_cts_object::queue();
+    if (!queue.get_device().has(sycl::aspect::fp64)) {
+      log.note(
+          "Device does not support double precision floating point operations");
+      return;
     }
+    run_tests_for_all_functors<double, without_property>()(range, queue, log,
+                                                           "double");
+    run_tests_for_all_functors<double, with_property>()(nd_range, queue, log,
+                                                        "double");
   }
 };
 
