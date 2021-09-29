@@ -44,7 +44,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       /** check types
        */
-      check_type_existence<sycl::info::kernel> typeCheck;
+      check_type_existence<sycl::info::kernel>();
 
       /** initialize return values
        */
