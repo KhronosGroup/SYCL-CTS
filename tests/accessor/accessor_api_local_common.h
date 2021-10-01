@@ -69,6 +69,18 @@ class check_local_accessor_api_methods {
           }
         }
         {
+          /** check get_count() method
+           */
+          // TODO: mark this check as testing deprecated functionality
+          auto accessorCount = acc.get_count();
+          check_return_type<size_t>(log, accessorCount, "get_count()");
+          const auto expectedCount = ((dims == 0) ? 1 : count);
+          if (accessorCount != expectedCount) {
+            fail_for_accessor<T, dims, mode, target>(
+                log, typeName, "accessor does not return the correct count");
+          }
+        }
+        {
           /** check get_size() method
           */
           auto accessorSize = acc.get_size();

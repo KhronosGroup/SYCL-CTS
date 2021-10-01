@@ -10,9 +10,9 @@
 #define __SYCL_CTS_TEST_USM_USM_API_H
 
 #include "../../util/exceptions.h"
+#include "../../util/usm_helper.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
-#include "usm.h"
 
 #include <algorithm>
 #include <array>
@@ -50,7 +50,8 @@ std::string get_allocation_decription() {
     return "non-USM host pointer";
   } else {
     constexpr auto kind = map_usm_allocation<alloc>();
-    return std::string(usm::get_allocation_description<kind>()) + " allocation";
+    return std::string(usm_helper::get_allocation_description<kind>()) +
+           " allocation";
   }
 }
 
@@ -64,7 +65,7 @@ bool check_device_support(sycl_cts::util::logger &log,
     constexpr auto kind = map_usm_allocation<alloc>();
     const auto &device = queue.get_device();
 
-    if (!device.has(usm::get_aspect<kind>())) {
+    if (!device.has(usm_helper::get_aspect<kind>())) {
       std::string message =
           "Device does not support " + get_allocation_decription<alloc>();
       log.note(message);
@@ -135,7 +136,7 @@ struct storage {
       return std::make_unique<T[]>(count);
     } else {
       constexpr auto kind = map_usm_allocation<alloc>();
-      return usm::allocate_usm_memory<kind, T>(queue, count);
+      return usm_helper::allocate_usm_memory<kind, T>(queue, count);
     }
   }
 
@@ -608,7 +609,7 @@ struct test {
           // will fail during validation. Reverse order is used to increase
           // probability of data race.
           for (size_t i = numEvents - 1; i + 1 > 0; --i) {
-            gens[idx].copy_arrays(parent);
+            gens[i].copy_arrays(parent);
           }
         }
       };
