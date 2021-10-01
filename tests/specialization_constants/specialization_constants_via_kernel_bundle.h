@@ -300,7 +300,7 @@ void set_value(sycl::kernel_bundle<id::state>& bundle) {
                   " set_specialization_constant");
     for (int i = 0; i < id::n_set; ++i) {
       // Prepare value to store
-      T value = T(get_init_value_helper<T>(0));
+      T value { get_init_value_helper<T>(0) };
       fill_init_values(value, values<T>::reference(i));
 
       bundle.template set_specialization_constant<
@@ -323,11 +323,11 @@ bool check_value(specStorageT&& storage) {
   using namespace get_spec_const;
 
   // Prepare to read value
-  T value = T(get_init_value_helper<T>(0));
+  T value { get_init_value_helper<T>(0) };
   fill_init_values(value, values<T>::empty);
 
   // Prepare to compare values
-  T expected = T(get_init_value_helper<T>(0));
+  T expected { get_init_value_helper<T>(0) };
   if constexpr (id::n_set == 0) {
     fill_init_values(expected, values<T>::initial);
   } else {

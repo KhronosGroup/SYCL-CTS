@@ -31,7 +31,7 @@ class check_spec_constant_exception_throw_for_type {
     // kernel_bundle
     {
       bool exception_was_thrown = false;
-      T res = T(get_init_value_helper<T>(0));
+      T res { get_init_value_helper<T>(0) };
       const int case_num = 1;
       auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -64,7 +64,7 @@ class check_spec_constant_exception_throw_for_type {
     // kernel_bundle
     {
       bool exception_was_thrown = false;
-      T sc_val = T(get_init_value_helper<T>(0));
+      T sc_val { get_init_value_helper<T>(0) };
       const int case_num = 2;
       auto queue = sycl_cts::util::get_cts_object::queue();
 

@@ -35,8 +35,8 @@ void perform_test(util::logger &log, const std::string &type_name,
     }
   }
   sycl::range<1> range(1);
-  T result = T(get_init_value_helper<T>(0));
-  T ref = T(get_init_value_helper<T>(0));
+  T result { get_init_value_helper<T>(0) };
+  T ref { get_init_value_helper<T>(0) };
   {
     fill_init_values(ref, case_num);
     sycl::buffer<T, 1> result_buffer(&result, range);
