@@ -41,7 +41,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -79,11 +79,6 @@ class TEST_NAME : public util::test_base {
         check_allocs(log, img_2d, range_2d, &pitch_1d);
         check_allocs(log, img_3d, range_3d, &pitch_2d);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

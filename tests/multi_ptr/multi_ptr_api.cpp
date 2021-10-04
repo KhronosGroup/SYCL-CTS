@@ -32,7 +32,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       auto types = named_type_pack<bool, float, double, char,   // types grouped
@@ -55,10 +55,6 @@ class TEST_NAME : public util::test_base {
       check_pointer_api<user_struct>{}(log, queue, "user_struct");
 
       queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
     }
   }
 };

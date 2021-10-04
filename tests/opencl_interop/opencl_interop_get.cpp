@@ -39,7 +39,7 @@ class TEST_NAME :
    */
   void run(util::logger &log) override {
 #ifdef SYCL_BACKEND_OPENCL
-    try {
+    {
       auto queue = util::get_cts_object::queue();
       if (queue.get_backend() != sycl::backend::opencl) {
         log.note("Interop part is not supported on non-OpenCL backend types");
@@ -204,12 +204,6 @@ class TEST_NAME :
 
         ctsQueue.wait_and_throw();
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
 #else
     log.note("The test is skipped because OpenCL back-end is not supported");

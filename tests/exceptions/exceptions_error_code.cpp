@@ -44,7 +44,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       for (const auto &err_c : get_err_codes()) {
         check_unique_enum_values(err_c, log);
       }
@@ -54,14 +54,6 @@ class TEST_NAME : public util::test_base {
       if (std::is_error_condition_enum<sycl::errc>::value) {
         FAIL(log, "sycl::errc is a error condition enumeration");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg{"a SYCL exception was caught: " +
-                           std::string(e.what())};
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg{"an exception was caught: " + std::string(e.what())};
-      FAIL(log, errorMsg);
     }
   }
 };

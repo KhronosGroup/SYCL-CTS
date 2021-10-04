@@ -100,7 +100,7 @@ bool test_item_2d(util::logger &log) {
   /*  */
   buffer_fill(dataIn.get(), nWidth, nHeight);
 
-  try {
+  {
     sycl::range<2> dataRange_i(nWidth, nHeight);
     sycl::range<2> dataRange_o(nWidth, nHeight);
 
@@ -121,12 +121,6 @@ bool test_item_2d(util::logger &log) {
     });
 
     cmdQueue.wait_and_throw();
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
-    return false;
   }
 
   if (buffer_verify(dataOut.get(), nWidth, nHeight)) {

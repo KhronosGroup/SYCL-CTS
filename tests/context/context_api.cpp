@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto context = util::get_cts_object::context();
 
       /** check is_host() method
@@ -50,12 +50,6 @@ class TEST_NAME : public util::test_base {
         auto platform = context.get_platform();
         check_return_type<sycl::platform>(log, platform, "get_platform()");
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

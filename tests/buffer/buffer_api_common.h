@@ -211,7 +211,7 @@ using flip_signedness_t =
 template <typename T, int size, int dims, typename alloc>
 void test_buffer(util::logger &log, sycl::range<dims> &r,
                  sycl::id<dims> &i) {
-  try {
+  {
     std::unique_ptr<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
 
@@ -435,11 +435,6 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     }
 
     q.wait_and_throw();
-  } catch (const sycl::exception& e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 

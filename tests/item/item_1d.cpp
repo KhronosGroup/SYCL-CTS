@@ -88,7 +88,7 @@ bool test_item_1d(util::logger &log) {
   /*  */
   buffer_fill(dataIn.get(), nWidth);
 
-  try {
+  {
     sycl::range<1> dataRange(nWidth);
 
     sycl::buffer<int, 1> bufIn(dataIn.get(), dataRange);
@@ -106,12 +106,6 @@ bool test_item_1d(util::logger &log) {
     });
 
     cmdQueue.wait_and_throw();
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
-    return false;
   }
 
   /*  */

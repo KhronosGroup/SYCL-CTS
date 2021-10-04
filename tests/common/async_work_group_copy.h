@@ -495,15 +495,11 @@ void check_all_dims(sycl::queue &queue, sycl_cts::util::logger &log,
 template<template<int, typename...> class action,
          typename ... actionArgsT, typename ... argsT>
 void check_all_dims(sycl_cts::util::logger &log, argsT&& ... args) {
-  try {
+  {
     auto queue = once_per_unit::get_queue();
 
     check_all_dims<action, actionArgsT...>(queue, log,
                                            std::forward<argsT>(args)...);
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-    FAIL(log, errorMsg);
   }
 }
 

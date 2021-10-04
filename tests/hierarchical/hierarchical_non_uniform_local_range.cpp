@@ -57,7 +57,7 @@ template <int dim> void check_dim(util::logger &log) {
       (dim > 1) ? ((dim > 2) ? local_range : local_range_total / local_range)
                 : 1;
   const unsigned local_range_3d = (dim > 2) ? local_range : 1;
-  try {
+  {
     // Set element of the vector with -1 to represent unset data.
     std::fill(data.begin(), data.end(), sycl::int3(-1, -1, -1));
 
@@ -134,11 +134,6 @@ template <int dim> void check_dim(util::logger &log) {
                 }
                 idx++;
               }
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 

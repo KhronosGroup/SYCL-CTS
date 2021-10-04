@@ -29,7 +29,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       check_all_types_fp64<buffer_accessor_type>::run(queue, log);
@@ -37,11 +37,6 @@ class TEST_NAME : public util::test_base {
       check_all_types_fp64<local_accessor_all_dims>::run(queue, log);
 
       queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

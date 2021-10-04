@@ -37,7 +37,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
       sycl::range<1> range(1);
       const int val_A = 3;
@@ -73,16 +73,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
         FAIL(log,
              "case specialization constants with class with a member function "
              "that accesses members");
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      auto errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

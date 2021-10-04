@@ -27,7 +27,7 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     cts_async_handler asyncHandler;
 
-    try {
+    {
       /** check default constructor and destructor
       */
       {
@@ -233,11 +233,6 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

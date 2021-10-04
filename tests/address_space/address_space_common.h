@@ -199,13 +199,9 @@ class check_types {
 
 template <typename T>
 void test_types(util::logger &log) {
-  try {
+  {
     check_types<T> verifier;
     if (!verifier()) FAIL(log, "Device compiler failed address space tests");
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-    FAIL(log, errorMsg);
   }
   return;
 }

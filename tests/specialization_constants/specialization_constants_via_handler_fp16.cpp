@@ -29,7 +29,7 @@ public:
    */
   void run(util::logger &log) override {
     using namespace specialization_constants_via_handler_common;
-    try {
+    {
       auto queue = util::get_cts_object::queue();
       if (!queue.get_device().has(sycl::aspect::fp16)) {
         log.note("Device does not support half precision floating point "
@@ -43,16 +43,6 @@ public:
       for_type_vectors_marray<check_spec_constant_with_handler_for_type,
                               sycl::half>(log, "sycl::half");
 #endif
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

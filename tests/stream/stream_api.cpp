@@ -115,7 +115,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check sycl::stream_manipulator
       */
       check_enum_class_value(sycl::stream_manipulator::dec);
@@ -302,11 +302,6 @@ class TEST_NAME : public util::test_base {
         check_group_h_item_dims(r31, r32);
 
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

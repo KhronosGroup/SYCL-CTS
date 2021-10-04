@@ -49,7 +49,7 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
-    try {
+    {
       using item_t = sycl::h_item<numDims>;
 
       // h_item is not default constructible, store two objects
@@ -138,11 +138,6 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log,
                   success[static_cast<size_t>(current_check::not_equal_other)],
                   true, numDims);
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
     }
   }
 

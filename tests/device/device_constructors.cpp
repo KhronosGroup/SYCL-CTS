@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check default constructor and destructor
        */
       {
@@ -154,11 +154,6 @@ class TEST_NAME : public util::test_base {
                "device hash_class does not work correctly (copy assigned)");
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

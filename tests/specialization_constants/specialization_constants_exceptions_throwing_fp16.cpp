@@ -30,7 +30,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
       if (!queue.get_device().has(sycl::aspect::fp16)) {
         log.note(
@@ -45,16 +45,6 @@ class TEST_NAME : public util::test_base {
       for_type_vectors_marray<check_spec_constant_exception_throw_for_type,
                               sycl::half>(log, "sycl::half");
 #endif
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was thrown: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was thrown: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

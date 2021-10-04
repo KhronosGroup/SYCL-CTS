@@ -101,7 +101,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(sycl_cts::util::logger &log) override {
-    try {
+    {
       auto queueA = util::get_cts_object::queue();
       auto queueB = util::get_cts_object::queue();
 
@@ -111,11 +111,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       queueA.wait_and_throw();
       queueB.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

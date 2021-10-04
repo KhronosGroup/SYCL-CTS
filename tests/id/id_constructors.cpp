@@ -31,7 +31,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       // check default constructors
 
       // dim 1
@@ -285,11 +285,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "id with item was not constructed correctly for dim = 3");
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -43,7 +43,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
 #ifdef SYCL_BACKEND_OPENCL
-    try {
+    {
       sycl::queue q{util::get_cts_object::queue()};
       if (q.get_backend() != sycl::backend::opencl) {
         log.note("Interop part is not supported on OpenCL backend type");
@@ -116,9 +116,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
           }
         }
       }
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      FAIL(log, "An unexpected SYCL exception was caught");
     }
 #else
     log.note("The test is skipped because OpenCL back-end is not supported");

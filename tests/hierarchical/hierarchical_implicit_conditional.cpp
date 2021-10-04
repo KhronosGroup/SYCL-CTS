@@ -30,7 +30,7 @@ static const int groupRangeTotal = (groupItemsTotal / localItemsTotal);
 using namespace sycl_cts;
 
 template <int dim> void check_dim(util::logger &log) {
-  try {
+  {
     int outputData[groupItemsTotal];
     for (int i = 0; i < groupItemsTotal; i++) {
       outputData[i] = 0;
@@ -87,12 +87,6 @@ template <int dim> void check_dim(util::logger &log) {
         FAIL(log, "Result not as expected.");
       }
     }
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 

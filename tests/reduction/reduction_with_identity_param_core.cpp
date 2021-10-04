@@ -27,15 +27,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       for_all_types<reduction_with_identity::run_test_for_type>(
           reduction_common::scalar_types, queue, log);
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

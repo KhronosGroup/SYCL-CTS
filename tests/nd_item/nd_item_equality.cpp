@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
-    try {
+    {
       using item_t = sycl::nd_item<numDims>;
 
       // nd_item is not default constructible, store two objects into the array
@@ -51,11 +51,6 @@ class TEST_NAME : public util::test_base {
       check_equality_comparable_generic(log, items[0],
                                         "nd_item " + std::to_string(numDims) +
                                         " (host)");
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 

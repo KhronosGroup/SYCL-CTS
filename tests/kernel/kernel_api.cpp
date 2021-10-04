@@ -30,7 +30,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto ctsQueue = util::get_cts_object::queue();
       const auto isHostCtx = ctsQueue.is_host();
       auto deviceList = ctsQueue.get_context().get_devices();
@@ -51,11 +51,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       // Check get_context()
       auto cxt = kernel.get_context();
       check_return_type<sycl::context>(log, cxt, "sycl::kernel::get_context()");
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

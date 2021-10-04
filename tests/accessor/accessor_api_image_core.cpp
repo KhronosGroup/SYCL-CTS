@@ -35,7 +35,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       using extension_tag = sycl_cts::util::extensions::tag::core;
@@ -44,11 +44,6 @@ class TEST_NAME : public util::test_base {
                                  extension_tag>::run(queue, log);
 
       queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

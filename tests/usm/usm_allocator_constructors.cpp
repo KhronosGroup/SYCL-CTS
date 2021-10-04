@@ -27,18 +27,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     using namespace usm_allocator_constructors;
     using TestType = int;
-    try {
-      check_usm_allocator_constructors<TestType>{}(log);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    }
+    { check_usm_allocator_constructors<TestType>{}(log); }
   }
 };
 

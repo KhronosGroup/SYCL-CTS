@@ -28,7 +28,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       const auto &error_category_local_usage{sycl::sycl_category()};
       const test_result_checker test_result_checker_local_usage(
           error_category_local_usage);
@@ -51,14 +51,6 @@ class TEST_NAME : public util::test_base {
              "sycl::sycl_category function's return type are not equal to "
              "const std::error_category");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg{"a SYCL exception was caught: " +
-                           std::string(e.what())};
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg{"an exception was caught: " + std::string(e.what())};
-      FAIL(log, errorMsg);
     }
   }
 };

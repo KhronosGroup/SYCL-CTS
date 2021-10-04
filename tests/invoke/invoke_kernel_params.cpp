@@ -87,7 +87,7 @@ class TEST_NAME : public util::test_base {
     {
       uint32_t result = 0;
 
-      try {
+      {
         auto my_queue = util::get_cts_object::queue();
 
         sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
@@ -122,11 +122,6 @@ class TEST_NAME : public util::test_base {
         });
 
         my_queue.wait_and_throw();
-      } catch (const sycl::exception &e) {
-        log_exception(log, e);
-        std::string errorMsg =
-            "a SYCL exception was caught: " + std::string(e.what());
-        FAIL(log, errorMsg.c_str());
       }
 
       if (!CHECK_VALUE_SCALAR(log, result, static_cast<decltype(result)>(1))) {
@@ -137,7 +132,7 @@ class TEST_NAME : public util::test_base {
     {
       uint32_t result = 0;
 
-      try {
+      {
         auto my_queue = util::get_cts_object::queue();
 
         sycl::buffer<uint32_t> buf_result(&result, sycl::range<1>(1));
@@ -165,11 +160,6 @@ class TEST_NAME : public util::test_base {
         });
 
         my_queue.wait_and_throw();
-      } catch (const sycl::exception &e) {
-        log_exception(log, e);
-        std::string errorMsg =
-            "a SYCL exception was caught: " + std::string(e.what());
-        FAIL(log, errorMsg.c_str());
       }
 
       if (!CHECK_VALUE_SCALAR(log, result, static_cast<decltype(result)>(1))) {
