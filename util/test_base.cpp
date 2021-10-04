@@ -7,8 +7,8 @@
 *******************************************************************************/
 
 #include "test_base.h"
+#include "../tests/common/common.h"
 #include "../tests/common/macros.h"
-#include "../tests/common/sycl.h"
 #include "logger.h"
 
 // conformance test suite namespace
