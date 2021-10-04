@@ -362,23 +362,21 @@ class test_helper {
 template <int dimensions>
 bool reduce_size(sycl::queue& queue) {
   bool res = true;
-  // Check if default work group size is supported
-  sycl::program program(queue.get_context());
-  if (is_compiler_available(program.get_devices()) &&
-      is_linker_available(program.get_devices())) {
-    program.build_with_kernel_type<test_kernel<dimensions>>();
-    auto kernel = program.get_kernel<test_kernel<dimensions>>();
-    auto device = queue.get_device();
+  using k_name = test_kernel<dimensions>;
+  auto ctx = queue.get_context();
+  auto kb =
+      sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
+  auto kernel = kb.get_kernel(sycl::get_kernel_id<k_name>());
+  auto device = queue.get_device();
 
-    auto work_group_size_limit = kernel.template get_work_group_info<
-        sycl::info::kernel_work_group::work_group_size>(device);
+  auto work_group_size_limit = kernel.template get_work_group_info<
+      sycl::info::kernel_work_group::work_group_size>(device);
 
-    size_t default_wg_size = 1;
-    for (size_t dim = 0; dim < dimensions; ++dim) {
-      default_wg_size *= DEFAULT_LOCAL_RANGE[dim];
-    }
-    res = default_wg_size > work_group_size_limit;
+  size_t default_wg_size = 1;
+  for (size_t dim = 0; dim < dimensions; ++dim) {
+    default_wg_size *= DEFAULT_LOCAL_RANGE[dim];
   }
+  res = default_wg_size > work_group_size_limit;
   return res;
 }
 

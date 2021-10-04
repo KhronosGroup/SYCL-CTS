@@ -9,7 +9,7 @@
 #ifndef __SYCLCTS_UTIL_EXTENSIONS_H
 #define __SYCLCTS_UTIL_EXTENSIONS_H
 
-#include "../tests/common/sycl.h"
+#include <sycl/sycl.hpp>
 
 namespace sycl_cts {
 namespace util {

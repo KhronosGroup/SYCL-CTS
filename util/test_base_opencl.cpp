@@ -52,9 +52,14 @@ bool test_base_opencl::setup(logger &log) {
   }
   const auto ctsDevice = ctsContext.get_devices()[0];
 
+#if !defined(__COMPUTECPP__)
   m_cl_platform_id =
       sycl::get_native<sycl::backend::opencl>(ctsDevice.get_platform());
   m_cl_device_id = sycl::get_native<sycl::backend::opencl>(ctsDevice);
+#else
+  m_cl_platform_id = ctsDevice.get_platform().get();
+  m_cl_device_id = ctsDevice.get();
+#endif
 
   cl_context_properties properties[3] = {
       CL_CONTEXT_PLATFORM, (cl_context_properties)m_cl_platform_id, 0};
