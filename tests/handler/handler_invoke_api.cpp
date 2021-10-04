@@ -475,7 +475,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
            "A SYCL exception was "
            "caught");
     }
-  };
+  }
 };
 
 // register this test with the test_collection
