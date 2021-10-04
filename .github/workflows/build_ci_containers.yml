@@ -37,6 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ComputeCpp images are built by Codeplay for the time being
           # - sycl-impl: computecpp
           # version: 2.6.0
           - sycl-impl: dpcpp
