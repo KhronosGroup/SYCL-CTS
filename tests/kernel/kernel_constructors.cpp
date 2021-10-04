@@ -42,33 +42,34 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of copy "
-              "constructor");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
+        using k_name = test_kernel<0>;
+        auto kb = sycl::get_kernel_bundle<
+                    k_name, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
 
-          prog.build_with_kernel_type<test_kernel<0>>();
-          auto kernelA = prog.get_kernel<test_kernel<0>>();
+        sycl::kernel kernelB(kernelA);
 
-          sycl::kernel kernelB(kernelA);
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name());
+        });
 
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<0>());
-          });
-
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-          if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
+#ifdef SYCL_BACKEND_OPENCL
+        if (ctsQueue.get_backend() == sycl::backend::opencl) {
+          auto iopKernelA =
+              sycl::get_native<sycl::backend::opencl>(kernelA);
+          auto iopKernelB =
+              sycl::get_native<sycl::backend::opencl>(kernelB);
+          if (!ctsSelector.is_host() && (iopKernelA != iopKernelB)) {
             FAIL(log,
                  "kernel was not constructed correctly. (contains different "
                  "OpenCL kernel object)");
           }
+        }
 #endif
 
-          ctsQueue.wait_and_throw();
-        }
+        ctsQueue.wait_and_throw();
       }
 
       /* Test assignment operator
@@ -77,32 +78,34 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of assignment "
-              "operator");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
-          prog.build_with_kernel_type<test_kernel<1>>();
-          auto kernelA = prog.get_kernel<test_kernel<1>>();
+        using k_name = test_kernel<1>;
+        auto kb = sycl::get_kernel_bundle<
+                    k_name, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
 
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<1>());
-          });
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name());
+        });
 
-          sycl::kernel kernelB = kernelA;
+        sycl::kernel kernelB = kernelA;
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-          if (!ctsSelector.is_host() && (kernelA.get() != kernelB.get())) {
+#ifdef SYCL_BACKEND_OPENCL
+        if (ctsQueue.get_backend() == sycl::backend::opencl) {
+          auto iopKernelA =
+              sycl::get_native<sycl::backend::opencl>(kernelA);
+          auto iopKernelB =
+              sycl::get_native<sycl::backend::opencl>(kernelB);
+          if (!ctsSelector.is_host() && (iopKernelA != iopKernelB)) {
             FAIL(log,
                  "kernel was not constructed correctly. (contains different "
                  "OpenCL kernel object)");
           }
+        }
 #endif
 
-          ctsQueue.wait_and_throw();
-        }
+        ctsQueue.wait_and_throw();
       }
 
       /* Test move constructor
@@ -111,24 +114,20 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of move "
-              "constructor");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
-          prog.build_with_kernel_type<test_kernel<2>>();
-          auto kernelA = prog.get_kernel<test_kernel<2>>();
+        using k_name = test_kernel<2>;
+        auto kb = sycl::get_kernel_bundle<
+                    k_name, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
 
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<2>());
-          });
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name());
+        });
 
-          sycl::kernel kernelB(std::move(kernelA));
+        sycl::kernel kernelB(std::move(kernelA));
 
-          ctsQueue.wait_and_throw();
-        }
+        ctsQueue.wait_and_throw();
       }
 
       /* Test move assignment operator
@@ -137,23 +136,19 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of move "
-              "assignment operator");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
-          prog.build_with_kernel_type<test_kernel<3>>();
-          auto kernelA = prog.get_kernel<test_kernel<3>>();
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<3>());
-          });
+        using k_name = test_kernel<3>;
+        auto kb = sycl::get_kernel_bundle<
+                    k_name, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name());
+        });
 
-          sycl::kernel kernelB = std::move(kernelA);
+        sycl::kernel kernelB = std::move(kernelA);
 
-          ctsQueue.wait_and_throw();
-        }
+        ctsQueue.wait_and_throw();
       }
 
       /* Test equality operator
@@ -162,78 +157,93 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cts_selector ctsSelector;
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of equality "
-              "operator");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
-          prog.build_with_kernel_type<test_kernel<4>>();
-          auto kernelA = prog.get_kernel<test_kernel<4>>();
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<4>());
-          });
+        using k_name4 = test_kernel<4>;
+        auto kbA = sycl::get_kernel_bundle<
+                      k_name4, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kbA.get_kernel(sycl::get_kernel_id<k_name4>());
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name4());
+        });
+        sycl::kernel kernelB(kernelA);
 
-          sycl::kernel kernelB(kernelA);
+        using k_name5 = test_kernel<5>;
+        auto kbC = sycl::get_kernel_bundle<
+                      k_name5, sycl::bundle_state::executable>(ctx);
+        auto kernelC = kbC.get_kernel(sycl::get_kernel_id<k_name5>());
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name5());
+        });
+        kernelC = (kernelA);
 
-          sycl::program progC(ctsQueue.get_context());
-          progC.build_with_kernel_type<test_kernel<5>>();
-          auto kernelC = progC.get_kernel<test_kernel<5>>();
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<5>());
-          });
-          kernelC = (kernelA);
+        using k_name6 = test_kernel<6>;
+        auto kbD = sycl::get_kernel_bundle<
+                      k_name6, sycl::bundle_state::executable>(ctx);
+        auto kernelD = kbD.get_kernel(sycl::get_kernel_id<k_name6>());
 
-          sycl::program progD(ctsQueue.get_context());
-          progD.build_with_kernel_type<test_kernel<6>>();
-          auto kernelD = progD.get_kernel<test_kernel<6>>();
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<6>());
-          });
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name6());
+        });
 
-          if (!ctsSelector.is_host()) {
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-            if (kernelA == kernelB &&
-                (kernelA.get() != kernelB.get() ||
-                 kernelA.get_context().get() != kernelB.get_context().get() ||
-                 kernelA.get_program().get() != kernelB.get_program().get())) {
-              FAIL(
-                  log,
-                  "kernel equality does not work correctly (copy constructed)");
+        if (!ctsSelector.is_host()) {
+#ifdef SYCL_BACKEND_OPENCL
+          if (ctsQueue.get_backend() == sycl::backend::opencl) {
+            auto iopKernelA =
+                sycl::get_native<sycl::backend::opencl>(kernelA);
+            auto iopKernelB =
+                sycl::get_native<sycl::backend::opencl>(kernelB);
+            auto iopKernelC =
+                sycl::get_native<sycl::backend::opencl>(kernelC);
+            auto iopCtxA = sycl::get_native<sycl::backend::opencl>(
+                              kernelA.get_context());
+            auto iopCtxB = sycl::get_native<sycl::backend::opencl>(
+                              kernelB.get_context());
+            auto iopCtxC = sycl::get_native<sycl::backend::opencl>(
+                              kernelC.get_context());
+            auto iopProgA = sycl::get_native<sycl::backend::opencl>(
+                              kernelA.get_kernel_bundle());
+            auto iopProgB = sycl::get_native<sycl::backend::opencl>(
+                              kernelB.get_kernel_bundle());
+            auto iopProgC = sycl::get_native<sycl::backend::opencl>(
+                              kernelC.get_kernel_bundle());
+
+            if (kernelA == kernelB && (iopKernelA != iopKernelB ||
+                iopCtxA != iopCtxB || iopProgA != iopProgB)) {
+              FAIL(log, "kernel equality does not work correctly (copy "
+                        "constructed)");
             }
             if (kernelA == kernelC &&
-                (kernelA.get() != kernelC.get() ||
-                 kernelA.get_context().get() != kernelC.get_context().get() ||
-                 kernelA.get_program().get() != kernelC.get_program().get())) {
+                (iopKernelA != iopKernelC || iopCtxA != iopCtxC ||
+                iopProgA != iopProgC)) {
               FAIL(log,
                    "kernel equality does not work correctly (copy assigned)");
             }
-#endif
-            if (kernelA != kernelB) {
-              FAIL(log,
-                   "kernel non-equality does not work correctly"
-                   "(copy constructed)");
-            }
-            if (kernelA != kernelC) {
-              FAIL(log,
-                   "kernel non-equality does not work correctly"
-                   "(copy assigned)");
-            }
-            if (kernelC == kernelD) {
-              FAIL(log,
-                   "kernel equality does not work correctly"
-                   "(comparing same)");
-            }
-            if (!(kernelC != kernelD)) {
-              FAIL(log,
-                   "kernel non-equality does not work correctly"
-                   "(comparing same)");
-            }
           }
-
-          ctsQueue.wait_and_throw();
+#endif
+          if (kernelA != kernelB) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(copy constructed)");
+          }
+          if (kernelA != kernelC) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(copy assigned)");
+          }
+          if (kernelC == kernelD) {
+            FAIL(log,
+                 "kernel equality does not work correctly"
+                 "(comparing same)");
+          }
+          if (!(kernelC != kernelD)) {
+            FAIL(log,
+                 "kernel non-equality does not work correctly"
+                 "(comparing same)");
+          }
         }
+
+        ctsQueue.wait_and_throw();
       }
 
       /* Test hashing
@@ -241,30 +251,27 @@ class TEST_NAME : public sycl_cts::util::test_base {
       {
         auto ctsQueue = util::get_cts_object::queue();
         auto deviceList = ctsQueue.get_context().get_devices();
+        auto ctx = ctsQueue.get_context();
 
-        if (!is_compiler_available(deviceList)) {
-          log.note(
-              "online compiler is not available -- skipping test of hashing");
-        } else {
-          sycl::program prog(ctsQueue.get_context());
-          prog.build_with_kernel_type<test_kernel<7>>();
-          auto kernelA = prog.get_kernel<test_kernel<7>>();
-          ctsQueue.submit([&](sycl::handler &cgh) {
-            cgh.single_task(test_kernel<7>());
-          });
+        using k_name = test_kernel<7>;
+        auto kb = sycl::get_kernel_bundle<
+                    k_name, sycl::bundle_state::executable>(ctx);
+        auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
+        ctsQueue.submit([&](sycl::handler &cgh) {
+          cgh.single_task(k_name());
+        });
 
-          sycl::kernel kernelB = kernelA;
+        sycl::kernel kernelB = kernelA;
 
-          std::hash<sycl::kernel> hasher;
+        std::hash<sycl::kernel> hasher;
 
-          if (hasher(kernelA) != hasher(kernelB)) {
-            FAIL(log,
-                 "kernel hashing does not work correctly (hashing of equal "
-                 "failed)");
-          }
-
-          ctsQueue.wait_and_throw();
+        if (hasher(kernelA) != hasher(kernelB)) {
+          FAIL(log,
+               "kernel hashing does not work correctly (hashing of equal "
+               "failed)");
         }
+
+        ctsQueue.wait_and_throw();
       }
     } catch (const sycl::exception &e) {
       log_exception(log, e);
