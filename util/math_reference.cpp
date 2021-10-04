@@ -190,13 +190,13 @@ template <typename T> T mad_sat_signed_long(T x, T y, T z) {
 }
 
 unsigned char mad_sat(unsigned char a, unsigned char b, unsigned char c) {
-  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<cl_ulong>(a, b, c);
 }
 unsigned short mad_sat(unsigned short a, unsigned short b, unsigned short c) {
-  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<cl_ulong>(a, b, c);
 }
 unsigned int mad_sat(unsigned int a, unsigned int b, unsigned int c) {
-  return mad_sat_unsigned<sycl::cl_ulong>(a, b, c);
+  return mad_sat_unsigned<cl_ulong>(a, b, c);
 }
 unsigned long mad_sat(unsigned long a, unsigned long b, unsigned long c) {
   return mad_sat_unsigned_long(a, b, c);
@@ -206,16 +206,16 @@ unsigned long long mad_sat(unsigned long long a, unsigned long long b,
   return mad_sat_unsigned_long(a, b, c);
 }
 char mad_sat(char a, char b, char c) {
-  return mad_sat_signed<sycl::cl_long>(a, b, c);
+  return mad_sat_signed<cl_long>(a, b, c);
 }
 signed char mad_sat(signed char a, signed char b, signed char c) {
-  return mad_sat_signed<sycl::cl_long>(a, b, c);
+  return mad_sat_signed<cl_long>(a, b, c);
 }
 short mad_sat(short a, short b, short c) {
-  return mad_sat_signed<sycl::cl_long>(a, b, c);
+  return mad_sat_signed<cl_long>(a, b, c);
 }
 int mad_sat(int a, int b, int c) {
-  return mad_sat_signed<sycl::cl_long>(a, b, c);
+  return mad_sat_signed<cl_long>(a, b, c);
 }
 long mad_sat(long a, long b, long c) {
   return mad_sat_signed_long<long>(a, b, c);
@@ -432,6 +432,9 @@ sycl::half fma(sycl::half a, sycl::half b, sycl::half c) {
 float fma(float a, float b, float c) { return reference_fma(a, b, c, 0); }
 double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
+// ComputeCpp and hipSYCL do not yet support sycl::bit_cast,
+// which is used in `nextafter`.
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -450,6 +453,7 @@ sycl::half fdim(sycl::half a, sycl::half b) {
   }
   return +0;
 }
+#endif
 
 float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
 double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
@@ -462,6 +466,8 @@ sycl::half modf(sycl::half a, sycl::half *b) {
   return res;
 }
 
+// ComputeCpp and hipSYCL do not yet support sycl::bit_cast
+#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x))
     return x;
@@ -492,6 +498,7 @@ sycl::half nextafter(sycl::half x, sycl::half y) {
 
   return sycl::bit_cast<sycl::half>(a);
 }
+#endif
 
 sycl::half sinpi(sycl::half a) { return reference_sinpi(a); }
 float sinpi(float a) { return reference_sinpi(a); }

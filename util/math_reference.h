@@ -9,7 +9,8 @@
 #ifndef __SYCLCTS_UTIL_MATH_REFERENCE_H
 #define __SYCLCTS_UTIL_MATH_REFERENCE_H
 
-#include "../tests/common/sycl.h"
+#include <sycl/sycl.hpp>
+
 #include "./math_helper.h"
 
 #include <cmath>

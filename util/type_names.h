@@ -9,7 +9,8 @@
 #ifndef __SYCLCTS_UTIL_TYPE_NAMES_H
 #define __SYCLCTS_UTIL_TYPE_NAMES_H
 
-#include "../tests/common/sycl.h"
+#include <sycl/sycl.hpp>
+
 #include "stl.h"
 
 template <typename T>

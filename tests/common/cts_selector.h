@@ -9,7 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H
 #define __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H
 
-#include "sycl.h"
+#include <sycl/sycl.hpp>
 
 #include "../../util/selector.h"
 

@@ -9,9 +9,10 @@
 #ifndef __SYCLCTS_TESTS_COMMON_MACROS_H
 #define __SYCLCTS_TESTS_COMMON_MACROS_H
 
+#include <sycl/sycl.hpp>
+
 #include "../../util/opencl_helper.h"
 #include "../../util/type_names.h"
-#include "sycl.h"
 
 #define TEST_FILE __FILE__
 #define TEST_BUILD_DATE __DATE__

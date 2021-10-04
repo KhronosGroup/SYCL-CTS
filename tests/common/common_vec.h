@@ -9,8 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_COMMON_VEC_H
 #define __SYCLCTS_TESTS_COMMON_COMMON_VEC_H
 
-// include our proxy to the real sycl header
-#include "sycl.h"
+#include <sycl/sycl.hpp>
 
 #include "../../util/accuracy.h"
 #include "../../util/math_vector.h"

@@ -9,8 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
 #define __SYCLCTS_TESTS_COMMON_GET_CTS_OBJECT_H
 
-// include our proxy to the real sycl header
-#include "sycl.h"
+#include <sycl/sycl.hpp>
 
 #include "../common/cts_async_handler.h"
 #include "../common/cts_selector.h"
@@ -64,7 +63,12 @@ struct get_cts_object {
   static sycl::queue queue(
       const sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
-    return sycl::queue(selector, asyncHandler);
+#if !defined(__HIPSYCL__)
+    return sycl::queue(selector, asyncHandler, sycl::property_list{});
+#else
+    return sycl::queue(selector.select_device(), asyncHandler,
+                       sycl::property_list{});
+#endif
   }
 
   /**
