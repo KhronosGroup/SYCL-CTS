@@ -27,7 +27,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     using namespace usm_allocator_constructors;
     using TestType = int;
-    { check_usm_allocator_constructors<TestType>{}(log); }
+    check_usm_allocator_constructors<TestType>{}(log);
   }
 };
 

@@ -418,7 +418,7 @@ class check_usm_allocate_free {
  */
 template <typename T, typename op>
 static void run_usm_test(util::logger &log) {
-  { check_usm_allocate_free<T, op>{}(log); }
+  check_usm_allocate_free<T, op>{}(log);
 }
 
 }  // namespace usm_allocate_free
