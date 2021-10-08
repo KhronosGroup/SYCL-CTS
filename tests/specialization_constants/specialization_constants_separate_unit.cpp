@@ -14,19 +14,21 @@ using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    value_helper<T>(default_val));
+    get_init_value_helper<T>(default_val));
 
-template <typename T, int case_num>
+template <typename T, test_cases_external TestCase>
 bool check_kernel_handler_by_reference_external(sycl::kernel_handler &h,
                                                 T expected) {
+  constexpr int case_num = static_cast<int>(TestCase);
   return check_equal_values(
       expected,
       h.get_specialization_constant<spec_const_external<T, case_num>>());
 }
 
-template <typename T, int case_num>
+template <typename T, test_cases_external TestCase>
 bool check_kernel_handler_by_value_external(sycl::kernel_handler h,
                                             T expected) {
+  constexpr int case_num = static_cast<int>(TestCase);
   return check_equal_values(
       expected,
       h.get_specialization_constant<spec_const_external<T, case_num>>());
@@ -37,25 +39,25 @@ bool check_kernel_handler_by_value_external(sycl::kernel_handler h,
   SYCL_EXTERNAL bool check_kernel_handler_by_reference_external_handler(       \
       sycl::kernel_handler &h, TYPE expected) {                                \
     return check_kernel_handler_by_reference_external<                         \
-        TYPE, by_reference_via_handler>(h, expected);                          \
+        TYPE, test_cases_external::by_reference_via_handler>(h, expected);     \
   }                                                                            \
                                                                                \
   SYCL_EXTERNAL bool check_kernel_handler_by_value_external_handler(           \
       sycl::kernel_handler h, TYPE expected) {                                 \
-    return check_kernel_handler_by_value_external<TYPE, by_value_via_handler>( \
-        h, expected);                                                          \
+    return check_kernel_handler_by_value_external<                             \
+        TYPE, test_cases_external::by_value_via_handler>(h, expected);         \
   }                                                                            \
                                                                                \
   SYCL_EXTERNAL bool check_kernel_handler_by_reference_external_bundle(        \
       sycl::kernel_handler &h, TYPE expected) {                                \
     return check_kernel_handler_by_reference_external<                         \
-        TYPE, by_reference_via_bundle>(h, expected);                           \
+        TYPE, test_cases_external::by_reference_via_bundle>(h, expected);      \
   }                                                                            \
                                                                                \
   SYCL_EXTERNAL bool check_kernel_handler_by_value_external_bundle(            \
       sycl::kernel_handler h, TYPE expected) {                                 \
-    return check_kernel_handler_by_value_external<TYPE, by_value_via_bundle>(  \
-        h, expected);                                                          \
+    return check_kernel_handler_by_value_external<                             \
+        TYPE, test_cases_external::by_value_via_bundle>(h, expected);          \
   }
 
 #ifndef SYCL_CTS_FULL_CONFORMANCE

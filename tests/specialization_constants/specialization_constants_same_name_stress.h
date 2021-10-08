@@ -69,8 +69,8 @@ class check_specialization_constants_same_name_stress_for_type {
 
       // Initialize ref arrays
       for (int i = 0; i < size; ++i) {
-        fill_init_values(ref_def_values_arr[i], i);
-        fill_init_values(ref_arr[i], i + static_cast<int>(size));
+        fill_init_values(ref_def_values_arr[i].value, i);
+        fill_init_values(ref_arr[i].value, i + static_cast<int>(size));
       }
 
       {

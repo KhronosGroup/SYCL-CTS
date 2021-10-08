@@ -9,6 +9,8 @@
 #ifndef __SYCL_UTIL_ALLOCATION_H
 #define __SYCL_UTIL_ALLOCATION_H
 
+#include "../tests/common/common.h"
+
 namespace sycl_cts {
 namespace util {
 
@@ -19,14 +21,14 @@ union remove_initialization {
   T value;
   remove_initialization() {}
 
-  template <typename T>
-  void operator=(const T &val) {
+  template <typename ValT>
+  void operator=(const ValT &val) {
     this->value = val;
   }
 
   friend bool operator==(const remove_initialization &lhs,
                          const remove_initialization &rhs) {
-    return lhs.value == rhs.value;
+    return check_equal_values(lhs.value, rhs.value);
   }
 
   operator value_type &() { return value; }

@@ -16,7 +16,7 @@ using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    value_helper<T>(default_val));
+    get_init_value_helper<T>(default_val));
 
 #define FUNC_DECLARE(TYPE)                                               \
   SYCL_EXTERNAL bool check_kernel_handler_by_reference_external_handler( \
@@ -73,8 +73,9 @@ class check_specialization_constants_external {
     // handler
     bool func_result = false;
     {
-      T ref = T(value_helper<T>(5));
-      const int case_num = by_reference_via_handler;
+      T ref { get_init_value_helper<T>(5) };
+      const int case_num =
+          static_cast<int>(test_cases_external::by_reference_via_handler);
       sycl::buffer<bool, 1> result_buffer(&func_result, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
@@ -96,8 +97,9 @@ class check_specialization_constants_external {
     // handler
     func_result = false;
     {
-      T ref = T(value_helper<T>(10));
-      const int case_num = by_value_via_handler;
+      T ref { get_init_value_helper<T>(10) };
+      const int case_num =
+          static_cast<int>(test_cases_external::by_value_via_handler);
       sycl::buffer<bool, 1> result_buffer(&func_result, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
@@ -121,8 +123,9 @@ class check_specialization_constants_external {
       // via kernel_bundle
       func_result = false;
       {
-        T ref = T(value_helper<T>(15));
-        const int case_num = by_reference_via_bundle;
+        T ref { get_init_value_helper<T>(15) };
+        const int case_num =
+            static_cast<int>(test_cases_external::by_reference_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&func_result, range);
 
         auto context = queue.get_context();
@@ -158,8 +161,9 @@ class check_specialization_constants_external {
       // kernel_bundle
       func_result = false;
       {
-        T ref = T(value_helper<T>(20));
-        const int case_num = by_value_via_bundle;
+        T ref { get_init_value_helper<T>(20) };
+        const int case_num =
+            static_cast<int>(test_cases_external::by_value_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&func_result, range);
 
         auto context = queue.get_context();
