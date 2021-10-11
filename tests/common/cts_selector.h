@@ -11,7 +11,9 @@
 
 #include <sycl/sycl.hpp>
 
-#include "../../util/selector.h"
+#include "../../util/test_manager.h"
+
+#include <regex>
 
 /** test suite specific device selector
  */
@@ -20,116 +22,34 @@ class cts_selector : public sycl::device_selector {
   /** Returns true if the default platform of the selector is host.
    * @return boolean specifying whether the default platform is host. */
   bool is_host() const {
-    using namespace sycl_cts::util;
-
-    return (get<selector>().get_default_platform() == selector::ctsplat::host);
-  }
-
-  /**
-   * Scores devices according to the type requested by the CTS
-   * @param type, the type of device currently being scored
-   * @param desired, the device type requested by the selector class
-   * @result = an integer score
-   */
-  int score(sycl::info::device_type type,
-            sycl_cts::util::selector::ctsdevice desired) const {
-    using namespace sycl_cts::util;
-
-    int result = -1;
-
-    // type == all device matches all, return early
-    if (type == sycl::info::device_type::all) {
-      result = 1000;
-    }
-
-    switch (desired) {
-      case selector::ctsdevice::host:
-        if (type == sycl::info::device_type::host) {
-          result = 1000;
-        }
-        break;
-      case selector::ctsdevice::opencl_cpu:
-        if (type == sycl::info::device_type::cpu) {
-          result = 1000;
-        }
-        break;
-      case selector::ctsdevice::opencl_gpu:
-        if (type == sycl::info::device_type::gpu) {
-          result = 1000;
-        }
-        break;
-      case selector::ctsdevice::opencl_accelerator:
-        if (type == sycl::info::device_type::accelerator) {
-          result = 1000;
-        }
-        break;
-      case selector::ctsdevice::custom:
-        if (type == sycl::info::device_type::custom) {
-          result = 1000;
-        }
-        break;
-      // Looking for a device type that doesn't exist, therefore
-      // select no devices
-      default:
-        result = -1;
-    }
-    // Device does not match the requested type
-    return result;
+    sycl::device device(*this);
+    return device.get_info<sycl::info::device::device_type>() ==
+           sycl::info::device_type::host;
   }
 
   /** device selection operator
    *  return <  0  : device will never be selected
    *  return >= 0  : positive device rating
    */
-  virtual int operator()(const sycl::device &dev) const {
+  virtual int operator()(const sycl::device& dev) const {
     using namespace sycl_cts;
     using namespace sycl_cts::util;
 
-    selector::ctsdevice ctsDevType = get<selector>().get_default_device();
-    selector::ctsplat ctsPlatform = get<selector>().get_default_platform();
+    auto& device_regex = get<test_manager>().get_device_regex();
 
-    // Early exit for host device
-    if (dev.is_host()) {
-      if (ctsDevType == selector::ctsdevice::host) {
-        return 1000;
-      } else {
-        return -1;
-      }
+    if (!device_regex.has_value()) {
+      return sycl::default_selector{}(dev);
     }
 
-    std::string vendor =
-        dev.get_platform().get_info<sycl::info::platform::vendor>();
-    sycl::info::device_type type =
-        dev.get_info<sycl::info::device::device_type>();
+    const auto platform_name =
+        dev.get_platform().get_info<sycl::info::platform::name>();
+    const auto device_name = dev.get_info<sycl::info::device::name>();
 
-    int result = -1;
-
-    switch (ctsPlatform) {
-      case selector::ctsplat::amd:
-        if (vendor.find("AMD") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::arm:
-        if (vendor.find("ARM") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::intel:
-        if (vendor.find("Intel") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      case selector::ctsplat::nvidia:
-        if (vendor.find("NVIDIA") != std::string::npos) {
-          result = score(type, ctsDevType);
-        }
-        break;
-      default:
-        result = -1;
+    if (std::regex_search(platform_name + " / " + device_name, *device_regex)) {
+      return 1000;
     }
 
-    return result;
+    return -1;
   }
 };
 
