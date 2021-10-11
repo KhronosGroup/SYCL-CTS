@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check select_device() method
        */
       {
@@ -44,12 +44,6 @@ class TEST_NAME : public util::test_base {
         auto score = selector(device);
         check_return_type<int>(log, score, "selector(sycl::device)");
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

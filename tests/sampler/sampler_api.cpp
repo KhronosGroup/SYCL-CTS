@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-    try {
+    {
       // Ensure all addressing_mode values defined
       check_enum_class_value(sycl::addressing_mode::mirrored_repeat);
       check_enum_class_value(sycl::addressing_mode::repeat);
@@ -63,12 +63,6 @@ class TEST_NAME : public util::test_base {
       auto filterMode = sampler.get_filtering_mode();
       check_return_type<sycl::filtering_mode>(log, filterMode,
                                                   "get_filtering_mode()");
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

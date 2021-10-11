@@ -293,7 +293,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       // use across all the dimensions
       auto my_queue = util::get_cts_object::queue();
       // templated approach
@@ -317,11 +317,6 @@ class TEST_NAME : public util::test_base {
         test_range<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

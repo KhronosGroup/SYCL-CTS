@@ -405,7 +405,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       // Validate for each dimension possible
@@ -444,11 +444,6 @@ class TEST_NAME : public util::test_base {
         validator.collect_group_indicies(queue);
         validator.validate_group_indicies(log);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

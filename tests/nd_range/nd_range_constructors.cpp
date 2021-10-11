@@ -97,7 +97,7 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
     constexpr size_t sizes[] = {16, 32, 64};
 
-    try {
+    {
       // global size to be set to the size
       sycl::range<1> gs_1d(sizes[0]);
       // local size to be set to 1/4 of the sizes
@@ -123,11 +123,6 @@ class TEST_NAME : public util::test_base {
       sycl::range<3> range_3d(sizes[0] / 8u, sizes[1] / 8u, sizes[2] / 8u);
       sycl::id<3> offset_3d(range_3d);
       test_nd_range_constructors(log, gs_3d, ls_3d, offset_3d);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

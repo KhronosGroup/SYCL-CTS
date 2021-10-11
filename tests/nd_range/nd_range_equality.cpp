@@ -63,7 +63,7 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_equality(util::logger& log) {
-    try {
+    {
       // Prepare ranges
       const auto range2 = util::get_cts_object::range<numDims>::get(2, 1, 1);
       const auto range4 = util::get_cts_object::range<numDims>::get(4, 1, 1);
@@ -135,12 +135,6 @@ class TEST_NAME : public util::test_base {
                   numDims);
       CHECK_VALUE(log, success[current_check::not_equal_other_same_local], true,
                   numDims);
-
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 

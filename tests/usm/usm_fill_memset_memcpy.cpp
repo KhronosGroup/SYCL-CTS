@@ -27,7 +27,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto q = util::get_cts_object::queue();
       if (!q.get_device().has(sycl::aspect::usm_shared_allocations)) {
         log.note(
@@ -67,10 +67,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       for (int i = 1; i < count; i++) {
         CHECK_VALUE_SCALAR(log, output.get()[i], value_for_filling);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

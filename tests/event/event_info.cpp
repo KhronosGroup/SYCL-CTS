@@ -28,7 +28,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check sycl::info::event_command_status
        */
       check_enum_class_value(sycl::info::event_command_status::complete);
@@ -112,11 +112,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "command start time > end time");
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

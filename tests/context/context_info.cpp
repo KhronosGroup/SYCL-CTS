@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
   */
   void run(util::logger &log) override {
-    try {
+    {
       auto context = util::get_cts_object::context();
 
       /** check get_info for info::context::reference_count
@@ -57,12 +57,6 @@ class TEST_NAME : public util::test_base {
             log, devs, "get_info<sycl::info::context::devices>()");
         TEST_TYPE_TRAIT(context, devices, context);
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

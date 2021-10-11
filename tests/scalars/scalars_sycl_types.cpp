@@ -32,7 +32,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       unsigned int host_size_t_size = sizeof(size_t);
 
       // SYCL Integral Data Types
@@ -219,12 +219,6 @@ class TEST_NAME : public util::test_base {
       }
 
       myQueue.wait_and_throw();
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

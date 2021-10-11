@@ -56,7 +56,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue{util::get_cts_object::queue()};
 
       {
@@ -73,11 +73,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       run_check<sycl::usm::alloc::shared>(queue, log);
       run_check<sycl::usm::alloc::device>(queue, log);
       run_check<sycl::usm::alloc::host>(queue, log);
-
-    } catch (const cl::sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

@@ -28,7 +28,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
 #ifndef SYCL_CTS_FULL_CONFORMANCE
       for_all_types<check_spec_constant_exception_throw_for_type>(
           get_spec_const::testing_types::types, log);
@@ -38,15 +38,6 @@ class TEST_NAME : public util::test_base {
 #endif
       for_all_types<check_spec_constant_exception_throw_for_type>(
           get_spec_const::testing_types::composite_types, log);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was thrown: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was thrown: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

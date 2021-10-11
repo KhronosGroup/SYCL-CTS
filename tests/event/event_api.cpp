@@ -35,8 +35,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
-
+    {
 #ifdef SYCL_CTS_TEST_OPENCL_INTEROP
       /** check get()
       */
@@ -112,12 +111,6 @@ class TEST_NAME : public util::test_base {
 
         sycl::event::wait_and_throw(eventList);
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

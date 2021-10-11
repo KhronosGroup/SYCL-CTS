@@ -35,7 +35,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     log.note("SYCL_EXTERNAL is not defined");
 #else
     using namespace specialization_constants_external;
-    try {
+    {
 
 #ifndef SYCL_CTS_FULL_CONFORMANCE
       for_all_types<check_specialization_constants_external>(
@@ -46,16 +46,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
 #endif
       for_all_types<check_specialization_constants_external>(
           get_spec_const::testing_types::composite_types, log);
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
 #endif  // SYCL_EXTERNAL
   }

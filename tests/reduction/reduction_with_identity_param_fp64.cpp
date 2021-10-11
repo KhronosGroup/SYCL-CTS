@@ -26,7 +26,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
       if (!queue.get_device().has(sycl::aspect::fp64)) {
         log.note(
@@ -36,10 +36,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
       reduction_with_identity::run_test_for_type<double>()(queue, log,
                                                            "double");
-    } catch (const cl::sycl::exception& e) {
-      log_exception(log, e);
-      auto errorMsg = "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

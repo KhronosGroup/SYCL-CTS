@@ -55,7 +55,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check a custom selector for a device
       */
       {
@@ -103,11 +103,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "custom selector selected a device with a negative score");
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

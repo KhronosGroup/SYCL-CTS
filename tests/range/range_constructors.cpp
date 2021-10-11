@@ -29,7 +29,7 @@ class TEST_NAME : public util::test_base {
    *  @param log, test transcript logging class
    */
   void run(util::logger &log) override {
-    try {
+    {
       // use across all the dimensions
       size_t sizes[] = {16, 8, 4};
 
@@ -164,11 +164,6 @@ class TEST_NAME : public util::test_base {
         check_equality_comparable_generic(log, range_explicit,
                                           std::string("range"));
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

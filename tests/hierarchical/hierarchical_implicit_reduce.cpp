@@ -147,7 +147,7 @@ class Multiplier {
 };
 
 template <int dim> void check_dim(util::logger &log) {
-  try {
+  {
       cts_selector sel;
       {
         Adder data[inputSize];
@@ -180,11 +180,6 @@ template <int dim> void check_dim(util::logger &log) {
           FAIL(log, msg);
         }
       }
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
 }
 

@@ -114,7 +114,7 @@ class check_specialization_constants_same_name_inter_link_for_type {
 template <int tu_num, typename via_kb>
 static void sc_run_test_core(util::logger &log) {
   using namespace spec_const_help;
-  try {
+  {
 #ifndef SYCL_CTS_FULL_CONFORMANCE
     for_all_types<check_specialization_constants_same_name_inter_link_for_type,
                   sc_sn_il_config<tu_num>, via_kb>(
@@ -128,15 +128,6 @@ static void sc_run_test_core(util::logger &log) {
     for_all_types<check_specialization_constants_same_name_inter_link_for_type,
                   sc_sn_il_config<tu_num>, via_kb>(
         get_spec_const::testing_types::composite_types, log);
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
   }
 }
 
@@ -144,7 +135,7 @@ static void sc_run_test_core(util::logger &log) {
 template <int tu_num, typename via_kb>
 static void sc_run_test_fp16(util::logger &log) {
   using namespace spec_const_help;
-  try {
+  {
     auto queue = util::get_cts_object::queue();
     if (!queue.get_device().has(sycl::aspect::fp16)) {
       log.note(
@@ -162,15 +153,6 @@ static void sc_run_test_fp16(util::logger &log) {
         check_specialization_constants_same_name_inter_link_for_type,
         sycl::half, sc_sn_il_config<tu_num>, via_kb>(log, "sycl::half");
 #endif
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
   }
 }
 
@@ -178,7 +160,7 @@ static void sc_run_test_fp16(util::logger &log) {
 template <int tu_num, typename via_kb>
 static void sc_run_test_fp64(util::logger &log) {
   using namespace spec_const_help;
-  try {
+  {
     auto queue = util::get_cts_object::queue();
     if (!queue.get_device().has(sycl::aspect::fp64)) {
       log.note(
@@ -196,15 +178,6 @@ static void sc_run_test_fp64(util::logger &log) {
         check_specialization_constants_same_name_inter_link_for_type, double,
         sc_sn_il_config<tu_num>, via_kb>(log, "double");
 #endif
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
   }
 }
 

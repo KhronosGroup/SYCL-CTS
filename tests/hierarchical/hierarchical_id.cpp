@@ -41,7 +41,7 @@ template <int dim> void check_dim(util::logger &log) {
   const int check_gr_range_2d = (check_g_items_2d / check_l_items_2d);
   const int check_gr_range_3d = (check_g_items_3d / check_l_items_3d);
 
-  try {
+  {
     sycl::int4 localIdData[gl_items_total];
     sycl::int4 localSizeData[gl_items_total];
     sycl::int4 globalIdData[gl_items_total];
@@ -231,11 +231,6 @@ template <int dim> void check_dim(util::logger &log) {
         }
       }
     }
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 

@@ -181,7 +181,7 @@ class check_specialization_constants_same_name_stress_for_type {
 template <typename via_kb>
 static void sc_run_test_core(util::logger &log) {
   using namespace specialization_constants_same_name_stress;
-  try {
+  {
 #ifndef SYCL_CTS_FULL_CONFORMANCE
     for_all_types<check_specialization_constants_same_name_stress_for_type,
                   via_kb>(get_spec_const::testing_types::types, log);
@@ -192,22 +192,13 @@ static void sc_run_test_core(util::logger &log) {
 #endif
     for_all_types<check_specialization_constants_same_name_stress_for_type,
                   via_kb>(get_spec_const::testing_types::composite_types, log);
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
   }
 }
 
 template <typename via_kb>
 static void sc_run_test_fp16(util::logger &log) {
   using namespace specialization_constants_same_name_stress;
-  try {
+  {
     auto queue = util::get_cts_object::queue();
     if (!queue.get_device().has(sycl::aspect::fp16)) {
       log.note(
@@ -224,22 +215,13 @@ static void sc_run_test_fp16(util::logger &log) {
         check_specialization_constants_same_name_stress_for_type, sycl::half,
         via_kb>(log, "sycl::half");
 #endif
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
   }
 }
 
 template <typename via_kb>
 static void sc_run_test_fp64(util::logger &log) {
   using namespace specialization_constants_same_name_stress;
-  try {
+  {
     auto queue = util::get_cts_object::queue();
     if (!queue.get_device().has(sycl::aspect::fp64)) {
       log.note(
@@ -256,15 +238,7 @@ static void sc_run_test_fp64(util::logger &log) {
         check_specialization_constants_same_name_stress_for_type, double,
         via_kb>(log, "double");
 #endif
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
-  } catch (const std::exception &e) {
-    std::string errorMsg = "an exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg);
+  }
   }
 }
 

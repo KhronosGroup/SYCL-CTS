@@ -95,19 +95,11 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       for (const auto &err_c : get_err_codes()) {
         compare_sycl_and_std_working(err_c, log);
         check_sycl_working(err_c, log);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg{"a SYCL exception was caught: " +
-                           std::string(e.what())};
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg{"an exception was caught: " + std::string(e.what())};
-      FAIL(log, errorMsg);
     }
   }
 };

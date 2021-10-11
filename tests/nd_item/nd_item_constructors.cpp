@@ -174,7 +174,7 @@ class TEST_NAME : public util::test_base {
 
   template <int numDims>
   void test_constructors(util::logger& log) {
-    try {
+    {
       success_array_t success;
       std::fill(std::begin(success), std::end(success), true);
 
@@ -287,11 +287,6 @@ class TEST_NAME : public util::test_base {
       CHECK_VALUE(log,
                   success[to_integral(current_check::move_assignment)],
                   true, numDims);
-    } catch (const sycl::exception& e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 

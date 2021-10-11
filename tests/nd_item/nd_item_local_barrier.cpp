@@ -44,7 +44,7 @@ class TEST_NAME : public util::test_base {
   *  @param log, test transcript logging class
   */
   void run(util::logger &log) override {
-    try {
+    {
       auto cmdQueue = util::get_cts_object::queue();
 
       // Verify local barrier works as fence for local address space
@@ -58,11 +58,6 @@ class TEST_NAME : public util::test_base {
           log, cmdQueue, barrierCall<3>(), errorMsg);
 
       cmdQueue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

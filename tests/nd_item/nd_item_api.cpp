@@ -320,17 +320,12 @@ class TEST_NAME : public util::test_base {
   *  @param log, test transcript logging class
   */
   void run(util::logger &log) override {
-    try {
+    {
       auto cmd_queue = util::get_cts_object::queue();
 
       test_item(log, cmd_queue);
 
       cmd_queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

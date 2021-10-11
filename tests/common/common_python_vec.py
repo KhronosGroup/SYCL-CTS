@@ -171,17 +171,12 @@ kernel_template = Template("""  bool resArray[1] = {true};
 test_func_template = Template("""
 void ${func_name}(util::logger &log) {
 
-  try {
+  {
     auto testQueue = util::get_cts_object::queue();
     {
       auto testDevice = testQueue.get_device();
       ${test}
     }
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 """)

@@ -31,7 +31,7 @@ static const size_t groupRangeTotal = (groupItemsTotal / localItemsTotal);
 using namespace sycl_cts;
 
 template <int dim> void check_dim(util::logger &log) {
-  try {
+  {
     size_t inputData[groupItemsTotal];
 
     auto testQueue = util::get_cts_object::queue();
@@ -90,12 +90,6 @@ template <int dim> void check_dim(util::logger &log) {
         FAIL(log, "Values not equal.");
       }
     }
-
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
   }
 }
 

@@ -29,7 +29,7 @@ public:
    */
   void run(util::logger &log) override {
     using namespace specialization_constants_via_handler_common;
-    try {
+    {
 #ifndef SYCL_CTS_FULL_CONFORMANCE
       for_all_types<check_spec_constant_with_handler_for_type>(
           get_spec_const::testing_types::types, log);
@@ -39,16 +39,6 @@ public:
 #endif
       for_all_types<check_spec_constant_with_handler_for_type>(
           get_spec_const::testing_types::composite_types, log);
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg);
     }
   }
 };

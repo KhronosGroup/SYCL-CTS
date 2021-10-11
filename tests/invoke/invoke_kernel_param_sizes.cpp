@@ -70,7 +70,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       auto sycl_queue = util::get_cts_object::queue();
 
       bool pass = true;
@@ -190,11 +190,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       if (!pass) FAIL(log, "one or more type size mismatches");
 
       sycl_queue.wait_and_throw();
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

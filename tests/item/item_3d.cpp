@@ -105,7 +105,7 @@ bool test_item_3d(util::logger &log) {
 
   buffer_fill(dataIn.get(), nWidth, nHeight, nDepth);
 
-  try {
+  {
     sycl::range<3> dataRange(nWidth, nHeight, nDepth);
 
     sycl::buffer<int, 3> bufIn(dataIn.get(), dataRange);
@@ -125,12 +125,6 @@ bool test_item_3d(util::logger &log) {
     });
 
     cmdQueue.wait_and_throw();
-  } catch (const sycl::exception &e) {
-    log_exception(log, e);
-    std::string errorMsg =
-        "a SYCL exception was caught: " + std::string(e.what());
-    FAIL(log, errorMsg.c_str());
-    return false;
   }
 
   if (buffer_verify(dataOut.get(), nWidth, nHeight, nDepth)) {

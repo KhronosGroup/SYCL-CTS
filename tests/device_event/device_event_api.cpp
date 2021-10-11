@@ -32,7 +32,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       /** check wait() member function
        */
       auto testQueue = util::get_cts_object::queue();
@@ -80,11 +80,6 @@ class TEST_NAME : public util::test_base {
       if (error) {
         FAIL(log, "sycl::device_event async_work_group_copy failed");
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      const auto errorMsg =
-          std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
     }
   }
 };

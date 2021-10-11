@@ -44,7 +44,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       // Test values
       int testScalar = 1;
       auto testVec = sycl::vec<int, 4>(1, 2, 3, 4);
@@ -124,11 +124,6 @@ class TEST_NAME : public util::test_base {
           }
         }
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

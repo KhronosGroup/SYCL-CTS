@@ -26,7 +26,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       bool gpuAvailable = false;
       bool cpuAvailable = false;
       bool acceleratorAvailable = false;
@@ -101,12 +101,6 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "accelerator_selector failed to select an appropriate device");
         }
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

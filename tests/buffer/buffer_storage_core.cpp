@@ -31,7 +31,7 @@ public:
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types_and_vectors<
           buffer_storage_common::check_buffer_storage_for_type>(
@@ -75,11 +75,6 @@ public:
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<buffer_storage_common::check_buffer_storage_for_type>(
           get_buffer_types::scalar_types, log);
-    } catch (sycl::exception e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

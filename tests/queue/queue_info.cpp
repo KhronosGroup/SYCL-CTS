@@ -27,7 +27,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
   */
   void run(util::logger &log) override {
-    try {
+    {
       /** check sycl::info::queue
       */
       check_enum_class_value(sycl::info::queue::reference_count);
@@ -47,11 +47,6 @@ class TEST_NAME : public util::test_base {
         check_get_info_param<sycl::info::queue, sycl::device,
                              sycl::info::queue::device>(log, queue);
       }
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

@@ -661,7 +661,7 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
+    {
       // Ensure the image always has 64 elements
       const int elemsPerDim1 = 64;
       const int elemsPerDim2 = 8;
@@ -697,11 +697,6 @@ class TEST_NAME : public util::test_base {
       img_1d_with_properties(log, range_1d, propList);
       img_2d_with_properties(log, range_2d, propList, &pitch_1d);
       img_3d_with_properties(log, range_3d, propList, &pitch_2d);
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

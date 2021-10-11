@@ -30,8 +30,7 @@ public:
    */
   void run(util::logger &log) override {
     using namespace specialization_constants_same_command_group_common;
-    try {
-
+    {
 #ifndef SYCL_CTS_FULL_CONFORMANCE
       for_all_types<
           check_specialization_constants_same_command_group>(
@@ -43,16 +42,6 @@ public:
 #endif
       for_all_types<check_specialization_constants_same_command_group>(
           get_spec_const::testing_types::composite_types, log);
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string errorMsg =
-          "a SYCL exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
-    } catch (const std::exception &e) {
-      std::string errorMsg =
-          "an exception was caught: " + std::string(e.what());
-      FAIL(log, errorMsg.c_str());
     }
   }
 };

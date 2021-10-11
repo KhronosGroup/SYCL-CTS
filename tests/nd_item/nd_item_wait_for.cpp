@@ -45,15 +45,10 @@ class TEST_NAME : public util::test_base {
   *  @param log, test transcript logging class
   */
   void run(util::logger &log) override {
-    try {
+    {
       auto queue = util::get_cts_object::queue();
 
       check_all_dims<check_dim>(queue, log);
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      auto errorMsg = std::string("a SYCL exception was caught: ") + e.what();
-      FAIL(log, errorMsg);
     }
   }
 };

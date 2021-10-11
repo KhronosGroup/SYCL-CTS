@@ -190,7 +190,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    try {
+    {
       using handler = sycl::handler;
 
       auto queue = util::get_cts_object::queue();
@@ -468,14 +468,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
                          });
         }
       }
-
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      FAIL(log,
-           "A SYCL exception was "
-           "caught");
     }
-  };
+  }
 };
 
 // register this test with the test_collection
