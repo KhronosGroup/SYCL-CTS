@@ -50,7 +50,9 @@ class test_manager : public singleton<test_manager> {
    * @return The regex set by the `--device` CLI parameter, used for selecting
    * the CTS device.
    */
-  const std::optional<std::regex>& get_device_regex() { return device_regex; }
+  const std::optional<std::regex>& get_device_regex() const {
+    return device_regex;
+  }
 
   void dump_device_info();
 
