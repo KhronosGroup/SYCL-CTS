@@ -85,12 +85,6 @@ function(add_sycl_executable_implementation)
         $<TARGET_PROPERTY:DPCPP::Runtime,INTERFACE_COMPILE_OPTIONS>)
 
     target_link_libraries(${exe_name} PUBLIC DPCPP::Runtime)
-    # CMake < 3.14 doesn't support INTERFACE_LINK_OPTIONS otherwise we just use
-    # LINK_LIBRARIES
-    if(${CMAKE_VERSION} VERSION_LESS 3.14)
-        target_link_options(${exe_name} PRIVATE
-            $<TARGET_PROPERTY:DPCPP::Runtime,INTERFACE_LINK_OPTIONS>)
-    endif()
 endfunction()
 
 # Adds device compiler definitions
