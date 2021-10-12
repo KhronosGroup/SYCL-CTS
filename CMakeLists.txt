@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(OpenCLTargets REQUIRED)
+find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
 # set host compiler flags
