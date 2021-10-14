@@ -8,8 +8,8 @@ else()
     string(REPLACE "/machine:x64" "" CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS}")
     # Remove /subsystem option which is not supported by clang-cl
-    string(REPLACE "/subsystem:console" "" CMAKE_CREATE_CONSOLE_EXE
-        ${CMAKE_CREATE_CONSOLE_EXE})
+    string(REPLACE "/subsystem:console" "" CMAKE_CXX_CREATE_CONSOLE_EXE
+        "${CMAKE_CXX_CREATE_CONSOLE_EXE}")
     find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp clang-cl
         HINTS ${DPCPP_INSTALL_DIR}
         PATH_SUFFIXES bin)
