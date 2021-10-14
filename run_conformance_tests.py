@@ -98,7 +98,7 @@ def handle_args(argv):
     full_conformance = 'OFF' if args.fast else 'ON'
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
-            full_conformance, args.conformance_filter, args.implementation_name,
+            full_conformance, args.implementation_name,
             args.additional_cmake_args, host_names, opencl_names,
             args.additional_ctest_args, args.build_only)
 
@@ -113,7 +113,7 @@ def split_additional_args(additional_args):
     return shlex.split(shlex.quote(additional_args))
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
-                        conformance_filter, additional_cmake_args, host_names,
+                        additional_cmake_args, host_names,
                         opencl_names):
     """
     Generates a CMake call based on the input in a form accepted by
@@ -124,7 +124,6 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
         '..',
         '-G' + build_system_name,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
-        '-DSYCL_CTS_TEST_FILTER=' + conformance_filter,
         '-Dhost_platform_name=' + host_names[0],
         '-Dhost_device_name=' + host_names[1],
         '-Dopencl_platform_name=' + opencl_names[0],
@@ -317,14 +316,13 @@ def main(argv=sys.argv[1:]):
 
     # Parse and gather all the script args
     (cmake_exe, build_system_name, build_system_call, full_conformance,
-     conformance_filter, implementation_name, additional_cmake_args, host_names,
+     implementation_name, additional_cmake_args, host_names,
      opencl_names, additional_ctest_args, build_only) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
-                                     full_conformance, conformance_filter,
-                                     additional_cmake_args, host_names,
-                                     opencl_names)
+                                     full_conformance, additional_cmake_args,
+                                     host_names, opencl_names)
 
     # Generate a CTest call in a form accepted by subprocess.call()
     ctest_call = generate_ctest_call(additional_ctest_args)

@@ -81,8 +81,8 @@ When configuring CMake, it is possible to use these flags:
 ``COMPUTECPP_INSTALL_DIR``
   Required only if your SYCL implementation is ComputeCpp.
 
-``SYCL_CTS_TEST_FILTER``
-  Specify which filter to use when building tests.
+``SYCL_CTS_EXCLUDE_TEST_CATEGORIES``
+  Optional file specifying a list of test categories to be excluded from the build.
 
 ``SYCL_CTS_ENABLE_FULL_CONFORMANCE``
   Enable extensive coverage with huge compilation and execution time.
