@@ -42,58 +42,45 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-    try {
-      if (!check_opencl_supporting(util::get_cts_object::queue(), log)) {
-        return;
-      }
-      // check that sycl::errc_for exist
-      check_template_exists<sycl::errc_for>();
+    if (!check_opencl_supporting(util::get_cts_object::queue(), log)) {
+      return;
+    }
+    // check that sycl::errc_for exist
+    check_template_exists<sycl::errc_for>();
 
 #ifdef SYCL_BACKEND_OPENCL
-      using sycl_errc_enum_t = sycl::errc_for<sycl::backend::opencl>;
-      // check that sycl::errc_for is enum and scoped enum
-      if (!std::is_enum_v<sycl_errc_enum_t>) {
-        FAIL(log, "sycl::errc_for is not enum");
-      } else if (!std::is_convertible_v<
-                     sycl_errc_enum_t,
-                     std::underlying_type<sycl_errc_enum_t>>) {
-        FAIL(log,
-             "sycl::errc_for is not a scoped enum cause he can't be implicitly "
-             "converted to int");
-      }
-      const auto errc_value{static_cast<sycl_errc_enum_t>(0)};
-      std::error_code err_code(
-          errc_value, sycl::error_category_for<sycl::backend::opencl>());
-      if (err_code.default_error_condition() !=
-          std::error_condition(
-              errc_value, sycl::error_category_for<sycl::backend::opencl>())) {
-        FAIL(log,
-             "error_code::default_error_condition() is not equal to "
-             "std::error_condition");
-      }
-      if (!std::is_error_code_enum_v<sycl_errc_enum_t>) {
-        FAIL(log, "sycl::errc_for is not a error code enumeration");
-      }
-      if (std::is_error_condition_enum_v<sycl_errc_enum_t>) {
-        FAIL(log, "sycl::errc_for is a error condition enumeration");
-      }
-      if (sycl::error_category_for<sycl::backend::opencl>().name() !=
-          "opencl") {
-        FAIL(log,
-             "sycl::error_category_for<sycl::backend::opencl> name is not "
-             "equal to \"opencl\"");
-      }
-#endif  // SYCL_BACKEND_OPENCL
-    } catch (const sycl::exception &e) {
-      log_exception(log, e);
-      std::string error_msg{"a SYCL exception was caught: " +
-                            std::string(e.what())};
-      FAIL(log, error_msg);
-    } catch (const std::exception &e) {
-      std::string error_msg{"an exception was caught: " +
-                            std::string(e.what())};
-      FAIL(log, error_msg);
+    using sycl_errc_enum_t = sycl::errc_for<sycl::backend::opencl>;
+    // check that sycl::errc_for is enum and scoped enum
+    if (!std::is_enum_v<sycl_errc_enum_t>) {
+      FAIL(log, "sycl::errc_for is not enum");
+    } else if (!std::is_convertible_v<sycl_errc_enum_t,
+                                      std::underlying_type<sycl_errc_enum_t>>) {
+      FAIL(log,
+           "sycl::errc_for is not a scoped enum cause he can't be implicitly "
+           "converted to int");
     }
+    const auto errc_value{static_cast<sycl_errc_enum_t>(0)};
+    std::error_code err_code(errc_value,
+                             sycl::error_category_for<sycl::backend::opencl>());
+    if (err_code.default_error_condition() !=
+        std::error_condition(
+            errc_value, sycl::error_category_for<sycl::backend::opencl>())) {
+      FAIL(log,
+           "error_code::default_error_condition() is not equal to "
+           "std::error_condition");
+    }
+    if (!std::is_error_code_enum_v<sycl_errc_enum_t>) {
+      FAIL(log, "sycl::errc_for is not a error code enumeration");
+    }
+    if (std::is_error_condition_enum_v<sycl_errc_enum_t>) {
+      FAIL(log, "sycl::errc_for is a error condition enumeration");
+    }
+    if (sycl::error_category_for<sycl::backend::opencl>().name() != "opencl") {
+      FAIL(log,
+           "sycl::error_category_for<sycl::backend::opencl> name is not "
+           "equal to \"opencl\"");
+    }
+#endif  // SYCL_BACKEND_OPENCL
   }
 };
 
