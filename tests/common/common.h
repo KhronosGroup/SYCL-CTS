@@ -153,7 +153,7 @@ void check_get_profiling_info_param(sycl_cts::util::logger& log,
  * @brief Helper function to check the equality of two SYCL objects.
  */
 template <typename T>
-void check_equality(sycl_cts::util::logger& log, T& a, T& b, bool checkGet) {
+void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
   /** check is_host
    */
   if (a.is_host() != b.is_host()) {
@@ -163,13 +163,11 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b, bool checkGet) {
 #ifdef SYCL_BACKEND_OPENCL
   /** check get_native
    */
-  if (checkGet) {
-    auto queue = util::get_cts_object::queue();
-    if (queue.get_backend() == sycl::backend::opencl) {
-      if ((sycl::get_native<sycl::backend::opencl>(a) !=
-          sycl::get_native<sycl::backend::opencl>(b))) {
-        FAIL(log, "two objects are not equal (get_native)");
-      }
+  auto queue = util::get_cts_object::queue();
+  if (queue.get_backend() == sycl::backend::opencl) {
+    if (sycl::get_native<sycl::backend::opencl>(a) !=
+        sycl::get_native<sycl::backend::opencl>(b)) {
+      FAIL(log, "two objects are not equal (get_native)");
     }
   }
 #endif  // SYCL_BACKEND_OPENCL

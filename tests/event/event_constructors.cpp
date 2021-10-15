@@ -59,9 +59,8 @@ class TEST_NAME : public util::test_base {
 
 #ifdef SYCL_BACKEND_OPENCL
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              (sycl::get_native<sycl::backend::opencl>(eventA) !=
-              sycl::get_native<sycl::backend::opencl>(eventB))) {
+          if (sycl::get_native<sycl::backend::opencl>(eventA) !=
+              sycl::get_native<sycl::backend::opencl>(eventB)) {
             FAIL(log, "event was not copied correctly.");
           }
         }
@@ -82,9 +81,8 @@ class TEST_NAME : public util::test_base {
 
 #ifdef SYCL_BACKEND_OPENCL
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              (sycl::get_native<sycl::backend::opencl>(eventA) !=
-              sycl::get_native<sycl::backend::opencl>(eventB))) {
+          if (sycl::get_native<sycl::backend::opencl>(eventA) !=
+              sycl::get_native<sycl::backend::opencl>(eventB)) {
             FAIL(log, "event was not assigned correctly.");
           }
         }

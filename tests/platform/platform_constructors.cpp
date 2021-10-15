@@ -85,9 +85,8 @@ class TEST_NAME : public util::test_base {
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              sycl::get_native<sycl::backend::opencl>(platformA) !=
-                  sycl::get_native<sycl::backend::opencl>(platformB)) {
+          if (sycl::get_native<sycl::backend::opencl>(platformA) !=
+              sycl::get_native<sycl::backend::opencl>(platformB)) {
             FAIL(log, "platform was not copy assigned correctly (get)");
           }
         }

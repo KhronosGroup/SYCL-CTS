@@ -62,9 +62,8 @@ class TEST_NAME : public util::test_base {
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              (sycl::get_native<sycl::backend::opencl>(deviceA) !=
-              sycl::get_native<sycl::backend::opencl>(deviceB))) {
+          if (sycl::get_native<sycl::backend::opencl>(deviceA) !=
+              sycl::get_native<sycl::backend::opencl>(deviceB)) {
             FAIL(log, "device was not assigned correctly (get)");
           }
         }
@@ -84,9 +83,8 @@ class TEST_NAME : public util::test_base {
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              (sycl::get_native<sycl::backend::opencl>(deviceA) !=
-              sycl::get_native<sycl::backend::opencl>(deviceB))) {
+          if (sycl::get_native<sycl::backend::opencl>(deviceA) !=
+              sycl::get_native<sycl::backend::opencl>(deviceB)) {
             FAIL(log, "device was not assigned correctly (get)");
           }
         }
