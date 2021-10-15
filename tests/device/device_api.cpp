@@ -73,19 +73,6 @@ class TEST_NAME : public util::test_base {
                                               "device::get_platform()");
       }
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-      /** check get() member function
-       */
-      {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
-        if (!selector.is_host()) {
-          auto clDeviceId = dev.get();
-          check_return_type<cl_device_id>(log, clDeviceId, "device::get()");
-        }
-      }
-#endif
-
       /** check is_host() member function
        */
       {

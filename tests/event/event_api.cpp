@@ -36,20 +36,6 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-      /** check get()
-      */
-      {
-        auto queue = util::get_cts_object::queue();
-        auto event = get_queue_event<class event_api_kernel_0>(queue);
-
-        if (!queue.is_host()) {
-          auto evt = event.get();
-          check_return_type<cl_event>(log, evt, "sycl::event::get()");
-        }
-        queue.wait_and_throw();
-      }
-#endif
 
       /** check is_host()
       */

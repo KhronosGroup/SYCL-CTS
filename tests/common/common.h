@@ -160,13 +160,19 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b, bool checkGet) {
     FAIL(log, "two objects are not equal (is_host)");
   }
 
-  /** check get
+#ifdef SYCL_BACKEND_OPENCL
+  /** check get_native
    */
   if (checkGet) {
-    if (a.get() != b.get()) {
-      FAIL(log, "two objects are not equal (get)");
+    auto queue = util::get_cts_object::queue();
+    if (queue.get_backend() == sycl::backend::opencl) {
+      if ((sycl::get_native<sycl::backend::opencl>(a) !=
+          sycl::get_native<sycl::backend::opencl>(b))) {
+        FAIL(log, "two objects are not equal (get_native)");
+      }
     }
   }
+#endif  // SYCL_BACKEND_OPENCL
 };
 
 /**
