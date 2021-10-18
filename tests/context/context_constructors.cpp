@@ -133,7 +133,7 @@ class TEST_NAME : public util::test_base {
         if (queue.get_backend() == sycl::backend::opencl) {
           if (sycl::get_native<sycl::backend::opencl>(contextA) !=
               sycl::get_native<sycl::backend::opencl>(contextB)) {
-            FAIL(log, "context was not copied correctly (get)");
+            FAIL(log, "context was not copied correctly");
           }
         }
 #endif
@@ -155,7 +155,7 @@ class TEST_NAME : public util::test_base {
         if (queue.get_backend() == sycl::backend::opencl) {
           if (sycl::get_native<sycl::backend::opencl>(contextA) !=
               sycl::get_native<sycl::backend::opencl>(contextB)) {
-            FAIL(log, "context was not assigned correctly (get)");
+            FAIL(log, "context was not assigned correctly");
           }
         }
 #endif

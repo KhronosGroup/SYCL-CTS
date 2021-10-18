@@ -65,7 +65,7 @@ class TEST_NAME : public util::test_base {
           if (!selector.is_host() &&
               sycl::get_native<sycl::backend::opencl>(platformA) !=
                   sycl::get_native<sycl::backend::opencl>(platformB)) {
-            FAIL(log, "platform was not copy constructed correctly (get)");
+            FAIL(log, "platform was not copy constructed correctly");
           }
         }
 #endif
@@ -87,7 +87,7 @@ class TEST_NAME : public util::test_base {
         if (queue.get_backend() == sycl::backend::opencl) {
           if (sycl::get_native<sycl::backend::opencl>(platformA) !=
               sycl::get_native<sycl::backend::opencl>(platformB)) {
-            FAIL(log, "platform was not copy assigned correctly (get)");
+            FAIL(log, "platform was not copy assigned correctly");
           }
         }
 #endif

@@ -167,7 +167,7 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
   if (queue.get_backend() == sycl::backend::opencl) {
     if (sycl::get_native<sycl::backend::opencl>(a) !=
         sycl::get_native<sycl::backend::opencl>(b)) {
-      FAIL(log, "two objects are not equal (get_native)");
+      FAIL(log, "two objects are not equal");
     }
   }
 #endif  // SYCL_BACKEND_OPENCL

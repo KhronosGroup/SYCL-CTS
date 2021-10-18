@@ -64,7 +64,7 @@ class TEST_NAME : public util::test_base {
         if (queue.get_backend() == sycl::backend::opencl) {
           if (sycl::get_native<sycl::backend::opencl>(deviceA) !=
               sycl::get_native<sycl::backend::opencl>(deviceB)) {
-            FAIL(log, "device was not assigned correctly (get)");
+            FAIL(log, "device was not assigned correctly");
           }
         }
 #endif
@@ -85,7 +85,7 @@ class TEST_NAME : public util::test_base {
         if (queue.get_backend() == sycl::backend::opencl) {
           if (sycl::get_native<sycl::backend::opencl>(deviceA) !=
               sycl::get_native<sycl::backend::opencl>(deviceB)) {
-            FAIL(log, "device was not assigned correctly (get)");
+            FAIL(log, "device was not assigned correctly");
           }
         }
 #endif
