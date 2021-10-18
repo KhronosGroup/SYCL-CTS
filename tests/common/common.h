@@ -163,7 +163,7 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
 #ifdef SYCL_BACKEND_OPENCL
   /** check get_native
    */
-  auto queue = util::get_cts_object::queue();
+  auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_backend() == sycl::backend::opencl) {
     if (sycl::get_native<sycl::backend::opencl>(a) !=
         sycl::get_native<sycl::backend::opencl>(b)) {
