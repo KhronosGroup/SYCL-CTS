@@ -39,6 +39,17 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running legacy tests
+option(SYCL_CTS_ENABLE_LEGACY_TESTS "Enable legacy tests" ON)
+if(SYCL_CTS_ENABLE_LEGACY_TESTS)
+    message(STATUS "Legacy tests are enabled")
+    add_definitions(-DSYCL_CTS_ENABLE_LEGACY_TESTS)
+else()
+    message(STATUS "Legacy tests are disabled")
+endif()
+# ------------------
+
+# ------------------
 # Debug-level verbose logging
 option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
 if(SYCL_CTS_ENABLE_VERBOSE_LOG)
