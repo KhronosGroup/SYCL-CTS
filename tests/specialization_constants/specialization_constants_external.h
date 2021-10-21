@@ -11,6 +11,7 @@
 
 #include "../common/common.h"
 #include "specialization_constants_common.h"
+#include "../common/type_list.h"
 
 using namespace get_spec_const;
 
@@ -34,9 +35,9 @@ CORE_TYPES(FUNC_DECLARE)
 #else
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DECLARE)
 #endif
-FUNC_DECLARE(testing_types::no_cnstr)
-FUNC_DECLARE(testing_types::def_cnstr)
-FUNC_DECLARE(testing_types::no_def_cnstr)
+FUNC_DECLARE(user_def_types::no_cnstr)
+FUNC_DECLARE(user_def_types::def_cnstr)
+FUNC_DECLARE(user_def_types::no_def_cnstr)
 #endif  // TEST_CORE
 
 #ifdef TEST_FP64

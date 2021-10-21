@@ -66,9 +66,9 @@ CORE_TYPES(FUNC_DEFINE)
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DEFINE)
 #endif
 
-FUNC_DEFINE(testing_types::no_cnstr)
-FUNC_DEFINE(testing_types::def_cnstr)
-FUNC_DEFINE(testing_types::no_def_cnstr)
+FUNC_DEFINE(user_def_types::no_cnstr)
+FUNC_DEFINE(user_def_types::def_cnstr)
+FUNC_DEFINE(user_def_types::no_def_cnstr)
 
 #ifdef SYCL_CTS_TEST_DOUBLE
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE

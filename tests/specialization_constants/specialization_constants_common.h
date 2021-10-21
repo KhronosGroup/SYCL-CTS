@@ -11,81 +11,12 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../common/type_list.h"
 
 #include <numeric>
 
 namespace get_spec_const {
 namespace testing_types {
-
-// A user-defined struct with several scalar member variables, no constructor,
-//  destructor or member functions.
-struct no_cnstr {
-  float a;
-  int b;
-  char c;
-
-  void operator=(const int &v) {
-    this->a = v;
-    this->b = v;
-    this->c = v;
-  }
-
-  friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
-    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-  }
-};
-
-// A user-defined class with several scalar member variables, a user-defined
-//  default constructor, and some member functions that modify the member
-//  variables.
-struct def_cnstr {
-  float a;
-  int b;
-  char c;
-
- public:
-  constexpr def_cnstr() : a(3.0), b(2), c('c') {}
-
-  constexpr void assign(int val) {
-    a = val * 3.0;
-    b = val * 2;
-    c = val;
-  }
-
-  void operator=(const int &v) {
-    this->a = v * 3.0;
-    this->b = v * 2;
-    this->c = v;
-  }
-
-  inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
-    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-  }
-};
-
-// A user-defined class with several scalar member variables, a deleted default
-// constructor, and a user-defined (non-default) constructor.
-class no_def_cnstr {
-  float a;
-  int b;
-  char c;
-
- public:
-  no_def_cnstr() = delete;
-
-  constexpr no_def_cnstr(int val) : a(val * 3.0), b(val * 2), c(val) {}
-
-  friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
-    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-  }
-
-  void operator=(const int &v) {
-    no_def_cnstr temp(v);
-    this->a = temp.a;
-    this->b = temp.b;
-    this->c = temp.c;
-  }
-};
 
 // C++ fundamental types that will be used in type coverage
 static const auto types = named_type_pack<
@@ -102,7 +33,7 @@ static const auto types = named_type_pack<
 
 // custom data types that will be used in type coverage
 static const auto composite_types =
-    named_type_pack<no_cnstr, def_cnstr, no_def_cnstr>(
+    named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr, user_def_types::no_def_cnstr>(
         {"no_cnstr", "def_cnstr", "no_def_cnstr"});
 
 }  // namespace testing_types
@@ -123,8 +54,8 @@ inline constexpr auto get_init_value_helper<bool>(int x) {
 }
 
 template <>
-inline constexpr auto get_init_value_helper<testing_types::no_cnstr>(int x) {
-  testing_types::no_cnstr instance{};
+inline constexpr auto get_init_value_helper<user_def_types::no_cnstr>(int x) {
+  user_def_types::no_cnstr instance{};
   instance.a = x;
   instance.b = x;
   instance.c = x;
@@ -132,8 +63,8 @@ inline constexpr auto get_init_value_helper<testing_types::no_cnstr>(int x) {
 }
 
 template <>
-inline constexpr auto get_init_value_helper<testing_types::def_cnstr>(int x) {
-  testing_types::def_cnstr instance;
+inline constexpr auto get_init_value_helper<user_def_types::def_cnstr>(int x) {
+  user_def_types::def_cnstr instance;
   instance.assign(x);
   return instance;
 }
