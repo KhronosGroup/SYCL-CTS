@@ -10,7 +10,6 @@
 #include "../tests/common/cts_selector.h"
 #include "../tests/common/get_cts_object.h"
 #include "../tests/common/macros.h"
-#include "../util/opencl_helper.h"
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -37,10 +36,6 @@ test_base_opencl::test_base_opencl()
  *  @param log for emitting test notes and results
  */
 bool test_base_opencl::setup(logger &log) {
-  /* get the OpenCLHelper object */
-  using sycl_cts::util::get;
-  using sycl_cts::util::opencl_helper;
-  opencl_helper &openclHelper = get<opencl_helper>();
   cl_int error = CL_SUCCESS;
 
   cts_selector ctsSelector;

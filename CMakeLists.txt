@@ -11,6 +11,11 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
+    message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
+endif()
+add_subdirectory(vendor/Catch2)
+
 # set host compiler flags
 if(WIN32)
     add_compile_options(/bigobj)

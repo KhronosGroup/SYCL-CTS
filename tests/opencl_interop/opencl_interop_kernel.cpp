@@ -7,7 +7,6 @@
 *******************************************************************************/
 
 #ifdef SYCL_BACKEND_OPENCL
-#include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
 #endif
 #include "../common/common.h"
