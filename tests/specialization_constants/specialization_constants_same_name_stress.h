@@ -239,7 +239,6 @@ static void sc_run_test_fp64(util::logger &log) {
         via_kb>(log, "double");
 #endif
   }
-  }
 }
 
 }  // namespace specialization_constants_same_name_stress
