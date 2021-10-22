@@ -1,0 +1,251 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for CUDA backend interoperability
+
+This is a test plan for the supported backend interoperability APIs for the
+CUDA backend described in the CUDA backend specification.
+
+== Testing scope
+
+=== Backend coverage
+
+All of the tests described in this plan are performed only for SYCL
+implementations which support the CUDA backend.
+
+=== Device coverage
+
+All of the tests described in this plan are performed only for Nvidia GPU
+devices available under the CUDA backend.
+
+[[sec:types]]
+=== Type coverage
+
+The tests described in this plan are performed for all supported types for the
+type they are associated with.
+
+When `T` is the data type for `accessor` or `local_accessor` it is tested for
+the following types:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+* `float`
+* `bool`
+* `std::byte`
+* `std::int8_t`
+* `std::int16_t`
+* `std::int32_t`
+* `std::int64_t`
+* `std::uint8_t`
+* `std::uint16_t`
+* `std::uint32_t`
+* `std::uint64_t`
+* `std::size_t`
+* `vec<T, int dim>` where `T` is each of the scalar types listed above except
+   for `bool` and `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
+* `marray<T, size_t dim>` where `T` is each of the scalar types listed above
+  and `dim` is `2`, `5`, and `10`.
+* A user-defined struct with several scalar member variables, no constructor,
+  destructor or member functions.
+* A user-defined class with several scalar member variables and a user-defined
+  default constructor.
+* A user-defined class with several scalar member variables, a deleted default
+  constructor, and a user-defined (non-default) constructor.
+
+When `T` is the data type for `unsampled_image_accessor` or
+`sampled_image_accessor` it is tested for the following types:
+
+* `sycl::int4`
+* `sycl::uint4`
+* `sycl::float4`
+* `sycl::half4`
+
+== Tests
+
+=== Backend availability
+
+* Check that the macro `SYCL_BACKEND_CUDA` is defined.
+* Check that the `sycl::backend` enum has the member `cuda`.
+* Check that the `sycl::is_backend_active` type specialization for
+`sycl::backend::cuda` is defined with a boolan member variabled called `value`
+which resolves to `true`.
+
+=== Application interoperability
+
+All of the tests in this section are run within SYCL application scope.
+
+==== Check availability of backend interop traits
+
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::platform>`
+is available and resolves to an alias of `std::vector<CUdevice>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::device>`
+is available and resolves to an alias of `CUdevice`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::context>`
+is available and resolves to an alias of `std::vector<CUcontext>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::queue>`
+is available and resolves to an alias of `CUstream`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::event>`
+is available and resolves to an alias of `CUevent`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::buffer>`
+is available and resolves to an alias of
+`struct { CUdeviceptr ptr; size_t size; }`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::platform>`
+is available and resolves to an alias of `std::vector<CUdevice>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::device>`
+is available and resolves to an alias of `CUdevice`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::context>`
+is available and resolves to an alias of `std::vector<CUcontext>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::queue>`
+is available and resolves to an alias of `CUstream`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::event>`
+is available and resolves to an alias of `CUevent`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::buffer>`
+is available and resolves to an alias of `CUdeviceptr`.
+
+==== Check availability of make_* interop functions
+
+* Check that the `sycl::make_platform` template function specialization for
+`sycl::backend::cuda` is defined and can take a valid `std::vector<CUdevice>`
+and returns a valid `sycl::platform`.
+* Check that the `sycl::make_device` template function specialization for
+`sycl::backend::cuda` is defined and can take a valid `CUdevice` and returns a
+valid `sycl::device`.
+* Check that the `sycl::make_context` template function specialization for
+`sycl::backend::cuda` is defined and can take a valid `std::vector<CUcontext>`
+and returns a valid `sycl::context`.
+* Check that the `sycl::make_queue` template function specialization for
+`sycl::backend::cuda` is defined and can take a valid `CUstream` and returns a
+valid `sycl::queue`.
+* Check that the `sycl::make_event` template function specialization for
+`sycl::backend::cuda` is defined and can take a valid `CUevent` and returns a
+valid `sycl::event`.
+
+==== Check availability of get_native interop functions
+
+* Check that the `sycl::get_native` template function specialization for
+`sycl::backend::cuda` and `sycl::platform` is defined and can take a valid
+`sycl::platform` and returns a valid `std::vector<CUdevice>`.
+* Check that the `sycl::get_native` template function specialization for
+`sycl::backend::cuda` and `sycl::device` is defined and can take a valid
+`sycl::device` and returns a valid `CUdevice`.
+* Check that the `sycl::get_native` template function specialization for
+`sycl::backend::cuda` and `sycl::context` is defined and can take a valid
+`sycl::context` and returns a valid `std::vector<CUcontext>`.
+* Check that the `sycl::get_native` template function specialization for
+`sycl::backend::cuda` and `sycl::queue` is defined and can take a valid
+`sycl::queue` and returns a valid `CUstream`.
+* Check that the `sycl::get_native` template function specialization for
+`sycl::backend::cuda` and `sycl::event` is defined and can take a valid
+`sycl::event` and returns a valid `CUevent`.
+
+==== Check availability of interop_handle get_native_* interop member functions
+
+* Check that the `sycl::interop_handle::get_native_device` template member
+function specialization for `sycl::backend::cuda` is defined and returns a valid
+`CUdevice`.
+* Check that the `sycl::interop_handle::get_native_queue` template member
+function specialization for `sycl::backend::cuda` is defined and returns a valid
+`CUstream`.
+* Check that the `sycl::interop_handle::get_native_context` template member
+function specialization for `sycl::backend::cuda` is defined and returns a valid
+`std::vector<CUcontext>`.
+* Check that the `sycl::interop_handle::get_native_mem` template member
+function specialization for `sycl::backend::cuda` and `sycl::buffer` is defined
+and returns a valid `struct { CUdeviceptr ptr; size_t size; }`.
+
+=== Kernel function interoperability
+
+All of the tests in this section are run within SYCL kernel function scope.
+
+==== Check availability of backend alias types
+
+* Check that the `sycl::cuda::texture` template class is defined.
+* Check that the `sycl::cuda::surface` template class is defined.
+
+==== Check availability of backend interop traits
+
+The following tests are not run for each of the types defined in <<sec:types>>.
+
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::device>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::constant_buffer>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::local>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+sycl::local_accessor<T, Dims>>` is available and resolves to an alias of `T *`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+sampled_image_accessor<T, 1, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 1>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+sampled_image_accessor<T, 2, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 2>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+sampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 3>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 1, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 1>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 2, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 2>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 3>`.
+* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::stream>` is
+available and resolves to an alias of `signed char *`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::device>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::constant_buffer>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::accessor<T,
+Dims, Mode, target::local>>` is available and resolves to an alias of
+`T *`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+sycl::local_accessor<T, Dims>>` is available and resolves to an alias of `T *`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+sampled_image_accessor<T, 1, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 1>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+sampled_image_accessor<T, 2, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 2>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+sampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::texture<T, 3>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 1, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 1>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 2, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 2>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda,
+unsampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
+resolves to an alias of `sycl::cuda::surface<T, 3>`.
+* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::stream>` is
+available and resolves to an alias of `signed char *`.
+
+==== Check calling a CUDA function
+
+The following tests are not run for each of the types defined in <<sec:types>>.
+
+* Check that a CUDA function can be declared using `SYCL_EXTERNAL`.
+* Check that a CUDA function can be called with the backend interop type `T *`
+converted from an `accessor` or `local_accessor`.
+* Check that a CUDA function can be called with the backend interop type
+`texture`, converted from a `sampled_image_accessor`.
+* Check that a CUDA function can be called with the backend interop type
+`surface`, converted from an `unsampled_image_accessor`.
