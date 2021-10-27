@@ -73,7 +73,7 @@ class check_specialization_constants_external {
     // handler
     bool passed = false;
     {
-      T ref { get_init_value_helper<T>(5) };
+      T ref{get_init_value_helper<T>(5)};
       const int case_num =
           static_cast<int>(test_cases_external::by_reference_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -98,7 +98,7 @@ class check_specialization_constants_external {
     // handler
     passed = false;
     {
-      T ref { get_init_value_helper<T>(10) };
+      T ref{get_init_value_helper<T>(10)};
       const int case_num =
           static_cast<int>(test_cases_external::by_value_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -127,7 +127,7 @@ class check_specialization_constants_external {
       // via kernel_bundle
       passed = false;
       {
-        T ref { get_init_value_helper<T>(15) };
+        T ref{get_init_value_helper<T>(15)};
         const int case_num =
             static_cast<int>(test_cases_external::by_reference_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -166,7 +166,7 @@ class check_specialization_constants_external {
       // kernel_bundle
       passed = false;
       {
-        T ref { get_init_value_helper<T>(20) };
+        T ref{get_init_value_helper<T>(20)};
         const int case_num =
             static_cast<int>(test_cases_external::by_value_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);
