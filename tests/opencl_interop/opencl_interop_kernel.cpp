@@ -6,6 +6,8 @@
 //
 *******************************************************************************/
 
+#include <sycl/sycl.hpp>
+
 #ifdef SYCL_BACKEND_OPENCL
 #include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
@@ -112,7 +114,8 @@ class TEST_NAME :
           FAIL(log, "create_kernel failed");
         }
 
-        sycl::kernel kernel = sycl::make_kernel(clKernel, context);
+        sycl::kernel kernel =
+            sycl::make_kernel<sycl::backend::opencl>(clKernel, context);
 
         /** test single_task(kernel)
          */
