@@ -104,6 +104,32 @@ class no_def_cnstr {
   }
 };
 
+template <typename T>
+inline constexpr auto get_init_value_helper(int x) {
+  return x;
+}
+
+template <>
+inline constexpr auto get_init_value_helper<bool>(int x) {
+  return (x%2 != 0);
+}
+
+template <>
+inline constexpr auto get_init_value_helper<no_cnstr>(int x) {
+  no_cnstr instance{};
+  instance.a = x;
+  instance.b = x;
+  instance.c = x;
+  return instance;
+}
+
+template <>
+inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
+  def_cnstr instance;
+  instance.assign(x);
+  return instance;
+}
+
 }  // namespace user_def_types
 
 namespace get_cts_types {

@@ -33,7 +33,8 @@ static const auto types = named_type_pack<
 
 // custom data types that will be used in type coverage
 static const auto composite_types =
-    named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr, user_def_types::no_def_cnstr>(
+    named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr,
+                    user_def_types::no_def_cnstr>(
         {"no_cnstr", "def_cnstr", "no_def_cnstr"});
 
 }  // namespace testing_types
@@ -43,41 +44,15 @@ static const auto composite_types =
 using sc_use_kernel_bundle = std::true_type;
 using sc_no_kernel_bundle = std::false_type;
 
-template <typename T>
-inline constexpr auto get_init_value_helper(int x) {
-  return x;
-}
-
-template <>
-inline constexpr auto get_init_value_helper<bool>(int x) {
-  return (x%2 != 0);
-}
-
-template <>
-inline constexpr auto get_init_value_helper<user_def_types::no_cnstr>(int x) {
-  user_def_types::no_cnstr instance{};
-  instance.a = x;
-  instance.b = x;
-  instance.c = x;
-  return instance;
-}
-
-template <>
-inline constexpr auto get_init_value_helper<user_def_types::def_cnstr>(int x) {
-  user_def_types::def_cnstr instance;
-  instance.assign(x);
-  return instance;
-}
-
 constexpr int default_val = 20;
 
 template <typename T, int case_num>
 constexpr sycl::specialization_id<T> spec_const(
-    get_init_value_helper<T>(default_val));
+    user_def_types::get_init_value_helper<T>(default_val));
 
 template <typename T>
 void fill_init_values(T &result, int val) {
-  result = get_init_value_helper<T>(val);
+  result = user_def_types::get_init_value_helper<T>(val);
 }
 
 template <typename T, int numElements>

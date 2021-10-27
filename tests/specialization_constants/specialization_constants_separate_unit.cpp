@@ -14,7 +14,7 @@ using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    get_init_value_helper<T>(default_val));
+    user_def_types::get_init_value_helper<T>(default_val));
 
 template <typename T, test_cases_external TestCase>
 bool check_kernel_handler_by_reference_external(sycl::kernel_handler &h,
