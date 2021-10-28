@@ -6,13 +6,12 @@
 //
 *******************************************************************************/
 
-#include <sycl/sycl.hpp>
+#include "../common/common.h"
 
 #ifdef SYCL_BACKEND_OPENCL
 #include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
 #endif
-#include "../common/common.h"
 
 #define TEST_NAME opencl_interop_constructors
 

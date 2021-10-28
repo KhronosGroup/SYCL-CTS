@@ -11,7 +11,6 @@
 #include "../tests/common/get_cts_object.h"
 #include "../tests/common/macros.h"
 #include "../util/opencl_helper.h"
-#include <sycl/sycl.hpp>
 
 #ifdef _MSC_VER
 #include <windows.h>
