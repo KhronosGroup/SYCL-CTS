@@ -15,8 +15,18 @@
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 namespace {
 
+#ifdef SYCL_CTS_FULL_CONFORMANCE
+static const auto types =
+    named_type_pack<char, signed char, unsigned char, short, unsigned short,
+                    int, unsigned int, long, unsigned long, long long,
+                    unsigned long long>{
+        "char",           "signed char", "unsigned char",     "short",
+        "unsigned short", "int",         "unsigned int",      "long",
+        "unsigned long",  "long long",   "unsigned long long"};
+#else
 static const auto types =
     named_type_pack<char, int, float>{"char", "int", "float"};
+#endif  // SYCL_CTS_FULL_CONFORMANCE
 
 template <typename funT, typename PredT, typename T>
 class test_kernel;
