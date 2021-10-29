@@ -19,7 +19,7 @@ struct check_result_find_high {
   bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
     return sub_group_mask.find_high() ==
-           sycl::id(sub_group.get_local_range().get(0) / 2 - 1);
+           sycl::id((sub_group.get_local_range().get(0) + 1) / 2 - 1);
   }
 };
 
