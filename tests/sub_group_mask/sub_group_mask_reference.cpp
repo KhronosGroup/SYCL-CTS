@@ -19,29 +19,30 @@ struct check_result_reference {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &) {
     for (size_t N = 0; N < sub_group_mask.size(); N++) {
-      auto ref = sub_group_mask[sycl::id(N)];
-      if (ref != (N % 2 == 0)) return false;
+      sycl::ext::oneapi::sub_group_mask::reference ref_to_bit =
+          sub_group_mask[sycl::id(N)];
+      if (ref_to_bit != (N % 2 == 0)) return false;
       switch (N % 5) {
         case 0:
-          ref = (N % 2 != 0);
+          ref_to_bit = (N % 2 != 0);
           if (sub_group_mask[sycl::id(N)] != (N % 2 != 0)) return false;
           break;
         case 1:
           if (N == sub_group_mask.size() - 1) break;
-          ref = sub_group_mask[sycl::id(N + 1)];
+          ref_to_bit = sub_group_mask[sycl::id(N + 1)];
           if (sub_group_mask[sycl::id(N)] != ((N + 1) % 2 == 0)) return false;
           break;
         case 2:
-          if (~ref != (N % 2 != 0)) return false;
+          if (~ref_to_bit != (N % 2 != 0)) return false;
           break;
         case 3:
-          if ((bool)ref != (N % 2 == 0)) return false;
+          if ((bool)ref_to_bit != (N % 2 == 0)) return false;
           break;
         case 4:
           if (!std::is_same<sycl::ext::oneapi::sub_group_mask::reference &,
-                            decltype(ref.flip())>::value)
+                            decltype(ref_to_bit.flip())>::value)
             return false;
-          if (ref.flip() != (N % 2 != 0)) return false;
+          if (ref_to_bit.flip() != (N % 2 != 0)) return false;
           break;
       }
     }
