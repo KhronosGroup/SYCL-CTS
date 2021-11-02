@@ -37,6 +37,17 @@ struct check_type_find_low {
                         decltype(sub_group_mask.find_low())>::value;
   }
 };
+
+template <size_t SGSize>
+using verification_func_for_second_half_predicate =
+    check_mask_api<SGSize, check_result_find_low, check_type_find_low,
+                   second_half_predicate,
+                   const sycl::ext::oneapi::sub_group_mask>;
+template <size_t SGSize>
+using verification_func_for_false_predicate =
+    check_mask_api<SGSize, check_result_find_low_no_bits_set,
+                   check_type_find_low, false_predicate,
+                   const sycl::ext::oneapi::sub_group_mask>;
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 /** test sycl::oneapi::sub_group_mask interface
@@ -54,12 +65,11 @@ class TEST_NAME : public util::test_base {
   void run(util::logger &log) override {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
     log.note("Check find_low() for mask with second half predicate");
-    check_const_api<check_result_find_low, check_type_find_low,
-                    second_half_predicate>(log);
+    check_diff_sub_group_sizes<verification_func_for_second_half_predicate>(
+        log);
 
     log.note("Check find_low() for mask with false predicate");
-    check_const_api<check_result_find_low_no_bits_set, check_type_find_low,
-                    false_predicate>(log);
+    check_diff_sub_group_sizes<verification_func_for_false_predicate>(log);
 #else
     log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK

@@ -30,6 +30,11 @@ struct check_type_subscript {
     return std::is_same<bool, decltype(sub_group_mask[sycl::id()])>::value;
   }
 };
+
+template <size_t SGSize>
+using verification_func_for_even_predicate =
+    check_mask_api<SGSize, check_result_subscript, check_type_subscript,
+                   even_predicate, const sycl::ext::oneapi::sub_group_mask>;
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 /** test sycl::oneapi::sub_group_mask interface
@@ -46,8 +51,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
-    check_const_api<check_result_subscript, check_type_subscript,
-                    even_predicate>(log);
+    check_diff_sub_group_sizes<verification_func_for_even_predicate>(log);
 #else
     log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK

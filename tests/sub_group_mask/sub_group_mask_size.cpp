@@ -27,6 +27,11 @@ struct check_type_size {
     return std::is_same<uint32_t, decltype(sub_group_mask.size())>::value;
   }
 };
+
+template <size_t SGSize>
+using verification_func_for_true_predicate =
+    check_mask_api<SGSize, check_result_size, check_type_size, true_predicate,
+                   const sycl::ext::oneapi::sub_group_mask>;
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 /** test sycl::oneapi::sub_group_mask interface
@@ -43,8 +48,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
-    check_const_api<check_result_size, check_type_size, true_predicate>(
-        log);
+    check_diff_sub_group_sizes<verification_func_for_true_predicate>(log);
 #else
     log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
