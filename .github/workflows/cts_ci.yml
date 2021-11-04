@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  compile-cts-support-libraries:
+  compile-cts:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -13,6 +13,7 @@ jobs:
         sycl-impl: [computecpp, dpcpp, hipsycl]
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+      parallel-build-jobs: 2
     container:
       # image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}
       # ComputeCpp images are hosted by Codeplay
@@ -24,10 +25,15 @@ jobs:
           submodules: true
       - name: Configure CMake
         working-directory: ${{ env.container-workspace }}
-        run: bash /scripts/configure.sh
+        run: |
+          bash /scripts/configure.sh \
+            -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter"
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
       - name: Build 'util'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target util
+      - name: Build all supported test categories
+        working-directory: ${{ env.container-workspace }}/build
+        run: cmake --build . --target test_all -- -j${{ env.parallel-build-jobs }}
