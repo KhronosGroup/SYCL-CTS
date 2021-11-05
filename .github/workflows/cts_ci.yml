@@ -42,8 +42,8 @@ jobs:
           cmake --build . --target test_all -- -j${{ env.parallel-build-jobs }}
           TS_AFTER=$(date +%s)
           ELAPSED=$(($TS_AFTER - $TS_BEFORE))
-          sort -rn -o build_times.log build_times.log
-          echo "Total time: $( date -d@$ELAPSED -u '+%-Hh %-Mm %-Ss' )" >> build_times.log
+          sort --numeric-sort --reverse --output=build_times.log build_times.log
+          echo "Total time: $( date --date=@$ELAPSED --utc '+%-Hh %-Mm %-Ss' )" >> build_times.log
       - name: Upload build times artifact
         uses: actions/upload-artifact@v2
         with:
