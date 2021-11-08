@@ -27,7 +27,8 @@ jobs:
         working-directory: ${{ env.container-workspace }}
         run: |
           bash /scripts/configure.sh \
-            -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter"
+            -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
+            -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
         run: cmake --build . --target oclmath
@@ -36,4 +37,15 @@ jobs:
         run: cmake --build . --target util
       - name: Build all supported test categories
         working-directory: ${{ env.container-workspace }}/build
-        run: cmake --build . --target test_all -- -j${{ env.parallel-build-jobs }}
+        run: |
+          TS_BEFORE=$(date +%s)
+          cmake --build . --target test_all -- -j${{ env.parallel-build-jobs }}
+          TS_AFTER=$(date +%s)
+          ELAPSED=$(($TS_AFTER - $TS_BEFORE))
+          sort --numeric-sort --reverse --output=build_times.log build_times.log
+          echo "Total time: $( date --date=@$ELAPSED --utc '+%-Hh %-Mm %-Ss' )" >> build_times.log
+      - name: Upload build times artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-times-${{ matrix.sycl-impl }}
+          path: ${{ env.container-workspace }}/build/build_times.log

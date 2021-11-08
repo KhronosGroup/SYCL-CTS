@@ -78,7 +78,10 @@ function(build_spir exe_name spir_target_name source_file output_path)
 
     add_custom_command(
     OUTPUT  ${output_bc} ${output_stub}
-    COMMAND ComputeCpp::compute++
+    # We prepend the compiler launcher to enable SYCL_CTS_MEASURE_BUILD_TIMES
+    # to also measure device compiler times.
+    COMMAND ${CMAKE_CXX_COMPILER_LAUNCHER}
+            $<TARGET_FILE:ComputeCpp::compute++>
             -Wno-ignored-attributes
             -O2
             -mllvm -inline-threshold=1000
