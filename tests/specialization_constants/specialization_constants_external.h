@@ -136,6 +136,9 @@ class check_specialization_constants_external {
         auto inputBundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
             context, {kernelID});
         if (!inputBundle.has_kernel(kernelID)) {
+          // It's implementation-defined if a kernel is available in a bundle
+          // with bundle_state::input. So if such bundle misses some kernels it
+          // shouldn't trigger a test failure.
           log.skip("Input bundle misses kernel in question");
           passed = true;
         } else {
@@ -175,6 +178,8 @@ class check_specialization_constants_external {
         auto inputBundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
             context, {kernelID});
         if (!inputBundle.has_kernel(kernelID)) {
+          // It's implementation-defined if a kernel is available in a bundle
+          // with bundle_state::input.
           log.skip("Input bundle misses kernel in question");
           passed = true;
         } else {
