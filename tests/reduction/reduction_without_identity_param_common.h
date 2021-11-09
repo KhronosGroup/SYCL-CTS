@@ -120,7 +120,7 @@ auto get_reduction_for_span(SpanT &span, FunctorT functor) {
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
@@ -171,7 +171,7 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
@@ -217,7 +217,7 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
@@ -275,6 +275,7 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
+ *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
