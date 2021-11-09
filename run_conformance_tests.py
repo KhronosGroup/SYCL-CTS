@@ -92,7 +92,8 @@ def split_additional_args(additional_args):
     # shlex doesn't support None
     if additional_args is None:
         return []
-    return shlex.split(additional_args)
+    # shell-parse in posix mode the shell-escaped string with additional_args
+    return shlex.split(shlex.quote(additional_args))
 
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
