@@ -190,8 +190,8 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
   sycl::buffer<VariableT> output_buffer{&output_result, 1};
 
   queue.submit([&](sycl::handler &cgh) {
-    auto reduction{get_reduction_for_buffer<UsePropertyFlag>(output_buffer,
-                                                              cgh, functor)};
+    auto reduction{
+        get_reduction_for_buffer<UsePropertyFlag>(output_buffer, cgh, functor)};
     auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
                                                  UseCombineFlagT, FunctorT>(
         initial_buf.template get_access<sycl::access_mode::read>(cgh))};
@@ -313,48 +313,46 @@ struct run_tests_for_all_functors {
   template <typename RangeT>
   void operator()(RangeT &range, sycl::queue &queue,
                   sycl_cts::util::logger &log, const std::string &type_name) {
+    constexpr bool use_lambda_without_combine{
+        reduction_get_lambda::without_combine};
+    constexpr bool use_lambda_with_combine{reduction_get_lambda::with_combine};
+    constexpr bool use_property_flag{UsePropertyFlagT::value};
+
+    // for functors that can be called by .combine() or overloaded operator()
     // for functors that can be called by .combine() or overloaded operator()
     // test will be called twice using operator +, *, ^= e.t.c.  and .combine()
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::plus<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<VariableT,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
-        sycl::plus<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::multiplies<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<VariableT,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::multiplies<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_and<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<VariableT,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_and<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_or<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<VariableT,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_or<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_xor<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<VariableT,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_xor<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::minimum<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::maximum<VariableT>(), range, queue, log, type_name);
   }
 };
