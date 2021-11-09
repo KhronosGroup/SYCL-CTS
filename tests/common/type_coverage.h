@@ -267,12 +267,8 @@ void for_all_types_and_marrays(const named_type_pack<types...>& typeList,
    */
   size_t typeNameIndex = 0;
 
-  int packExpansion[] = {(
-      for_type_and_marrays<action, types, actionArgsT...>(
+  ((for_type_and_marrays<action, types, actionArgsT...>(
           std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
-      ++typeNameIndex,
-      0  // Dummy initialization value
-      )...};
-  static_cast<void>(packExpansion);
+    ++typeNameIndex), ...);
 }
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H

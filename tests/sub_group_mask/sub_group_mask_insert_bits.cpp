@@ -55,7 +55,7 @@ struct check_result_insert_bits {
 template <typename T>
 struct check_type_insert_bits {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
-    return std::is_same<void, decltype(sub_group_mask.insert_bits(T()))>::value;
+    return std::is_same_v<void, decltype(sub_group_mask.insert_bits(T()))>;
   }
 };
 
