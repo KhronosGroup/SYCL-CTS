@@ -24,7 +24,7 @@ Compilation and execution prerequisites
 ---------------------------------------
 
 - Python 3.7
-- CMake 3.13
+- CMake 3.15
 - A conformant implementation of OpenCL
 - An implementation of SYCL
   - Note: the SYCL implementation may require additional dependencies

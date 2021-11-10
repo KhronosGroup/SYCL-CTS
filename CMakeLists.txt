@@ -1,5 +1,4 @@
-# check CMake Version
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 project(sycl_cts LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -9,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(OpenCLTargets REQUIRED)
+find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
 # set host compiler flags
