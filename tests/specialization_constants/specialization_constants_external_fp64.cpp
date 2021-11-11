@@ -44,7 +44,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
             "operations");
         return;
       }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_specialization_constants_external<double> fp64_test{};
       fp64_test(log, "double");
 #else

@@ -37,7 +37,7 @@ public:
                  "operations");
         return;
       }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_specialization_constants_same_command_group<double> fp64_test{};
       fp64_test(log, "double");
 #else
