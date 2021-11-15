@@ -43,7 +43,9 @@ class TEST_NAME :
     {
       auto queue = util::get_cts_object::queue();
       if (queue.get_backend() != sycl::backend::opencl) {
-        log.note("Interop part is not supported on non-OpenCL backend types");
+        log.skip(
+            "OpenCL interoperability part is not supported on non-OpenCL "
+            "backend types");
         return;
       }
 

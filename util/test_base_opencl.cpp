@@ -40,7 +40,9 @@ bool test_base_opencl::setup(logger &log) {
   /* get the OpenCLHelper object */
   auto queue = util::get_cts_object::queue();
   if (queue.get_backend() != sycl::backend::opencl) {
-    log.skip("Interop part is not supported on non-OpenCL backend types");
+    log.skip(
+        "OpenCL interoperability part is not supported on non-OpenCL backend "
+        "types");
     return false;
   }
 
