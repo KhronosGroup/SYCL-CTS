@@ -17,7 +17,7 @@ struct check_template_exists {};
 
 bool check_opencl_supporting(const sycl::queue &q,
                              sycl_cts::util::logger &log) {
-  bool opencl_supported{};
+  bool opencl_supported{false};
 #ifdef SYCL_BACKEND_OPENCL
   opencl_supported = q.get_backend() == sycl::backend::opencl;
 #endif  // SYCL_BACKEND_OPENCL
