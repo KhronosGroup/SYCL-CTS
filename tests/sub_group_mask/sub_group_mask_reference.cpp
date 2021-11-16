@@ -21,24 +21,32 @@ struct check_result_reference {
     for (size_t N = 0; N < sub_group_mask.size(); N++) {
       sycl::ext::oneapi::sub_group_mask::reference ref_to_bit =
           sub_group_mask[sycl::id(N)];
+      // check that reference to bit have correct value
       if (ref_to_bit != (N % 2 == 0)) return false;
       switch (N % 5) {
         case 0:
+          // check reference operator=(bool x)
+          // by assigning opposite value and checking corresponding bit in mask
           ref_to_bit = (N % 2 != 0);
           if (sub_group_mask[sycl::id(N)] != (N % 2 != 0)) return false;
           break;
         case 1:
+          // check reference operator=(const reference& x)
+          // by assigning reference for next bit and checking corresponding bit in mask
           if (N == sub_group_mask.size() - 1) break;
           ref_to_bit = sub_group_mask[sycl::id(N + 1)];
           if (sub_group_mask[sycl::id(N)] != ((N + 1) % 2 == 0)) return false;
           break;
         case 2:
+          // check reference operator~()
           if (~ref_to_bit != (N % 2 != 0)) return false;
           break;
         case 3:
+          // check reference operator bool()
           if ((bool)ref_to_bit != (N % 2 == 0)) return false;
           break;
         case 4:
+          // check reference member function flip()
           if (!std::is_same<sycl::ext::oneapi::sub_group_mask::reference &,
                             decltype(ref_to_bit.flip())>::value)
             return false;
