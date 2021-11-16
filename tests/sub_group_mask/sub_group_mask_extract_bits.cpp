@@ -15,7 +15,10 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
-template <typename T>
+// Since sub_group_mask with even predicate consists of 0101...01
+// expected extracted bits are 0101..01 or 1010..10 depending on starting pos.
+// Filling variable of type T with 01 or 10 to match size of the mask
+// and the rest of starting bits are remaining 0.
 void get_expected_bits(T &out, uint32_t mask_size, int pos) {
   if (pos >= mask_size - 1) return;
   int init;
