@@ -231,9 +231,10 @@ struct buffer_accessor_get_pointer_r {
   template <typename accT, typename errorAccT>
   static void check(const accT& acc, const errorAccT& errorAccessor,
                     const sycl_id_t<dim>& offset) {
-    sycl_id_t<dim>
-        zero_offset;  // In SYCL 2020, get_pointer() always returns the base
-                      // buffer pointer, ignoring any offset.
+    // In SYCL 2020, get_pointer() always returns the base
+    // buffer pointer, ignoring any offset.
+    sycl_id_t<dim> zero_offset;
+
     const auto expectedRead = expected_value_t::expected_read(zero_offset);
     auto ptr = acc.get_pointer();
 
