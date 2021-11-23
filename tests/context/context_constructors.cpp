@@ -128,9 +128,13 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "context was not copied correctly (is_host)");
         }
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (contextA.get() != contextB.get())) {
-          FAIL(log, "context was not copied correctly (get)");
+#ifdef SYCL_BACKEND_OPENCL
+        auto queue = util::get_cts_object::queue();
+        if (queue.get_backend() == sycl::backend::opencl) {
+          if (sycl::get_native<sycl::backend::opencl>(contextA) !=
+              sycl::get_native<sycl::backend::opencl>(contextB)) {
+            FAIL(log, "context was not copied correctly");
+          }
         }
 #endif
       }
@@ -146,9 +150,13 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "context was not assigned correctly (is_host)");
         }
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (contextA.get() != contextB.get())) {
-          FAIL(log, "context was not assigned correctly (get)");
+#ifdef SYCL_BACKEND_OPENCL
+        auto queue = util::get_cts_object::queue();
+        if (queue.get_backend() == sycl::backend::opencl) {
+          if (sycl::get_native<sycl::backend::opencl>(contextA) !=
+              sycl::get_native<sycl::backend::opencl>(contextB)) {
+            FAIL(log, "context was not assigned correctly");
+          }
         }
 #endif
       }
@@ -193,7 +201,7 @@ class TEST_NAME : public util::test_base {
                "failed)");
         }
         if (!(contextA == contextC)) {
-          check_equality(log, contextA, contextC, !selector.is_host());
+          check_equality(log, contextA, contextC);
           FAIL(log,
                "device equality does not work correctly (equality of equal "
                "failed)");

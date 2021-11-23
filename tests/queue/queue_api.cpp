@@ -64,20 +64,6 @@ class TEST_NAME : public util::test_base {
                                             "sycl::queue::get_device()");
       }
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-      /** check get() member function
-       */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
-        if (!selector.is_host()) {
-          auto clQueueObject = queue.get();
-          check_return_type<cl_command_queue>(log, clQueueObject,
-                                              "sycl::queue::get()");
-        }
-      }
-#endif
-
       /** check submit(command_group_scope) member function
       */
       {
