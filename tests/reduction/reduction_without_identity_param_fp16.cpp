@@ -35,10 +35,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
           "Device does not support half precision floating point operations");
       return;
     }
-    run_tests_for_all_functors<sycl::half, without_property>()(
+
+    run_tests_for_all_functors<sycl::half, run_test_without_property>()(
         range, queue, log, "sycl::half");
-    run_tests_for_all_functors<sycl::half, with_property>()(nd_range, queue,
-                                                            log, "sycl::half");
+    run_tests_for_all_functors<sycl::half, run_test_with_property>()(
+        nd_range, queue, log, "sycl::half");
   }
 };
 
