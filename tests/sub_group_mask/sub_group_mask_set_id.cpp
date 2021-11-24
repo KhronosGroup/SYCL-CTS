@@ -18,14 +18,14 @@ using namespace sycl_cts;
 struct check_result_set_id {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    for (int N = 0; N < sub_group_mask.size(); N++) {
+    for (size_t N = 0; N < sub_group_mask.size(); N++) {
       if (N % 3 == 0)
         sub_group_mask.set(sycl::id(N), true);
       else if (N % 3 == 1)
         sub_group_mask.set(sycl::id(N), false);
     }
 
-    for (int N = 0; N < sub_group_mask.size(); N++) {
+    for (size_t N = 0; N < sub_group_mask.size(); N++) {
       switch (N % 3) {
         case 0:
           if (!sub_group_mask.test(sycl::id(N))) return false;

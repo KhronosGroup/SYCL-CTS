@@ -8,6 +8,7 @@
 
 #include "sub_group_mask_common.h"
 
+
 #define TEST_NAME sub_group_mask_reset_id
 
 namespace TEST_NAMESPACE {
@@ -18,15 +19,15 @@ using namespace sycl_cts;
 struct check_result_reset_id {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    for (int N = 0; N < sub_group_mask.size(); N++) {
-      if (N % 3 == 0) sub_group_mask.reset(sycl::id(N));
+    for (size_t N = 0; N < sub_group_mask.size(); N += 3) {
+      sub_group_mask.reset(sycl::id(N));
     }
 
-    for (int N = 0; N < sub_group_mask.size(); N++) {
+    for (size_t N = 0; N < sub_group_mask.size(); N++) {
       switch (N % 3) {
         case 0:
           if (sub_group_mask.test(sycl::id(N))) return false;
-          break;
+          continue;
         default:
           if (sub_group_mask.test(sycl::id(N)) != (N % 2 == 0)) return false;
       }

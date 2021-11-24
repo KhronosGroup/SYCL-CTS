@@ -22,7 +22,7 @@ struct check_result_set {
     unsigned long zero = 0;
     sub_group_mask.set();
     sub_group_mask.extract_bits(after_set);
-    return (after_set == ~zero);
+    return after_set == ~zero;
   }
 };
 

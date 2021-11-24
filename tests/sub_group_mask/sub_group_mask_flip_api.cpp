@@ -19,11 +19,10 @@ struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
     unsigned long before_flip, after_flip;
-    unsigned long zero = 0;
     sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip();
     sub_group_mask.extract_bits(after_flip);
-    return ((before_flip ^ after_flip) == ~zero);
+    return after_flip == ~before_flip;
   }
 };
 

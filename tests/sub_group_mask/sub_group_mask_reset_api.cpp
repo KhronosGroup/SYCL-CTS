@@ -21,7 +21,7 @@ struct check_result_reset {
     unsigned long after_reset;
     sub_group_mask.reset();
     sub_group_mask.extract_bits(after_reset);
-    return (after_reset == 0);
+    return after_reset == 0;
   }
 };
 
