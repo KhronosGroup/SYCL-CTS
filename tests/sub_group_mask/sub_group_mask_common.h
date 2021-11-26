@@ -31,7 +31,7 @@ static const auto types =
 template <typename funT, typename PredT, typename T, size_t SGSize>
 class test_kernel;
 
-constexpr size_t globalSize = 128;
+constexpr size_t globalSize = 32;
 constexpr size_t localSize = 32;
 
 struct even_predicate {
