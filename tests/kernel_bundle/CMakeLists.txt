@@ -1,0 +1,26 @@
+file(GLOB test_cases_list *.cpp)
+
+set(independent_cases_list
+  has_kernel_bundle_core_all_states_ctx_only.cpp
+  has_kernel_bundle_core_all_states_dev.cpp
+  has_kernel_bundle_core_atomic64_ctx_only.cpp
+  has_kernel_bundle_core_atomic64_dev.cpp
+  has_kernel_bundle_core_fp16_ctx_only.cpp
+  has_kernel_bundle_core_fp16_dev.cpp
+  has_kernel_bundle_core_fp64_ctx_only.cpp
+  has_kernel_bundle_core_fp64_dev.cpp
+  has_kernel_bundle_core_like_support_reqd_sub_group_size_ctx_only.cpp
+  has_kernel_bundle_core_like_support_reqd_sub_group_size_dev.cpp
+  has_kernel_bundle_core_like_unsupport_reqd_sub_group_size_ctx_only.cpp
+  has_kernel_bundle_core_like_unsupport_reqd_sub_group_size_dev.cpp
+  has_kernel_bundle_core_reqd_like_support_work_group_size_ctx_only.cpp
+  has_kernel_bundle_core_reqd_like_support_work_group_size_dev.cpp
+  has_kernel_bundle_core_reqd_like_unsupport_work_group_size_ctx_only.cpp
+  has_kernel_bundle_core_reqd_like_unsupport_work_group_size_dev.cpp
+)
+
+list(TRANSFORM independent_cases_list PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
+list(REMOVE_ITEM test_cases_list ${independent_cases_list})
+
+add_cts_test(${test_cases_list})
+add_independent_cts_tests(${independent_cases_list})
