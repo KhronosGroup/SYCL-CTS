@@ -181,6 +181,7 @@ function(add_cts_test_helper)
   target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
 endfunction()
 
+# Create one *.exe-file from all of the provided *.cpp-files
 function(add_cts_test)
   # To make check that any .cpp files are passed
   # List created because, direct check on "${ARGN}" gives false-positive result
@@ -194,6 +195,7 @@ function(add_cts_test)
   endif()
 endfunction()
 
+# Create a separate *.exe-file from each of the provided *.cpp-files
 function(add_independent_cts_tests)
   set(tests_list "${ARGN}")
   foreach(ind_test IN LISTS tests_list)
