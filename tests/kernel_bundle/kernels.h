@@ -112,6 +112,15 @@ struct simple_kernel_descriptor {
   static auto get_restrictions() { return util::kernel_restrictions(); }
 };
 
+struct kernel_second : kernel_base {
+  void operator()(sycl::item<1> id) const { trigger_invocation_flag(id); }
+};
+
+struct simple_kernel_descriptor_second {
+  using type = kernel_second;
+  static auto get_restrictions() { return util::kernel_restrictions(); }
+};
+
 struct kernel_accelerator : kernel_base {
   void operator()(sycl::item<1> id) const
       [[sycl::requires(has(sycl::aspect::accelerator))]] {
