@@ -206,8 +206,7 @@ function(add_independent_cts_tests)
 
       add_cts_test_helper(${test_exe_name} "${test_cases_list}")
     else()
-      # this comment will be removed after testing TMT run
-      message(STATUS ">>>>>>>>>>>>>>>>>>>>> no file named ${ind_test}")
+      message(FATAL_ERROR "No file named ${ind_test}")
     endif()
   endforeach()
 endfunction()
