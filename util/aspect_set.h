@@ -14,9 +14,7 @@
 #include <set>
 #include <string>
 
-namespace sycl_cts {
-namespace util {
-namespace aspect {
+namespace sycl_cts::util::aspect {
 
 /** @brief Provides set of aspects to work with
  *  @details Example of usage:
@@ -48,8 +46,6 @@ std::string to_string(sycl::aspect asp);
  */
 std::string to_string(const aspect_set &asp_set);
 
-}  // namespace aspect
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util::aspect
 
 #endif  // __SYCLCTS_UTIL_ASPECT_SET_H

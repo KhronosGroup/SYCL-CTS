@@ -15,8 +15,7 @@
 #include <string>
 #include <utility>
 
-namespace sycl_cts {
-namespace util {
+namespace sycl_cts::util {
 
 /** @brief Descriptor for specific kernel requirements
  *  @details See SYCL2020 rev.3 par. 5.7
@@ -30,6 +29,7 @@ class kernel_restrictions {
 
   size_t work_group_size[3];
   int work_group_size_dims;
+
  public:
   kernel_restrictions();
 
@@ -47,7 +47,7 @@ class kernel_restrictions {
   void add_aspect(const sycl::aspect& asp);
 
   void add_aspects(const aspect::aspect_set& asp);
-  
+
   void reset();
 
   bool is_compatible(const sycl::device& device, std::string& info) const;
@@ -60,7 +60,6 @@ class kernel_restrictions {
   std::string to_string() const;
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util
 
 #endif  // __SYCLCTS_UTIL_KERNEL_RESTRICTIONS_H

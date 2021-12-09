@@ -13,11 +13,7 @@
 #include "has_kernel_bundle.h"
 #include <vector>
 
-namespace sycl_cts {
-namespace tests {
-namespace has_kernel_bundle {
-
-namespace check {
+namespace sycl_cts::tests::has_kernel_bundle::check {
 
 /** @brief Call sycl::has_kernel_bundle with sycl::bundle_state, context and
  *         device and verify that exception was thrown
@@ -101,10 +97,6 @@ struct zero_devices<KernelDescriptorT, BundleState,
   }
 };
 
-}  // namespace check
-
-}  // namespace has_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::has_kernel_bundle::check
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICES_H

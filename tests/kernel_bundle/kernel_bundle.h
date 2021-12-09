@@ -19,9 +19,7 @@
 #include <string>
 #include <string_view>
 
-namespace sycl_cts {
-namespace tests {
-namespace kernel_bundle {
+namespace sycl_cts::tests::kernel_bundle {
 
 /** @brief Provides device aspects required for the bundle state given
  */
@@ -117,8 +115,6 @@ class TestCaseDescriptionBase : public ITestCaseDescription {
   }
 };
 
-}  // namespace kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_KERNEL_BUNDLE_H

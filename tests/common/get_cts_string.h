@@ -11,8 +11,7 @@
 
 #include "common.h"
 
-namespace sycl_cts {
-namespace get_cts_string {
+namespace sycl_cts::get_cts_string {
 
 enum class verbosity { brief = 0, detail };
 
@@ -40,7 +39,6 @@ inline std::string for_bundle_state() {
   return result;
 }
 
-}  // namespace get_cts_string
-}  // namespace sycl_cts
+}  // namespace sycl_cts::get_cts_string
 
 #endif  // __SYCLCTS_TESTS_COMMON_GET_CTS_STRING_H

@@ -10,9 +10,7 @@
 
 #include <stdexcept>
 
-namespace sycl_cts {
-namespace util {
-namespace aspect {
+namespace sycl_cts::util::aspect {
 
 namespace detail {
 
@@ -72,6 +70,4 @@ std::string to_string(const aspect_set &asp_set) {
   return result;
 }
 
-}  // namespace aspect
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util::aspect

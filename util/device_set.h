@@ -17,8 +17,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace sycl_cts {
-namespace util {
+namespace sycl_cts::util {
 
 /** @brief Provides toolkit for working with a set of devices
  *  @details For example, to have a greedy tests using all devices with and
@@ -85,7 +84,6 @@ class device_set {
   auto cend() const { return devices.cend(); }
 };
 
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util
 
 #endif  // __SYCLCTS_UTIL_DEVICE_SET_H

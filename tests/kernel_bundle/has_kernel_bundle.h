@@ -17,10 +17,7 @@
 #include "kernel_bundle.h"
 #include "kernels.h"
 
-
-namespace sycl_cts {
-namespace tests {
-namespace has_kernel_bundle {
+namespace sycl_cts::tests::has_kernel_bundle {
 
 static const std::string unexpected_exception_msg{
     "unexpected SYCL exception error code was caught"};
@@ -82,8 +79,6 @@ struct multiple_kernels;
 
 }  // namespace check
 
-}  // namespace has_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::has_kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_H

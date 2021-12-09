@@ -17,11 +17,7 @@
 #include "../common/common.h"
 #include "has_kernel_bundle.h"
 
-namespace sycl_cts {
-namespace tests {
-namespace has_kernel_bundle {
-
-namespace check {
+namespace sycl_cts::tests::has_kernel_bundle::check {
 
 static const std::string error_message{
     "sycl::has_kernel_bundle return true for zero kernels"};
@@ -102,10 +98,6 @@ struct zero_kernels<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
   }
 };
 
-}  // namespace check
-
-}  // namespace has_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::has_kernel_bundle::check
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_KERNELS_H

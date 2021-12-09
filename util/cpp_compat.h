@@ -15,8 +15,8 @@
 #define COMPAT_CPP20
 #endif
 
-namespace sycl_cts {
-namespace util {
+namespace sycl_cts::util {
+
 namespace details {
 /** @brief Provides implementation for std::erase_if
  */
@@ -52,5 +52,4 @@ COMPAT_CPP20 static
   return details::erase_if(set, pred);
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util

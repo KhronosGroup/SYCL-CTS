@@ -10,8 +10,7 @@
 
 #include <algorithm>
 
-namespace sycl_cts {
-namespace util {
+namespace sycl_cts::util {
 
 kernel_restrictions::kernel_restrictions() { reset(); }
 
@@ -138,5 +137,4 @@ std::string kernel_restrictions::to_string() const {
   return result;
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util

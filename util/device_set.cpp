@@ -12,8 +12,7 @@
 
 #include <stdexcept>
 
-namespace sycl_cts {
-namespace util {
+namespace sycl_cts::util {
 
 device_set::device_set(const sycl::context& ctx, util::logger& log)
     : context(ctx) {
@@ -107,5 +106,4 @@ std::vector<sycl::device> device_set::get_devices() const {
   return result;
 }
 
-}  // namespace util
-}  // namespace sycl_cts
+}  // namespace sycl_cts::util
