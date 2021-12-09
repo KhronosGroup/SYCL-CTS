@@ -82,7 +82,7 @@ bool define_kernel(sycl::queue &queue,
         cgh.parallel_for(sycl::range<1>(1), kernel_functor{acc});
       });
     }
-    return (result == kernel_functor::EXPECTED_VAL);
+    return result == kernel_functor::EXPECTED_VAL;
   }
   return false;
 }
@@ -100,7 +100,7 @@ class TestCaseDescriptionBase : public ITestCaseDescription {
                                     std::string_view functionOverload)
       : m_functionName(functionName), m_functionOverload(functionOverload) {}
 
-  virtual std::string to_string() const override {
+  std::string to_string() const override {
     std::string result(m_functionName);
 
     if (!m_functionOverload.empty()) {
