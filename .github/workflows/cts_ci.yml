@@ -14,9 +14,9 @@ jobs:
           - sycl-impl: computecpp
             version: 2.6.0
           - sycl-impl: dpcpp
-            version: f5c838cd
+            version: 6699a5d
           - sycl-impl: hipsycl
-            version: 72a29fb9
+            version: b836149
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2
