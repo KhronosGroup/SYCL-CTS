@@ -52,10 +52,10 @@ enum class id {
 
 namespace check {
 
-/** @brief Verification logic for zero devices
+/** @brief Verification logic for zero device
  */
 template <typename KernelDescriptorT, sycl::bundle_state, overload::id>
-struct zero_devices;
+struct zero_device;
 
 /** @brief Verification logic for zero kernels
  */

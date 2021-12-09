@@ -58,7 +58,7 @@ void expect_not_throws(sycl_cts::util::logger &log,
  *  @details Use case can be as follows:
  *               expect_throws<sycl::errc::invalid>(
  *                 log, desc_t("with context, devices"),
- *                 [&]{sycl::get_kernel_bundle<State>(context, zero_devices);});
+ *                 [&]{sycl::get_kernel_bundle<State>(context, zero_device);});
  */
 template <sycl::errc expected, typename ActionT, typename ... ActionArgsT>
 void expect_throws(sycl_cts::util::logger &log,

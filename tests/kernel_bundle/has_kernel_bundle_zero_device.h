@@ -2,12 +2,12 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides common code for zero devices test case
+//  Provides common code for zero device test case
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICES_H
-#define __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICES_H
+#ifndef __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICE_H
+#define __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICE_H
 
 #include "../common/common.h"
 #include "has_kernel_bundle.h"
@@ -24,7 +24,7 @@ namespace sycl_cts::tests::has_kernel_bundle::check {
  *  @param dev sycl::device class object
  */
 template <typename KernelDescriptorT, sycl::bundle_state BundleState>
-struct zero_devices<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
+struct zero_device<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
     using kernel_functor = typename KernelDescriptorT::type;
@@ -50,7 +50,7 @@ struct zero_devices<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
  *  @param dev sycl::device class object
  */
 template <typename KernelDescriptorT, sycl::bundle_state BundleState>
-struct zero_devices<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
+struct zero_device<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
     using kernel_functor = typename KernelDescriptorT::type;
@@ -77,7 +77,7 @@ struct zero_devices<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
  *  @param dev sycl::device class object
  */
 template <typename KernelDescriptorT, sycl::bundle_state BundleState>
-struct zero_devices<KernelDescriptorT, BundleState,
+struct zero_device<KernelDescriptorT, BundleState,
                     overload::id::ctx_dev_kname> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
@@ -99,4 +99,4 @@ struct zero_devices<KernelDescriptorT, BundleState,
 
 }  // namespace sycl_cts::tests::has_kernel_bundle::check
 
-#endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICES_H
+#endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_ZERO_DEVICE_H
