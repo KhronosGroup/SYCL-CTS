@@ -15,9 +15,9 @@ jobs:
           - sycl-impl: computecpp
             tag: computecpp
           - sycl-impl: dpcpp
-            tag: dpcpp-f5c838cd
+            tag: dpcpp-1f3f9b9
           - sycl-impl: hipsycl
-            tag: hipsycl-72a29fb9
+            tag: hipsycl-b836149
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2
