@@ -35,7 +35,7 @@ inline typename Container::size_type erase_if(Container& container, Pred pred) {
 }
 }  // namespace details
 
-/** @brief Provides std::erase_if form std::map available from c++20
+/** @brief Provides std::erase_if from std::map available from c++20
  */
 template <class Key, class T, class Compare, class Alloc, class Pred>
 COMPAT_CPP20 static typename std::map<Key, T, Compare, Alloc>::size_type

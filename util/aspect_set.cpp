@@ -65,7 +65,7 @@ std::string to_string(const aspect_set &asp_set) {
     result += delimiter;
   }
 
-  // Remove the latest delimiter
+  // Remove the latest delimiter since asp_set is not empty
   result.resize(result.size() - delimiter.size());
   return result;
 }
