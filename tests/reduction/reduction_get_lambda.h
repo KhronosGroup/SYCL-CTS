@@ -21,13 +21,13 @@ namespace reduction_get_lambda {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam FirstValueT The first value type that will be used in functor
  *  @tparam SecondValueT The second value type that will be used in functor
- *  @param first_val First value that will be used in fuctor
- *  @param second_val Second value that will be used in fuctor
- *  @retval Result value after applying chosed functor to two provided values
+ *  @param first_val First value that will be used in functor
+ *  @param second_val Second value that will be used in functor
+ *  @retval Result value after applying chosen functor to two provided values
  */
 template <typename VariableT, typename FunctorT, typename FirstValueT,
           typename SecondValueT>
-auto apply_chosen_functor(FirstValueT first_val, SecondValueT second_val) {
+auto apply_chosen_functor(FirstValueT &first_val, SecondValueT &second_val) {
   if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
     return first_val *= second_val;
   } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
@@ -63,8 +63,7 @@ auto get_lambda_with_range(AccessorT accessor) {
         [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
   } else {
     return [=](sycl::id<1> idx, auto &reducer) {
-      reducer =
-          apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
+      apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
     };
   }
 }
@@ -90,7 +89,7 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
     };
   } else {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      reducer = apply_chosen_functor<VariableT, FunctorT>(
+      apply_chosen_functor<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()]);
     };
   }
