@@ -38,8 +38,8 @@ namespace sycl_cts::util {
  */
 class device_set {
   using StorageType = std::unordered_set<sycl::device>;
-  sycl::context context;
-  StorageType devices;
+  sycl::context m_context;
+  StorageType m_devices;
 
  public:
   device_set() = delete;
@@ -80,8 +80,8 @@ class device_set {
   sycl::context get_context() const;
   std::vector<sycl::device> get_devices() const;
 
-  auto cbegin() const { return devices.cbegin(); }
-  auto cend() const { return devices.cend(); }
+  auto cbegin() const { return m_devices.cbegin(); }
+  auto cend() const { return m_devices.cend(); }
 };
 
 }  // namespace sycl_cts::util
