@@ -73,7 +73,7 @@ bool define_kernel(sycl::queue &queue,
   if (also_submit == submit_kernel::yes && dev_is_compat) {
     using kernel_functor = typename KernelDescriptorT::type;
     using res_type = typename kernel_functor::element_type;
-    res_type result = kernel_functor::INIT_VAL;
+    res_type result = kernel_functor::init_val;
     {
       sycl::buffer<res_type, 1> res_buffer(&result, sycl::range<1>(1));
       queue.submit([&](sycl::handler &cgh) {
@@ -82,7 +82,7 @@ bool define_kernel(sycl::queue &queue,
         cgh.parallel_for(sycl::range<1>(1), kernel_functor{acc});
       });
     }
-    return result == kernel_functor::EXPECTED_VAL;
+    return result == kernel_functor::expected_val;
   }
   return false;
 }

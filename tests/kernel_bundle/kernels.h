@@ -23,16 +23,16 @@ struct kernel_base {
   using accessor_t = sycl::accessor<element_type, 1,
                                     sycl::access_mode::read_write,
                                     sycl::target::global_buffer>;
-  static constexpr element_type INIT_VAL = 1;
-  static constexpr element_type EXPECTED_VAL = 2;
-  static constexpr element_type DIFF_VAL = EXPECTED_VAL - INIT_VAL;
+  static constexpr element_type init_val = 1;
+  static constexpr element_type expected_val = 2;
+  static constexpr element_type diff_val = expected_val - init_val;
   accessor_t m_acc;
 
   kernel_base(accessor_t acc) : m_acc(acc) {}
 
   void trigger_invocation_flag(sycl::item<1> item) const {
     if (item.get_linear_id() == 0) {
-      m_acc[0] = EXPECTED_VAL;
+      m_acc[0] = expected_val;
     }
   }
 };
@@ -224,7 +224,7 @@ struct kernel_atomic64_descriptor {
 struct kernel_fp16_no_attr : kernel_base {
   void operator()(sycl::item<1> id) const {
     if (id.get_linear_id() == 0) {
-      const auto fp = static_cast<sycl::half>(m_acc[0] + DIFF_VAL);
+      const auto fp = static_cast<sycl::half>(m_acc[0] + diff_val);
       m_acc[0] = fp;
     }
   }
@@ -242,7 +242,7 @@ struct kernel_fp16_no_attr_descriptor {
 struct kernel_fp64_no_attr : kernel_base {
   void operator()(sycl::item<1> id) const {
     if (id.get_linear_id() == 0) {
-      const auto fp = static_cast<double>(m_acc[0] + DIFF_VAL);
+      const auto fp = static_cast<double>(m_acc[0] + diff_val);
       m_acc[0] = fp;
     }
   }
@@ -266,7 +266,7 @@ struct kernel_atomic64_no_attr : kernel_base {
                                     sycl::memory_scope::work_group,
                                     sycl::access::address_space::global_space>;
       ref_t longAtomic(m_acc[0]);
-      longAtomic.fetch_add(DIFF_VAL);
+      longAtomic.fetch_add(diff_val);
     }
   }
 };
