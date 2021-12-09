@@ -6,10 +6,11 @@
 //
 *******************************************************************************/
 
+#include "../common/common.h"
+
 #ifdef SYCL_BACKEND_OPENCL
 #include "../../util/test_base_opencl.h"
 #endif
-#include "../common/common.h"
 
 #define TEST_NAME opencl_interop_get
 
@@ -41,7 +42,9 @@ class TEST_NAME :
     {
       auto queue = util::get_cts_object::queue();
       if (queue.get_backend() != sycl::backend::opencl) {
-        log.note("Interop part is not supported on non-OpenCL backend types");
+        WARN(
+            "OpenCL interoperability part is not supported on non-OpenCL "
+            "backend types");
         return;
       }
       cts_selector ctsSelector;
@@ -115,17 +118,15 @@ class TEST_NAME :
         } else {
           auto bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
               ctsContext);
-          if (!program.is_host()) {
-            auto interopProgram =
-                sycl::get_native<sycl::backend::opencl>(bundle);
-            check_return_type<cl_program>(log, interopProgram,
-                                          "get_native(kernel_bundle)");
+          auto interopProgramVec =
+              sycl::get_native<sycl::backend::opencl>(bundle);
+          check_return_type<std::vector<cl_program>>(
+              log, interopProgramVec, "get_native(kernel_bundle)");
 
-            if (interopProgram == nullptr) {
-              FAIL(log,
-                   "get_native(kernel_bundle) did not return a valid "
-                   "cl_program");
-            }
+          if (interopProgramVec.size() == 0) {
+            FAIL(log,
+                 "get_native(kernel_bundle) did not return a valid "
+                 "cl_program");
           }
         }
       }
@@ -133,53 +134,50 @@ class TEST_NAME :
       /** check get_native() for kernel
        */
       {
-        if (!ctsContext.is_host()) {
-          cl_program clProgram{};
-          if (online_compiler_supported(
-                  sycl::get_native<sycl::backend::opencl>(ctsDevice), log)) {
-            std::string kernelSource = R"(
-            __kernel void opencl_interop_get_kernel() {}
-            )";
+        cl_program clProgram{};
+        if (online_compiler_supported(
+                sycl::get_native<sycl::backend::opencl>(ctsDevice), log)) {
+          std::string kernelSource = R"(
+          __kernel void opencl_interop_get_kernel() {}
+          )";
 
-            if (!create_built_program(
-                    kernelSource,
-                    sycl::get_native<sycl::backend::opencl>(ctsContext),
-                    sycl::get_native<sycl::backend::opencl>(ctsDevice),
-                    clProgram, log)) {
-              FAIL(log, "create_built_program failed");
-            }
-          } else {
-            std::string programBinaryFile = "opencl_interop_get.bin";
-
-            if (!create_program_with_binary(
-                    programBinaryFile,
-                    sycl::get_native<sycl::backend::opencl>(ctsContext),
-                    sycl::get_native<sycl::backend::opencl>(ctsDevice),
-                    clProgram, log)) {
-              std::string errorMsg =
-                  "create_program_with_binary failed.";
-              errorMsg +=
-                  " Since online compile is not supported, expecting to find " +
-                  programBinaryFile + " in same path as the executable binary";
-              FAIL(log, errorMsg.c_str());
-            }
+          if (!create_built_program(
+                  kernelSource,
+                  sycl::get_native<sycl::backend::opencl>(ctsContext),
+                  sycl::get_native<sycl::backend::opencl>(ctsDevice), clProgram,
+                  log)) {
+            FAIL(log, "create_built_program failed");
           }
+        } else {
+          std::string programBinaryFile = "opencl_interop_get.bin";
 
-          cl_kernel clKernel{};
-          if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
-                             log)) {
-            FAIL(log, "create_kernel failed");
+          if (!create_program_with_binary(
+                  programBinaryFile,
+                  sycl::get_native<sycl::backend::opencl>(ctsContext),
+                  sycl::get_native<sycl::backend::opencl>(ctsDevice), clProgram,
+                  log)) {
+            std::string errorMsg = "create_program_with_binary failed.";
+            errorMsg +=
+                " Since online compile is not supported, expecting to find " +
+                programBinaryFile + " in same path as the executable binary";
+            FAIL(log, errorMsg.c_str());
           }
+        }
 
-          sycl::kernel kernel = sycl::make_kernel(clKernel, ctsContext);
+        cl_kernel clKernel{};
+        if (!create_kernel(clProgram, "opencl_interop_get_kernel", clKernel,
+                           log)) {
+          FAIL(log, "create_kernel failed");
+        }
 
-          auto interopKernel = sycl::get_native<sycl::backend::opencl>(kernel);
-          check_return_type<cl_kernel>(log, interopKernel,
-                                       "get_native(kernel)");
+        sycl::kernel kernel =
+            sycl::make_kernel<sycl::backend::opencl>(clKernel, ctsContext);
 
-          if (interopKernel == nullptr) {
-            FAIL(log, "get_native(kernel) did not return a valid cl_kernel");
-          }
+        auto interopKernel = sycl::get_native<sycl::backend::opencl>(kernel);
+        check_return_type<cl_kernel>(log, interopKernel, "get_native(kernel)");
+
+        if (interopKernel == nullptr) {
+          FAIL(log, "get_native(kernel) did not return a valid cl_kernel");
         }
       }
 
@@ -192,13 +190,12 @@ class TEST_NAME :
           cgh.single_task<class event_kernel>([]() {});
         });
 
-        if (!event.is_host()) {
-          auto interopEvent = sycl::get_native<sycl::backend::opencl>(event);
-          check_return_type<cl_event>(log, interopEvent, "get_native(event)");
+        auto interopEventVec = sycl::get_native<sycl::backend::opencl>(event);
+        check_return_type<std::vector<cl_event>>(log, interopEventVec,
+                                                 "get_native(event)");
 
-          if (interopEvent == nullptr) {
-            FAIL(log, "get_native(event) did not return a valid cl_event");
-          }
+        if (interopEventVec.size() == 0) {
+          FAIL(log, "get_native(event) did not return a valid cl_event");
         }
 
         ctsQueue.wait_and_throw();

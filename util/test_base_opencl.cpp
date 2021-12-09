@@ -36,6 +36,15 @@ test_base_opencl::test_base_opencl()
  *  @param log for emitting test notes and results
  */
 bool test_base_opencl::setup(logger &log) {
+  /* get the OpenCLHelper object */
+  auto queue = util::get_cts_object::queue();
+  if (queue.get_backend() != sycl::backend::opencl) {
+    WARN(
+        "OpenCL interoperability part is not supported on non-OpenCL backend "
+        "types");
+    return false;
+  }
+
   cl_int error = CL_SUCCESS;
 
   cts_selector ctsSelector;

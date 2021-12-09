@@ -54,15 +54,15 @@ void run_all_core_tests(RangeT& range, sycl::queue& queue,
       scalar_types, range, queue, log);
 
   run_test_for_all_reductions_types<
-      custom_type, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+      custom_type, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
       sycl::plus<custom_type>(), range, queue, log,
       "reduction_common::custom_type");
   run_test_for_all_reductions_types<
-      custom_type, reduction_get_lambda::without_combine, UsePropertyFlagT>(
+      custom_type, reduction_get_lambda::without_combine, UsePropertyFlagT::value>(
       sycl::plus<custom_type>(), range, queue, log,
       "reduction_common::custom_type");
   run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT>(
+                                    UsePropertyFlagT::value>(
       op_without_identity<int>(), range, queue, log, "int with custom functor");
 
   run_test_for_bool_variable<UsePropertyFlagT>(range, queue, log);
@@ -96,8 +96,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
     auto queue = util::get_cts_object::queue();
-    run_tests_for_identity_type<without_property>(queue, log);
-    run_tests_for_identity_type<with_property>(queue, log);
+
+    run_tests_for_identity_type<run_test_without_property>(queue, log);
+    run_tests_for_identity_type<run_test_with_property>(queue, log);
   }
 };
 
