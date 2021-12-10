@@ -25,6 +25,7 @@ range
 reduction
 specialization_constants
 stream
+sub_group_mask
 usm
 vector_api
 vector_constructors
