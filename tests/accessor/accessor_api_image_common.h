@@ -421,9 +421,8 @@ size_t get_slice_index(const coordT& coordTag,
   if (std::is_same_v<coordT, acc_coord_tag::use_normalized_upper> &&
       filteringMode == sycl::filtering_mode::linear) {
     return idx[dims] + 1;
-  } else {
-    return idx[dims];
   }
+  return idx[dims];
 }
 
 template <typename T, int dims, sycl::target target,
