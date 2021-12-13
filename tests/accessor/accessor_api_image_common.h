@@ -390,30 +390,67 @@ std::vector<sycl::byte> get_image_input_data(
   return convert_image_data_to_bytes<T>(data, byteSize);
 }
 
+/**
+ * @brief Returns an image_array's index to read an image by
+ *        coordinates from
+ * @tparam dims Number of accessor dimensions
+ * @param idx Work-item ID
+ * @return Index of the image to read
+ */
+template <int dims>
+size_t get_slice_index(image_array_id_t<dims> idx) {
+  return idx[dims];
+}
+
+/**
+ * @brief Returns an image_array's index to read an image by
+ *        coordinates from
+ * @tparam dims Number of accessor dimensions
+ * @tparam coordT Type of the tag to mark the right index for test
+ * @param coordTag A tag to mark the right index for test
+ * @param filteringMode A filtering mode used by the sampler to read the image
+ * @param idx Work-item ID
+ * @return Index of the image to read. If the linear filtering mode is used
+ *         and coordT is equal to acc_coord_tag::use_normalized_upper, the
+ *         function returns the next index.
+ */
+template <int dims, typename coordT>
+size_t get_slice_index(const coordT& coordTag,
+                       sycl::filtering_mode filteringMode,
+                       image_array_id_t<dims> idx) {
+  if (std::is_same_v<coordT, acc_coord_tag::use_normalized_upper> &&
+      filteringMode == sycl::filtering_mode::linear) {
+    return idx[dims] + 1;
+  } else {
+    return idx[dims];
+  }
+}
+
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode>
-T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
+          sycl::access_mode access_mode>
+T read_image_acc(const sycl::accessor<T, dims, access_mode, target> &acc,
                  sycl::id<dims> idx) {
   return acc.read(image_access<dims>::get_int(idx));
 }
 
-template <typename T, int dims, sycl::access_mode mode>
-T read_image_acc(const sycl::accessor<T, dims, mode,
+template <typename T, int dims, sycl::access_mode access_mode>
+T read_image_acc(const sycl::accessor<T, dims, access_mode,
                                     sycl::target::image_array> &acc,
                  image_array_id_t<dims> idx) {
   // Verify __image_array_slice__ read
   using coordT = acc_coord_tag::use_int;
   const auto coords = image_array_coords<dims>::get(coordT{}, idx);
-  return acc[idx[dims]].read(coords);
+  return acc[get_slice_index<dims>(idx)].read(coords);
 }
 
 template <typename T, int dims, sycl::target target,
-          sycl::access_mode mode, typename coordT>
-T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
+          sycl::access_mode access_mode, typename coordT>
+T read_image_acc_sampled(const sycl::accessor<T, dims, access_mode, target> &acc,
                          const sycl::sampler& smpl,
                          sycl::id<dims> idx,
                          sycl::range<dims> range,
-                         const coordT& coordTag) {
+                         const coordT& coordTag,
+                         sycl::filtering_mode filteringMode) {
   if constexpr (std::is_same_v<coordT, acc_coord_tag::use_int>) {
     // Verify read using integer unnormalized coordinates
     return acc.read(image_access<dims>::get_int(idx), smpl);
@@ -427,16 +464,18 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
     return acc.read(coords, smpl);
   }
 }
-template <typename T, int dims, sycl::access_mode mode, typename coordT>
-T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
+template <typename T, int dims, sycl::access_mode access_mode, typename coordT>
+T read_image_acc_sampled(const sycl::accessor<T, dims, access_mode,
                                     sycl::target::image_array> &acc,
                          sycl::sampler smpl,
                          image_array_id_t<dims> idx,
                          image_array_range_t<dims> range,
-                         const coordT& coordTag) {
+                         const coordT& coordTag,
+                         sycl::filtering_mode filteringMode) {
   // Verify __image_array_slice__ read
   const auto coords = image_array_coords<dims>::get(coordTag, idx, range);
-  return acc[idx[dims]].read(coords, smpl);
+  return acc[get_slice_index<dims>(coordTag, filteringMode, idx)].read(coords,
+                                                                       smpl);
 }
 
 template <typename T, int dims, sycl::target target,
@@ -1070,7 +1109,7 @@ class image_accessor_api_sampled_r {
     const T expected = get_expected_value<coordT>(idx);
     const T elem =
         read_image_acc_sampled(m_acc, m_sampler.instance, idx, m_range,
-                               coordT{});
+                               coordT{}, m_sampler.filtering_mode);
 
     const bool succeed = check_texel_value(elem, expected);
     if (!succeed) {
