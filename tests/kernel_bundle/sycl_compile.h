@@ -19,9 +19,7 @@
 #ifndef __SYCLCTS_TESTS_SYCL_COMPILE_H
 #define __SYCLCTS_TESTS_SYCL_COMPILE_H
 
-namespace sycl_cts {
-namespace tests {
-namespace sycl_compile {
+namespace sycl_cts::tests::sycl_compile {
 
 class TestCaseDescription
     : public kernel_bundle::TestCaseDescriptionBase<sycl::bundle_state::input> {
@@ -73,13 +71,16 @@ static void check_bundle_kernels(util::logger &log, const std::string &kName) {
     return;
   }
 
-  auto input_kb = sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {dev}, {k_id});
+  auto input_kb =
+      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {dev}, {k_id});
   auto input_ids = input_kb.get_kernel_ids();
 
   auto obj_kb = compile_bundle<Overload>(input_kb, {dev});
   kernel_bundle::define_kernel<DescriptorT, sycl::bundle_state::input>(queue);
 
-  auto restrictions{kernel_bundle::get_restrictions<DescriptorT, sycl::bundle_state::input>()};
+  auto restrictions{
+      kernel_bundle::get_restrictions<DescriptorT,
+                                      sycl::bundle_state::input>()};
   bool dev_is_compat = restrictions.is_compatible(dev);
 
   if (obj_kb.has_kernel(k_id) != dev_is_compat) {
@@ -129,7 +130,8 @@ static void check_associated_devices(util::logger &log) {
     return;
   }
 
-  auto input_kb = sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, devices);
+  auto input_kb =
+      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, devices);
   auto obj_kb = compile_bundle<Overload>(input_kb, devices);
 
   // Check that result kernel bundle contains all devices from passed vector
@@ -158,8 +160,6 @@ static void check_associated_devices(util::logger &log) {
   kernel_bundle::define_kernel<Descr, sycl::bundle_state::input>(queue);
 }
 
-}  // namespace sycl_compile
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::sycl_compile
 
 #endif  // __SYCLCTS_TESTS_SYCL_COMPILE_H
