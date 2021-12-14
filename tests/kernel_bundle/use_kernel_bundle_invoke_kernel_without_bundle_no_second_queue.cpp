@@ -18,7 +18,7 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace tests_for_use_kernel_bundle;
+using namespace sycl_cts::tests::use_kernel_bundle;
 
 /** @brief Call use_kernel_bundle and invoke the kernel that not contained in
  *         provided kernel bundle

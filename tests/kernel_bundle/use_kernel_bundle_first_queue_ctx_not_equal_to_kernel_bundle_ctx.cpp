@@ -22,7 +22,7 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace tests_for_use_kernel_bundle;
+using namespace sycl_cts::tests::use_kernel_bundle;
 using namespace use_kernel_bundle_queue_ctx_not_equal_kb_ctx;
 
 class TEST_NAME : public sycl_cts::util::test_base {

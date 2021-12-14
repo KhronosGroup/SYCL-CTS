@@ -17,7 +17,7 @@
 
 #include <cstddef>
 
-namespace tests_for_use_kernel_bundle {
+namespace sycl_cts::tests::use_kernel_bundle {
 
 /** @brief Kernel, that will be used to get kernel bundle, that will be used
  *         for the case when we get kernel bundle for kernel that won't be used
@@ -107,6 +107,6 @@ get_bundle_with_built_in_kernels(const sycl::context &ctx) {
   return k_bundle;
 }
 
-}  // namespace tests_for_use_kernel_bundle
+}  // namespace sycl_cts::tests::use_kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_USE_KERNEL_BUNDLE_H

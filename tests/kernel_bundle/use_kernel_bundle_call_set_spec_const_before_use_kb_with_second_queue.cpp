@@ -17,7 +17,7 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace tests_for_use_kernel_bundle;
+using namespace sycl_cts::tests::use_kernel_bundle;
 
 constexpr sycl::specialization_id<int> spec_const;
 

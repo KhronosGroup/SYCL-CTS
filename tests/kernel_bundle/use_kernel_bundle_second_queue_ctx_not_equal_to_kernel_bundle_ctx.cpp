@@ -22,7 +22,7 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-using namespace tests_for_use_kernel_bundle;
+using namespace sycl_cts::tests::use_kernel_bundle;
 using namespace use_kernel_bundle_queue_ctx_not_equal_kb_ctx;
 
 class TEST_NAME : public sycl_cts::util::test_base {
@@ -54,7 +54,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
     run_verification(log, first_ctx, second_ctx, non_empty_bundle);
 
     sycl::kernel_bundle<sycl::bundle_state::executable>
-        bundle_with_built_in_kernel = get_bundle_with_built_in_kernels(first_ctx);
+        bundle_with_built_in_kernel =
+            get_bundle_with_built_in_kernels(first_ctx);
     run_verification(log, first_ctx, second_ctx, bundle_with_built_in_kernel);
   }
 };

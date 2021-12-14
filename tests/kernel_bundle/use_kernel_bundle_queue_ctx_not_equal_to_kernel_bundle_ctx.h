@@ -32,14 +32,14 @@ inline void run_verification(
 
   expect_throws<sycl::errc::invalid>(
       log,
-      tests_for_use_kernel_bundle::TestCaseDescription<
+      sycl_cts::tests::use_kernel_bundle::TestCaseDescription<
           sycl::bundle_state::executable>("(kernel_bundle<>)"),
       [&] {
         first_queue.submit(
             [&](sycl::handler &cgh) {
               cgh.use_kernel_bundle(kernel_bundle);
               cgh.single_task<
-                  tests_for_use_kernel_bundle::kernel_for_kernel_bundle>(
+                  sycl_cts::tests::use_kernel_bundle::kernel_for_kernel_bundle>(
                   [=]() {});
             },
             second_queue);
