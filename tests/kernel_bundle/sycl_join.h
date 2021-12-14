@@ -11,9 +11,7 @@
 
 #include "../common/common.h"
 
-namespace sycl_cts {
-namespace tests {
-namespace sycl_join {
+namespace sycl_cts::tests::sycl_join {
 
 /** @brief Provides full comparison of device images in two kernel bundles
  *  @tparam State sycl::bundle_state
@@ -33,8 +31,6 @@ inline bool check_dev_images_equal(sycl_cts::util::logger &log,
   return ok;
 }
 
-}  // namespace sycl_join
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::sycl_join
 
 #endif  // __SYCLCTS_TESTS_SYCL_JOIN_H
