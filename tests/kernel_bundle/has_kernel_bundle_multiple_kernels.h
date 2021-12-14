@@ -15,10 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace sycl_cts {
-namespace tests {
-namespace has_kernel_bundle {
-namespace check {
+namespace sycl_cts::testshas_kernel_bundle::check {
 namespace details {
 /** @brief Check that calling has_kernel_bundle overload for a two kernels
  *         is same as:
@@ -304,9 +301,6 @@ struct multiple_kernels<BundleState, overload::id::ctx_only> {
   }
 };
 
-}  // namespace check
-}  // namespace has_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::testshas_kernel_bundle::check
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_H
