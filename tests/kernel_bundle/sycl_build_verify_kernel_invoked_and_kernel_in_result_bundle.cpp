@@ -34,7 +34,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace tests_for_sycl_build;
+using namespace sycl_cts::tests::sycl_build;
 
 /** @brief Provide verification for provided bundle that it has kernels without
  *         any requirements, that kernel with CPU, GPU or accelerator

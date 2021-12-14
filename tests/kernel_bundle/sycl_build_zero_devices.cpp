@@ -20,7 +20,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
-using namespace tests_for_sycl_build;
+using namespace sycl_cts::tests::sycl_build;
 using namespace sycl_cts::tests::kernel_bundle;
 
 class TEST_NAME : public sycl_cts::util::test_base {
@@ -49,7 +49,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
             "(kernel_bundle<>, empty vector<sycl::device>)"),
         [&] { sycl::build(kernel_bundle, zero_devices); });
 
-    define_kernel<simple_kernel_descriptor, sycl::bundle_state::executable>(q, submit_kernel::yes);
+    define_kernel<simple_kernel_descriptor, sycl::bundle_state::executable>(
+        q, submit_kernel::yes);
   }
 };
 

@@ -14,7 +14,7 @@
 #include "kernels.h"
 #include <vector>
 
-namespace tests_for_sycl_build {
+namespace sycl_cts::tests::sycl_build {
 
 using cpu_kernel = kernels::kernel_cpu_descriptor::type;
 using gpu_kernel = kernels::kernel_gpu_descriptor::type;
@@ -34,6 +34,6 @@ class TestCaseDescription
   };
 };
 
-}  // namespace tests_for_sycl_build
+}  // namespace sycl_cts::tests::sycl_build
 
 #endif  // __SYCLCTS_TESTS_SYCL_BUILD_H
