@@ -13,9 +13,7 @@
 #include "../common/common.h"
 #include "has_kernel_bundle.h"
 
-namespace sycl_cts {
-namespace tests {
-namespace has_kernel_bundle {
+namespace sycl_cts::tests::has_kernel_bundle {
 
 static const auto kernels_types_sub_group = named_type_pack<
     kernels::kernel_likely_unsupported_sub_group_size_descriptor,
@@ -308,8 +306,6 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_dev_kname> {
 
 }  // namespace check
 
-}  // namespace has_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::has_kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_CORE_H
