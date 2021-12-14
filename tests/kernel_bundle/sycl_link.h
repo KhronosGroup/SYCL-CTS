@@ -14,9 +14,7 @@
 #include "kernels.h"
 #include <vector>
 
-namespace sycl_cts {
-namespace tests {
-namespace sycl_link {
+namespace sycl_cts::tests::sycl_link {
 
 using vector_with_object_bundles =
     std::vector<sycl::kernel_bundle<sycl::bundle_state::object>>;
@@ -31,8 +29,6 @@ class TestCaseDescription
             "sycl::link", functionOverload){};
 };
 
-}  // namespace sycl_link
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::sycl_link
 
 #endif  // __SYCLCTS_TESTS_SYCL_LINK_H
