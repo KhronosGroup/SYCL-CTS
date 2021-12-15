@@ -52,7 +52,7 @@ public:
     if (!availability::check(queue, log))
       return;
 
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     // Specific set of types to cover during ordinary compilation
 
     const auto vector_types = named_type_pack<int>({"int"});
@@ -150,7 +150,7 @@ public:
     }
 #endif
 
-#endif // SYCL_CTS_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
     for_all_types_and_vectors<check_type>(vector_types, log, queue);
 

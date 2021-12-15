@@ -38,7 +38,7 @@ class TEST_NAME : public util::test_base {
             "operations");
         return;
       }
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_spec_constant_exception_throw_for_type<double> fp64_test{};
       fp64_test(log, "double");
 #else

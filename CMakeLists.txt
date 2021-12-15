@@ -1,5 +1,4 @@
-# check CMake Version
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 project(sycl_cts LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -9,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(OpenCLTargets REQUIRED)
+find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
 # set host compiler flags
@@ -31,7 +30,7 @@ option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
        "Enable full conformance mode with extensive tests" OFF)
 if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
     message(STATUS "Full conformance mode: ON")
-    add_definitions(-DSYCL_CTS_FULL_CONFORMANCE)
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_ENABLE_FULL_CONFORMANCE)
 else()
     message(STATUS "Full conformance mode: OFF")
     message(WARNING
@@ -71,6 +70,23 @@ endif()
 # ------------------
 # Device used for running with CTest (e.g. during conformance report generation)
 set(SYCL_CTS_CTEST_DEVICE "" CACHE STRING "Device used when running with CTest")
+# ------------------
+
+# ------------------
+# Measure build times
+option(SYCL_CTS_MEASURE_BUILD_TIMES "Measure build time for each translation unit and write it to 'build_times.log'" OFF)
+if(SYCL_CTS_MEASURE_BUILD_TIMES)
+    if(CMAKE_GENERATOR MATCHES "Makefiles|Ninja")
+        # Wrap compiler calls in utility script to measure build times.
+        # Note that SYCL implementations that require custom build steps, e.g. for dedicated
+        # device compiler passes (such as ComputeCpp), may require special handling.
+        # In case the user already specified a compiler launcher, make sure ours comes first.
+        list(PREPEND CMAKE_CXX_COMPILER_LAUNCHER "${CMAKE_SOURCE_DIR}/tools/measure_build_time.py")
+    else()
+        # Only Makefiles and Ninja support CMake compiler launchers
+        message(FATAL_ERROR "Build time measurements are only supported for the 'Unix Makefiles' and 'Ninja' generators.")
+    endif()
+endif()
 # ------------------
 
 enable_testing()

@@ -3,146 +3,129 @@
 <xsl:stylesheet id="stylesheet" version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <xsl:template match="/">
-	<html>
-		<head>
-			<title>SYCL 2020 Conformance Report</title>
-			<style type="text/css">
-				body {
-					margin: 40px auto;
-					max-width: 800px;
-					font-size: 18px;
-					font-family: Sans-Serif;
-					padding: 0 10px
-				}
+    <html>
+        <head>
+            <title>SYCL 2020 Conformance Report</title>
+            <style type="text/css">
+                body {
+                    margin: 40px auto;
+                    max-width: 800px;
+                    font-size: 18px;
+                    font-family: Sans-Serif;
+                    padding: 0 10px
+                }
 
-				h1,h2,h3 {
-					line-height: 1.2
-				}
+                h1,h2,h3 {
+                    line-height: 1.2
+                }
 
-				.site-header {
-					font-weight: bold;
-					text-align: center;
-					line-height: 3;
-				}
+                .site-header {
+                    font-weight: bold;
+                    text-align: center;
+                    line-height: 3;
+                }
 
-				table {
-					table-layout: fixed;
-					border-spacing: 0px 2px;
-					width: 100%;
-				}
+                table {
+                    table-layout: fixed;
+                    border-spacing: 0px 2px;
+                    width: 100%;
+                }
 
-				tr td:nth-child(1) {
-   					font-weight: bold;
-   					line-height: 1.6;
-				}
+                tr td:nth-child(1) {
+                    font-weight: bold;
+                    line-height: 1.6;
+                }
 
-				tr td:nth-child(2) {
-   					text-align: right;
-   					line-height: 1.6;
-				}
+                tr td:nth-child(2) {
+                    text-align: right;
+                    line-height: 1.6;
+                }
 
-				th {
-					text-align: center;
-					font-weight: bold;
-					line-height: 2;
-					font-size: 18px;
-				}
+                th {
+                    text-align: center;
+                    font-weight: bold;
+                    line-height: 2;
+                    font-size: 18px;
+                }
 
-				.test-result {
-					background-color: #ef9a9a;
-				}
+                .test-result {
+                    background-color: #ef9a9a;
+                }
 
-				.test-result.passed {
-					background-color: #a5d6a7;
-				}
+                .test-result.passed {
+                    background-color: #a5d6a7;
+                }
 
-				pre {
-					font-family: monospace;
-				}
+                pre {
+                    font-family: monospace;
+                }
 
-				summary {
-					display: flex;
-				}
+                summary {
+                    display: flex;
+                }
 
-				details summary::-webkit-details-marker {
-					margin-top: 10px;
-				}
+                details summary::-webkit-details-marker {
+                    margin-top: 10px;
+                }
 
-			</style>
-		</head>
-		<body>
-			<center>
-				<img src="https://upload.wikimedia.org/wikipedia/en/1/19/Khronos_Group_SYCL_logo.svg" width="500px"/>
-				<h1>SYCL 2020 Conformance Report</h1>
-				<xsl:apply-templates select="Site"/>
-				<h2>Test Results</h2>
-				<xsl:apply-templates select="Site/Testing/Test"/>
-			</center>
-		</body>
-	</html>
+            </style>
+        </head>
+        <body>
+            <center>
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/19/Khronos_Group_SYCL_logo.svg" width="500px"/>
+                <h1>SYCL 2020 Conformance Report</h1>
+                <xsl:apply-templates select="Site"/>
+                <h2>Test Results</h2>
+                <xsl:apply-templates select="Site/Testing/Test"/>
+            </center>
+        </body>
+    </html>
 </xsl:template>
 
 <xsl:template match="Site">
-  <table>
-  	<tr><td class="site-header" colspan="2">Implementation</td></tr>
-  	<tr><td>Name</td><td><xsl:value-of select="./@BuildName" /></td></tr>
-  	<tr><td class="site-header" colspan="2">Host System</td></tr>
-		<tr><td>Date</td><td><xsl:value-of select="/Site/Testing/StartDateTime"/></td></tr>
-  	<tr><td>Operating System</td><td><xsl:value-of select="./@OSName" /></td></tr>
-  	<tr><td>OS Release</td><td><xsl:value-of select="./@OSRelease" /></td></tr>
-  	<tr><td>CPU Architecture</td><td><xsl:value-of select="./@OSPlatform" /></td></tr>
-		<tr><td class="site-header" colspan="2">Host Device Information</td></tr>
-		<tr><td>Host Platform Name</td><td><xsl:value-of select="./@HostPlatformName" /></td></tr>
-		<tr><td>Host Platform Vendor</td><td><xsl:value-of select="./@HostPlatformVendor" /></td></tr>
-		<tr><td>Host Platform Version</td><td><xsl:value-of select="./@HostPlatformVersion" /></td></tr>
-		<tr><td>Host Device Name</td><td><xsl:value-of select="./@HostDeviceName" /></td></tr>
-		<tr><td>Host Device Vendor</td><td><xsl:value-of select="./@HostDeviceVendor" /></td></tr>
-		<tr><td>Host Device Version</td><td><xsl:value-of select="./@HostDeviceVersion" /></td></tr>
-    <tr><td class="site-header" colspan="2">Host Device Extension Support</td></tr>
-    <tr><td>Half Precision Floating Point</td><td><xsl:value-of select="./@HostDeviceFP16" /></td></tr>
-		<tr><td>Double Precision Floating Point</td><td><xsl:value-of select="./@HostDeviceFP64" /></td></tr>
-		<tr><td>Int64 Base Atomics</td><td><xsl:value-of select="./@HostDeviceInt64Base" /></td></tr>
-		<tr><td>Int64 Extended Atomics</td><td><xsl:value-of select="./@HostDeviceInt64Extended" /></td></tr>
-		<tr><td>3D Image Write</td><td><xsl:value-of select="./@HostDevice3DWrites" /></td></tr>
-		<tr><td class="site-header" colspan="2">OpenCL Device Information</td></tr>
-		<tr><td>OpenCL Platform Name</td><td><xsl:value-of select="./@OpenCLPlatformName" /></td></tr>
-		<tr><td>OpenCL Platform Vendor</td><td><xsl:value-of select="./@OpenCLPlatformVendor" /></td></tr>
-		<tr><td>OpenCL Platform Version</td><td><xsl:value-of select="./@OpenCLPlatformVersion" /></td></tr>
-		<tr><td>OpenCL Device Name</td><td><xsl:value-of select="./@OpenCLDeviceName" /></td></tr>
-		<tr><td>OpenCL Device Vendor</td><td><xsl:value-of select="./@OpenCLDeviceVendor" /></td></tr>
-		<tr><td>OpenCL Device Version</td><td><xsl:value-of select="./@OpenCLDeviceVersion" /></td></tr>
-		<tr><td>OpenCL Device Type</td><td><xsl:value-of select="./@OpenCLDeviceType" /></td></tr>
-		<tr><td class="site-header" colspan="2">OpenCL Device Extension Support</td></tr>
-    <tr><td>Half Precision Floating Point</td><td><xsl:value-of select="./@OpenCLDeviceFP16" /></td></tr>
-		<tr><td>Double Precision Floating Point</td><td><xsl:value-of select="./@OpenCLDeviceFP64" /></td></tr>
-		<tr><td>Int64 Base Atomics</td><td><xsl:value-of select="./@OpenCLDeviceInt64Base" /></td></tr>
-		<tr><td>Int64 Extended Atomics</td><td><xsl:value-of select="./@OpenCLDeviceInt64Extended" /></td></tr>
-		<tr><td>3D Image Write</td><td><xsl:value-of select="./@OpenCLDevice3DWrites" /></td></tr>
-		<tr><td class="site-header" colspan="2">Build Information</td></tr>
-		<tr><td>Full Conformance Mode</td><td><xsl:value-of select="./@FullConformanceMode" /></td></tr>
-  	<tr><td>CMake Input</td><td><xsl:value-of select="./@CMakeInput" /></td></tr>
-  	<tr><td>Build System Generator</td><td><xsl:value-of select="./@BuildSystemGenerator" /></td></tr>
-  	<tr><td>Build System Call</td><td><xsl:value-of select="./@BuildSystemCall" /></td></tr>
-  	<tr><td>CTest Call</td><td><xsl:value-of select="./@CTestCall" /></td></tr>
-  </table>  
+    <table>
+        <tr><td class="site-header" colspan="2">Implementation</td></tr>
+        <tr><td>Name</td><td><xsl:value-of select="./@BuildName" /></td></tr>
+        <tr><td class="site-header" colspan="2">Host System</td></tr>
+        <tr><td>Date</td><td><xsl:value-of select="/Site/Testing/StartDateTime"/></td></tr>
+        <tr><td>Operating System</td><td><xsl:value-of select="./@OSName" /></td></tr>
+        <tr><td>OS Release</td><td><xsl:value-of select="./@OSRelease" /></td></tr>
+        <tr><td>CPU Architecture</td><td><xsl:value-of select="./@OSPlatform" /></td></tr>
+        <tr><td class="site-header" colspan="2">Device Information</td></tr>
+        <tr><td>Platform Name</td><td><xsl:value-of select="./@PlatformName" /></td></tr>
+        <tr><td>Platform Vendor</td><td><xsl:value-of select="./@PlatformVendor" /></td></tr>
+        <tr><td>Platform Version</td><td><xsl:value-of select="./@PlatformVersion" /></td></tr>
+        <tr><td>Device Name</td><td><xsl:value-of select="./@DeviceName" /></td></tr>
+        <tr><td>Device Vendor</td><td><xsl:value-of select="./@DeviceVendor" /></td></tr>
+        <tr><td>Device Version</td><td><xsl:value-of select="./@DeviceVersion" /></td></tr>
+        <tr><td class="site-header" colspan="2">Device Extension Support</td></tr>
+        <tr><td>Half Precision Floating Point</td><td><xsl:value-of select="./@DeviceFP16" /></td></tr>
+        <tr><td>Double Precision Floating Point</td><td><xsl:value-of select="./@DeviceFP64" /></td></tr>
+        <tr><td class="site-header" colspan="2">Build Information</td></tr>
+        <tr><td>Full Conformance Mode</td><td><xsl:value-of select="./@FullConformanceMode" /></td></tr>
+        <tr><td>CMake Input</td><td><xsl:value-of select="./@CMakeInput" /></td></tr>
+        <tr><td>Build System Generator</td><td><xsl:value-of select="./@BuildSystemGenerator" /></td></tr>
+        <tr><td>Build System Call</td><td><xsl:value-of select="./@BuildSystemCall" /></td></tr>
+        <tr><td>CTest Call</td><td><xsl:value-of select="./@CTestCall" /></td></tr>
+    </table>
 </xsl:template>
 
 <xsl:template match="Test">
-	<details>
-		<summary>
-			<table>
-				<tr class="test-result {@Status}">
-					<td><xsl:value-of select="Name"/></td>
-					<td><xsl:value-of select="./@Status" /></td>
-				</tr>
-			</table>
-		</summary>
-		<table>
-			<tr>
-				<td colspan="2"><pre><xsl:value-of select="Results/Measurement/Value"/></pre></td>
-			</tr>
-		</table>
-	</details>
+    <details>
+        <summary>
+            <table>
+                <tr class="test-result {@Status}">
+                    <td><xsl:value-of select="Name"/></td>
+                    <td><xsl:value-of select="./@Status" /></td>
+                </tr>
+            </table>
+        </summary>
+        <table>
+            <tr>
+                <td colspan="2"><pre><xsl:value-of select="Results/Measurement/Value"/></pre></td>
+            </tr>
+        </table>
+    </details>
 </xsl:template>
 
 </xsl:stylesheet>

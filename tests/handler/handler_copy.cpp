@@ -947,7 +947,7 @@ class TEST_NAME : public util::test_base {
       test_all_variants<double>(lh, queue);
       test_all_variants<sycl::double16>(lh, queue);
 
-#if defined(SYCL_CTS_FULL_CONFORMANCE)
+#if defined(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
       test_all_variants<char>(lh, queue);
       test_all_variants<short>(lh, queue);
       test_all_variants<long>(lh, queue);

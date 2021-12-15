@@ -35,10 +35,11 @@ class TEST_NAME : public sycl_cts::util::test_base {
           "Device does not support double precision floating point operations");
       return;
     }
-    run_tests_for_all_functors<double, without_property>()(range, queue, log,
-                                                           "double");
-    run_tests_for_all_functors<double, with_property>()(nd_range, queue, log,
-                                                        "double");
+
+    run_tests_for_all_functors<double, run_test_without_property>()(
+        range, queue, log, "double");
+    run_tests_for_all_functors<double, run_test_with_property>()(
+        nd_range, queue, log, "double");
   }
 };
 

@@ -18,24 +18,28 @@ add_subdirectory("common")
 
 function(get_std_type OUT_LIST)
   set(STD_TYPE_LIST "")
-  list(APPEND STD_TYPE_LIST char
-    "signed char"
-    "unsigned char")
 
-  list(APPEND STD_TYPE_LIST short
-    "unsigned short")
+  list(APPEND STD_TYPE_LIST
+    "char"
+    "int"
+    "float"
+    "double"
+    "sycl::half"
+  )
 
-  list(APPEND STD_TYPE_LIST int
-    "unsigned int")
-
-  list(APPEND STD_TYPE_LIST long
-    "unsigned long"
-    "long long"
-    "unsigned long long")
-
-  list(APPEND STD_TYPE_LIST float
-    double
-    sycl::half)
+  if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+    list(APPEND STD_TYPE_LIST
+      "signed char"
+      "unsigned char"
+      "short"
+      "unsigned short"
+      "unsigned int"
+      "long"
+      "unsigned long"
+      "long long"
+      "unsigned long long"
+    )
+  endif()
 
   set(${OUT_LIST} ${${OUT_LIST}} ${STD_TYPE_LIST} PARENT_SCOPE)
 endfunction()
@@ -49,14 +53,22 @@ endfunction()
 
 function(get_fixed_width_type OUT_LIST)
   set(FIXED_WIDTH_LIST "")
-  list(APPEND FIXED_WIDTH_LIST std::int8_t
-    std::int16_t
+
+  list(APPEND FIXED_WIDTH_LIST
+    std::int8_t
     std::int32_t
-    std::int64_t
-    std::uint8_t
-    std::uint16_t
-    std::uint32_t
-    std::uint64_t)
+  )
+
+  if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+    list(APPEND FIXED_WIDTH_LIST
+      std::uint8_t
+      std::int16_t
+      std::uint16_t
+      std::uint32_t
+      std::int64_t
+      std::uint64_t
+    )
+  endif()
 
   set(${OUT_LIST} ${${OUT_LIST}} ${FIXED_WIDTH_LIST} PARENT_SCOPE)
 endfunction()
@@ -155,8 +167,6 @@ function(add_cts_test)
   target_include_directories(${test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   set(info_dump_dir "${CMAKE_BINARY_DIR}/Testing")
-  # FIXME: run_conformance_tests.py does not yet set SYCL_CTS_CTEST_DEVICE.
-  # The script is currently broken in more than one way and in need of an overhaul.
   add_test(NAME ${test_exe_name}
            COMMAND ${test_exe_name}
                    --device ${SYCL_CTS_CTEST_DEVICE}

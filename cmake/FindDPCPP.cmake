@@ -8,6 +8,8 @@ else()
     string(REPLACE "/machine:x64" "" CMAKE_EXE_LINKER_FLAGS
         "${CMAKE_EXE_LINKER_FLAGS}")
     # Remove /subsystem option which is not supported by clang-cl
+    string(REPLACE "/subsystem:console" "" CMAKE_CREATE_CONSOLE_EXE
+        "${CMAKE_CREATE_CONSOLE_EXE}")
     string(REPLACE "/subsystem:console" "" CMAKE_CXX_CREATE_CONSOLE_EXE
         "${CMAKE_CXX_CREATE_CONSOLE_EXE}")
     find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp clang-cl
@@ -85,12 +87,6 @@ function(add_sycl_executable_implementation)
         $<TARGET_PROPERTY:DPCPP::Runtime,INTERFACE_COMPILE_OPTIONS>)
 
     target_link_libraries(${exe_name} PUBLIC DPCPP::Runtime)
-    # CMake < 3.14 doesn't support INTERFACE_LINK_OPTIONS otherwise we just use
-    # LINK_LIBRARIES
-    if(${CMAKE_VERSION} VERSION_LESS 3.14)
-        target_link_options(${exe_name} PRIVATE
-            $<TARGET_PROPERTY:DPCPP::Runtime,INTERFACE_LINK_OPTIONS>)
-    endif()
 endfunction()
 
 # Adds device compiler definitions
