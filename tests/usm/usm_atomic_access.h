@@ -46,43 +46,6 @@ auto get_atomic_memory() {
 
 constexpr bool with_atomic64 = true;
 constexpr bool without_atomic64 = false;
-/** @brief Dummy functor that use in type coverage
- *  @tparam CounterT Variable type from type coverage
- *  @tparam UseAtomic64Flag std::integral_constant type
- */
-template <typename CounterT>
-struct run_all_tests {
-  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
-                  const std::string &typeName) {
-    if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
-      if (!use_atomic_flag) {
-        return;
-      }
-      if (!queue.get_device().has(sycl::aspect::atomic64)) {
-        log.note("Device does not perform 64-bit atomic operations");
-        return;
-      }
-    } else {
-      if (use_atomic_flag) {
-        return;
-      }
-    }
-    run_test_with_chosen_mem_type<CounterT>(queue, log, typeName);
-  }
-};
-
-/** @brief Run test with two allocation types
- *  @tparam CounterT Variable type from type coverage
- *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
- */
-template <typename CounterT>
-void run_test_with_chosen_mem_type(sycl::queue &queue,
-                                   sycl_cts::util::logger &log,
-                                   const std::string &typeName) {
-  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, log, typeName);
-  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, log, typeName);
-}
 
 /** @brief Kernel for device side interaction with common memory
  */
@@ -175,6 +138,44 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
              "\" underlying type");
   }
 }
+
+/** @brief Run test with two allocation types
+ *  @tparam CounterT Variable type from type coverage
+ *  @param queue sycl::queue class object
+ *  @param log sycl_cts::util::logger class object
+ */
+template <typename CounterT>
+void run_test_with_chosen_mem_type(sycl::queue &queue,
+                                   sycl_cts::util::logger &log,
+                                   const std::string &typeName) {
+  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, log, typeName);
+  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, log, typeName);
+}
+
+/** @brief Dummy functor that use in type coverage
+ *  @tparam CounterT Variable type from type coverage
+ *  @tparam UseAtomic64Flag std::integral_constant type
+ */
+template <typename CounterT>
+struct run_all_tests {
+  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
+                  const std::string &typeName) {
+    if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
+      if (!use_atomic_flag) {
+        return;
+      }
+      if (!queue.get_device().has(sycl::aspect::atomic64)) {
+        log.note("Device does not perform 64-bit atomic operations");
+        return;
+      }
+    } else {
+      if (use_atomic_flag) {
+        return;
+      }
+    }
+    run_test_with_chosen_mem_type<CounterT>(queue, log, typeName);
+  }
+};
 
 }  // namespace usm_atomic_access
 
