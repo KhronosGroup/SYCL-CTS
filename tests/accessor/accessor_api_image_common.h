@@ -996,14 +996,12 @@ class image_accessor_api_sampled_r {
    */
   template <int dims>
   sycl::id<dims> next_id(sycl::id<dims> idx) const {
+    static_assert(dims > 0);
+    ++idx;
     if constexpr (target == sycl::target::image_array) {
-      auto res = idx;
-      for (int i = 0; i + 1 < dims; i++) {
-        res[i]++;
-      }
-      return res;
+      --idx[dims-1];
     }
-    return idx + 1;
+    return idx;
   }
 
   /**
