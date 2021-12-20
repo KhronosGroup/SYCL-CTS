@@ -9,8 +9,8 @@
 #ifndef __SYCLCTS_TESTS_SUB_GROUP_MASK_COMMON_H
 #define __SYCLCTS_TESTS_SUB_GROUP_MASK_COMMON_H
 
-#include "../common/common.h"
-#include "../common/type_coverage.h"
+#include "../../common/common.h"
+#include "../../common/type_coverage.h"
 
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 namespace {

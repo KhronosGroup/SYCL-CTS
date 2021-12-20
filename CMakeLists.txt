@@ -40,6 +40,15 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running extension one API tests
+option(SYCL_CTS_ENABLE_EXTENSION_ONE_API_TESTS
+       "Enable extension one API tests" OFF)
+if(SYCL_CTS_ENABLE_EXTENSION_ONE_API_TESTS)
+    message(WARNING "Enable extension tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
 # Debug-level verbose logging
 option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
 if(SYCL_CTS_ENABLE_VERBOSE_LOG)
