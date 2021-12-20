@@ -41,7 +41,7 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.6.0
           - sycl-impl: dpcpp
-            version: f5c838cd
+            version: 1f3f9b9b
           - sycl-impl: hipsycl
             version: 72a29fb9
     steps:
