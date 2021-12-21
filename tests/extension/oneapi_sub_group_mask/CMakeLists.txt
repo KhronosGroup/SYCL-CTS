@@ -1,3 +1,5 @@
-file(GLOB test_cases_list *.cpp)
+if(SYCL_EXT_ONE_API_ENABLE_SUB_GROUP_MASK_TESTS)
+  file(GLOB test_cases_list *.cpp)
 
-add_cts_test(${test_cases_list})
+  add_cts_test(${test_cases_list})
+endif()
