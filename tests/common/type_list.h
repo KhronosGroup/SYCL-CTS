@@ -35,16 +35,17 @@ struct user_struct {
 
 namespace user_def_types {
 // A user-defined struct with several scalar member variables, no constructor,
-//  destructor or member functions.
+//  destructor or non-special member functions.
 struct no_cnstr {
   float a;
   int b;
   char c;
 
-  void operator=(const int &v) {
-    this->a = v;
-    this->b = v;
-    this->c = v;
+  constexpr auto &operator=(const int &v) {
+    a = v;
+    b = v;
+    c = v;
+    return *this;
   }
 
   friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
@@ -69,10 +70,9 @@ struct def_cnstr {
     c = val;
   }
 
-  void operator=(const int &v) {
-    this->a = v * 3.0;
-    this->b = v * 2;
-    this->c = v;
+  constexpr auto &operator=(const int &v) {
+    assign(v);
+    return *this;
   }
 
   inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
@@ -95,38 +95,32 @@ class no_def_cnstr {
   friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
-
-  void operator=(const int &v) {
-    no_def_cnstr temp(v);
-    this->a = temp.a;
-    this->b = temp.b;
-    this->c = temp.c;
-  }
 };
-
+// Returns instance of type T
 template <typename T>
 inline constexpr auto get_init_value_helper(int x) {
   return x;
 }
 
+// Returns instance of type bool
 template <>
 inline constexpr auto get_init_value_helper<bool>(int x) {
-  return (x%2 != 0);
+  return (x % 2 != 0);
 }
 
+// Returns instance of user defined struct with no constructor
 template <>
 inline constexpr auto get_init_value_helper<no_cnstr>(int x) {
   no_cnstr instance{};
-  instance.a = x;
-  instance.b = x;
-  instance.c = x;
+  instance = x;
   return instance;
 }
 
+// Returns instance of user defined struct default constructor
 template <>
 inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
   def_cnstr instance;
-  instance.assign(x);
+  instance = x;
   return instance;
 }
 
