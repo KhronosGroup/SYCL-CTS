@@ -40,11 +40,11 @@ endif()
 # ------------------
 
 # ------------------
-# Extensive mode for running extension one API tests
-option(SYCL_CTS_ENABLE_EXTENSION_ONE_API_TESTS
-       "Enable extension one API tests" OFF)
-if(SYCL_CTS_ENABLE_EXTENSION_ONE_API_TESTS)
-    message(WARNING "Enable extension tests mode: ON")
+# Extensive mode for running extension oneAPI sub_group_mask tests
+option(SYCL_EXT_ONE_API_ENABLE_SUB_GROUP_MASK_TESTS
+       "Enable extension oneAPI sub_group_mask tests" OFF)
+if(SYCL_EXT_ONE_API_ENABLE_SUB_GROUP_MASK_TESTS)
+    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
 endif()
 # ------------------
 
