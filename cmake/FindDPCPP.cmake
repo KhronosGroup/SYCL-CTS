@@ -38,6 +38,9 @@ else()
 endif()
 set(CMAKE_CXX_FLAGS "${DPCPP_FP_FLAG} ${CMAKE_CXX_FLAGS}")
 
+# Disable range rounding feature to reduce # of SYCL kernels.
+set(CMAKE_CXX_FLAGS "-D__SYCL_DISABLE_PARALLEL_FOR_RANGE_ROUNDING__")
+
 option(DPCPP_DISABLE_SYCL2020_DEPRECATION_WARNINGS
   "Disable SYCL 2020 deprecation warnings" ON)
 if(DPCPP_DISABLE_SYCL2020_DEPRECATION_WARNINGS)
