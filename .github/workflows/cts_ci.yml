@@ -15,7 +15,7 @@ jobs:
           - sycl-impl: computecpp
             tag: computecpp
           - sycl-impl: dpcpp
-            tag: dpcpp-1f3f9b9
+            tag: dpcpp-ec97c57
           - sycl-impl: hipsycl
             tag: hipsycl-b836149
     env:
