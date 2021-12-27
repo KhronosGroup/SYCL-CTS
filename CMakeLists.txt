@@ -39,6 +39,15 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running extension oneAPI compile-time property list tests
+option(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS
+       "Enable extension oneAPI compile-time property list tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS)
+    message(STATUS "oneAPI extension compile-time property list tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
 # Debug-level verbose logging
 option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
 if(SYCL_CTS_ENABLE_VERBOSE_LOG)
