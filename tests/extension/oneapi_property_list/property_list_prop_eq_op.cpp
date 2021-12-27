@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
+#include "../../common/common.h"
 
 #define TEST_NAME property_list_prop_eq_op
 

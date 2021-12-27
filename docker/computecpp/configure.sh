@@ -7,4 +7,5 @@ cmake . -G Ninja -B build \
     -DCMAKE_PREFIX_PATH=/sycl \
     -DCMAKE_BUILD_TYPE=Release \
     -DSYCL_CTS_ENABLE_FULL_CONFORMANCE=0 \
+    -DSYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS=0 \
     $@

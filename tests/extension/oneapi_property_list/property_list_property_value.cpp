@@ -6,7 +6,7 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
+#include "../../common/common.h"
 #include <type_traits>
 
 #define TEST_NAME property_list_property_value
