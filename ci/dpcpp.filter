@@ -1,17 +1,5 @@
-accessor
-atomic
 buffer
 exceptions
-handler
-hierarchical
-id
-invoke
-item
-math_builtin_api
-multi_ptr
-nd_item
 opencl_interop
-range
 reduction
-specialization_constants
 usm
