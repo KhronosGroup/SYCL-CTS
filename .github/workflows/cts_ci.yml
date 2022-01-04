@@ -98,17 +98,27 @@ jobs:
           bash /scripts/configure.sh \
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
+      - name: Set up ccache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.sycl-impl }}-ccache-
+      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
+      # This requires compilation with -MD, which is enabled because we use the Ninja generator
+      # Using this mode should not have any practical disadvantages
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
-        run: cmake --build . --target oclmath
+        run: CCACHE_DEPEND=1 cmake --build . --target oclmath
       - name: Build 'util'
         working-directory: ${{ env.container-workspace }}/build
-        run: cmake --build . --target util
+        run: CCACHE_DEPEND=1 cmake --build . --target util
       - name: Build all supported test categories
         working-directory: ${{ env.container-workspace }}/build
         run: |
           TS_BEFORE=$(date +%s)
-          cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
+          CCACHE_DEPEND=1 cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
           TS_AFTER=$(date +%s)
           ELAPSED=$(($TS_AFTER - $TS_BEFORE))
           sort --numeric-sort --reverse --output=build_times.log build_times.log
