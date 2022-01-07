@@ -41,9 +41,9 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.6.0
           - sycl-impl: dpcpp
-            version: f5c838cd
+            version: 1f3f9b9
           - sycl-impl: hipsycl
-            version: 72a29fb9
+            version: b836149
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -61,8 +61,8 @@ jobs:
         with:
           context: docker/${{ matrix.sycl-impl }}
           push: true
-          tags: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}
-          cache-from: type=registry,ref=khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}
+          tags: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
+          cache-from: type=registry,ref=khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
           cache-to: type=inline
           build-args: |
             IMPL_VERSION=${{ matrix.version }}
