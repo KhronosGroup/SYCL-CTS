@@ -11,20 +11,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # FIXME: Generate tag from version string once ComputeCpp has been updated to use versioned image tags
           - sycl-impl: computecpp
-            tag: computecpp
+            version: 2.8.0
           - sycl-impl: dpcpp
-            tag: dpcpp-1f3f9b9
+            version: 1f3f9b9
           - sycl-impl: hipsycl
-            tag: hipsycl-b836149
+            version: b836149
     env:
       container-workspace: /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       parallel-build-jobs: 2
     container:
       # image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
       # ComputeCpp images are hosted by Codeplay
-      image: ${{ format('{0}/sycl-cts-ci:{1}', matrix.sycl-impl != 'computecpp' && 'khronosgroup' || 'scottstraughan', matrix.tag) }}
+      image: ${{ format('{0}/sycl-cts-ci:{1}-{2}', matrix.sycl-impl != 'computecpp' && 'khronosgroup' || 'scottstraughan', matrix.sycl-impl, matrix.version) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
