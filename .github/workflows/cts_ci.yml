@@ -5,10 +5,73 @@ on:
   workflow_dispatch:
 
 jobs:
-  compile-cts:
+  build-common-base-image:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build common base image
+        uses: docker/build-push-action@v2
+        with:
+          context: docker/common
+          push: true
+          tags: khronosgroup/sycl-cts-ci:common
+          cache-from: type=registry,ref=khronosgroup/sycl-cts-ci:common
+          cache-to: type=inline
+
+  build-image-for-sycl-impl:
+    needs: build-common-base-image
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
+      # NB: Don't forget to update versions in compile-cts step as well
+      matrix:
+        include:
+          # ComputeCpp images are built by Codeplay for the time being
+          # - sycl-impl: computecpp
+          # version: 2.8.0
+          - sycl-impl: dpcpp
+            version: 1f3f9b9
+          - sycl-impl: hipsycl
+            version: b836149
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build SYCL container image
+        uses: docker/build-push-action@v2
+        with:
+          context: docker/${{ matrix.sycl-impl }}
+          push: true
+          tags: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
+          cache-from: type=registry,ref=khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
+          cache-to: type=inline
+          build-args: |
+            IMPL_VERSION=${{ matrix.version }}
+
+  compile-cts:
+    needs: build-image-for-sycl-impl
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      # NB: Don't forget to update versions in build-image-for-sycl-impl step as well
       matrix:
         include:
           - sycl-impl: computecpp
@@ -35,17 +98,27 @@ jobs:
           bash /scripts/configure.sh \
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
+      - name: Set up ccache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ${{ matrix.sycl-impl }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.sycl-impl }}-ccache-
+      # Use ccache's "depend mode" to work around DPC++ issue (see https://github.com/intel/llvm/issues/5260)
+      # This requires compilation with -MD, which is enabled because we use the Ninja generator
+      # Using this mode should not have any practical disadvantages
       - name: Build 'oclmath'
         working-directory: ${{ env.container-workspace }}/build
-        run: cmake --build . --target oclmath
+        run: CCACHE_DEPEND=1 cmake --build . --target oclmath
       - name: Build 'util'
         working-directory: ${{ env.container-workspace }}/build
-        run: cmake --build . --target util
+        run: CCACHE_DEPEND=1 cmake --build . --target util
       - name: Build all supported test categories
         working-directory: ${{ env.container-workspace }}/build
         run: |
           TS_BEFORE=$(date +%s)
-          cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
+          CCACHE_DEPEND=1 cmake --build . --target test_all --parallel ${{ env.parallel-build-jobs }}
           TS_AFTER=$(date +%s)
           ELAPSED=$(($TS_AFTER - $TS_BEFORE))
           sort --numeric-sort --reverse --output=build_times.log build_times.log

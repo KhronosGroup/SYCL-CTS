@@ -3,6 +3,7 @@
 set -o errexit -o pipefail -o noclobber -o nounset
 
 cmake . -G Ninja -B build \
+    -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
     -DSYCL_IMPLEMENTATION=DPCPP \
     -DDPCPP_INSTALL_DIR=/sycl \
     -DCMAKE_CXX_COMPILER=/sycl/bin/clang++ \
