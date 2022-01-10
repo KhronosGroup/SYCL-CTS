@@ -2,6 +2,8 @@ accessor
 address_space
 atomic
 buffer
+context
+device
 device_event
 event
 exception_handling
@@ -20,6 +22,7 @@ math_builtin_api
 multi_ptr
 nd_item
 opencl_interop
+platform
 queue
 range
 reduction

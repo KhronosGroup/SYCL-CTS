@@ -24,6 +24,9 @@ class kernel;
 
 constexpr int init_value_without_property_case{99};
 
+using run_test_with_property = std::true_type;
+using run_test_without_property = std::false_type;
+
 /** @brief Provide std::string with common error message
  *  @tparam VariableT Variable type from type coverage
  *  @param underlying_type_name String with underlying type
@@ -42,8 +45,7 @@ static std::string get_fail_message(const std::string &underlying_type_name,
 }
 
 /** @brief Construct reducer with USM pointer to variable
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
  *          using sycl::property::reduction::initialize_to_identity
  *  @tparam PtrForVariableT Pointer type to variable that used in
  *          sycl::reduction
@@ -52,13 +54,10 @@ static std::string get_fail_message(const std::string &underlying_type_name,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @retval Reducer with pointer to variable and chosen functor
  */
-using with_property = std::true_type;
-using without_property = std::false_type;
-template <typename UsePropertyFlagT, typename PtrForVariableT,
-          typename FunctorT>
+template <bool UsePropertyFlag, typename PtrForVariableT, typename FunctorT>
 auto get_reduction_for_value_ptr(PtrForVariableT ptr_for_variable,
                                  FunctorT functor) {
-  if constexpr (UsePropertyFlagT::value) {
+  if constexpr (UsePropertyFlag) {
     return sycl::reduction(
         ptr_for_variable, functor,
         {sycl::property::reduction::initialize_to_identity()});
@@ -68,8 +67,7 @@ auto get_reduction_for_value_ptr(PtrForVariableT ptr_for_variable,
 }
 
 /** @brief Construct reducer with sycl::buffer
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
  *          using sycl::property::reduction::initialize_to_identity
  *  @tparam BufferT sycl::buffer type
  *  @tparam FunctorT The type of the functor with which the test runs
@@ -78,10 +76,10 @@ auto get_reduction_for_value_ptr(PtrForVariableT ptr_for_variable,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @retval Reducer with sycl::buffer and chosen functor
  */
-template <typename UsePropertyFlagT, typename BufferT, typename FunctorT>
+template <bool UsePropertyFlag, typename BufferT, typename FunctorT>
 auto get_reduction_for_buffer(BufferT &buffer, sycl::handler &cgh,
                               FunctorT functor) {
-  if constexpr (UsePropertyFlagT::value) {
+  if constexpr (UsePropertyFlag) {
     return sycl::reduction(
         buffer, cgh, functor,
         {sycl::property::reduction::initialize_to_identity()});
@@ -91,8 +89,7 @@ auto get_reduction_for_buffer(BufferT &buffer, sycl::handler &cgh,
 }
 
 /** @brief Construct reducer with sycl::span
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
  *          using sycl::property::reduction::initialize_to_identity
  *  @tparam SpanT sycl::span type
  *  @tparam FunctorT The type of the functor with which the test runs
@@ -100,9 +97,9 @@ auto get_reduction_for_buffer(BufferT &buffer, sycl::handler &cgh,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @retval Reducer with sycl::span and chosen functor
  */
-template <typename UsePropertyFlagT, typename SpanT, typename FunctorT>
+template <bool UsePropertyFlag, typename SpanT, typename FunctorT>
 auto get_reduction_for_span(SpanT &span, FunctorT functor) {
-  if constexpr (UsePropertyFlagT::value) {
+  if constexpr (UsePropertyFlag) {
     return sycl::reduction(
         span, functor, {sycl::property::reduction::initialize_to_identity()});
   } else {
@@ -115,19 +112,18 @@ auto get_reduction_for_span(SpanT &span, FunctorT functor) {
  *  @tparam VariableT Variable type from type coverage
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
  *          calling .combine() function or operator +, *, ^= e.t.c.
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't using
- *          sycl::property::reduction::initialize_to_identity
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
+ *          using sycl::property::reduction::initialize_to_identity
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
-template <typename VariableT, typename UseCombineFlagT,
-          typename UsePropertyFlagT, typename FunctorT, typename RangeT>
+template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
+          typename FunctorT, typename RangeT>
 void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
                             sycl::queue &queue, sycl_cts::util::logger &log,
                             const std::string &type_name) {
@@ -139,14 +135,15 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
       reduction_common::get_init_value_for_expected_value<VariableT, FunctorT,
-                                        UsePropertyFlagT>())};
+                                                          UsePropertyFlag>())};
   auto variable_for_reduction{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, VariableT>(
           queue)};
   *variable_for_reduction.get() =
-      reduction_common::get_init_value_for_reduction<VariableT, FunctorT, UsePropertyFlagT>();
+      reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
+                                                     UsePropertyFlag>();
   queue.submit([&](sycl::handler &cgh) {
-    auto reduction{get_reduction_for_value_ptr<UsePropertyFlagT>(
+    auto reduction{get_reduction_for_value_ptr<UsePropertyFlag>(
         variable_for_reduction.get(), functor)};
     auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
                                                  UseCombineFlagT, FunctorT>(
@@ -166,19 +163,18 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
  *          calling .combine() function or operator +, *, ^= e.t.c.
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't using
- *          sycl::property::reduction::initialize_to_identity
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
+ *          using sycl::property::reduction::initialize_to_identity
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
-template <typename VariableT, typename UseCombineFlagT,
-          typename UsePropertyFlagT, typename FunctorT, typename RangeT>
+template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
+          typename FunctorT, typename RangeT>
 void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
                          sycl_cts::util::logger &log,
                          const std::string &type_name) {
@@ -186,14 +182,16 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT,
+                                                          FunctorT>())};
   VariableT output_result{
-      reduction_common::get_init_value_for_reduction<VariableT, FunctorT, UsePropertyFlagT>()};
+      reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
+                                                     UsePropertyFlag>()};
   sycl::buffer<VariableT> output_buffer{&output_result, 1};
 
   queue.submit([&](sycl::handler &cgh) {
-    auto reduction{get_reduction_for_buffer<UsePropertyFlagT>(output_buffer,
-                                                              cgh, functor)};
+    auto reduction{
+        get_reduction_for_buffer<UsePropertyFlag>(output_buffer, cgh, functor)};
     auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
                                                  UseCombineFlagT, FunctorT>(
         initial_buf.template get_access<sycl::access_mode::read>(cgh))};
@@ -211,19 +209,18 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
  *          calling .combine() function or operator +, *, ^= e.t.c.
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't using
- *          sycl::property::reduction::initialize_to_identity
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
+ *          using sycl::property::reduction::initialize_to_identity
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
- *  @param typeName a string representing the currently tested type
+ *  @param type_name a string representing the currently tested type
  */
-template <typename VariableT, typename UseCombineFlagT,
-          typename UsePropertyFlagT, typename FunctorT, typename RangeT>
+template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
+          typename FunctorT, typename RangeT>
 void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
                        sycl_cts::util::logger &log,
                        const std::string &type_name) {
@@ -234,12 +231,14 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT,
+                                                          FunctorT>())};
   auto allocated_memory{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, VariableT>(
           queue, number_elements)};
   auto value_for_filling{
-      reduction_common::get_init_value_for_reduction<VariableT, FunctorT, UsePropertyFlagT>()};
+      reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
+                                                     UsePropertyFlag>()};
   for (size_t i = 0; i < number_elements; i++) {
     allocated_memory.get()[i] = value_for_filling;
   }
@@ -247,7 +246,7 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
   queue.submit([&](sycl::handler &cgh) {
     sycl::span<VariableT, number_elements> span(allocated_memory.get(),
                                                 number_elements);
-    auto reduction{get_reduction_for_span<UsePropertyFlagT>(span, functor)};
+    auto reduction{get_reduction_for_span<UsePropertyFlag>(span, functor)};
     auto lambda{
         reduction_get_lambda::get_lambda_for_span<VariableT, RangeT,
                                                   UseCombineFlagT, FunctorT>(
@@ -268,18 +267,18 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @tparam VariableT Variable type from type coverage
  *  @tparam UseCombineFlagT std::integral_constant type that let switch between
  *          calling .combine() function or operator +, *, ^= e.t.c.
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
- *          let switch between using and don't using
- *          sycl::property::reduction::initialize_to_identity
+ *  @tparam UsePropertyFlag bool flag that let switch between using and don't
+ *          using sycl::property::reduction::initialize_to_identity
  *  @tparam FunctorT The type of the functor with which the test runs
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
  *  @param log sycl_cts::util::logger class object
+ *  @param type_name a string representing the currently tested type
  */
-template <typename VariableT, typename UseCombineFlagT,
-          typename UsePropertyFlagT, typename FunctorT, typename RangeT>
+template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
+          typename FunctorT, typename RangeT>
 void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
                                        sycl::queue &queue,
                                        sycl_cts::util::logger &log,
@@ -292,18 +291,18 @@ void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
         "Test skipped due to floating point variable cannot be used with " +
         std::string(typeid(FunctorT).name()) + " functor");
   } else {
-    run_test_for_value_ptr<VariableT, UseCombineFlagT, UsePropertyFlagT>(
+    run_test_for_value_ptr<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, log, type_name);
-    run_test_for_buffer<VariableT, UseCombineFlagT, UsePropertyFlagT>(
+    run_test_for_buffer<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, log, type_name);
-    run_test_for_span<VariableT, UseCombineFlagT, UsePropertyFlagT>(
+    run_test_for_span<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, log, type_name);
   }
 }
 
 /** @brief Dummy functor that use in type coverage for scalar type variables
  *  @tparam VariableT Variable type from type coverage
- *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
+ *  @tparam UsePropertyFlagT std::integral_constant type that
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
  *  @param queue sycl::queue class object
@@ -315,43 +314,46 @@ struct run_tests_for_all_functors {
   template <typename RangeT>
   void operator()(RangeT &range, sycl::queue &queue,
                   sycl_cts::util::logger &log, const std::string &type_name) {
+    constexpr bool use_lambda_without_combine{
+        reduction_get_lambda::without_combine};
+    constexpr bool use_lambda_with_combine{reduction_get_lambda::with_combine};
+    constexpr bool use_property_flag{UsePropertyFlagT::value};
+
+    // for functors that can be called by .combine() or overloaded operator()
     // for functors that can be called by .combine() or overloaded operator()
     // test will be called twice using operator +, *, ^= e.t.c.  and .combine()
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::plus<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::without_combine, UsePropertyFlagT>(
-        sycl::plus<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::multiplies<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::without_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::multiplies<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_and<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::without_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_and<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_or<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::without_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_or<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::bit_xor<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::without_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
+                                      use_property_flag>(
         sycl::bit_xor<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::minimum<VariableT>(), range, queue, log, type_name);
-    run_test_for_all_reductions_types<
-        VariableT, reduction_get_lambda::with_combine, UsePropertyFlagT>(
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
         sycl::maximum<VariableT>(), range, queue, log, type_name);
   }
 };

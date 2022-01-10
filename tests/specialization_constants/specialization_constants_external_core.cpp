@@ -37,7 +37,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using namespace specialization_constants_external;
     {
 
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<check_specialization_constants_external>(
           get_spec_const::testing_types::types, log);
 #else

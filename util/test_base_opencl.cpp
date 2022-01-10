@@ -38,6 +38,14 @@ test_base_opencl::test_base_opencl()
  */
 bool test_base_opencl::setup(logger &log) {
   /* get the OpenCLHelper object */
+  auto queue = util::get_cts_object::queue();
+  if (queue.get_backend() != sycl::backend::opencl) {
+    log.skip(
+        "OpenCL interoperability part is not supported on non-OpenCL backend "
+        "types");
+    return false;
+  }
+
   using sycl_cts::util::get;
   using sycl_cts::util::opencl_helper;
   opencl_helper &openclHelper = get<opencl_helper>();

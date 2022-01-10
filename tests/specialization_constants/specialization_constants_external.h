@@ -29,7 +29,7 @@ inline constexpr sycl::specialization_id<T> spec_const_external(
       sycl::kernel_handler h, TYPE);
 
 #ifdef TEST_CORE
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 CORE_TYPES(FUNC_DECLARE)
 #else
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DECLARE)
@@ -40,7 +40,7 @@ FUNC_DECLARE(testing_types::no_def_cnstr)
 #endif  // TEST_CORE
 
 #ifdef TEST_FP64
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DECLARE(double)
 #else
 SYCL_VECTORS_MARRAYS(double, FUNC_DECLARE)
@@ -48,7 +48,7 @@ SYCL_VECTORS_MARRAYS(double, FUNC_DECLARE)
 #endif  // TEST_FP64
 
 #ifdef TEST_FP16
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DECLARE(sycl::half)
 #else
 SYCL_VECTORS_MARRAYS(sycl::half, FUNC_DECLARE)
@@ -71,12 +71,12 @@ class check_specialization_constants_external {
 
     // case 1: Pass kernel handler object by reference to external function via
     // handler
-    bool func_result = false;
+    bool passed = false;
     {
-      T ref { get_init_value_helper<T>(5) };
+      T ref{get_init_value_helper<T>(5)};
       const int case_num =
           static_cast<int>(test_cases_external::by_reference_via_handler);
-      sycl::buffer<bool, 1> result_buffer(&func_result, range);
+      sycl::buffer<bool, 1> result_buffer(&passed, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
             result_buffer.template get_access<sycl::access_mode::write>(cgh);
@@ -87,20 +87,21 @@ class check_specialization_constants_external {
         });
       });
     }
-    if (!func_result)
+    if (!passed) {
       FAIL(log,
            "case 1: Pass kernel handler object by reference to external "
            "function via handler failed for " +
                type_name_string<T>::get(type_name));
+    }
 
     // case 2: Pass kernel handler object by value to external function via
     // handler
-    func_result = false;
+    passed = false;
     {
-      T ref { get_init_value_helper<T>(10) };
+      T ref{get_init_value_helper<T>(10)};
       const int case_num =
           static_cast<int>(test_cases_external::by_value_via_handler);
-      sycl::buffer<bool, 1> result_buffer(&func_result, range);
+      sycl::buffer<bool, 1> result_buffer(&passed, range);
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
             result_buffer.template get_access<sycl::access_mode::write>(cgh);
@@ -110,31 +111,37 @@ class check_specialization_constants_external {
         });
       });
     }
-    if (!func_result)
+    if (!passed) {
       FAIL(log,
            "case 2: Pass kernel handler object by value to external function "
            "via handler failed for " +
                type_name_string<T>::get(type_name));
+    }
 
-    if (!queue.get_device().has(sycl::aspect::online_compiler))
-      log.note("Device does not support online compilation of device code");
-    else {
+    if (!queue.get_device().has(sycl::aspect::online_compiler)) {
+      log.skip("Device does not support online compilation of device code");
+    } else {
+      const auto context = queue.get_context();
+
       // case 3: Pass kernel handler object by reference to external function
       // via kernel_bundle
-      func_result = false;
+      passed = false;
       {
-        T ref { get_init_value_helper<T>(15) };
+        T ref{get_init_value_helper<T>(15)};
         const int case_num =
             static_cast<int>(test_cases_external::by_reference_via_bundle);
-        sycl::buffer<bool, 1> result_buffer(&func_result, range);
+        sycl::buffer<bool, 1> result_buffer(&passed, range);
 
-        auto context = queue.get_context();
         sycl::kernel_id kernelID = sycl::get_kernel_id<kernel<T, case_num>>();
         auto inputBundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
             context, {kernelID});
-        if (!inputBundle.has_kernel(kernelID))
-          log.note("Input bundle misses kernel in question");
-        else {
+        if (!inputBundle.has_kernel(kernelID)) {
+          // It's implementation-defined if a kernel is available in a bundle
+          // with bundle_state::input. So if such bundle misses some kernels it
+          // shouldn't trigger a test failure.
+          log.skip("Input bundle misses kernel in question");
+          passed = true;
+        } else {
           inputBundle.template set_specialization_constant<
               spec_const_external<T, case_num>>(ref);
           auto exeBundle = sycl::build(inputBundle);
@@ -151,28 +158,31 @@ class check_specialization_constants_external {
           });
         }
       }
-      if (!func_result)
+      if (!passed) {
         FAIL(log,
              "case 3: Pass kernel handler object by reference to external "
              "function via  kernel_bundle failed for " +
                  type_name_string<T>::get(type_name));
+      }
 
       // case 4: Pass kernel handler object by value to external function via
       // kernel_bundle
-      func_result = false;
+      passed = false;
       {
-        T ref { get_init_value_helper<T>(20) };
+        T ref{get_init_value_helper<T>(20)};
         const int case_num =
             static_cast<int>(test_cases_external::by_value_via_bundle);
-        sycl::buffer<bool, 1> result_buffer(&func_result, range);
+        sycl::buffer<bool, 1> result_buffer(&passed, range);
 
-        auto context = queue.get_context();
         sycl::kernel_id kernelID = sycl::get_kernel_id<kernel<T, case_num>>();
         auto inputBundle = sycl::get_kernel_bundle<sycl::bundle_state::input>(
             context, {kernelID});
-        if (!inputBundle.has_kernel(kernelID))
-          log.note("Input bundle misses kernel in question");
-        else {
+        if (!inputBundle.has_kernel(kernelID)) {
+          // It's implementation-defined if a kernel is available in a bundle
+          // with bundle_state::input.
+          log.skip("Input bundle misses kernel in question");
+          passed = true;
+        } else {
           inputBundle.template set_specialization_constant<
               spec_const_external<T, case_num>>(ref);
           auto exeBundle = sycl::build(inputBundle);
@@ -189,11 +199,12 @@ class check_specialization_constants_external {
           });
         }
       }
-      if (!func_result)
+      if (!passed) {
         FAIL(log,
              "case 4: Pass kernel handler object by value to external function "
              "via kernel_bundle failed for " +
                  type_name_string<T>::get(type_name));
+      }
     }
   }
 };

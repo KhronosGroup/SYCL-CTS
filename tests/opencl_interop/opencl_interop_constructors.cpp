@@ -6,11 +6,12 @@
 //
 *******************************************************************************/
 
+#include "../common/common.h"
+
 #ifdef SYCL_BACKEND_OPENCL
 #include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
 #endif
-#include "../common/common.h"
 
 #define TEST_NAME opencl_interop_constructors
 
@@ -23,7 +24,7 @@ class buffer_interop_constructor_kernel;
  */
 class TEST_NAME :
 #ifdef SYCL_BACKEND_OPENCL
-    public sycl_cts::util::test_base_opencl
+    public util::test_base_opencl
 #else
     public util::test_base
 #endif
@@ -42,7 +43,9 @@ class TEST_NAME :
     {
       auto queue = util::get_cts_object::queue();
       if (queue.get_backend() != sycl::backend::opencl) {
-        log.note("Interop part is not supported on non-OpenCL backend types");
+        log.skip(
+            "OpenCL interoperability part is not supported on non-OpenCL "
+            "backend types");
         return;
       }
 
@@ -62,7 +65,8 @@ class TEST_NAME :
       /** check make_platform (cl_platform_id)
        */
       {
-        sycl::platform platform = sycl::make_platform(m_cl_platform_id);
+        sycl::platform platform =
+            sycl::make_platform<sycl::backend::opencl>(m_cl_platform_id);
 
         cl_platform_id interopPlatformID =
             sycl::get_native<sycl::backend::opencl>(platform);
@@ -74,7 +78,8 @@ class TEST_NAME :
       /** check make_device (cl_device_id)
        */
       {
-        sycl::device device = sycl::make_device(m_cl_device_id);
+        sycl::device device =
+            sycl::make_device<sycl::backend::opencl>(m_cl_device_id);
 
         cl_device_id interopDeviceID =
             sycl::get_native<sycl::backend::opencl>(device);
@@ -89,7 +94,8 @@ class TEST_NAME :
       /** check make_context (cl_context)
        */
       {
-        sycl::context context = sycl::make_context(m_cl_context);
+        sycl::context context =
+            sycl::make_context<sycl::backend::opencl>(m_cl_context);
 
         cl_context interopContext =
             sycl::get_native<sycl::backend::opencl>(context);
@@ -105,7 +111,8 @@ class TEST_NAME :
        */
       {
         cts_async_handler asyncHandler;
-        sycl::context context = sycl::make_context(m_cl_context, asyncHandler);
+        sycl::context context = sycl::make_context<sycl::backend::opencl>(
+            m_cl_context, asyncHandler);
 
         cl_context interopContext =
             sycl::get_native<sycl::backend::opencl>(context);
@@ -120,7 +127,8 @@ class TEST_NAME :
       /** check make_queue (cl_command_queue, const context&)
        */
       {
-        sycl::queue queue = sycl::make_queue(m_cl_command_queue, ctsContext);
+        sycl::queue queue = sycl::make_queue<sycl::backend::opencl>(
+            m_cl_command_queue, ctsContext);
 
         cl_command_queue interopQueue =
             sycl::get_native<sycl::backend::opencl>(queue);
@@ -149,8 +157,8 @@ class TEST_NAME :
        */
       {
         cts_async_handler asyncHandler;
-        sycl::queue queue =
-            sycl::make_queue(m_cl_command_queue, ctsContext, asyncHandler);
+        sycl::queue queue = sycl::make_queue<sycl::backend::opencl>(
+            m_cl_command_queue, ctsContext, asyncHandler);
 
         cl_command_queue interopQueue =
             sycl::get_native<sycl::backend::opencl>(queue);
@@ -191,16 +199,19 @@ class TEST_NAME :
         }
 
         auto kernel_bundle =
-            sycl::make_kernel_bundle<sycl::bundle_state::executable>(
+            sycl::make_kernel_bundle<sycl::backend::opencl,
+                                     sycl::bundle_state::executable>(
                 clProgram, ctsContext);
 
-        cl_program interopProgram =
+        std::vector<cl_program> interopProgramVec =
             sycl::get_native<sycl::backend::opencl>(kernel_bundle);
-        if (interopProgram != clProgram) {
+        if (interopProgramVec[0] != clProgram) {
           FAIL(log, "program was not constructed correctly");
         }
-        if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgram))) {
-          FAIL(log, "failed to release OpenCL program");
+        for (int i = 0; i < interopProgramVec.size(); i++) {
+          if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgramVec[i]))) {
+            FAIL(log, "failed to release OpenCL program");
+          }
         }
       }
 
@@ -238,7 +249,8 @@ class TEST_NAME :
           FAIL(log, "create_kernel failed");
         }
 
-        sycl::kernel kernel = sycl::make_kernel(clKernel, ctsContext);
+        sycl::kernel kernel =
+            sycl::make_kernel<sycl::backend::opencl>(clKernel, ctsContext);
 
         cl_kernel interopKernel =
             sycl::get_native<sycl::backend::opencl>(kernel);
@@ -268,7 +280,8 @@ class TEST_NAME :
         }
 
         sycl::buffer<int, 1> buffer =
-            sycl::make_buffer<int>(clBuffer, queue.get_context());
+            sycl::make_buffer<sycl::backend::opencl, int>(clBuffer,
+                                                          queue.get_context());
 
         // calculate element count, size and range for the interop buffer
         sycl::range<1> interopRange{size};
@@ -336,7 +349,8 @@ class TEST_NAME :
         }
 
         sycl::buffer<int, 1> buffer =
-            sycl::make_buffer<int>(clBuffer, queue.get_context(), event);
+            sycl::make_buffer<sycl::backend::opencl, int>(
+                clBuffer, queue.get_context(), event);
 
         // calculate element count, size and range for the interop buffer
         sycl::range<1> interopRange{size};
@@ -386,10 +400,13 @@ class TEST_NAME :
       {
         cl_event clEvent = clCreateUserEvent(
             sycl::get_native<sycl::backend::opencl>(ctsContext), nullptr);
-        sycl::event event = sycl::make_event(clEvent, ctsContext);
+        sycl::event event =
+            sycl::make_event<sycl::backend::opencl>(clEvent, ctsContext);
 
-        cl_event interopEvent = sycl::get_native<sycl::backend::opencl>(event);
-        if (interopEvent != clEvent) {
+        std::vector<cl_event> interopEventVec =
+            sycl::get_native<sycl::backend::opencl>(event);
+
+        if (interopEventVec[0] != clEvent) {
           FAIL(log, "event was not constructed correctly");
         }
       }

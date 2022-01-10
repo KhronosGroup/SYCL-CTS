@@ -60,7 +60,7 @@ bool check_kernel_handler_by_value_external(sycl::kernel_handler h,
         TYPE, test_cases_external::by_value_via_bundle>(h, expected);          \
   }
 
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 CORE_TYPES(FUNC_DEFINE)
 #else
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DEFINE)
@@ -71,7 +71,7 @@ FUNC_DEFINE(testing_types::def_cnstr)
 FUNC_DEFINE(testing_types::no_def_cnstr)
 
 #ifdef SYCL_CTS_TEST_DOUBLE
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DEFINE(double)
 #else
 SYCL_VECTORS_MARRAYS(double, FUNC_DEFINE)
@@ -79,7 +79,7 @@ SYCL_VECTORS_MARRAYS(double, FUNC_DEFINE)
 #endif  // SYCL_CTS_TEST_DOUBLE
 
 #ifdef SYCL_CTS_TEST_HALF
-#ifndef SYCL_CTS_FULL_CONFORMANCE
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DEFINE(sycl::half)
 #else
 SYCL_VECTORS_MARRAYS(sycl::half, FUNC_DEFINE)

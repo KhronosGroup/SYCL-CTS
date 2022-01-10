@@ -57,9 +57,12 @@ class TEST_NAME : public util::test_base {
         auto eventA = get_queue_event<class event_constructors_0>(queue);
         sycl::event eventB(eventA);
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (eventA.get() != eventB.get())) {
-          FAIL(log, "event was not copied correctly.");
+#ifdef SYCL_BACKEND_OPENCL
+        if (queue.get_backend() == sycl::backend::opencl) {
+          if (sycl::get_native<sycl::backend::opencl>(eventA) !=
+              sycl::get_native<sycl::backend::opencl>(eventB)) {
+            FAIL(log, "event was not copied correctly.");
+          }
         }
 #endif
 
@@ -76,9 +79,12 @@ class TEST_NAME : public util::test_base {
         auto eventB = get_queue_event<class event_constructors_2>(queue);
         eventB = eventA;
 
-#ifdef SYCL_CTS_TEST_OPENCL_INTEROP
-        if (!selector.is_host() && (eventA.get() != eventB.get())) {
-          FAIL(log, "event was not assigned correctly.");
+#ifdef SYCL_BACKEND_OPENCL
+        if (queue.get_backend() == sycl::backend::opencl) {
+          if (sycl::get_native<sycl::backend::opencl>(eventA) !=
+              sycl::get_native<sycl::backend::opencl>(eventB)) {
+            FAIL(log, "event was not assigned correctly.");
+          }
         }
 #endif
 
