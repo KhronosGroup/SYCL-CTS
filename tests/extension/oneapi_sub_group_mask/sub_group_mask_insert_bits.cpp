@@ -19,7 +19,7 @@ using namespace sycl_cts;
 template <typename T>
 void get_bits(T &out) {
   out = 1;
-  for (int i = 2; i + 2 <= sizeof(T) * CHAR_BIT; i = i + 2) {
+  for (size_t i = 2; i + 2 <= sizeof(T) * CHAR_BIT; i = i + 2) {
     out <<= 2;
     out++;
   }
@@ -34,14 +34,14 @@ void get_bits(sycl::marray<T, nElements> &out) {
 
 template <typename T>
 struct check_result_insert_bits {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &) {
-    for (int pos = 0; pos < sub_group_mask.size(); pos++) {
+    for (size_t pos = 0; pos < sub_group_mask.size(); pos++) {
       sycl::ext::oneapi::sub_group_mask mask = sub_group_mask;
       T bits;
       get_bits(bits);
       mask.insert_bits(bits, sycl::id(pos));
-      for (int K = 0; K < mask.size(); K++)
+      for (size_t K = 0; K < mask.size(); K++)
         if (K >= pos && K < pos + CHAR_BIT * sizeof(T)) {
           if (mask.test(sycl::id(K)) != ((K - pos) % 2 == 0)) return false;
         } else {
@@ -54,17 +54,22 @@ struct check_result_insert_bits {
 
 template <typename T>
 struct check_type_insert_bits {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
     return std::is_same_v<void, decltype(sub_group_mask.insert_bits(T()))>;
   }
 };
 
 template <typename T>
 struct check_for_type {
+  template <size_t SGSize>
+  using verification_func_for_mod3_predicate =
+      check_mask_api<SGSize, check_result_insert_bits<T>,
+                     check_type_insert_bits<T>, mod3_predicate,
+                     const sycl::ext::oneapi::sub_group_mask>;
+
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + type_name_string<T>::get(typeName));
-    check_non_const_api<check_result_insert_bits<T>, check_type_insert_bits<T>,
-                        mod3_predicate, T>(log);
+    check_diff_sub_group_sizes<verification_func_for_mod3_predicate>(log);
   }
 };
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK

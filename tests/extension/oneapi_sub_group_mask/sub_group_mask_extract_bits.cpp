@@ -19,6 +19,7 @@ using namespace sycl_cts;
 // expected extracted bits are 0101..01 or 1010..10 depending on starting pos.
 // Filling variable of type T with 01 or 10 to match size of the mask
 // and the rest of starting bits are remaining 0.
+template <typename T>
 void get_expected_bits(T &out, uint32_t mask_size, int pos) {
   if (pos >= mask_size - 1) return;
   int init;
@@ -27,7 +28,7 @@ void get_expected_bits(T &out, uint32_t mask_size, int pos) {
   else
     init = 0b10;
   out = init;
-  for (int i = 2; i + 2 <= sizeof(T) * CHAR_BIT && i + 2 <= mask_size - pos;
+  for (size_t i = 2; i + 2 <= sizeof(T) * CHAR_BIT && i + 2 <= mask_size - pos;
        i = i + 2) {
     out <<= 2;
     out += init;
@@ -38,7 +39,7 @@ template <typename T>
 struct check_result_extract_bits {
   bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &) {
-    for (int pos = 0; pos <= sub_group_mask.size(); pos++) {
+    for (size_t pos = 0; pos <= sub_group_mask.size(); pos++) {
       T bits;
       sub_group_mask.extract_bits(bits, sycl::id(pos));
       T expected(0);
@@ -59,10 +60,15 @@ struct check_type_extract_bits {
 
 template <typename T>
 struct check_for_type {
+  template <size_t SGSize>
+  using verification_func_for_even_predicate =
+      check_mask_api<SGSize, check_result_extract_bits<T>,
+                     check_type_extract_bits<T>, even_predicate,
+                     const sycl::ext::oneapi::sub_group_mask>;
+
   void operator()(util::logger &log, const std::string &typeName) {
     log.note("testing: " + type_name_string<T>::get(typeName));
-    check_const_api<check_result_extract_bits<T>, check_type_extract_bits<T>,
-                    even_predicate, T>(log);
+    check_diff_sub_group_sizes<verification_func_for_even_predicate>(log);
   }
 };
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
