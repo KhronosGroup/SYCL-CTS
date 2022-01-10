@@ -25,7 +25,7 @@ static const auto types =
         "unsigned long",  "long long",   "unsigned long long"};
 #else
 static const auto types =
-    named_type_pack<char, int, float>{"char", "int", "float"};
+    named_type_pack<char, int>{"char", "int"};
 #endif  // SYCL_CTS_FULL_CONFORMANCE
 
 template <typename funT, typename PredT, typename T, size_t SGSize>
