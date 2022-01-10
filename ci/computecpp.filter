@@ -12,6 +12,8 @@ hierarchical
 host_task
 image
 kernel
+kernel_args
+kernel_bundle
 math_builtin_api
 multi_ptr
 nd_item
