@@ -128,7 +128,7 @@ inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
 
 namespace get_cts_types {
 inline auto get_vector_types() {
-  auto pack =
+  static const auto pack =
       named_type_pack<bool, char, signed char, unsigned char, short,
                       unsigned short, int, unsigned int, long, unsigned long,
                       long long, unsigned long long, float, sycl::cl_float,
