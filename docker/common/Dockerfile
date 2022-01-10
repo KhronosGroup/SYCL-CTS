@@ -11,6 +11,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
       ca-certificates \
       cmake \
       ninja-build \
+      ccache \
       ocl-icd-opencl-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists*
