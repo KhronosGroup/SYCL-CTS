@@ -9,4 +9,5 @@ cmake . -G Ninja -B build \
     -DCMAKE_CXX_COMPILER=/sycl/bin/clang++ \
     -DCMAKE_BUILD_TYPE=Release \
     -DSYCL_CTS_ENABLE_FULL_CONFORMANCE=0 \
+    -DSYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS=0 \
     $@
