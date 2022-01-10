@@ -2,34 +2,40 @@
 //
 //  SYCL 2020 Extension Conformance Test
 //
-//  Provides tests to check sub_group_mask reset()
+//  Provides tests to check sub_group_mask flip()
 //
 *******************************************************************************/
 
 #include "sub_group_mask_common.h"
 
-#define TEST_NAME sub_group_mask_reset_api
+#define TEST_NAME sub_group_mask_flip_api
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
-struct check_result_reset {
+struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    unsigned long after_reset;
-    sub_group_mask.reset();
-    sub_group_mask.extract_bits(after_reset);
-    return after_reset == 0;
+    unsigned long before_flip, after_flip;
+    sub_group_mask.extract_bits(before_flip);
+    sub_group_mask.flip();
+    sub_group_mask.extract_bits(after_flip);
+    return after_flip == ~before_flip;
   }
 };
 
-struct check_type_reset {
+struct check_type_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
-    return std::is_same<void, decltype(sub_group_mask.reset())>::value;
+    return std::is_same<void, decltype(sub_group_mask.flip())>::value;
   }
 };
+
+template <size_t SGSize>
+using verification_func_for_even_predicate =
+    check_mask_api<SGSize, check_result_flip, check_type_flip, even_predicate,
+                   sycl::ext::oneapi::sub_group_mask>;
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 /** test sycl::oneapi::sub_group_mask interface
@@ -46,8 +52,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
-    check_non_const_api<check_result_reset, check_type_reset, even_predicate>(
-        log);
+    check_diff_sub_group_sizes<verification_func_for_even_predicate>(log);
 #else
     log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK

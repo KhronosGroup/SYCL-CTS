@@ -2,36 +2,41 @@
 //
 //  SYCL 2020 Extension Conformance Test
 //
-//  Provides tests to check sub_group_mask reset_low()
+//  Provides tests to check sub_group_mask reset_high()
 //
 *******************************************************************************/
 
 #include "sub_group_mask_common.h"
 
-#define TEST_NAME sub_group_mask_reset_low
+#define TEST_NAME sub_group_mask_reset_high
 
 namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
-struct check_result_reset_low {
+struct check_result_reset_high {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    auto low = sub_group_mask.find_low();
+    auto high = sub_group_mask.find_high();
     unsigned long after_reset, before_reset;
     sub_group_mask.extract_bits(before_reset);
-    sub_group_mask.reset_low();
+    sub_group_mask.reset_high();
     sub_group_mask.extract_bits(after_reset);
-    return after_reset == before_reset ^ (1 << low);
+    return after_reset == before_reset ^ (1 << high);
   }
 };
 
-struct check_type_reset_low {
+struct check_type_reset_high {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
-    return std::is_same<void, decltype(sub_group_mask.reset_low())>::value;
+    return std::is_same<void, decltype(sub_group_mask.reset_high())>::value;
   }
 };
+
+template <size_t SGSize>
+using verification_func_for_even_predicate =
+    check_mask_api<SGSize, check_result_reset_high, check_type_reset_high,
+                   first_half_predicate, sycl::ext::oneapi::sub_group_mask>;
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 /** test sycl::oneapi::sub_group_mask interface
@@ -48,8 +53,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
-    check_non_const_api<check_result_reset_low, check_type_reset_low,
-                        second_half_predicate>(log);
+    check_diff_sub_group_sizes<verification_func_for_even_predicate>(log);
 #else
     log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
