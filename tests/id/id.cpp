@@ -34,9 +34,22 @@ TEST_CASE("id provides a default constructor", "[id]") {
 TEST_CASE("id provides specialized constructors for each dimensionality",
           "[id]") {
   using sycl::id;
-  CHECK(id<1>{5} == id<1>{5});
-  CHECK(id<2>{5, 8} == id<2>{5, 8});
-  CHECK(id<3>{5, 8, 3} == id<3>{5, 8, 3});
+
+  STATIC_CHECK(std::is_constructible_v<id<1>, size_t>);
+  STATIC_CHECK(std::is_constructible_v<id<2>, size_t, size_t>);
+  STATIC_CHECK(std::is_constructible_v<id<3>, size_t, size_t, size_t>);
+
+  const id<1> a{5};
+  CHECK(a[0] == 5);
+
+  const id<2> b{5, 8};
+  CHECK(b[0] == 5);
+  CHECK(b[1] == 8);
+
+  const id<3> c{5, 8, 3};
+  CHECK(c[0] == 5);
+  CHECK(c[1] == 8);
+  CHECK(c[2] == 3);
 
   CHECK(DEVICE_EVAL(id<1>{5}) == id<1>{5});
   CHECK(DEVICE_EVAL((id<2>{5, 8})) == id<2>{5, 8});
