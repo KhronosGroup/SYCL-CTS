@@ -39,11 +39,19 @@ endif()
 # ------------------
 
 # ------------------
+<<<<<<< HEAD
 # Extensive mode for running extension oneAPI compile-time property list tests
 option(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS
        "Enable extension oneAPI compile-time property list tests" OFF)
 if(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS)
     message(STATUS "oneAPI extension compile-time property list tests mode: ON")
+=======
+# Extensive mode for running extension oneAPI sub_group_mask tests
+option(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+       "Enable extension oneAPI sub_group_mask tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
+    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
+>>>>>>> SYCL-2020
 endif()
 # ------------------
 
