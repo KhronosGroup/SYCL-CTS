@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 
 #include <array>
 #include <string>
@@ -75,7 +75,7 @@ class TEST_NAME : public util::test_base {
 
         // Retrieve two h_item objects and store them
         sycl::buffer<item_t> itemBuf(items.data(),
-                                         sycl::range<1>(items.size()));
+                                     sycl::range<1>(items.size()));
         testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
               itemBuf.template get_access<sycl::access_mode::write>(cgh);
@@ -90,7 +90,7 @@ class TEST_NAME : public util::test_base {
 
         // Perform comparisons on the stored h_item objects
         sycl::buffer<bool> successBuf(success.data(),
-                                          sycl::range<1>(success.size()));
+                                      sycl::range<1>(success.size()));
         testQueue.submit([&](sycl::handler& cgh) {
           auto itemAcc =
               itemBuf.template get_access<sycl::access_mode::read>(cgh);
@@ -126,8 +126,8 @@ class TEST_NAME : public util::test_base {
       }
 
       // Check h_item equality operator
-      check_equality_comparable_generic(log, items[0],
-                                        "h_item " + std::to_string(numDims));
+      common_semantics::check_on_host(log, items[0],
+                                      "h_item " + std::to_string(numDims));
       CHECK_VALUE(log, success[static_cast<size_t>(current_check::equal_self)],
                   true, numDims);
       CHECK_VALUE(log,

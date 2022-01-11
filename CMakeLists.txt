@@ -48,6 +48,15 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running extension oneAPI sub_group_mask tests
+option(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+       "Enable extension oneAPI sub_group_mask tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
+    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
 # Debug-level verbose logging
 option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
 if(SYCL_CTS_ENABLE_VERBOSE_LOG)
