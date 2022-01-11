@@ -87,6 +87,16 @@ bool define_kernel(sycl::queue &queue,
   return false;
 }
 
+/** @brief Submit dummy kernel, without any requires with specific kernel name
+ *  @tparam KernelName Name of the kernel that will be defined
+ *  @param queue sycl::queue class object
+ */
+template <typename KernelName>
+void define_kernel(sycl::queue &queue) {
+  queue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<KernelName>([=]() {}); });
+}
+
 template <sycl::bundle_state BundleState>
 class TestCaseDescriptionBase : public ITestCaseDescription {
  protected:

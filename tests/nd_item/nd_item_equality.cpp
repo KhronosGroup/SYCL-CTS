@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 #include "../common/invoke.h"
 
 #define TEST_NAME nd_item_equality
@@ -43,14 +43,13 @@ class TEST_NAME : public util::test_base {
           store_instances<numItems, invoke_nd_item<numDims, setup_kernel_t>>();
 
       // Check nd_item equality operator on the device side
-      equality_comparable_on_device<item_t>::
-          template check_on_kernel<nd_item_equality_kernel<numDims>>(
+      common_semantics::on_device_checker<item_t>::template
+          run<nd_item_equality_kernel<numDims>>(
               log, items, "nd_item " + std::to_string(numDims) + " (device)");
 
       // Check nd_item equality operator on the host side
-      check_equality_comparable_generic(log, items[0],
-                                        "nd_item " + std::to_string(numDims) +
-                                        " (host)");
+      common_semantics::check_on_host(
+          log, items[0], "nd_item " + std::to_string(numDims) + " (host)");
     }
   }
 
@@ -66,4 +65,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-}  // namespace TEST_NAME
+}  // namespace TEST_NAMESPACE
