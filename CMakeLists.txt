@@ -46,6 +46,8 @@ if(SYCL_CTS_ENABLE_LEGACY_TESTS)
     add_definitions(-DSYCL_CTS_ENABLE_LEGACY_TESTS)
 else()
     message(STATUS "Legacy tests are disabled")
+    message(WARNING
+            "Tests for legacy features should be enabled for conformance submission")
 endif()
 # ------------------
 

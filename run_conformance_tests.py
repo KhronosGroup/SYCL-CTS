@@ -60,8 +60,8 @@ def handle_args(argv):
         required=False,
         action='store_true')
     parser.add_argument(
-        '--enable-legacy',
-        help='Enable legacy tests.',
+        '--disable-legacy',
+        help='Disable legacy tests.',
         required=False,
         action='store_true')
     parser.add_argument(
@@ -82,7 +82,7 @@ def handle_args(argv):
     args = parser.parse_args(argv)
 
     full_conformance = 'OFF' if args.fast else 'ON'
-    enable_legacy = 'ON' if args.enable_legacy else 'OFF'
+    enable_legacy = 'OFF' if args.disable_legacy else 'ON'
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
             full_conformance, enable_legacy, args.exclude_categories,
