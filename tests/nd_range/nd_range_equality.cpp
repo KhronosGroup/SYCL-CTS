@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 
 #include <array>
 
@@ -123,8 +123,8 @@ class TEST_NAME : public util::test_base {
       }
 
       // Check nd_range equality operator
-      check_equality_comparable_generic(log, objects[0],
-                                        "nd_range " + std::to_string(numDims));
+      common_semantics::check_on_host(log, objects[0],
+                                      "nd_range " + std::to_string(numDims));
       CHECK_VALUE(log, success[current_check::equal_self], true, numDims);
       CHECK_VALUE(log, success[current_check::not_equal_self], false, numDims);
       CHECK_VALUE(log, success[current_check::equal_other_same_global], false,

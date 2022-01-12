@@ -39,6 +39,15 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running extension oneAPI sub_group_mask tests
+option(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+       "Enable extension oneAPI sub_group_mask tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
+    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
 # Extensive mode for running extension oneAPI device_global tests
 option(SYCL_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
        "Enable extension oneAPI device_global tests" OFF)
