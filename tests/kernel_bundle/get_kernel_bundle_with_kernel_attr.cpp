@@ -20,6 +20,9 @@
 //  get_kernel_bundle overload contains only kernels that are compatible with
 //  the provided device.
 //
+//  IMPORTANT: This file should not be merged with another *.cpp file because we
+//  should have strictly defined kernels in application.
+//
 *******************************************************************************/
 
 #include "get_kernel_bundle.h"
@@ -30,7 +33,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
 using namespace sycl_cts::tests::kernel_bundle;
- using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 class TEST_NAME : public sycl_cts::util::test_base {
  public:

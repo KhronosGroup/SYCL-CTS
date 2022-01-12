@@ -29,7 +29,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 /** @brief Observing kernel bundle with provided bundle state for each overload
  *         that don't receive KernelName template parameter the then call

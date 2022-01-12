@@ -15,7 +15,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 template <sycl::bundle_state State>
 void run_tests(util::logger &log, sycl::queue &queue) {

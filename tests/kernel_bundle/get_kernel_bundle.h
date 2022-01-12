@@ -14,9 +14,7 @@
 #include "kernel_bundle.h"
 #include "kernels.h"
 
-namespace sycl_cts {
-namespace tests {
-namespace get_kernel_bundle {
+namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle {
 
 inline auto kernels_with_attributes = named_type_pack<
     kernels::kernel_cpu_descriptor, kernels::kernel_gpu_descriptor,
@@ -207,8 +205,6 @@ inline void run_test_for_all_overload_types(
   }
 }
 
-}  // namespace get_kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_GET_KERNEL_BUNDLE_H

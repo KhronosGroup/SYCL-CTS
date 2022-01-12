@@ -14,6 +14,8 @@
 //    5) sycl::get_kernel_bundle(context, selector)
 //    6) sycl::get_kernel_bundle(context, devices, selector)
 //
+//  IMPORTANT: This file should not be merged with another *.cpp file because we
+//  should have no kernel in application.
 //
 *******************************************************************************/
 
@@ -25,7 +27,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 template <sycl::bundle_state State>
 void run_tests(util::logger &log, sycl::queue &queue) {

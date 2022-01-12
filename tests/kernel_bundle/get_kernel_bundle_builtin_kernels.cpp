@@ -38,7 +38,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
-using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 using namespace sycl_cts::tests::kernel_bundle;
 
 using first_simple_kernel = simple_kernel_descriptor::type;

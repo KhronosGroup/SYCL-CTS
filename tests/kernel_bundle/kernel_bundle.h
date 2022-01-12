@@ -12,9 +12,7 @@
 #include "../../util/exceptions.h"
 #include "../common/common.h"
 
-namespace sycl_cts {
-namespace tests {
-namespace kernel_bundle {
+namespace sycl_cts::tests::kernel_bundle {
 
 /** @brief Call queue::submit for each user-defined kernel from provided named
  *         type pack and then verify that this kernel was invoked (if device
@@ -105,8 +103,6 @@ void define_kernel(sycl::queue &queue) {
       [&](sycl::handler &cgh) { cgh.single_task<KernelName>([=]() {}); });
 }
 
-}  // namespace kernel_bundle
-}  // namespace tests
-}  // namespace sycl_cts
+}  // namespace sycl_cts::tests::kernel_bundle
 
 #endif  // __SYCLCTS_TESTS_KERNEL_BUNDLE_H

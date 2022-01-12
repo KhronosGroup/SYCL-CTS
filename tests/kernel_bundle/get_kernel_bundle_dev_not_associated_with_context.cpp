@@ -27,7 +27,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 /** @brief Calls get_kernel_bundle overloads when provided device is not
  *         associated with provided context and verify that exception was thrown

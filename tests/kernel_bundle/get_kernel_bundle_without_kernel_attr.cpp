@@ -19,6 +19,9 @@
 //  get_kernel_bundle overload contains only kernels compatible with
 //  the provided device.
 //
+//  IMPORTANT: This file should not be merged with another *.cpp file because we
+//  should have strictly defined kernels in application.
+//
 *******************************************************************************/
 
 #include "get_kernel_bundle.h"
@@ -28,7 +31,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace sycl_cts::tests::kernel_bundle;
- using namespace sycl_cts::tests::get_kernel_bundle;
+using namespace sycl_cts::tests::kernel_bundle::get_kernel_bundle;
 
 class TEST_NAME : public sycl_cts::util::test_base {
  public:
@@ -55,7 +58,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     // fill vector with kernel ids with for pre-defined kernels
     for_all_types<fill_vector_with_user_defined_kernel_ids>(
-        kernels_without_attributes, user_defined_kernel_ids, queue.get_device());
+        kernels_without_attributes, user_defined_kernel_ids,
+        queue.get_device());
 
     run_test_for_all_overload_types<sycl::bundle_state::executable>(
         log, queue, kernels_without_attributes, user_defined_kernel_ids);
