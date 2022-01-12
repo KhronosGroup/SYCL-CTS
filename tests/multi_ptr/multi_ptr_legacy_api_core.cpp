@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-#ifdef SYCL_CTS_ENABLE_LEGACY_TESTS
+#ifdef SYCL_CTS_TEST_DEPRECATED_FEATURES
     auto queue = util::get_cts_object::queue();
 
     const auto types = get_types();
@@ -45,8 +45,10 @@ class TEST_NAME : public util::test_base {
 
     queue.wait_and_throw();
 #else
-    log.note("The test is skipped because legacy tests are disabled.");
-#endif  // SYCL_CTS_ENABLE_LEGACY_TESTS
+    log.note(
+        "The test is skipped because tests for the deprecated features are "
+        "disabled.");
+#endif  // SYCL_CTS_TEST_DEPRECATED_FEATURES
   }
 };
 
