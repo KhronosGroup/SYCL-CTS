@@ -16,9 +16,9 @@
 //  group groupsize, likely supported work group size and for two kernels
 //  without any requirements for device from chosen platform.
 //
-//  The test verifies that kernel bundle that obtained from each
-//  get_kernel_bundle overload contain only kernels that compatible with
-//  provided device.
+//  The test verifies that the kernel bundle which is obtained from each
+//  get_kernel_bundle overload contains only kernels that are compatible with
+//  the provided device.
 //
 *******************************************************************************/
 
@@ -30,7 +30,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace kernels;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+ using namespace sycl_cts::tests::get_kernel_bundle;
 
 class TEST_NAME : public sycl_cts::util::test_base {
  public:

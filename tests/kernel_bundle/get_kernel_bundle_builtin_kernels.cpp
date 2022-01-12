@@ -9,27 +9,29 @@
 //    4) sycl::get_kernel_bundle<BundleState>(context, kernelIds)
 //    5) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
 //    6) sycl::get_kernel_bundle<BundleState>(context)
-//  In this tests uses two user defined kernels without any requirements without
-//  any requirements for device from chosen platform.
+//  In this tests, use two user-defined kernels without any requirements for
+//  device from chosen platform.
 //
-//  This test verifies that this overload:
+//  This test verifies that these overloads:
 //    1) sycl::get_kernel_bundle<BundleState>(context)
 //    2) sycl::get_kernel_bundle<BundleState>(context, devices)
 //    3) sycl::get_kernel_bundle<BundleState>(context, devices, selector)
-//  Doesent contained built-in kernels.
-//  This test verifies that this overload doesent contained built-in kernels:
+//  Do not contain any built-in kernel.
+//  This test verifies that these overloads:
 //    1) sycl::get_kernel_bundle<BundleState>(context, selector)
 //    2) sycl::get_kernel_bundle<BundleState>(context, kernelIds)
 //    3) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
-//  Contains built-in kernels (if built-in kernel_ids were provided) and
-//  contains built-in kernels + user defined kernels (if built-in kernel_ids +
-//  user defined kernel_ids were provided).
+//  Contain built-in kernels (if built-in kernel_ids were provided) and contain
+//  built-in kernels + user-defined kernels (if built-in kernel_ids +
+//  user-defined kernel_ids were provided).
 //
 *******************************************************************************/
 
 #include "../common/common.h"
 #include "get_kernel_bundle.h"
 #include "kernels.h"
+// for std::any_of
+#include <algorithm>
 
 #define TEST_NAME get_kernel_bundle_builtin_kernels
 
@@ -48,7 +50,16 @@ const auto second_simple_kernel_id =
 const std::vector<sycl::kernel_id> user_defined_kernel_ids{
     first_simple_kernel_id, second_simple_kernel_id};
 
+template <sycl::bundle_state BundleState>
+struct has_kernel {
+  sycl::kernel_bundle<BundleState> m_k_bundle;
+  has_kernel(sycl::kernel_bundle<BundleState> k_bundle)
+      : m_k_bundle(k_bundle) {}
 
+  bool operator()(const sycl::kernel_id &kernel_id) {
+    return m_k_bundle.has_kernel(kernel_id);
+  }
+};
 
 /** @brief Do some verifications for described sycl::get_kernel_bundle overloads
  *  @tparam BundleState sycl::bundle_state enumeration's field
@@ -57,20 +68,21 @@ const std::vector<sycl::kernel_id> user_defined_kernel_ids{
  */
 template <sycl::bundle_state BundleState>
 void run_tests(util::logger &log, sycl::queue &queue) {
-  const auto context { queue.get_context()};
-  const auto device {queue.get_device()};
-  bool selector_was_called_for_built_in {false};
+  const auto context{queue.get_context()};
+  const auto device{queue.get_device()};
+  bool selector_was_called_for_built_in{false};
 
-  const std::vector<sycl::kernel_id> built_in_kernel_ids { device.template get_info<sycl::info::device::built_in_kernel_ids>()};
+  const std::vector<sycl::kernel_id> built_in_kernel_ids{
+      device.template get_info<sycl::info::device::built_in_kernel_ids>()};
 
-  const auto selector_1 = [](const sycl::device_image<BundleState> &) {
-    return true;
-  };
-  const auto selector_2 =
+  const auto always_device_image_selector =
+      [](const sycl::device_image<BundleState> &) { return true; };
+  const auto no_built_in_device_image_selector_verifier =
       [&](const sycl::device_image<BundleState> &device_img) {
         for (auto &built_in_kernel_id : built_in_kernel_ids) {
           if (!device_img.has_kernel(built_in_kernel_id)) {
             selector_was_called_for_built_in = true;
+            break;
           }
         }
         return true;
@@ -98,13 +110,11 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   {
     auto k_bundle = sycl::get_kernel_bundle<BundleState>(context);
     bool k_bundle_has_built_in_kernel = true;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = false;
-      }
-    }
-    if (!k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
   }
 
@@ -116,14 +126,12 @@ void run_tests(util::logger &log, sycl::queue &queue) {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, built_in_kernel_ids);
     bool k_bundle_has_built_in_kernel = true;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (!k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = false;
-      }
-    }
-    if (!k_bundle_has_built_in_kernel) {
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more build-in kernels");
+           "Obtained kernel bundle does not have one or more built-in kernels");
     }
   }
 
@@ -135,24 +143,18 @@ void run_tests(util::logger &log, sycl::queue &queue) {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, all_available_kernels);
     bool k_bundle_has_built_in_kernel = true;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (!k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = false;
-      }
-    }
-    if (!k_bundle_has_built_in_kernel) {
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more build-in kernels");
+           "Obtained kernel bundle does not have one or more built-in kernels");
     }
-    bool k_bundle_has_user_defined_kernel = true;
-    for (auto &user_defined_kernel_id : user_defined_kernel_ids) {
-      if (!k_bundle.has_kernel(user_defined_kernel_id)) {
-        k_bundle_has_user_defined_kernel = false;
-      }
-    }
-    if (!k_bundle_has_user_defined_kernel) {
+
+    if (!std::any_of(user_defined_kernel_ids.cbegin(),
+                     user_defined_kernel_ids.cend(), has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more user-defined "
+           "Obtained kernel bundle does not have one or more user-defined "
            "kernels without any requires");
     }
   }
@@ -163,14 +165,11 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   // verify that obtained kernel bundle does not contain built-in kernels
   {
     auto k_bundle = sycl::get_kernel_bundle<BundleState>(context, devices);
-    bool k_bundle_has_built_in_kernel = false;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = true;
-      }
-    }
-    if (k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
   }
 
@@ -182,14 +181,11 @@ void run_tests(util::logger &log, sycl::queue &queue) {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, built_in_kernel_ids);
     bool k_bundle_has_built_in_kernel = true;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (!k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = false;
-      }
-    }
-    if (!k_bundle_has_built_in_kernel) {
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more build-in kernels");
+           "Obtained kernel bundle does not have one or more built-in kernels");
     }
   }
   // with built-in and user-defined kernels
@@ -200,24 +196,17 @@ void run_tests(util::logger &log, sycl::queue &queue) {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, all_available_kernels);
     bool k_bundle_has_built_in_kernel = true;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (!k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = false;
-      }
-    }
-    if (!k_bundle_has_built_in_kernel) {
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more build-in kernels");
+           "Obtained kernel bundle does not have one or more built-in kernels");
     }
-    bool k_bundle_has_user_defined_kernel = true;
-    for (auto &user_defined_kernel_id : user_defined_kernel_ids) {
-      if (!k_bundle.has_kernel(user_defined_kernel_id)) {
-        k_bundle_has_user_defined_kernel = false;
-      }
-    }
-    if (!k_bundle_has_user_defined_kernel) {
+
+    if (!std::any_of(user_defined_kernel_ids.cbegin(),
+                     user_defined_kernel_ids.cend(), has_kb_verifier)) {
       FAIL(log,
-           "Obtained kernel bundle doesent have one or more user-defined "
+           "Obtained kernel bundle does not have one or more user-defined "
            "kernels without any requires");
     }
   }
@@ -227,34 +216,30 @@ void run_tests(util::logger &log, sycl::queue &queue) {
       "overload");
   // verify that obtained kernel bundle does not contain built-in kernels
   {
-    auto k_bundle = sycl::get_kernel_bundle<BundleState>(context, selector_1);
-    bool k_bundle_has_built_in_kernel = false;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = true;
-      }
-    }
-    if (k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+    auto k_bundle = sycl::get_kernel_bundle<BundleState>(
+        context, always_device_image_selector);
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
   }
   // selector should not be called for built-in kernels
   {
     selector_was_called_for_built_in = false;
 
-    auto k_bundle = sycl::get_kernel_bundle<BundleState>(context, selector_2);
-    bool k_bundle_has_built_in_kernel = false;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = true;
-      }
-    }
-    if (k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+    auto k_bundle = sycl::get_kernel_bundle<BundleState>(
+        context, no_built_in_device_image_selector_verifier);
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
     if (selector_was_called_for_built_in) {
       FAIL(log,
-           "Kernel bundle was callsed for device image with built-in kernel");
+           "Kernel bundle was called for device image with built-in kernel");
     }
   }
 
@@ -263,32 +248,26 @@ void run_tests(util::logger &log, sycl::queue &queue) {
       "selector) overload");
   // verify that obtained kernel bundle does not contain built-in kernels
   {
-    auto k_bundle =
-        sycl::get_kernel_bundle<BundleState>(context, devices, selector_1);
-    bool k_bundle_has_built_in_kernel = false;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = true;
-      }
-    }
-    if (k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+    auto k_bundle = sycl::get_kernel_bundle<BundleState>(
+        context, devices, always_device_image_selector);
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
   }
   // selector should not be called for built-in kernels
   {
     selector_was_called_for_built_in = false;
 
-    auto k_bundle =
-        sycl::get_kernel_bundle<BundleState>(context, devices, selector_2);
-    bool k_bundle_has_built_in_kernel = false;
-    for (auto &built_in_kernel_id : built_in_kernel_ids) {
-      if (k_bundle.has_kernel(built_in_kernel_id)) {
-        k_bundle_has_built_in_kernel = true;
-      }
-    }
-    if (k_bundle_has_built_in_kernel) {
-      FAIL(log, "Obtained kernel bundle has build-in kernel");
+    auto k_bundle = sycl::get_kernel_bundle<BundleState>(
+        context, devices, no_built_in_device_image_selector_verifier);
+
+    has_kernel<BundleState> has_kb_verifier(k_bundle);
+    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                    has_kb_verifier)) {
+      FAIL(log, "Obtained kernel bundle has built-in kernel");
     }
     if (selector_was_called_for_built_in) {
       FAIL(log,
@@ -317,7 +296,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     define_kernel<simple_kernel_descriptor, sycl::bundle_state::executable>(
         queue);
     define_kernel<simple_kernel_descriptor_second,
-                      sycl::bundle_state::executable>(queue);
+                  sycl::bundle_state::executable>(queue);
   }
 };
 

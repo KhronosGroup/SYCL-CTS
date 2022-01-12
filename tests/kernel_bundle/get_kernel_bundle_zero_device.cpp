@@ -10,7 +10,7 @@
 #include "../common/common.h"
 #include "get_kernel_bundle.h"
 
-#define TEST_NAME get_kernel_bundle_zero_devices
+#define TEST_NAME get_kernel_bundle_zero_device
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -35,7 +35,7 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   const auto kernel_id = sycl::get_kernel_id<kernelNameT>();
 
   using descriptionT = TestCaseDescription<State>;
-  const std::vector<sycl::device> zero_devices;
+  const std::vector<sycl::device> zero_device;
 
   // No checks for: sycl::get_kernel_bundle(context)
   // No checks for: sycl::get_kernel_bundle(context, kernel_ids)
@@ -43,23 +43,23 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   // Checks for: sycl::get_kernel_bundle(context, devices)
   expect_throws<sycl::errc::invalid>(
       log, descriptionT("with context, devices"),
-      [&] { sycl::get_kernel_bundle<State>(context, zero_devices); });
+      [&] { sycl::get_kernel_bundle<State>(context, zero_device); });
 
   // Checks for: sycl::get_kernel_bundle(context, devices, kernel_ids)
   expect_throws<sycl::errc::invalid>(
       log, descriptionT("with context, devices, single kernel id"), [&] {
-        sycl::get_kernel_bundle<State>(context, zero_devices, {kernel_id});
+        sycl::get_kernel_bundle<State>(context, zero_device, {kernel_id});
       });
   expect_throws<sycl::errc::invalid>(
       log, descriptionT("with context, devices, zero kernel ids"),
-      [&] { sycl::get_kernel_bundle<State>(context, zero_devices, {}); });
+      [&] { sycl::get_kernel_bundle<State>(context, zero_device, {}); });
 
   // No checks for: sycl::get_kernel_bundle<KernelName>(context)
 
   // Checks for: sycl::get_kernel_bundle<KernelName>(context, devices)
   expect_throws<sycl::errc::invalid>(
       log, descriptionT("with context, devices, kernel name"), [&] {
-        sycl::get_kernel_bundle<kernelNameT, State>(context, zero_devices);
+        sycl::get_kernel_bundle<kernelNameT, State>(context, zero_device);
       });
 
   // No checks for: sycl::get_kernel_bundle(context, selector)
@@ -71,7 +71,7 @@ void run_tests(util::logger &log, sycl::queue &queue) {
           return true;
         };
 
-        sycl::get_kernel_bundle<State>(context, zero_devices, selector);
+        sycl::get_kernel_bundle<State>(context, zero_device, selector);
       });
 }
 

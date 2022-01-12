@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  This test calls this sycl::get_kernel_bundle overloads:
+//  This test calls these sycl::get_kernel_bundle overloads:
 //    1) sycl::get_kernel_bundle<BundleState>(context, devices, selector)
 //    2) sycl::get_kernel_bundle<BundleState>(context, selector)
 //    3) sycl::get_kernel_bundle<BundleState>(context, devices)
@@ -15,8 +15,8 @@
 //  sycl::aspect::online_compiler and with bundle_state::object if device
 //  doesn't has sycl::aspect::online_linker.
 //
-//  The test verifies that the exceptions with sycl::errc::invalid is thrown if
-//  device is not supperted sycl::aspect::online_linker and\or
+//  The test verifies that an exception with sycl::errc::invalid is thrown if
+//  device is not supported sycl::aspect::online_linker and/or
 //  sycl::aspect::online_compiler aspects.
 //
 *******************************************************************************/

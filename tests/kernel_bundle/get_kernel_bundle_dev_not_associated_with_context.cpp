@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  This test calls this sycl::get_kernel_bundle overloads:
+//  This test calls these sycl::get_kernel_bundle overloads:
 //    1) sycl::get_kernel_bundle<BundleState>(context, devices, selector)
 //    2) sycl::get_kernel_bundle<BundleState>(context, devices)
 //    3) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
@@ -81,7 +81,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     const std::vector<sycl::device> devices{sycl::device::get_devices()};
     if (devices.size() <= 1) {
-      log.skip("Test skipped due to one device was found");
+      log.skip("Test skipped due to only zero or one device was found");
       return;
     }
 

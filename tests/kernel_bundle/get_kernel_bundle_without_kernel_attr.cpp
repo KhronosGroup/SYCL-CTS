@@ -11,13 +11,13 @@
 //    6) sycl::get_kernel_bundle<BundleState>(context)
 //    7) sycl::get_kernel_bundle<KernelName, BundleState>(context)
 //    8) sycl::get_kernel_bundle<KernelName, BundleState>(context, devices)
-//  For kernels that uses fp16 and fp64 datatypes, kernel that uses atomic_ref
-//  (it requires atomic64 aspect) and for two kernels without any requirements
-//  for device from chosen platform.
+//  For kernels that use fp16 and fp64 datatypes, a kernel that uses atomic_ref
+//  (it requires atomic64 aspect) and for two kernels without any requirement
+//  on device from the chosen platform.
 //
-//  The test verifies that kernel bundle that obtained from each
-//  get_kernel_bundle overload contain only kernels that compatible with
-//  provided device.
+//  The test verifies that the kernel bundle which is  obtained from each
+//  get_kernel_bundle overload contains only kernels compatible with
+//  the provided device.
 //
 *******************************************************************************/
 
@@ -28,7 +28,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace sycl_cts::tests::kernel_bundle;
-using namespace sycl_cts::tests::get_kernel_bundle;
+ using namespace sycl_cts::tests::get_kernel_bundle;
 
 class TEST_NAME : public sycl_cts::util::test_base {
  public:

@@ -11,11 +11,11 @@
 //    6) sycl::get_kernel_bundle<BundleState>(context)
 //    7) sycl::get_kernel_bundle<KernelName, BundleState>(context)
 //    8) sycl::get_kernel_bundle<KernelName, BundleState>(context, devices)
-//  For kernels that uses fp16 and fp64 datatypes, kernel that uses atomic_ref
-//  (it requires atomic64 aspect) and for two kernels without any requirements
-//  for device from chosen platform.
+//  For kernels that use fp16 and fp64 datatypes, a kernel that uses atomic_ref
+//  (it requires atomic64 aspect) and for two kernels without any requirement
+//  on device from the chosen platform.
 //
-//  The test verifies that the exception not thrown for bundle_state::input and
+//  The test verifies that no exception is thrown for bundle_state::input and
 //  bundle_state::object.
 //
 *******************************************************************************/
@@ -46,20 +46,20 @@ void run_test_for_all_overload_types(
   const auto context = queue.get_context();
   const auto device = queue.get_device();
 
-  const auto selector = [](const sycl::device_image<BundleState> &) {
-    return true;
-  };
+  const auto always_device_image_selector =
+      [](const sycl::device_image<BundleState> &) { return true; };
 
   expect_not_throws(
       log, TestCaseDescription<BundleState>("(context, devices, selector)"),
       [&] {
         sycl::get_kernel_bundle<BundleState>(context, {device},
-                                             selector);
+                                             always_device_image_selector);
       });
 
   expect_not_throws(
       log, TestCaseDescription<BundleState>("(context, selector)"), [&] {
-        sycl::get_kernel_bundle<BundleState>(context, selector);
+        sycl::get_kernel_bundle<BundleState>(context,
+                                             always_device_image_selector);
       });
 
   expect_not_throws(
@@ -115,12 +115,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     // fill vector with kernel ids with for pre-defined kernels
     for_all_types<fill_vector_with_user_defined_kernel_ids>(
-        kernels_without_attributes, user_defined_kernel_ids, queue.get_device());
+        kernels_without_attributes, user_defined_kernel_ids,
+        queue.get_device());
 
-    run_test_for_all_overload_types<sycl::bundle_state::input>(log, queue,
-                                                 user_defined_kernel_ids);
-    run_test_for_all_overload_types<sycl::bundle_state::object>(log, queue,
-                                                  user_defined_kernel_ids);
+    run_test_for_all_overload_types<sycl::bundle_state::input>(
+        log, queue, user_defined_kernel_ids);
+    run_test_for_all_overload_types<sycl::bundle_state::object>(
+        log, queue, user_defined_kernel_ids);
 
     for_all_types<execute_kernel_and_verify_executions>(
         kernels_without_attributes, log, queue);

@@ -99,7 +99,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     // Ensure we have no user-defined kernels in a whole application
     const auto kernel_ids = sycl::get_kernel_ids();
-    if (kernel_ids.size() != 0) {
+    if (!kernel_ids.empty()) {
       FAIL(log,
            "Test precondition failed: at least one user-defined kernel found");
     }
