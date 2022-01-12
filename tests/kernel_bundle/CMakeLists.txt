@@ -17,6 +17,9 @@ set(independent_cases_list
   has_kernel_bundle_core_reqd_like_support_work_group_size_dev.cpp
   has_kernel_bundle_core_reqd_like_unsupport_work_group_size_ctx_only.cpp
   has_kernel_bundle_core_reqd_like_unsupport_work_group_size_dev.cpp
+  get_kernel_ids_multiple_kernels.cpp
+  get_kernel_ids_single_kernel.cpp
+  get_kernel_ids_no_kernels.cpp
 )
 
 list(TRANSFORM independent_cases_list PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")

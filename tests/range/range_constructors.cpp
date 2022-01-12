@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 
 #define TEST_NAME range_constructors
 
@@ -68,8 +68,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 1");
         }
 
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+        common_semantics::check_on_host(log, range_explicit,
+                                        std::string("range"));
       }
 
       // dim 2
@@ -111,8 +111,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 2");
         }
 
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+        common_semantics::check_on_host(log, range_explicit,
+                                        std::string("range"));
       }
 
       // dim 3
@@ -161,8 +161,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 3");
         }
 
-        check_equality_comparable_generic(log, range_explicit,
-                                          std::string("range"));
+        common_semantics::check_on_host(log, range_explicit,
+                                        std::string("range"));
       }
     }
   }
