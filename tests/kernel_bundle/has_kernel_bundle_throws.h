@@ -28,7 +28,6 @@ template <typename KernelDescriptorT, sycl::bundle_state BundleState>
 struct throws<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
-    bool ex_was_thrown = false;
     sycl::queue queue{ctx, ctx.get_devices()[0]};
 
     expect_throws<sycl::errc::invalid>(
@@ -55,7 +54,6 @@ struct throws<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
                   const sycl::device &dev) {
     using kernel_functor = typename KernelDescriptorT::type;
     auto k_id = sycl::get_kernel_id<kernel_functor>();
-    bool ex_was_thrown = false;
     sycl::queue queue{ctx, ctx.get_devices()[0]};
 
     expect_throws<sycl::errc::invalid>(
@@ -81,7 +79,6 @@ struct throws<KernelDescriptorT, BundleState, overload::id::ctx_dev_kname> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
     using kernel_functor = typename KernelDescriptorT::type;
-    bool ex_was_thrown = false;
     sycl::queue queue{ctx, ctx.get_devices()[0]};
 
     // We expect that exception with sycl::errc::invalid will be thrown
