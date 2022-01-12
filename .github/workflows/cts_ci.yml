@@ -5,7 +5,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Pushing container images requires DockerHub credentials, provided as GitHub secrets.
+  # Secrets are not available for runs triggered from external branches (forks).
+  check-secrets:
+    runs-on: ubuntu-20.04
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - name: Check whether secrets are available
+        id: check
+        run: |
+          SECRET=${{ secrets.DOCKERHUB_TOKEN }}
+          echo "::set-output name=available::${SECRET:+yes}"
+
   build-common-base-image:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.available == 'yes'
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -68,6 +83,8 @@ jobs:
 
   compile-cts:
     needs: build-image-for-sycl-impl
+    # Wait for Docker image builds, but run even if they're skipped
+    if: always()
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
