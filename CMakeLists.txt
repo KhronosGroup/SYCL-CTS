@@ -39,6 +39,15 @@ endif()
 # ------------------
 
 # ------------------
+# Extensive mode for running extension oneAPI device_global tests
+option(SYCL_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
+       "Enable extension oneAPI device_global tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS)
+    message(STATUS "oneAPI extension device_global tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
 # Debug-level verbose logging
 option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
 if(SYCL_CTS_ENABLE_VERBOSE_LOG)
