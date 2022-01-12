@@ -3,6 +3,9 @@ file(GLOB test_cases_list *.cpp)
 set(independent_cases_list
   has_kernel_bundle_multiple_kernels_ctx_only.cpp
   has_kernel_bundle_multiple_kernels_dev.cpp
+  get_kernel_ids_multiple_kernels.cpp
+  get_kernel_ids_single_kernel.cpp
+  get_kernel_ids_no_kernels.cpp
 )
 
 list(TRANSFORM independent_cases_list PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
