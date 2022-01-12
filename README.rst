@@ -88,6 +88,10 @@ When configuring CMake, it is possible to use these flags:
   Enable extensive coverage with huge compilation and execution time.
   This mode is switched off by default. Should be swithed on for conformance.
 
+``SYCL_CTS_TEST_DEPRECATED_FEATURES``
+  Enable tests for legacy SYCL features. This option is switched on by default.
+  Should be swithed on for conformance.
+
 ``SYCL_CTS_VERBOSE_LOG``
   Enable debug-level logs with the possibly oververbose output.
   This mode is switched off by default.

@@ -60,6 +60,11 @@ def handle_args(argv):
         required=False,
         action='store_true')
     parser.add_argument(
+        '--disable-deprecated-features',
+        help='Disable tests for the deprecated SYCL features.',
+        required=False,
+        action='store_true')
+    parser.add_argument(
         '--device',
         help='Select SYCL device to run CTS on. ECMAScript regular expression syntax can be used.',
         type=str,
@@ -77,10 +82,11 @@ def handle_args(argv):
     args = parser.parse_args(argv)
 
     full_conformance = 'OFF' if args.fast else 'ON'
+    test_deprecated_features = 'OFF' if args.disable_deprecated_features else 'ON'
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
-            full_conformance, args.exclude_categories, args.implementation_name,
-            args.additional_cmake_args, args.device,
+            full_conformance, test_deprecated_features, args.exclude_categories,
+            args.implementation_name, args.additional_cmake_args, args.device,
             args.additional_ctest_args, args.build_only)
 
 
@@ -96,7 +102,8 @@ def split_additional_args(additional_args):
 
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
-                        exclude_categories, additional_cmake_args, device):
+                        test_deprecated_features, exclude_categories,
+                        additional_cmake_args, device):
     """
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
@@ -106,6 +113,7 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
         '..',
         '-G' + build_system_name,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
+        '-DSYCL_CTS_TEST_DEPRECATED_FEATURES=' + test_deprecated_features,
         '-DSYCL_CTS_CTEST_DEVICE=' + device,
     ]
     if exclude_categories is not None:
@@ -246,13 +254,15 @@ def main(argv=sys.argv[1:]):
 
     # Parse and gather all the script args
     (cmake_exe, build_system_name, build_system_call, full_conformance,
-     exclude_categories, implementation_name, additional_cmake_args, device,
-     additional_ctest_args, build_only) = handle_args(argv)
+     test_deprecated_features, exclude_categories, implementation_name,
+     additional_cmake_args, device, additional_ctest_args,
+     build_only) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
-                                     full_conformance, exclude_categories,
-                                     additional_cmake_args, device)
+                                     full_conformance, test_deprecated_features,
+                                     exclude_categories, additional_cmake_args,
+                                     device)
 
     # Generate a CTest call in a form accepted by subprocess.call()
     ctest_call = generate_ctest_call(additional_ctest_args)

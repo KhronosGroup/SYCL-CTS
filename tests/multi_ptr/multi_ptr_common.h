@@ -10,8 +10,51 @@
 #define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_COMMON_H
 
 #include "../common/common.h"
+#include "../common/type_coverage.h"
 
 namespace multi_ptr_common {
+
+/** @brief Legacy multi_ptr alias to enforce the access::decorated::legacy
+ *         usage with no dependency on default multi_ptr template parameter
+ *         values
+ */
+template <typename T, sycl::access::address_space Space>
+using multi_ptr_legacy =
+    sycl::multi_ptr<T, Space, sycl::access::decorated::legacy>;
+
+template <typename T>
+using global_ptr_legacy =
+    multi_ptr_legacy<T, sycl::access::address_space::global_space>;
+
+template <typename T>
+using private_ptr_legacy =
+    multi_ptr_legacy<T, sycl::access::address_space::private_space>;
+
+template <typename T>
+using local_ptr_legacy =
+    multi_ptr_legacy<T, sycl::access::address_space::local_space>;
+
+template <typename T>
+using constant_ptr_legacy =
+    multi_ptr_legacy<T, sycl::access::address_space::constant_space>;
+
+/** @brief Factory method to enforce the same coverage for constructors and API
+ */
+inline auto get_types() {
+  return named_type_pack<bool, float, double, char,   // types grouped
+                         signed char, unsigned char,  // by sign
+                         short, unsigned short,       //
+                         int, unsigned int,           //
+                         long, unsigned long,         //
+                         long long, unsigned long long>{
+      "bool",        "float",
+      "double",      "char",
+      "signed char", "unsigned char",
+      "short",       "unsigned short",
+      "int",         "unsigned int",
+      "long",        "unsigned long",
+      "long long",   "unsigned long long"};
+}
 
 template <typename... argsT>
 void silence_warnings(argsT...) {
