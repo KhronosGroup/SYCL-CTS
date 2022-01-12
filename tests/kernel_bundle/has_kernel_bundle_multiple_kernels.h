@@ -14,19 +14,21 @@
 #include "kernels.h"
 #include <string>
 #include <vector>
+// for std::any_of
+#include <algorithm>
 
-namespace sycl_cts::testshas_kernel_bundle::check {
+namespace sycl_cts::tests::has_kernel_bundle::check {
 namespace details {
-/** @brief Check that calling has_kernel_bundle overload for a two kernels
- *         is same as:
- *           - call has_kernel_bundle overload for each of kernels and
+/** @brief Check that calling has_kernel_bundle overload for two kernels
+ *         is the same as:
+ *           - call has_kernel_bundle overload for each kernel and
  *           - apply 'AND' operation over the results of the separate calls
  *  @details According to the SYCL-2020 rev.3 #4.11.8 "Querying if a kernel
  *           bundle exists" we need to ensure that
  *           - if we call specific sycl::has_kernel_bundle overload for multiple
  *             kernel ids
- *           - the result "true" is expected only if every kernel that used
- *             is compatible with device
+ *           - the result "true" is expected only if every kernel that is used
+ *             is compatible with the device
  */
 template <sycl::bundle_state BundleState, typename SyclOverloadT>
 void verify_specific_kernels(sycl_cts::util::logger &log, sycl::context ctx,
@@ -153,9 +155,9 @@ void verify_specific_kernels(sycl_cts::util::logger &log, sycl::context ctx,
   }
 }
 
-/** @brief Check that calling has_kernel_bundle overload for a two kernels
- *         is same as:
- *           - call has_kernel_bundle overload for each of kernels and
+/** @brief Check that calling has_kernel_bundle overload for two kernels
+ *         is the same as:
+ *           - call has_kernel_bundle overload for each kernel and
  *           - apply 'OR' operation over the results of the separate calls
  *  @details According to the SYCL-2020 rev.3 #4.11.8 "Querying if a kernel
  *           bundle exists" we need to ensure that
@@ -212,11 +214,9 @@ void verify_all_kernels_in_application(sycl_cts::util::logger &log,
     }
   }
 
-  // Retrieve results of a single calls
-  bool expected = false;
-  for (const auto &id : ids) {
-    expected |= sycl::has_kernel_bundle<BundleState>(ctx, devices, {id});
-  }
+  bool expected = std::any_of(ids.cbegin(), ids.cend(), [&](auto &id) {
+    return sycl::has_kernel_bundle<BundleState>(ctx, devices, {id});
+  });
 
   // Run the test
   const bool retrieved = call_has_kernel_bundle();
@@ -279,7 +279,7 @@ struct multiple_kernels<BundleState, overload::id::ctx_dev> {
     const std::vector<sycl::device> devices{device};
     sycl::context ctx(devices);
 
-    auto call = [&]() {
+    auto call = [&] {
       return sycl::has_kernel_bundle<BundleState>(ctx, devices);
     };
     details::verify_all_kernels_in_application<BundleState>(log, ctx, device,
@@ -295,12 +295,12 @@ struct multiple_kernels<BundleState, overload::id::ctx_only> {
     const std::vector<sycl::device> devices{device};
     sycl::context ctx(devices);
 
-    auto call = [&]() { return sycl::has_kernel_bundle<BundleState>(ctx); };
+    auto call = [&] { return sycl::has_kernel_bundle<BundleState>(ctx); };
     details::verify_all_kernels_in_application<BundleState>(log, ctx, device,
                                                             call);
   }
 };
 
-}  // namespace sycl_cts::testshas_kernel_bundle::check
+}  // namespace sycl_cts::tests::has_kernel_bundle::check
 
 #endif  // __SYCLCTS_TESTS_HAS_KERNEL_BUNDLE_H

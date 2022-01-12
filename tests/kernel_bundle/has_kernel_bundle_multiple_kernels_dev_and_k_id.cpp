@@ -3,13 +3,13 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test calls sycl::has_kernel_bundle<all bundle_states>(ctx, devices,
-//  kernelId) for kernels with this six kernels (2x kernel_cpu, 2x kernel_gpu,
+//  kernelId) for kernels with these six kernels (2x kernel_cpu, 2x kernel_gpu,
 //  2x kernel_accelerator).
 //    1) Call sycl::has_kernel_bundle only with one kernel: with kernel_cpu,
 //  kernel_gpu and kernel_accelerator.
-//    2) Unite call results for two kernels, for example call result for
-//  kernel_cpu and kernel_gpu (union using && operator). Save union result to
-//  varaible with name "expected"
+//    2) Reduce call results for two kernels, for example call result for
+//  kernel_cpu and kernel_gpu (reducing with && operator). Save reduced result to
+//  variable with name "expected"
 //    3) Call sycl::has_kernel_bundle with combination of these kernels:
 //  kernel_cpu and kernel_gpu, kernel_cpu and kernel_gpu, kernel_gpu and
 //  kernel_accelerator, kernel_cpu and second_kernel_cpu etc.
