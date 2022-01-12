@@ -85,13 +85,13 @@ inline void log_err_message(sycl_cts::util::logger &log, bool has_kb_result,
 /** @brief Verify has_kernel_bundle result by rules that depend on
  *         sycl::bundle_state
  *  @details If we got unexpected has_kernel_bundle result then this function
- *           return TRUE
+ *           returns TRUE
  *  @tparam BundleStateT sycl::bundle_state enum's enumeration's field
  *  @param has_kb_result Result of sycl::has_kernel_bundle calling
  *  @param dev_is_compat Current device compatible status
- *  @retval Bool value that correspond to has_kernel_bundle result that NOT
- *          equal to device compatible status according to rules that depend on
- *          sycl::bundle_state
+ *  @retval Bool value that corresponds to has_kernel_bundle result that does
+ *          NOT equal to device compatible status according to rules that depend
+ *          on sycl::bundle_state
  */
 template <sycl::bundle_state BundleStateT>
 bool result_has_kb_is_wrong(bool has_kb_result, bool dev_is_compat) {
@@ -127,7 +127,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_only> {
     auto k_id{sycl::get_kernel_id<kernel_functor>()};
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
@@ -159,7 +159,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_kid> {
     auto k_id{sycl::get_kernel_id<kernel_functor>()};
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
@@ -191,7 +191,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
     auto k_id{sycl::get_kernel_id<kernel_functor>()};
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
@@ -223,7 +223,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
     auto k_id{sycl::get_kernel_id<kernel_functor>()};
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
@@ -256,7 +256,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_kname> {
     auto k_id{sycl::get_kernel_id<kernel_functor>()};
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
@@ -289,7 +289,7 @@ struct core<KernelDescriptorT, BundleState, overload::id::ctx_dev_kname> {
     auto k_id = sycl::get_kernel_id<kernel_functor>();
     auto restrictions{
         kernel_bundle::get_restrictions<KernelDescriptorT, BundleState>()};
-    std::string compat_info{};
+    std::string compat_info;
     sycl::queue queue(ctx, dev);
 
     bool dev_is_compat{restrictions.is_compatible(dev, compat_info)};
