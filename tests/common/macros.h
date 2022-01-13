@@ -15,12 +15,12 @@
 #include <catch2/catch_test_macros.hpp>
 #undef FAIL  // We define our own FAIL macro
 
+#include "../../util/logger.h"
+#include "../../util/test_base.h"
 #include "../../util/type_names.h"
 #include "macro_utils.h"
 
 #define TEST_FILE __FILE__
-#define TEST_BUILD_DATE __DATE__
-#define TEST_BUILD_TIME __TIME__
 
 /** convert a parameter to a string
  */
@@ -53,8 +53,6 @@ inline void set_test_info(sycl_cts::util::test_base::info& out,
                           const std::string& name, const char* file) {
   out.m_name = name;
   out.m_file = file;
-  out.m_buildDate = TEST_BUILD_DATE;
-  out.m_buildTime = TEST_BUILD_TIME;
 }
 
 /**

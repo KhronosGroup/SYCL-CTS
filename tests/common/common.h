@@ -13,7 +13,6 @@
 #include <sycl/sycl.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#undef FAIL  // We define our own FAIL macro in macros.h
 
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"

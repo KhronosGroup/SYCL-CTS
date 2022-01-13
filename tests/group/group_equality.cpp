@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 #include "../common/invoke.h"
 
 #define TEST_NAME group_equality
@@ -43,14 +43,13 @@ class TEST_NAME : public util::test_base {
           store_instances<numItems, invoke_group<numDims, setup_kernel_t>>();
 
       // Check nd_item equality operator on the device side
-      equality_comparable_on_device<item_t>::
-          template check_on_kernel<group_equality_kernel<numDims>>(
+      common_semantics::on_device_checker<item_t>::template
+          run<group_equality_kernel<numDims>>(
               log, items, "group " + std::to_string(numDims) + " (device)");
 
       // Check group equality operator on the host side
-      check_equality_comparable_generic(log, items[0],
-                                        "group " + std::to_string(numDims) +
-                                        " (host)");
+      common_semantics::check_on_host(
+          log, items[0], "group " + std::to_string(numDims) + " (host)");
     }
   }
 
@@ -66,4 +65,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-}  // namespace TEST_NAME
+}  // namespace TEST_NAMESPACE
