@@ -42,6 +42,8 @@ inline void fail_test(sycl_cts::util::logger& log,
 
 /**
  * @brief Helper function to check the return value of a function.
+ *
+ * @deprecated Prefer using CHECK/REQUIRE macros instead.
  */
 template <typename T>
 void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
@@ -55,11 +57,19 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
  * @brief Helper function to check the return type of a function.
  */
 template <typename expectedT, typename returnT>
-void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
-                       std::string functionName) {
+void check_return_type(returnT returnVal, std::string functionName) {
   INFO(functionName + " has incorrect return type -> " +
        typeid(returnT).name());
   CHECK(std::is_same<returnT, expectedT>::value);
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename expectedT, typename returnT>
+void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
+                       std::string functionName) {
+  check_return_type(returnVal, functionName);
 }
 
 /**
@@ -74,14 +84,20 @@ bool check_return_type_bool(returnT returnVal) {
  * @brief Helper function to check two types are equal.
  */
 template <typename expectedT, typename actualT>
+void check_equal_type(actualT actualVal, std::string logMsg) {
+  if (typeid(expectedT) != typeid(actualT)) {
+    FAIL(logMsg + "\nGot type -> " + std::string(typeid(actualT).name()) +
+         "\nExpected type -> " + std::string(typeid(expectedT).name()));
+  }
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename expectedT, typename actualT>
 void check_equal_type(sycl_cts::util::logger& log, actualT actualVal,
                       std::string logMsg) {
-  if (typeid(expectedT) != typeid(actualT)) {
-    FAIL(log, logMsg + "\nGot type -> " +
-                  std::string(typeid(actualT).name()) +
-                  "\nExpected type -> " +
-                  std::string(typeid(expectedT).name()));
-  }
+  check_equal_type(actualVal, logMsg);
 }
 
 /**
@@ -118,50 +134,66 @@ void check_enum_underlying_type(sycl_cts::util::logger& log) {
  * @brief Helper function to check an info parameter.
  */
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
-void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
+void check_get_info_param(const objectT& object) {
   /** check param_traits return type
    */
   using paramTraitsType =
       typename sycl::info::param_traits<enumT, kValue>::return_type;
   if (typeid(paramTraitsType) != typeid(returnT)) {
-    FAIL(log, "param_trait specialization has incorrect return type");
+    FAIL("param_trait specialization has incorrect return type");
   }
 
   /** check get_info return type
    */
   auto returnValue = object.template get_info<kValue>();
-  check_return_type<returnT>(log, returnValue, "object::get_info()");
+  check_return_type<returnT>(returnValue, "object::get_info()");
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename enumT, typename returnT, enumT kValue, typename objectT>
+void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
+  check_get_info_param<enumT, returnT, kValue>(object);
 }
 
 /**
  * @brief Helper function to check a profiling info parameter.
  */
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
-void check_get_profiling_info_param(sycl_cts::util::logger& log,
-                                    const objectT& object) {
+void check_get_profiling_info_param(const objectT& object) {
   /** check param_traits return type
    */
   using paramTraitsType =
       typename sycl::info::param_traits<enumT, kValue>::return_type;
   if (!std::is_same<paramTraitsType, returnT>::value) {
-    FAIL(log, "param_trait specialization has incorrect return type");
+    FAIL("param_trait specialization has incorrect return type");
   }
 
   /** check get_profiling_info return type
    */
   auto returnValue = object.template get_profiling_info<kValue>();
-  check_return_type<returnT>(log, returnValue, "object::get_profiling_info()");
+  check_return_type<returnT>(returnValue, "object::get_profiling_info()");
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename enumT, typename returnT, enumT kValue, typename objectT>
+void check_get_profiling_info_param(sycl_cts::util::logger& log,
+                                    const objectT& object) {
+  check_get_profiling_info_param<enumT, returnT, kValue>(object);
 }
 
 /**
  * @brief Helper function to check the equality of two SYCL objects.
  */
 template <typename T>
-void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
+void check_equality(T& a, T& b) {
   /** check is_host
    */
   if (a.is_host() != b.is_host()) {
-    FAIL(log, "two objects are not equal (is_host)");
+    FAIL("two objects are not equal (is_host)");
   }
 
 #ifdef SYCL_BACKEND_OPENCL
@@ -175,22 +207,38 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
 #else
     if (a.get() != b.get()) {
 #endif
-      FAIL(log, "two objects are not equal");
+      FAIL("two objects are not equal");
     }
   }
 #endif  // SYCL_BACKEND_OPENCL
 };
 
 /**
+ * @deprecated Use overload without logger.
+ */
+template <typename T>
+void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
+  check_equality(a, b);
+};
+
+/**
  * @brief Helper function to test two arrays have equal elements
  */
 template <typename arrT, int size>
-void check_array_equality(sycl_cts::util::logger& log, arrT* arr1, arrT* arr2) {
+void check_array_equality(arrT* arr1, arrT* arr2) {
   for (int i = 0; i < size; i++) {
     if (arr1[i] != arr2[i]) {
-      FAIL(log, "arrays are not equal");
+      FAIL("arrays are not equal");
     }
   }
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename arrT, int size>
+void check_array_equality(sycl_cts::util::logger& log, arrT* arr1, arrT* arr2) {
+  check_array_equality<arrT, size>(arr1, arr2);
 }
 
 /**
@@ -223,19 +271,27 @@ inline bool check_type_sign<sycl::half>(bool expected_sign) {
  * sign
  */
 template <typename T>
-void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
-                                  bool expected_sign,
+void check_type_min_size_sign_log(size_t minSize, bool expected_sign,
                                   std::string typeName) {
   if (!check_type_min_size<T>(minSize)) {
-    FAIL(log, std::string(
-                  "The following host type does not have the correct size: ") +
-                  typeName);
+    FAIL(std::string(
+             "The following host type does not have the correct size: ") +
+         typeName);
   }
   if (!check_type_sign<T>(expected_sign)) {
-    FAIL(log, std::string(
-                  "The following host type does not have the correct sign: ") +
-                  typeName);
+    FAIL(std::string(
+             "The following host type does not have the correct sign: ") +
+         typeName);
   }
+}
+
+/**
+ * @deprecated Use overload without logger.
+ */
+template <typename T>
+void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
+                                  bool expected_sign, std::string typeName) {
+  check_type_min_size_sign_log<T>(minSize, expected_sign, typeName);
 }
 
 /**
