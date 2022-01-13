@@ -14,18 +14,25 @@
 namespace sycl_cts {
 namespace get_cts_string {
 
+/**
+ * @brief Enum class for verbosity level of output in the for_bundle_state
+ * function
+ *
+ */
 enum class verbosity { brief = 0, detail };
 
 /** @brief Stringify bool value
  *  @tparam bool flag Value to convert
  *  @retval String with interpretation of bool
  */
-inline std::string for_bool(bool flag) { return flag ? "true" : "false"; }
+constexpr std::string_view for_bool(const bool flag) {
+  return flag ? "true" : "false";
+}
 
 /** @brief Return string's description depending on the type of bundle_state and
  * verbosity level
- *  @tparam State bundle state
- *  @tparam Level verbosity level
+ *  @tparam State of kernel bundle
+ *  @tparam Level of verbosity
  *  @retval string's description of bundle state
  */
 template <sycl::bundle_state State, verbosity Level = verbosity::brief>
@@ -49,11 +56,12 @@ inline std::string for_bundle_state() {
 }
 
 /** @brief Return string's description depending on the type of address space
- *  @tparam AddressSpace type of address space that needs to be converted to string
+ *  @tparam AddressSpace type of address space that needs to be converted to
+ * string
  *  @retval String description of given address space
  */
 template <sycl::access::address_space AddressSpace>
-inline std::string_view for_address_space() {
+constexpr std::string_view for_address_space() {
   if constexpr (AddressSpace == sycl::access::address_space::global_space) {
     return "global_space";
   } else if constexpr (AddressSpace ==
@@ -69,7 +77,8 @@ inline std::string_view for_address_space() {
                        sycl::access::address_space::constant_space) {
     return "constant_space(deprecated)";
   } else {
-    static_assert(AddressSpace != AddressSpace, "Unknown address space type");
+    static_assert(AddressSpace != AddressSpace,
+                  "Unknown sycl::access::address_space type");
   }
 }
 
@@ -78,7 +87,7 @@ inline std::string_view for_address_space() {
  *  @retval String description of address space
  */
 template <sycl::access::decorated Decorated>
-inline std::string_view for_decorated() {
+constexpr std::string_view for_decorated() {
   if constexpr (Decorated == sycl::access::decorated::yes) {
     return "yes";
   } else if constexpr (Decorated == sycl::access::decorated::no) {
@@ -86,7 +95,8 @@ inline std::string_view for_decorated() {
   } else if constexpr (Decorated == sycl::access::decorated::legacy) {
     return "legacy";
   } else {
-    static_assert(Decorated != Decorated, "Unknown decorated type");
+    static_assert(Decorated != Decorated,
+                  "Unknown sycl::access::decorated type");
   }
 }
 
@@ -95,7 +105,7 @@ inline std::string_view for_decorated() {
  *  @retval String description of mode
  */
 template <sycl::access::mode Mode>
-inline std::string_view for_mode() {
+constexpr std::string_view for_mode() {
   if constexpr (Mode == sycl::access::mode::read) {
     return "read";
   } else if constexpr (Mode == sycl::access::mode::read_write) {
@@ -109,7 +119,7 @@ inline std::string_view for_mode() {
   } else if constexpr (Mode == sycl::access::mode::discard_write) {
     return "discard_write(deprecated)";
   } else {
-    static_assert(Mode != Mode, "Unknown mode type");
+    static_assert(Mode != Mode, "Unknown sycl::access_mode type");
   }
 }
 
@@ -118,7 +128,7 @@ inline std::string_view for_mode() {
  *  @retval String description of target
  */
 template <sycl::access::target Target>
-inline std::string_view for_target() {
+constexpr std::string_view for_target() {
   if constexpr (Target == sycl::access::target::constant_buffer) {
     return "constant_buffer";
   } else if constexpr (Target == sycl::access::target::device) {
@@ -136,22 +146,23 @@ inline std::string_view for_target() {
   } else if (Target == sycl::access::target::global_buffer) {
     return "global_buffer(deprecated)";
   } else {
-    static_assert(Target != Target, "Unknown target type");
+    static_assert(Target != Target, "Unknown sycl::access::target type");
   }
 }
 
 /** @brief Return string's description depending on the type of isPlaceHolder
- *  @tparam isPlaceHolder value that needs to be converted to string
+ *  @tparam PlaceHolder value that needs to be converted to string
  *  @retval String description of placeholder
  */
-template <sycl::access::placeholder placeholder>
-inline std::string_view for_placeholder() {
-  if constexpr (placeholder == sycl::access::placeholder::false_t) {
+template <sycl::access::placeholder Placeholder>
+constexpr std::string_view for_placeholder() {
+  if constexpr (Placeholder == sycl::access::placeholder::false_t) {
     return "false_t";
-  } else if constexpr (placeholder == sycl::access::placeholder::true_t) {
+  } else if constexpr (Placeholder == sycl::access::placeholder::true_t) {
     return "true_t";
   } else {
-    static_assert(placeholder != placeholder, "Unknown placeholder type");
+    static_assert(Placeholder != Placeholder,
+                  "Unknown sycl::access::placeholder type");
   }
 }
 
