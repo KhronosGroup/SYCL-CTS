@@ -89,18 +89,18 @@ static void verify_members(sycl_cts::util::logger &log,
                          ", with tested type: " + type_name};
   if (!std::is_same_v<decltype(multi_ptr)::value_type, VariableT>) {
     FAIL(log,
-         "sycl::multi_ptr::value_type doesent equal to provided value type" +
+         "sycl::multi_ptr::value_type doesn't equal to provided value type" +
              log_suffix);
   }
   if (!std::is_same_v<decltype(multi_ptr)::difference_type, std::ptrdiff_t>) {
     FAIL(log,
-         "sycl::multi_ptr::difference_type doesent equal to std::ptrdiff_t" +
+         "sycl::multi_ptr::difference_type doesn't equal to std::ptrdiff_t" +
              log_suffix);
   }
   if (!std::is_same_v<decltype(multi_ptr)::iterator_category,
                       std::random_access_iterator_tag>) {
     FAIL(log,
-         "sycl::multi_ptr::iterator_category doesent equal to "
+         "sycl::multi_ptr::iterator_category doesn't equal to "
          "std::random_access_iterator_tag" +
              log_suffix);
   }
@@ -109,14 +109,14 @@ static void verify_members(sycl_cts::util::logger &log,
     if (!std::is_same_v<decltype(multi_ptr)::pointer,
                         std::add_pointer_t<VariableT>>) {
       FAIL(log,
-           "sycl::multi_ptr::pointer doesent equal to "
+           "sycl::multi_ptr::pointer doesen't equal to "
            "std::add_pointer_t<value_type>" +
                log_suffix);
     }
     if (!std::is_same_v<decltype(multi_ptr)::reference,
                         std::add_lvalue_reference_t<VariableT>>) {
       FAIL(log,
-           "sycl::multi_ptr::reference doesent equal to "
+           "sycl::multi_ptr::reference doesn't equal to "
            "std::add_lvalue_reference_t<value_type>" +
                log_suffix);
     }
