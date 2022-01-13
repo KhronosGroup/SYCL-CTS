@@ -6,6 +6,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/extensions.h"
 #include "../common/common.h"
 #include "multi_ptr_members.h"
 
@@ -29,7 +30,9 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     auto queue = util::get_cts_object::queue();
-    if (!queue.get_device().has(sycl::aspect::fp16)) {
+    using avaliability =
+        util::extensions::availability<util::extensions::tag::fp16>;
+    if (!avaliability::check(queue, log)) {
       log.skip(
           "Device does not support half precision floating point operations");
       return;
