@@ -10,7 +10,6 @@
 #include "../tests/common/cts_selector.h"
 #include "../tests/common/get_cts_object.h"
 #include "../tests/common/macros.h"
-#include "../util/opencl_helper.h"
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -40,15 +39,12 @@ bool test_base_opencl::setup(logger &log) {
   /* get the OpenCLHelper object */
   auto queue = util::get_cts_object::queue();
   if (queue.get_backend() != sycl::backend::opencl) {
-    log.skip(
+    WARN(
         "OpenCL interoperability part is not supported on non-OpenCL backend "
         "types");
     return false;
   }
 
-  using sycl_cts::util::get;
-  using sycl_cts::util::opencl_helper;
-  opencl_helper &openclHelper = get<opencl_helper>();
   cl_int error = CL_SUCCESS;
 
   cts_selector ctsSelector;
