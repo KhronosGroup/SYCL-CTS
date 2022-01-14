@@ -312,7 +312,7 @@ struct use_normalization_coefficient<sycl::cl_half4> : std::true_type {};
 template <typename T>
 typename image_format_channel<T>::storage_t get_expected_image_value() {
   using storage_t = typename image_format_channel<T>::storage_t;
-  if (use_normalization_coefficient<T>::value) {
+  if constexpr (use_normalization_coefficient<T>::value) {
     return static_cast<storage_t>(0.2f);
   } else {
     return static_cast<storage_t>(17);
@@ -984,8 +984,24 @@ class image_accessor_api_sampled_r {
        *    ftp://ftp.icsi.berkeley.edu/pub/theory/priest-thesis.ps.Z
        *  for details
        */
-      return get_expected_value_linear(idx + 1);
+      return get_expected_value_linear(next_id(idx));
     }
+  }
+
+  /**
+   *  @brief Computes the next id for getting an expected upper value for the
+   *  linear filtration. If the target is target::image_array, the last
+   *  component is not a coordinate, it is the index of an image in the array
+   *  to read from, so the last component should not be incremented.
+   */
+  template <int dims>
+  sycl::id<dims> next_id(sycl::id<dims> idx) const {
+    static_assert(dims > 0);
+    ++idx;
+    if constexpr (target == sycl::target::image_array) {
+      --idx[dims-1];
+    }
+    return idx;
   }
 
   /**
