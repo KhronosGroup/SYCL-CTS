@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_value.h"
+#include "../common/common_semantics.h"
 
 #define TEST_NAME id_constructors
 
@@ -98,7 +98,7 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "id with id was not move assigned correctly for dim = 1");
         }
 
-        check_equality_comparable_generic(log, id_explicit, std::string("id"));
+        common_semantics::check_on_host(log, id_explicit, std::string("id"));
       }
 
       // dim 2
@@ -140,7 +140,7 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "id with id was not move assigned correctly for dim = 2");
         }
 
-        check_equality_comparable_generic(log, id_explicit, std::string("id"));
+        common_semantics::check_on_host(log, id_explicit, std::string("id"));
       }
 
       // dim 3
@@ -189,7 +189,7 @@ class TEST_NAME : public util::test_base {
           FAIL(log, "id with id was not move assigned correctly for dim = 3");
         }
 
-        check_equality_comparable_generic(log, id_explicit, std::string("id"));
+        common_semantics::check_on_host(log, id_explicit, std::string("id"));
       }
 
       // construct from an item
@@ -201,9 +201,8 @@ class TEST_NAME : public util::test_base {
         {
           sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
           q.submit([&](sycl::handler &cgh) {
-            auto hasSucceded =
-                b.get_access<sycl::access_mode::read_write,
-                             sycl::target::device>(cgh);
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
             auto my_range = sycl::range<1>(sizes[0]);
 
@@ -230,9 +229,8 @@ class TEST_NAME : public util::test_base {
         {
           sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
           q.submit([&](sycl::handler &cgh) {
-            auto hasSucceded =
-                b.get_access<sycl::access_mode::read_write,
-                             sycl::target::device>(cgh);
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
             auto my_range = sycl::range<2>(sizes[0], sizes[1]);
 
@@ -242,7 +240,6 @@ class TEST_NAME : public util::test_base {
                   (id.get(1) != item.get_id(1))) {
                 hasSucceded[0] = false;
               }
-
             };
             cgh.parallel_for<class id_it2>(my_range, my_kernel);
           });
@@ -261,9 +258,8 @@ class TEST_NAME : public util::test_base {
         {
           sycl::buffer<bool, 1> b(&success, sycl::range<1>(1));
           q.submit([&](sycl::handler &cgh) {
-            auto hasSucceded =
-                b.get_access<sycl::access_mode::read_write,
-                             sycl::target::device>(cgh);
+            auto hasSucceded = b.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(cgh);
 
             auto my_range = sycl::range<3>(sizes[0], sizes[1], sizes[2]);
 
@@ -274,7 +270,6 @@ class TEST_NAME : public util::test_base {
                   (id.get(2) != item.get_id(2))) {
                 hasSucceded[0] = false;
               }
-
             };
             cgh.parallel_for<class id_it3>(my_range, my_kernel);
           });
@@ -292,4 +287,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace id_constructors__ */
+}  // namespace TEST_NAMESPACE

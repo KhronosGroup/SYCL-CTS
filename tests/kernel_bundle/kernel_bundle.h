@@ -9,7 +9,8 @@
 #ifndef __SYCLCTS_TESTS_KERNEL_BUNDLE_H
 #define __SYCLCTS_TESTS_KERNEL_BUNDLE_H
 
-
+#include "../../util/exceptions.h"
+#include "../common/common.h"
 #include "../common/type_coverage.h"
 #include "kernels.h"
 
@@ -38,6 +39,13 @@ using fp16_kernel = kernels::kernel_fp16_no_attr_descriptor::type;
 using fp64_kernel = kernels::kernel_fp64_no_attr_descriptor::type;
 using atomic64_kernel = kernels::kernel_atomic64_no_attr_descriptor::type;
 
+/** @brief Submit dummy kernel with specific kernel name
+ */
+template <typename KernelName>
+void define_kernel(sycl::queue &queue) {
+  queue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<KernelName>([=]() {}); });
+}
 
 }  // namespace kernel_bundle
 }  // namespace tests
