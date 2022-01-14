@@ -137,7 +137,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
   if (std::find(sb_begin, sb_end, eight_sg_size) != sb_end) {
     verification_func<eight_sg_size>{}(log);
   } else {
-    log.skip(
+    WARN(
         "Test for 8 sub group size was skipped due to 8 is unsupported sub "
         "group size");
   }
@@ -145,7 +145,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
   if (std::find(sb_begin, sb_end, sixteen_sg_size) != sb_end) {
     verification_func<sixteen_sg_size>{}(log);
   } else {
-    log.skip(
+    WARN(
         "Test for 16 sub group size was skipped due to 16 is unsupported sub "
         "group size");
   }
@@ -153,7 +153,7 @@ void check_diff_sub_group_sizes(sycl_cts::util::logger &log) {
   if (std::find(sb_begin, sb_end, thirty_two_sg_size) != sb_end) {
     verification_func<thirty_two_sg_size>{}(log);
   } else {
-    log.skip(
+    WARN(
         "Test for 32 sub group size was skipped due to 32 is unsupported sub "
         "group size");
   }

@@ -12,7 +12,7 @@
 #include "../common/type_coverage.h"
 
 /** user defined struct that is used in accessor tests
-*/
+ */
 struct user_struct {
   float a;
   int b;
@@ -35,16 +35,17 @@ struct user_struct {
 
 namespace user_def_types {
 // A user-defined struct with several scalar member variables, no constructor,
-//  destructor or member functions.
+//  destructor or non-special member functions.
 struct no_cnstr {
   float a;
   int b;
   char c;
 
-  void operator=(const int &v) {
-    this->a = v;
-    this->b = v;
-    this->c = v;
+  constexpr auto &operator=(const int &v) {
+    a = v;
+    b = v;
+    c = v;
+    return *this;
   }
 
   friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
@@ -69,10 +70,9 @@ struct def_cnstr {
     c = val;
   }
 
-  void operator=(const int &v) {
-    this->a = v * 3.0;
-    this->b = v * 2;
-    this->c = v;
+  constexpr auto &operator=(const int &v) {
+    assign(v);
+    return *this;
   }
 
   inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
@@ -96,70 +96,94 @@ class no_def_cnstr {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
 
-  void operator=(const int &v) {
-    no_def_cnstr temp(v);
-    this->a = temp.a;
-    this->b = temp.b;
-    this->c = temp.c;
-  }
+  // A user-defined struct with several scalar member variables, arrow operator
+  // overload, no constructor and
+  // destructor or member functions.
+  struct arrow_operator_overloaded {
+    float a;
+    int b;
+    char c;
+
+    void operator=(const int &v) {
+      this->a = v;
+      this->b = v;
+      this->c = v;
+    }
+
+    arrow_operator_overloaded *operator->() { return this; }
+    const arrow_operator_overloaded *operator->() const { return this; }
+
+    friend bool operator==(const arrow_operator_overloaded &lhs,
+                           const arrow_operator_overloaded &rhs) {
+      return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+    }
+  };
 };
+// Returns instance of type T
+template <typename T>
+inline constexpr auto get_init_value_helper(int x) {
+  return x;
+}
 
-// A user-defined struct with several scalar member variables, arrow operator
-// overload, no constructor and
-// destructor or member functions.
-struct arrow_operator_overloaded {
-  float a;
-  int b;
-  char c;
+// Returns instance of type bool
+template <>
+inline constexpr auto get_init_value_helper<bool>(int x) {
+  return (x % 2 != 0);
+}
 
-  void operator=(const int &v) {
-    this->a = v;
-    this->b = v;
-    this->c = v;
-  }
+// Returns instance of user defined struct with no constructor
+template <>
+inline constexpr auto get_init_value_helper<no_cnstr>(int x) {
+  no_cnstr instance{};
+  instance = x;
+  return instance;
+}
 
-  arrow_operator_overloaded *operator->() { return this; }
-  const arrow_operator_overloaded *operator->() const { return this; }
-
-  friend bool operator==(const arrow_operator_overloaded &lhs,
-                         const arrow_operator_overloaded &rhs) {
-    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-  }
-};
+// Returns instance of user defined struct default constructor
+template <>
+inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
+  def_cnstr instance;
+  instance = x;
+  return instance;
+}
 
 }  // namespace user_def_types
 
 namespace get_cts_types {
-static const auto vector_types = named_type_pack<
-    bool, char, signed char, unsigned char, short, unsigned short, int,
-    unsigned int, long, unsigned long, long long, unsigned long long, float,
-    sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char,
-    sycl::cl_uchar, sycl::cl_short, sycl::cl_ushort,
-    sycl::cl_int, sycl::cl_uint, sycl::cl_long, sycl::cl_ulong>{
-    "bool",
-    "char",
-    "signed char",
-    "unsigned char",
-    "short",
-    "unsigned short",
-    "int",
-    "unsigned int",
-    "long",
-    "unsigned long",
-    "long long",
-    "unsigned long long",
-    "float",
-    "sycl::cl_float",
-    "sycl::byte",
-    "sycl::cl_bool",
-    "sycl::cl_char",
-    "sycl::cl_uchar",
-    "sycl::cl_short",
-    "sycl::cl_ushort",
-    "sycl::cl_int",
-    "sycl::cl_uint",
-    "sycl::cl_long",
-    "sycl::cl_ulong"};
-} // namespace get_cts_type
+inline auto get_vector_types() {
+  static const auto pack =
+      named_type_pack<bool, char, signed char, unsigned char, short,
+                      unsigned short, int, unsigned int, long, unsigned long,
+                      long long, unsigned long long, float, sycl::cl_float,
+                      sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
+                      sycl::cl_short, sycl::cl_ushort, sycl::cl_int,
+                      sycl::cl_uint, sycl::cl_long, sycl::cl_ulong>{
+          "bool",
+          "char",
+          "signed char",
+          "unsigned char",
+          "short",
+          "unsigned short",
+          "int",
+          "unsigned int",
+          "long",
+          "unsigned long",
+          "long long",
+          "unsigned long long",
+          "float",
+          "sycl::cl_float",
+          "sycl::byte",
+          "sycl::cl_bool",
+          "sycl::cl_char",
+          "sycl::cl_uchar",
+          "sycl::cl_short",
+          "sycl::cl_ushort",
+          "sycl::cl_int",
+          "sycl::cl_uint",
+          "sycl::cl_long",
+          "sycl::cl_ulong"};
+  return pack;
+}
+}  // namespace get_cts_types
 
-#endif // __SYCLCTS_TESTS_COMMON_TYPE_LIST_H
+#endif  // __SYCLCTS_TESTS_COMMON_TYPE_LIST_H
