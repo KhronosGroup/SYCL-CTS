@@ -9,14 +9,14 @@
 #ifndef __SYCLCTS_TESTS_SPEC_CONST_MULTIPLE_H
 #define __SYCLCTS_TESTS_SPEC_CONST_MULTIPLE_H
 
+#include "../../util/allocation.h"
 #include "../common/common.h"
 #include "../common/once_per_unit.h"
 #include "specialization_constants_common.h"
-#include "../../util/allocation.h"
 
 template <typename T, int def_val>
 constexpr sycl::specialization_id<T> sc_multiple(
-    get_spec_const::get_init_value_helper<T>(def_val));
+    user_def_types::get_init_value_helper<T>(def_val));
 
 namespace specialization_constants_multiple {
 using namespace sycl_cts;
@@ -57,13 +57,13 @@ class check_specialization_constants_multiple_for_type {
     int val_A = 5;
     int val_B = 10;
     int val_C = 30;
-    T ref1{get_init_value_helper<T>(0)};
-    T ref2{get_init_value_helper<T>(0)};
-    T ref3{get_init_value_helper<T>(0)};
+    T ref1{user_def_types::get_init_value_helper<T>(0)};
+    T ref2{user_def_types::get_init_value_helper<T>(0)};
+    T ref3{user_def_types::get_init_value_helper<T>(0)};
     fill_init_values(ref1, val_A);
     fill_init_values(ref2, val_B);
     fill_init_values(ref3, val_C);
-    util::remove_initialization<T> result_vec[size] {};
+    util::remove_initialization<T> result_vec[size]{};
     {
       sycl::buffer<T, 1> result_buffer(result_vec->data(),
                                        sycl::range<1>(size));
@@ -114,15 +114,17 @@ class check_specialization_constants_multiple_for_type {
     if (!check_equal_values(ref1, result_vec[0].value) ||
         !check_equal_values(ref2, result_vec[1].value) ||
         !check_equal_values(ref3, result_vec[2].value) ||
-        !check_equal_values(T(get_init_value_helper<T>(def_values[3])),
-                            result_vec[3].value) ||
-        !check_equal_values(T(get_init_value_helper<T>(def_values[4])),
-                            result_vec[4].value) ||
-        !check_equal_values(T(get_init_value_helper<T>(def_values[5])),
-                            result_vec[5].value))
+        !check_equal_values(
+            T(user_def_types::get_init_value_helper<T>(def_values[3])),
+            result_vec[3].value) ||
+        !check_equal_values(
+            T(user_def_types::get_init_value_helper<T>(def_values[4])),
+            result_vec[4].value) ||
+        !check_equal_values(
+            T(user_def_types::get_init_value_helper<T>(def_values[5])),
+            result_vec[5].value))
       FAIL(log,
            "multiple spec const for " + type_name_string<T>::get(type_name));
-
   }
 };
 
