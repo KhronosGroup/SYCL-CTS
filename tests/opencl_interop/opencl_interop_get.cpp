@@ -9,7 +9,6 @@
 #include "../common/common.h"
 
 #ifdef SYCL_BACKEND_OPENCL
-#include "../../util/opencl_helper.h"
 #include "../../util/test_base_opencl.h"
 #endif
 
@@ -43,7 +42,7 @@ class TEST_NAME :
     {
       auto queue = util::get_cts_object::queue();
       if (queue.get_backend() != sycl::backend::opencl) {
-        log.skip(
+        WARN(
             "OpenCL interoperability part is not supported on non-OpenCL "
             "backend types");
         return;

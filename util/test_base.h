@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2021 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -11,11 +12,15 @@
 
 #include <string>
 
+#include "logger.h"
+
 // conformance test suite namespace
 namespace sycl_cts {
 namespace util {
 
-/** Base class for all SYCL tests
+/**
+ * Base class for legacy test cases.
+ * @deprecated Use Catch2's TEST_CASE macro instead.
  */
 class test_base {
  public:
@@ -24,8 +29,6 @@ class test_base {
   struct info {
     std::string m_name;
     std::string m_file;
-    std::string m_buildDate;
-    std::string m_buildTime;
   };
 
   /** virtual destructor
@@ -39,6 +42,9 @@ class test_base {
    *  @param info, test_base::info structure as output
    */
   virtual void get_info(info &out) const = 0;
+
+  // Some legacy tests change visibility of get_info to non-public
+  void get_info_legacy(info &out) { get_info(out); }
 
   /** called before this test is executed
    *  @param log for emitting test notes and results
@@ -54,6 +60,11 @@ class test_base {
    *  @param log for emitting test notes and results
    */
   void run_test(class logger &log);
+
+  void run_legacy() {
+    logger log{};
+    run_test(log);
+  }
 
   /** called after this test has executed
    *  @param log for emitting test notes and results
