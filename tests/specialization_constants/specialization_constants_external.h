@@ -119,7 +119,7 @@ class check_specialization_constants_external {
     }
 
     if (!queue.get_device().has(sycl::aspect::online_compiler)) {
-      log.skip("Device does not support online compilation of device code");
+      WARN("Device does not support online compilation of device code");
     } else {
       const auto context = queue.get_context();
 
@@ -139,7 +139,7 @@ class check_specialization_constants_external {
           // It's implementation-defined if a kernel is available in a bundle
           // with bundle_state::input. So if such bundle misses some kernels it
           // shouldn't trigger a test failure.
-          log.skip("Input bundle misses kernel in question");
+          WARN("Input bundle misses kernel in question");
           passed = true;
         } else {
           inputBundle.template set_specialization_constant<
@@ -180,7 +180,7 @@ class check_specialization_constants_external {
         if (!inputBundle.has_kernel(kernelID)) {
           // It's implementation-defined if a kernel is available in a bundle
           // with bundle_state::input.
-          log.skip("Input bundle misses kernel in question");
+          WARN("Input bundle misses kernel in question");
           passed = true;
         } else {
           inputBundle.template set_specialization_constant<

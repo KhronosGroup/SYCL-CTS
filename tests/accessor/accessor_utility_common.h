@@ -139,7 +139,7 @@ void fail_for_accessor(sycl_cts::util::logger& log,
                        const std::string& message) {
   const auto accTypeName =
       accessor_type_name<T, dims, mode, target, placeholder>(dataType);
-  FAIL(log, (accTypeName + ": " + message));
+  FAIL(accTypeName << ": " << message);
 }
 
 }  // namespace accessor_utility

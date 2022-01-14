@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2020-2021 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -17,34 +18,9 @@
 namespace sycl_cts {
 namespace util {
 
-/** manage the overall state of the test executable
- *
- */
-class test_manager : public singleton<test_manager> {
+class device_manager : public singleton<device_manager> {
  public:
-  /** constructor
-   */
-  test_manager();
-
-  /** parse the command line options
-   */
-  bool parse(const int argc, const char** args);
-
-  /** run the tests themselves
-   */
-  bool run();
-
-  /** print command line usage information to the screen
-   */
-  void print_usage();
-
-  /**
-   */
-  bool will_execute() const;
-
-  /**
-   */
-  bool wimpy_mode_enabled() const;
+  void set_device_regex(std::regex re) { device_regex = std::move(re); }
 
   /**
    * @return The regex set by the `--device` CLI parameter, used for selecting
@@ -54,18 +30,18 @@ class test_manager : public singleton<test_manager> {
     return device_regex;
   }
 
-  void dump_device_info();
-
-  /** program lifetime hooks
+  /**
+   * Lists all available devices, indicating the currently selected one.
    */
-  void on_start();
-  void on_exit();
+  void list_devices() const;
 
- protected:
-  bool m_willExecute;
-  bool m_wimpyMode;
-  bool m_infoDump;
-  std::string m_infoDumpFile;
+  /**
+   * Dumps information about the device used for this CTS run to a
+   * file, to be used by the conformance report generation script.
+   */
+  void dump_info(const std::string& infoDumpFile);
+
+ private:
   std::optional<std::regex> device_regex;
 };
 
