@@ -90,10 +90,9 @@ static void check_bundle_kernels(util::logger &log, const std::string &kName) {
   }
 
   // Check that result object bundle has the same kernels as input bundle
-  bool same_kernels_in_obj_bundle = true;
-  for (const auto &in_id : input_ids) {
-    same_kernels_in_obj_bundle &= obj_kb.has_kernel(in_id);
-  }
+  bool same_kernels_in_obj_bundle =
+      std::any_of(input_ids.cbegin(), input_ids.cend(),
+                  [&](auto &in_id) { return obj_kb.has_kernel(in_id); });
 
   if (!same_kernels_in_obj_bundle) {
     FAIL(log,
@@ -137,10 +136,7 @@ static void check_associated_devices(util::logger &log) {
   // Check that result kernel bundle contains all devices from passed vector
   bool same_devs = true;
   auto kb_devs = obj_kb.get_devices();
-  for (const auto &dev : devices) {
-    same_devs &=
-        (std::find(kb_devs.begin(), kb_devs.end(), dev) != kb_devs.end());
-  }
+  same_devs = std::equal(kb_devs.begin(), kb_devs.end(), devices.begin());
   if (!same_devs) {
     FAIL(log,
          "Set of associated to obj_kb devices is not equal to list of "
