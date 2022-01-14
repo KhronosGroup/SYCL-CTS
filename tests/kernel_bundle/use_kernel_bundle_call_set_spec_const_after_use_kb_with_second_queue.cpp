@@ -38,7 +38,7 @@ void run_verification(
         [&](sycl::handler &cgh) {
           cgh.use_kernel_bundle(kernel_bundle);
           cgh.set_specialization_constant<spec_const>(0);
-          cgh.single_task<kernel_for_kernel_bundle>([=]() {});
+          cgh.single_task<kernel_for_kernel_bundle>([=] {});
         },
         second_queue);
   } catch (const sycl::exception &e) {

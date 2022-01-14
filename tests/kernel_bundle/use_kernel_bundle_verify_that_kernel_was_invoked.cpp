@@ -7,7 +7,8 @@
 //  have kernel bundle in bundle_state::executable state and calls
 //  sycl::handler::use_kernel_bundle for this bundle, then get spec const value.
 //
-//  The test verifies that the pec const value is equal to expected velue.
+//  The test verifies that the specialization constant value is equal to
+//  expected value.
 //
 //  This test should pass even if implementation of use_kernel_bundle is empty.
 //

@@ -49,7 +49,7 @@ void run_verification(
     // call queue::submit for have kernel in application and have possible to
     // use this kernel for receive kernel bundle
     queue.submit([&](sycl::handler &cgh) {
-      cgh.single_task<kernel_for_kernel_bundle>([=]() {});
+      cgh.single_task<kernel_for_kernel_bundle>([=] {});
     });
   } catch (const sycl::exception &e) {
     if (e.code() != sycl::errc::kernel_not_supported) {

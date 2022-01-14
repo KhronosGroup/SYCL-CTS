@@ -68,7 +68,7 @@ class TestCaseDescription
  */
 inline sycl::kernel_bundle<sycl::bundle_state::executable> get_empty_bundle(
     const sycl::context &ctx) {
-  std::vector<sycl::kernel_id> kernel_ids{};
+  std::vector<sycl::kernel_id> kernel_ids;
   auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
       ctx, ctx.get_devices(), kernel_ids);
   if (!k_bundle.empty()) {

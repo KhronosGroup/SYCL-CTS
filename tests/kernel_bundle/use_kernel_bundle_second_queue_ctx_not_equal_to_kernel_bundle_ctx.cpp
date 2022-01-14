@@ -39,7 +39,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto platforms = sycl::platform::get_platforms();
     const std::vector<sycl::device> devices{sycl::device::get_devices()};
     if (devices.size() <= 1) {
-      log.note("Test skipped due to one device was found");
+      log.note("Test skipped due to only zero or one device was found");
       return;
     }
     sycl::context first_ctx(devices[0]);
