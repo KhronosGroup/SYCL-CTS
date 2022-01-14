@@ -51,7 +51,8 @@ bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
            std::to_string(kernel_type_size);
     msg += std::string(", host size = ") +
            std::to_string(host_type_size);
-    return FAIL(log, msg);
+    FAIL(log, msg);
+    return false;
   }
 
   return true;
