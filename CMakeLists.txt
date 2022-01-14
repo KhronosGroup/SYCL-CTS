@@ -11,6 +11,11 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
+    message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
+endif()
+add_subdirectory(vendor/Catch2)
+
 # set host compiler flags
 if(WIN32)
     add_compile_options(/bigobj)
@@ -35,6 +40,29 @@ else()
     message(STATUS "Full conformance mode: OFF")
     message(WARNING
             "Full conformance mode should be used for conformance submission")
+endif()
+# ------------------
+
+# ------------------
+# Extensive mode for running legacy tests
+option(SYCL_CTS_TEST_DEPRECATED_FEATURES
+       "Enable tests for the deprecated SYCL features" ON)
+if(SYCL_CTS_TEST_DEPRECATED_FEATURES)
+    message(STATUS "Tests for the deprecated SYCL features are enabled")
+    add_definitions(-DSYCL_CTS_TEST_DEPRECATED_FEATURES)
+else()
+    message(STATUS "Tests for the deprecated SYCL features are disabled")
+    message(WARNING
+            "Tests for the deprecated SYCL features should be enabled for conformance submission")
+endif()
+# ------------------
+
+# ------------------
+# Extensive mode for running extension oneAPI sub_group_mask tests
+option(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+       "Enable extension oneAPI sub_group_mask tests" OFF)
+if(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
+    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
 endif()
 # ------------------
 
