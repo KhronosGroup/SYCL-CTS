@@ -5,10 +5,10 @@
 //  This test calls these sycl::build overloads:
 //    1) sycl::build(kernel_bundle<>, std::vector<device>, property_list)
 //    2) sycl::build(kernel_bundle<>, property_list)
-//  For kernels with CPU, GPU and accelerator requirements, kernels that uses
-//  fp16 and fp64 data types, kernel that uses atomic_ref (it uses atomic_ref
+//  For kernels with CPU, GPU and accelerator requirements, kernels that use
+//  fp16 and fp64 data types, a kernel that uses atomic_ref (it uses atomic_ref
 //  explicitly but not marked with sycl::requires attribute) and two kernels
-//  without any requirements, for device from chosen platform.
+//  without any requirement, on device from the chosen platform.
 //
 //  This test verifies following things:
 //    1) That the obtained kernel bundle in executable state contain all

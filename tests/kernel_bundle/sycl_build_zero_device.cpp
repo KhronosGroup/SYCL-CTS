@@ -5,7 +5,7 @@
 //  This test calls sycl::build(kernel_bundle<>, std::vector<device>,
 //  property_list) with empty device vector.
 //
-//  The test verifies that the exception with sycl::errc::invalid was thrown.
+//  The test verifies that an exception with sycl::errc::invalid was thrown.
 //
 *******************************************************************************/
 
