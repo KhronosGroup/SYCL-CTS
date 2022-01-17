@@ -39,7 +39,7 @@ using input_bundle_t = sycl::kernel_bundle<sycl::bundle_state::input>;
  *  @tparam Overload Selected overload of sycl::compile
  */
 template <CompileOverload Overload>
-static auto compile_bundle(input_bundle_t &inKb,
+static auto compile_bundle(const input_bundle_t &inKb,
                            const std::vector<sycl::device> &devices) {
   if constexpr (Overload == CompileOverload::bundle_and_devs) {
     return sycl::compile(inKb, devices);
@@ -114,7 +114,7 @@ static void check_bundle_kernels(util::logger &log, const std::string &kName) {
 template <CompileOverload Overload>
 static void check_associated_devices(util::logger &log) {
   auto queue = util::get_cts_object::queue();
-  auto ctx = queue.get_context();
+  const auto ctx = queue.get_context();
   std::vector<sycl::device> devices{queue.get_device()};
   // Force duplicates
   devices.push_back(devices[0]);
@@ -126,11 +126,13 @@ static void check_associated_devices(util::logger &log) {
     return;
   }
 
-  // Check that result kernel bundle contains all devices from passed vector
-  auto input_kb =
+  const auto input_kb =
       sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, devices);
-  auto kb_devs = compile_bundle<Overload>(input_kb, devices).get_devices();
-  if (std::adjacent_find(kb_devs.begin(), kb_devs.end()) != kb_devs.end()) {
+  const auto obj_kb = compile_bundle<Overload>(input_kb, devices);
+  const auto kb_devs = obj_kb.get_devices();
+
+  // Check that result kernel bundle contains all devices from passed vector
+  if (!std::equal(kb_devs.begin(), kb_devs.end(), devices.begin())) {
     FAIL(log,
          "Set of associated to obj_kb devices is not equal to list of "
          "devices passed.");
