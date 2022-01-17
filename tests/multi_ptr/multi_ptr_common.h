@@ -41,6 +41,7 @@ using constant_ptr_legacy =
 /** @brief Factory method to enforce the same coverage for constructors and API
  */
 inline auto get_types() {
+#ifdef SYCL_CTS_FULL_CONFORMANCE
   return named_type_pack<bool, float, double, char,   // types grouped
                          signed char, unsigned char,  // by sign
                          short, unsigned short,       //
@@ -54,6 +55,20 @@ inline auto get_types() {
       "int",         "unsigned int",
       "long",        "unsigned long",
       "long long",   "unsigned long long"};
+#else
+  return named_type_pack<int, float>{"int", "float"};
+#endif  // SYCL_CTS_FULL_CONFORMANCE
+}
+
+// custom data types that will be used in type coverage
+inline auto get_composite_types() {
+#ifdef SYCL_CTS_FULL_CONFORMANCE
+  return named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr,
+                         user_def_types::no_def_cnstr>(
+      {"no_cnstr", "def_cnstr", "no_def_cnstr"});
+#else
+  return named_type_pack<user_def_types::def_cnstr>({"def_cnstr"});
+#endif  // SYCL_CTS_FULL_CONFORMANCE
 }
 
 template <typename... argsT>
@@ -68,7 +83,7 @@ struct check_void_pointer {
   using data_t = typename std::remove_const<T>::type;
 
   template <typename... argsT>
-  void operator()(argsT&&... args) {
+  void operator()(argsT &&...args) {
     action<data_t, void>{}(std::forward<argsT>(args)..., "void");
     action<const data_t, const void>{}(std::forward<argsT>(args)..., "void");
   }
@@ -81,7 +96,7 @@ struct check_pointer {
   using data_t = typename std::remove_const<T>::type;
 
   template <typename... argsT>
-  void operator()(argsT&&... args) {
+  void operator()(argsT &&...args) {
     action<data_t, data_t>{}(std::forward<argsT>(args)...);
     action<const data_t, const data_t>{}(std::forward<argsT>(args)...);
   }
