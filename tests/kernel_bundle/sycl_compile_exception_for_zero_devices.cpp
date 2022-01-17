@@ -40,7 +40,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto input_kb = sycl::get_kernel_bundle<sycl::bundle_state::input>(queue.get_context());
 
     TestCaseDescription desc{"(kernel_bundle, {})"};
-    expect_throws<sycl::errc::invalid>(log, desc, [&]() {
+    expect_throws<sycl::errc::invalid>(log, desc, [&] {
       // Explicit type for vector of devices is required. Otherwise call is
       // ambiguous
       sycl::compile(input_kb, std::vector<sycl::device>{});

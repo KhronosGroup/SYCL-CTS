@@ -46,7 +46,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto input_kb = sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx);
 
     TestCaseDescription desc{"(kernel_bundle, devices)"};
-    expect_throws<sycl::errc::invalid>(log, desc, [&]() {
+    expect_throws<sycl::errc::invalid>(log, desc, [&] {
 
       sycl::compile(input_kb, {platforms[0].get_devices()[0]});
     });
