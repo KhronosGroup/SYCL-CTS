@@ -15,7 +15,7 @@
 #include "kernels.h"
 #include "sycl_build.h"
 
-#define TEST_NAME sycl_build_zero_devices
+#define TEST_NAME sycl_build_zero_device
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -36,7 +36,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto q = util::get_cts_object::queue();
 
-    std::vector<sycl::device> zero_devices{};
+    std::vector<sycl::device> zero_device{};
     const auto first_simple_kernel_id =
         sycl::get_kernel_id<first_simple_kernel>();
 
@@ -47,7 +47,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         log,
         TestCaseDescription<sycl::bundle_state::executable>(
             "(kernel_bundle<>, empty vector<sycl::device>)"),
-        [&] { sycl::build(kernel_bundle, zero_devices); });
+        [&] { sycl::build(kernel_bundle, zero_device); });
 
     define_kernel<simple_kernel_descriptor, sycl::bundle_state::executable>(
         q, submit_kernel::yes);
