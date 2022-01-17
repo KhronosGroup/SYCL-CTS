@@ -12,7 +12,7 @@
 
 namespace device_global_common_functions {
 
-/** @brief Enum for kernel names in tests
+/** @brief Enum for kernel names
  */
 enum class test_names : size_t {
   get_multi_ptr_method,
@@ -23,15 +23,19 @@ enum class test_names : size_t {
 };
 
 /** @brief Generate test description string
- *  @tparam T variable type
- *  @tparam Decorated parameter
- *  @retval String with description
+ *  @tparam Decorated flag that will be converted to string and added to the
+ * result description
+ *  @retval String with a description of test case
+ *  @param text_name The string to show in the case description
+ *  @param info The string with additional information about the test case
+ *  @param type_name The string interpretation of data type in the test case
  */
-template <typename T, sycl::access::decorated Decorated>
+template <sycl::access::decorated Decorated>
 inline std::string get_case_description(const std::string& test_name,
                                         const std::string& info,
                                         const std::string& type_name) {
-  std::string decorated{sycl_cts::get_cts_string::for_decorated<Decorated>()};
+  const std::string decorated{
+      sycl_cts::get_cts_string::for_decorated<Decorated>()};
   std::string message;
   message += test_name + " error: " + info;
   message += " with tparams:";
@@ -41,10 +45,11 @@ inline std::string get_case_description(const std::string& test_name,
 }
 
 /** @brief Generate test description string
- *  @tparam T variable type
- *  @retval String with description
+ *  @retval The string with a description of test case
+ *  @param text_name The string to show in the case description
+ *  @param info The string with additional information about the test case
+ *  @param type_name The string interpretation of data type in the test case
  */
-template <typename T>
 inline std::string get_case_description(const std::string& test_name,
                                         const std::string& info,
                                         const std::string& type_name) {
@@ -55,34 +60,69 @@ inline std::string get_case_description(const std::string& test_name,
   return message;
 }
 
-/** @brief The function helps to change and compare non-array values
- *  @tparam T type of value
+/** @brief Utility class helps to change and compare generic values
+ *  @tparam T Type of value
  */
 template <typename T>
 struct value_helper {
-  static void change_val(T& value) { value = T{1}; }
+  /**
+   * @brief The function changes value from the first parameter to
+   * value from the second parameter
+   * @param value The reference to the array that needs to be change
+   * @param new_val The new value that will be set
+   */
+  static void change_val(T& value, const int new_val = 1) { value = new_val; }
+
+  /**
+   * @brief The function compares values from the first
+   * parameter value from the second parameter
+   */
   static bool compare_val(const T& left, const T& right) {
     return (left == right);
   }
 };
 
-/** @brief The function helps to change and compare arrays
- *  @tparam T type of array values
- *  @tparam N size of array
+/** @brief Utility class helps to change and compare arrays
+ *  @tparam T Type of array values
+ *  @tparam N Size of array
  */
 template <typename T, size_t N>
 struct value_helper<T[N]> {
   using arrayT = T[N];
-  static void change_val(arrayT& value) {
-    for (size_t i = 0; i < N; i++) {
-      value[i] = T{1};
+  /**
+   * @brief The function changes all values of the array from the first parameter to
+   * value from the second parameter
+   * @param value The reference to the array that needs to be change
+   * @param new_val The new value that will be set
+   */
+  static void change_val(arrayT& value, const int new_val = 1) {
+    for (size_t i = 0; i < N; ++i) {
+      value[i] = new_val;
     }
   }
-  static bool compare_val(const arrayT& left, const arrayT right) {
-    for (size_t i = 0; i < N; i++) {
-      if (left != right) return false;
+
+  /**
+   * @brief The function compares all i-th values of the array from the first
+   * parameter with all i-th values of the array from the second parameter
+   */
+  static bool compare_val(const arrayT& left, const arrayT& right) {
+    bool are_equal = true;
+    for (size_t i = 0; i < N; ++i) {
+      are_equal &= left[i] == right[i];
     }
-    return true;
+    return are_equal;
+  }
+
+  /**
+   * @brief The function compares all i-th values of the array from the first
+   * parameter value from the second parameter
+   */
+  static bool compare_val(const arrayT& left, const T& right) {
+    bool are_equal = true;
+    for (size_t i = 0; i < N; ++i) {
+      are_equal &= left[i] == right;
+    }
+    return are_equal;
   }
 };
 }  // namespace device_global_common_functions
