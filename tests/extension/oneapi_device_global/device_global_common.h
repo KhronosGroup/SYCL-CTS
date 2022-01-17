@@ -22,6 +22,23 @@ enum class test_names : size_t {
   arrow_operator,
 };
 
+/**
+ * @brief Enum class for kernel names in functional tests. Cannot use enums from
+ * properties as they are nested in struct and therefore non forward declarable
+ */
+enum class property_tag : size_t {
+  none,
+  dev_image_scope,
+  host_access_r,
+  host_access_w,
+  host_access_none,
+  host_access_r_w,
+  init_mode_trig_reset,
+  init_mode_trig_reprogram,
+  impl_in_csr_true,
+  impl_in_csr_false
+};
+
 /** @brief Generate test description string
  *  @tparam Decorated flag that will be converted to string and added to the
  * result description
@@ -90,8 +107,8 @@ template <typename T, size_t N>
 struct value_helper<T[N]> {
   using arrayT = T[N];
   /**
-   * @brief The function changes all values of the array from the first parameter to
-   * value from the second parameter
+   * @brief The function changes all values of the array from the first
+   * parameter to value from the second parameter
    * @param value The reference to the array that needs to be change
    * @param new_val The new value that will be set
    */
