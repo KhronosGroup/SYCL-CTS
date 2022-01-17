@@ -8,7 +8,7 @@
 //  one device, but for sycl::link will be provided vector with device, that was
 //  used for kernel bundle and different devices.
 //
-//  The test verifies that the exception with sycl::errc::invalid was thrown.
+//  The test verifies that an exception with sycl::errc::invalid was thrown.
 //
 *******************************************************************************/
 

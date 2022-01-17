@@ -5,7 +5,7 @@
 //  This test calls sycl::link(vector<kernel_bundle<>>, std::vector<device>,
 //  property_list) with empty kernel bundle and empty device vector.
 //
-//  The test verifies that the exception with sycl::errc::invalid was thrown.
+//  The test verifies that an exception with sycl::errc::invalid was thrown.
 //
 *******************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "kernels.h"
 #include "sycl_link.h"
 
-#define TEST_NAME sycl_link_zero_devices_and_zero_bundles
+#define TEST_NAME sycl_link_zero_device_and_zero_bundles
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -35,14 +35,14 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto q = util::get_cts_object::queue();
     vector_with_object_bundles zero_bundles{};
-    
-    std::vector<sycl::device> zero_devices{};
-    
+
+    const std::vector<sycl::device> zero_device{};
+
     expect_throws<sycl::errc::invalid>(
         log,
         TestCaseDescription<sycl::bundle_state::executable>(
             "(vector<kernel_bundle>, empty vector<sycl::device>)"),
-        [&] { sycl::link(zero_bundles, zero_devices); });
+        [&] { sycl::link(zero_bundles, zero_device); });
   }
 };
 

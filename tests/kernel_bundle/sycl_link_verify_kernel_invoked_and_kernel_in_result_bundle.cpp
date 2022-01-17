@@ -7,21 +7,22 @@
 //    2) sycl::link(vector<kernel_bundle<>>, property_list)
 //    3) sycl::link(kernel_bundle<>, std::vector<device>, property_list)
 //    4) sycl::link(kernel_bundle<>, property_list)
-//  For kernels with CPU, GPU and accelerator requirements, kernels that uses
-//  fp16 and fp64 data types, kernel that uses atomic_ref (it requires atomic64
-//  aspect, but this kernel don't use sycl::requires) and two kernels without
-//  any requirements, for device from chosen platform.
+//  For kernels with CPU, GPU and accelerator requirements, kernels that use
+//  fp16 and fp64 data types, a kernel that uses atomic_ref (it requires
+//  atomic64 aspect, but this kernel don't use sycl::requires) and two kernels
+//  without any requirement, on device from the chosen platform.
 //
 //  In this tests kernel_bundles<sycl::bundle_state::object> will be obtained by
-//  three ways: obtain bundles in executable state, obtain bundles in object
-//  state and then call sycl::compile to obtain kernel bundle in object state
-//  and third way is construct std::vector with bundles that obtain from two
-//  previous ways.
+//  three ways:
+//    1) Obtain bundles in executable state.
+//    2) Obtain bundles in object state and then call sycl::compile to obtain
+//      kernel bundle in object state.
+//    3) Construct std::vector with bundles that obtain from two previous ways.
 //  For different overloads we obtain kernel bundles by different ways:
-//  1) For overload that obtain vector with kernel bundles we provide vector
+//  1) For overload that obtain std::vector<kernel_bundle> we provide vector
 //    with all bundles that receive by three ways that described above.
-//  2) For overload that obtain single kernel bundle calls sycl::join to merge
-//    all bundles in one and then provide them to sycl::link.
+//  2) For overload that obtain single kernel bundle, call sycl::join to merge
+//    all bundles in one and then provide it to sycl::link.
 //
 //
 //  The test verifies that the obtained kernel bundle in executable state
@@ -29,9 +30,8 @@
 //  current device, otherwise this kernel should not be presented in result
 //  bundle).
 //  This test also verifies that kernel bundle context is equal to provided
-//  context, verifies that provided kernels were invoked and verifies that
-//  devices from resulted kernel bundle are equal to provided devices with
-//  duplicates removed.
+//  context, provided kernels were invoked and devices from result kernel bundle
+//  are equal to provided devices with duplicates removed.
 //
 *******************************************************************************/
 

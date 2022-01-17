@@ -8,7 +8,7 @@
 //  sycl::link(kernel_bundle<>, property_list) overloads with two kernel bundles
 //  that were obtained using different contexts.
 //
-//  The test verifies that the exception with sycl::errc::invalid was thrown.
+//  The test verifies that an exception with sycl::errc::invalid was thrown.
 //
 *******************************************************************************/
 
