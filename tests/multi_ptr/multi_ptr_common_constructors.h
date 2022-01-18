@@ -19,7 +19,7 @@ template <typename T, sycl::access::address_space Space,
           sycl::access::decorated Decorated>
 struct multi_ptr_kernel_name;
 
-/** @brief Provdes text description of test case in case of fail
+/** @brief Provides text description of test case in case of fail
  *  @tparam Space sycl::access::address_space value
  *  @tparam Decorated sycl::access::decorated value
  */
@@ -43,7 +43,7 @@ constexpr bool use_local_accessor =
     (Space == sycl::access::address_space::local_space) ||
     (Space == sycl::access::address_space::private_space);
 
-/** @brief Provdes verification of multi_ptr common constructors with template
+/** @brief Provides verification of multi_ptr common constructors with template
  *         parameters given
  *  @tparam T Variable type for type coverage
  *  @tparam Space sycl::access::address_space value
@@ -60,6 +60,9 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   // Kernel name
   using k_name = multi_ptr_kernel_name<T, Space, Decorated>;
 
+  // In the test, there are 5 verifies for type correctness and only 4 verifies
+  // for value correctness because we can't predict what value will contain
+  // multi_ptr created with the default constructor
   constexpr size_t types_size = 5;
   constexpr size_t values_size = 4;
   // Arrays for result values
@@ -80,10 +83,13 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   // Main check lambda
   auto run_and_check = [=](RefAccType ref_acc, ResultAccType same_type_acc,
                            ResultAccType same_value_acc) {
+    // For indexing result arrays
+    size_t type_i = 0;
+    size_t value_i = 0;
     // Check default constructor
     {
       m_ptr_t mptr;
-      same_type_acc[0] =
+      same_type_acc[type_i++] =
           std::is_same_v<decltype(mptr.get()), typename m_ptr_t::pointer>;
     }
 
@@ -92,9 +98,9 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
       m_ptr_t other(ref_acc);
       m_ptr_t mptr(other);
 
-      same_type_acc[1] =
+      same_type_acc[type_i++] =
           std::is_same_v<decltype(mptr.get()), typename m_ptr_t::pointer>;
-      same_value_acc[0] = (*(mptr.get()) == *(other.get()));
+      same_value_acc[value_i++] = (*(mptr.get()) == *(other.get()));
     }
 
     // Check multi_ptr(multi_ptr&&)
@@ -103,9 +109,9 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
       auto other_get = *(other.get());
       m_ptr_t mptr(std::move(other));
 
-      same_type_acc[2] =
+      same_type_acc[type_i++] =
           std::is_same_v<decltype(mptr.get()), typename m_ptr_t::pointer>;
-      same_value_acc[1] = (*(mptr.get()) == other_get);
+      same_value_acc[value_i++] = (*(mptr.get()) == other_get);
     }
 
     // Check explicit multi_ptr(multi_ptr<ElementType, Space, yes>::pointer)
@@ -113,17 +119,17 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
       other_decorated_ptr_t other(ref_acc);
       m_ptr_t mptr(other.get());
 
-      same_type_acc[3] =
+      same_type_acc[type_i++] =
           std::is_same_v<decltype(mptr.get()), typename m_ptr_t::pointer>;
-      same_value_acc[2] = (*(mptr.get()) == *(other.get()));
+      same_value_acc[value_i++] = (*(mptr.get()) == *(other.get()));
     }
 
     // Check multi_ptr(std::nullptr_t)
     {
       m_ptr_t mptr(nullptr);
-      same_type_acc[4] =
+      same_type_acc[type_i++] =
           std::is_same_v<decltype(mptr.get()), typename m_ptr_t::pointer>;
-      same_value_acc[3] = (mptr.get() == nullptr);
+      same_value_acc[value_i++] = (mptr.get() == nullptr);
     }
   };
 
@@ -169,7 +175,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   }
 }
 
-/** @brief Provdes verification of multi_ptr common constructors for type given
+/** @brief Provides verification of multi_ptr common constructors for type given
  *  @tparam T Variable type for type coverage
  */
 template <typename T>
@@ -184,6 +190,8 @@ class check_multi_ptr_common_constructors_for_type {
               sycl::access::decorated::yes>(log, type_name);
     run_tests<T, sycl::access::address_space::generic_space,
               sycl::access::decorated::yes>(log, type_name);
+    run_tests<T, sycl::access::address_space::constant_space,
+              sycl::access::decorated::yes>(log, type_name);
     run_tests<T, sycl::access::address_space::global_space,
               sycl::access::decorated::no>(log, type_name);
     run_tests<T, sycl::access::address_space::local_space,
@@ -191,6 +199,8 @@ class check_multi_ptr_common_constructors_for_type {
     run_tests<T, sycl::access::address_space::private_space,
               sycl::access::decorated::no>(log, type_name);
     run_tests<T, sycl::access::address_space::generic_space,
+              sycl::access::decorated::no>(log, type_name);
+    run_tests<T, sycl::access::address_space::constant_space,
               sycl::access::decorated::no>(log, type_name);
   }
 };
