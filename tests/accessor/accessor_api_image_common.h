@@ -1120,16 +1120,30 @@ class image_accessor_api_sampled_r {
     const bool useNormalized =
         m_sampler.coordinate_normalization_mode ==
             sycl::coordinate_normalization_mode::normalized;
+    const bool useNearest =
+        m_sampler.filtering_mode == sycl::filtering_mode::nearest;
+
     if (useNormalized) {
       const bool worksForLower =
         check_read<acc_coord_tag::use_normalized_lower>(idx);
       if (worksForLower)
         check_read<acc_coord_tag::use_normalized_upper>(idx);
     } else {
-      const bool worksForInteger =
-        check_read<acc_coord_tag::use_int>(idx);
-      if (worksForInteger)
+      const bool worksForFloat =
         check_read<acc_coord_tag::use_float>(idx);
+      if (worksForFloat && useNearest) {
+        /*
+          SYCL 1.2.1 mentions the following: "SYCL overlays the OpenCL
+          specification and inherits its capabilities and restrictions as well
+          as the additional features it provides on top of OpenCL 1.2."
+          
+          OpenCL spec rules that when int is used as the coordinates, the
+          filter mode must be NEAREST: "The read_imagef calls that take integer
+          coordinates must use a sampler with filter mode set to
+          CLK_FILTER_NEAREST ...; otherwise the values returned are undefined."
+         */
+        check_read<acc_coord_tag::use_int>(idx);
+      }
     }
   }
 };
