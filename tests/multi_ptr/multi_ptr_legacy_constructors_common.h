@@ -2,19 +2,19 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Common code for multi_ptr constructors' tests
+//  Common code for legacy multi_ptr constructors' tests
 //
 *******************************************************************************/
 
-#ifndef SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_CONSTRUCTORS_COMMON_H
-#define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_CONSTRUCTORS_COMMON_H
+#ifndef SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_LEGACY_CONSTRUCTORS_COMMON_H
+#define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_LEGACY_CONSTRUCTORS_COMMON_H
 
 #include "../common/common.h"
 #include "multi_ptr_common.h"
-using namespace multi_ptr_common;
 
-namespace multi_ptr_constructors_common {
+namespace multi_ptr_legacy_constructors_common {
 using namespace sycl_cts;
+using namespace multi_ptr_common;
 
 template <typename T, typename U>
 class kernel0;
@@ -25,33 +25,31 @@ class pointer_ctors {
   using data_t = typename std::remove_const<T>::type;
 
   using multiPtrGlobal =
-      sycl::multi_ptr<U, sycl::access::address_space::global_space>;
+      multi_ptr_legacy<U, sycl::access::address_space::global_space>;
   using multiPtrConstant =
-      sycl::multi_ptr<U, sycl::access::address_space::constant_space>;
+      multi_ptr_legacy<U, sycl::access::address_space::constant_space>;
   using multiPtrLocal =
-      sycl::multi_ptr<U, sycl::access::address_space::local_space>;
+      multi_ptr_legacy<U, sycl::access::address_space::local_space>;
   using multiPtrPrivate =
-      sycl::multi_ptr<U, sycl::access::address_space::private_space>;
+      multi_ptr_legacy<U, sycl::access::address_space::private_space>;
 
-  void operator()(sycl::queue &queue, const std::string& dataTypeName) {
-    return operator() (queue, dataTypeName, dataTypeName);
+  void operator()(sycl::queue &queue, const std::string &dataTypeName) {
+    return operator()(queue, dataTypeName, dataTypeName);
   }
-  void operator()(sycl::queue &queue, const std::string&,
-                  const std::string&) {
+  void operator()(sycl::queue &queue, const std::string &,
+                  const std::string &) {
     const int size = 64;
     sycl::range<1> range(size);
     std::unique_ptr<data_t[]> data(new data_t[size]);
     sycl::buffer<T, 1> buffer(data.get(), range);
 
     queue.submit([&](sycl::handler &handler) {
-      sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::device>
+      sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::device>
           globalAccessor(buffer, handler);
       sycl::accessor<T, 1, sycl::access_mode::read,
-                         sycl::target::constant_buffer>
+                     sycl::target::constant_buffer>
           constantAccessor(buffer, handler);
-      sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::local>
+      sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::local>
           localAccessor(size, handler);
 
       handler.single_task<class kernel0<T, U>>([=] {
@@ -72,11 +70,10 @@ class pointer_ctors {
         /** check (elementType *) constructors
          */
         {
-          sycl::global_ptr<U> globalPtr(
-              static_cast<U *>(&globalAccessor[0]));
-          sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+          global_ptr_legacy<U> globalPtr(static_cast<U *>(&globalAccessor[0]));
+          constant_ptr_legacy<U> constantPtr(constantAccessor.get_pointer());
+          local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtr(globalPtr);
           multiPtrConstant constantMultiPtr(constantPtr);
@@ -90,11 +87,10 @@ class pointer_ctors {
         /** check (pointer) constructors
          */
         {
-          sycl::global_ptr<U> globalPtr(
-              static_cast<U *>(&globalAccessor[0]));
-          sycl::constant_ptr<U> constantPtr(constantAccessor.get_pointer());
-          sycl::local_ptr<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          sycl::private_ptr<U> privatePtr(static_cast<U *>(privateData));
+          global_ptr_legacy<U> globalPtr(static_cast<U *>(&globalAccessor[0]));
+          constant_ptr_legacy<U> constantPtr(constantAccessor.get_pointer());
+          local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
+          private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtr(globalPtr.get());
           multiPtrConstant constantMultiPtr(constantPtr.get());
@@ -130,12 +126,10 @@ class pointer_ctors {
         /** check copy constructors
          */
         {
-          sycl::global_ptr<U> globalPtrA(
-              static_cast<U *>(&globalAccessor[0]));
-          sycl::constant_ptr<U> constantPtrA(
-              constantAccessor.get_pointer());
-          sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
+          global_ptr_legacy<U> globalPtrA(static_cast<U *>(&globalAccessor[0]));
+          constant_ptr_legacy<U> constantPtrA(constantAccessor.get_pointer());
+          local_ptr_legacy<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtrA(globalPtrA);
           multiPtrConstant constantMultiPtrA(constantPtrA);
@@ -154,12 +148,10 @@ class pointer_ctors {
         /** check move constructors
          */
         {
-          sycl::global_ptr<U> globalPtrA(
-              static_cast<U *>(&globalAccessor[0]));
-          sycl::constant_ptr<U> constantPtrA(
-              constantAccessor.get_pointer());
-          sycl::local_ptr<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          sycl::private_ptr<U> privatePtrA(static_cast<U *>(privateData));
+          global_ptr_legacy<U> globalPtrA(static_cast<U *>(&globalAccessor[0]));
+          constant_ptr_legacy<U> constantPtrA(constantAccessor.get_pointer());
+          local_ptr_legacy<U> localPtrA(static_cast<U *>(&localAccessor[0]));
+          private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
 
           multiPtrGlobal globalMultiPtrA(globalPtrA);
           multiPtrConstant constantMultiPtrA(constantPtrA);
@@ -186,6 +178,6 @@ using check_pointer_ctors = check_pointer<pointer_ctors, T>;
 template <typename T>
 using check_void_pointer_ctors = check_void_pointer<pointer_ctors, T>;
 
-}  // namespace multi_ptr_constructors_common
+}  // namespace multi_ptr_legacy_constructors_common
 
-#endif  // SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_CONSTRUCTORS_COMMON_H
+#endif  // SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_LEGACY_CONSTRUCTORS_COMMON_H

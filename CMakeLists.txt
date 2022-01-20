@@ -11,6 +11,11 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
+    message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
+endif()
+add_subdirectory(vendor/Catch2)
+
 # set host compiler flags
 if(WIN32)
     add_compile_options(/bigobj)
@@ -44,6 +49,20 @@ option(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS
        "Enable extension oneAPI compile-time property list tests" OFF)
 if(SYCL_ENABLE_EXT_ONEAPI_PROPERTY_LIST_TESTS)
     message(STATUS "oneAPI extension compile-time property list tests mode: ON")
+endif()
+# ------------------
+
+# ------------------
+# Extensive mode for running legacy tests
+option(SYCL_CTS_TEST_DEPRECATED_FEATURES
+       "Enable tests for the deprecated SYCL features" ON)
+if(SYCL_CTS_TEST_DEPRECATED_FEATURES)
+    message(STATUS "Tests for the deprecated SYCL features are enabled")
+    add_definitions(-DSYCL_CTS_TEST_DEPRECATED_FEATURES)
+else()
+    message(STATUS "Tests for the deprecated SYCL features are disabled")
+    message(WARNING
+            "Tests for the deprecated SYCL features should be enabled for conformance submission")
 endif()
 # ------------------
 

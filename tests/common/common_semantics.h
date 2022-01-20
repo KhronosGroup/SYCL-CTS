@@ -26,11 +26,11 @@ void check_on_host(sycl_cts::util::logger& log, const T& a,
   /** check for reflexivity
    */
   if (!(a == a)) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator== reflexivity failed)"));
+    FAIL(testName
+         << " is not equality-comparable (operator== reflexivity failed)");
   } else if (a != a) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator!= reflexivity failed)"));
+    FAIL(testName
+         << " is not equality-comparable (operator!= reflexivity failed)");
   }
 
   /** check for symmetry
@@ -38,17 +38,17 @@ void check_on_host(sycl_cts::util::logger& log, const T& a,
   auto b = a;
   const auto& bReadOnly = b; // force const-correctness
   if (!(a == bReadOnly)) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator==, copy constructor)"));
+    FAIL(testName
+         << " is not equality-comparable (operator==, copy constructor)");
   } else if (!(bReadOnly == a)) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator== symmetry failed)"));
+    FAIL(
+        testName << " is not equality-comparable (operator== symmetry failed)");
   } else if (a != bReadOnly) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator!=, copy constructor)"));
+    FAIL(testName
+         << " is not equality-comparable (operator!=, copy constructor)");
   } else if (bReadOnly != a) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator!= symmetry failed)"));
+    FAIL(
+        testName << " is not equality-comparable (operator!= symmetry failed)");
   }
 
   /** check for transitivity
@@ -56,11 +56,11 @@ void check_on_host(sycl_cts::util::logger& log, const T& a,
   auto c = b;
   const auto& cReadOnly = c; // force const-correctness
   if (!(a == cReadOnly)) {
-    FAIL(log, (testName +
-               " is not equality-comparable (operator== transitivity failed)"));
+    FAIL(testName
+         << " is not equality-comparable (operator== transitivity failed)");
   } else if (a != cReadOnly) {
-    FAIL(log, (testName +
-              " is not equality-comparable (operator!= transitivity  failed)"));
+    FAIL(testName
+         << " is not equality-comparable (operator!= transitivity  failed)");
   }
 }
 
@@ -77,22 +77,20 @@ void check_on_host(sycl_cts::util::logger& log, const T& a,
     /** extra checks for symmetry (comparsion with other)
      */
     if (a == other) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator==, different value)"));
+      FAIL(testName
+           << " is not equality-comparable (operator==, different value)");
     }
     if (other == a) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator== symmetry failed," +
-                 " different value)"));
+      FAIL(testName << " is not equality-comparable (operator== symmetry "
+                       "failed, different value)");
     }
     if (!(a != other)) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!=, different value)"));
+      FAIL(testName
+           << " is not equality-comparable (operator!=, different value)");
     }
     if (!(other != a)) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!= symmetry failed," +
-                 " different value)"));
+      FAIL(testName << " is not equality-comparable (operator!= symmetry "
+                       "failed, different value)");
     }
 }
 
@@ -191,62 +189,58 @@ public:
     /** check for reflexivity success
      */
     if (!success[to_integral(current_check::reflexivity_equal_self)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator== reflexivity failed)")
-      );
+      FAIL(testName
+           << " is not equality-comparable (operator== reflexivity failed)");
     }
     if (!success[to_integral(current_check::reflexivity_not_equal_self)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!= reflexivity failed)")
-      );
+      FAIL(testName
+           << " is not equality-comparable (operator!= reflexivity failed)");
     }
 
     /** check for symmetry success
      */
     if (!success[to_integral(current_check::equal_copy)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator==, copy constructor)"));
+      FAIL(testName
+           << " is not equality-comparable (operator==, copy constructor)");
     } else if (!success[to_integral(current_check::equal_copy_symmetry)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator== symmetry failed," +
-                 " copy constructor)"));
+      FAIL(
+          testName << " is not equality-comparable (operator== symmetry failed,"
+                   << " copy constructor)");
     }
     if (!success[to_integral(current_check::equal_other)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator==, different value)"));
+      FAIL(testName
+           << " is not equality-comparable (operator==, different value)");
     } else if (!success[to_integral(current_check::equal_other_symmetry)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator== symmetry failed," +
-                 " different value)"));
+      FAIL(
+          testName << " is not equality-comparable (operator== symmetry failed,"
+                   << " different value)");
     }
 
     if (!success[to_integral(current_check::not_equal_copy)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!=, copy constructor)"));
+      FAIL(testName
+           << " is not equality-comparable (operator!=, copy constructor)");
     } else if (!success[to_integral(current_check::not_equal_copy_symmetry)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!= symmetry failed," +
-                 " copy constructor)"));
+      FAIL(
+          testName << " is not equality-comparable (operator!= symmetry failed,"
+                   << " copy constructor)");
     }
     if (!success[to_integral(current_check::not_equal_other)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!=, different value)"));
+      FAIL(testName
+           << " is not equality-comparable (operator!=, different value)");
     } else if (!success[to_integral(current_check::not_equal_other_symmetry)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator!= symmetry failed," +
-                 " different value)"));
+      FAIL(
+          testName << " is not equality-comparable (operator!= symmetry failed,"
+                   << " different value)");
     }
 
     /** check for transitivity success
      */
     if (!success[to_integral(current_check::transitivity_equal)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable (operator== transitivity failed)")
-      );
+      FAIL(testName
+           << " is not equality-comparable (operator== transitivity failed)");
     } else if (!success[to_integral(current_check::transitivity_not_equal)]) {
-      FAIL(log, (testName +
-                 " is not equality-comparable" +
-                 " (operator!= transitivity  failed)"));
+      FAIL(testName << " is not equality-comparable"
+                    << " (operator!= transitivity  failed)");
     }
   }
 };
