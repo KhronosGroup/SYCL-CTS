@@ -92,8 +92,15 @@ def split_additional_args(additional_args):
     # shlex doesn't support None
     if additional_args is None:
         return []
-    # shell-parse in posix mode the shell-escaped string with additional_args
-    return shlex.split(shlex.quote(additional_args))
+    use_posix_mode = os.name != 'nt'
+    # shlex was not intended for Windows by design, with non-POSIX Unix shells
+    # supported. Still it provides a Windows-compilant solution up to the
+    # certain degree, details: https://bugs.python.org/issue1724822
+    # The rules for quoting and escaping in non-POSIX mode are different from
+    # the native Windows rules, defined for CommandLineToArgvW for example.
+    # Still it makes possible to use something like "%ENV_VAR%\subdir" within
+    # additional arguments
+    return shlex.split(additional_args, posix=use_posix_mode)
 
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
