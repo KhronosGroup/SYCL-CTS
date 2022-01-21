@@ -138,6 +138,13 @@ static void check_associated_devices(util::logger &log) {
          "devices passed.");
   }
 
+  // TODO: we can't use std::set<sycl::device> due to the fact that sycl::device
+  // has no comparative operators.
+  // When this issue will be resolved the following statement can be used insted
+  // of cycle with std::count calling:
+  //  std::sort(kb_devs.begin(), kb_devs.end());
+  //  if (std::adjacent_find(kb_devs.begin(), kb_devs.end()) != kb_devs.end()) {
+
   // Check that result kernel bundle does not have duplicates
   bool unique_devs = true;
   for (const auto &dev : kb_devs) {
