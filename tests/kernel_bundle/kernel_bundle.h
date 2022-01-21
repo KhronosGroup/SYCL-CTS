@@ -60,9 +60,10 @@ inline void compare_dev_compat_and_has_kb_result(
   }
 }
 
-/** @brief Verify that provided sycl::kernel_bundle presented kernel if it
- *         device compatible with kernel requirements. Also verifies that number
- *         of devicec in kernel bundle is equal to the passed devices number.
+/** @brief Verify that the provided sycl::kernel_bundle has the specified kernel
+ *         and that the associated device satisfy all kernel requirements. Also
+ *         verifies that number of devices in kernel bundle is equal to the
+ *         passed devices number.
  *  @tparam KernelDescriptorT Kernel descriptor
  *  @param log sycl_cts::util::logger class object
  *  @param kernel_bundle kernel bundle that was obtained from different
@@ -87,8 +88,13 @@ struct verify_that_kernel_in_bundle {
       auto k_id{sycl::get_kernel_id<kernel>()};
 
       const bool kb_has_kernel{kernel_bundle.has_kernel(k_id)};
+      const auto kb_devices{kernel_bundle.get_devices()};
       const bool dev_compat_status{
-          kernel_restrictions.is_compatible(kernel_bundle.get_devices()[0])};
+          std::all_of(kb_devices.begin(), kb_devices.end(),
+                      [&](const sycl::device &device) {
+                        return kernel_restrictions.is_compatible(device);
+                      })};
+
       compare_dev_compat_and_has_kb_result(log, dev_compat_status,
                                            kb_has_kernel, kernel_name);
     }

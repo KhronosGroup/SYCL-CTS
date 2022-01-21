@@ -53,10 +53,10 @@ class TestCaseDescription
             "sycl::get_kernel_bundle", functionOverload){};
 };
 
-/** @brief Fills std::vector with kernels_ids if kernel compatible with the
- *         provided device. This lets avoid situations when new kernel
- *         descriptor was added, but test developer forgot to update kernel_ids
- *         for tests so this kernel is skipped.
+/** @brief Fills an std::vector with kernels_ids for all kernels compatible with
+ *         the provided device. This avoids failures when new kernel descriptors
+ *         are added, but the test developer forgot to update kernel_ids for
+ *         tests skipping the new kernels.
  *  @tparam KernelDescriptorT Kernel descriptor
  */
 template <typename KernelDescriptorT>
@@ -162,8 +162,7 @@ inline void run_test_for_all_overload_types(
   {
     log.note(
         "Run test for sycl::get_kernel_bundle<BundleState>(context, "
-        "selector) "
-        "overload");
+        "selector) overload");
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context, selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
         kernel_descriptors, log, kernel_bundle, number_devices);

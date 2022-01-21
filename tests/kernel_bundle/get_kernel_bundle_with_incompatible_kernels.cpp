@@ -5,7 +5,7 @@
 //  This test calls these sycl::get_kernel_bundle overloads:
 //    1) sycl::get_kernel_bundle<BundleState>(context, kernelIds)
 //    2) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
-//  For kernels that incompatible with current device.
+//  For kernels that are incompatible with current device.
 //
 //  The test verifies that the exceptions with sycl::errc::invalid are thrown.
 //
