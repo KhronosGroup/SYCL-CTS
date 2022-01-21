@@ -36,7 +36,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto q = util::get_cts_object::queue();
 
-    std::vector<sycl::device> zero_device{};
+    std::vector<sycl::device> zero_device;
     const auto first_simple_kernel_id =
         sycl::get_kernel_id<first_simple_kernel>();
 
