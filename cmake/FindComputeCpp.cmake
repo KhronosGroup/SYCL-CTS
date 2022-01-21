@@ -89,11 +89,12 @@ function(build_spir exe_name spir_target_name source_file output_path)
             ${computecpp_device_compiler_defs}
             ${COMPUTECPP_USER_FLAGS}
             ${platform_specific_args}
-            $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">
-            $<$<BOOL:${device_compile_definitions}>:-D$<JOIN:${device_compile_definitions},\t-D>>
-            $<JOIN:${device_compile_options},\t>
+            $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\;-I\">\">
+            $<$<BOOL:${device_compile_definitions}>:-D$<JOIN:${device_compile_definitions},\;-D>>
+            $<JOIN:${device_compile_options},\;>
             -o ${output_bc}
             -c ${source_file}
+    COMMAND_EXPAND_LISTS
     DEPENDS ${source_file}
     WORKING_DIRECTORY ${output_path}
     COMMENT "Building SPIR object ${output_bc}")
