@@ -39,7 +39,7 @@ class TEST_NAME : public util::test_base {
       property_list prop_list{device_image_scope_v, implement_in_csr_v<true>};
 
       if (!std::is_base_of_v<std::true_type,
-                             is_property_list<decltype(prop_list)> >)
+                             is_property_list<decltype(prop_list)>>)
         FAIL(log,
              "is_property_list for property list is not derived from "
              "std::true_type");
@@ -47,7 +47,7 @@ class TEST_NAME : public util::test_base {
       if (!is_property_list_v<decltype(prop_list)>)
         FAIL(log, "is_property_list_v for property list is not true");
 
-      if (std::is_base_of_v<std::true_type, is_property_list<A> >)
+      if (std::is_base_of_v<std::true_type, is_property_list<A>>)
         FAIL(log,
              "is_property_list for not property list is derived from "
              "std::true_type");

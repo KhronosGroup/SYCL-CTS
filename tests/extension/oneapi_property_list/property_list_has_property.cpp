@@ -38,14 +38,14 @@ class TEST_NAME : public util::test_base {
                               host_access_v<host_access::access::read>};
 
       if (!prop_list.has_property<device_image_scope>())
-        FAIL(log, "wrong result for device_image_scope");
+        FAIL(log, "property_list should have device_image_scope property");
       if (!prop_list.has_property<implement_in_csr>())
-        FAIL(log, "wrong result for implement_in_csr");
+        FAIL(log, "property_list should have implement_in_csr property");
       if (!prop_list.has_property<host_access>())
-        FAIL(log, "wrong result for host_access");
+        FAIL(log, "property_list should have host_access property");
 
       if (prop_list.has_property<init_mode>())
-        FAIL(log, "wrong result for init_mode");
+        FAIL(log, "property_list shouldn't have init_mode property");
     }
 #endif
   }
