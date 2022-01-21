@@ -2,55 +2,63 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright:	(c) 2018 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright (c) 2021 The Khronos Group Inc.
 //
 *******************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <regex>
+#include <string>
 
-#include "./../../util/collection.h"
-#include "./../../util/test_manager.h"
+#define CATCH_CONFIG_RUNNER
+#include <catch2/catch_session.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/internal/catch_clara.hpp>
 
-using namespace sycl_cts::util;
+#include "./../../util/device_manager.h"
+#include "cts_selector.h"
 
-/** program exit callback
- */
-void exit_handler() {
-  // inform the test manager of program exit
-  get<test_manager>().on_exit();
-}
+int main(int argc, char** argv) {
+  using namespace sycl_cts;
 
-/** test suite entry point
- */
-int main(int argc, const char **args) {
-  // register an exit handler
-  atexit(exit_handler);
+  Catch::Session session;
+  session.configData().name = "The SYCL 2020 Conformance Test Suite";
 
-  // prepare the test collection for use
-  get<collection>().prepare();
+  std::string devicePattern;
+  std::string infoDumpFile;
+  bool listDevices = false;
 
-  // get a handle to the test manager instance
-  test_manager &testManager = get<test_manager>();
+  using namespace Catch::Clara;
 
-  // inform the test manager the cts has launched
-  testManager.on_start();
+  // TODO: Look into removing some of Catch2's default options
+  //       that we don't need, e.g. for benchmarking.
+  auto cli = Opt(devicePattern, "pattern")["--device"](
+                 "Select SYCL device to run CTS on. ECMAScript "
+                 "regular expression syntax can be used") |
+             Opt(listDevices)["--list-devices"]("List all available devices") |
+             Opt(infoDumpFile, "file")["--info-dump"](
+                 "Dump platform and device info to file") |
+             session.cli();
 
-  // parse the command line
-  if (!testManager.parse(argc, args)) {
-    return -1;
+  session.cli(cli);
+
+  const int returnCode = session.applyCommandLine(argc, argv);
+  if (returnCode != 0) {
+    return returnCode;
   }
 
-  // Dump device info
-  testManager.dump_device_info();
-
-  // if the test harness will execute
-  if (testManager.will_execute()) {
-    // run all of the specified tests
-    if (!testManager.run()) {
-      return -1;
-    }
+  auto& device_mngr = util::get<util::device_manager>();
+  if (!devicePattern.empty()) {
+    device_mngr.set_device_regex(std::regex(devicePattern));
   }
 
-  return 0;
+  if (listDevices) {
+    device_mngr.list_devices();
+    return EXIT_SUCCESS;
+  }
+
+  if (!infoDumpFile.empty()) {
+    device_mngr.dump_info(infoDumpFile);
+  }
+
+  return session.run();
 }
