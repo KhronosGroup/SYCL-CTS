@@ -33,7 +33,7 @@ class TEST_NAME : public util::test_base {
     using avaliability =
         util::extensions::availability<util::extensions::tag::fp16>;
     if (!avaliability::check(queue, log)) {
-      log.skip(
+      WARN(
           "Device does not support half precision floating point operations");
       return;
     }
