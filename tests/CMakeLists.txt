@@ -141,10 +141,10 @@ endfunction()
 add_executable(test_all)
 
 # create test executable targets for each test project using the build_sycl function
-function(add_cts_test)
+function(add_cts_test_helper)
   get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-  set(test_exe_name test_${test_dir})
-  set(test_cases_list ${ARGN})
+  set(test_exe_name test_${ARGV0})
+  set(test_cases_list ${ARGV1})
 
   if(NOT ${test_dir} IN_LIST exclude_categories)
     message(STATUS "Adding test: " ${test_exe_name})
@@ -174,12 +174,44 @@ function(add_cts_test)
 
   target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
+  target_link_libraries(${test_exe_name} PRIVATE Catch2::Catch2)
+
   set_property(TARGET ${test_exe_name}
                PROPERTY FOLDER "Tests/${test_exe_name}")
   set_property(TARGET ${test_exe_name}_objects
                PROPERTY FOLDER "Tests/${test_exe_name}")
 
   target_sources(test_all PRIVATE $<TARGET_OBJECTS:${test_exe_name}_objects>)
+endfunction()
+
+# Create one *.exe-file from all of the provided *.cpp-files
+function(add_cts_test)
+  # To make check that any .cpp files are passed
+  # List created because, direct check on "${ARGN}" gives false-positive result
+  set(tests_list "${ARGN}")
+  if (tests_list)
+    get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    set(test_exe_name ${test_dir})
+    set(test_cases_list "${ARGN}")
+
+    add_cts_test_helper(${test_exe_name} "${test_cases_list}")
+  endif()
+endfunction()
+
+# Create a separate *.exe-file from each of the provided *.cpp-files
+function(add_independent_cts_tests)
+  set(tests_list "${ARGN}")
+  foreach(ind_test IN LISTS tests_list)
+    if(EXISTS "${ind_test}")
+      get_filename_component(cpp_name "${ind_test}" NAME_WE)
+      set(test_exe_name "${cpp_name}")
+      set(test_cases_list "${ind_test}")
+
+      add_cts_test_helper(${test_exe_name} "${test_cases_list}")
+    else()
+      message(FATAL_ERROR "No file named ${ind_test}")
+    endif()
+  endforeach()
 endfunction()
 
 file(GLOB test_category_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
@@ -191,3 +223,4 @@ foreach(dir ${test_category_dirs})
 endforeach()
 
 target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
+target_link_libraries(test_all PRIVATE Catch2::Catch2)

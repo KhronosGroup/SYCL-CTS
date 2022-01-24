@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2020-2021 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -10,6 +11,8 @@
 #define __SYCLCTS_TESTS_COMMON_COMMON_H
 
 #include <sycl/sycl.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
@@ -52,10 +55,9 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
 template <typename expectedT, typename returnT>
 void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
                        std::string functionName) {
-  if (!std::is_same<returnT, expectedT>::value) {
-    FAIL(log, functionName + " has incorrect return type -> " +
-                  std::string(typeid(returnT).name()));
-  }
+  INFO(functionName + " has incorrect return type -> " +
+       typeid(returnT).name());
+  CHECK(std::is_same<returnT, expectedT>::value);
 }
 
 /**
@@ -165,8 +167,12 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
    */
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_backend() == sycl::backend::opencl) {
+#if !defined(__COMPUTECPP__)
     if (sycl::get_native<sycl::backend::opencl>(a) !=
         sycl::get_native<sycl::backend::opencl>(b)) {
+#else
+    if (a.get() != b.get()) {
+#endif
       FAIL(log, "two objects are not equal");
     }
   }
