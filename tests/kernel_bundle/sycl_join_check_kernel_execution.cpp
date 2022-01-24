@@ -36,7 +36,7 @@ void run_verification(util::logger &log, sycl::queue &q,
       auto res_acc =
           res_buffer.template get_access<sycl::access_mode::write>(cgh);
       cgh.use_kernel_bundle(kb);
-      cgh.single_task<KernelName>([=]() { res_acc[0] = true; });
+      cgh.single_task<KernelName>([=] { res_acc[0] = true; });
     });
   }
   if (!value_to_rewrite_in_kernel) {
