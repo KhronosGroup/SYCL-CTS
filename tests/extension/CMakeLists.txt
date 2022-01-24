@@ -1,0 +1,6 @@
+file(GLOB test_category_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
+foreach(dir ${test_category_dirs})
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/CMakeLists.txt")
+    add_subdirectory(${dir})
+  endif()
+endforeach()

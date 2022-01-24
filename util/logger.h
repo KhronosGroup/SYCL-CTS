@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2021 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -10,60 +11,36 @@
 #define __SYCLCTS_UTIL_LOGGER_H
 
 #include "stl.h"
-#include "test_base.h"
 
 #include <string>
-#include <string_view>
 #include <type_traits>
 
 namespace sycl_cts {
 namespace util {
 
-/** the logger class records all output during testing
- *  and so forms a transcript of an executed test
+/**
+ * Logging utility class for legacy test cases.
+ * @deprecated Please use Catch2's INFO and WARN macros instead.
  */
 class logger {
  public:
-  /** test result values
-   */
-  enum result {
-    epending = 0,
-    epass,
-    efail,
-    eskip,
-    efatal,
-    etimeout,
-  };
+  logger() = default;
 
-  /** constructor
-   */
-  logger();
-
-  /** destructor
-   */
-  ~logger();
-
-  /* emit a test preamble
-   */
-  void preamble(const struct test_base::info &testInfo);
-
-  /** notify a test has failed
+  /**
+   * notify a test has failed
+   * @deprecated Use the FAIL macro instead.
    */
   void fail(const std::string &reason, const int line);
 
-  /** notify a test has been skipped
-   */
-  void skip(const std::string &reason = std::string());
-
-  /** report fatal error and abort program
-   */
-  void fatal(const std::string &reason = std::string());
-
-  /** output verbose information
+  /**
+   * output verbose information
+   * @deprecated Use Catch2's WARN or INFO macros instead.
    */
   void note(const std::string &str);
 
-  /** output verbose information
+  /**
+   * output verbose information
+   * @deprecated Use Catch2's WARN or INFO macros instead.
    */
   void note(const char *fmt, ...);
 
@@ -90,48 +67,29 @@ class logger {
     if constexpr (std::is_invocable_v<seedT>) {
       // Using factory method
       const std::string message{seed()};
-      note(message);
+      log_debug(message);
     } else {
       // Using data value
       const std::string message{seed};
-      note(message);
+      log_debug(message);
     }
 #else
     static_cast<void>(seed);
 #endif
   }
 
-  /** beginning of a test
-   */
-  void test_start();
-
-  /** end of a test
-   */
-  void test_end();
-
-  /** send a progress update
-   *
-   *  sent as number of 'items' done of 'total'
-   */
-  void progress(int item, int total);
-
-  /** return true if the log has been marked as fail
-   */
-  bool has_failed();
-
-  /** return the test result as result enum
-   */
-  result get_result() const;
+  // This is a hack to enable both old and new style FAIL macros, i.e.
+  // FAIL(log, "my message") // old style
+  // FAIL("my value = " << 123) // new Catch2 style
+  friend std::ostream &operator<<(std::ostream &os, const logger &m) {
+    return os;
+  }
 
  protected:
-  // unique log identifier
-  int32_t m_logId;
-
-  // test result
-  result m_result;
-
   // disable copy constructors
   logger(const logger &);
+
+  void log_debug(const std::string &str);
 
 };  // class logger
 
