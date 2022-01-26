@@ -139,9 +139,9 @@ static void check_associated_devices(util::logger &log) {
   }
 
   // TODO: we can't use std::set<sycl::device> due to the fact that sycl::device
-  // has no comparative operators.
-  // When this issue will be resolved the following statement can be used insted
-  // of cycle with std::count calling:
+  // has no comparison operators.
+  // Once this issue is resolved, the following statement can be used instead of
+  // cycling with a std::count call:
   //  std::sort(kb_devs.begin(), kb_devs.end());
   //  if (std::adjacent_find(kb_devs.begin(), kb_devs.end()) != kb_devs.end()) {
 
