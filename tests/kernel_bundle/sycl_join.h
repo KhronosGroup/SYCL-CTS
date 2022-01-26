@@ -25,9 +25,9 @@ inline bool check_dev_images_equal(sycl_cts::util::logger &log,
              std::distance(rhs_kb.begin(), rhs_kb.end()));
   if (!ok) return ok;
   // TODO: we can't use std::set<sycl::kernel_bundle> due to the fact that
-  // sycl::kernel_bundle has no comparative operators.
-  // When this issue will be resolved the following statement can be used insted
-  // of cycle with std::count calling:
+  // sycl::kernel_bundle has no comparison operators.
+  // Once this issue is resolved, the following statement can be used instead of
+  // cycling with a std::find call:
   //  std::sort(rhs_kb.begin(), rhs_kb.end());
   //  ok = std::adjacent_find(rhs_kb.begin(), rhs_kb.end()) != rhs_kb.end();
   for (const auto &dev_img : lhs_kb) {
