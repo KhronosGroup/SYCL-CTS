@@ -91,6 +91,17 @@ struct value_helper {
   static void change_val(T& value, const int new_val = 1) { value = new_val; }
 
   /**
+   * @brief The function changes value from the first parameter to
+   * value from the second parameter of the same type
+   * Disabled if T is int to avoid function ambiguous
+   */
+  template <typename Ty = T>
+  static typename std::enable_if_t<!std::is_same_v<Ty, int>> change_val(
+      T& value, const T new_val) {
+    value = new_val;
+  }
+
+  /**
    * @brief The function compares values from the first
    * parameter value from the second parameter
    */
@@ -115,6 +126,17 @@ struct value_helper<T[N]> {
   static void change_val(arrayT& value, const int new_val = 1) {
     for (size_t i = 0; i < N; ++i) {
       value[i] = new_val;
+    }
+  }
+  /**
+   * @brief The function changes all values of the array from the first parameter to
+   * values of the array from the second parameter
+   * @param value The reference to the array that needs to be change
+   * @param new_vals The array with values that will be set
+   */
+  static void change_val(arrayT& value, const arrayT& new_vals) {
+    for (size_t i = 0; i < N; i++) {
+      value[i] = new_vals[i];
     }
   }
 
@@ -142,6 +164,25 @@ struct value_helper<T[N]> {
     return are_equal;
   }
 };
+
+/** @brief The helper function to get variable address for pointer
+ *  @tparam T Type of variable
+ *  @param data variable to get pointer to
+ */
+template <typename T>
+inline T* pointer_helper(T& data) {
+  return &data;
+}
+
+/** @brief The helper function to get first element od array address for pointer
+ *  @tparam T Type of array values
+ *  @tparam N Size of array
+ *  @param data array to get pointer to
+ */
+template <typename T, size_t N>
+inline T* pointer_helper(T (&data)[N]) {
+  return &data[0];
+}
 }  // namespace device_global_common_functions
 
 #endif  // SYCL_CTS_TEST_DEVICE_GLOBAL_COMMON_H
