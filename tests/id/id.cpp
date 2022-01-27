@@ -60,6 +60,8 @@ TEST_CASE("id provides specialized constructors for each dimensionality",
 template <int Dimensions>
 using idh = util::get_cts_object::id<Dimensions>;
 
+// TODO SPEC: Do common by-value semantics require trivially copyable?
+// See also https://github.com/KhronosGroup/SYCL-Docs/issues/210
 TEMPLATE_TEST_CASE_SIG("id provides common by-value semantics", "[id]",
                        ((int D), D), 1, 2, 3) {
   using sycl::id;
@@ -211,31 +213,28 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
     CHECK(DEVICE_EVAL(a[i]) == values[i]);
   }
 
-#define ASSIGN_COMPONENT(operand_value, c, v) \
-  ([=](auto x) {                              \
-    x[c] = v;                                 \
-    return x;                                 \
-  })(operand_value)
+  const auto assign_component = [](auto x, auto c, auto v) {
+    x[c] = v;
+    return x;
+  };
 
   using sycl::id;
 
-  CHECK(ASSIGN_COMPONENT(a, 0, 7) == idh<D>::get(7, 8, 3));
-  CHECK(DEVICE_EVAL_T(id<D>, ASSIGN_COMPONENT(a, 0, 7)) ==
+  CHECK(assign_component(a, 0, 7) == idh<D>::get(7, 8, 3));
+  CHECK(DEVICE_EVAL_T(id<D>, assign_component(a, 0, 7)) ==
         idh<D>::get(7, 8, 3));
 
   if (D >= 2) {
-    CHECK(ASSIGN_COMPONENT(a, 1, 9) == idh<D>::get(5, 9, 3));
-    CHECK(DEVICE_EVAL_T(id<D>, ASSIGN_COMPONENT(a, 1, 9)) ==
+    CHECK(assign_component(a, 1, 9) == idh<D>::get(5, 9, 3));
+    CHECK(DEVICE_EVAL_T(id<D>, assign_component(a, 1, 9)) ==
           idh<D>::get(5, 9, 3));
   }
 
   if (D == 3) {
-    CHECK(ASSIGN_COMPONENT(a, 2, 11) == idh<D>::get(5, 8, 11));
-    CHECK(DEVICE_EVAL_T(id<D>, ASSIGN_COMPONENT(a, 2, 11)) ==
+    CHECK(assign_component(a, 2, 11) == idh<D>::get(5, 8, 11));
+    CHECK(DEVICE_EVAL_T(id<D>, assign_component(a, 2, 11)) ==
           idh<D>::get(5, 8, 11));
   }
-
-#undef ASSIGN_COMPONENT
 }
 
 TEST_CASE("id can be converted to size_t if Dimensions == 1", "[id]") {
