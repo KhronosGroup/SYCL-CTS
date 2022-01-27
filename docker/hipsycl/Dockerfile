@@ -15,7 +15,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     rm -rf /var/lib/apt/lists*
 
 RUN git clone https://github.com/illuhad/hipSYCL.git \
-      --branch=develop --single-branch --shallow-since=2021-08-01 \
       --recurse-submodules /tmp/hipSYCL && \
     cd /tmp/hipSYCL && \
     git checkout $IMPL_VERSION && \
