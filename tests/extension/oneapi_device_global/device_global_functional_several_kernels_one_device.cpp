@@ -14,7 +14,7 @@
 
 #include "../../common/common.h"
 #include "../../common/type_coverage.h"
-#include "../../util/array.h"
+#include "../../../util/array.h"
 #include "device_global_common.h"
 #include "type_pack.h"
 
@@ -31,7 +31,7 @@ namespace several_kernel_in_one_device {
 template <typename T>
 oneapi::device_global<T> dev_global;
 template <typename T>
-oneapi::device_global<T> const_dev_global;
+const oneapi::device_global<T> const_dev_global;
 
 template <typename T>
 struct first_kernel;
@@ -68,7 +68,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   // If T is not array then element_type == T
   // As we fill the array with the same numbers with type of the array element,
   // we can store only one number to compare whole array with this number
-  using element_type = typename std::remove_extent_t<T>;
+  using element_type = std::remove_extent_t<T>;
 
   // Creating variables for store result of comparing
   constexpr size_t checks_size = integral(indx::size);
