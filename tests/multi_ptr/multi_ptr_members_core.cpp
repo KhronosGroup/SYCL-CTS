@@ -2,22 +2,21 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide multi_ptr constructors' tests for fp16 types
+//  Provides tests for multi_ptr members tests with core data types.
 //
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "multi_ptr_constructors_common.h"
+#include "multi_ptr_members.h"
+#include "multi_ptr_common.h"
 
-#include <string>
-
-#define TEST_NAME multi_ptr_constructors_fp16
+#define TEST_NAME multi_ptr_members_core
 
 namespace TEST_NAMESPACE {
-using namespace multi_ptr_constructors_common;
 using namespace sycl_cts;
+using namespace multi_ptr_members;
 
-/** tests the constructors for explicit pointers
+/** tests the api for explicit pointers
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -30,20 +29,10 @@ class TEST_NAME : public util::test_base {
   /** execute this test
    */
   void run(util::logger &log) override {
-    {
-      auto queue = util::get_cts_object::queue();
-
-      if (!queue.get_device().has(sycl::aspect::fp16)) {
-        log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
-
-      check_void_pointer_ctors<sycl::half>{}(queue, "sycl::half");
-      check_pointer_ctors<sycl::half>{}(queue, "sycl::half");
-
-      queue.wait_and_throw();
-    }
+    const auto types = multi_ptr_common::get_types();
+    const auto composite_types = multi_ptr_common::get_composite_types();
+    for_all_types<run_test_with_chosen_data_type>(types, log);
+    for_all_types<run_test_with_chosen_data_type>(composite_types, log);
   }
 };
 

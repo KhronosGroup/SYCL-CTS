@@ -73,6 +73,9 @@ The CTS can be configured using the following CMake configuration options:
 `SYCL_CTS_ENABLE_HALF_TESTS` (default: `ON`)
  Enable tests that require half precision floating point capabilities.
 
+`SYCL_CTS_TEST_DEPRECATED_FEATURES` (default `ON`)
+ Enable tests for legacy SYCL features. Should be switched on for conformance.
+
 `SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS` (default: `ON`)
  Enable OpenCL interoperability tests.
 

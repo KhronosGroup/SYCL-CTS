@@ -29,8 +29,6 @@ class test_base {
   struct info {
     std::string m_name;
     std::string m_file;
-    std::string m_buildDate;
-    std::string m_buildTime;
   };
 
   /** virtual destructor

@@ -11,12 +11,13 @@
 
 #include "../common/common.h"
 #include "specialization_constants_common.h"
+#include "../common/type_list.h"
 
 using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    get_init_value_helper<T>(default_val));
+    user_def_types::get_init_value_helper<T>(default_val));
 
 #define FUNC_DECLARE(TYPE)                                               \
   SYCL_EXTERNAL bool check_kernel_handler_by_reference_external_handler( \
@@ -34,9 +35,9 @@ CORE_TYPES(FUNC_DECLARE)
 #else
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DECLARE)
 #endif
-FUNC_DECLARE(testing_types::no_cnstr)
-FUNC_DECLARE(testing_types::def_cnstr)
-FUNC_DECLARE(testing_types::no_def_cnstr)
+FUNC_DECLARE(user_def_types::no_cnstr)
+FUNC_DECLARE(user_def_types::def_cnstr)
+FUNC_DECLARE(user_def_types::no_def_cnstr)
 #endif  // TEST_CORE
 
 #ifdef TEST_FP64
@@ -73,7 +74,7 @@ class check_specialization_constants_external {
     // handler
     bool passed = false;
     {
-      T ref{get_init_value_helper<T>(5)};
+      T ref { user_def_types::get_init_value_helper<T>(5) };
       const int case_num =
           static_cast<int>(test_cases_external::by_reference_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -98,7 +99,7 @@ class check_specialization_constants_external {
     // handler
     passed = false;
     {
-      T ref{get_init_value_helper<T>(10)};
+      T ref { user_def_types::get_init_value_helper<T>(10) };
       const int case_num =
           static_cast<int>(test_cases_external::by_value_via_handler);
       sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -127,7 +128,7 @@ class check_specialization_constants_external {
       // via kernel_bundle
       passed = false;
       {
-        T ref{get_init_value_helper<T>(15)};
+        T ref { user_def_types::get_init_value_helper<T>(15) };
         const int case_num =
             static_cast<int>(test_cases_external::by_reference_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);
@@ -169,7 +170,7 @@ class check_specialization_constants_external {
       // kernel_bundle
       passed = false;
       {
-        T ref{get_init_value_helper<T>(20)};
+        T ref { user_def_types::get_init_value_helper<T>(20) };
         const int case_num =
             static_cast<int>(test_cases_external::by_value_via_bundle);
         sycl::buffer<bool, 1> result_buffer(&passed, range);

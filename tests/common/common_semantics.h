@@ -2,12 +2,12 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// Provides verification for common by-value semantics
+// Provides generic semantics verification
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_COMMON_COMMON_BY_VALUE_H
-#define __SYCLCTS_TESTS_COMMON_COMMON_BY_VALUE_H
+#ifndef __SYCLCTS_TESTS_COMMON_SEMANTICS_H
+#define __SYCLCTS_TESTS_COMMON_SEMANTICS_H
 
 #include "common.h"
 
@@ -15,13 +15,13 @@
 #include <string>
 #include <type_traits>
 
-namespace {
+namespace common_semantics {
 
 /**
  * @brief Check equality-comparable operations on the host side
  */
 template <typename T>
-void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
+void check_on_host(sycl_cts::util::logger& log, const T& a,
                                        const std::string& testName) {
   /** check for reflexivity
    */
@@ -65,10 +65,40 @@ void check_equality_comparable_generic(sycl_cts::util::logger& log, const T& a,
 }
 
 /**
+ * @brief Check equality-comparable operations on the host side with extra
+ *        checks for symmetry
+ */
+template <typename T>
+void check_on_host(sycl_cts::util::logger& log, const T& a,
+                                       const T& other,
+                                       const std::string& testName) {
+    check_on_host(log, a, testName);
+
+    /** extra checks for symmetry (comparsion with other)
+     */
+    if (a == other) {
+      FAIL(testName
+           << " is not equality-comparable (operator==, different value)");
+    }
+    if (other == a) {
+      FAIL(testName << " is not equality-comparable (operator== symmetry "
+                       "failed, different value)");
+    }
+    if (!(a != other)) {
+      FAIL(testName
+           << " is not equality-comparable (operator!=, different value)");
+    }
+    if (!(other != a)) {
+      FAIL(testName << " is not equality-comparable (operator!= symmetry "
+                       "failed, different value)");
+    }
+}
+
+/**
  * @brief Check equality-comparable operations on the device side
  */
 template <typename T>
-class equality_comparable_on_device
+class on_device_checker
 {
   /**
    * @brief Provides a safe index for checking an operation
@@ -93,9 +123,8 @@ class equality_comparable_on_device
 
 public:
   template <typename kernelT>
-  static void check_on_kernel(sycl_cts::util::logger& log,
-                              const std::array<T, 2>& items,
-                              const std::string& testName) {
+  static void run(sycl_cts::util::logger& log, const std::array<T, 2>& items,
+                  const std::string& testName) {
     // Store comparison results from kernel into a success array
     success_array_t success;
     std::fill(std::begin(success), std::end(success), false);
@@ -218,4 +247,4 @@ public:
 
 }  // namespace
 
-#endif  // __SYCLCTS_TESTS_COMMON_COMMON_BY_VALUE_H
+#endif  // __SYCLCTS_TESTS_COMMON_SEMANTICS_H
