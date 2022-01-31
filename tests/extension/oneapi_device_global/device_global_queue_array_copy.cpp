@@ -31,7 +31,7 @@ template <typename T>
 oneapi::device_global<T> dev_global_out;
 
 /** @brief The function tests that queue copy overloads correctly copy
- * single element to device_global
+ *  a single element to device_global
  *  @tparam T Type of underlying struct
  */
 template <typename T, size_t N>
@@ -39,7 +39,7 @@ void run_test_copy_to_device_global_array(util::logger& log,
                                           const std::string& type_name) {
   T data[N];
   value_helper<T[N]>::change_val(data, 1);
-  const T* src_data = &data[0];
+  const auto src_data = &data[0];
   size_t num_element = N / 2;
 
   auto queue = util::get_cts_object::queue();
@@ -83,7 +83,7 @@ void run_test_copy_from_device_global_array(util::logger& log,
   T new_val[N];
   value_helper<T[N]>::change_val(new_val, 5);
   T data[N];
-  std::remove_all_extents_t<T>* dst_data = &data[0];
+  auto dst_data = &data[0];
   size_t num_element = N / 2;
 
   auto queue = util::get_cts_object::queue();

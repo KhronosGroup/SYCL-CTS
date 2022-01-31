@@ -157,7 +157,7 @@ inline T* pointer_helper(T& data) {
   return &data;
 }
 
-/** @brief The helper function to get first element od array address for pointer
+/** @brief The helper function to get first element of array address for pointer
  *  @tparam T Type of array values
  *  @tparam N Size of array
  *  @param data array to get pointer to

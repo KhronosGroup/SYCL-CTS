@@ -48,7 +48,7 @@ void run_test_copy_to_device_global(util::logger& log,
   using element_type = std::remove_all_extents_t<T>;
   T data{};
   value_helper<T>::change_val(data, 1);
-  const element_type* src_data = pointer_helper(data);
+  const auto src_data = pointer_helper(data);
 
   // to generate events with generator from usm_api.h
   // gens will generate events that will fill array arr_src
@@ -139,9 +139,9 @@ void run_test_copy_from_device_global(util::logger& log,
   T new_val{};
   value_helper<T>::change_val(new_val, 5);
   T data1{}, data2{}, data3{};
-  element_type* dst_data1 = pointer_helper(data1);
-  element_type* dst_data2 = pointer_helper(data2);
-  element_type* dst_data3 = pointer_helper(data3);
+  auto dst_data1 = pointer_helper(data1);
+  auto dst_data2 = pointer_helper(data2);
+  auto dst_data3 = pointer_helper(data3);
 
   sycl::queue queue;
   auto queue = util::get_cts_object::queue();
