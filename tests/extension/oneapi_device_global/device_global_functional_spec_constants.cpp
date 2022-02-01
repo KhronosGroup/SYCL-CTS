@@ -4,7 +4,7 @@
 //
 //  Provides functional test for device_global
 //
-//  Checks interaction of device_global instance with a specialization
+//  Checks interaction of device_global instance with specialization
 //  constants. At the first kernel run check that device_global contains default
 //  value and then change the device_global to value from specialization
 //  constant. At the second run change specialization constant value and check
@@ -45,7 +45,7 @@ class read_and_write_in_kernel {
  public:
   /**
    * @brief The function reads value from device_global instance and then writes
-   * new value from specialization constants in instance. Test will be failed if
+   * new value from specialization constants in instance. Test will fail if
    * value from device_global instance not equal to default value
    */
   static inline void expect_def_val(util::logger& log,
