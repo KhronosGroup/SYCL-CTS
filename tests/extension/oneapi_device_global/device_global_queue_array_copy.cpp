@@ -97,8 +97,7 @@ void run_test_copy_from_device_global_array(util::logger& log,
   auto event = queue.copy(dev_global_in<T[N]>, dst_data, 1, num_element);
   event.wait();
 
-  // eq op is used because not all custom types have not eq op
-  if (!(data[num_element] == new_val[num_element])) {
+  if (data[num_element] != new_val[num_element]) {
     FAIL(log, get_case_description(
                   "Overload of sycl::queue::copy for device_global",
                   "Didn't copy correct element from device_global array",
