@@ -110,7 +110,7 @@ void call_read_kernel(sycl::queue& q, util::logger& log,
       });
     });
   }
-  // Test fail if non-default value read from the device_global instance
+  // Test fails if non-default value read from the device_global instance
   if (!is_default_val)
     FAIL(log, get_case_description("device_global: Unique for every device",
                                    "Value changed on another device. "
@@ -118,7 +118,8 @@ void call_read_kernel(sycl::queue& q, util::logger& log,
                                    type_name));
 }
 /**
- * @brief The function tests that device_global instance unique for every device
+ * @brief The function tests that the device_global instance is unique for every
+ * device
  * @tparam T Type of the underlying value
  */
 template <typename T>
@@ -142,7 +143,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         queues.emplace_back(device);
       }
     }
-    // If already have more that one device, then break the loop
+    // If already have more than one device, then break the loop
     if (queues.size() > 1) break;
   }
 
