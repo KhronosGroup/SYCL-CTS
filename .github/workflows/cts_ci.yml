@@ -55,7 +55,7 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.8.0
           - sycl-impl: dpcpp
-            version: ec97c57
+            version: c230f3c
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -94,7 +94,7 @@ jobs:
           - sycl-impl: computecpp
             version: 2.8.0
           - sycl-impl: dpcpp
-            version: ec97c57
+            version: c230f3c
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:
