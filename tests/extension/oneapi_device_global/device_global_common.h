@@ -92,12 +92,12 @@ struct value_helper {
 
   /**
    * @brief The function changes value from the first parameter to
-   * value from the second parameter of the same type
+   * value from the second parameter of the same type.
    * Disabled if T is int to avoid function ambiguous
    */
   template <typename Ty = T>
   static typename std::enable_if_t<!std::is_same_v<Ty, int>> change_val(
-      T& value, const T new_val) {
+      T& value, const T& new_val) {
     value = new_val;
   }
 
@@ -131,7 +131,7 @@ struct value_helper<T[N]> {
   /**
    * @brief The function changes all values of the array from the first parameter to
    * values of the array from the second parameter
-   * @param value The reference to the array that needs to be change
+   * @param value The reference to the array that needs to be changed
    * @param new_vals The array with values that will be set
    */
   static void change_val(arrayT& value, const arrayT& new_vals) {
@@ -174,7 +174,7 @@ inline T* pointer_helper(T& data) {
   return &data;
 }
 
-/** @brief The helper function to get first element od array address for pointer
+/** @brief The helper function to get first element of array address for pointer
  *  @tparam T Type of array values
  *  @tparam N Size of array
  *  @param data array to get pointer to
