@@ -130,9 +130,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
 #if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    log.skip("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-    log.skip("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
+    WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
     check_device_global_api_arrow_operator_for_type<
         user_def_types::arrow_operator_overloaded>{}(log, "arrow_operator");
