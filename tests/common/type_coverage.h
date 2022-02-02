@@ -32,8 +32,7 @@ struct type_name_string {
 template <typename T, size_t nElements>
 struct type_name_string<sycl::vec<T, nElements>> {
     static std::string get(const std::string& dataType) {
-        return "sycl::vec<" + dataType + "," +
-               std::to_string(nElements) + ">";
+      return "sycl::vec<" + dataType + "," + std::to_string(nElements) + ">";
     }
 };
 
@@ -230,5 +229,46 @@ void for_all_types_vectors_marray(const named_type_pack<types...>& typeList,
       0  // Dummy initialization value
       )...};
   static_cast<void>(packExpansion);
+}
+
+/**
+ * @brief Run action for type and marrays of this type
+ * @tparam action Functor template for action to run
+ * @tparam T Type to instantiate functor template with
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action, typename T,
+          typename... actionArgsT, typename... argsT>
+void for_type_and_marrays(argsT&&... args) {
+  for_all_types<action, actionArgsT...>(
+      type_pack<T, typename sycl::template marray<T, 2>,
+                typename sycl::template marray<T, 5>,
+                typename sycl::template marray<T, 10>>{},
+      std::forward<argsT>(args)...);
+}
+
+/**
+ * @brief Run action for each of types and marrays of types given by
+ *        named_type_pack instance
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam types Deduced from type_pack parameter pack for list of types to use
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param typeList Named type pack instance with underlying type names stored
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action,
+          typename... actionArgsT, typename... types, typename... argsT>
+void for_all_types_and_marrays(const named_type_pack<types...>& typeList,
+                               argsT&&... args) {
+  /** run action for each type from types... parameter pack
+   */
+  size_t typeNameIndex = 0;
+
+  ((for_type_and_marrays<action, types, actionArgsT...>(
+          std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
+    ++typeNameIndex), ...);
 }
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
