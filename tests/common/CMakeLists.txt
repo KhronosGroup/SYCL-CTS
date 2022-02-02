@@ -1,4 +1,5 @@
 add_library(main_function_object OBJECT main.cpp)
+target_link_libraries(main_function_object PRIVATE SYCL::SYCL Catch2::Catch2)
 add_library(main_function INTERFACE)
 add_library(CTS::main_function ALIAS main_function)
 target_sources(main_function INTERFACE $<TARGET_OBJECTS:main_function_object>)

@@ -10,6 +10,7 @@ exceptions
 group
 hierarchical
 host_task
+id
 image
 kernel
 kernel_args
