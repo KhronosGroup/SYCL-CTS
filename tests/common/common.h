@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2020-2021 The Khronos Group Inc.
+//  Copyright (c) 2020-2022 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -17,10 +17,12 @@
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
-#include "../common/cts_async_handler.h"
-#include "../common/cts_selector.h"
-#include "../common/get_cts_object.h"
+
+#include "cts_async_handler.h"
+#include "cts_selector.h"
+#include "get_cts_object.h"
 #include "macros.h"
+#include "string_makers.h"
 
 #include <cinttypes>
 #include <numeric>

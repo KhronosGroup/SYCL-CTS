@@ -31,6 +31,9 @@ struct user_struct {
     return (((lhs.a + eps > rhs.a) && (lhs.a < rhs.a + eps)) &&
             (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
+  friend bool operator!=(const user_struct &lhs, const user_struct &rhs) {
+    return !(lhs == rhs);
+  }
 };
 
 namespace user_def_types {
@@ -50,6 +53,10 @@ struct no_cnstr {
 
   friend bool operator==(const no_cnstr &lhs, const no_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+  }
+
+  friend bool operator!=(const no_cnstr &lhs, const no_cnstr &rhs) {
+    return !(lhs == rhs);
   }
 };
 
@@ -78,6 +85,10 @@ struct def_cnstr {
   inline friend bool operator==(const def_cnstr &lhs, const def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
+
+  friend bool operator!=(const def_cnstr &lhs, const def_cnstr &rhs) {
+    return !(lhs == rhs);
+  }
 };
 
 // A user-defined class with several scalar member variables, a deleted default
@@ -95,6 +106,37 @@ class no_def_cnstr {
   friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
   }
+
+  friend bool operator!=(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
+    return !(lhs == rhs);
+  }
+
+  // A user-defined struct with several scalar member variables, arrow operator
+  // overload, no constructor and
+  // destructor or member functions.
+  struct arrow_operator_overloaded {
+    float a;
+    int b;
+    char c;
+
+    void operator=(const int &v) {
+      this->a = v;
+      this->b = v;
+      this->c = v;
+    }
+
+    arrow_operator_overloaded *operator->() { return this; }
+    const arrow_operator_overloaded *operator->() const { return this; }
+
+    friend bool operator==(const arrow_operator_overloaded &lhs,
+                           const arrow_operator_overloaded &rhs) {
+      return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+    }
+    friend bool operator!=(const arrow_operator_overloaded &lhs,
+                           const arrow_operator_overloaded &rhs) {
+      return !(lhs == rhs);
+    }
+  };
 };
 // Returns instance of type T
 template <typename T>
