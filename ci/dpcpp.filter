@@ -3,4 +3,3 @@ exceptions
 multi_ptr
 opencl_interop
 reduction
-usm
