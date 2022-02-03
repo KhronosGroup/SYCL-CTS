@@ -75,10 +75,10 @@ inline void log_err_message(sycl_cts::util::logger &log, bool has_kb_result,
                             const std::string &compatible_info,
                             const std::string &kernel_name) {
   FAIL(log, "sycl::has_kernel_bundle() result: " +
-                sycl_cts::get_cts_string::for_bool(has_kb_result) +
+                std::string(sycl_cts::get_cts_string::for_bool(has_kb_result)) +
                 ", but device compatible status: " +
-                sycl_cts::get_cts_string::for_bool(dev_is_compat) + ". for " +
-                kernel_name + ", with restrictions:" +
+                std::string(sycl_cts::get_cts_string::for_bool(dev_is_compat)) +
+                ". for " + kernel_name + ", with restrictions:" +
                 string_with_restrictions + " and device " + compatible_info);
 }
 
