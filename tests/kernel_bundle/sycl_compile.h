@@ -66,7 +66,7 @@ static void check_bundle_kernels(util::logger &log, const std::string &kName) {
   // Test can be skipped if all devices do not support online compilation
   // since this is not sycl::compile's fault
   if (!sycl::has_kernel_bundle<sycl::bundle_state::input>(ctx, {dev}, {k_id})) {
-    log.skip("No kernel bundle with input state with kernel: " + kName +
+    log.note("No kernel bundle with input state with kernel: " + kName +
              " (skipped).");
     return;
   }
@@ -122,7 +122,7 @@ static void check_associated_devices(util::logger &log) {
   // Test can be skipped if all devices do not support online compilation
   // since this is not sycl::compile's fault
   if (!sycl::has_kernel_bundle<sycl::bundle_state::input>(ctx)) {
-    log.skip("No kernel bundle with input state for test (skipped).");
+    log.note("No kernel bundle with input state for test (skipped).");
     return;
   }
 
