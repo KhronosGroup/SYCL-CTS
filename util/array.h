@@ -11,6 +11,8 @@
 #ifndef __SYCLCTS_UTIL_ARRAY_H
 #define __SYCLCTS_UTIL_ARRAY_H
 
+#include <cstddef>
+
 namespace sycl_cts {
 namespace util {
 

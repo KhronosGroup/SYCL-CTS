@@ -21,10 +21,9 @@ namespace usm_atomic_access {
 
 static auto get_scalar_types() {
   static const auto scalar_types =
-      named_type_pack<short, unsigned short, int, unsigned int, long,
+      named_type_pack<int, unsigned int, long,
                       unsigned long, float, double, long long,
-                      unsigned long long>({"short", "unsigned short", "int",
-                                           "unsigned int", "long",
+                      unsigned long long>({"int", "unsigned int", "long",
                                            "unsigned long", "float", "double",
                                            "long long", "unsigned long long"});
   return scalar_types;
@@ -47,43 +46,6 @@ auto get_atomic_memory() {
 
 constexpr bool with_atomic64 = true;
 constexpr bool without_atomic64 = false;
-/** @brief Dummy functor that use in type coverage
- *  @tparam CounterT Variable type from type coverage
- *  @tparam UseAtomic64Flag std::integral_constant type
- */
-template <typename CounterT>
-struct run_all_tests {
-  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
-                  const std::string &typeName) {
-    if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
-      if (!use_atomic_flag) {
-        return;
-      }
-      if (!queue.get_device().has(sycl::aspect::atomic64)) {
-        log.note("Device does not perform 64-bit atomic operations");
-        return;
-      }
-    } else {
-      if (use_atomic_flag) {
-        return;
-      }
-    }
-    run_test_with_chosen_mem_type<CounterT>(queue, log, typeName);
-  }
-};
-
-/** @brief Run test with two allocation types
- *  @tparam CounterT Variable type from type coverage
- *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
- */
-template <typename CounterT>
-void run_test_with_chosen_mem_type(sycl::queue &queue,
-                                   sycl_cts::util::logger &log,
-                                   const std::string &typeName) {
-  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, log, typeName);
-  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, log, typeName);
-}
 
 /** @brief Kernel for device side interaction with common memory
  */
@@ -127,28 +89,37 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
   *flag_ptr = 0;
   *counter_ptr = 0;
 
+  using sycl::memory_order;
+  using sycl::memory_scope;
+  using sycl::access::address_space;
+
   queue.submit([=](sycl::handler &cgh) {
     cgh.single_task<kernel<AllocMemT, CounterT>>([=]() {
-      sycl::atomic_ref<CounterT> atomic_ref_dev_side(counter_ptr);
-      sycl::atomic_ref<int> flag_atomic_ref_dev_side(flag_ptr);
-      while (!flag_atomic_ref_dev_side.load(sycl::memory_order::seq_cst))
+      sycl::atomic_ref<CounterT, memory_order::relaxed, memory_scope::device,
+                       address_space::global_space>
+          atomic_ref_dev_side(*counter_ptr);
+      sycl::atomic_ref<int, memory_order::relaxed, memory_scope::device,
+                       address_space::global_space>
+          flag_atomic_ref_dev_side(*flag_ptr);
+      while (!flag_atomic_ref_dev_side.load(memory_order::seq_cst))
         ;
       for (size_t i = 0; i < number_of_repetitions; i++) {
-        atomic_ref_dev_side.fetch_add(increment_value,
-                                      sycl::memory_order::seq_cst);
+        atomic_ref_dev_side.fetch_add(increment_value, memory_order::seq_cst);
       }
     });
   });
-  sycl::atomic_ref<int> flag_atomic_ref_host_side(flag_ptr);
-  flag_atomic_ref_host_side.fetch_add(increment_value,
-                                      sycl::memory_order::seq_cst);
+  sycl::atomic_ref<int, memory_order::relaxed, memory_scope::device,
+                   address_space::global_space>
+      flag_atomic_ref_host_side(*flag_ptr);
+  flag_atomic_ref_host_side.fetch_add(increment_value, memory_order::seq_cst);
   // With sycl::atomic_ref we must use scalar data types.
   // This is mentioned in SYCL2020 rev. 3 spec (section #4.15.3. Atomic
   // references)
-  sycl::atomic_ref<CounterT> atomic_ref_host_side(counter_ptr);
-  for (size_t i = 0; i <= number_of_repetitions; i++) {
-    atomic_ref_host_side.fetch_add(increment_value,
-                                   sycl::memory_order::seq_cst);
+  sycl::atomic_ref<CounterT, memory_order::relaxed, memory_scope::device,
+                   address_space::global_space>
+      atomic_ref_host_side(*counter_ptr);
+  for (size_t i = 0; i < number_of_repetitions; i++) {
+    atomic_ref_host_side.fetch_add(increment_value, memory_order::seq_cst);
     // As it's more likely that the execution of the cycle will start first on
     // the host, we provoke a longer execution of the cycle on the host to
     // increase the chances of simultaneous overwriting of the variable value
@@ -167,6 +138,44 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
              "\" underlying type");
   }
 }
+
+/** @brief Run test with two allocation types
+ *  @tparam CounterT Variable type from type coverage
+ *  @param queue sycl::queue class object
+ *  @param log sycl_cts::util::logger class object
+ */
+template <typename CounterT>
+void run_test_with_chosen_mem_type(sycl::queue &queue,
+                                   sycl_cts::util::logger &log,
+                                   const std::string &typeName) {
+  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, log, typeName);
+  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, log, typeName);
+}
+
+/** @brief Dummy functor that use in type coverage
+ *  @tparam CounterT Variable type from type coverage
+ *  @tparam UseAtomic64Flag std::integral_constant type
+ */
+template <typename CounterT>
+struct run_all_tests {
+  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
+                  const std::string &typeName) {
+    if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
+      if (!use_atomic_flag) {
+        return;
+      }
+      if (!queue.get_device().has(sycl::aspect::atomic64)) {
+        log.note("Device does not perform 64-bit atomic operations");
+        return;
+      }
+    } else {
+      if (use_atomic_flag) {
+        return;
+      }
+    }
+    run_test_with_chosen_mem_type<CounterT>(queue, log, typeName);
+  }
+};
 
 }  // namespace usm_atomic_access
 
