@@ -16,13 +16,15 @@ namespace specialization_constants_same_command_group_common {
 using namespace sycl_cts;
 using namespace get_spec_const;
 
-template <typename T, int num_case> class kernel;
+template <typename T, int num_case>
+class kernel;
 
-template <typename T, int num_case> class command_group_object {
-  T *value; // to not initialize for struct with no default constructor
+template <typename T, int num_case>
+class command_group_object {
+  T *value;  // to not initialize for struct with no default constructor
   sycl::buffer<T, 1> *result_buffer;
 
-public:
+ public:
   bool set_const;
   void set_value(T *value_) {
     value = value_;
@@ -40,16 +42,17 @@ public:
   }
 };
 
-template <typename T> class check_specialization_constants_same_command_group {
-public:
+template <typename T>
+class check_specialization_constants_same_command_group {
+ public:
   void operator()(util::logger &log, const std::string &type_name) {
-    T ref_A { get_init_value_helper<T>(5) };
-    T ref_B { get_init_value_helper<T>(10) };
+    T ref_A{user_def_types::get_init_value_helper<T>(5)};
+    T ref_B{user_def_types::get_init_value_helper<T>(10)};
     auto queue = util::get_cts_object::queue();
     sycl::range<1> range(1);
     {
-      T result1 { get_init_value_helper<T>(0) };
-      T result2 { get_init_value_helper<T>(0) };
+      T result1{user_def_types::get_init_value_helper<T>(0)};
+      T result2{user_def_types::get_init_value_helper<T>(0)};
       {
         command_group_object<T, 1> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
@@ -70,8 +73,8 @@ public:
     }
 
     {
-      T result1 { get_init_value_helper<T>(0) };
-      T result2 { get_init_value_helper<T>(0) };
+      T result1{user_def_types::get_init_value_helper<T>(0)};
+      T result2{user_def_types::get_init_value_helper<T>(0)};
       {
         command_group_object<T, 2> cmo;
         sycl::buffer<T> result_buffer1(&result1, range);
@@ -87,10 +90,12 @@ public:
       }
       if (!check_equal_values(ref_A, result1))
         FAIL(log, "case 2 failed for value A for " + type_name);
-      if (!check_equal_values(T(get_init_value_helper<T>(default_val)), result2))
+      if (!check_equal_values(
+              T(user_def_types::get_init_value_helper<T>(default_val)),
+              result2))
         FAIL(log, "case 2 failed for default value for " + type_name);
     }
   }
 };
 } /* namespace specialization_constants_same_command_group_common */
-#endif // __SYCLCTS_TESTS_SPEC_CONST_SAME_COMMAND_GROUP_COMMON_H
+#endif  // __SYCLCTS_TESTS_SPEC_CONST_SAME_COMMAND_GROUP_COMMON_H

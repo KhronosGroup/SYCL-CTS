@@ -14,7 +14,7 @@ using namespace get_spec_const;
 
 template <typename T, int case_num>
 inline constexpr sycl::specialization_id<T> spec_const_external(
-    get_init_value_helper<T>(default_val));
+    user_def_types::get_init_value_helper<T>(default_val));
 
 template <typename T, test_cases_external TestCase>
 bool check_kernel_handler_by_reference_external(sycl::kernel_handler &h,
@@ -66,9 +66,9 @@ CORE_TYPES(FUNC_DEFINE)
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DEFINE)
 #endif
 
-FUNC_DEFINE(testing_types::no_cnstr)
-FUNC_DEFINE(testing_types::def_cnstr)
-FUNC_DEFINE(testing_types::no_def_cnstr)
+FUNC_DEFINE(user_def_types::no_cnstr)
+FUNC_DEFINE(user_def_types::def_cnstr)
+FUNC_DEFINE(user_def_types::no_def_cnstr)
 
 #ifdef SYCL_CTS_TEST_DOUBLE
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
