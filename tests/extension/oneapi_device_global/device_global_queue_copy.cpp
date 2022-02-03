@@ -87,7 +87,7 @@ void run_test_copy_to_device_global(util::logger& log,
   auto event3 = queue.copy(src_data, dev_global3<T>,
                                 sizeof(T) / sizeof(element_type), 0, depEvents);
   event3.wait();
-  for (size_t i = numEvents - 1; i >= 0; --i) {
+  for (size_t i = numEvents - 1; i > 1; --i) {
     gens[i].copy_arrays(queue);
   }
 
@@ -187,7 +187,7 @@ void run_test_copy_from_device_global(util::logger& log,
   auto event3 = queue.copy(dev_global<T>, dst_data3,
                                 sizeof(T) / sizeof(element_type), 0, depEvents);
   event3.wait();
-  for (size_t i = numEvents - 1; i >= 0; --i) {
+  for (size_t i = numEvents - 1; i > 1; --i) {
     gens[i].copy_arrays(queue);
   }
 
