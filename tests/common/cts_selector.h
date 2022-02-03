@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2021 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -11,7 +12,7 @@
 
 #include <sycl/sycl.hpp>
 
-#include "../../util/test_manager.h"
+#include "../../util/device_manager.h"
 
 #include <regex>
 
@@ -35,7 +36,7 @@ class cts_selector : public sycl::device_selector {
     using namespace sycl_cts;
     using namespace sycl_cts::util;
 
-    auto& device_regex = get<test_manager>().get_device_regex();
+    auto& device_regex = get<device_manager>().get_device_regex();
 
     if (!device_regex.has_value()) {
       return sycl::default_selector{}(dev);

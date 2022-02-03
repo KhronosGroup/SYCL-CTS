@@ -2,6 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2020-2022 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -11,13 +12,17 @@
 
 #include <sycl/sycl.hpp>
 
+#include <catch2/catch_test_macros.hpp>
+
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
-#include "../common/cts_async_handler.h"
-#include "../common/cts_selector.h"
-#include "../common/get_cts_object.h"
+
+#include "cts_async_handler.h"
+#include "cts_selector.h"
+#include "get_cts_object.h"
 #include "macros.h"
+#include "string_makers.h"
 
 #include <cinttypes>
 #include <numeric>
@@ -52,10 +57,9 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
 template <typename expectedT, typename returnT>
 void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
                        std::string functionName) {
-  if (!std::is_same<returnT, expectedT>::value) {
-    FAIL(log, functionName + " has incorrect return type -> " +
-                  std::string(typeid(returnT).name()));
-  }
+  INFO(functionName + " has incorrect return type -> " +
+       typeid(returnT).name());
+  CHECK(std::is_same<returnT, expectedT>::value);
 }
 
 /**

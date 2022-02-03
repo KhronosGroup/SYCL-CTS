@@ -22,7 +22,6 @@ math_builtin_api
 multi_ptr
 nd_item
 nd_range
-platform
 queue
 range
 reduction
@@ -30,7 +29,6 @@ sampler
 scalars
 specialization_constants
 stream
-sub_group_mask
 usm
 vector_alias
 vector_api
