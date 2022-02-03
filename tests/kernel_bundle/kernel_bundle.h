@@ -56,7 +56,6 @@ sycl_cts::util::kernel_restrictions get_restrictions() {
  */
 enum class submit_kernel { yes, no };
 
-namespace sycl_cts::tests::kernel_bundle {
 
 /** @brief Call queue::submit for each user-defined kernel from provided named
  *         type pack and then verify that this kernel was invoked (if device
@@ -98,9 +97,9 @@ inline void compare_dev_compat_and_has_kb_result(
   if (has_k_b_result != dev_compat_status) {
     FAIL(log, "For kernel " + kernel_name +
                   " containing in bundle status is: " +
-                  get_cts_string::for_bool(has_k_b_result) +
+                  std::string(get_cts_string::for_bool(has_k_b_result)) +
                   ", but device compatible status is: " +
-                  get_cts_string::for_bool(dev_compat_status));
+                  std::string(get_cts_string::for_bool(dev_compat_status)));
   }
 }
 

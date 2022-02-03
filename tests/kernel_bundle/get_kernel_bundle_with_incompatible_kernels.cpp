@@ -88,7 +88,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     if (!device.has(sycl::aspect::online_linker) ||
         !device.has(sycl::aspect::online_compiler)) {
-      log.skip(
+      log.note(
           "Tests for input and object bundle states skipped due to device does "
           "not support online_linker or/and online_compiler aspect.");
     } else {

@@ -116,7 +116,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     std::vector<sycl::kernel_id> user_defined_kernel_ids{k_id};
 
     if (queue.get_device().has(sycl::aspect::online_compiler)) {
-      log.skip(
+      log.note(
           "Test for get_kernel_bundle<bundle_state::input> was skipped due to "
           "current device supports aspect::online_compiler");
     } else {
@@ -124,7 +124,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           log, queue, user_defined_kernel_ids);
     }
     if (queue.get_device().has(sycl::aspect::online_linker)) {
-      log.skip(
+      log.note(
           "Test for get_kernel_bundle<bundle_state::object> was skipped due to "
           "current device supports aspect::online_linker");
     } else {

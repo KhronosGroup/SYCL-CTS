@@ -45,7 +45,7 @@ void run_tests(util::logger &log, sycl::queue &queue) {
     restrictions.set_aspects(get_bundle_state_aspects<State>());
 
     if (!restrictions.is_compatible(device)) {
-      log.skip("Test for " + get_cts_string::for_bundle_state<State>() +
+      log.note("Test for " + get_cts_string::for_bundle_state<State>() +
                " kernel bundle state "
                "skipped. Device does not support " +
                restrictions.to_string());
