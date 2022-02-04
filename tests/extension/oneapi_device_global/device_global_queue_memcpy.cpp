@@ -75,8 +75,7 @@ void run_test_memcpy_to_device_global(util::logger& log,
   // Use fast copy arrays for future check. If overloads do not
   // wait for the passed events to complete, then an incompletely
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
-  // will fail with generator function check(). Reverse order is used to
-  // increase probability of data race.
+  // will fail with generator function check().
 
   auto event2 =
       queue.memcpy(dev_global2<T>, src_data, sizeof(T), 0, depEvents[0]);
@@ -85,6 +84,9 @@ void run_test_memcpy_to_device_global(util::logger& log,
 
   auto event3 = queue.memcpy(dev_global3<T>, src_data, sizeof(T), 0, depEvents);
   event3.wait();
+  // Reverse order is used to increase probability of data race.
+  // Array in gens[0] is already copied after event2,
+  // so it's not copied here to not to rewrite result for previous case.
   for (size_t i = numEvents - 1; i > 1; --i) {
     gens[i].copy_arrays(queue);
   }
@@ -185,8 +187,7 @@ void run_test_memcpy_from_device_global(util::logger& log,
   // Use fast copy arrays for future check. If overloads do not
   // wait for the passed events to complete, then an incompletely
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
-  // will fail with generator function check(). Reverse order is used to
-  // increase probability of data race.
+  // will fail with generator function check().
 
   auto event2 =
       queue.memcpy(dst_data2, dev_global<T>, sizeof(T), 0, depEvents[0]);
@@ -195,6 +196,9 @@ void run_test_memcpy_from_device_global(util::logger& log,
 
   auto event3 = queue.memcpy(dst_data3, dev_global<T>, sizeof(T), 0, depEvents);
   event3.wait();
+  // Reverse order is used to increase probability of data race.
+  // Array in gens[0] is already copied after event2,
+  // so it's not copied here to not to rewrite result for previous case.
   for (size_t i = numEvents - 1; i > 1; --i) {
     gens[i].copy_arrays(queue);
   }
