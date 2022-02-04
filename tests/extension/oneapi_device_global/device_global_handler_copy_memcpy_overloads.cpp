@@ -2,16 +2,16 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for the methods overloads of the sycl::handler class
+//  Provides tests for the member functions overloads of the sycl::handler class
 //  discribed below:
 //  1. copy overloads
 //  2. memcpy overloads
 //
 //  The tests submits task in the sycl::queue and invokes .copy() or .memcpy()
-//  methods of the sycl::handler class then checks correctness of the results.
-//  If testing type is array then test invokes .copy() or .memcpy() methods
-//  again but with `count` and `startIndex` parameters to copy the first
-//  element.
+//  member functions of the sycl::handler class then checks correctness of the
+//  results. If testing type is array then test invokes .copy() or .memcpy()
+//  member functions again but with `count` and `startIndex` parameters to copy
+//  the first element.
 //
 *******************************************************************************/
 
@@ -40,8 +40,8 @@ struct kernel2;
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .copy() method overload correctly copy data
- * from the pointer to the device_global instance
+/** @brief The function tests that .copy() member function overload correctly
+ * copy data from the pointer to the device_global instance
  *  @tparam T Type of underlying device_global value
  */
 template <typename T>
@@ -86,8 +86,8 @@ void run_test(util::logger& log, const std::string& type_name) {
     });
     queue.wait_and_throw();
 
-    // If T is array we can test .copy() method with count and startIndex
-    // parameters
+    // If T is array we can test .copy() member function with count and
+    // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
@@ -111,10 +111,11 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .copy() method overload",
-                  "Wrong value after copy to the device_global instance",
-                  type_name));
+    FAIL(
+        log,
+        get_case_description(
+            "device_global: sycl::handler .copy() member function overload",
+            "Wrong value after copy to the device_global instance", type_name));
   }
 }
 }  // namespace copy_to_dg
@@ -128,8 +129,8 @@ struct kernel2;
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .copy() method overload correctly copy data
- * to the pointer from the device_global instance
+/** @brief The function tests that .copy() member function overload correctly
+ * copy data to the pointer from the device_global instance
  *  @tparam T Type of underlying device_global value
  */
 template <typename T>
@@ -162,7 +163,7 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
 
       sycl_stub::handler cgh_stub;
-      // Copy elements from the device_global instace to the pointed memory
+      // Copy elements from the device_global instance to the pointed memory
       cgh_stub.template copy<T>(dev_global<T>, dest);
 
       cgh.single_task<kernel1<T>>([=] {
@@ -173,8 +174,8 @@ void run_test(util::logger& log, const std::string& type_name) {
     });
     queue.wait_and_throw();
 
-    // If T is array we can test .copy() method with count and startIndex
-    // parameters
+    // If T is array we can test .copy() member function with count and
+    // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
@@ -197,10 +198,11 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .copy() method overload",
-                  "Wrong value after copy from the device_global instance",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::handler .copy() member function overload",
+             "Wrong value after copy from the device_global instance",
+             type_name));
   }
 }
 }  // namespace copy_from_dg
@@ -214,8 +216,8 @@ struct kernel2;
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .memcpy() method overload correctly copy
- * memory from the pointer to the device_global instance
+/** @brief The function tests that .memcpy() member function overload correctly
+ * copy memory from the pointer to the device_global instance
  *  @tparam T Type of underlying device_global value
  */
 template <typename T>
@@ -261,8 +263,8 @@ void run_test(util::logger& log, const std::string& type_name) {
     });
     queue.wait_and_throw();
 
-    // If T is array we can test .copy() method with count and startIndex
-    // parameters
+    // If T is array we can test .copy() member function with count and
+    // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
@@ -286,10 +288,11 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .memcpy() method overload",
-                  "Wrong value after memcpy to the device_global instance",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::handler .memcpy() member function overload",
+             "Wrong value after memcpy to the device_global instance",
+             type_name));
   }
 }
 }  // namespace memcpy_to_dg
@@ -303,8 +306,8 @@ struct kernel2;
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .memcpy() method overload correctly copy
- * memory to the pointer from the device_global instance
+/** @brief The function tests that .memcpy() member function overload correctly
+ * copy memory to the pointer from the device_global instance
  */
 template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
@@ -348,8 +351,8 @@ void run_test(util::logger& log, const std::string& type_name) {
     });
     queue.wait_and_throw();
 
-    // If T is array we can test .copy() method with count and startIndex
-    // parameters
+    // If T is array we can test .copy() member function with count and
+    // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
@@ -372,10 +375,11 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .memcpy() method overload",
-                  "Wrong value after memcpy from the device_global instance",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::handler .memcpy() member function overload",
+             "Wrong value after memcpy from the device_global instance",
+             type_name));
   }
 }
 }  // namespace memcpy_from_dg
