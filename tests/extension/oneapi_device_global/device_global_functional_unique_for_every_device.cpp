@@ -57,11 +57,11 @@ std::vector<sycl::device> try_to_get_sub_devices(const sycl::device& dev) {
       }
       // Return an empty vector if device doesn't support partition
       case partition_property::no_partition:
-        return std::vector<sycl::device>();
+        return {};
     }
   }
   // Return an empty vector if fails to partition in at least 2 devices
-  return std::vector<sycl::device>();
+  return {};
 }
 
 namespace unique_for_every_device {
