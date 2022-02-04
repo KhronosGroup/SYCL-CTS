@@ -58,7 +58,7 @@ class TestCaseDescription
   constexpr TestCaseDescription(std::string_view functionOverload)
       : sycl_cts::tests::kernel_bundle::TestCaseDescriptionBase<BundleState>(
             "sycl::use_kernel_bundle", functionOverload) {
-    m_print_bundle_state = false;
+    this->m_print_bundle_state = false;
   };
 };
 
