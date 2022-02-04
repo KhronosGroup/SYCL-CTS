@@ -11,8 +11,7 @@
 
 #include "common.h"
 
-namespace sycl_cts {
-namespace get_cts_string {
+namespace sycl_cts::get_cts_string {
 
 /**
  * @brief Enum class for verbosity level of output in the for_bundle_state
@@ -166,7 +165,6 @@ constexpr std::string_view for_placeholder() {
   }
 }
 
-}  // namespace get_cts_string
-}  // namespace sycl_cts
+}  // namespace sycl_cts::get_cts_string
 
 #endif  // __SYCLCTS_TESTS_COMMON_GET_CTS_STRING_H
