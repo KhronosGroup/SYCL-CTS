@@ -204,7 +204,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto q = util::get_cts_object::queue();
     if (!q.get_device().has(sycl::aspect::online_linker) ||
         !q.get_device().has(sycl::aspect::online_compiler)) {
-      log.skip(
+      log.note(
           "Device does not support online linking or online compiling of "
           "device code");
       return;
