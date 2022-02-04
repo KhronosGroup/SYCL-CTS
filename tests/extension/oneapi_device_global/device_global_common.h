@@ -92,12 +92,12 @@ struct value_helper {
 
   /**
    * @brief The function changes value from the first parameter to
-   * value from the second parameter of the same type
+   * value from the second parameter of the same type.
    * Disabled if T is int to avoid function ambiguous
    */
   template <typename Ty = T>
   static typename std::enable_if_t<!std::is_same_v<Ty, int>> change_val(
-      T& value, const T new_val) {
+      T& value, const T& new_val) {
     value = new_val;
   }
 
