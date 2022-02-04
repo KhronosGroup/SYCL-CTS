@@ -1,6 +1,22 @@
 file(GLOB test_cases_list *.cpp)
 
 set(independent_cases_list
+  has_kernel_bundle_core_all_states_ctx_only.cpp
+  has_kernel_bundle_core_all_states_dev.cpp
+  has_kernel_bundle_core_atomic64_ctx_only.cpp
+  has_kernel_bundle_core_atomic64_dev.cpp
+  has_kernel_bundle_core_fp16_ctx_only.cpp
+  has_kernel_bundle_core_fp16_dev.cpp
+  has_kernel_bundle_core_fp64_ctx_only.cpp
+  has_kernel_bundle_core_fp64_dev.cpp
+  has_kernel_bundle_core_like_support_reqd_sub_group_size_ctx_only.cpp
+  has_kernel_bundle_core_like_support_reqd_sub_group_size_dev.cpp
+  has_kernel_bundle_core_like_unsupport_reqd_sub_group_size_ctx_only.cpp
+  has_kernel_bundle_core_like_unsupport_reqd_sub_group_size_dev.cpp
+  has_kernel_bundle_core_reqd_like_support_work_group_size_ctx_only.cpp
+  has_kernel_bundle_core_reqd_like_support_work_group_size_dev.cpp
+  has_kernel_bundle_core_reqd_like_unsupport_work_group_size_ctx_only.cpp
+  has_kernel_bundle_core_reqd_like_unsupport_work_group_size_dev.cpp
   has_kernel_bundle_multiple_kernels_ctx_only.cpp
   has_kernel_bundle_multiple_kernels_dev.cpp
   has_kernel_bundle_zero_kernels_ctx_only_and_ctx_and_dev.cpp

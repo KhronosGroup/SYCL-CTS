@@ -10,6 +10,9 @@
 #define __SYCLCTS_UTIL_EXTENSIONS_H
 
 #include <sycl/sycl.hpp>
+#include "logger.h"
+
+#include <string>
 
 namespace sycl_cts {
 namespace util {
