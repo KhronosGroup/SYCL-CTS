@@ -73,10 +73,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-
-      sycl_stub::handler cgh_stub;
       // Copy elements from the pointed memory to the device_global instance
-      cgh_stub.template copy<T>(src, dev_global<T>);
+      cgh.copy<T>(src, dev_global<T>);
 
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
@@ -94,11 +92,10 @@ void run_test(util::logger& log, const std::string& type_name) {
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        sycl_stub::handler cgh_stub;
         // Changing value of the first element
         src[0] = changed_value;
         // Copy first element from the array
-        cgh_stub.template copy<T>(src, dev_global<T>, element_size, 0);
+        cgh.copy<T>(src, dev_global<T>, element_size, 0);
 
         cgh.single_task<kernel2<T>>([=] {
           // dev_global have to be equal to *src after copy
@@ -161,10 +158,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-
-      sycl_stub::handler cgh_stub;
       // Copy elements from the device_global instance to the pointed memory
-      cgh_stub.template copy<T>(dev_global<T>, dest);
+      cgh.copy<T>(dev_global<T>, dest);
 
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
@@ -182,11 +177,10 @@ void run_test(util::logger& log, const std::string& type_name) {
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        sycl_stub::handler cgh_stub;
         // Changing value of the first element
         dev_global<T>[0] = changed_value;
         // Copy first element from the array
-        cgh_stub.template copy<T>(dev_global<T>, dest, element_size, 0);
+        cgh.copy<T>(dev_global<T>, dest, element_size, 0);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &=
@@ -250,10 +244,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-
-      sycl_stub::handler cgh_stub;
       // Copy memory from the pointed memory to the device_global instance
-      cgh_stub.template memcpy<T>(dev_global<T>, src);
+      cgh.memcpy<T>(dev_global<T>, src);
 
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
@@ -271,12 +263,11 @@ void run_test(util::logger& log, const std::string& type_name) {
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        sycl_stub::handler cgh_stub;
         // Changing value of the first element
         element_ptr src_ptr = static_cast<element_ptr>(src);
         src_ptr[0] = changed_value;
         // Copy first element from the array
-        cgh_stub.template memcpy<T>(dev_global<T>, src, element_size, 0);
+        cgh.memcpy<T>(dev_global<T>, src, element_size, 0);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &= value_helper<T>::compare_val(
@@ -338,10 +329,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-
-      sycl_stub::handler cgh_stub;
       // Copy memory to the pointed memory from the device_global instance
-      cgh_stub.template memcpy<T>(dest, dev_global<T>);
+      cgh.memcpy<T>(dest, dev_global<T>);
 
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
@@ -359,11 +348,10 @@ void run_test(util::logger& log, const std::string& type_name) {
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        sycl_stub::handler cgh_stub;
         // Changing value of the first element
         dev_global<T>[0] = changed_value;
         // Copy first element from the array
-        cgh_stub.template memcpy<T>(dest, dev_global<T>, element_size, 0);
+        cgh.memcpy<T>(dest, dev_global<T>, element_size, 0);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] = value_helper<T>::compare_val(
