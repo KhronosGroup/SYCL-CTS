@@ -74,14 +74,14 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   if (!is_exception_thrown) {
     FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .copy() member function exception",
+                  "device_global: sycl::handler .copy() member function exception",
                   "Exception was not thrown after attempt to "
                   "write beyond the end of the destination variable",
                   type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
-             "deivice_global: sycl::handler .copy() member function exception",
+             "device_global: sycl::handler .copy() member function exception",
              "Wrong errc inside the exception. Expected sycl::errc::invalid",
              type_name));
   }
@@ -130,14 +130,14 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   if (!is_exception_thrown) {
     FAIL(log, get_case_description(
-                  "deivice_global: sycl::handler .memcpy() member function exception",
+                  "device_global: sycl::handler .memcpy() member function exception",
                   "Exception was not thrown after attempt to "
                   "write beyond the end of the destination variable",
                   type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
-             "deivice_global: sycl::handler .memcpy() member function exception",
+             "device_global: sycl::handler .memcpy() member function exception",
              "Wrong errc inside the exception. Expected sycl::errc::invalid",
              type_name));
   }
@@ -182,14 +182,14 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   if (!is_exception_thrown) {
     FAIL(log, get_case_description(
-                  "deivice_global: sycl::queue .copy() member function exception",
+                  "device_global: sycl::queue .copy() member function exception",
                   "Exception was not thrown after attempt to "
                   "write beyond the end of the destination variable",
                   type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
-             "deivice_global: sycl::queue .copy() member function exception",
+             "device_global: sycl::queue .copy() member function exception",
              "Wrong errc inside the exception. Expected sycl::errc::invalid",
              type_name));
   }
@@ -235,14 +235,14 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   if (!is_exception_thrown) {
     FAIL(log, get_case_description(
-                  "deivice_global: sycl::queue .memcpy() member function exception",
+                  "device_global: sycl::queue .memcpy() member function exception",
                   "Exception was not thrown after attempt to "
                   "write beyond the end of the destination variable",
                   type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
-             "deivice_global: sycl::queue .memcpy() member function exception",
+             "device_global: sycl::queue .memcpy() member function exception",
              "Wrong errc inside the exception. Expected sycl::errc::invalid",
              type_name));
   }
