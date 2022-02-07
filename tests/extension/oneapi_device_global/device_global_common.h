@@ -120,7 +120,7 @@ struct value_helper<T[N]> {
   /**
    * @brief The function changes all values of the array from the first
    * parameter to value from the second parameter
-   * @param value The reference to the array that needs to be change
+   * @param value The reference to the array that needs to be changed
    * @param new_val The new value that will be set
    */
   static void change_val(arrayT& value, const int new_val = 1) {
@@ -129,8 +129,22 @@ struct value_helper<T[N]> {
     }
   }
   /**
-   * @brief The function changes all values of the array from the first parameter to
-   * values of the array from the second parameter
+   * @brief The function changes all values of the array from the first
+   * parameter to value of type T from the second parameter
+   * Disabled if T is int to avoid function ambiguous
+   * @param value The reference to the array that needs to be changed
+   * @param new_val The new value that will be set
+   */
+  template <typename Ty = T>
+  static typename std::enable_if_t<!std::is_same_v<Ty, int>> change_val(
+      arrayT& value, const T new_val) {
+    for (size_t i = 0; i < N; i++) {
+      value[i] = new_val;
+    }
+  }
+  /**
+   * @brief The function changes all values of the array from the first
+   * parameter to values of the array from the second parameter
    * @param value The reference to the array that needs to be changed
    * @param new_vals The array with values that will be set
    */
