@@ -49,8 +49,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<T[N]> src(new T[N]);
   std::shared_ptr<T[N]> dest(new T[N]);
 
-  bool is_exception_thrown{true};
-  bool is_exception_correct{true};
+  bool is_exception_thrown{false};
+  bool is_exception_correct{false};
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
@@ -58,15 +58,17 @@ void run_test(util::logger& log, const std::string& type_name) {
     // Have to throw an exception
     try {
       cgh.template copy<T>(src.get(), dev_global<T>, N, N / 2);
-      is_exception_thrown &= false;
+      is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_correct &= is_errc_invalid(e);
+      is_exception_thrown = true;
+      is_exception_correct = is_errc_invalid(e);
     }
 
     try {
       cgh.template copy<T>(dev_global<T>, dest.get(), N, N / 2);
-      is_exception_thrown &= false;
+      is_exception_thrown = false;
     } catch (sycl::exception const& e) {
+      is_exception_thrown &= true;
       is_exception_correct &= is_errc_invalid(e);
     }
   });
@@ -103,8 +105,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<void> src(new T[N]);
   std::shared_ptr<void> dest(new T[N]);
 
-  bool is_exception_thrown{true};
-  bool is_exception_correct{true};
+  bool is_exception_thrown{false};
+  bool is_exception_correct{false};
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
@@ -113,16 +115,18 @@ void run_test(util::logger& log, const std::string& type_name) {
     try {
       cgh.template memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
                              (sizeof(T) * N) / 2);
-      is_exception_thrown &= false;
+      is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_correct &= is_errc_invalid(e);
+      is_exception_thrown = true;
+      is_exception_correct = is_errc_invalid(e);
     }
 
     try {
       cgh.template memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
                              (sizeof(T) * N) / 2);
-      is_exception_thrown &= false;
+      is_exception_thrown = false;
     } catch (sycl::exception const& e) {
+      is_exception_thrown &= true;
       is_exception_correct &= is_errc_invalid(e);
     }
   });
@@ -159,24 +163,26 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<T[N]> src(new T[N]);
   std::shared_ptr<T[N]> dest(new T[N]);
 
-  bool is_exception_thrown{true};
-  bool is_exception_correct{true};
+  bool is_exception_thrown{false};
+  bool is_exception_correct{false};
   auto queue = util::get_cts_object::queue();
   // Try to write data beyond the end of the destination variable
   // Have to throw an exception
   try {
     queue.template copy<T>(src.get(), dev_global<T>, N, N / 2);
     queue.wait_and_throw();
-    is_exception_thrown &= false;
+    is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_correct &= is_errc_invalid(e);
+    is_exception_thrown = true;
+    is_exception_correct = is_errc_invalid(e);
   }
 
   try {
     queue.template copy<T>(dev_global<T>, dest.get(), N, N / 2);
     queue.wait_and_throw();
-    is_exception_thrown &= false;
+    is_exception_thrown = false;
   } catch (sycl::exception const& e) {
+    is_exception_thrown &= true;
     is_exception_correct &= is_errc_invalid(e);
   }
 
@@ -211,25 +217,27 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<void> src(new T[N]);
   std::shared_ptr<void> dest(new T[N]);
 
-  bool is_exception_thrown{true};
-  bool is_exception_correct{true};
+  bool is_exception_thrown{false};
+  bool is_exception_correct{false};
   auto queue = util::get_cts_object::queue();
 
   try {
     queue.template memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
                              (sizeof(T) * N) / 2);
     queue.wait_and_throw();
-    is_exception_thrown &= false;
+    is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_correct &= is_errc_invalid(e);
+    is_exception_thrown = true;
+    is_exception_correct = is_errc_invalid(e);
   }
 
   try {
     queue.template memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
                              (sizeof(T) * N) / 2);
     queue.wait_and_throw();
-    is_exception_thrown &= false;
+    is_exception_thrown = false;
   } catch (sycl::exception const& e) {
+    is_exception_thrown &= false;
     is_exception_correct &= is_errc_invalid(e);
   }
 
