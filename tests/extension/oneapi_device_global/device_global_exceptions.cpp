@@ -39,9 +39,9 @@ namespace handler_copy_exceptions {
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .copy() member function overload throws an exception
- * with error code equal to errc::invalid if attempt to write beyond the end of
- * the destination variable
+/** @brief The function tests that .copy() member function overload throws an
+ * exception with error code equal to errc::invalid if attempt to write beyond
+ * the end of the destination variable
  *  @tparam T Type of underlying device_global value
  */
 template <typename T, size_t N>
@@ -75,11 +75,12 @@ void run_test(util::logger& log, const std::string& type_name) {
   queue.wait_and_throw();
 
   if (!is_exception_thrown) {
-    FAIL(log, get_case_description(
-                  "device_global: sycl::handler .copy() member function exception",
-                  "Exception was not thrown after attempt to "
-                  "write beyond the end of the destination variable",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::handler .copy() member function exception",
+             "Exception was not thrown after attempt to "
+             "write beyond the end of the destination variable",
+             type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
@@ -95,9 +96,9 @@ namespace handler_memcpy_exceptions {
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .memcpy() member function overload throws an exception
- * with error code equal to errc::invalid if attempt to write beyond the end of
- * the destination variable
+/** @brief The function tests that .memcpy() member function overload throws an
+ * exception with error code equal to errc::invalid if attempt to write beyond
+ * the end of the destination variable
  *  @tparam T Type of underlying device_global value
  */
 template <typename T, size_t N>
@@ -114,7 +115,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     // Have to throw an exception
     try {
       cgh.memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
-                             (sizeof(T) * N) / 2);
+                    (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
       is_exception_thrown = true;
@@ -123,7 +124,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
     try {
       cgh.memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
-                             (sizeof(T) * N) / 2);
+                    (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
       is_exception_thrown &= true;
@@ -133,11 +134,12 @@ void run_test(util::logger& log, const std::string& type_name) {
   queue.wait_and_throw();
 
   if (!is_exception_thrown) {
-    FAIL(log, get_case_description(
-                  "device_global: sycl::handler .memcpy() member function exception",
-                  "Exception was not thrown after attempt to "
-                  "write beyond the end of the destination variable",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::handler .memcpy() member function exception",
+             "Exception was not thrown after attempt to "
+             "write beyond the end of the destination variable",
+             type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
@@ -153,9 +155,9 @@ namespace queue_copy_exceptions {
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .copy() member function overload throws an exception
- * with error code equal to errc::invalid if attempt to write beyond the end of
- * the destination variable
+/** @brief The function tests that .copy() member function overload throws an
+ * exception with error code equal to errc::invalid if attempt to write beyond
+ * the end of the destination variable
  *  @tparam T Type of underlying device_global value
  */
 template <typename T, size_t N>
@@ -187,11 +189,12 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_exception_thrown) {
-    FAIL(log, get_case_description(
-                  "device_global: sycl::queue .copy() member function exception",
-                  "Exception was not thrown after attempt to "
-                  "write beyond the end of the destination variable",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::queue .copy() member function exception",
+             "Exception was not thrown after attempt to "
+             "write beyond the end of the destination variable",
+             type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
@@ -207,9 +210,9 @@ namespace queue_memcpy_exceptions {
 template <typename T>
 oneapi::device_global<T> dev_global;
 
-/** @brief The function tests that .memcpy() member function overload throws an exception
- * with error code equal to errc::invalid if attempt to write beyond the end of
- * the destination variable
+/** @brief The function tests that .memcpy() member function overload throws an
+ * exception with error code equal to errc::invalid if attempt to write beyond
+ * the end of the destination variable
  *  @tparam T Type of underlying device_global value
  */
 template <typename T, size_t N>
@@ -223,7 +226,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   try {
     queue.memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
-                             (sizeof(T) * N) / 2);
+                    (sizeof(T) * N) / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
@@ -233,7 +236,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   try {
     queue.memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
-                             (sizeof(T) * N) / 2);
+                    (sizeof(T) * N) / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
@@ -242,11 +245,12 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_exception_thrown) {
-    FAIL(log, get_case_description(
-                  "device_global: sycl::queue .memcpy() member function exception",
-                  "Exception was not thrown after attempt to "
-                  "write beyond the end of the destination variable",
-                  type_name));
+    FAIL(log,
+         get_case_description(
+             "device_global: sycl::queue .memcpy() member function exception",
+             "Exception was not thrown after attempt to "
+             "write beyond the end of the destination variable",
+             type_name));
   } else if (!is_exception_correct) {
     FAIL(log,
          get_case_description(
