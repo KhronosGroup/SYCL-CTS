@@ -57,7 +57,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     // Try to write data beyond the end of the destination variable
     // Have to throw an exception
     try {
-      cgh.template copy<T>(src.get(), dev_global<T>, N, N / 2);
+      cgh.copy<T>(src.get(), dev_global<T>, N, N / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
       is_exception_thrown = true;
@@ -65,7 +65,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     }
 
     try {
-      cgh.template copy<T>(dev_global<T>, dest.get(), N, N / 2);
+      cgh.copy<T>(dev_global<T>, dest.get(), N, N / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
       is_exception_thrown &= true;
@@ -113,7 +113,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     // Try to write data beyond the end of the destination variable
     // Have to throw an exception
     try {
-      cgh.template memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
+      cgh.memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
                              (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
@@ -122,7 +122,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     }
 
     try {
-      cgh.template memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
+      cgh.memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
                              (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
@@ -169,7 +169,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   // Try to write data beyond the end of the destination variable
   // Have to throw an exception
   try {
-    queue.template copy<T>(src.get(), dev_global<T>, N, N / 2);
+    queue.copy<T>(src.get(), dev_global<T>, N, N / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
@@ -178,7 +178,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   try {
-    queue.template copy<T>(dev_global<T>, dest.get(), N, N / 2);
+    queue.copy<T>(dev_global<T>, dest.get(), N, N / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
@@ -222,7 +222,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   auto queue = util::get_cts_object::queue();
 
   try {
-    queue.template memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
+    queue.memcpy<T>(src.get(), dev_global<T>, sizeof(T) * N,
                              (sizeof(T) * N) / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
@@ -232,7 +232,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   try {
-    queue.template memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
+    queue.memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
                              (sizeof(T) * N) / 2);
     queue.wait_and_throw();
     is_exception_thrown = false;
