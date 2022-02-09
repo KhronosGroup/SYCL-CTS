@@ -62,7 +62,10 @@ void run_test(util::logger& log, const std::string& type_name) {
     } catch (sycl::exception const& e) {
       is_exception_correct = is_errc_invalid(e);
     }
+  });
+  queue.wait_and_throw();
 
+  queue.submit([&](sycl::handler& cgh) {
     try {
       cgh.copy<T>(dev_global<T>, dest.get(), N, N / 2);
       is_exception_thrown = false;
@@ -118,7 +121,10 @@ void run_test(util::logger& log, const std::string& type_name) {
     } catch (sycl::exception const& e) {
       is_exception_correct = is_errc_invalid(e);
     }
+  });
+  queue.wait_and_throw();
 
+  queue.submit([&](sycl::handler& cgh) {
     try {
       cgh.memcpy<T>(dev_global<T>, dest.get(), sizeof(T) * N,
                     (sizeof(T) * N) / 2);
