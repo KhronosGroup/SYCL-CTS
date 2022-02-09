@@ -70,12 +70,15 @@ void run_test(util::logger& log, const std::string& type_name) {
                                               sycl::range<1>(1));
     auto queue = util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
+      // Copy elements from the pointed memory to the device_global instance
+      cgh.copy<T>(src, dev_global<T>);
+    });
+    queue.wait_and_throw();
+
+    queue.submit([&](sycl::handler& cgh) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-      // Copy elements from the pointed memory to the device_global instance
-      cgh.copy<T>(src, dev_global<T>);
-
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
         is_copy_correct_acc[0] =
@@ -88,15 +91,17 @@ void run_test(util::logger& log, const std::string& type_name) {
     // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
-        auto is_copy_correct_acc =
-            is_copy_correct_buf.template get_access<sycl::access_mode::write>(
-                cgh);
-
         // Changing value of the first element
         src[0] = changed_value;
         // Copy first element from the array
         cgh.copy<T>(src, dev_global<T>, element_size, 0);
+      });
+      queue.wait_and_throw();
 
+      queue.submit([&](sycl::handler& cgh) {
+        auto is_copy_correct_acc =
+            is_copy_correct_buf.template get_access<sycl::access_mode::write>(
+                cgh);
         cgh.single_task<kernel2<T>>([=] {
           // dev_global have to be equal to *src after copy
           is_copy_correct_acc[0] &=
@@ -122,6 +127,8 @@ template <typename T>
 struct kernel1;
 template <typename T>
 struct kernel2;
+template <typename T>
+struct kernel3;
 // Creating instance with default constructor
 template <typename T>
 oneapi::device_global<T> dev_global;
@@ -155,12 +162,15 @@ void run_test(util::logger& log, const std::string& type_name) {
                                               sycl::range<1>(1));
     auto queue = util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
+      // Copy elements from the device_global instance to the pointed memory
+      cgh.copy<T>(dev_global<T>, dest);
+    });
+    queue.wait_and_throw();
+
+    queue.submit([&](sycl::handler& cgh) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-      // Copy elements from the device_global instance to the pointed memory
-      cgh.copy<T>(dev_global<T>, dest);
-
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
         is_copy_correct_acc[0] =
@@ -173,15 +183,22 @@ void run_test(util::logger& log, const std::string& type_name) {
     // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
+        // Changing value of the first element
+        cgh.single_task<kernel2<T>>([=] { dev_global<T>[0] = changed_value; });
+      });
+      queue.wait_and_throw();
+
+      queue.submit([&](sycl::handler& cgh) {
+        // Copy first element from the array
+        cgh.copy<T>(dev_global<T>, dest, element_size, 0);
+      });
+      queue.wait_and_throw();
+
+      queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
-
-        // Changing value of the first element
-        dev_global<T>[0] = changed_value;
-        // Copy first element from the array
-        cgh.copy<T>(dev_global<T>, dest, element_size, 0);
-        cgh.single_task<kernel2<T>>([=] {
+        cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &=
               value_helper<T>::compare_val(dev_global<T>, *dest);
@@ -241,12 +258,15 @@ void run_test(util::logger& log, const std::string& type_name) {
                                               sycl::range<1>(1));
     auto queue = util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
+      // Copy memory from the pointed memory to the device_global instance
+      cgh.memcpy<T>(dev_global<T>, src);
+    });
+    queue.wait_and_throw();
+
+    queue.submit([&](sycl::handler& cgh) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-      // Copy memory from the pointed memory to the device_global instance
-      cgh.memcpy<T>(dev_global<T>, src);
-
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
         is_copy_correct_acc[0] = value_helper<T>::compare_val(
@@ -259,15 +279,18 @@ void run_test(util::logger& log, const std::string& type_name) {
     // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
-        auto is_copy_correct_acc =
-            is_copy_correct_buf.template get_access<sycl::access_mode::write>(
-                cgh);
-
         // Changing value of the first element
         element_ptr src_ptr = static_cast<element_ptr>(src);
         src_ptr[0] = changed_value;
         // Copy first element from the array
         cgh.memcpy<T>(dev_global<T>, src, element_size, 0);
+      });
+      queue.wait_and_throw();
+
+      queue.submit([&](sycl::handler& cgh) {
+        auto is_copy_correct_acc =
+            is_copy_correct_buf.template get_access<sycl::access_mode::write>(
+                cgh);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &= value_helper<T>::compare_val(
@@ -293,6 +316,8 @@ template <typename T>
 struct kernel1;
 template <typename T>
 struct kernel2;
+template <typename T>
+struct kernel3;
 // Creating instance with default constructor
 template <typename T>
 oneapi::device_global<T> dev_global;
@@ -326,12 +351,15 @@ void run_test(util::logger& log, const std::string& type_name) {
                                               sycl::range<1>(1));
     auto queue = util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
+      // Copy memory to the pointed memory from the device_global instance
+      cgh.memcpy<T>(dest, dev_global<T>);
+    });
+    queue.wait_and_throw();
+
+    queue.submit([&](sycl::handler& cgh) {
       auto is_copy_correct_acc =
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
-      // Copy memory to the pointed memory from the device_global instance
-      cgh.memcpy<T>(dest, dev_global<T>);
-
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
         is_copy_correct_acc[0] = value_helper<T>::compare_val(
@@ -344,15 +372,22 @@ void run_test(util::logger& log, const std::string& type_name) {
     // startIndex parameters
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
+        // Changing value of the first element
+        cgh.singe_task<kernel2<T>>([=] { dev_global<T>[0] = changed_value; });
+      });
+      queue.wait_and_throw();
+
+      queue.submit([&](sycl::handler& cgh) {
+        // Copy first element from the array
+        cgh.memcpy<T>(dest, dev_global<T>, element_size, 0);
+      });
+      queue.wait_and_throw();
+
+      queue.submit([&](sycl::handler& cgh) {
         auto is_copy_correct_acc =
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
-
-        // Changing value of the first element
-        dev_global<T>[0] = changed_value;
-        // Copy first element from the array
-        cgh.memcpy<T>(dest, dev_global<T>, element_size, 0);
-        cgh.single_task<kernel2<T>>([=] {
+        cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] = value_helper<T>::compare_val(
               dev_global<T>, *(static_cast<element_type*>(dest)));
@@ -360,16 +395,17 @@ void run_test(util::logger& log, const std::string& type_name) {
       });
       queue.wait_and_throw();
     }
-  }
+    }
 
-  if (!is_copy_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .memcpy() member function overload",
-             "Wrong value after memcpy from the device_global instance",
-             type_name));
+    if (!is_copy_correct) {
+      FAIL(
+          log,
+          get_case_description(
+              "device_global: sycl::handler .memcpy() member function overload",
+              "Wrong value after memcpy from the device_global instance",
+              type_name));
+    }
   }
-}
 }  // namespace memcpy_from_dg
 
 template <typename T>
