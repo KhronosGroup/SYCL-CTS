@@ -49,8 +49,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<T[N]> src(new T[N]);
   std::shared_ptr<T[N]> dest(new T[N]);
 
-  bool is_exception_thrown{false};
-  bool is_exception_correct{false};
+  bool is_exception_thrown{true};
+  bool is_exception_correct{true};
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
@@ -60,7 +60,6 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.copy<T>(src.get(), dev_global<T>, N, N / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_thrown = true;
       is_exception_correct = is_errc_invalid(e);
     }
 
@@ -68,7 +67,6 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.copy<T>(dev_global<T>, dest.get(), N, N / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_thrown &= true;
       is_exception_correct &= is_errc_invalid(e);
     }
   });
@@ -106,8 +104,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<void> src(new T[N]);
   std::shared_ptr<void> dest(new T[N]);
 
-  bool is_exception_thrown{false};
-  bool is_exception_correct{false};
+  bool is_exception_thrown{true};
+  bool is_exception_correct{true};
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
@@ -118,7 +116,6 @@ void run_test(util::logger& log, const std::string& type_name) {
                     (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_thrown = true;
       is_exception_correct = is_errc_invalid(e);
     }
 
@@ -127,7 +124,6 @@ void run_test(util::logger& log, const std::string& type_name) {
                     (sizeof(T) * N) / 2);
       is_exception_thrown = false;
     } catch (sycl::exception const& e) {
-      is_exception_thrown &= true;
       is_exception_correct &= is_errc_invalid(e);
     }
   });
@@ -165,8 +161,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<T[N]> src(new T[N]);
   std::shared_ptr<T[N]> dest(new T[N]);
 
-  bool is_exception_thrown{false};
-  bool is_exception_correct{false};
+  bool is_exception_thrown{true};
+  bool is_exception_correct{true};
   auto queue = util::get_cts_object::queue();
   // Try to write data beyond the end of the destination variable
   // Have to throw an exception
@@ -175,7 +171,6 @@ void run_test(util::logger& log, const std::string& type_name) {
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_thrown = true;
     is_exception_correct = is_errc_invalid(e);
   }
 
@@ -184,7 +179,6 @@ void run_test(util::logger& log, const std::string& type_name) {
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_thrown &= true;
     is_exception_correct &= is_errc_invalid(e);
   }
 
@@ -220,8 +214,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   std::shared_ptr<void> src(new T[N]);
   std::shared_ptr<void> dest(new T[N]);
 
-  bool is_exception_thrown{false};
-  bool is_exception_correct{false};
+  bool is_exception_thrown{true};
+  bool is_exception_correct{true};
   auto queue = util::get_cts_object::queue();
 
   try {
@@ -230,7 +224,6 @@ void run_test(util::logger& log, const std::string& type_name) {
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_thrown = true;
     is_exception_correct = is_errc_invalid(e);
   }
 
@@ -240,7 +233,6 @@ void run_test(util::logger& log, const std::string& type_name) {
     queue.wait_and_throw();
     is_exception_thrown = false;
   } catch (sycl::exception const& e) {
-    is_exception_thrown &= false;
     is_exception_correct &= is_errc_invalid(e);
   }
 
