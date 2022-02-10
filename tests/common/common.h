@@ -135,16 +135,13 @@ void check_enum_underlying_type(sycl_cts::util::logger& log) {
  */
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
 void check_get_info_param(const objectT& object) {
-  /** check param_traits return type
-   */
+  // Check param_traits return type
   using paramTraitsType =
       typename sycl::info::param_traits<enumT, kValue>::return_type;
-  if (typeid(paramTraitsType) != typeid(returnT)) {
-    FAIL("param_trait specialization has incorrect return type");
-  }
+  INFO("param_traits specialization has incorrect return type");
+  CHECK(std::is_same_v<paramTraitsType, returnT>);
 
-  /** check get_info return type
-   */
+  // Check get_info return type
   auto returnValue = object.template get_info<kValue>();
   check_return_type<returnT>(returnValue, "object::get_info()");
 }
@@ -155,34 +152,6 @@ void check_get_info_param(const objectT& object) {
 template <typename enumT, typename returnT, enumT kValue, typename objectT>
 void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
   check_get_info_param<enumT, returnT, kValue>(object);
-}
-
-/**
- * @brief Helper function to check a profiling info parameter.
- */
-template <typename enumT, typename returnT, enumT kValue, typename objectT>
-void check_get_profiling_info_param(const objectT& object) {
-  /** check param_traits return type
-   */
-  using paramTraitsType =
-      typename sycl::info::param_traits<enumT, kValue>::return_type;
-  if (!std::is_same<paramTraitsType, returnT>::value) {
-    FAIL("param_trait specialization has incorrect return type");
-  }
-
-  /** check get_profiling_info return type
-   */
-  auto returnValue = object.template get_profiling_info<kValue>();
-  check_return_type<returnT>(returnValue, "object::get_profiling_info()");
-}
-
-/**
- * @deprecated Use overload without logger.
- */
-template <typename enumT, typename returnT, enumT kValue, typename objectT>
-void check_get_profiling_info_param(sycl_cts::util::logger& log,
-                                    const objectT& object) {
-  check_get_profiling_info_param<enumT, returnT, kValue>(object);
 }
 
 /**
@@ -327,15 +296,6 @@ bool check_equal_values(const sycl::marray<T, numElements>& lhs,
   auto perElement = lhs == rhs;
   return std::all_of(perElement.begin(), perElement.end(), [](bool el){
     return el;
-  });
-}
-
-/** helper function for retrieving an event from a submitted kernel
- */
-template <typename kernelT>
-sycl::event get_queue_event(sycl::queue& queue) {
-  return queue.submit([&](sycl::handler& handler) {
-    handler.single_task<kernelT>([=]() {});
   });
 }
 #endif
