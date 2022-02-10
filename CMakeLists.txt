@@ -115,6 +115,19 @@ endif()
 # ------------------
 
 # ------------------
+# CUDA interoperability
+option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
+	"Enable CUDA interoperability tests." ON)
+if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
+    find_package(CUDA REQUIRED)
+
+    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_CUDA_INTEROP)
+    add_host_and_device_compiler_definitions(-DSYCL_EXT_ONEAPI_BACKEND_CUDA_EXPERIMENTAL)
+    add_host_and_device_compiler_definitions(-DSYCL_EXT_ONEAPI_BACKEND_CUDA)
+endif()
+# ------------------
+
+# ------------------
 # Device used for running with CTest (e.g. during conformance report generation)
 set(SYCL_CTS_CTEST_DEVICE "" CACHE STRING "Device used when running with CTest")
 # ------------------
