@@ -286,7 +286,7 @@ static sycl::event make_throwing_host_event(
 
 TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
   test_exception_handler teh;
-  auto e = make_throwing_host_event(teh.get_queue(), "foo");
+  auto e = make_throwing_host_event(teh.get_queue(), "some-error");
 
   SECTION("event::wait") { e.wait(); }
   SECTION("event::wait(std::vector<event>)") {
@@ -298,7 +298,7 @@ TEST_CASE("event::wait does not report asynchronous errors", "[event]") {
 
 TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
   test_exception_handler teh;
-  auto e = make_throwing_host_event(teh.get_queue(), "foo");
+  auto e = make_throwing_host_event(teh.get_queue(), "some-error");
 
   SECTION("event::wait_and_throw") { e.wait_and_throw(); }
   SECTION("event::wait_and_throw(std::vector<event>)") {
@@ -306,15 +306,15 @@ TEST_CASE("event::wait_and_throw reports asynchronous errors", "[event]") {
   }
 
   CHECK(teh.count() == 1);
-  CHECK(teh.has("foo"));
+  CHECK(teh.has("some-error"));
 }
 
 TEST_CASE(
     "event::wait_and_throw reports asynchronous errors from related events",
     "[event]") {
   test_exception_handler teh;
-  auto e1 = make_throwing_host_event(teh.get_queue(), "foo");
-  auto e2 = make_throwing_host_event(teh.get_queue(), "bar", {e1});
+  auto e1 = make_throwing_host_event(teh.get_queue(), "some-error");
+  auto e2 = make_throwing_host_event(teh.get_queue(), "another-error", {e1});
 
   SECTION("event::wait_and_throw") { e2.wait_and_throw(); }
   SECTION("event::wait_and_throw(std::vector<event>)") {
@@ -325,8 +325,8 @@ TEST_CASE(
   e1.wait_and_throw();
 
   CHECK(teh.count() == 2);
-  CHECK(teh.has("foo"));
-  CHECK(teh.has("bar"));
+  CHECK(teh.has("some-error"));
+  CHECK(teh.has("another-error"));
 }
 
 // TODO SPEC: It is unclear what "any unconsumed error [...] will be passed to
@@ -340,8 +340,8 @@ TEST_CASE(
   test_exception_handler teh2;
   REQUIRE(teh1.get_queue() != teh2.get_queue());
 
-  auto e1 = make_throwing_host_event(teh1.get_queue(), "foo");
-  auto e2 = make_throwing_host_event(teh2.get_queue(), "bar", {e1});
+  auto e1 = make_throwing_host_event(teh1.get_queue(), "some-error");
+  auto e2 = make_throwing_host_event(teh2.get_queue(), "another-error", {e1});
 
   SECTION("event::wait_and_throw") { e2.wait_and_throw(); }
   SECTION("event::wait_and_throw(std::vector<event>)") {
@@ -349,8 +349,8 @@ TEST_CASE(
   }
 
   CHECK(teh2.count() == 2);
-  CHECK(teh2.has("foo"));
-  CHECK(teh2.has("bar"));
+  CHECK(teh2.has("some-error"));
+  CHECK(teh2.has("another-error"));
 
   // This should be a no-op as the error already has been consumed
   e1.wait_and_throw();
@@ -360,10 +360,10 @@ TEST_CASE(
 TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
           "[event]") {
   test_exception_handler teh;
-  make_throwing_host_event(teh.get_queue(), "foo").wait_and_throw();
+  make_throwing_host_event(teh.get_queue(), "some-error").wait_and_throw();
   teh.clear();
 
-  auto e = make_throwing_host_event(teh.get_queue(), "bar");
+  auto e = make_throwing_host_event(teh.get_queue(), "another-error");
 
   SECTION("event::wait_and_throw") { e.wait_and_throw(); }
   SECTION("event::wait_and_throw(std::vector<event>)") {
@@ -371,7 +371,7 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
   }
 
   CHECK(teh.count() == 1);
-  CHECK(teh.has("bar"));
+  CHECK(teh.has("another-error"));
 }
 
 TEST_CASE("event::get_info returns correct command execution status",
