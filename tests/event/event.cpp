@@ -112,23 +112,6 @@ TEST_CASE("event provides commmon reference semantics", "[event]") {
 
 TODO_TEST_CASE("event::get_backend returns the associated backend", "[event]");
 
-TEST_CASE("event::get_wait_list returns a list of all direct dependencies",
-          "[event]") {
-  const auto e_a = make_device_event();
-  const auto e_b = make_device_event({e_a});
-  const auto e_c = make_device_event();
-  auto e_d = make_device_event({e_b, e_c});
-
-  CHECK(
-      std::is_same_v<std::vector<sycl::event>, decltype(e_d.get_wait_list())>);
-  const auto wait_list = e_d.get_wait_list();
-  CHECK(wait_list.size() == 2);
-  CHECK(std::find(wait_list.cbegin(), wait_list.cend(), e_b) !=
-        wait_list.cend());
-  CHECK(std::find(wait_list.cbegin(), wait_list.cend(), e_c) !=
-        wait_list.cend());
-}
-
 /**
  * Encapsulates a host task that waits until resolved (= a boolean flag is set).
  */
@@ -153,12 +136,15 @@ class resolvable_host_event {
   sycl::event& get_sycl_event() { return event; }
 
   void resolve() {
-    std::unique_lock<std::mutex> lk(mut);
+    std::lock_guard<std::mutex> lk(mut);
     should_resolve = true;
     cv.notify_one();
   }
 
-  virtual ~resolvable_host_event() { resolve(); }
+  virtual ~resolvable_host_event() {
+    resolve();
+    event.wait();
+  }
 
  private:
   std::mutex mut;
@@ -166,6 +152,28 @@ class resolvable_host_event {
   bool should_resolve = false;
   sycl::event event;
 };
+
+TEST_CASE("event::get_wait_list returns a list of all direct dependencies",
+          "[event]") {
+  resolvable_host_event e_a;
+  resolvable_host_event e_b{{e_a.get_sycl_event()}};
+  resolvable_host_event e_c;
+  resolvable_host_event e_d{{e_b.get_sycl_event(), e_c.get_sycl_event()}};
+
+  CHECK(std::is_same_v<std::vector<sycl::event>,
+                       decltype(e_d.get_sycl_event().get_wait_list())>);
+  const auto wait_list = e_d.get_sycl_event().get_wait_list();
+  CHECK(wait_list.size() == 2);
+  CHECK(std::find(wait_list.cbegin(), wait_list.cend(), e_b.get_sycl_event()) !=
+        wait_list.cend());
+  CHECK(std::find(wait_list.cbegin(), wait_list.cend(), e_c.get_sycl_event()) !=
+        wait_list.cend());
+
+  e_a.resolve();
+  e_b.resolve();
+  e_c.resolve();
+  e_d.resolve();
+}
 
 /**
  * A resolvable_host_event that automatically resolves itself after a given
