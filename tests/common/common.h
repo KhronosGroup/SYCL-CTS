@@ -69,7 +69,7 @@ void check_return_type(returnT returnVal, std::string functionName) {
 template <typename expectedT, typename returnT>
 void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
                        std::string functionName) {
-  check_return_type(returnVal, functionName);
+  check_return_type<expectedT>(returnVal, functionName);
 }
 
 /**
@@ -97,7 +97,7 @@ void check_equal_type(actualT actualVal, std::string logMsg) {
 template <typename expectedT, typename actualT>
 void check_equal_type(sycl_cts::util::logger& log, actualT actualVal,
                       std::string logMsg) {
-  check_equal_type(actualVal, logMsg);
+  check_equal_type<expectedT>(actualVal, logMsg);
 }
 
 /**
