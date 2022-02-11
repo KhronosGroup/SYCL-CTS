@@ -1,0 +1,431 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for multi_ptr
+
+This is a test plan for the APIs described in SYCL 2020 section 4.7.7
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Multi_ptr types
+
+All of the tests described below are performed using each of the
+following types as the `ElementType`.
+
+In Regular mode:
+
+* `int`
+* `float`
+* A user-defined class with several scalar member variables and a user-defined
+  default constructor.
+
+In full conformance mode:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+* `bool`
+* A user-defined struct with several scalar member variables, no constructor,
+  destructor or member functions.
+* A user-defined class with several scalar member variables, a deleted default
+  constructor, and a user-defined (non-default) constructor.
+
+In addition, if the device has `aspect::fp64`, the following type is tested:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`, the following type is tested:
+
+* `sycl::half`
+
+
+== Tests
+
+=== SYCL1.2.1 compatible interface
+
+CTS contains tests for multi_ptr SYCL1.2.1 interface, `access::decorated::legacy` template parameter should be added to them.
+Add compilation flag for disabling legacy tests.
+
+=== SYCL2020 interface
+
+==== Members
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Check the following:
+
+* `iterator_category` is same as `std::random_access_iterator_tag`
+* `difference_type` is same as `std::ptrdiff_t`
+* `value_type` is same as `ElementType`
+
+For following `access::decorated::no` as DecorateAddress parameter
+check the following:
+
+* `pointer` is same as `std::add_pointer_t<value_type>`
+* `reference` is same as `std::add_lvalue_reference_t<value_type>`
+
+==== Common constructors
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Call constructors:
+
+* `multi_ptr()`
+* `multi_ptr(const multi_ptr&)` and check return type and that it refers to the same value using get()
+* `multi_ptr(multi_ptr&&)` and check return type and that it refers to the same value using get()
+* `explicit multi_ptr(multi_ptr<ElementType, Space, yes>::pointer)` and return type and check that
+  it refers to the same value using get()
+* `multi_ptr(std::nullptr_t)` and check return type and that it refers to the same value using get()
+
+==== global_space constructor
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:generic_space`
+
+For dimensions = 1, 2, 3
+
+For the following values as Mode parameter:
+
+* read,
+* write,
+* read_write
+
+Create multi_ptr within a command group using
+`multi_ptr(accessor<value_type, dimensions, Mode, target::device, isPlaceholder>)`
+and check return type and that it refers to the same value using get()
+
+==== local_space constructor
+
+For the following values as Space parameter:
+
+* `access::address_space:local_space`
+* `access::address_space:generic_space`
+
+For dimensions = 1, 2, 3
+
+Create multi_ptr within a command group using
+`multi_ptr(local_accessor<ElementType, dimensions>)`
+and check return type and that it refers to the same value using get()
+
+==== Common assignment operators
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor, construct multi_ptr with default constructor
+and check that as result of following operators the second multi_ptr refers to the same value using get:
+
+* `&operator=(const multi_ptr&)`
+* `&operator=(multi_ptr&&)`
+* `&operator=(std::nullptr_t)`
+
+==== Convert assignment operators
+
+For `access::address_space:generic_space` as Space parameter
+
+For the following values as ASP parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+For the following values as IsDecorated parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor, construct multi_ptr with default constructor
+and check that as a result of the following operators the second multi_ptr refers to the target value using get:
+
+* `&operator=(const multi_ptr<value_type, ASP, IsDecorated>&)`
+* `&operator=(multi_ptr<value_type, ASP, IsDecorated>&&)`
+
+==== Access operators
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor and check:
+
+* result for operator*(), return type same as reference and const correctness
+* result for operator->(), return type same as pointer and const correctness
+* result for get(), return type same as pointer and const correctness
+* result for get_raw(), return type same as std::add_pointer_t<value_type> and const correctness
+* result for get_decorated() and const correctness
+
+==== Explicit conversions to private_ptr
+
+For `access::address_space:generic_space` as Space parameter
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor and check result and return type as raw_private_ptr or decorated_private_ptr for operators:
+
+* `multi_ptr<value_type, access::address_space::private_space, IsDecorated>()`
+* `multi_ptr<const value_type, access::address_space::private_space,  IsDecorated>()`
+
+Constract multi_ptr with accessor and check const correctness for operator
+`multi_ptr<const value_type, access::address_space::private_space,  IsDecorated>()`
+
+==== Explicit conversions to global_ptr
+
+For `access::address_space:generic_space` as Space parameter
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor and check that it refers to the same value using get()
+and return type as raw_global_ptr or decorated_global_ptr for operators:
+
+* `multi_ptr<value_type, access::address_space::global_space, IsDecorated>()`
+* `multi_ptr<const value_type, access::address_space::global_space, IsDecorated>()`
+
+Constract multi_ptr with accessor and check const correctness for operator
+`multi_ptr<const value_type, access::address_space::global_space, IsDecorated>()`
+
+==== Explicit conversions to local_ptr
+
+For `access::address_space:generic_space` as Space parameter
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+For the following values as IsDecorated parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor and check that it refers to the same value using get()
+and return type as raw_local_ptr or decorated_local_ptr for operators:
+
+* `multi_ptr<value_type, access::address_space::local_space, IsDecorated>()`
+* `multi_ptr<const value_type, access::address_space::local_space, IsDecorated>()`
+
+Check const correctness for operator
+`multi_ptr<const value_type, access::address_space::local_space, IsDecorated>()`
+
+
+==== Implicit conversions
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+For the following values as IsDecorated parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor and check result implicit conversion to
+
+* `multi_ptr<const void, Space, IsDecorated>`
+* `multi_ptr<const value_type, Space, IsDecorated>`
+
+For `access::decorated::yes` as DecorateAddress parameter
+Constract multi_ptr with accessor and check result of implicit conversion to `multi_ptr<value_type, Space, access::decorated::no>`
+by checking that it refers to the same value using get()
+
+For `access::decorated::no` as DecorateAddress parameter
+Constract multi_ptr with accessor and check result of implicit conversion to `multi_ptr<value_type, Space, access::decorated::yes>`
+by checking that it refers to the same value using get()
+
+==== prefetch(size_t numElements)
+
+For `access::address_space:global_space` as Space parameter
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Check call and const correctness prefetch(size_t numElements)
+
+==== Arithmetic operators
+
+For the following values as Space parameter:
+
+* `access::address_space:global_space`
+* `access::address_space:local_space`
+* `access::address_space:private_space`
+* `access::address_space:generic_space`
+
+For the following values as DecorateAddress parameter:
+
+* `access::decorated::yes`
+* `access::decorated::no`
+
+Constract multi_ptr with accessor to 5th element of array of 10 consecutive values starting with 1 of testing type
+with same template parameters and check result of operators:
+
+* `multi_ptr& operator++(multi_ptr& mp)` refers to `6`
+* `multi_ptr operator++(multi_ptr& mp)` refers to `6`
+* `multi_ptr& operator--(multi_ptr& mp)` refers to `4`
+* `multi_ptr operator--(multi_ptr& mp, int)` refers to `4`
+* `multi_ptr& operator+=(multi_ptr& lhs, difference_type r)` with `r == 3` refers to `8`
+* `multi_ptr& operator-=(multi_ptr& lhs, difference_type r)` with `r == 2` refers to `3`
+* `multi_ptr operator+(const multi_ptr& lhs, difference_type r)` with `r == 4` refers to `9`
+* `multi_ptr operator-(const multi_ptr& lhs, difference_type r)`  with `r == 1` refers to `4`
+* `reference operator*(const multi_ptr& lhs)` equals `5`
+
+Constract 2 multi_ptr's m_ptr1 and m_ptr2 with accessors to 1th and 2nd elements of array of testing type
+with same template parameters and check result of operators:
+
+* `bool operator==(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`true` for `m_ptr1` and `m_ptr1`
+`false` for `m_ptr1` and `m_ptr2`
+
+* `bool operator!=(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`false` for `m_ptr1` and `m_ptr1`
+`true` for `m_ptr1` and `m_ptr2`
+
+
+* `bool operator<(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`true` for `m_ptr1` and `m_ptr2`
+`false` for `m_ptr2` and `m_ptr1`
+
+* `bool operator>(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`false` for `m_ptr1` and `m_ptr2`
+`true` for `m_ptr2` and `m_ptr1`
+
+* `bool operator<=(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`true` for `m_ptr1` and `m_ptr1`
+`true` for `m_ptr1` and `m_ptr2`
+`false` for `m_ptr2` and `m_ptr1`
+
+* `bool operator>=(const multi_ptr& lhs, const multi_ptr& rhs)`
+
+`true` for `m_ptr1` and `m_ptr1`
+`true` for `m_ptr2` and `m_ptr1`
+`false` for `m_ptr1` and `m_ptr2`
+
+Constract multi_ptr with accessor or with nullptr_t
+with same template parameters and check result of operators:
+
+* `bool operator==(const multi_ptr& lhs, std::nullptr_t)`
+
+`true` for m_ptr constracted from nullptr_t
+`false` for m_ptr constracted from accessor
+
+* `bool operator!=(const multi_ptr& lhs, std::nullptr_t)`
+
+`false` for m_ptr constracted from nullptr_t
+`true` for m_ptr constracted from accessor
+
+* `bool operator<(const multi_ptr& lhs, std::nullptr_t)`
+
+std::less<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(multi_ptr.get(), nullptr)
+
+* `bool operator>(const multi_ptr& lhs, std::nullptr_t)`
+
+std::greater<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(multi_ptr.get(), nullptr)
+
+* `bool operator<=(const multi_ptr& lhs, std::nullptr_t)`
+
+std::less_equal<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(multi_ptr.get(), nullptr)
+
+* `bool operator>=(const multi_ptr& lhs, std::nullptr_t)`
+
+std::greater_equal<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(multi_ptr.get(), nullptr)
+
+* `bool operator==(std::nullptr_t, const multi_ptr& rhs)`
+
+`true` for m_ptr constracted from nullptr_t
+`false` for m_ptr constracted from accessor
+
+* `bool operator!=(std::nullptr_t, const multi_ptr& rhs)`
+
+`false` for m_ptr constracted from nullptr_t
+`true` for m_ptr constracted from accessor
+
+* `bool operator<(std::nullptr_t, const multi_ptr& rhs)`
+
+std::less<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(nullptr, multi_ptr.get())
+
+* `bool operator>(std::nullptr_t, const multi_ptr& rhs)`
+
+std::greater<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(nullptr, multi_ptr.get())
+
+* `bool operator<=(std::nullptr_t, const multi_ptr& rhs)`
+
+std::less_equal<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(nullptr, multi_ptr.get())
+
+* `bool operator>=(std::nullptr_t, const multi_ptr& rhs)`
+
+std::greater_equal<multi_ptr<value_type, Space, access::decorated::yes>::pointer>()(nullptr, multi_ptr.get())
