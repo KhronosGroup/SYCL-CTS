@@ -46,8 +46,8 @@ TEST_CASE("event provides a default constructor", "[event]") {
 
   // A default constructed event acts as though it was created from a
   // default-constructed queue.
-  sycl::device default_device{};
-  CHECK(event.get_backend() == default_device.get_backend());
+  sycl::queue default_queue{};
+  CHECK(event.get_backend() == default_queue.get_backend());
 }
 
 // TODO: Can we unify with common/common_by_reference.h and other approaches
@@ -110,7 +110,15 @@ TEST_CASE("event provides commmon reference semantics", "[event]") {
   }
 }
 
-TODO_TEST_CASE("event::get_backend returns the associated backend", "[event]");
+TEST_CASE("event::get_backend returns the associated backend", "[event]") {
+  CHECK(std::is_nothrow_invocable_v<decltype(&sycl::event::get_backend),
+                                    const sycl::event>);
+  const auto e = make_device_event();
+  // There isn't really anything more we can test here, as all members of the
+  // sycl::backend enum are implementation defined.
+  e.get_backend();
+  SUCCEED();
+}
 
 /**
  * Encapsulates a host task that waits until resolved (= a boolean flag is set).
@@ -412,7 +420,7 @@ TEST_CASE("event::get_info returns correct command execution status",
 }
 
 // TODO: Figure out if/how we want to test this.
-// => Must throw exception w/ ercc:backend_mismatch if querying a paramter for
+// => Must throw exception w/ ercc::backend_mismatch if querying a paramter for
 // a different backend. We can only test this if an implementation supports more
 // than one backend.
 TODO_TEST_CASE("event::get_backend_info returns backend-specific information",
