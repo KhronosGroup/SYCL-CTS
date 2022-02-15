@@ -420,9 +420,9 @@ TEST_CASE("event::get_info returns correct command execution status",
 }
 
 // TODO: Figure out if/how we want to test this.
-// => Must throw exception w/ ercc::backend_mismatch if querying a paramter for
-// a different backend. We can only test this if an implementation supports more
-// than one backend.
+// => Must throw exception w/ errc::backend_mismatch if querying a parameter
+// for a different backend. We can only test this if an implementation supports
+// more than one backend.
 TODO_TEST_CASE("event::get_backend_info returns backend-specific information",
                "[event]");
 
