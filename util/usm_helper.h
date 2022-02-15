@@ -9,9 +9,9 @@
 #ifndef __SYCL_CTS_UTIL_USM_HELPER_H
 #define __SYCL_CTS_UTIL_USM_HELPER_H
 
-#include "../common/common.h"
 #include <memory>
 #include <string_view>
+#include <sycl/sycl.hpp>
 
 namespace usm_helper {
 

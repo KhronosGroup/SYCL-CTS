@@ -9,6 +9,7 @@
 *******************************************************************************/
 
 #include "../../util/usm_helper.h"
+#include "../common/common.h"
 #include <cstring>
 
 #define TEST_NAME usm_get_pointer_queries
