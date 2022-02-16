@@ -18,11 +18,11 @@ using namespace sycl_cts;
 struct check_result_set {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    unsigned long after_set;
-    unsigned long zero = 0;
     sub_group_mask.set();
-    sub_group_mask.extract_bits(after_set);
-    return after_set == ~zero;
+    for (size_t N = 0; N < sub_group_mask.size(); N++) {
+      if (!sub_group_mask.test(sycl::id(N))) return false;
+    }
+    return true;
   }
 };
 

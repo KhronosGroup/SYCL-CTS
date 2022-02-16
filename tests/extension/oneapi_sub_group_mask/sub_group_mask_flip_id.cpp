@@ -23,7 +23,7 @@ struct check_result_flip_id {
     sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip(local_id);
     sub_group_mask.extract_bits(after_flip);
-    return after_flip == before_flip ^ (1 << local_id.get(0));
+    return after_flip == (before_flip ^ (1 << local_id.get(0)));
   }
 };
 

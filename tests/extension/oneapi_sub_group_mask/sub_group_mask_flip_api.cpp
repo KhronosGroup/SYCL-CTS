@@ -18,11 +18,16 @@ using namespace sycl_cts;
 struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    unsigned long before_flip, after_flip;
-    sub_group_mask.extract_bits(before_flip);
+    // since all bits need to be checked and size of sub_group_mask is not
+    // known beforehand we can't use fixed type to extract bits and check them
+    // after the flip
+    const sycl::ext::oneapi::sub_group_mask initial_mask = sub_group_mask;
     sub_group_mask.flip();
-    sub_group_mask.extract_bits(after_flip);
-    return after_flip == ~before_flip;
+    for (int N = 0; N < sub_group_mask.size(); N++) {
+      if (sub_group_mask.test(sycl::id(N)) == initial_mask.test(sycl::id(N)))
+        return false;
+    }
+    return true;
   }
 };
 

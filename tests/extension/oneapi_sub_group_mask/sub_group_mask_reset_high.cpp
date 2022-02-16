@@ -23,7 +23,7 @@ struct check_result_reset_high {
     sub_group_mask.extract_bits(before_reset);
     sub_group_mask.reset_high();
     sub_group_mask.extract_bits(after_reset);
-    return after_reset == before_reset ^ (1 << high);
+    return after_reset == (before_reset ^ (1 << high));
   }
 };
 
