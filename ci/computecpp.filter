@@ -28,3 +28,4 @@ usm
 vector_api
 vector_constructors
 vector_swizzles
+optional_kernel_features
