@@ -11,7 +11,7 @@
 #include "../common/common.h"
 #include "catch2/catch_template_test_macros.hpp"
 
-namespace kernel_features_missmathced_nd_range_exception {
+namespace kernel_features_mismatched_nd_range_exception {
 using namespace sycl_cts;
 
 // Define required size of work group for attribute
@@ -25,7 +25,7 @@ class Functor {
 
 TEST_CASE(
     "Kernel features. Exceptions throwns by [[reqd_work_group_size()]] with "
-    "missmatched nd_range",
+    "mismatched nd_range",
     "[kernel_features]") {
   auto queue = util::get_cts_object::queue();
   const auto max_wg_size =
@@ -42,7 +42,7 @@ TEST_CASE(
       [[sycl::reqd_work_group_size(testing_wg_size)]]{};
 
   // Create nd_range that have to cause an exception
-  sycl::nd_range<1> missmathced_nd_rage(sycl::range{max_wg_size + 1},
+  sycl::nd_range<1> mismatched_nd_rage(sycl::range{max_wg_size + 1},
                                         sycl::range{max_wg_size + 1});
 
   {
@@ -51,7 +51,7 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(missmathced_nd_rage, separate_lambda);
+            cgh.parallel_for(mismatched_nd_rage, separate_lambda);
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {
@@ -68,7 +68,7 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(missmathced_nd_rage, Functor{});
+            cgh.parallel_for(mismatched_nd_rage, Functor{});
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {
@@ -85,7 +85,7 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(missmathced_nd_rage, [
+            cgh.parallel_for(mismatched_nd_rage, [
             ](sycl::item<1>) [[sycl::reqd_work_group_size(testing_wg_size)]]{});
           })
           .wait_and_throw();
@@ -97,4 +97,4 @@ TEST_CASE(
     CHECK(is_exception_expected == is_exception_thrown);
   }
 }
-}  // namespace kernel_features_missmathced_nd_range_exception
+}  // namespace kernel_features_mismatched_nd_range_exception
