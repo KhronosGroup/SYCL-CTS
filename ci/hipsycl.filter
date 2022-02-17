@@ -22,6 +22,7 @@ math_builtin_api
 multi_ptr
 nd_item
 nd_range
+optional_kernel_features
 queue
 range
 reduction
@@ -37,4 +38,3 @@ vector_load_store
 vector_operators
 vector_swizzle_assignment
 vector_swizzles
-optional_kernel_features
