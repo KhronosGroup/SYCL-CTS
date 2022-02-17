@@ -10,6 +10,7 @@
 
 #include <sycl/sycl.hpp>
 
+#include "../tests/common/exceptions.h"
 #include "../tests/common/macros.h"
 #include "logger.h"
 

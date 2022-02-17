@@ -56,37 +56,6 @@ inline void set_test_info(sycl_cts::util::test_base::info& out,
 }
 
 /**
- * Helper function to log details for SYCL exception
- */
-inline void log_exception(sycl_cts::util::logger& log,
-                          const sycl::exception& e) {
-  std::string message = "SYCL exception\n";
-  // Using references to avoid object slicing
-  const auto& code = e.code();
-  const auto& category = e.category();
-
-  auto append_str = [&message](const char* description, std::string&& value) {
-    message += description;
-    message += " - '" + value + "'\n";
-  };
-  auto append_cstr = [&append_str](const char* description, const char* value) {
-    if (!value) {
-      value = "nullptr";
-    }
-    append_str(description, std::string(value));
-  };
-
-  // Collect exception details
-  append_cstr("category name", category.name());
-  append_str("code value", std::to_string(code.value()));
-  append_str("code message", code.message());
-  append_cstr("what", e.what());
-
-  // Print message in a single Catch2 warning
-  log.note(message);
-}
-
-/**
  * Explicitly marks a test case as failed.
  *
  * In most situations it is preferable to use an assertion macro (CHECK,

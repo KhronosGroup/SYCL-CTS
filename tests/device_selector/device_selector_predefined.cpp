@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/exceptions.h"
 
 #define TEST_NAME device_selector_predefined
 
