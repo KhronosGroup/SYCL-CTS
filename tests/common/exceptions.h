@@ -269,8 +269,7 @@ inline auto equals_exception_for(const CodeT& code) {
  *
  * Deprecated, use Catch2 macroses for new tests instead
  */
-inline void log_exception(sycl_cts::util::logger& log,
-                          const sycl::exception& e) {
+inline void log_exception(sycl_cts::util::logger&, const sycl::exception& e) {
   // Print multi-line message in a single Catch2 warning
   WARN(stringify_sycl_exception(e));
 }
