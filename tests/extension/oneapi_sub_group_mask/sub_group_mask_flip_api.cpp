@@ -16,23 +16,21 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_flip {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    // since all bits need to be checked and size of sub_group_mask is not
-    // known beforehand we can't use fixed type to extract bits and check them
-    // after the flip
-    const sycl::ext::oneapi::sub_group_mask initial_mask = sub_group_mask;
+    unsigned long before_flip, after_flip;
+    sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip();
-    for (int N = 0; N < sub_group_mask.size(); N++) {
-      if (sub_group_mask.test(sycl::id(N)) == initial_mask.test(sycl::id(N)))
-        return false;
-    }
-    return true;
+    sub_group_mask.extract_bits(after_flip);
+    // mask off irrelevant bits
+    unsigned long mask =
+        ULONG_MAX >> (CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size());
+    return ((after_flip & before_flip) & mask) == 0;
   }
 };
 
 struct check_type_flip {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<void, decltype(sub_group_mask.flip())>::value;
   }
 };

@@ -34,7 +34,7 @@ void get_bits(sycl::marray<T, nElements> &out) {
 
 template <typename T>
 struct check_result_insert_bits {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     for (size_t pos = 0; pos < sub_group_mask.size(); pos++) {
       sycl::ext::oneapi::sub_group_mask mask = sub_group_mask;
@@ -54,7 +54,7 @@ struct check_result_insert_bits {
 
 template <typename T>
 struct check_type_insert_bits {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same_v<void, decltype(sub_group_mask.insert_bits(T()))>;
   }
 };

@@ -16,7 +16,7 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_test {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     for (size_t N = 0; N < sub_group_mask.size(); N++) {
       if (sub_group_mask.test(sycl::id(N)) != (N % 2 == 0)) return false;
@@ -26,7 +26,7 @@ struct check_result_test {
 };
 
 struct check_type_test {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<bool, decltype(sub_group_mask.test(sycl::id()))>::value;
   }
 };
