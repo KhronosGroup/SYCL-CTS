@@ -10,6 +10,7 @@
 #define __SYCL_CTS_TEST_USM_ATOMIC_ACCESS_H
 
 #include "../../util/usm_helper.h"
+#include "../common/common.h"
 #include "../common/type_coverage.h"
 #include <chrono>
 #include <cstring>
