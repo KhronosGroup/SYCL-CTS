@@ -18,6 +18,7 @@
 #include "../../util/proxy.h"
 #include "../../util/test_base.h"
 
+#include "conversion.h"
 #include "cts_async_handler.h"
 #include "cts_selector.h"
 #include "get_cts_object.h"
@@ -368,16 +369,6 @@ inline void if_constexpr(const F& f) {
   if (condition) {
     f();
   }
-}
-
-/**
- * @brief Static cast scoped enum value to the underlying type
- */
-template <typename enumT>
-constexpr auto to_integral(enumT const& value)
-  -> typename std::enable_if<std::is_enum<enumT>::value,
-                             typename std::underlying_type<enumT>::type>::type {
-    return static_cast<typename std::underlying_type<enumT>::type>(value);
 }
 
 /**
