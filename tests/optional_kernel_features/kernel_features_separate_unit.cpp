@@ -9,6 +9,7 @@
 
 #include "../common/common.h"
 
+#ifdef SYCL_EXTERNAL
 namespace kernel_features_common {
 template <typename T, sycl::aspect aspect>
 [[sycl::device_has(aspect)]] SYCL_EXTERNAL void
@@ -41,3 +42,4 @@ use_feature_function_external_decorated<AtomicRefT, sycl::aspect::atomic64>() {
   feature += 42;
 }
 }  // namespace kernel_features_common
+#endif

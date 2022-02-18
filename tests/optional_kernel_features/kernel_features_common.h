@@ -12,6 +12,7 @@
 
 namespace kernel_features_common {
 
+#ifdef SYCL_EXTERNAL
 /**
  * @brief The external function that use T and decorated with attribute
  *
@@ -21,6 +22,7 @@ namespace kernel_features_common {
 template <typename T, sycl::aspect aspect>
 [[sycl::device_has(aspect)]] SYCL_EXTERNAL void
 use_feature_function_external_decorated();
+#endif
 
 /**
  * @brief The function that use T
@@ -125,6 +127,7 @@ class non_decorated_call_decorated_function {
   }
 };
 
+#ifdef SYCL_EXTERNAL
 /**
  * @brief Not decorated functor that invokes decorated with FeatureAspectT
  * external function that use feature defined in FeatureTypeT
@@ -142,6 +145,7 @@ class non_decorated_call_decorated_external_function {
     use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
   }
 };
+#endif
 
 /**
  * @brief Not decorated functor that invokes decorated with FeatureAspectT
@@ -177,6 +181,7 @@ class decorated_call_use_feature {
   }
 };
 
+#ifdef SYCL_EXTERNAL
 /**
  * @brief Decorated with KernelAspectT functor that invokes decorated with
  * FeatureAspectT external function that use feature defined in FeatureTypeT
@@ -195,6 +200,7 @@ class decorated_call_decorated_external_function {
     use_feature_function_external_decorated<FeatureTypeT, FunctionAspectT>();
   }
 };
+#endif
 
 /**
  * @brief Decorated with FeatureAspectT functor that invokes not decorated

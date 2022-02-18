@@ -95,6 +95,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
+  #ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel does not have the attribute [[sycl::device_has()]] but it "
       "calls a SYCL_EXTERNAL function which uses the tested feature. The "
@@ -131,6 +132,7 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
+  #endif
 
   SECTION(
       "Kernel does not use the tested feature but is decorated with the "
@@ -274,6 +276,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
+  #ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel with attribute [[sycl::device_has()]] for not currently tested "
       "feature but with SYCL_EXTERNAL function with tested feature and "
@@ -321,5 +324,6 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
+  #endif
 }
 }  // namespace kernel_features_device_has_exceptions
