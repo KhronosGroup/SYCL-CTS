@@ -14,6 +14,10 @@
 namespace kernel_features_mismatched_nd_range_exception {
 using namespace sycl_cts;
 
+struct kernel_separate_lambda;
+struct kernel_functor;
+struct kernel_submission_call;
+
 // Define required size of work group for attribute
 constexpr int testing_wg_size = 16;
 
@@ -43,7 +47,7 @@ TEST_CASE(
 
   // Create nd_range that have to cause an exception
   sycl::nd_range<1> mismatched_nd_rage(sycl::range{max_wg_size + 1},
-                                        sycl::range{max_wg_size + 1});
+                                       sycl::range{max_wg_size + 1});
 
   {
     INFO("Task as separate lambda");
@@ -51,7 +55,8 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(mismatched_nd_rage, separate_lambda);
+            cgh.parallel_for<kernel_separate_lambda>(mismatched_nd_rage,
+                                                     separate_lambda);
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {
@@ -68,7 +73,7 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(mismatched_nd_rage, Functor{});
+            cgh.parallel_for<kernel_functor>(mismatched_nd_rage, Functor{});
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {
@@ -85,8 +90,10 @@ TEST_CASE(
     try {
       queue
           .submit([&](sycl::handler& cgh) {
-            cgh.parallel_for(mismatched_nd_rage, [
-            ](sycl::nd_item<1>) [[sycl::reqd_work_group_size(testing_wg_size)]]{});
+            cgh.parallel_for<kernel_submission_call>(
+                mismatched_nd_rage,
+                [](sycl::nd_item<1>)
+                    [[sycl::reqd_work_group_size(testing_wg_size)]]{});
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {
