@@ -21,7 +21,7 @@ template <sycl::usm::alloc alloc>
 void run_check(const sycl::queue &queue, sycl_cts::util::logger &log) {
   const auto &context{queue.get_context()};
   // According to the SYCL 2020 the first device in context should be
-  // used for alloc::host
+  // used for alloc::host.
   const auto &device{(alloc == sycl::usm::alloc::host)
                          ? queue.get_context().get_devices()[0]
                          : queue.get_device()};

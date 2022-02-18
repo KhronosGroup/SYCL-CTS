@@ -23,7 +23,7 @@ template <sycl::usm::alloc alloc, typename elems_typeT>
 auto allocate_usm_memory(const sycl::queue &queue, size_t num_elements = 1) {
   const auto &context{queue.get_context()};
   // According to the SYCL 2020 the first device in context should be
-  // used for alloc::host
+  // used for alloc::host.
   const auto &device{(alloc == sycl::usm::alloc::host)
                          ? queue.get_context().get_devices()[0]
                          : queue.get_device()};
