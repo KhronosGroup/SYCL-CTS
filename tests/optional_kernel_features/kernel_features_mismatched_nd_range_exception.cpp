@@ -32,7 +32,7 @@ TEST_CASE(
     "mismatched nd_range",
     "[kernel_features]") {
   auto queue = util::get_cts_object::queue();
-  const auto max_wg_size =
+  const size_t max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
   if (max_wg_size < testing_wg_size) {
     WARN("Device supported work group size too small. Skipping..");
@@ -46,8 +46,8 @@ TEST_CASE(
       [[sycl::reqd_work_group_size(testing_wg_size)]]{};
 
   // Create nd_range that have to cause an exception
-  sycl::nd_range<1> mismatched_nd_rage(sycl::range{max_wg_size + 1},
-                                       sycl::range{max_wg_size + 1});
+  sycl::nd_range<1> mismatched_nd_rage(sycl::range(max_wg_size + 1),
+                                       sycl::range(max_wg_size + 1));
 
   {
     INFO("Task as separate lambda");
