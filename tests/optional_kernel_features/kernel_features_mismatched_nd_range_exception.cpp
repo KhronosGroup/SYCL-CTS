@@ -20,7 +20,7 @@ constexpr int testing_wg_size = 16;
 class Functor {
  public:
   [[sycl::reqd_work_group_size(testing_wg_size)]] void operator()(
-      sycl::item<1>) const {}
+      sycl::nd_item<1>) const {}
 };
 
 TEST_CASE(
@@ -38,7 +38,7 @@ TEST_CASE(
   const bool is_exception_expected = true;
   sycl::errc errc_expected = sycl::errc::nd_range;
 
-  const auto separate_lambda = [=](sycl::item<1>)
+  const auto separate_lambda = [=](sycl::nd_item<1>)
       [[sycl::reqd_work_group_size(testing_wg_size)]]{};
 
   // Create nd_range that have to cause an exception
@@ -86,7 +86,7 @@ TEST_CASE(
       queue
           .submit([&](sycl::handler& cgh) {
             cgh.parallel_for(mismatched_nd_rage, [
-            ](sycl::item<1>) [[sycl::reqd_work_group_size(testing_wg_size)]]{});
+            ](sycl::nd_item<1>) [[sycl::reqd_work_group_size(testing_wg_size)]]{});
           })
           .wait_and_throw();
     } catch (const sycl::exception& e) {

@@ -23,7 +23,6 @@ math_builtin_api
 multi_ptr
 nd_item
 nd_range
-optional_kernel_features
 queue
 range
 reduction
