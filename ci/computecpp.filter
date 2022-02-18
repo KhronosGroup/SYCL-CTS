@@ -1,3 +1,4 @@
+
 accessor
 atomic
 buffer
@@ -19,6 +20,7 @@ math_builtin_api
 multi_ptr
 nd_item
 opencl_interop
+optional_kernel_features
 platform
 reduction
 specialization_constants
@@ -28,4 +30,3 @@ usm
 vector_api
 vector_constructors
 vector_swizzles
-optional_kernel_features
