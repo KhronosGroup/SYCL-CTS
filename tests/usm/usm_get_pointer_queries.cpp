@@ -23,7 +23,7 @@ void run_check(const sycl::queue &queue, sycl_cts::util::logger &log) {
   // According to the SYCL 2020 (rev. 4, $4.8.4. Unified shared memory pointer
   // queries) 'get_pointer_device' must return the first device in context for
   // the usm::alloc::host kind.
-  const auto &device{(alloc == sycl::usm::alloc::host)
+  const auto &device{alloc == sycl::usm::alloc::host
                          ? queue.get_context().get_devices()[0]
                          : queue.get_device()};
 
