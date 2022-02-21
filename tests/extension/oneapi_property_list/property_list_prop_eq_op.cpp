@@ -15,8 +15,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 
 template <typename T, typename U>
-constexpr void check_equal(util::logger &log, T prop1, U prop2,
-                           bool expected_equal) {
+void check_equal(util::logger &log, T prop1, U prop2, bool expected_equal) {
   if ((prop1 == prop2) != expected_equal) {
     FAIL(log, "wrong result for equality operator");
   }
