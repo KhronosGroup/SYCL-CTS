@@ -18,13 +18,16 @@ using namespace sycl_cts;
 struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
+    int shift = CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size();
+    // sub_group_mask's size is expected not to be greater than 32 in these
+    // tests but check is added to make sure of it
+    if (shift < 0) return false;
     unsigned long before_flip, after_flip;
     sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip();
     sub_group_mask.extract_bits(after_flip);
     // mask off irrelevant bits
-    unsigned long mask =
-        ULONG_MAX >> (CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size());
+    unsigned long mask = ULONG_MAX >> shift;
     return ((after_flip & before_flip) & mask) == 0;
   }
 };

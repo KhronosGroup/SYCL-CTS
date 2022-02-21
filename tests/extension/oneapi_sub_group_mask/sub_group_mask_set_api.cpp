@@ -18,12 +18,15 @@ using namespace sycl_cts;
 struct check_result_set {
   bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
+    int shift = CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size();
+    // sub_group_mask's size is expected not to be greater than 32 in these
+    // tests but check is added to make sure of it
+    if (shift < 0) return false;
     unsigned long after_set;
     sub_group_mask.set();
     sub_group_mask.extract_bits(after_set);
     // mask off irrelevant bits
-    unsigned long mask =
-        ULONG_MAX >> (CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size());
+    unsigned long mask = ULONG_MAX >> shift;
     unsigned long all_set = ULONG_MAX & mask;
     after_set = after_set & mask;
     return after_set == all_set;
