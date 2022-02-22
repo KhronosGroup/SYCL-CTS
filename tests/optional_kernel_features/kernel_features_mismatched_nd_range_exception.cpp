@@ -19,7 +19,7 @@ struct kernel_functor;
 struct kernel_submission_call;
 
 // Define required size of work group for attribute
-constexpr int testing_wg_size = 16;
+constexpr int testing_wg_size = 1;
 
 class Functor {
  public:
@@ -28,8 +28,8 @@ class Functor {
 };
 
 TEST_CASE(
-    "Kernel features. Exceptions throwns by [[reqd_work_group_size()]] with "
-    "mismatched nd_range",
+    "Kernel features. Submitting a kernel with an nd-range that does not match."
+    "[[sycl::reqd_work_group_size]] throws an exception",
     "[kernel_features]") {
   auto queue = util::get_cts_object::queue();
   const size_t max_wg_size =
@@ -49,8 +49,7 @@ TEST_CASE(
   sycl::nd_range<1> mismatched_nd_rage(sycl::range(max_wg_size + 1),
                                        sycl::range(max_wg_size + 1));
 
-  {
-    INFO("Task as separate lambda");
+  SECTION("Task as separate lambda") {
     bool is_exception_thrown = false;
     try {
       queue
@@ -67,8 +66,7 @@ TEST_CASE(
     CHECK(is_exception_expected == is_exception_thrown);
   }
 
-  {
-    INFO("Task as functor");
+  SECTION("Task as functor") {
     bool is_exception_thrown = false;
     try {
       queue
@@ -84,8 +82,7 @@ TEST_CASE(
     CHECK(is_exception_expected == is_exception_thrown);
   }
 
-  {
-    INFO("Task as submission call");
+  SECTION("Task as submission call") {
     bool is_exception_thrown = false;
     try {
       queue
