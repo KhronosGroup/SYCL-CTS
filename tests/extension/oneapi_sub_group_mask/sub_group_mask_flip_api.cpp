@@ -18,7 +18,6 @@ using namespace sycl_cts;
 struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
-    int shift = CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size();
     // sub_group_mask's size must be in the range between 0 (excluded) and 32
     // (included) to rule out UB
     if (sub_group_mask.size() > 32 || sub_group_mask.size() == 0) return false;
