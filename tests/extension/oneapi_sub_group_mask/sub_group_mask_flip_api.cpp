@@ -19,15 +19,16 @@ struct check_result_flip {
   bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     int shift = CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size();
-    // sub_group_mask's size is expected to be greater than 0 and not to be
-    // greater than 32 in these tests but check is added to make sure of it
-    if (shift < 0 || sub_group_mask.size() == 0) return false;
+    // sub_group_mask's size must be in the range between 0 (excluded) and 32
+    // (included) to rule out UB
+    if (sub_group_mask.size() > 32 || sub_group_mask.size() == 0) return false;
     unsigned long before_flip, after_flip;
     sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip();
     sub_group_mask.extract_bits(after_flip);
     // mask off irrelevant bits
-    unsigned long mask = ULONG_MAX >> shift;
+    unsigned long mask =
+        ULONG_MAX >> (CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size());
     return ((after_flip & before_flip) & mask) == 0;
   }
 };
