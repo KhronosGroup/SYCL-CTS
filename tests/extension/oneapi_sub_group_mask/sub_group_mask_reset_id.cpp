@@ -16,7 +16,7 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_reset_id {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     for (size_t N = 0; N < sub_group_mask.size(); N += 3) {
       sub_group_mask.reset(sycl::id(N));
@@ -36,7 +36,7 @@ struct check_result_reset_id {
 };
 
 struct check_type_reset_id {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<void,
                         decltype(sub_group_mask.reset(sycl::id()))>::value;
   }

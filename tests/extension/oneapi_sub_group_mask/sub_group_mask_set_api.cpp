@@ -16,18 +16,25 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_set {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
+    // sub_group_mask's size must be in the range between 0 (excluded) and 32
+    // (included) to rule out UB
+    if (sub_group_mask.size() > 32 || sub_group_mask.size() == 0) return false;
     unsigned long after_set;
-    unsigned long zero = 0;
     sub_group_mask.set();
     sub_group_mask.extract_bits(after_set);
-    return after_set == ~zero;
+    // mask off irrelevant bits
+    unsigned long mask =
+        ULONG_MAX >> (CHAR_BIT * sizeof(unsigned long) - sub_group_mask.size());
+    unsigned long all_set = ULONG_MAX & mask;
+    after_set = after_set & mask;
+    return after_set == all_set;
   }
 };
 
 struct check_type_set {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<void, decltype(sub_group_mask.set())>::value;
   }
 };
