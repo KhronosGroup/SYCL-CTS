@@ -31,24 +31,28 @@ namespace support {
 #if defined(__COMPUTECPP__)
 constexpr bool exception_code = false;
 constexpr bool exception_category = false;
+constexpr bool sycl_errc = false;
 constexpr bool sycl_errc_for = false;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = false;
 #elif defined(__HIPSYCL__)
 constexpr bool exception_code = true;
 constexpr bool exception_category = false;
+constexpr bool sycl_errc = false;
 constexpr bool sycl_errc_for = false;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = false;
 #elif defined(__DPCPP__)
 constexpr bool exception_code = true;
 constexpr bool exception_category = true;
+constexpr bool sycl_errc = true;
 constexpr bool sycl_errc_for = true;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = ;
 #else
 constexpr bool exception_code = true;
 constexpr bool exception_category = true;
+constexpr bool sycl_errc = true;
 constexpr bool sycl_errc_for = true;
 constexpr bool sycl_error_category_for = true;
 constexpr bool sycl_make_error_code = true;
@@ -69,8 +73,7 @@ inline std::string stringify_sycl_exception(const sycl::exception& e) {
   out << "SYCL exception\n";
 
   // Define helpers to format exception details
-  auto append_str = [&out](const char* description, std::string&& value) {
-    // Uses r-value reference directly
+  auto append_str = [&out](const char* description, const std::string& value) {
     out << "with " << description << ": '" << value << "'\n";
   };
   auto append_cstr = [&append_str](const char* description, const char* value) {
@@ -94,7 +97,17 @@ inline std::string stringify_sycl_exception(const sycl::exception& e) {
   } else {
     // Using reference to avoid object slicing
     const auto& code = e.code();
-    append_str("code value", std::to_string(code.value()));
+
+    if constexpr(!detail::support::sycl_errc) {
+      append_cstr("code", "errc enum not supported by implementation");
+    } else {
+      using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
+      const auto& errc_value = static_cast<sycl::errc>(code.value());
+
+      append_str("code", CodeStringMakerT::convert(errc_value));
+    }
+
+    append_str("code raw value", std::to_string(code.value()));
     append_str("code message", code.message());
   }
 
