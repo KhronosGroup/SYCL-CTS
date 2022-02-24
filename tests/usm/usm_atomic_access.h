@@ -73,6 +73,16 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
              " memory allocation");
     return;
   }
+  auto orders =
+      queue.get_device()
+          .get_info<sycl::info::device::atomic_memory_order_capabilities>();
+  if (std::find(orders.begin(), orders.end(), sycl::memory_order::seq_cst) ==
+      orders.end()) {
+    log.note(
+        "Device does not support atomics with sequentially consistent memory "
+        "order");
+    return;
+  }
 
   auto flag{usm_helper::allocate_usm_memory<AllocMemT, int>(queue)};
   auto counter{usm_helper::allocate_usm_memory<AllocMemT, CounterT>(queue)};
