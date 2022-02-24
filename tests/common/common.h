@@ -21,6 +21,7 @@
 #include "conversion.h"
 #include "cts_async_handler.h"
 #include "cts_selector.h"
+#include "enums.h"
 #include "get_cts_object.h"
 #include "macros.h"
 #include "string_makers.h"
