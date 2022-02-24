@@ -11,7 +11,6 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <mutex>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
@@ -134,19 +133,17 @@ class resolvable_host_event {
           for (auto& dep : dependencies) {
             cgh.depends_on(dep);
           }
-          cgh.host_task([this] {
-            std::unique_lock<std::mutex> lk(mut);
-            cv.wait(lk, [this] { return should_resolve; });
-          });
+          cgh.host_task([this] { promise.get_future().wait(); });
         });
   }
 
   sycl::event& get_sycl_event() { return event; }
 
   void resolve() {
-    std::lock_guard<std::mutex> lk(mut);
-    should_resolve = true;
-    cv.notify_one();
+    if (!is_resolved) {
+      is_resolved = true;
+      promise.set_value();
+    }
   }
 
   virtual ~resolvable_host_event() {
@@ -155,9 +152,8 @@ class resolvable_host_event {
   }
 
  private:
-  std::mutex mut;
-  std::condition_variable cv;
-  bool should_resolve = false;
+  bool is_resolved = false;
+  std::promise<void> promise;
   sycl::event event;
 };
 
@@ -191,7 +187,7 @@ class delayed_host_event : public resolvable_host_event {
  public:
   delayed_host_event(std::chrono::milliseconds delay)
       : resolvable_host_event() {
-    future = std::async(std::launch::async, [this, delay]() {
+    future = std::async(std::launch::async, [this, delay] {
       std::this_thread::sleep_for(delay);
       resolve();
       resolved = true;

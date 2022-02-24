@@ -86,8 +86,8 @@ bool check_return_type_bool(returnT returnVal) {
 template <typename expectedT, typename actualT>
 void check_equal_type(actualT actualVal, std::string logMsg) {
   if (typeid(expectedT) != typeid(actualT)) {
-    FAIL(logMsg + "\nGot type -> " + std::string(typeid(actualT).name()) +
-         "\nExpected type -> " + std::string(typeid(expectedT).name()));
+    FAIL(logMsg << "\nGot type -> " << typeid(actualT).name()
+                << "\nExpected type -> " << typeid(expectedT).name());
   }
 }
 
