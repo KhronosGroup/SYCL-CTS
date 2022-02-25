@@ -24,8 +24,7 @@ class Functor {
 };
 
 TEMPLATE_TEST_CASE_SIG(
-    "Kernel features. Exceptions thrown by [[reqd_work_group_size(N)]] with "
-    "unsupported size",
+    "Exceptions thrown by [[reqd_work_group_size(N)]] with unsupported size",
     "[kernel_features]", ((size_t N), N), 16, 4294967295) {
   auto queue = util::get_cts_object::queue();
   auto max_wg_size =
