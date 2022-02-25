@@ -17,13 +17,13 @@ using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
 
-TEMPLATE_TEST_CASE_SIG(
-    "Kernel features. Exceptions throwns by [[device_has()]]",
-    "[kernel_features]",
-    ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
-     FeatureAspectT),
-    (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
-    (AtomicRefT, sycl::aspect::atomic64)) {
+TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
+                       "[kernel_features]",
+                       ((typename FeatureTypeT, sycl::aspect FeatureAspectT),
+                        FeatureTypeT, FeatureAspectT),
+                       (sycl::half, sycl::aspect::fp16),
+                       (double, sycl::aspect::fp64),
+                       (AtomicRefT, sycl::aspect::atomic64)) {
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -95,7 +95,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
-  #ifdef SYCL_EXTERNAL
+#ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel does not have the attribute [[sycl::device_has()]] but it "
       "calls a SYCL_EXTERNAL function which uses the tested feature. The "
@@ -132,7 +132,7 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
-  #endif
+#endif
 
   SECTION(
       "Kernel does not use the tested feature but is decorated with the "
@@ -276,7 +276,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
-  #ifdef SYCL_EXTERNAL
+#ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel with attribute [[sycl::device_has()]] for not currently tested "
       "feature but with SYCL_EXTERNAL function with tested feature and "
@@ -324,6 +324,6 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
-  #endif
+#endif
 }
 }  // namespace kernel_features_device_has_exceptions
