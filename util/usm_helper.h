@@ -21,8 +21,13 @@ namespace usm_helper {
  */
 template <sycl::usm::alloc alloc, typename elems_typeT>
 auto allocate_usm_memory(const sycl::queue &queue, size_t num_elements = 1) {
-  const auto &device{queue.get_device()};
   const auto &context{queue.get_context()};
+  // According to the SYCL 2020 (rev. 4, $4.8.4. Unified shared memory pointer
+  // queries) 'get_pointer_device' must return the first device in context for
+  // the usm::alloc::host kind.
+  const auto &device{alloc == sycl::usm::alloc::host
+                         ? queue.get_context().get_devices()[0]
+                         : queue.get_device()};
 
   auto deleter = [=](elems_typeT *ptr) { sycl::free(ptr, context); };
 
