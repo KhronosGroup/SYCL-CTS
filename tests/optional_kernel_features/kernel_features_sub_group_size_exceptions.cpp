@@ -24,14 +24,13 @@ class functor_with_attribute {
 };
 
 TEMPLATE_TEST_CASE_SIG(
-    "Kernel features. Runtime exception if device doesn't support required "
-    "sub-group size",
+    "Runtime exception if device doesn't support required sub-group size",
     "[kernel_features]", ((size_t N), N), 16, 4099) {
   auto queue = util::get_cts_object::queue();
-      
+
   const sycl::errc errc_expected = sycl::errc::kernel_not_supported;
   bool is_exception_expected = true;
-  
+
   // Verify N supported or not supported as sub_group size on the current device
   const auto sg_sizes_vec =
       queue.get_device().get_info<sycl::info::device::sub_group_sizes>();
