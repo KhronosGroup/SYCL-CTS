@@ -40,7 +40,7 @@ TEMPLATE_TEST_CASE_SIG(
   }
 
   {
-    const auto separate_lambda_no_arg = []() [[sycl::reqd_sub_group_size(N)]]{};
+    const auto separate_lambda_no_arg = [] [[sycl::reqd_sub_group_size(N)]]{};
     const auto separate_lambda_item_arg =
         [](sycl::item<1>) [[sycl::reqd_sub_group_size(N)]]{};
     const auto separate_lambda_group_arg =
