@@ -37,7 +37,7 @@ void get_expected_bits(T &out, uint32_t mask_size, int pos) {
 
 template <typename T>
 struct check_result_extract_bits {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     for (size_t pos = 0; pos <= sub_group_mask.size(); pos++) {
       T bits;
@@ -52,7 +52,7 @@ struct check_result_extract_bits {
 
 template <typename T>
 struct check_type_extract_bits {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     T bits;
     return std::is_same_v<void, decltype(sub_group_mask.extract_bits(bits))>;
   }

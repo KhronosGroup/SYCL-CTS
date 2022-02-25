@@ -10,6 +10,7 @@
 #define __SYCL_CTS_TEST_USM_ATOMIC_ACCESS_H
 
 #include "../../util/usm_helper.h"
+#include "../common/common.h"
 #include "../common/type_coverage.h"
 #include <chrono>
 #include <cstring>
@@ -70,6 +71,16 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
     log.note("Device does not support atomic access to the unified " +
              std::string(usm_helper::get_allocation_description<AllocMemT>()) +
              " memory allocation");
+    return;
+  }
+  auto orders =
+      queue.get_device()
+          .get_info<sycl::info::device::atomic_memory_order_capabilities>();
+  if (std::find(orders.begin(), orders.end(), sycl::memory_order::seq_cst) ==
+      orders.end()) {
+    log.note(
+        "Device does not support atomics with sequentially consistent memory "
+        "order");
     return;
   }
 

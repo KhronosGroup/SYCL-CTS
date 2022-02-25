@@ -16,19 +16,19 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_flip_id {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     auto local_id = sub_group.get_local_id();
     unsigned long before_flip, after_flip;
     sub_group_mask.extract_bits(before_flip);
     sub_group_mask.flip(local_id);
     sub_group_mask.extract_bits(after_flip);
-    return after_flip == before_flip ^ (1 << local_id.get(0));
+    return after_flip == (before_flip ^ (1 << local_id.get(0)));
   }
 };
 
 struct check_type_flip_id {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<void, decltype(sub_group_mask.flip(sycl::id()))>::value;
   }
 };

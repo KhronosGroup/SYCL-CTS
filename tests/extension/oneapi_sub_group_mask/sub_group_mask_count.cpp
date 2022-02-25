@@ -16,14 +16,14 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_count {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     return sub_group_mask.count() == sub_group.get_local_range().get(0) / 2;
   }
 };
 
 struct check_type_count {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<uint32_t, decltype(sub_group_mask.count())>::value;
   }
 };
