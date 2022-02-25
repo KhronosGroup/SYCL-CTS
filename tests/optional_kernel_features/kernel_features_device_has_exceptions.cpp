@@ -28,7 +28,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
 
   // Check if the device supports testing feature
   bool is_exception_expected = true;
-  if (queue.device_has(FeatureAspectT)) {
+  if (queue.get_device().has(FeatureAspectT)) {
     is_exception_expected = false;
   }
 
@@ -39,7 +39,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "Kernel that uses the tested feature but does not have any attribute "
       "[[sycl::device_has()]]") {
     {
-      const auto lambda_no_arg = []() { USE_FEATURE(FeatureTypeT); };
+      const auto lambda_no_arg = [] { USE_FEATURE(FeatureTypeT); };
       const auto lambda_item_arg = [](sycl::item<1>) {
         USE_FEATURE(FeatureTypeT);
       };
@@ -68,7 +68,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "the kernel nor the function have an attribute "
       "[[sycl::device_has()]].") {
     {
-      const auto lambda_no_arg = []() {
+      const auto lambda_no_arg = [] {
         use_feature_function_non_decorated<FeatureTypeT>();
       };
       const auto lambda_item_arg = [](sycl::item<1>) {
@@ -103,7 +103,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "SYCL_EXTERNAL function is declared with the corresponding attribute "
       "[[sycl::device_has()]].") {
     {
-      const auto lambda_no_arg = []() {
+      const auto lambda_no_arg = [] {
         use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
       };
       const auto lambda_item_arg = [](sycl::item<1>) {
@@ -138,7 +138,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "Kernel does not use the tested feature but is decorated with the "
       "corresponding attribute [[sycl::device_has()]].") {
     {
-      const auto lambda_no_arg = []() [[sycl::device_has(FeatureAspectT)]] {
+      const auto lambda_no_arg = [] [[sycl::device_has(FeatureAspectT)]] {
         dummy_function_non_decorated();
       };
       const auto lambda_item_arg =
@@ -172,7 +172,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "corresponding attribute [[sycl::device_has()]]. Neither the kernel "
       "nor the function use the feature.") {
     {
-      const auto lambda_no_arg = []() {
+      const auto lambda_no_arg = [] {
         dummy_function_decorated<FeatureAspectT>();
       };
       const auto lambda_item_arg = [](sycl::item<1>) {
@@ -204,7 +204,7 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
       "corresponding attribute [[sycl::device_has()]]. Function uses the "
       "feature and kernel doesn't.") {
     {
-      const auto lambda_no_arg = []() {
+      const auto lambda_no_arg = [] {
         use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
       };
       const auto lambda_item_arg = [](sycl::item<1>) {
@@ -238,14 +238,13 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
     constexpr sycl::aspect AnotherFeatureAspect =
         get_another_aspect<FeatureAspectT>();
     bool other_feature_exception_expect = true;
-    if (queue.device_has(AnotherFeatureAspect) &&
-        queue.device_has(FeatureAspectT)) {
+    if (queue.get_device().has(AnotherFeatureAspect) &&
+        queue.get_device().has(FeatureAspectT)) {
       other_feature_exception_expect = false;
     }
 
     {
-      const auto lambda_no_arg =
-          []() [[sycl::device_has(AnotherFeatureAspect)]] {
+      const auto lambda_no_arg = [] [[sycl::device_has(AnotherFeatureAspect)]] {
         USE_FEATURE(FeatureTypeT);
       };
       const auto lambda_item_arg =
@@ -285,14 +284,13 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
     constexpr sycl::aspect AnotherFeatureAspect =
         get_another_aspect<FeatureAspectT>();
     bool other_feature_exception_expect = true;
-    if (queue.device_has(AnotherFeatureAspect) &&
-        queue.device_has(FeatureAspectT)) {
+    if (queue.get_device().has(AnotherFeatureAspect) &&
+        queue.get_device().has(FeatureAspectT)) {
       other_feature_exception_expect = false;
     }
 
     {
-      const auto lambda_no_arg =
-          []() [[sycl::device_has(AnotherFeatureAspect)]] {
+      const auto lambda_no_arg = [] [[sycl::device_has(AnotherFeatureAspect)]] {
         use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
       };
       const auto lambda_item_arg =

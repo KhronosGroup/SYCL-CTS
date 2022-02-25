@@ -455,7 +455,7 @@ void run_functor(const bool is_exception_expected,
       try {                                                                    \
         QUEUE                                                                  \
             .submit([&](sycl::handler &cgh) {                                  \
-              cgh.single_task([=]() ATTRIBUTE { __VA_ARGS__; });               \
+              cgh.single_task([=] ATTRIBUTE { __VA_ARGS__; });                 \
             })                                                                 \
             .wait();                                                           \
         is_exception_thrown = false;                                           \
