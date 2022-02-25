@@ -32,28 +32,24 @@ namespace support {
 #if defined(__COMPUTECPP__)
 constexpr bool exception_code = false;
 constexpr bool exception_category = false;
-constexpr bool sycl_errc = false;
 constexpr bool sycl_errc_for = false;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = false;
 #elif defined(__HIPSYCL__)
 constexpr bool exception_code = true;
 constexpr bool exception_category = false;
-constexpr bool sycl_errc = false;
 constexpr bool sycl_errc_for = false;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = false;
 #elif defined(__DPCPP__)
 constexpr bool exception_code = true;
 constexpr bool exception_category = true;
-constexpr bool sycl_errc = true;
 constexpr bool sycl_errc_for = true;
 constexpr bool sycl_error_category_for = false;
 constexpr bool sycl_make_error_code = ;
 #else
 constexpr bool exception_code = true;
 constexpr bool exception_category = true;
-constexpr bool sycl_errc = true;
 constexpr bool sycl_errc_for = true;
 constexpr bool sycl_error_category_for = true;
 constexpr bool sycl_make_error_code = true;
@@ -99,15 +95,14 @@ inline std::string stringify_sycl_exception(const sycl::exception& e) {
     // Using reference to avoid object slicing
     const auto& code = e.code();
 
-    if constexpr(!detail::support::sycl_errc) {
-      append_cstr("code", "errc enum not supported by implementation");
-    } else {
-      using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
-      const auto& errc_value = static_cast<sycl::errc>(code.value());
+#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 0
+    append_cstr("code", "errc enum not supported by implementation");
+#else
+    using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
+    const auto& errc_value = static_cast<sycl::errc>(code.value());
 
-      append_str("code", CodeStringMakerT::convert(errc_value));
-    }
-
+    append_str("code", CodeStringMakerT::convert(errc_value));
+#endif
     append_str("code raw value", std::to_string(code.value()));
     append_str("code message", code.message());
   }
@@ -152,6 +147,7 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
   const std::error_category& m_category;
 };
 
+#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 /**
  *  Matcher for sycl::errc error codes
  *  C++ provides semantic match for std::error_code by operator==, still SYCL
@@ -192,6 +188,7 @@ struct matcher_equals_exception
  private:
   const sycl::errc& m_code_value;
 };
+#endif
 
 /**
  *  Matcher for backend-specific category and error codes
@@ -253,6 +250,7 @@ inline auto has_exception_category(const std::error_category& category) {
   return detail::matcher_exception_category(category);
 }
 
+#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 /**
  *  Provides matcher for sycl::errc error codes with sycl_category check
  *
@@ -264,6 +262,7 @@ inline auto has_exception_category(const std::error_category& category) {
 inline auto equals_exception(const sycl::errc& code) {
   return detail::matcher_equals_exception(code);
 }
+#endif
 
 /**
  *  Provides matcher for backend-specific category and error codes

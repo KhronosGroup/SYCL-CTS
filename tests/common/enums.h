@@ -12,7 +12,14 @@
 #include <catch2/catch_tostring.hpp>
 #include <sycl/sycl.hpp>
 
-#if !defined(__HIPSYCL__)
+// TODO: Remove when all implementations support the sycl::errc enum
+#if defined(__HIPSYCL__) || defined(__COMPUTECPP__)
+#define SYCL_CTS_SUPPORT_HAS_ERRC_ENUM 0
+#else
+#define SYCL_CTS_SUPPORT_HAS_ERRC_ENUM 1
+#endif
+
+#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 CATCH_REGISTER_ENUM(sycl::errc, sycl::errc::success, sycl::errc::runtime,
                     sycl::errc::kernel, sycl::errc::accessor,
                     sycl::errc::nd_range, sycl::errc::event,
