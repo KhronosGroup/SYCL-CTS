@@ -28,7 +28,7 @@ class Functor {
 };
 
 TEST_CASE(
-    "Kernel features. Submitting a kernel with an nd-range that does not match."
+    "Submitting a kernel with an nd-range that does not match."
     "[[sycl::reqd_work_group_size]] throws an exception",
     "[kernel_features]") {
   auto queue = util::get_cts_object::queue();
