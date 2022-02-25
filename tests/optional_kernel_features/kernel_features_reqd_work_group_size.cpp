@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE_SIG(
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() [[sycl::reqd_work_group_size(N)]]{};
+    const auto lambda_no_arg = [] [[sycl::reqd_work_group_size(N)]]{};
     const auto lambda_item_arg =
         [](sycl::item<1>) [[sycl::reqd_work_group_size(N)]]{};
     const auto lambda_group_arg =
