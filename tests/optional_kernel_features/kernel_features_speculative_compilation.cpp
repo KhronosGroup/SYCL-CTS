@@ -71,7 +71,7 @@ TEST_CASE("Speculative compilation with supported feature",
     }
   }
 
-  if (queue.device_has(sycl::aspect::fp16)) {
+  if (queue.get_device().has(sycl::aspect::fp16)) {
     {
       const auto separate_lambda_no_arg = [] {
         use_feature_function_non_decorated<sycl::half>();
@@ -100,7 +100,7 @@ TEST_CASE("Speculative compilation with supported feature",
     }
   }
 
-  if (queue.device_has(sycl::aspect::fp64)) {
+  if (queue.get_device().has(sycl::aspect::fp64)) {
     {
       const auto separate_lambda_no_arg = [] {
         use_feature_function_non_decorated<double>();
@@ -129,7 +129,7 @@ TEST_CASE("Speculative compilation with supported feature",
     }
   }
 
-  if (queue.device_has(sycl::aspect::atomic64)) {
+  if (queue.get_device().has(sycl::aspect::atomic64)) {
     {
       const auto separate_lambda_no_arg = [] {
         use_feature_function_non_decorated<AtomicRefT>();
