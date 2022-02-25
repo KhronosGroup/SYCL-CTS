@@ -19,6 +19,7 @@
 
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <utility>
 
 namespace sycl_cts {
@@ -153,11 +154,13 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
 
 /**
  *  Matcher for sycl::errc error codes
- *  C++ provides semantic match for std::error_code by operator==
+ *  C++ provides semantic match for std::error_code by operator==, still SYCL
+ *  doesn't support std::error_condition, so we have a strict equality check
+ *  here
  */
-struct matcher_exception_code_semantic_match
+struct matcher_equals_exception
     : public Catch::Matchers::MatcherGenericBase {
-  matcher_exception_code_semantic_match(const sycl::errc& code_value)
+  matcher_equals_exception(const sycl::errc& code_value)
       : m_code_value(code_value) {}
 
   static constexpr bool is_supported_by_implementation() {
@@ -170,18 +173,19 @@ struct matcher_exception_code_semantic_match
       // should fail with this matcher
       return false;
     } else {
-      // Semantic match
-      return other.code() == m_code_value;
+      // Compare two std::error_code instances
+      return std::is_error_code_enum_v<sycl::errc> &&
+             (other.code() == m_code_value);
     }
   }
 
   std::string describe() const override {
+    using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
     std::ostringstream result;
-    result << "has code semantically matching to ";
+    result << "has code value ";
     result << to_integral(m_code_value);
-    if constexpr (detail::support::sycl_make_error_code) {
-      result << " (" << sycl::make_error_code(m_code_value).message() << ")";
-    }
+    result << " (" << CodeStringMakerT::convert(m_code_value) << ")";
+    result << " for sycl_category";
     return result.str();
   }
 
@@ -243,23 +247,22 @@ class matcher_equals_exception_for
  *
  *  Usage example:
  *     CHECK_THROWS_MATCHES(action, sycl::exception,
- *         has_exception_category(sycl::sycl_category()) &&
- *         matches_exception_code(sycl::errc::invalid));
+ *         has_exception_category(sycl::sycl_category()));
  */
 inline auto has_exception_category(const std::error_category& category) {
   return detail::matcher_exception_category(category);
 }
 
 /**
- *  Provides matcher for sycl::errc error codes with semantic match
+ *  Provides matcher for sycl::errc error codes with sycl_category check
  *
  *  Usage example:
  *     CHECK_THROWS_MATCHES(action, sycl::exception,
- *         matches_exception_code(sycl::errc::feature_not_supported) ||
- *         matches_exception_code(sycl::errc::invalid));
+ *         equals_exception(sycl::errc::feature_not_supported) ||
+ *         equals_exception(sycl::errc::invalid));
  */
-inline auto matches_exception_code(const sycl::errc& code) {
-  return detail::matcher_exception_code_semantic_match(code);
+inline auto equals_exception(const sycl::errc& code) {
+  return detail::matcher_equals_exception(code);
 }
 
 /**
