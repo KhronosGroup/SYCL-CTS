@@ -9,6 +9,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 
 namespace kernel_features_mismatched_nd_range_exception {
@@ -27,10 +28,10 @@ class Functor {
       sycl::nd_item<1>) const {}
 };
 
-TEST_CASE(
-    "Submitting a kernel with an nd-range that does not match."
-    "[[sycl::reqd_work_group_size]] throws an exception",
-    "[kernel_features]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Submitting a kernel with an nd-range that does not match."
+ "[[sycl::reqd_work_group_size]] throws an exception",
+ "[kernel_features]")({
   auto queue = util::get_cts_object::queue();
   const size_t max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
@@ -100,5 +101,5 @@ TEST_CASE(
     }
     CHECK(is_exception_expected == is_exception_thrown);
   }
-}
+});
 }  // namespace kernel_features_mismatched_nd_range_exception
