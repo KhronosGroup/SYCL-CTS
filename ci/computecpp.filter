@@ -4,7 +4,6 @@ buffer
 context
 device
 device_event
-event
 exception_handling
 exceptions
 group
@@ -19,7 +18,6 @@ math_builtin_api
 multi_ptr
 nd_item
 opencl_interop
-optional_kernel_features
 platform
 reduction
 specialization_constants

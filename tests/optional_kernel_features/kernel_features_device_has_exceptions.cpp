@@ -7,8 +7,10 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
+
 namespace kernel_features_device_has_exceptions {
 using namespace sycl_cts;
 using namespace kernel_features_common;
@@ -17,13 +19,12 @@ using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
 
-TEMPLATE_TEST_CASE_SIG(
-    "Kernel features. Exceptions throwns by [[device_has()]]",
-    "[kernel_features]",
-    ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
-     FeatureAspectT),
-    (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
-    (AtomicRefT, sycl::aspect::atomic64)) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
+("Exceptions throwns by [[device_has()]]", "[kernel_features]",
+ ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
+  FeatureAspectT),
+ (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+ (AtomicRefT, sycl::aspect::atomic64))({
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -95,7 +96,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
-  #ifdef SYCL_EXTERNAL
+#ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel does not have the attribute [[sycl::device_has()]] but it "
       "calls a SYCL_EXTERNAL function which uses the tested feature. The "
@@ -132,7 +133,7 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
-  #endif
+#endif
 
   SECTION(
       "Kernel does not use the tested feature but is decorated with the "
@@ -238,8 +239,8 @@ TEMPLATE_TEST_CASE_SIG(
     constexpr sycl::aspect AnotherFeatureAspect =
         get_another_aspect<FeatureAspectT>();
     bool other_feature_exception_expect = true;
-    if (queue.device_has(AnotherFeatureAspect) &&
-        queue.device_has(FeatureAspectT)) {
+    if (queue.get_device().has(AnotherFeatureAspect) &&
+        queue.get_device().has(FeatureAspectT)) {
       other_feature_exception_expect = false;
     }
 
@@ -276,7 +277,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
   }
 
-  #ifdef SYCL_EXTERNAL
+#ifdef SYCL_EXTERNAL
   SECTION(
       "Kernel with attribute [[sycl::device_has()]] for not currently tested "
       "feature but with SYCL_EXTERNAL function with tested feature and "
@@ -285,8 +286,8 @@ TEMPLATE_TEST_CASE_SIG(
     constexpr sycl::aspect AnotherFeatureAspect =
         get_another_aspect<FeatureAspectT>();
     bool other_feature_exception_expect = true;
-    if (queue.device_has(AnotherFeatureAspect) &&
-        queue.device_has(FeatureAspectT)) {
+    if (queue.get_device().has(AnotherFeatureAspect) &&
+        queue.get_device().has(FeatureAspectT)) {
       other_feature_exception_expect = false;
     }
 
@@ -324,6 +325,6 @@ TEMPLATE_TEST_CASE_SIG(
                                                   FeatureAspectT>());
     }
   }
-  #endif
-}
+#endif
+});
 }  // namespace kernel_features_device_has_exceptions

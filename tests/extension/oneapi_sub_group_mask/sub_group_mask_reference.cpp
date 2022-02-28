@@ -16,7 +16,7 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_reference {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     for (size_t N = 0; N < sub_group_mask.size(); N++) {
       sycl::ext::oneapi::sub_group_mask::reference ref_to_bit =
@@ -59,7 +59,7 @@ struct check_result_reference {
 };
 
 struct check_type_reference {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<sycl::ext::oneapi::sub_group_mask::reference,
                         decltype(sub_group_mask[sycl::id()])>::value;
   }

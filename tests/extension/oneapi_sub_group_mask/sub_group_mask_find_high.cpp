@@ -16,7 +16,7 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_find_high {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     return sub_group_mask.find_high() ==
            sycl::id((sub_group.get_local_range().get(0) + 1) / 2 - 1);
@@ -24,7 +24,7 @@ struct check_result_find_high {
 };
 
 struct check_result_find_high_no_bits_set {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     return sub_group_mask.find_high() ==
            sycl::id(sub_group.get_local_range().get(0));
@@ -32,7 +32,7 @@ struct check_result_find_high_no_bits_set {
 };
 
 struct check_type_find_high {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<sycl::id<1>,
                         decltype(sub_group_mask.find_high())>::value;
   }
