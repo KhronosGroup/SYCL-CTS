@@ -110,11 +110,12 @@
 #define INTERNAL_CTS_ENABLED_TEST_CASE_BODY(...) \
   { __VA_ARGS__; }
 
-#define INTERNAL_CTS_CHECK_ALL_IMPLS(catchMacroProxy, impl, ...)          \
-  INTERNAL_CTS_IF(INTERNAL_CTS_IS_IMPL(impl))                             \
-  (INTERNAL_CTS_DISABLED_TEST_CASE,                                       \
-   INTERNAL_CTS_IF(INTERNAL_CTS_HAS_ARGS(__VA_ARGS__))(                   \
-       INTERNAL_CTS_DEFER3(_INTERNAL_CTS_CHECK_ALL_IMPLS)()(__VA_ARGS__), \
+#define INTERNAL_CTS_CHECK_ALL_IMPLS(catchMacroProxy, impl, ...)             \
+  INTERNAL_CTS_IF(INTERNAL_CTS_IS_IMPL(impl))                                \
+  (INTERNAL_CTS_DISABLED_TEST_CASE,                                          \
+   INTERNAL_CTS_IF(INTERNAL_CTS_HAS_ARGS(__VA_ARGS__))(                      \
+       INTERNAL_CTS_DEFER3(_INTERNAL_CTS_CHECK_ALL_IMPLS)()(catchMacroProxy, \
+                                                            __VA_ARGS__),    \
        catchMacroProxy))
 #define _INTERNAL_CTS_CHECK_ALL_IMPLS() INTERNAL_CTS_CHECK_ALL_IMPLS
 
