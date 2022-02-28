@@ -7,6 +7,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
 
@@ -41,8 +42,8 @@ using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
 
-TEST_CASE("Speculative compilation with supported feature",
-          "[kernel_features]") {
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("Speculative compilation with supported feature", "[kernel_features]")({
   auto queue = util::get_cts_object::queue();
   const sycl::errc errc_expected = sycl::errc::success;
   constexpr bool is_exception_expected = false;
@@ -272,5 +273,5 @@ TEST_CASE("Speculative compilation with supported feature",
                           NO_KERNEL_BODY);
     }
   }
-}
+});
 }  // namespace kernel_features_speculative_compilation
