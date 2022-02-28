@@ -7,6 +7,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
 #include <algorithm>
@@ -23,9 +24,9 @@ class functor_with_attribute {
   [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::group<1>) const {}
 };
 
-TEMPLATE_TEST_CASE_SIG(
-    "Runtime exception if device doesn't support required sub-group size",
-    "[kernel_features]", ((size_t N), N), 16, 4099) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL, ComputeCpp)
+("Runtime exception if device doesn't support required sub-group size",
+ "[kernel_features]", ((size_t N), N), 16, 4099)({
   auto queue = util::get_cts_object::queue();
 
   const sycl::errc errc_expected = sycl::errc::kernel_not_supported;
@@ -60,5 +61,5 @@ TEMPLATE_TEST_CASE_SIG(
     RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
                         [[sycl::reqd_sub_group_size(N)]], {});
   }
-}
+});
 }  // namespace kernel_features_sub_group_size
