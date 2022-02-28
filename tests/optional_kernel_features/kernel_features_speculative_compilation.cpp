@@ -51,7 +51,7 @@ TEST_CASE("Speculative compilation with supported feature",
   // group size
   {
     {
-      const auto separate_lambda_no_arg = [] {};
+      const auto separate_lambda_no_arg = []() {};
       const auto separate_lambda_item_arg = [](sycl::item<1>) {};
       const auto separate_lambda_group_arg = [](sycl::group<1>) {};
 
@@ -73,7 +73,7 @@ TEST_CASE("Speculative compilation with supported feature",
 
   if (queue.get_device().has(sycl::aspect::fp16)) {
     {
-      const auto separate_lambda_no_arg = [] {
+      const auto separate_lambda_no_arg = []() {
         use_feature_function_non_decorated<sycl::half>();
       };
       const auto separate_lambda_item_arg = [](sycl::item<1>) {
@@ -102,7 +102,7 @@ TEST_CASE("Speculative compilation with supported feature",
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
     {
-      const auto separate_lambda_no_arg = [] {
+      const auto separate_lambda_no_arg = []() {
         use_feature_function_non_decorated<double>();
       };
       const auto separate_lambda_item_arg = [](sycl::item<1>) {
@@ -131,7 +131,7 @@ TEST_CASE("Speculative compilation with supported feature",
 
   if (queue.get_device().has(sycl::aspect::atomic64)) {
     {
-      const auto separate_lambda_no_arg = [] {
+      const auto separate_lambda_no_arg = []() {
         use_feature_function_non_decorated<AtomicRefT>();
       };
       const auto separate_lambda_item_arg = [](sycl::item<1>) {
@@ -165,7 +165,7 @@ TEST_CASE("Speculative compilation with supported feature",
   if (max_wg_size >= testing_wg_size[0]) {
     {
       const auto separate_lambda_no_arg =
-          [] [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
+          []() [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
       const auto separate_lambda_item_arg = [](sycl::item<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
@@ -191,7 +191,7 @@ TEST_CASE("Speculative compilation with supported feature",
   if (max_wg_size >= testing_wg_size[1]) {
     {
       const auto separate_lambda_no_arg =
-          [] [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
+          []() [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
       const auto separate_lambda_item_arg = [](sycl::item<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
@@ -222,7 +222,7 @@ TEST_CASE("Speculative compilation with supported feature",
   if (find_res != sg_sizes_vec.end()) {
     {
       const auto separate_lambda_no_arg =
-          [] [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
+          []() [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
       const auto separate_lambda_item_arg =
           [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
@@ -250,7 +250,7 @@ TEST_CASE("Speculative compilation with supported feature",
   if (find_res != sg_sizes_vec.end()) {
     {
       const auto separate_lambda_no_arg =
-          [] [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
+          []() [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
       const auto separate_lambda_item_arg =
           [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
