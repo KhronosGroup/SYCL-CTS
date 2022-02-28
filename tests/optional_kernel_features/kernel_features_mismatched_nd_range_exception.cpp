@@ -50,7 +50,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   sycl::nd_range<1> mismatched_nd_rage(sycl::range(max_wg_size + 1),
                                        sycl::range(max_wg_size + 1));
 
-  SECTION("Task as separate lambda") {
+  {
     bool is_exception_thrown = false;
     try {
       queue
@@ -67,7 +67,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     CHECK(is_exception_expected == is_exception_thrown);
   }
 
-  SECTION("Task as functor") {
+  {
     bool is_exception_thrown = false;
     try {
       queue
@@ -83,7 +83,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     CHECK(is_exception_expected == is_exception_thrown);
   }
 
-  SECTION("Task as submission call") {
+  {
     bool is_exception_thrown = false;
     try {
       queue
