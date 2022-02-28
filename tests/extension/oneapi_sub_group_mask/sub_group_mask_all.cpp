@@ -16,21 +16,21 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_all_false {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     return !sub_group_mask.all();
   }
 };
 
 struct check_result_all_true {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &) {
     return sub_group_mask.all();
   }
 };
 
 struct check_type_all {
-  bool operator()(const sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(const sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<bool, decltype(sub_group_mask.all())>::value;
   }
 };

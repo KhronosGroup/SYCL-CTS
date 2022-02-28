@@ -174,7 +174,7 @@ function(add_cts_test_helper)
 
   target_link_libraries(${test_exe_name} PRIVATE CTS::util CTS::main_function oclmath)
 
-  target_link_libraries(${test_exe_name} PRIVATE Catch2::Catch2)
+  target_link_libraries(${test_exe_name} PRIVATE Catch2::Catch2 Threads::Threads)
 
   set_property(TARGET ${test_exe_name}
                PROPERTY FOLDER "Tests/${test_exe_name}")
@@ -223,4 +223,4 @@ foreach(dir ${test_category_dirs})
 endforeach()
 
 target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
-target_link_libraries(test_all PRIVATE Catch2::Catch2)
+target_link_libraries(test_all PRIVATE Catch2::Catch2 Threads::Threads)

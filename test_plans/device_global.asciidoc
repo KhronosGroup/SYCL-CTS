@@ -1,0 +1,433 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL_INTEL_device_global
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/DeviceGlobal/SYCL_INTEL_device_global.asciidoc[SYCL_INTEL_device_global.asciidoc]
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_DEVICE_GLOBAL` so they can be skipped
+if feature is not supported.
+
+=== Underlying device_global types
+
+All of tests described below (with the exception of those tests described under
+"Tests which are not run for all types") are performed using each of the
+following types as the underlying type of a `device_global`.
+
+* `int`
+* `bool`
+* A user-defined struct with several scalar members, no constructor or destructor,
+  and no member functions.
+* `T[N]` where `T` is each of types listed above
+  and `dim` is `2`, `5`, and `10`.
+
+== Tests
+
+=== Basic tests for device_global API
+
+==== multi_ptr()
+
+For const and non const `device_global` instances.
+
+Create `device_global` instance with default constructor.
+
+For the following values as DecorateAddress parameter:
+
+* access::decorated::yes
+* access::decorated::no
+
+Access created instance on device and call get_multi_ptr<IsDecorated>().
+
+Check that return type is `multi_ptr<T, access::address_space::global_space, IsDecorated>`.
+
+Check that resulted `multi_ptr` references to default value.
+
+==== Implicit conversion to a reference to the underlying `T`
+
+* For const and non const `device_global` instances.
+* Create `device_global` instance with default constructor.
+* Access created instance on device and call T() to access reference.
+* Check that resulted reference is to default value.
+* For non const `device_global` assign new T value and check that `device_global` instance now contains new value.
+
+==== get()
+
+* For const and non const `device_global` instances.
+* Create `device_global` instance with default constructor.
+* Access created instance on device and call get() to access reference.
+* Check that return type is `T&` or `const T&`.
+* Check that resulted reference is to default value.
+* For non const `device_global` assign new T value and check that `device_global` instance now contains new value.
+
+==== has_property()
+
+* Create `device_global<T, property_list_t<host_access::value_t<host_access::access::read>>` instance with default constructor.
+* Check that `has_property<host_access>` returns `true`.
+* Check that `has_property<device_image_scope>` returns `false`.
+
+==== get_property()
+
+* Create `device_global<T, property_list_t<host_access::value_t<host_access::access::read>>` instance with default constructor.
+* Check that `get_property<host_access>` returns `host_access::access::read`.
+
+==== element_type
+
+Check that member type `element_type` exists and is_same as `std::remove_extent_t<T>`.
+
+=== Tests for device_global API which are not run for all types
+
+==== operator[]
+
+* For const and non const `device_global<T[N]>` instances, where T[N] - all array types from testing scope.
+* Create `device_global` instance with default constructor.
+* Access created instance on device and call [i] (i = 0..N) to access reference.
+* Check that return type is `element_type&` or `const element_type&`.
+* Check that resulted reference is to default value.
+* For non const `device_global` assign new T values and check that `device_global` instance now contains new values.
+
+==== +operator->+
+
+* For const and non const `device_global` instances with underlying type as
+user-defined struct with and `+operator->()+`.
+* Create `device_global` instance with default constructor.
+* Access created instance on device and call `+operator->()+`.
+* Check that user-defined struct `+operator->()+` were called and its membes were changed as expected.
+
+=== Check functionality
+
+==== Call one kernel multiple times
+
+This check is run for `device_global` with following properites:
+
+* no property
+* `device_image_scope`
+* `host_access(read)`
+* `host_access(write)`
+* `host_access(read_write)`
+* `host_access(none)`
+* `init_mode(reprogram)`
+* `init_mode(reset)`
+* `implement_in_csr(true)`
+* `implement_in_csr(false)`
+
+Steps:
+
+* For non-const `device_global`.
+* Create `device_global` instance with default constructor.
+* Define a kernel that reads the variable and writes a new value.
+* Call the kernel for the first time and verify that it reads the default value.
+* Call the kernel for the second time and verify that it reads the value set from the first invocation.
+
+==== Several kernels for one device
+
+* For const and non const `device_global` instances.
+* Create `device_global` instance with default constructor.
+* Write a value to `device_global` instance in one kernel.
+* Read value from another kernel on the same device and check that it's the same value.
+
+==== Unique for every device
+
+Check is run on all available devices
+
+* For const and non const `device_global` instances.
+* Create `device_global` instance with default constructor.
+* Get available platforms with `sycl::platform::get_platforms()`.
+* For every platform get available devices with `get_devices()`.
+* If two devices are not available, skip this check.
+* If more than two devices available check all combinations.
+* Write a value to `device_global` instance in one kernel on one device.
+* Read value from kernel on another device and check that it's different.
+
+==== Interaction with specialization constants
+
+* Declare a `device_global` without the `device_image_scope` property
+* Define a kernel that uses a specialization constant and also reads/writes in the device_global.
+* Call the kernel once to set the value of the `device_global`.
+* Change the value of the specialization consant.
+* Call the kernel with the new specialization constant value.
+* Make sure the kernel reads the same value from the device_global that was set in the first invocation.
+
+==== Interaction with kernel bundles
+
+* Declare a `device_global` without the `device_image_scope` property
+* Define a kernel that reads / write the `device_global`.
+* Create a kernel bundle from that kernel.
+* Build the kernel bundle and invoke the kernel. This will set the `device_global` to some new value.
+* Build the kernel bundle a second time and invoke the kernel.
+* Make sure the second invocation reads the same value of the `device_global` that was set in the first invocation.
+
+==== Pass a pointer to the underlying T type to another kernel
+
+* Declare a `device_global` variable `G`.
+* Call a kernel `A` that writes a value `X` to the `device_global` and
+  also stores the address `&G.get()` to a buffer accessor.
+* Call a second kernel `B` that reads the address from the buffer accessor.
+  Attempt to read the value of the device global by dereferencing this pointer
+  and verify that you get the value `X` which was set in the first kernel.
+
+==== device_global defined in various ways
+
+Create an application with `device_global` variables defined in the
+following ways:
+
+* Defined at namespace scope.
+* Defined in an unnamed namespace.
+* Defined as a static member variable of a structure.
+
+Perform the following test:
+
+* Create `device_global` instance with default constructor.
+* Access created instance on device by operator T() and write a value to it.
+* Check that `device_global` instance now contains new value.
+
+==== device_global variables with same name
+
+* Define `device_global` variable in an unnamed namespace that are shadowed by a variable with the same name.
+* Access created variables on device and write different value in them.
+* Check that they both contain right values.
+
+=== Overloads of sycl::queue::copy for device_global
+
+Create non const `device_global` instance with default constructor.
+
+Create `const std::remove_all_extents_t<T> *src` with size `sizeof(T)`.
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const std::remove_all_extents_t<T> *src,
+    device_global<T, PropertyListT>& dest,
+    size_t count = sizeof(T) / sizeof(std::remove_all_extents_t<T>),
+    size_t startIndex = 0);`
+*  `template <typename T, typename PropertyListT>
+    event copy(const std::remove_all_extents_t<T> *src,
+    device_global<T, PropertyListT>& dest,
+    size_t count, size_t startIndex, event depEvent);`
+*  `template <typename T, typename PropertyListT>
+    event copy(const std::remove_all_extents_t<T> *src,
+    device_global<T, PropertyListT>& dest,
+    size_t count, size_t startIndex,
+    const std::vector<event> &depEvents);`
+
+Use shortcut overload to copy data and check that `device_global` contains it by
+
+* Executing kernel that reads value.
+* Calling `queue::copy()` overload for copying from `device_global` from the host.
+
+Create non const `device_global` instance with default constructor.
+
+Create `std::remove_all_extents_t<T> *dest` with allocated size `sizeof(T)`.
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count = sizeof(T) / sizeof(std::remove_all_extents_t<T>),
+    size_t startIndex = 0);`
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count, size_t startIndex, event depEvent);`
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count,size_t startIndex, const std::vector<event> &depEvents);`
+
+Write a value to `device_global` instance by executing a kernel, use shortcut overload to copy data
+and check that dest contains it.
+
+Create const `device_global` instance with default constructor.
+Create `std::remove_all_extents_t<T> *dest` with allocated size `sizeof(T)` that conatins non default T values.
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count = sizeof(T) / sizeof(std::remove_all_extents_t<T>),
+    size_t startIndex = 0);`
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count, size_t startIndex, event depEvent);`
+
+*  `template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest,
+    size_t count,size_t startIndex, const std::vector<event> &depEvents);`
+
+Use shortcut overload to copy data and check that dest contains default T values.
+
+=== Overloads of sycl::queue::copy for device_global for arrays
+
+For all `T[N]` from array types from testing scope:
+
+
+Create non const `device_global<T[N]>` instance with default constructor.
+
+Create `const T *src` with size `sizeof(T[N])`.
+
+For `count = 1` and for `startIndex = N / 2`:
+
+For `queue` shortcut:
+
+`template <typename T, typename PropertyListT>
+    event copy(const std::remove_all_extents_t<T> *src,
+    device_global<T, PropertyListT>& dest,
+    count, startIndex);`
+
+Use shortcut overload to copy element and check that `device_global` element
+with index `N/2` equal to `src` element with this index it by executing kernel that reads value.
+Check that all other elements remain equal to default value.
+
+Create non const `device_global<T[N]>` instance with default constructor.
+Create `T *dest` with allocated size `sizeof(T[N])`.
+
+For `count = 1` and for `startIndex = N / 2`:
+
+For `queue` shortcut:
+
+`template <typename T, typename PropertyListT>
+    event copy(const device_global<T, PropertyListT>& src,
+    std::remove_all_extents_t<T> *dest, count, startIndex);`
+
+Write a value to `device_global` instance by executing a kernel, use shortcut overload to copy element
+and check that `dest` element with with index `N/2` equals to element from `device_global`.
+Check that all other `dest` elements remain the same.
+
+=== Overloads of sycl::queue::memcpy for device_global
+
+Create non const `device_global` instance with default constructor.
+
+Create. `const void *src` with size `sizeof(T)`
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(device_global<T, PropertyListT>& dest,
+    const void *src, size_t numBytes = sizeof(T), size_t offset = 0);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(device_global<T, PropertyListT>& dest,
+    const void *src, size_t numBytes,
+    size_t offset, event depEvent);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(device_global<T, PropertyListT>& dest,
+    const void *src, size_t numBytes,
+    size_t offset, const std::vector<event> &depEvents);`
+
+Use shortcut overload to copy data and check that device_global contains it by
+
+* Executing kernel that reads value.
+* Calling `queue::copy()` overload for copying from `device_global` from the host.
+
+Create non const `device_global` instance with default constructor.
+
+Create `void *dest` with allocated size `sizeof(T)`.
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src,
+    size_t numBytes = sizeof(T), size_t offset = 0);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src, size_t numBytes,
+    size_t offset, event depEvent);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src, size_t numBytes,
+    size_t offset, const std::vector<event> &depEvents);`
+
+Write a value to `device_global` instance by executing a kernel, use shortcut overload to copy data
+and check that `dest` contains it.
+
+Create const `device_global` instance with default constructor.
+
+Create `void *dest` with allocated size `sizeof(T)` that contains non default T values.
+
+For `queue` shortcuts:
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src,
+    size_t numBytes = sizeof(T), size_t offset = 0);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src, size_t numBytes,
+    size_t offset, event depEvent);`
+
+*  `template <typename T, typename PropertyListT>
+    event memcpy(void *dest,
+    const device_global<T, PropertyListT>& src, size_t numBytes,
+    size_t offset, const std::vector<event> &depEvents);`
+
+Use shortcut overload to copy data and check that `dest` contains default T values.
+
+=== Overloads of sycl::handler::copy/memcpy for device_global
+
+* Create non const `device_global` instance with default constructor.
+  Create `const std::remove_all_extents_t<T> *src` with size `sizeof(T)`.
+  Use `handler` function `copy` to copy from src to device_global and check result.
+
+* If underlying type is array use `handler` function `copy` to copy one element from
+  src to device_global and check result.
+
+* Create const `device_global` instance with default constructor.
+  Create `std::remove_all_extents_t<T> *dest` with allocated size `sizeof(T)`.
+  Use `handler` function `copy` to copy from device_global to dest and check result.
+
+* If underlying type is array use `handler` function `copy` to copy one element
+  from device_global to dest and check result.
+
+* Create non const `device_global` instance with default constructor.
+  Create `const void *src` with size `sizeof(T)`.
+  Use `handler` function `memcpy` to copy from src to device_global and check result.
+
+* Create const `device_global` instance with default constructor.
+  Create `void *dest` with allocated size `sizeof(T)`.
+  Use `handler` function `memcpy` to copy from device_global to dest and check result.
+
+=== Error condition for of queue::copy and handler::copy
+
+For all `T[N]` from array types from testing scope:
+
+Create non const `device_global<T[N]>` instance with default constructor.
+
+Create `const T *src` with size `sizeof(T[N])`,
+
+For `count = N` and for `startIndex = N / 2`:
+
+Call:
+
+* `queue` shortcut:
+  `template <typename T, typename PropertyListT>
+    event copy(const std::remove_all_extents_t<T> *src,
+    device_global<T, PropertyListT>& dest,
+    count, startIndex);`
+* handler function
+  `template <typename T, typename PropertyListT>
+  void copy(const std::remove_all_extents_t<T> *src,
+  device_global<T, PropertyListT>& dest, count, startIndex);`
+
+and check that in both cases a synchronous exception with `errc::invalid` is thrown.

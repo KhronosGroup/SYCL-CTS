@@ -13,6 +13,7 @@
 
 #include "../common/common.h"
 #include "../common/device_eval.h"
+#include "../common/disabled_for_test_case.h"
 
 using namespace sycl_cts;
 
@@ -289,10 +290,10 @@ TEMPLATE_TEST_CASE_SIG(
   CHECK(DEVICE_EVAL(a >= b) == idh<D>::get(1, 1, 1));
 }
 
-TEMPLATE_TEST_CASE_SIG(
-    "id supports various binary operators of the form `id OP size_t` and "
-    "`size_t OP id`",
-    "[id]", ((int D), D), 1, 2, 3) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+("id supports various binary operators of the form `id OP size_t` and "
+ "`size_t OP id`",
+ "[id]", ((int D), D), 1, 2, 3)({
   const auto a = idh<D>::get(5, 8, 3);
   const size_t b = 3;
 
@@ -361,7 +362,7 @@ TEMPLATE_TEST_CASE_SIG(
   CHECK(DEVICE_EVAL(b <= a) == idh<D>::get(1, 1, 1));
   CHECK(DEVICE_EVAL(a >= b) == idh<D>::get(1, 1, 1));
   CHECK(DEVICE_EVAL(b >= a) == idh<D>::get(0, 0, 1));
-}
+});
 
 #define COMPOUND_OP(operand_value, expr) \
   ([=](auto x) { return expr, x; })(operand_value)
@@ -430,8 +431,8 @@ TEMPLATE_TEST_CASE_SIG(
 
 #undef COMPOUND_OP
 
-TEMPLATE_TEST_CASE_SIG("id supports unary +/- operators", "[id]", ((int D), D),
-                       1, 2, 3) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+("id supports unary +/- operators", "[id]", ((int D), D), 1, 2, 3)({
   const auto a = idh<D>::get(5, 8, 3);
   const auto b = idh<D>::get(-5, -8, -3);
   CHECK(+a == a);
@@ -443,14 +444,14 @@ TEMPLATE_TEST_CASE_SIG("id supports unary +/- operators", "[id]", ((int D), D),
   CHECK(DEVICE_EVAL(-a) == b);
   CHECK(DEVICE_EVAL(+b) == b);
   CHECK(DEVICE_EVAL(-b) == a);
-}
+});
 
-TEMPLATE_TEST_CASE_SIG(
-    "id supports pre- and postfix increment/decrement operators", "[id]",
-    ((int D), D), 1, 2, 3) {
 #define INC_DEC_OP(operand_value, expr) \
   ([=](auto x) { return std::pair{expr, x}; })(operand_value)
 
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
+("id supports pre- and postfix increment/decrement operators", "[id]",
+ ((int D), D), 1, 2, 3)({
   const auto a = idh<D>::get(5, 8, 3);
   const auto b = idh<D>::get(6, 9, 4);
   const auto c = idh<D>::get(4, 7, 2);
@@ -466,9 +467,9 @@ TEMPLATE_TEST_CASE_SIG(
   CHECK(DEVICE_EVAL_T(id_pair, INC_DEC_OP(a, --x)) == std::pair{c, c});
   CHECK(DEVICE_EVAL_T(id_pair, INC_DEC_OP(a, x++)) == std::pair{a, b});
   CHECK(DEVICE_EVAL_T(id_pair, INC_DEC_OP(a, x--)) == std::pair{a, c});
+});
 
 #undef INC_DEC_OP
-}
 
 TEST_CASE("id can deduce dimensionality from constructor parameters", "[id]") {
   using sycl::id;
