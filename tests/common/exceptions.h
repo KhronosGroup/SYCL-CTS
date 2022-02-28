@@ -265,7 +265,7 @@ inline auto equals_exception(const sycl::errc& code) {
  */
 template <sycl::backend Backend, typename CodeT>
 inline auto equals_exception_for(const CodeT& code) {
-#if SYCL_CTS_SUPPORT_HAS_ERRC_FOR == 0
+#if SYCL_CTS_SUPPORT_HAS_ERRC_FOR == 1
   static_assert(std::is_same_v<CodeT, sycl::errc_for<Backend>> ||
                 std::is_same_v<CodeT, int>);
 #endif
