@@ -2,5 +2,4 @@ buffer
 exceptions
 multi_ptr
 opencl_interop
-optional_kernel_features
 reduction

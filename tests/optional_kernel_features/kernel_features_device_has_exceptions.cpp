@@ -7,8 +7,10 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
+
 namespace kernel_features_device_has_exceptions {
 using namespace sycl_cts;
 using namespace kernel_features_common;
@@ -17,13 +19,12 @@ using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
 
-TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
-                       "[kernel_features]",
-                       ((typename FeatureTypeT, sycl::aspect FeatureAspectT),
-                        FeatureTypeT, FeatureAspectT),
-                       (sycl::half, sycl::aspect::fp16),
-                       (double, sycl::aspect::fp64),
-                       (AtomicRefT, sycl::aspect::atomic64)) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
+("Exceptions throwns by [[device_has()]]", "[kernel_features]",
+ ((typename FeatureTypeT, sycl::aspect FeatureAspectT), FeatureTypeT,
+  FeatureAspectT),
+ (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
+ (AtomicRefT, sycl::aspect::atomic64))({
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -323,5 +324,5 @@ TEMPLATE_TEST_CASE_SIG("Exceptions throwns by [[device_has()]]",
     }
   }
 #endif
-}
+});
 }  // namespace kernel_features_device_has_exceptions
