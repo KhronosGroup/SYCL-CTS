@@ -1,0 +1,487 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sub_group_mask
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/GroupMask/GroupMask.asciidoc[GroupMask.asciidoc]
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+All of the following tests have these initial steps performed in defferent .cpp files :
+
+* Create a `queue` from the tested device and call `queue::submit()`.
+* Submit a kernel via `handler::parallel_for()` with parameters `sycl::nd_range<1>(range<1>(128), range<1>(32))`
+  and lambda finction with parameter `sycl::nd_item<1>`.
+* In lambda function use `nd_item::get_sub_group()` to get `sycl::sub_group` instance.
+* Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
+* Use accessor to buffer for type `bool` to save results.
+* For regular test run check is performed only for leader work-item
+* For full conformance test run check is performed for all work-items.
+
+=== Test for max_bits
+
+Check that member `size_t max_bits` exists.
+
+=== Tests for Member Functions
+
+==== Simple const member functions
+
+Member functions from Table are checked with following steps:
+
+* Use const instance of `sub_group_mask`.
+* Check return type.
+* Check that Expression returns Exprected value.
+
+[%header,cols="2,2,1,2,2"]
+|===
+|Function
+|Predicate
+|Return type
+|Expression
+|Expected value
+
+|`operator[](id<1> id) const`
+|`sub_group.get_local_id().size_t()%2 == 0`
+|`bool`
+|`sub_group_mask[id(N)]` for `N = 0...sub_group_mask.size - 1`
+|`N%2 == 0`
+
+|`test(id<1> id) const`
+|`sub_group.get_local_id().size_t()%2 == 0`
+|`bool`
+|`sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size - 1`
+|`N%2 == 0`
+
+|`all() const`
+|`sub_group.get_local_id().size_t()%2 == 0`
+|`bool`
+|`sub_group_mask.all()`
+|`false`
+
+|`all() const`
+|`true`
+|`bool`
+|`sub_group_mask.all()`
+|`true`
+
+|`any() const`
+|`sub_group.get_local_id().size_t()%2 == 0`
+|`bool`
+|`sub_group_mask.any()`
+|`true`
+
+|`any() const`
+|`false`
+|`bool`
+|`sub_group_mask.any()`
+|`false`
+
+|`none() const`
+|`sub_group.get_local_id().size_t()%2 == 0`
+|`bool`
+|`sub_group_mask.none()`
+|`false`
+
+|`none() const`
+|`false`
+|`bool`
+|`sub_group_mask.none()`
+|`true`
+
+|`count() const`
+|`sub_group.get_local_id().size_t() < sub_group.get_local_range().size_t()/2`
+|`uint32_t`
+|`sub_group_mask.count()`
+|`sub_group.get_local_range().size()/2`
+
+|`size() const`
+|`true`
+|`uint32_t`
+|`sub_group_mask.size()`
+|`sub_group.get_local_range().size()`
+
+|`find_low() const`
+|`sub_group.get_local_id().size_t() > sub_group.get_local_range().size_t()/2 - 1`
+|`id<1>`
+|`sub_group_mask.find_low()`
+|`id(sub_group.get_local_range().size()/2)`
+
+|`find_low() const`
+|`false`
+|`id<1>`
+|`sub_group_mask.find_low()`
+|`id(sub_group.get_local_range().size())`
+
+|`find_high() const`
+|`sub_group.get_local_id().size_t() < sub_group.get_local_range().size_t()/2`
+|`id<1>`
+|`sub_group_mask.find_high()`
+|`id(sub_group.get_local_range().size_t()/2 - 1)`
+
+|`find_high() const`
+|`false`
+|`id<1>`
+|`sub_group_mask.find_high()`
+|`id(sub_group.get_local_range().size_t())`
+|===
+
+
+==== operator[](id<1> id)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `sub_group_mask::reference`.
+* Check that `sub_group_mask[id(N)]` for `N = 0...sub_group_mask.size() - 1`
+  refers to value equal to `N%2 == 0`
+
+To check `sub_group_mask::reference` functionality:
+
+* If `N%5 == 0` try to assign opposite value to `sub_group_mask[id(N)]`
+  and then check that `sub_group_mask.test(id(N))` equals `N%2 =! 0`.
+* If `N%5 == 1` try to assign `sub_group_mask[id(N+1)]` to `sub_group_mask[id(N)]`
+  and then check that `sub_group_mask.test(id(N))` equals `(N+1)%2 == 0`.
+* If `N%5 == 2` check that `~sub_group_mask[id(N)]` equals `N%2 != 0`.
+* If `N%5 == 3` check that `(bool)sub_group_mask[id(N)]` equals `N%2 == 0`.
+* If `N%5 == 4` try to use `sub_group_mask[id(N)].flip()`, check that return type is
+  `sub_group_mask::reference&`, check that `sub_group_mask.test(id(N))` equals `N%2 =! 0`.
+
+==== insert_bits(const T bits, id<1> pos = 0)
+
+For T equals to integral types below:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+
+And `marray<T, dim>` where T is the integral type above
+and `dim` is `2`, `5`, and `10`.
+
+For `N = 0...sub_group_mask.size() - 1`:
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%3 == 0`.
+* Check that return type is `void`.
+* Use insert_bits(bits, id(N)) with `bits = 0b1010...`
+* For `K = 0 ... N - 1` check that `sub_group_mask.test(id(K))` equals `K%3 == 0`
+* For `K = N ... N + CHAR_BIT * sizeof(T) - 1`
+  check that `sub_group_mask.test(id(K))` equals `(N-K)%2 == 1`
+* If `N + CHAR_BIT * sizeof(T) < sub_group_mask.size()`
+  for `K = N + CHAR_BIT * sizeof(T) ... sub_group_mask.size() - 1`
+  check that `sub_group_mask.test(id(K))` equals `K%3 == 0`
+
+==== extract_bits(T &out, id<1> pos = 0) const
+
+For T equals to integral types below:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+
+And `marray<T, dim>` where T is the integral type above
+and `dim` is `2`, `5`, and `10`.
+
+For `N = 0...sub_group_mask.size() - 1`:
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 != 0`.
+* Check that return type is `void`.
+* Use extract_bits(id(N))
+* If `N + CHAR_BIT * sizeof(T) < sub_group_mask.size()` check that out is `0b1010...`
+* Otherwise check that out's first `sub_group_mask.size() - N` bits are `10..` and the rest is zero.
+
+==== set()
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* Use set().
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `true`.
+
+==== set(id<1> id, bool value = true)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* for `N = 0...sub_group_mask.size() - 1` use set(id(N), true) if `N%3 == 0` and
+  set(id(N), false) if `N%3 == 1`
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `true` if `N%3 == 0`,  `false` if N%3 == 1 and `N%2 == 0` if `N%3 == 2`
+
+==== reset()
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* Use reset().
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `false`.
+
+==== reset(id<1> id)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* for `N = 0...sub_group_mask.size() - 1` use reset(id(N)) if `N%3 == 0`.
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `false` if `N%3 == 0`, and equals `N%2 == 0` otherwise.
+
+==== reset_low()
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t() > sub_group.get_local_range().size_t()/2`.
+* Check that return type is `void`.
+* Save result for low = find_low().
+* Use reset_low().
+* Check that sub_group_mask[low] refers to `false`.
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `false` if `N > sub_group.get_local_range().size_t()/2 + 1` and `true` otherwise.
+
+==== reset_high()
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t() < sub_group.get_local_range().size_t()/2`.
+* Check that return type is `void`.
+* Save result for high = find_high().
+* Use reset_high().
+* Check that sub_group_mask[high] refers to `false`.
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `true` if `N < sub_group.get_local_range().size_t()/2 - 1` and `false` otherwise.
+
+==== flip()
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* Use flip().
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 =! 0`.
+
+==== flip(id<1> id)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `void`.
+* Use flip(sub_group.get_local_id()).
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0` if id(N) != sub_group.get_local_id().
+* Check that `sub_group_mask.test(sub_group.get_local_id())`
+  equals `sub_group.get_local_id().size_t()%2 != 0`
+
+==== operator==(const sub_group_mask rhs) const
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `bool`.
+* Check that result is `true`.
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 != 0`.
+* Check that return type is `bool`.
+* Check that result is `false`.
+
+==== operator!=(const sub_group_mask rhs) const
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `bool`.
+* Check that result is `false`.
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 != 0`.
+* Check that return type is `bool`.
+* Check that result is `true`.
+
+==== operator &=(const sub_group_mask rhs)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `true`.
+* Use operator &=(rhs).
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `false`.
+* Use operator &=(rhs)
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `false`.
+
+==== operator |=(const sub_group_mask rhs)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `true`.
+* Use operator |=(rhs)
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `true`.
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `false`.
+* Use operator |=(rhs)
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.
+
+==== operator ^=(const sub_group_mask rhs)
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `true`.
+* Use operator ^=(rhs)
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 != 0`.
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For const rhs sub_group_mask use Predicate `false`.
+* Use operator ^=(rhs)
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.
+
+==== operator <\<=(size_t shift) const
+
+For `shift = 0...sub_group_mask.size() - 1`:
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%3 == 0`.
+* Use operator <\<=(shift)
+* Check that `sub_group_mask.test(id(N))` for
+  `N = shift...sub_group_mask.size() - 1`  equals `(N - shift)%3 == 0`.
+* Check that `sub_group_mask.test(id(N))` for `N = 0...shift - 1`
+  equals `false`.
+
+
+==== operator >>=(size_t shift) const
+
+For `shift = 0...sub_group_mask.size() - 1`:
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%3 == 0`.
+* Use operator >>=(shift)
+* Check that `sub_group_mask.test(id(N))` for
+  `N = sub_group_mask.size() - shift...sub_group_mask.size() - 1`  equals `false`.
+* Check that `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - shift - 1`
+  equals `(N + shift)%3 == 0`.
+
+==== operator ~() const
+
+* Use const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* Check that return type is `sub_group_mask`.
+* Get new `sub_group_mask` with operator ~()
+* Check that for new `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 != 0`.
+
+==== operator <<(size_t shift)
+
+For `shift = 0...sub_group_mask.size() - 1`:
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%3 == 0`.
+* Get new `sub_group_mask` with operator <<(shift)
+* Check that for new `sub_group_mask` `sub_group_mask.test(id(N))` for
+  `N = shift...sub_group_mask.size() - 1`  equals `(N - shift)%3 != 0`.
+* Check that for new `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...shift - 1`
+  equals `false`.
+
+
+==== operator >>(size_t shift)
+
+For `shift = 0...sub_group_mask.size() - 1`:
+
+* Use non-const instance of `sub_group_mask`.
+* Use Predicate `sub_group.get_local_id().size_t()%3 == 0`.
+* Get new `sub_group_mask` with operator >>(shift)
+* Check that for new `sub_group_mask` `sub_group_mask.test(id(N))` for
+  `N = sub_group_mask.size() - shift...sub_group_mask.size() - 1`  equals `false`.
+* Check that for new `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - shift - 1`
+  equals `(N + shift)%3 != 0`.
+
+=== Tests for non-member functions
+
+==== operator &(const sub_group_mask& lhs, const sub_group_mask& rhs)
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `true`.
+* Use operator &(const sub_group_mask& lhs, const sub_group_mask& rhs).
+* Check that return type is `sub_group_mask`
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `false`.
+* Use operator &(const sub_group_mask& lhs, const sub_group_mask& rhs).
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `false`.
+
+==== operator |(const sub_group_mask& lhs, const sub_group_mask& rhs)
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `true`.
+* Use operator |=(rhs)
+* Check that return type is `sub_group_mask`
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `true`.
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `false`.
+* Use operator |=(rhs)
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.
+
+==== operator ^(const sub_group_mask& lhs, const sub_group_mask& rhs)
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `true`.
+* Use operator ^=(rhs)
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 != 0`.
+
+* Use const instances of `sub_group_mask`.
+* For lhs sub_group_mask use Predicate `sub_group.get_local_id().size_t()%2 == 0`.
+* For rhs sub_group_mask use Predicate `false`.
+* Use operator ^=(rhs)
+* Check that return type is `sub_group_mask`
+* Check that for resulting `sub_group_mask` `sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size() - 1`
+  equals `N%2 == 0`.

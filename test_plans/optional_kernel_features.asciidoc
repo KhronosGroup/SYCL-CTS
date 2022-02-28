@@ -1,0 +1,120 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for behavior for optional kernel features
+
+This is a test plan for optional kernel features described in
+https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:optional-kernel-features[Optional kernel features]
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line if not stated otherwise.
+
+== Tests
+
+All tests should use following methods of kernels submission unless stated otherwise:
+
+* single_task
+* parallel_for_work_group
+* parallel_for
+
+Kernel should be defined:
+
+* through lambda in submission call
+* through a separate functor
+* through a separate lambda
+
+=== Runtime exception if device doesn't support feature
+
+For following features:
+
+* fp16
+* fp64
+* atomic64
+
+For following kernels:
+
+* Kernel that uses the tested feature but does not have any attribute `[[sycl::device_has()]]`.
+* Kernel that calls a function that uses the tested feature.
+  Neither the kernel nor the function have an attribute `[[sycl::device_has()]]`.
+*  Kernel does not have the attribute `[[sycl::device_has()]]` but it calls a
+  SYCL_EXTERNAL function which uses the tested feature.  The SYCL_EXTERNAL
+  function is defined in another translation unit.  The SYCL_EXTERNAL function
+  is declared with the corresponding attribute `[[sycl::device_has()]]`.
+* Kernel does not use the tested feature but is decorated with the corresponding attribute `[[sycl::device_has()]]`.
+* Kernel that calls a function which is decorated with the feature's corresponding attribute `[[sycl::device_has()]]`.
+  Neither the kernel nor the function use the feature.
+* Kernel that calls a function which is decorated with the feature's corresponding attribute `[[sycl::device_has()]]`.
+  Function uses the feature and kernel doesn't.
+* Kernel with tested feature but with attribute `[[sycl::device_has()]]` for another feature.
+* Kernel with attribute `[[sycl::device_has()]]` for not currently tested feature
+  but with SYCL_EXTERNAL function with tested feature and attribute `[[sycl::device_has()]]`
+  with tested feature that is defined in another translation unit.
+
+Submit kernel to the device and check the result:
+
+* If the device doesn't support optional feature that are used in kernel or in `[[sycl::device_has()]]`,
+  check that synchronous `errc::kernel_not_supported` is thrown.
+* If the device does support features that are used in both the kernel and in `[[sycl::device_has()]]`,
+  the kernel should be submitted and executed without any exception.
+
+=== Runtime exception if device doesn't support required work group size
+
+For following sizes:
+
+* 16
+* 4294967295
+
+Do the following:
+
+* Get device's max work group size using info::device::max_work_group_size.
+* Create kernel with attribute [[sycl::reqd_work_group_size(W)]] where W is tested size.
+* Submit kernels to device.
+* Check that, if W > max work group size, synchronous `errc::kernel_not_supported` is thrown,
+  and that otherwise kernel is executed without any exception.
+
+=== Runtime exception if kernel is decorated with [[sycl::reqd_work_group_size(W)]] and uses mismatched nd_range
+
+* Get device's max work group size using info::device::max_work_group_size.
+* Create kernel with attribute [[sycl::reqd_work_group_size(W)]] where W is `16`.
+* Create `nd_range` with different size.
+* Submit kernel to device with parallel_for.
+* Check that, if W > max work group size, synchronous `errc::kernel_not_supported` is thrown,
+  and that otherwise  synchronous `errc::nd_range` is thrown.
+
+=== Runtime exception if device doesn't support required sub-group size.
+
+For following sizes:
+
+* 16
+* 4099
+
+Do the following:
+
+* Get the device's list of supported sub-group sizes using info::device::info::device::sub_group_sizes.
+* Create kernel with attribute [[sycl::reqd_sub_group_size(S)]] where S is tested size.
+* Submit kernel to device.
+* Check that if S is not one of the supported sizes, a synchronous errc::kernel_not_supported is thrown,
+  and otherwise the kernel is executed without any exception.
+
+=== No runtime exception for speculative compilation with unsupported feature
+
+This test case has the following kernels that all reside in the same translation unit:
+
+* A kernel that does not use any optional features.
+* A kernel that uses fp16.
+* A kernel that uses fp64
+* A kernel that uses atomic64
+* A kernel with a required work-group size of 16
+* A kernel with a required work-group size of 4294967295
+* A kernel with a required sub-group size of 16
+* A kernel with a required sub-group size of 4099
+
+The first kernel is submitted unconditionally to the device.
+Each of the remaining kernels is submitted to the device only if it supports the kernel's feature / work-group size / sub-group size.
+
+Check that no exception is thrown.
