@@ -23,40 +23,42 @@
 #include <utility>
 
 namespace sycl_cts {
-namespace detail {
 
 // TODO: Remove when all three implementations support the sycl::exception API
 // entirely
-namespace support {
-
 #if defined(__COMPUTECPP__)
-constexpr bool exception_code = false;
-constexpr bool exception_category = false;
-constexpr bool sycl_errc_for = false;
-constexpr bool sycl_error_category_for = false;
-constexpr bool sycl_make_error_code = false;
-#elif defined(__HIPSYCL__)
-constexpr bool exception_code = true;
-constexpr bool exception_category = false;
-constexpr bool sycl_errc_for = false;
-constexpr bool sycl_error_category_for = false;
-constexpr bool sycl_make_error_code = false;
-#elif defined(__DPCPP__)
-constexpr bool exception_code = true;
-constexpr bool exception_category = true;
-constexpr bool sycl_errc_for = true;
-constexpr bool sycl_error_category_for = false;
-constexpr bool sycl_make_error_code = ;
-#else
-constexpr bool exception_code = true;
-constexpr bool exception_category = true;
-constexpr bool sycl_errc_for = true;
-constexpr bool sycl_error_category_for = true;
-constexpr bool sycl_make_error_code = true;
-#endif
 
-}  // namespace support
-}  // namespace detail
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 0
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0
+#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 0
+#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
+#define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
+
+#elif defined(__HIPSYCL__)
+
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 0
+#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 0
+#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
+#define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
+
+#elif defined(__DPCPP__)
+
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 1
+#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 1
+#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 0
+#define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 0
+
+#else
+
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE 1
+#define SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY 1
+#define SYCL_CTS_SUPPORT_HAS_ERRC_FOR 1
+#define SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR 1
+#define SYCL_CTS_SUPPORT_HAS_MAKE_ERROR_CODE 1
+
+#endif
 
 /**
  * Helper function to get details for SYCL exception
@@ -81,31 +83,32 @@ inline std::string stringify_sycl_exception(const sycl::exception& e) {
   };
 
   // Collect exception details, considering possible implementation gaps
-  if constexpr (!detail::support::exception_category) {
-    append_cstr("category", "not supported by implementation");
-  } else {
-    // Using reference to avoid object slicing
-    const auto& category = e.category();
-    append_cstr("category name", category.name());
-  }
+#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0
+  append_cstr("category", "not supported by implementation");
+#else
+  // Using reference to avoid object slicing
+  const auto& category = e.category();
+  append_cstr("category name", category.name());
+#endif
 
-  if constexpr (!detail::support::exception_code) {
-    append_cstr("code", "not supported by implementation");
-  } else {
-    // Using reference to avoid object slicing
-    const auto& code = e.code();
+#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE == 0
+  append_cstr("code", "not supported by implementation");
+#else
+  // Using reference to avoid object slicing
+  const auto& code = e.code();
 
 #if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 0
-    append_cstr("code", "errc enum not supported by implementation");
+  append_cstr("code", "errc enum not supported by implementation");
 #else
-    using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
-    const auto& errc_value = static_cast<sycl::errc>(code.value());
+  using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
+  const auto& errc_value = static_cast<sycl::errc>(code.value());
 
-    append_str("code", CodeStringMakerT::convert(errc_value));
-#endif
-    append_str("code raw value", std::to_string(code.value()));
-    append_str("code message", code.message());
-  }
+  append_str("code", CodeStringMakerT::convert(errc_value));
+#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
+
+  append_str("code raw value", std::to_string(code.value()));
+  append_str("code message", code.message());
+#endif //  SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE
 
   append_cstr("what", e.what());
 
@@ -125,18 +128,14 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
   matcher_exception_category(const std::error_category& category)
       : m_category(category) {}
 
-  static constexpr bool is_supported_by_implementation() {
-    return detail::support::exception_category;
-  }
-
   bool match(const sycl::exception& other) const {
-    if constexpr (!is_supported_by_implementation()) {
-      // There should be no compilation failures, but every CHECK_THROWS_MATCHES
-      // should fail with this matcher
-      return false;
-    } else {
-      return other.category() == m_category;
-    }
+#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0
+    // There should be no compilation failures, but every CHECK_THROWS_MATCHES
+    // should fail with this matcher
+    return false;
+#else
+    return other.category() == m_category;
+#endif
   }
 
   std::string describe() const override {
@@ -159,20 +158,16 @@ struct matcher_equals_exception
   matcher_equals_exception(const sycl::errc& code_value)
       : m_code_value(code_value) {}
 
-  static constexpr bool is_supported_by_implementation() {
-    return detail::support::exception_code;
-  }
-
   bool match(const sycl::exception& other) const {
-    if constexpr (!is_supported_by_implementation()) {
-      // There should be no compilation failures, but every CHECK_THROWS_MATCHES
-      // should fail with this matcher
-      return false;
-    } else {
-      // Compare two std::error_code instances
-      return std::is_error_code_enum_v<sycl::errc> &&
-             (other.code() == m_code_value);
-    }
+#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE == 0
+    // There should be no compilation failures, but every CHECK_THROWS_MATCHES
+    // should fail with this matcher
+    return false;
+#else
+    // Compare two std::error_code instances
+    return std::is_error_code_enum_v<sycl::errc> &&
+           (other.code() == m_code_value);
+#endif //  SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE
   }
 
   std::string describe() const override {
@@ -188,7 +183,7 @@ struct matcher_equals_exception
  private:
   const sycl::errc& m_code_value;
 };
-#endif
+#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
 
 /**
  *  Matcher for backend-specific category and error codes
@@ -200,36 +195,33 @@ class matcher_equals_exception_for
   matcher_equals_exception_for(const CodeT& code_value)
       : m_code_value(code_value) {}
 
-  static constexpr bool is_supported_by_implementation() {
-    return detail::support::exception_code &&
-           detail::support::exception_category &&
-           detail::support::sycl_error_category_for;
-  }
-
   bool match(const sycl::exception& other) const {
-    if constexpr (!is_supported_by_implementation()) {
-      // There should be no compilation failures, but every CHECK_THROWS_MATCHES
-      // should fail with this matcher
-      return false;
-    } else {
-      // Error code is validated by value, with no semantic match
-      const auto& expected_category = sycl::error_category_for<Backend>();
-      return (other.category() == expected_category) &&
-             (other.code().value() == m_code_value);
-    }
+
+#if (SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE == 0) || \
+    (SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0) || \
+    (SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR == 0)
+    // There should be no compilation failures, but every CHECK_THROWS_MATCHES
+    // should fail with this matcher
+    return false;
+#else
+    // Error code is validated by value, with no semantic match
+    const auto& expected_category = sycl::error_category_for<Backend>();
+    return (other.category() == expected_category) &&
+           (other.code().value() == m_code_value);
+#endif
   }
 
   std::string describe() const override {
     std::ostringstream result;
     result << "has code value " << to_integral(m_code_value);
 
-    if constexpr (!detail::support::sycl_error_category_for) {
-      result << " for backend-specific category (not supported)";
-    } else {
-      const auto& expected_category = sycl::error_category_for<Backend>();
-      result << " for backend-specific category '" << expected_category().name();
-      result << "'";
-    }
+#if (SYCL_CTS_SUPPORT_HAS_ERROR_CATEGORY_FOR == 0)
+    result << " for backend-specific category (not supported)";
+#else
+    const auto& expected_category = sycl::error_category_for<Backend>();
+    result << " for backend-specific category '" << expected_category().name();
+    result << "'";
+#endif
     return result.str();
   }
 
@@ -262,7 +254,7 @@ inline auto has_exception_category(const std::error_category& category) {
 inline auto equals_exception(const sycl::errc& code) {
   return detail::matcher_equals_exception(code);
 }
-#endif
+#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 1
 
 /**
  *  Provides matcher for backend-specific category and error codes
@@ -273,10 +265,10 @@ inline auto equals_exception(const sycl::errc& code) {
  */
 template <sycl::backend Backend, typename CodeT>
 inline auto equals_exception_for(const CodeT& code) {
-  if constexpr (detail::support::sycl_errc_for) {
-    static_assert(std::is_same_v<CodeT, sycl::errc_for<Backend>> ||
-                  std::is_same_v<CodeT, int>);
-  }
+#if SYCL_CTS_SUPPORT_HAS_ERRC_FOR == 0
+  static_assert(std::is_same_v<CodeT, sycl::errc_for<Backend>> ||
+                std::is_same_v<CodeT, int>);
+#endif
   return detail::matcher_equals_exception_for<Backend, CodeT>(code);
 }
 
