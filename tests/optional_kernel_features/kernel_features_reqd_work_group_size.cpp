@@ -7,6 +7,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "../common/common.h"
 #include "catch2/catch_template_test_macros.hpp"
 #include "kernel_features_common.h"
@@ -23,9 +24,9 @@ class Functor {
   [[sycl::reqd_work_group_size(N)]] void operator()(sycl::group<1>) const {}
 };
 
-TEMPLATE_TEST_CASE_SIG(
-    "Exceptions thrown by [[reqd_work_group_size(N)]] with unsupported size",
-    "[kernel_features]", ((size_t N), N), 16, 4294967295) {
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp)
+    ("Exceptions thrown by [[reqd_work_group_size(N)]] with unsupported size",
+    "[kernel_features]", ((size_t N), N), 16, 4294967295) ({
   auto queue = util::get_cts_object::queue();
   auto max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
@@ -50,6 +51,6 @@ TEMPLATE_TEST_CASE_SIG(
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
                         [[sycl::reqd_work_group_size(N)]], NO_KERNEL_BODY);
   }
-}
+});
 
 }  // namespace kernel_features_reqd_work_group_size
