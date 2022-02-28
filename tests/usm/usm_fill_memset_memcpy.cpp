@@ -7,6 +7,7 @@
 *******************************************************************************/
 
 #include "../../util/usm_helper.h"
+#include "../common/common.h"
 #include <cstring>
 
 #define TEST_NAME usm_fill_memset_memcpy
