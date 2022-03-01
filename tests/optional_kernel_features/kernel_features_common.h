@@ -11,6 +11,8 @@
 #include "../common/common.h"
 
 namespace kernel_features_common {
+// FIXME: re-enable compilation with hipSYCL when `sycl::errc` is supported
+#ifndef __HIPSYCL__
 
 #ifdef SYCL_EXTERNAL
 /**
@@ -511,6 +513,7 @@ void run_functor(const bool is_exception_expected,
       check_async_exception(QUEUE, false);                                     \
     }                                                                          \
   }
-};  // namespace kernel_features_common
+#endif  // ifndef __HIPSYCL__
+};      // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
