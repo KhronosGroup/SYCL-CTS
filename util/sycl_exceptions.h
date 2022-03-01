@@ -10,7 +10,6 @@
 #define __SYCLCTS_UTIL_SYCL_EXCEPTIONS_H
 
 #include <catch2/catch_tostring.hpp>
-#include <catch2/catch_translate_exception.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 #include <sycl/sycl.hpp>
 
@@ -23,8 +22,6 @@
 #include <string>
 #include <system_error>
 #include <utility>
-
-namespace sycl_cts {
 
 // TODO: Remove when all three implementations support the sycl::exception API
 // entirely
@@ -63,60 +60,14 @@ namespace sycl_cts {
 
 #endif
 
+namespace sycl_cts::util {
+
 /**
  * Helper function to get details for SYCL exception
  * Can be used, for example, for INFO(... << stringify_sycl_exception(ex))
  * expressions
- *
- * TODO: Move function body to the common/exceptions.cpp
  */
-inline std::string stringify_sycl_exception(const sycl::exception& e) {
-  std::ostringstream out;
-  out << "SYCL exception\n";
-
-  // Define helpers to format exception details
-  auto append_str = [&out](const char* description, const std::string& value) {
-    out << "with " << description << ": '" << value << "'\n";
-  };
-  auto append_cstr = [&append_str](const char* description, const char* value) {
-    if (!value) {
-      value = "nullptr";
-    }
-    append_str(description, {value});
-  };
-
-  // Collect exception details, considering possible implementation gaps
-#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0
-  append_cstr("category", "not supported by implementation");
-#else
-  // Using reference to avoid object slicing
-  const auto& category = e.category();
-  append_cstr("category name", category.name());
-#endif
-
-#if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE == 0
-  append_cstr("code", "not supported by implementation");
-#else
-  // Using reference to avoid object slicing
-  const auto& code = e.code();
-
-#if SYCL_CTS_SUPPORT_HAS_ERRC_ENUM == 0
-  append_cstr("code", "errc enum not supported by implementation");
-#else
-  using CodeStringMakerT = Catch::StringMaker<sycl::errc>;
-  const auto& errc_value = static_cast<sycl::errc>(code.value());
-
-  append_str("code", CodeStringMakerT::convert(errc_value));
-#endif //  SYCL_CTS_SUPPORT_HAS_ERRC_ENUM
-
-  append_str("code raw value", std::to_string(code.value()));
-  append_str("code message", code.message());
-#endif //  SYCL_CTS_SUPPORT_HAS_EXCEPTION_CODE
-
-  append_cstr("what", e.what());
-
-  return out.str();
-}
+std::string stringify_sycl_exception(const sycl::exception& e);
 
 /**
  *  Matchers' implementation details
@@ -275,20 +226,7 @@ inline auto equals_exception_for(const CodeT& code) {
   return detail::matcher_equals_exception_for<Backend, CodeT>(code);
 }
 
-
-/**
- * Stringification of SYCL exceptions for Catch2 tests
- * Provides more details than simple what() message
- *
- * Note that neither this macro, not StringMaker specialization would provide
- * support for expressions like `INFO("Exception: " << exception)`
- *
- * TODO: Move out to the common/exceptions.cpp
- */
-CATCH_TRANSLATE_EXCEPTION(const sycl::exception& e) {
-  return stringify_sycl_exception(e);
-}
-}  //  namespace sycl_cts
+}  //  namespace sycl_cts::util
 
 /**
  * Stringification of SYCL exceptions for Catch2 tests
@@ -298,7 +236,7 @@ namespace Catch {
 template <>
 struct StringMaker<sycl::exception> {
   static std::string convert(const sycl::exception& e) {
-    return sycl_cts::stringify_sycl_exception(e);
+    return ::sycl_cts::util::stringify_sycl_exception(e);
   }
 };
 }  // namespace Catch
