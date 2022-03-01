@@ -8,7 +8,7 @@
 
 #include "../../common/common.h"
 
-#define TEST_NAME property_list_prop_eq_op
+#define TEST_NAME properties_prop_eq_op
 
 namespace TEST_NAMESPACE {
 
@@ -25,7 +25,7 @@ void check_equal(util::logger &log, T prop1, U prop2, bool expected_equal) {
   }
 }
 
-/** test sycl::ext::oneapi::property_value equality operators
+/** test sycl::ext::oneapi::experimental::property_value equality operators
  */
 class TEST_NAME : public util::test_base {
  public:
@@ -38,24 +38,24 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
     {
-      using namespace sycl::ext::oneapi;
-      property_list props{device_image_scope_v};
+      using namespace sycl::ext::oneapi::experimental;
+      properties props{device_image_scope};
       constexpr auto prop_value_device_image_scope =
-          props.get_property<device_image_scope>();
+          props.get_property<device_image_scope_key>();
 
-      property_list props2{implement_in_csr_v<true>};
+      properties props2{implement_in_csr<true>};
       constexpr auto prop_value_implement_in_csr_true =
-          props2.get_property<implement_in_csr>();
+          props2.get_property<implement_in_csr_key>();
 
-      property_list props3{implement_in_csr_v<false>};
+      properties props3{implement_in_csr<false>};
       constexpr auto prop_value_implement_in_csr_false =
-          props3.get_property<implement_in_csr>();
+          props3.get_property<implement_in_csr_key>();
 
       check_equal(log, prop_value_device_image_scope,
                   prop_value_device_image_scope, true);
