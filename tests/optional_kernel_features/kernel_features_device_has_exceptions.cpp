@@ -9,7 +9,10 @@
 
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
+// FIXME: re-enable compilation with hipSYCL when `sycl::errc` is supported
+#ifndef __HIPSYCL__
 #include "kernel_features_common.h"
+#endif
 
 namespace kernel_features_device_has_exceptions {
 using namespace sycl_cts;
