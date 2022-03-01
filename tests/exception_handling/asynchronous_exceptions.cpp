@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
-#include "../common/exceptions.h"
 
 #define TEST_NAME asynchronous_exceptions
 

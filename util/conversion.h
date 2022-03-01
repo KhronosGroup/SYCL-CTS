@@ -4,8 +4,8 @@
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_COMMON_CONVERSION_H
-#define __SYCLCTS_TESTS_COMMON_CONVERSION_H
+#ifndef __SYCLCTS_UTIL_CONVERSION_H
+#define __SYCLCTS_UTIL_CONVERSION_H
 
 #include <type_traits>
 
@@ -28,4 +28,4 @@ constexpr auto to_integral(enumT const& value) {
 
 }  //  namespace
 
-#endif  // __SYCLCTS_TESTS_COMMON_CONVERSION_H
+#endif  // __SYCLCTS_UTIL_CONVERSION_H

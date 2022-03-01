@@ -14,14 +14,14 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "../../util/conversion.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
+#include "../../util/sycl_enums.h"
 #include "../../util/test_base.h"
 
-#include "conversion.h"
 #include "cts_async_handler.h"
 #include "cts_selector.h"
-#include "enums.h"
 #include "get_cts_object.h"
 #include "macros.h"
 #include "string_makers.h"

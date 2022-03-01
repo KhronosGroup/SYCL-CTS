@@ -6,8 +6,8 @@
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_COMMON_ENUMS_H
-#define __SYCLCTS_TESTS_COMMON_ENUMS_H
+#ifndef __SYCLCTS_UTIL_SYCL_ENUMS_H
+#define __SYCLCTS_UTIL_SYCL_ENUMS_H
 
 #include <catch2/catch_tostring.hpp>
 #include <sycl/sycl.hpp>
@@ -31,4 +31,4 @@ CATCH_REGISTER_ENUM(sycl::errc, sycl::errc::success, sycl::errc::runtime,
                     sycl::errc::backend_mismatch);
 #endif
 
-#endif  // __SYCLCTS_TESTS_COMMON_ENUMS_H
+#endif  // __SYCLCTS_UTIL_SYCL_ENUMS_H

@@ -11,7 +11,7 @@
 
 #include "../../util/math_reference.h"
 #include "../../util/accuracy.h"
-#include "../common/exceptions.h"
+#include "../../util/sycl_exceptions.h"
 #include "../common/once_per_unit.h"
 #include <cfloat>
 #include <limits>

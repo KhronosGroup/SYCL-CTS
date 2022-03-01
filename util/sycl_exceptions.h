@@ -2,20 +2,22 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Provides stringification and matchers for SYCL exceptions
+//
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_COMMON_EXCEPTIONS_H
-#define __SYCLCTS_TESTS_COMMON_EXCEPTIONS_H
+#ifndef __SYCLCTS_UTIL_SYCL_EXCEPTIONS_H
+#define __SYCLCTS_UTIL_SYCL_EXCEPTIONS_H
 
 #include <catch2/catch_tostring.hpp>
 #include <catch2/catch_translate_exception.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 #include <sycl/sycl.hpp>
 
-#include "../../util/logger.h"
-#include "../common/conversion.h"
-#include "../common/enums.h"
-#include "../common/macros.h"
+#include "../tests/common/macros.h" // To ensure FAIL macro replaced properly
+#include "conversion.h"
+#include "logger.h"
+#include "sycl_enums.h"
 
 #include <sstream>
 #include <string>
@@ -309,4 +311,4 @@ struct StringMaker<sycl::exception> {
 };
 }  // namespace Catch
 
-#endif  // __SYCLCTS_TESTS_COMMON_EXCEPTIONS_H
+#endif  // __SYCLCTS_UTIL_SYCL_EXCEPTIONS_H
