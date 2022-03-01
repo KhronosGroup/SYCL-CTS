@@ -275,15 +275,6 @@ inline auto equals_exception_for(const CodeT& code) {
   return detail::matcher_equals_exception_for<Backend, CodeT>(code);
 }
 
-/**
- * Helper function to log details for SYCL exception for legacy tests
- *
- * Deprecated, use Catch2 macroses for new tests instead
- */
-inline void log_exception(sycl_cts::util::logger&, const sycl::exception& e) {
-  // Print multi-line message in a single Catch2 warning
-  WARN(stringify_sycl_exception(e));
-}
 
 /**
  * Stringification of SYCL exceptions for Catch2 tests
@@ -311,5 +302,17 @@ struct StringMaker<sycl::exception> {
   }
 };
 }  // namespace Catch
+
+/**
+ * Helper function to log details for SYCL exception for legacy tests
+ *
+ * Deprecated, use Catch2 macroses for new tests instead
+ */
+namespace {
+inline void log_exception(sycl_cts::util::logger&, const sycl::exception& e) {
+  // Print multi-line message in a single Catch2 warning
+  WARN(sycl_cts::util::stringify_sycl_exception(e));
+}
+} // anonymous namespace
 
 #endif  // __SYCLCTS_UTIL_SYCL_EXCEPTIONS_H
