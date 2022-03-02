@@ -14,17 +14,6 @@ namespace TEST_NAMESPACE {
 
 using namespace sycl_cts;
 
-template <typename T, typename U>
-void check_equal(util::logger &log, T prop1, U prop2, bool expected_equal) {
-  if ((prop1 == prop2) != expected_equal) {
-    FAIL(log, "wrong result for equality operator");
-  }
-
-  if ((prop1 != prop2) == expected_equal) {
-    FAIL(log, "wrong result for inequality operator");
-  }
-}
-
 /** test sycl::ext::oneapi::experimental::property_value equality operators
  */
 class TEST_NAME : public util::test_base {
@@ -57,12 +46,19 @@ class TEST_NAME : public util::test_base {
       constexpr auto prop_value_implement_in_csr_false =
           props3.get_property<implement_in_csr_key>();
 
-      check_equal(log, prop_value_device_image_scope,
-                  prop_value_device_image_scope, true);
-      check_equal(log, prop_value_implement_in_csr_true,
-                  prop_value_implement_in_csr_true, true);
-      check_equal(log, prop_value_implement_in_csr_true,
-                  prop_value_implement_in_csr_false, false);
+      CHECK(prop_value_device_image_scope == prop_value_device_image_scope);
+      CHECK_FALSE(prop_value_device_image_scope !=
+                  prop_value_device_image_scope);
+
+      CHECK(prop_value_implement_in_csr_true ==
+            prop_value_implement_in_csr_true);
+      CHECK_FALSE(prop_value_implement_in_csr_true !=
+                  prop_value_implement_in_csr_true);
+
+      CHECK_FALSE(prop_value_implement_in_csr_true ==
+                  prop_value_implement_in_csr_false);
+      CHECK(prop_value_implement_in_csr_true !=
+            prop_value_implement_in_csr_false);
     }
 #endif
   }
