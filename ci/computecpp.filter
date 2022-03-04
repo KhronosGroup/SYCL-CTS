@@ -4,7 +4,6 @@ buffer
 context
 device
 device_event
-event
 exception_handling
 exceptions
 group

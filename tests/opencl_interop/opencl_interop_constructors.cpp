@@ -394,13 +394,14 @@ class TEST_NAME :
       }
       // TODO: add checks for make_sampled_image and make_unsampled_image
 
-      /** check make_event (cl_event, const context&)
+      /** check make_event (std::vector<cl_event>, const context&)
        */
       {
         cl_event clEvent = clCreateUserEvent(
             sycl::get_native<sycl::backend::opencl>(ctsContext), nullptr);
+        std::vector<cl_event> clEventVec(1, clEvent);
         sycl::event event =
-            sycl::make_event<sycl::backend::opencl>(clEvent, ctsContext);
+            sycl::make_event<sycl::backend::opencl>(clEventVec, ctsContext);
 
         std::vector<cl_event> interopEventVec =
             sycl::get_native<sycl::backend::opencl>(event);

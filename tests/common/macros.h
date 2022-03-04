@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2020-2021 The Khronos Group Inc.
+//  Copyright (c) 2020-2022 The Khronos Group Inc.
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
@@ -74,6 +74,22 @@ inline void set_test_info(sycl_cts::util::test_base::info& out,
                      Catch::ResultDisposition::Normal,                    \
                      msg_or_logger INTERNAL_CTS_IF(INTERNAL_CTS_HAS_ARGS( \
                          __VA_ARGS__))(<< __VA_ARGS__, << ""));
+
+/**
+ * Adds a placeholder test case that should be implemented in the future.
+ *
+ * A description must be provided, optionally tags can be provided as well.
+ * Example usage:
+ *
+ * TODO_TEST_CASE("my feature works as expected", "[my-feature]");
+ *
+ * The test case is marked with the [todo] tag, so it can be listed on the
+ * command line.
+ */
+#define TODO_TEST_CASE(description, ...)                      \
+  TEST_CASE(description, __VA_ARGS__ "[todo][!shouldfail]") { \
+    FAIL("This test case is not yet implemented.");           \
+  }
 
 #if defined(SYCL_CTS_TEST_OPENCL_INTEROP)
 #define CHECK_CL_SUCCESS(log, error) \

@@ -16,19 +16,19 @@ using namespace sycl_cts;
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 
 struct check_result_reset_high {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask,
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask,
                   const sycl::sub_group &sub_group) {
     auto high = sub_group_mask.find_high();
     unsigned long after_reset, before_reset;
     sub_group_mask.extract_bits(before_reset);
     sub_group_mask.reset_high();
     sub_group_mask.extract_bits(after_reset);
-    return after_reset == before_reset ^ (1 << high);
+    return after_reset == (before_reset ^ (1 << high));
   }
 };
 
 struct check_type_reset_high {
-  bool operator()(sycl::ext::oneapi::sub_group_mask &sub_group_mask) {
+  bool operator()(sycl::ext::oneapi::sub_group_mask sub_group_mask) {
     return std::is_same<void, decltype(sub_group_mask.reset_high())>::value;
   }
 };

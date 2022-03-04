@@ -16,7 +16,7 @@
 #include "../common/common.h"
 #include "has_kernel_bundle_zero_kernels.h"
 
-#define TEST_NAME has_kernel_bundle_zero_kernels_ctx_only
+#define TEST_NAME has_kernel_bundle_zero_kernels_ctx_only_and_ctx_and_dev
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
