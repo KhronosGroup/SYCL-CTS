@@ -8,7 +8,7 @@
 
 #include "../../common/common.h"
 
-#define TEST_NAME property_list_is_property_check
+#define TEST_NAME properties_is_property_check
 
 namespace TEST_NAMESPACE {
 
@@ -27,23 +27,24 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
     {
-      using namespace sycl::ext::oneapi;
+      using namespace sycl::ext::oneapi::experimental;
 
-      // is_device_copyable for compile-time-constant properties
-      if (!sycl::is_property_v<device_image_scope>)
-        FAIL(log, "is_property_v for device_image_scope is not true");
-      if (!sycl::is_property_v<host_access>)
-        FAIL(log, "is_property_v for device_image_scope is not true");
-      if (!sycl::is_property_v<init_mode>)
-        FAIL(log, "is_property_v for device_image_scope is not true");
-      if (!sycl::is_property_v<implement_in_csr>)
-        FAIL(log, "is_property_v for device_image_scope is not true");
+      // is_property_key for compile-time-constant properties
+      if (!is_property_key<device_image_scope_key>::value)
+        FAIL(log,
+             "is_property_key for device_image_scope_key is not true_type");
+      if (!is_property_key<host_access_key>::value)
+        FAIL(log, "is_property_key for host_access_key is not true_type");
+      if (!is_property_key<init_mode_key>::value)
+        FAIL(log, "is_property_key for init_mode_key is not true_type");
+      if (!is_property_key<implement_in_csr_key>::value)
+        FAIL(log, "is_property_key for implement_in_csr_key is not true_type");
     }
 #endif
   }
