@@ -300,7 +300,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
   CHECK(a + b == idh<D>::get(8, 11, 6));
   CHECK(b + a == idh<D>::get(8, 11, 6));
   CHECK(a - b == idh<D>::get(2, 5, 0));
-  CHECK(b - a == idh<D>::get(-2ul, -5ul, 0));
+  CHECK(b - a == idh<D>::get(-2, -5, 0));
   CHECK(a * b == idh<D>::get(15, 24, 9));
   CHECK(b * a == idh<D>::get(15, 24, 9));
   CHECK(a / b == idh<D>::get(1, 2, 1));
@@ -333,7 +333,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(hipSYCL)
   CHECK(DEVICE_EVAL(a + b) == idh<D>::get(8, 11, 6));
   CHECK(DEVICE_EVAL(b + a) == idh<D>::get(8, 11, 6));
   CHECK(DEVICE_EVAL(a - b) == idh<D>::get(2, 5, 0));
-  CHECK(DEVICE_EVAL(b - a) == idh<D>::get(-2ul, -5ul, 0));
+  CHECK(DEVICE_EVAL(b - a) == idh<D>::get(-2, -5, 0));
   CHECK(DEVICE_EVAL(a * b) == idh<D>::get(15, 24, 9));
   CHECK(DEVICE_EVAL(b * a) == idh<D>::get(15, 24, 9));
   CHECK(DEVICE_EVAL(a / b) == idh<D>::get(1, 2, 1));

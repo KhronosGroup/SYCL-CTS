@@ -2,13 +2,13 @@
 //
 //  SYCL 2020 Extension Conformance Test
 //
-//  Provides test for sycl::ext::oneapi::is_property_list
+//  Provides test for sycl::ext::oneapi::experimental::is_property_list
 //
 *******************************************************************************/
 
 #include "../../common/common.h"
 
-#define TEST_NAME property_list_is_property_list
+#define TEST_NAME properties_is_property_list
 
 namespace TEST_NAMESPACE {
 
@@ -29,14 +29,14 @@ class TEST_NAME : public util::test_base {
   /** execute the test
    */
   void run(util::logger &log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
     {
-      using namespace sycl::ext::oneapi;
-      property_list prop_list{device_image_scope_v, implement_in_csr_v<true>};
+      using namespace sycl::ext::oneapi::experimental;
+      properties prop_list{device_image_scope, implement_in_csr<true>};
 
       if (!std::is_base_of_v<std::true_type,
                              is_property_list<decltype(prop_list)>>)
