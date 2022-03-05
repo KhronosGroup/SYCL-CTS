@@ -13,7 +13,7 @@
 #include <sycl/sycl.hpp>
 
 // TODO: Remove when all implementations support the sycl::errc enum
-#if defined(__HIPSYCL__) || defined(__COMPUTECPP__)
+#if defined(__HIPSYCL__)
 #define SYCL_CTS_SUPPORT_HAS_ERRC_ENUM 0
 #else
 #define SYCL_CTS_SUPPORT_HAS_ERRC_ENUM 1
