@@ -14,8 +14,10 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "../../util/conversion.h"
 #include "../../util/math_vector.h"
 #include "../../util/proxy.h"
+#include "../../util/sycl_enums.h"
 #include "../../util/test_base.h"
 
 #include "cts_async_handler.h"
@@ -384,16 +386,6 @@ inline void if_constexpr(const F& f) {
   if (condition) {
     f();
   }
-}
-
-/**
- * @brief Static cast scoped enum value to the underlying type
- */
-template <typename enumT>
-constexpr auto to_integral(enumT const& value)
-  -> typename std::enable_if<std::is_enum<enumT>::value,
-                             typename std::underlying_type<enumT>::type>::type {
-    return static_cast<typename std::underlying_type<enumT>::type>(value);
 }
 
 /**
