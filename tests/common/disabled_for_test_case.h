@@ -51,6 +51,17 @@
 #define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
 #endif
 
+// Clang 8 does not properly handle _Pragma inside macro expansions.
+// See https://compiler-explorer.com/z/4WebY11TM.
+// As a crude workaround we disable _Pragma altogether.
+// This is required as of ComputeCpp 2.8.0, which is based on Clang 8.
+#if defined(__clang__) && __clang_major__ <= 8
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbuiltin-macro-redefined"
+#define _Pragma(...)
+#pragma clang diagnostic pop
+#endif
+
 // ------------------------------------------------------------------------------------
 
 #define INTERNAL_CTS_IMPL_PROBE(impl) \
@@ -87,12 +98,6 @@
 
 // ------------------------------------------------------------------------------------
 
-#define INTERNAL_CTS_FIRST(a, ...) a
-#define INTERNAL_CTS_HAS_ARGS(...) \
-  INTERNAL_CTS_BOOL(               \
-      INTERNAL_CTS_FIRST(_INTERNAL_CTS_END_OF_ARGS_ __VA_ARGS__)())
-#define _INTERNAL_CTS_END_OF_ARGS_() 0
-
 // In case we are compiling with a disabled implementation,
 // replace test case with this auto-failing proxy.
 // Note that we explicitly receive a description and tags here,
@@ -110,11 +115,12 @@
 #define INTERNAL_CTS_ENABLED_TEST_CASE_BODY(...) \
   { __VA_ARGS__; }
 
-#define INTERNAL_CTS_CHECK_ALL_IMPLS(catchMacroProxy, impl, ...)          \
-  INTERNAL_CTS_IF(INTERNAL_CTS_IS_IMPL(impl))                             \
-  (INTERNAL_CTS_DISABLED_TEST_CASE,                                       \
-   INTERNAL_CTS_IF(INTERNAL_CTS_HAS_ARGS(__VA_ARGS__))(                   \
-       INTERNAL_CTS_DEFER3(_INTERNAL_CTS_CHECK_ALL_IMPLS)()(__VA_ARGS__), \
+#define INTERNAL_CTS_CHECK_ALL_IMPLS(catchMacroProxy, impl, ...)             \
+  INTERNAL_CTS_IF(INTERNAL_CTS_IS_IMPL(impl))                                \
+  (INTERNAL_CTS_DISABLED_TEST_CASE,                                          \
+   INTERNAL_CTS_IF(INTERNAL_CTS_HAS_ARGS(__VA_ARGS__))(                      \
+       INTERNAL_CTS_DEFER3(_INTERNAL_CTS_CHECK_ALL_IMPLS)()(catchMacroProxy, \
+                                                            __VA_ARGS__),    \
        catchMacroProxy))
 #define _INTERNAL_CTS_CHECK_ALL_IMPLS() INTERNAL_CTS_CHECK_ALL_IMPLS
 

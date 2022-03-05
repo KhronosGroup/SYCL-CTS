@@ -12,6 +12,7 @@
 
 #include "../tests/common/macros.h"
 #include "logger.h"
+#include "sycl_exceptions.h"
 
 // conformance test suite namespace
 namespace sycl_cts {
