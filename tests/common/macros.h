@@ -56,21 +56,6 @@ inline void set_test_info(sycl_cts::util::test_base::info& out,
 }
 
 /**
- *
- */
-inline void log_exception(sycl_cts::util::logger& log,
-                          const sycl::exception& e) {
-  // notify that an exception was thrown
-  log.note("sycl exception caught");
-
-  // log exception error string
-  std::string what = e.what();
-  if (!what.empty()) {
-    log.note("what - " + what);
-  }
-}
-
-/**
  * Explicitly marks a test case as failed.
  *
  * In most situations it is preferable to use an assertion macro (CHECK,

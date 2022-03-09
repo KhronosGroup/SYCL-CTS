@@ -6,6 +6,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 #define TEST_NAME device_selector_predefined
