@@ -11,6 +11,7 @@
 
 #include <sycl/sycl.hpp>
 
+// Change of async handler can affect on tests of optional kernel features
 struct cts_async_handler {
   void operator()(sycl::exception_list l) {
     for (auto &e : l) {
