@@ -8,11 +8,12 @@
 
 #ifndef SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
 #define SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
-
+#include "catch2/matchers/catch_matchers.hpp"
 namespace kernel_features_common {
-// FIXME: re-enable compilation with hipSYCL when `sycl::errc` is supported
-#ifndef __HIPSYCL__
+// FIXME: re-enable compilation with hipSYCL or computecpp when `sycl::errc` is supported
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
 
 #ifdef SYCL_EXTERNAL
 /**
@@ -263,16 +264,90 @@ inline void check_async_exception(sycl::queue &queue,
 }
 
 /**
- * @brief The function helps to run separate lambdas in the kernel by executing
- * them in single_task, parallel_for and parallel_for_work_group. The function
- * also expects exception depending on is_exception_expected flag.
+ * @brief The function helps to execute actions and check if the expected
+ * exception was thrown. Actions will be passed to the CHECK_THROWS_MATCHES or
+ * CHECK_NOTHROW depending on the flag is_exception_expected.
+ *
+ * @tparam SingleTaskActionT Type of single_task_action. Can be deduced from the
+ * argument.
+ * @tparam ParallelForActionT Type of parallel_for_action. Can be deduced from
+ * the argument.
+ * @tparam ParallelForWgActionT Type of parallel_for_wg_action. Can be deduced
+ * from the argument.
+ * @param is_exception_expected The flag shows if exception expected from
+ * the kernel
+ * @param errc_expected The error code that expected from sycl::exception
+ * @param queue The sycl::queue instance for device
+ * @param description String description of the tasks that will be executed
+ * @param single_task_action Task for single_task invocation
+ * @param parallel_for_action Task for parallel_for invocation
+ * @param parallel_for_wg_action Task for parallel_for_work_group invocation
+ */
+template <typename SingleTaskActionT, typename ParallelForActionT,
+          typename ParallelForWgActionT>
+void execute_tasks_and_check_exception(
+    const bool is_exception_expected, const sycl::errc errc_expected,
+    sycl::queue &queue, const std::string &description,
+    SingleTaskActionT single_task_action,
+    ParallelForActionT parallel_for_action,
+    ParallelForWgActionT parallel_for_wg_action) {
+  const std::string single_task_desc =
+      "Execution of " + description + " in single_task";
+  const std::string parallel_for_desc =
+      "Execution of " + description + " in parallel_for";
+  const std::string parallel_for_wg_desc =
+      "Execution of " + description + " in parallel_for_work_group";
+
+  if (is_exception_expected) {
+    {
+      INFO(single_task_desc);
+      CHECK_THROWS_MATCHES(single_task_action, sycl::exception,
+                           sycl_cts::util::equals_exception(errc_expected));
+      check_async_exception(queue, false);
+    }
+    {
+      INFO(parallel_for_desc);
+      CHECK_THROWS_MATCHES(parallel_for_action, sycl::exception,
+                           sycl_cts::util::equals_exception(errc_expected));
+      check_async_exception(queue, false);
+    }
+    {
+      INFO(parallel_for_wg_desc);
+      CHECK_THROWS_MATCHES(parallel_for_wg_action, sycl::exception,
+                           sycl_cts::util::equals_exception(errc_expected));
+      check_async_exception(queue, false);
+    }
+  } else {
+    {
+      INFO(single_task_desc);
+      CHECK_NOTHROW(single_task_action);
+      check_async_exception(queue, false);
+    }
+    {
+      INFO(parallel_for_desc);
+      CHECK_NOTHROW(parallel_for_action);
+      check_async_exception(queue, false);
+    }
+    {
+      INFO(parallel_for_wg_desc);
+      CHECK_NOTHROW(parallel_for_wg_action);
+      check_async_exception(queue, false);
+    }
+  }
+}
+
+/**
+ * @brief The function helps to run separate lambdas in the kernel by
+ * executing them in single_task, parallel_for and parallel_for_work_group.
+ * The function also expects exception depending on is_exception_expected
+ * flag.
  *
  * @tparam LambdaNoArg The type of lambda for single_task invocation
  * @tparam LambdaItemArg The type of lambda for parallel_for invocation
  * @tparam LambdaGroupArg The type of lambda for parallel_for_work_group
  * invocation
- * @param is_exception_expected The flag shows if exception expected from the
- * kernel
+ * @param is_exception_expected The flag shows if exception expected from
+ * the kernel
  * @param errc_expected The error code that expected from sycl::exception
  * @param queue The sycl::queue instance for device
  * @param separate_lambda_no_arg The lambda for single_task invocation
@@ -286,65 +361,32 @@ void run_separate_lambda(const bool is_exception_expected,
                          LambdaNoArg separate_lambda_no_arg,
                          LambdaItemArg separate_lambda_item_arg,
                          LambdaGroupArg separate_lambda_group_arg) {
-  bool is_exception_thrown = false;
-  {
-    INFO("Execution of separate lambda function in single_task");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.single_task(separate_lambda_no_arg);
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
-  {
-    INFO("Execution of separate lambda function in parallel_for");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.parallel_for(sycl::range{1}, separate_lambda_item_arg);
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
-  {
-    INFO("Execution of separate lambda function in parallel_for_work_group");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},
-                                        separate_lambda_group_arg);
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
+  auto single_task_action = [&queue, separate_lambda_no_arg] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.single_task(separate_lambda_no_arg);
+        })
+        .wait();
+  };
+  auto parallel_for_action = [&queue, separate_lambda_item_arg] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.parallel_for(sycl::range{1}, separate_lambda_item_arg);
+        })
+        .wait();
+  };
+  auto parallel_for_wg_action = [&queue, separate_lambda_group_arg] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},
+                                      separate_lambda_group_arg);
+        })
+        .wait();
+  };
+
+  execute_tasks_and_check_exception(is_exception_expected, errc_expected, queue,
+                                    "separate lambda", single_task_action,
+                                    parallel_for_action, parallel_for_action);
 }
 
 template <typename Functor>
@@ -369,66 +411,33 @@ struct kernel_parallel_for_wg;
 template <typename Functor>
 void run_functor(const bool is_exception_expected,
                  const sycl::errc errc_expected, sycl::queue &queue) {
-  bool is_exception_thrown = false;
-  {
-    INFO("Execution of kernel functor in single_task");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.single_task<kernel_single_task<Functor>>(Functor{});
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
-  {
-    INFO("Execution of kernel functor in parallel_for");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.parallel_for<kernel_parallel_for<Functor>>(sycl::range{1},
-                                                           Functor{});
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
-  {
-    INFO("Execution of kernel functor in parallel_for_work_group");
-    try {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            cgh.parallel_for_work_group<kernel_parallel_for_wg<Functor>>(
-                sycl::range{1}, sycl::range{1}, Functor{});
-          })
-          .wait();
-      is_exception_thrown = false;
-    } catch (const sycl::exception &e) {
-      is_exception_thrown = true;
-      if (is_exception_expected) {
-        INFO("Error code check");
-        CHECK(e.code() == errc_expected);
-      }
-    }
-    CHECK(is_exception_thrown == is_exception_expected);
-    check_async_exception(queue, false);
-  }
+  auto single_task_action = [&queue] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.single_task<kernel_single_task<Functor>>(Functor{});
+        })
+        .wait();
+  };
+  auto parallel_for_action = [&queue] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.parallel_for<kernel_parallel_for<Functor>>(sycl::range{1},
+                                                         Functor{});
+        })
+        .wait();
+  };
+  auto parallel_for_wg_action = [&queue] {
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.parallel_for_work_group<kernel_parallel_for_wg<Functor>>(
+              sycl::range{1}, sycl::range{1}, Functor{});
+        })
+        .wait();
+  };
+
+  execute_tasks_and_check_exception(is_exception_expected, errc_expected, queue,
+                                    "functor", single_task_action,
+                                    parallel_for_action, parallel_for_action);
 }
 
 #define NO_ATTRIBUTE /*no attribute*/
@@ -447,73 +456,40 @@ void run_functor(const bool is_exception_expected,
  * @param __VA_ARGS__ Body of the submission call that have to be executed on
  * the device
  */
-#define RUN_SUBMISSION_CALL(IS_EXCEPTION_EXPECTED, ERRC, QUEUE, ATTRIBUTE,     \
-                            ...)                                               \
-  {                                                                            \
-    bool is_exception_thrown = false;                                          \
-                                                                               \
-    {                                                                          \
-      INFO("Execution of submission call in single_task");                     \
-      try {                                                                    \
-        QUEUE                                                                  \
-            .submit([&](sycl::handler &cgh) {                                  \
-              cgh.single_task([=]() ATTRIBUTE { __VA_ARGS__; });               \
-            })                                                                 \
-            .wait();                                                           \
-        is_exception_thrown = false;                                           \
-      } catch (const sycl::exception &e) {                                     \
-        is_exception_thrown = true;                                            \
-        if (IS_EXCEPTION_EXPECTED) {                                           \
-          INFO("Error code check");                                            \
-          CHECK(e.code() == ERRC);                                             \
-        }                                                                      \
-      }                                                                        \
-      CHECK(is_exception_thrown == IS_EXCEPTION_EXPECTED);                     \
-      check_async_exception(QUEUE, false);                                     \
-    }                                                                          \
-    {                                                                          \
-      INFO("Execution of submission call in parallel_for");                    \
-      try {                                                                    \
-        QUEUE                                                                  \
-            .submit([&](sycl::handler &cgh) {                                  \
-              cgh.parallel_for(sycl::range{1},                                 \
-                               [=](sycl::item<1>) ATTRIBUTE { __VA_ARGS__; }); \
-            })                                                                 \
-            .wait();                                                           \
-        is_exception_thrown = false;                                           \
-      } catch (const sycl::exception &e) {                                     \
-        is_exception_thrown = true;                                            \
-        if (IS_EXCEPTION_EXPECTED) {                                           \
-          INFO("Error code check");                                            \
-          CHECK(e.code() == ERRC);                                             \
-        }                                                                      \
-      }                                                                        \
-      CHECK(is_exception_thrown == IS_EXCEPTION_EXPECTED);                     \
-      check_async_exception(QUEUE, false);                                     \
-    }                                                                          \
-    {                                                                          \
-      INFO("Execution of submission call in parallel_for_work_group");         \
-      try {                                                                    \
-        QUEUE                                                                  \
-            .submit([&](sycl::handler &cgh) {                                  \
-              cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},      \
-                                          [=](sycl::group<1>)                  \
-                                              ATTRIBUTE { __VA_ARGS__; });     \
-            })                                                                 \
-            .wait();                                                           \
-        is_exception_thrown = false;                                           \
-      } catch (const sycl::exception &e) {                                     \
-        is_exception_thrown = true;                                            \
-        if (IS_EXCEPTION_EXPECTED) {                                           \
-          INFO("Error code check");                                            \
-          CHECK(e.code() == ERRC);                                             \
-        }                                                                      \
-      }                                                                        \
-      CHECK(is_exception_thrown == IS_EXCEPTION_EXPECTED);                     \
-      check_async_exception(QUEUE, false);                                     \
-    }                                                                          \
+#define RUN_SUBMISSION_CALL(IS_EXCEPTION_EXPECTED, ERRC, QUEUE, ATTRIBUTE,   \
+                            ...)                                             \
+                                                                             \
+  {                                                                          \
+    auto single_task_action = [&QUEUE] {                                     \
+      QUEUE                                                                  \
+          .submit([&](sycl::handler &cgh) {                                  \
+            cgh.single_task([=]() ATTRIBUTE { __VA_ARGS__; });               \
+          })                                                                 \
+          .wait();                                                           \
+    };                                                                       \
+    auto parallel_for_action = [&QUEUE] {                                    \
+      QUEUE                                                                  \
+          .submit([&](sycl::handler &cgh) {                                  \
+            cgh.parallel_for(sycl::range{1},                                 \
+                             [=](sycl::item<1>) ATTRIBUTE { __VA_ARGS__; }); \
+          })                                                                 \
+          .wait();                                                           \
+    };                                                                       \
+    auto parallel_for_wg_action = [&QUEUE] {                                 \
+      QUEUE                                                                  \
+          .submit([&](sycl::handler &cgh) {                                  \
+            cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},      \
+                                        [=](sycl::group<1>)                  \
+                                            ATTRIBUTE { __VA_ARGS__; });     \
+          })                                                                 \
+          .wait();                                                           \
+    };                                                                       \
+                                                                             \
+    execute_tasks_and_check_exception(                                       \
+        IS_EXCEPTION_EXPECTED, ERRC, QUEUE, "submission call",               \
+        single_task_action, parallel_for_action, parallel_for_action);       \
   }
-#endif  // ifndef __HIPSYCL__
+#endif  //#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
 };      // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
