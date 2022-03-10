@@ -441,6 +441,7 @@ void run_functor(const bool is_exception_expected,
 }
 
 #define NO_ATTRIBUTE /*no attribute*/
+#define NO_KERNEL_BODY /*no kernel code*/
 
 /**
  * @brief The function like macros that helps to define and run kernels through
