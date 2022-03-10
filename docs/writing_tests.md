@@ -1,0 +1,156 @@
+# Writing Tests
+
+This section contains guidelines on how to write test cases for the SYCL CTS.
+We recommend that you try and stick to these guidelines, however, they are not to be considered hard and fast rules, and best practices are still being developed.
+
+## Test Categories
+
+Test cases in the SYCL CTS are grouped into *categories*.
+Each folder in the [`tests`](../tests) directory corresponds to one such category.
+Each category is comprised of one or more translation units and is compiled into a single test executable, named `test_<category>`.
+
+> Before adding a test case, consider whether there already exists a category it would fit into, or whether a new category is required.
+
+> The CTS supports disabling the compilation of entire categories for certain SYCL implementations.
+> See [Procedures](procedures.md) for more information.
+
+## Setting up a Simple Category & Test Case
+
+To create a new test category create the following files inside the [`tests`](../tests) directory:
+
+```
+tests
+└── simple
+   ├── CMakeLists.txt
+   └── simple.cpp
+```
+
+In `tests/simple/CMakeLists.txt` add the following boilerplate:
+
+```
+file(GLOB test_cases_list *.cpp)
+add_cts_test(${test_cases_list})
+```
+
+Then in `tests/simple/simple.cpp` add the following:
+
+```c++
+#include "../common/common.h"
+
+TEST_CASE("a simple test case", "[simple]") {
+    sycl::buffer<int> buf(1);
+    sycl::queue queue = sycl_cts::util::get_cts_object::queue();
+    queue.submit([&](sycl::handler& cgh) {
+        sycl::accessor w{buf, cgh, sycl::write_only};
+        cgh.single_task<class simple_kernel>([=] {
+            w[0] = 42;
+        });
+    });
+
+    sycl::host_accessor r{buf, sycl::read_only};
+    CHECK(r[0] == 42);
+}
+```
+
+This adds a test case with the description `"a simple test case"` and the *tag* `[simple]`.
+Both can later be used to narrow down the set of test cases that will be executed during runtime.
+
+When configuring CMake, the new test category will automatically be detected and a target with the name `test_simple` is added.
+You can run the test case by either executing `./bin/test_simple` directly, or alternatively as part of `./bin/test_all`.
+
+> Note that for historic reasons, the CTS currently contains many test cases that are written in a different style.
+> Please see [New-style vs Legacy Test Cases](#new-style-vs-legacy-test-cases) for more information.
+
+## Important Catch2 Concepts
+
+The SYCL CTS relies on [Catch2](https://github.com/catchorg/Catch2/) as its underlying testing framework.
+This section will list the most important concepts required to write tests with Catch2.
+For a comprehensive overview of all features, please refer to the [Catch2 documentation](https://github.com/catchorg/Catch2/tree/devel/docs).
+In addition, the CTS provides several custom utilities to extend Catch2's feature set.
+See [Special Macros & Custom Matchers](#special-macros--custom-matchers) for more information.
+
+### Test Case Macros
+
+Catch2 provides several macros of varying complexity for defining test cases.
+While different macros take different parameters, they all require a *description* and optionally a list of *tags* to be specified.
+
+
+- `TEST_CASE`: This is the most basic macro, useful for test cases that do not require multiple compile-time definitions.
+- `TEMPLATE_TEST_CASE`
+- `TEMPLATE_TEST_CASE_SIG`
+
+**TODO**
+
+### Sections
+
+**TODO**
+
+### Generators
+
+**TODO**
+
+## Special Macros & Custom Matchers
+
+**TODO**
+
+## Best Practices
+
+Here is a list of best practices for writing test cases.
+These are not set in stone and are likely to evolve over time.
+
+- Always write tests using Catch2 macros, avoid [legacy test cases](#new-style-vs-legacy-test-cases).
+- Avoid old-style `if(!condition) FAIL("reason");` pattern.
+  Use `CHECK(condition)` instead.
+- Keep test cases small and focused to a single concept / behavior.
+  Even a single function could be tested with several test cases.
+- Use natural language descriptions for test cases.
+    - Avoid: `"host_accessor range mismatch exception"`.
+    - Prefer: `"host_accessors throws if accessed range exceeds buffer dimensions"`.
+- Tag test cases according to the feature being tested:
+    - Use `[some_type]` for types that exist in the SYCL specification (example: `[host_accessor]`).
+    - Use `[some-concept]` for concepts without a clearly associated type (example: `[backend-interop]`).
+- Try to write test cases in the same order as the associated API specification (if possible).
+
+## New-style vs Legacy Test Cases
+
+When browsing the CTS, you will likely encounter two different kinds of test cases: **New-style test cases** and **legacy test cases**.
+New-style test cases are written using free-standing [Catch2](https://github.com/catchorg/Catch2/) macros such as `TEST_CASE` and will look something like this:
+
+```c++
+TEST_CASE("SYCL feature XY works as expected", "[feature-xy]") {
+    // ...
+    CHECK(works_as_expected);
+}
+```
+
+Importantly, multiple of these test cases will typically be grouped into a single file.
+
+Legacy test cases on the other hand use a class-based approach, where a test case is implemented by extending the `sycl_test::util::test_base` class.
+Testing logic is then implemented in the `run` member function:
+
+```c++
+#define TEST_NAME feature_xy
+
+namespace TEST_NAMESPACE {
+using namespace sycl_cts;
+
+class TEST_NAME : public util::test_base {
+public:
+  void get_info(test_base::info &out) const override { /* ... */ }
+
+  void run(util::logger &log) override {
+      // ...
+      if(!works_as_expected) {
+          FAIL("feature XY does not work as expected");
+      }
+  }
+};
+
+util::test_proxy<TEST_NAME> proxy;
+}
+```
+
+While legacy test cases are still mapped to Catch2 under the hood, they require a lot of boilerplate code and therefore testing logic for distinct aspects of a feature are often grouped into a single test case, making them harder to comprehend and debug.
+Although technically not required, usually only one class extending `test_base` is defined per file.
+
+> **Important:** Always write new-style test cases.
