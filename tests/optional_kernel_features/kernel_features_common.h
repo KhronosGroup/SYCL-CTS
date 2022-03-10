@@ -33,7 +33,7 @@ use_feature_function_external_decorated();
  * @tparam T The type of variable that will use inside the function
  */
 template <typename T>
-void use_feature_function_non_decorated() {
+inline void use_feature_function_non_decorated() {
   unsigned long long temp = 42;
   T feature(temp);
   feature += 42;
@@ -70,7 +70,7 @@ template <sycl::aspect aspect>
  * @tparam T The type of variable that will use inside the function
  * @tparam aspect Instance of sycl::aspect that will be used in attribute
  */
-void dummy_function_non_decorated() {
+inline void dummy_function_non_decorated() {
   int var = 0;
   var += 42;
 }
@@ -250,7 +250,7 @@ constexpr sycl::aspect get_another_aspect() {
  * @param is_exception_expected The flag shows if the function will expect
  * exception or not
  */
-void check_async_exception(sycl::queue &queue,
+inline void check_async_exception(sycl::queue &queue,
                            const bool is_exception_expected) {
   INFO("Check if async exception was thrown");
   bool is_async_exception_thrown{};
