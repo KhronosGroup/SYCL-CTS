@@ -15,8 +15,8 @@
 namespace device_global_types {
 inline auto get_types() {
   static const auto types =
-      named_type_pack<int, bool, user_def_types::no_cnstr>{"int", "bool",
-                                                           "no_cnstr"};
+      named_type_pack<int, bool, user_def_types::no_cnstr>::generate("int", "bool",
+                                                           "no_cnstr");
   return types;
 }
 }  // namespace device_global_types

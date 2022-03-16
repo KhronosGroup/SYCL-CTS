@@ -47,16 +47,16 @@ inline auto get_types() {
                          short, unsigned short,       //
                          int, unsigned int,           //
                          long, unsigned long,         //
-                         long long, unsigned long long>{
+                         long long, unsigned long long>::generate(
       "bool",        "float",
       "double",      "char",
       "signed char", "unsigned char",
       "short",       "unsigned short",
       "int",         "unsigned int",
       "long",        "unsigned long",
-      "long long",   "unsigned long long"};
+      "long long",   "unsigned long long");
 #else
-  return named_type_pack<int, float>{"int", "float"};
+  return named_type_pack<int, float>::generate("int", "float");
 #endif  // SYCL_CTS_FULL_CONFORMANCE
 }
 
@@ -64,10 +64,10 @@ inline auto get_types() {
 inline auto get_composite_types() {
 #ifdef SYCL_CTS_FULL_CONFORMANCE
   return named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr,
-                         user_def_types::no_def_cnstr>(
-      {"no_cnstr", "def_cnstr", "no_def_cnstr"});
+                         user_def_types::no_def_cnstr>::generate(
+      "no_cnstr", "def_cnstr", "no_def_cnstr");
 #else
-  return named_type_pack<user_def_types::def_cnstr>({"def_cnstr"});
+  return named_type_pack<user_def_types::def_cnstr>::generate("def_cnstr");
 #endif  // SYCL_CTS_FULL_CONFORMANCE
 }
 

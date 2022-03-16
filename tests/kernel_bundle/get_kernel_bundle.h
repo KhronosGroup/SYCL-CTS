@@ -23,7 +23,7 @@ inline auto kernels_with_attributes = named_type_pack<
     kernels::kernel_likely_unsupported_sub_group_size_descriptor,
     kernels::kernel_likely_supported_sub_group_size_descriptor,
     kernels::kernel_likely_unsupported_work_group_size_descriptor,
-    kernels::kernel_likely_supported_work_group_size_descriptor>{
+    kernels::kernel_likely_supported_work_group_size_descriptor>::generate(
     "kernel_cpu_descriptor",
     "kernel_gpu_descriptor",
     "kernel_accelerator_descriptor",
@@ -32,17 +32,17 @@ inline auto kernels_with_attributes = named_type_pack<
     "kernel_likely_unsupported_sub_group_size_descriptor",
     "kernel_likely_supported_sub_group_size_descriptor",
     "kernel_likely_unsupported_work_group_size_descriptor",
-    "kernel_likely_supported_work_group_size_descriptor"};
+    "kernel_likely_supported_work_group_size_descriptor");
 
 inline auto kernels_without_attributes =
     named_type_pack<kernels::simple_kernel_descriptor,
                     kernels::simple_kernel_descriptor_second,
                     kernels::kernel_fp16_no_attr_descriptor,
                     kernels::kernel_fp64_no_attr_descriptor,
-                    kernels::kernel_atomic64_no_attr_descriptor>{
+                    kernels::kernel_atomic64_no_attr_descriptor>::generate(
         "simple_kernel_descriptor", "simple_kernel_descriptor_second",
         "kernel_fp16_no_attr_descriptor", "kernel_fp64_no_attr_descriptor",
-        "kernel_atomic64_no_attr_descriptor"};
+        "kernel_atomic64_no_attr_descriptor");
 
 template <sycl::bundle_state BundleState>
 class TestCaseDescription

@@ -46,9 +46,9 @@ static const std::string skip_test_for_builtin_kernels_msg{
 inline auto user_def_kernels =
     named_type_pack<kernels::kernel_cpu_descriptor,
                     kernels::kernel_gpu_descriptor,
-                    kernels::kernel_accelerator_descriptor>{
+                    kernels::kernel_accelerator_descriptor>::generate(
         "kernel_cpu_descriptor", "kernel_gpu_descriptor",
-        "kernel_accelerator_descriptor"};
+        "kernel_accelerator_descriptor");
 
 template <sycl::bundle_state BundleState>
 class TestCaseDescription

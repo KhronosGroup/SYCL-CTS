@@ -29,11 +29,11 @@ inline auto kernels_for_link_and_build = named_type_pack<
     kernels::simple_kernel_descriptor_second,
     kernels::kernel_fp16_no_attr_descriptor,
     kernels::kernel_fp64_no_attr_descriptor,
-    kernels::kernel_atomic64_no_attr_descriptor>{
+    kernels::kernel_atomic64_no_attr_descriptor>::generate(
     "kernel_cpu_descriptor",           "kernel_gpu_descriptor",
     "kernel_accelerator_descriptor",   "simple_kernel_descriptor",
     "simple_kernel_descriptor_second", "kernel_fp16_no_attr_descriptor",
-    "kernel_fp64_no_attr_descriptor",  "kernel_atomic64_no_attr_descriptor"};
+    "kernel_fp64_no_attr_descriptor",  "kernel_atomic64_no_attr_descriptor");
 
 using cpu_kernel = kernels::kernel_cpu_descriptor::type;
 using gpu_kernel = kernels::kernel_gpu_descriptor::type;
