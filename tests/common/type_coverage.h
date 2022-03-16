@@ -14,7 +14,7 @@
 
 #include <sycl/sycl.hpp>
 
-#include "type_traits.h"
+#include "../../util/type_traits.h"
 
 /**
  * @brief Retrieve type name; by default just forward the given one
