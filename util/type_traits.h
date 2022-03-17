@@ -15,7 +15,7 @@
 namespace {
 
 // Common type traits functions
-template <typename ... T>
+template <typename... T>
 struct contains;
 
 template <typename T>
@@ -24,11 +24,10 @@ struct contains<T> : std::false_type {};
 /**
  * @brief Verify type is within the list of types
  */
-template <typename T, typename headT, typename ... tailT>
-struct contains<T, headT, tailT...> :
-    std::conditional<std::is_same<T, headT>::value,
-                     std::true_type,
-                     contains<T, tailT...>>::type {};
+template <typename T, typename headT, typename... tailT>
+struct contains<T, headT, tailT...>
+    : std::conditional<std::is_same<T, headT>::value, std::true_type,
+                       contains<T, tailT...>>::type {};
 
 /**
  * @brief Verify type has the given number of bits
@@ -43,12 +42,8 @@ using bits_eq = std::bool_constant<(sizeof(T) * CHAR_BIT) == bits>;
  *        into this set
  */
 template <typename T>
-using has_atomic_support =
-    contains<T,
-             int, unsigned int,
-             long, unsigned long,
-             long long, unsigned long long,
-             float>;
+using has_atomic_support = contains<T, int, unsigned int, long, unsigned long,
+                                    long long, unsigned long long, float>;
 
 /**
  * @brief Checks whether T is a floating-point sycl type
@@ -61,6 +56,6 @@ using is_cl_float_type =
                        std::is_same<sycl::cl_double, T>::value ||
                        std::is_same<sycl::cl_half, T>::value>;
 
-} // namespace
+}  // namespace
 
-#endif // __SYCLCTS_UTIL_TYPE_TRAITS_H
+#endif  // __SYCLCTS_UTIL_TYPE_TRAITS_H
