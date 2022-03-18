@@ -46,9 +46,9 @@ endif()
 
 # ------------------
 # Extensive mode for running extension oneAPI compile-time property list tests
-option(SYCL_ENABLE_EXT_ONEAPI_PROPERTIES
+option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
        "Enable extension oneAPI compile-time property list tests" OFF)
-if(SYCL_ENABLE_EXT_ONEAPI_PROPERTIES)
+if(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS)
     message(STATUS "oneAPI extension compile-time property list tests mode: ON")
 endif()
 # ------------------
