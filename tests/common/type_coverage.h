@@ -31,7 +31,7 @@ struct type_name_string {
  */
 template <typename T, size_t nElements>
 struct type_name_string<sycl::vec<T, nElements>> {
-  static std::string get(const std::string &dataType) {
+  static std::string get(const std::string& dataType) {
     return "sycl::vec<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
@@ -43,7 +43,7 @@ struct type_name_string<sycl::vec<T, nElements>> {
  */
 template <typename T, size_t nElements>
 struct type_name_string<cl::sycl::marray<T, nElements>> {
-  static std::string get(const std::string &dataType) {
+  static std::string get(const std::string& dataType) {
     return "cl::sycl::marray<" + dataType + "," + std::to_string(nElements) +
            ">";
   }
@@ -341,7 +341,7 @@ inline void for_all_types(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_type_and_vectors(argsT &&...args) {
+void for_type_and_vectors(argsT&&... args) {
   static const auto types = type_pack<
       T, typename sycl::template vec<T, 1>, typename sycl::template vec<T, 2>,
       typename sycl::template vec<T, 3>, typename sycl::template vec<T, 4>,

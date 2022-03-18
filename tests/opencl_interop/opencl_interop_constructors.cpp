@@ -85,9 +85,6 @@ class TEST_NAME :
         if (interopDeviceID != m_cl_device_id) {
           FAIL(log, "device was not constructed correctly");
         }
-        if (!CHECK_CL_SUCCESS(log, clReleaseDevice(interopDeviceID))) {
-          FAIL(log, "failed to release OpenCL device");
-        }
       }
 
       /** check make_context (cl_context)
@@ -100,9 +97,6 @@ class TEST_NAME :
             sycl::get_native<sycl::backend::opencl>(context);
         if (interopContext != m_cl_context) {
           FAIL(log, "context was not constructed correctly");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
-          FAIL(log, "failed to release OpenCL context");
         }
       }
 
@@ -117,9 +111,6 @@ class TEST_NAME :
             sycl::get_native<sycl::backend::opencl>(context);
         if (interopContext != m_cl_context) {
           FAIL(log, "context was not constructed correctly");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseContext(interopContext))) {
-          FAIL(log, "failed to release OpenCL context");
         }
       }
 
@@ -143,13 +134,6 @@ class TEST_NAME :
           FAIL(log, "queue destination was not copy constructed correctly");
         }
 
-        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(clQueueCopy))) {
-          FAIL(log, "failed to release OpenCL command queue");
-        }
-
-        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
-          FAIL(log, "failed to release OpenCL command queue");
-        }
       }
 
       /** check make_queue (cl_command_queue, const context&, async_handler)
@@ -163,9 +147,6 @@ class TEST_NAME :
             sycl::get_native<sycl::backend::opencl>(queue);
         if (interopQueue != m_cl_command_queue) {
           FAIL(log, "queue was not constructed correctly");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseCommandQueue(interopQueue))) {
-          FAIL(log, "failed to release OpenCL command queue");
         }
       }
 
@@ -206,11 +187,6 @@ class TEST_NAME :
             sycl::get_native<sycl::backend::opencl>(kernel_bundle);
         if (interopProgramVec[0] != clProgram) {
           FAIL(log, "program was not constructed correctly");
-        }
-        for (int i = 0; i < interopProgramVec.size(); i++) {
-          if (!CHECK_CL_SUCCESS(log, clReleaseProgram(interopProgramVec[i]))) {
-            FAIL(log, "failed to release OpenCL program");
-          }
         }
       }
 
@@ -255,9 +231,6 @@ class TEST_NAME :
             sycl::get_native<sycl::backend::opencl>(kernel);
         if (interopKernel != clKernel) {
           FAIL(log, "kernel was not constructed correctly");
-        }
-        if (!CHECK_CL_SUCCESS(log, clReleaseKernel(interopKernel))) {
-          FAIL(log, "failed to release OpenCL kernel");
         }
       }
 
