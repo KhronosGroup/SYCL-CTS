@@ -55,11 +55,11 @@ endif()
 
 # ------------------
 # Extensive mode for running legacy tests
-option(SYCL_CTS_TEST_DEPRECATED_FEATURES
+option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
        "Enable tests for the deprecated SYCL features" ON)
-if(SYCL_CTS_TEST_DEPRECATED_FEATURES)
+if(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
     message(STATUS "Tests for the deprecated SYCL features are enabled")
-    add_definitions(-DSYCL_CTS_TEST_DEPRECATED_FEATURES)
+    add_definitions(-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
 else()
     message(STATUS "Tests for the deprecated SYCL features are disabled")
     message(WARNING
