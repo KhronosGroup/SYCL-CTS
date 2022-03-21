@@ -20,9 +20,9 @@ struct kernel_base {
   // We are using unsigned long long to make it universal for all cases
   // including atomic64
   using element_type = unsigned long long;
-  using accessor_t = sycl::accessor<element_type, 1,
-                                    sycl::access_mode::read_write,
-                                    sycl::target::global_buffer>;
+  using accessor_t =
+      sycl::accessor<element_type, 1, sycl::access_mode::read_write,
+                     sycl::target::global_buffer>;
   static constexpr element_type init_val = 1;
   static constexpr element_type expected_val = 2;
   static constexpr element_type diff_val = expected_val - init_val;
@@ -38,8 +38,8 @@ struct kernel_base {
 };
 
 struct kernel_cpu : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::cpu))]] {
+  [[sycl::device_has(sycl::aspect::cpu)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -55,8 +55,8 @@ struct kernel_cpu_descriptor {
 
 // that kernel and struct using in multiple kernels in one test
 struct kernel_cpu_second : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::cpu))]] {
+  [[sycl::device_has(sycl::aspect::cpu)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -71,8 +71,8 @@ struct kernel_cpu_descriptor_second {
 };
 
 struct kernel_gpu : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::gpu))]] {
+  [[sycl::device_has(sycl::aspect::gpu)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -88,8 +88,8 @@ struct kernel_gpu_descriptor {
 
 // that kernel and struct using in multiple kernels in one test
 struct kernel_gpu_second : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::gpu))]] {
+  [[sycl::device_has(sycl::aspect::gpu)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -122,8 +122,8 @@ struct simple_kernel_descriptor_second {
 };
 
 struct kernel_accelerator : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::accelerator))]] {
+  [[sycl::device_has(sycl::aspect::accelerator)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -139,8 +139,8 @@ struct kernel_accelerator_descriptor {
 
 // that kernel and struct using in multiple kernels in one test
 struct kernel_accelerator_second : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::accelerator))]] {
+  [[sycl::device_has(sycl::aspect::accelerator)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -155,8 +155,8 @@ struct kernel_accelerator_descriptor_second {
 };
 
 struct kernel_custom : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::custom))]] {
+  [[sycl::device_has(sycl::aspect::custom)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -171,8 +171,8 @@ struct kernel_custom_descriptor {
 };
 
 struct kernel_fp16 : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::fp16))]] {
+  [[sycl::device_has(sycl::aspect::fp16)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -187,8 +187,8 @@ struct kernel_fp16_descriptor {
 };
 
 struct kernel_fp64 : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::fp64))]] {
+  [[sycl::device_has(sycl::aspect::fp64)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -203,8 +203,8 @@ struct kernel_fp64_descriptor {
 };
 
 struct kernel_atomic64 : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::atomic64))]] {
+  [[sycl::device_has(sycl::aspect::atomic64)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -258,13 +258,13 @@ struct kernel_fp64_no_attr_descriptor {
 };
 
 struct kernel_atomic64_no_attr : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::atomic64))]] {
+  [[sycl::device_has(sycl::aspect::atomic64)]] void operator()(
+      sycl::item<1> id) const {
     if (id.get_linear_id() == 0) {
-      using ref_t = sycl::atomic_ref<unsigned long long,
-                                    sycl::memory_order::relaxed,
-                                    sycl::memory_scope::work_group,
-                                    sycl::access::address_space::global_space>;
+      using ref_t =
+          sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
+                           sycl::memory_scope::work_group,
+                           sycl::access::address_space::global_space>;
       ref_t longAtomic(m_acc[0]);
       longAtomic.fetch_add(diff_val);
     }
@@ -281,8 +281,8 @@ struct kernel_atomic64_no_attr_descriptor {
 };
 
 struct kernel_image : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::image))]] {
+  [[sycl::device_has(sycl::aspect::image)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -297,8 +297,8 @@ struct kernel_image_descriptor {
 };
 
 struct kernel_online_compiler : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::online_compiler))]] {
+  [[sycl::device_has(sycl::aspect::online_compiler)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -313,8 +313,8 @@ struct kernel_online_compiler_descriptor {
 };
 
 struct kernel_online_linker : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::online_linker))]] {
+  [[sycl::device_has(sycl::aspect::online_linker)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -329,8 +329,8 @@ struct kernel_online_linker_descriptor {
 };
 
 struct kernel_queue_profiling : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::queue_profiling))]] {
+  [[sycl::device_has(sycl::aspect::queue_profiling)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -345,8 +345,8 @@ struct kernel_queue_profiling_descriptor {
 };
 
 struct kernel_usm_device_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_device_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_device_allocations)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -361,8 +361,8 @@ struct kernel_usm_device_allocations_descriptor {
 };
 
 struct kernel_usm_host_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_host_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_host_allocations)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -377,8 +377,8 @@ struct kernel_usm_host_allocations_descriptor {
 };
 
 struct kernel_usm_atomic_host_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_atomic_host_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_atomic_host_allocations)]] void
+  operator()(sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -393,8 +393,8 @@ struct kernel_usm_atomic_host_allocations_descriptor {
 };
 
 struct kernel_usm_shared_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_shared_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_shared_allocations)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -409,8 +409,8 @@ struct kernel_usm_shared_allocations_descriptor {
 };
 
 struct kernel_usm_atomic_shared_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_atomic_shared_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_atomic_shared_allocations)]] void
+  operator()(sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
@@ -425,8 +425,8 @@ struct kernel_usm_atomic_shared_allocations_descriptor {
 };
 
 struct kernel_usm_system_allocations : kernel_base {
-  void operator()(sycl::item<1> id) const
-      [[sycl::requires(has(sycl::aspect::usm_system_allocations))]] {
+  [[sycl::device_has(sycl::aspect::usm_system_allocations)]] void operator()(
+      sycl::item<1> id) const {
     trigger_invocation_flag(id);
   }
 };
