@@ -23,8 +23,8 @@ static const std::string unexpected_exception_msg{
     "unexpected SYCL exception error code was caught"};
 
 static const auto simple_kernel =
-    named_type_pack<kernels::simple_kernel_descriptor>{
-        "simple_kernel_descriptor"};
+    named_type_pack<kernels::simple_kernel_descriptor>::generate(
+        "simple_kernel_descriptor");
 
 template <sycl::bundle_state BundleState>
 class TestCaseDescription

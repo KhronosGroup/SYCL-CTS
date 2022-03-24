@@ -32,11 +32,11 @@ const auto scalar_types =
     named_type_pack<char, signed char, unsigned char, short int,
                     unsigned short int, int, unsigned int, long int,
                     unsigned long int, float, long long int,
-                    unsigned long long int>(
-        {"char", "signed char", "unsigned char", "short int",
+                    unsigned long long int>::generate(
+         "char", "signed char", "unsigned char", "short int",
          "unsigned short int", "int", "unsigned int", "long int",
          "unsigned long int", "float", "long long int",
-         "unsigned long long int"});
+         "unsigned long long int");
 
 /** @brief Returns expected value for testing
  *  @tparam VariableT The type of the variable with which the test runs

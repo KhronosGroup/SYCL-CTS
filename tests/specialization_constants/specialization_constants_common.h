@@ -23,19 +23,19 @@ static const auto types = named_type_pack<
     bool, char, signed char, unsigned char, short, unsigned short, int,
     unsigned int, long, unsigned long, long long, unsigned long long, float,
     sycl::byte, std::int8_t, std::uint8_t, std::int16_t, std::uint16_t,
-    std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, std::size_t>{
+    std::int32_t, std::uint32_t, std::int64_t, std::uint64_t, std::size_t>::generate(
     "bool",         "char",           "signed char",  "unsigned char",
     "short",        "unsigned short", "int",          "unsigned int",
     "long",         "unsigned long",  "long long",    "unsigned long long",
     "float",        "sycl::byte",     "std::int8_t",  "std::uint8_t",
     "std::int16_t", "std::uint16_t",  "std::int32_t", "std::uint32_t",
-    "std::int64_t", "std::uint64_t",  "std::size_t"};
+    "std::int64_t", "std::uint64_t",  "std::size_t");
 
 // custom data types that will be used in type coverage
 static const auto composite_types =
     named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr,
-                    user_def_types::no_def_cnstr>(
-        {"no_cnstr", "def_cnstr", "no_def_cnstr"});
+                    user_def_types::no_def_cnstr>::generate(
+        "no_cnstr", "def_cnstr", "no_def_cnstr");
 
 }  // namespace testing_types
 

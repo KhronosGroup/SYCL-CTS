@@ -19,13 +19,13 @@ namespace {
 static const auto types =
     named_type_pack<char, signed char, unsigned char, short, unsigned short,
                     int, unsigned int, long, unsigned long, long long,
-                    unsigned long long>{
+                    unsigned long long>::generate(
         "char",           "signed char", "unsigned char",     "short",
         "unsigned short", "int",         "unsigned int",      "long",
-        "unsigned long",  "long long",   "unsigned long long"};
+        "unsigned long",  "long long",   "unsigned long long");
 #else
 static const auto types =
-    named_type_pack<char, int>{"char", "int"};
+    named_type_pack<char, int>::generate("char", "int");
 #endif  // SYCL_CTS_FULL_CONFORMANCE
 
 template <typename funT, typename PredT, typename T, size_t SGSize>

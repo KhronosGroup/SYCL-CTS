@@ -17,21 +17,21 @@ namespace sycl_cts::tests::has_kernel_bundle {
 
 static const auto kernels_types_sub_group = named_type_pack<
     kernels::kernel_likely_unsupported_sub_group_size_descriptor,
-    kernels::kernel_likely_supported_sub_group_size_descriptor>{
+    kernels::kernel_likely_supported_sub_group_size_descriptor>::generate(
     "kernel_likely_unsupported_sub_group_size_descriptor",
-    "kernel_likely_supported_sub_group_size_descriptor"};
+    "kernel_likely_supported_sub_group_size_descriptor");
 
 static const auto kernels_types_work_group = named_type_pack<
     kernels::kernel_likely_supported_work_group_size_descriptor,
-    kernels::kernel_likely_unsupported_work_group_size_descriptor>{
+    kernels::kernel_likely_unsupported_work_group_size_descriptor>::generate(
     "kernel_large_work_group_size_descriptor",
-    "kernel_small_work_group_size_descriptor"};
+    "kernel_small_work_group_size_descriptor");
 
 static const auto kernels_types_fp16_fp64_at64 =
     named_type_pack<kernels::kernel_fp16_descriptor,
                     kernels::kernel_fp64_descriptor,
-                    kernels::kernel_atomic64_descriptor>{
-        "kernel_fp16", "kernel_fp64", "kernel_atomic64"};
+                    kernels::kernel_atomic64_descriptor>::generate(
+        "kernel_fp16", "kernel_fp64", "kernel_atomic64");
 
 static const auto kernels_types_for_aspect_required = named_type_pack<
     kernels::kernel_cpu_descriptor, kernels::kernel_gpu_descriptor,
@@ -46,7 +46,7 @@ static const auto kernels_types_for_aspect_required = named_type_pack<
     kernels::kernel_usm_atomic_host_allocations_descriptor,
     kernels::kernel_usm_shared_allocations_descriptor,
     kernels::kernel_usm_atomic_shared_allocations_descriptor,
-    kernels::kernel_usm_system_allocations_descriptor>{
+    kernels::kernel_usm_system_allocations_descriptor>::generate(
     "kernel_cpu_descriptor",
     "kernel_gpu_descriptor",
     "kernel_accelerator_descriptor",
@@ -63,7 +63,7 @@ static const auto kernels_types_for_aspect_required = named_type_pack<
     "kernel_usm_atomic_host_allocations_descriptor",
     "kernel_usm_shared_allocations_descriptor",
     "kernel_usm_atomic_shared_allocations_descriptor",
-    "kernel_usm_system_allocations_descriptor"};
+    "kernel_usm_system_allocations_descriptor");
 
 namespace check {
 

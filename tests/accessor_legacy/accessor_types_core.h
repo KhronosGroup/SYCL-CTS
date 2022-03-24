@@ -55,14 +55,14 @@ public:
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     // Specific set of types to cover during ordinary compilation
 
-    const auto vector_types = named_type_pack<int>({"int"});
+    const auto vector_types = named_type_pack<int>::generate("int");
     const auto scalar_types =
         named_type_pack<float,
                         std::size_t,
-                        accessor_utility::user_struct>({
+                        accessor_utility::user_struct>::generate(
                         "float",
                         "std::size_t",
-                        "user struct"});
+                        "user struct");
 #else
     // Extended type coverage
 
@@ -79,7 +79,7 @@ public:
                         sycl::cl_char, sycl::cl_uchar,
                         sycl::cl_short, sycl::cl_ushort,
                         sycl::cl_int, sycl::cl_uint,
-                        sycl::cl_long, sycl::cl_ulong>({
+                        sycl::cl_long, sycl::cl_ulong>::generate(
                         "bool",
                         "char", "signed char", "unsigned char",
                         "short", "unsigned short",
@@ -92,14 +92,14 @@ public:
                         "sycl::cl_char", "sycl::cl_uchar",
                         "sycl::cl_short", "sycl::cl_ushort",
                         "sycl::cl_int", "sycl::cl_uint",
-                        "sycl::cl_long", "sycl::cl_ulong"});
+                        "sycl::cl_long", "sycl::cl_ulong");
     const auto scalar_types =
         named_type_pack<std::size_t,
                         accessor_utility::user_struct,
-                        accessor_utility::user_namespace::user_alias>({
+                        accessor_utility::user_namespace::user_alias>::generate(
                         "std::size_t",
                         "user struct",
-                        "user alias"});
+                        "user alias");
 
 #ifdef INT8_MAX
     if (!std::is_same<std::int8_t, sycl::cl_char>::value) {

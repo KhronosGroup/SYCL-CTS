@@ -49,11 +49,11 @@ public:
         named_type_pack<sycl::cl_int4,
                         sycl::cl_uint4,
                         sycl::cl_float4,
-                        user_alias>({
+                        user_alias>::generate(
                         "sycl::cl_int",
                         "sycl::cl_uint",
                         "sycl::cl_float",
-                        "user_alias"});
+                        "user_alias");
 
     for_all_types<check_type>(types, log, queue);
 
