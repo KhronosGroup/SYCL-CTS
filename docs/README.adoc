@@ -1,20 +1,20 @@
-# SYCL CTS Developer Documentation
+= SYCL CTS Developer Documentation
 
 This document is intended as a comprehensive reference for developers wanting to contribute to the SYCL CTS.
 
-## [General](general.md)
+== link:general.adoc[General]
 
 - Overview of the SYCL Conformance Test Suite
 
-## [Procedures](procedures.md)
+== link:procedures.adoc[Procedures]
 
 - Test Plans
 - Pull Requests
 - Continuous Integration (CI)
 
-## [Coding Guidelines](coding_guidelines.md)
+== link:coding_guidelines.adoc[Coding Guidelines]
 
-## [Writing Tests](writing_tests.md)
+== link:writing_tests.adoc[Writing Tests]
 
 - New-style vs legacy test cases
 

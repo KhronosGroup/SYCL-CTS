@@ -1,3 +1,0 @@
-# Coding Guidelines
-
-**TODO**

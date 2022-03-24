@@ -1,5 +1,0 @@
-# General
-
-**TODO**
-
-## Overview of the SYCL Conformance Test Suite
