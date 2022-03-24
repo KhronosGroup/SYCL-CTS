@@ -121,7 +121,7 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
         '..',
         '-G' + build_system_name,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
-        '-DSYCL_CTS_TEST_DEPRECATED_FEATURES=' + test_deprecated_features,
+        '-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS=' + test_deprecated_features,
         '-DSYCL_CTS_CTEST_DEVICE=' + device,
     ]
     if exclude_categories is not None:

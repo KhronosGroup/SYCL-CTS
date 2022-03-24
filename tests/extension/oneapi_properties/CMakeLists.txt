@@ -1,4 +1,4 @@
-if(SYCL_EXT_ONEAPI_PROPERTIES)
+if(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS)
   # Temporarily define for device_global properties
   # TODO: remove when device_global fully implemented
   add_definitions(-DSYCL_EXT_ONEAPI_DEVICE_GLOBAL)

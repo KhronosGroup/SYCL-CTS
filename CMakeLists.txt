@@ -46,20 +46,20 @@ endif()
 
 # ------------------
 # Extensive mode for running extension oneAPI compile-time property list tests
-option(SYCL_EXT_ONEAPI_PROPERTIES
+option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
        "Enable extension oneAPI compile-time property list tests" OFF)
-if(SYCL_EXT_ONEAPI_PROPERTIES)
+if(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS)
     message(STATUS "oneAPI extension compile-time property list tests mode: ON")
 endif()
 # ------------------
 
 # ------------------
 # Extensive mode for running legacy tests
-option(SYCL_CTS_TEST_DEPRECATED_FEATURES
+option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
        "Enable tests for the deprecated SYCL features" ON)
-if(SYCL_CTS_TEST_DEPRECATED_FEATURES)
+if(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
     message(STATUS "Tests for the deprecated SYCL features are enabled")
-    add_definitions(-DSYCL_CTS_TEST_DEPRECATED_FEATURES)
+    add_definitions(-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
 else()
     message(STATUS "Tests for the deprecated SYCL features are disabled")
     message(WARNING
@@ -69,18 +69,18 @@ endif()
 
 # ------------------
 # Extensive mode for running extension oneAPI sub_group_mask tests
-option(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+option(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
        "Enable extension oneAPI sub_group_mask tests" OFF)
-if(SYCL_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
+if(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
     message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
 endif()
 # ------------------
 
 # ------------------
 # Extensive mode for running extension oneAPI device_global tests
-option(SYCL_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
+option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
        "Enable extension oneAPI device_global tests" OFF)
-if(SYCL_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS)
+if(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS)
     message(STATUS "oneAPI extension device_global tests mode: ON")
 endif()
 # ------------------
