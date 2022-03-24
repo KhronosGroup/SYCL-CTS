@@ -81,31 +81,56 @@ Catch2 provides several macros of varying complexity for defining test cases.
 While different macros take different parameters, they all require a *description* and optionally a list of *tags* to be specified.
 
 
-- `TEST_CASE`: This is the most basic macro, useful for test cases that do not require multiple compile-time definitions.
-- `TEMPLATE_TEST_CASE`
-- `TEMPLATE_TEST_CASE_SIG`
+- `TEST_CASE` is the most basic macro, useful for test cases that deal with APIs that are not templated in any way.
+- `TEMPLATE_TEST_CASE` can be provided with one or more types that are then available as `TestType` within the test case.
+The test case is then instantiated separately for each type.
+- `TEMPLATE_TEST_CASE_SIG` can be used to make one or more template parameters (including non-type template parameters) available under a custom name.
+
+TIP: Use `TEMPLATE_TEST_CASE_SIG("my test", "[my-tag]", ((int D), D), 1, 2, 3)` to test APIs that support multiple dimensions.
+The test case will be executed three times, with `D` having a value of `1`, `2` and `3`.
 
 === Assertion Macros
 
-**TODO**
+* `CHECK(condition)` asserts that the provided condition is true. If it is false, the assertion failure will be reported and the test case continues execution.
+* `REQUIRE(condition)` like `CHECK`, but will abort the current test case upon failure.
+
+TIP: Use `CHECK` by default, only resort to `REQUIRE` when further execution of a test case would result in a crash (for example `REQUIRE(arr.size() >= 2); if(arr[1] == 123) { /* ... */ }`).
 
 === Providing Context
 
-(INFO, CAPTURE, ...)
+While Catch2 already provides great error reporting out of the box, it can sometimes be helpful to provide additional context alongside a failing assertion.
 
-**TODO**
+* `CAPTURE(...)` can be used to print the name and value of arbitrary values alongside a failing assertion.
+* `INFO(message)` allows to provide additional information in the form of natural language descriptions.
+`iostream`-style formatting is supported.
+
+Example usages of both:
+[source,c++]
+----
+TEST_CASE("my test case") {
+    const int x = 3;
+    const int y = 4;
+    const int z = x * y;
+    // Shorthand
+    CAPTURE(x, y);
+    // More verbose
+    INFO("checking that x (" << x << ") times y (" << y << ") equals 20");
+    CHECK(z == 20);
+}
+----
 
 === Sections
 
 **TODO**
 
-=== Generators
-
-**TODO**
-
 == Special Macros & Custom Matchers
 
-**TODO**
+The SYCL CTS extends Catch2's functionality with several custom macros and matchers.
+
+=== Compile-Time Disabled Test Cases
+
+* `DISABLED_FOR_TEST_CASE`
+* `DISABLED_FOR_TEMPLATE_TEST_CASE_SIG`
 
 == Best Practices
 
@@ -123,7 +148,10 @@ These are not set in stone and are likely to evolve over time.
 * Tag test cases according to the feature being tested:
     ** Use `[some_type]` for types that exist in the SYCL specification (example: `[host_accessor]`).
     ** Use `[some-concept]` for concepts without a clearly associated type (example: `[backend-interop]`).
-* Try to write test cases in the same order as the associated API specification (if possible).
+* Group test cases into files at your own discretion.
+  It is certainly possible to have all test cases for a given API within the same file.
+  However, for larger features distributing test cases across multiple files may be preferable.
+* Try to order test cases in a file in the same order as their associated API specification (if possible).
 
 == New-style vs Legacy Test Cases
 
