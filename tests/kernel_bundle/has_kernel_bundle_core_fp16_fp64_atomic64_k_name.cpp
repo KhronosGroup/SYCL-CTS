@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  This test calls sycl::has_kernel_bundle<kernel_name, all bundle_state>(
-//  context) for kernels with sycl::requires(has(sycl::aspect::fp16))/fp64/
+//  context) for kernels with sycl::device_has(sycl::aspect::fp16)/fp64/
 //  atomic64 requirements for all available devices.
 //
 //  The test verifies that the has_kernel_bundle result is equal to compatible
