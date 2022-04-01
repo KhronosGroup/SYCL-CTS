@@ -28,7 +28,7 @@ TEST_CASE("Check that sycl::async_handler is expected type", "[exception]") {
 }
 
 TEST_CASE(
-    "Check that when there are no exceptions expected then the async handler "
+    "Check that, when there is no exception expected, the async handler "
     "is not invoked",
     "[exception]") {
   test_async_handler asyncHandler;
@@ -54,7 +54,7 @@ TEST_CASE(
 
   SECTION("static event::wait_and_throw(const std::vector<event> &eventList)") {
     auto event = q.submit([&](sycl::handler &h) {});
-    std::vector<sycl::event> event_vector(1, event);
+    std::vector event_vector{event};
     sycl::event::wait_and_throw(event_vector);
     CHECK_FALSE(asyncHandler.invoked);
   }
