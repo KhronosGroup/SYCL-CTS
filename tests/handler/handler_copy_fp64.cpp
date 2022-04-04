@@ -15,14 +15,16 @@ using namespace handler_copy_common;
 
 TEST_CASE("Tests the API for sycl::handler::copy for double", "[handler]") {
   auto queue = util::get_cts_object::queue();
-  if (queue.get_device().has(sycl::aspect::fp64)) {
-    log_helper lh;
-
-    test_all_variants<double>(lh, queue);
-    test_all_variants<sycl::double16>(lh, queue);
-  } else {
-    WARN("Device does not support double precision floating point operations");
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
   }
+
+  log_helper lh;
+  test_all_variants<double>(lh, queue);
+  test_all_variants<sycl::double16>(lh, queue);
 }
 
 }  // namespace handler_copy_fp64
