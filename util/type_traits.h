@@ -50,11 +50,9 @@ using has_atomic_support = contains<T, int, unsigned int, long, unsigned long,
  * @brief Checks whether T is a floating-point sycl type
  */
 template <typename T>
-using is_cl_float_type =
-    std::bool_constant<std::is_floating_point<T>::value ||
-                       std::is_same<sycl::half, T>::value ||
-                       std::is_same<float, T>::value ||
-                       std::is_same<double, T>::value>::value>;
+using is_sycl_floating_point_type =
+    std::bool_constant<std::is_floating_point_v<T> ||
+                       std::is_same_v<sycl::half, T>>;
 
 template <typename T>
 using is_sycl_floating_point =
