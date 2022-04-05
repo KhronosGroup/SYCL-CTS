@@ -120,10 +120,19 @@ inline auto get_dimensions() {
  * @brief Factory function for getting type_pack with target values
  */
 inline auto get_targets() {
+  // FIXME: re-enable when sycl::target::host_task is supported
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
+    !defined(__SYCL_COMPILER_VERSION)
   static const auto targets =
       value_pack<sycl::target, sycl::target::device,
                  sycl::target::host_task>::generate_named("target::device",
                                                           "target::host_task");
+#else
+  static const auto targets =
+      value_pack<sycl::target, sycl::target::device>::generate_named(
+          "target::device");
+#endif
+
   return targets;
 }
 
@@ -266,6 +275,9 @@ inline void change_val(sycl::marray<T, N>& left,
 }
 }  // namespace value_helper
 
+// FIXME: re-enable when deduction tags for accessors is supported
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
+    !defined(__SYCL_COMPILER_VERSION)
 /**
  * @brief Function helps to get TagT corresponding to ModeT and TargetT template
  * parameters
@@ -290,6 +302,8 @@ auto get_tag() {
     }
   }
 }
+#endif  // #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) &&
+        // !defined(__SYCL_COMPILER_VERSION)
 
 /**
  * @brief Enum class for accessor type specification
