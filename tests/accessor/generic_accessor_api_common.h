@@ -108,24 +108,25 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
 
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res) {
-
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[0] = std::is_same_v<decltype(acc_multi_ptr_no),
-          typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &= value_helper::compare_vals(*acc_multi_ptr_no.get(), expected_data);
+  res_acc[0] = std::is_same_v<
+      decltype(acc_multi_ptr_no),
+      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &=
+      value_helper::compare_vals(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[0] &= std::is_same_v<decltype(acc_multi_ptr_yes),
-                              typename AccT::template accessor_ptr<
-                                  sycl::access::decorated::yes>>;
-  res_acc[0] &= value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data);
+  res_acc[0] &= std::is_same_v<
+      decltype(acc_multi_ptr_yes),
+      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[0] &=
+      value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
   res_acc[0] &= std::is_same_v<decltype(acc_pointer), std::add_pointer_t<T>>;
   res_acc[0] &= value_helper::compare_vals(*acc_pointer, expected_data);
-
 }
 
 template <typename T, typename AccT, int dims>
@@ -207,7 +208,6 @@ class run_api_tests {
                                     util::get_cts_object::range<dims>::get(
                                         1, 1, 1) /*expected_range*/,
                                     sycl::id<dims>() /*&expected_offset)*/);
-
 
               if constexpr (TargetT == sycl::target::host_task) {
                 cgh.host_task([=] {
