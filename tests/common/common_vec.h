@@ -57,7 +57,7 @@ bool check_vector_values(sycl::vec<vecType, numOfElems> vector,
  *        for division result are accurate enough
  */
 template <typename vecType, int numOfElems>
-typename std::enable_if<is_cl_float_type<vecType>::value, bool>::type
+typename std::enable_if<is_sycl_floating_point<vecType>::value, bool>::type
 check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
                         vecType *vals) {
   for (int i = 0; i < numOfElems; i++) {
@@ -80,7 +80,7 @@ check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
  * @brief Helper function to check that vector values for division are correct
  */
 template <typename vecType, int numOfElems>
-typename std::enable_if<!is_cl_float_type<vecType>::value, bool>::type
+typename std::enable_if<!is_sycl_floating_point<vecType>::value, bool>::type
 check_vector_values_div(sycl::vec<vecType, numOfElems> vector,
                         vecType *vals) {
   return check_vector_values(vector, vals);
@@ -119,7 +119,7 @@ T2 float_map_match(T1 floats[], T2 vals[], int size, T1 src) {
 
 template <typename sourceType, typename targetType>
 static constexpr bool if_FP_to_non_FP_conv_v =
-    is_cl_float_type<sourceType>::value && !is_cl_float_type<targetType>::value;
+    is_sycl_floating_point<sourceType>::value && !is_sycl_floating_point<targetType>::value;
 
 template <typename vecType, int N, typename convertType>
 sycl::vec<convertType, N> convert_vec(sycl::vec<vecType, N> inputVec) {
@@ -236,7 +236,7 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
 // values instead.
 template <typename vecType, int N, typename convertType>
 void handleFPToUnsignedConv(sycl::vec<vecType, N>& inputVec) {
-  if constexpr (is_cl_float_type<vecType>::value &&
+  if constexpr (is_sycl_floating_point<vecType>::value &&
                 std::is_unsigned_v<convertType>) {
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);

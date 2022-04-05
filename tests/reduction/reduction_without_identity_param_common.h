@@ -283,7 +283,7 @@ void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
                                        sycl::queue &queue,
                                        sycl_cts::util::logger &log,
                                        const std::string &type_name) {
-  if constexpr (is_cl_float_type<VariableT>::value &&
+  if constexpr (is_sycl_floating_point<VariableT>::value &&
                 (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
