@@ -166,6 +166,30 @@ class run_api_tests {
                                     sycl::id<dims>() /*&expected_offset)*/);
 
               test_accessor_ptr(acc, data);
+            })
+            .wait_and_throw();
+      }
+    }
+
+    SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
+                                   "Check api for buffer accessor")) {
+      T data(expected_val);
+      bool res = false;
+      {
+        sycl::buffer<T, dims> data_buf(&data, r);
+        sycl::buffer res_buf(&res, sycl::range(1));
+        queue
+            .submit([&](sycl::handler &cgh) {
+              AccT acc(data_buf, cgh);
+
+              test_accessor_methods(acc, sizeof(T) /* expected_byte_size*/,
+                                    1 /*expected_size*/,
+                                    false /*expected_isPlaceholder*/,
+                                    util::get_cts_object::range<dims>::get(
+                                        1, 1, 1) /*expected_range*/,
+                                    sycl::id<dims>() /*&expected_offset)*/);
+
+              test_accessor_ptr(acc, data);
               if constexpr (TargetT == sycl::target::host_task) {
                 cgh.host_task([=] {
                   auto &acc_ref = acc[sycl::id<dims>()];
@@ -176,7 +200,7 @@ class run_api_tests {
                     value_helper::change_val(acc_ref, changed_val);
                 });
               } else {
-                sycl::accessor res_acc(res_buf);
+                sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([acc, res_acc]() {
                   auto &acc_ref = acc[sycl::id<dims>()];
                   res_acc[0] =
@@ -222,11 +246,12 @@ class run_api_tests {
         sycl::buffer res_buf(&res, sycl::range(1));
         queue
             .submit([&](sycl::handler &cgh) {
-              AccT acc(data_buf, acc_range, offset_id);
+              AccT acc(data_buf, cgh, acc_range, offset_id);
               test_accessor_methods(
                   acc, sizeof(T) * acc_range.size() /* expected_byte_size*/,
                   acc_range.size() /*expected_size*/,
-                  true /*expected_isPlaceholder*/, acc_range /*expected_range*/,
+                  false /*expected_isPlaceholder*/,
+                  acc_range /*expected_range*/,
                   offset_id /*&expected_offset)*/);
 
               test_accessor_ptr(acc, T(0));
@@ -239,7 +264,7 @@ class run_api_tests {
                     value_helper::change_val(acc_ref, changed_val);
                 });
               } else {
-                sycl::accessor res_acc(res_buf);
+                sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
@@ -249,7 +274,6 @@ class run_api_tests {
                     value_helper::change_val(acc_ref, changed_val);
                 });
               }
-
             })
             .wait_and_throw();
       }
