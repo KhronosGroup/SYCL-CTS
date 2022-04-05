@@ -25,7 +25,7 @@ struct type_name_string {
 };
 
 /**
- * @brief Specialization of type name retrievement for sycl::vec class
+ * @brief Specialization of type name retrieve for sycl::vec class
  * @param T Type of the data stored in vector
  * @param nElements Number of elements stored in vector
  */
@@ -37,15 +37,14 @@ struct type_name_string<sycl::vec<T, nElements>> {
 };
 
 /**
- * @brief Specialization of type name retrievement for cl::sycl::marray class
+ * @brief Specialization of type name retrieve for sycl::marray class
  * @param T Type of the data stored in marray
  * @param nElements Number of elements stored in marray
  */
 template <typename T, size_t nElements>
-struct type_name_string<cl::sycl::marray<T, nElements>> {
-  static std::string get(const std::string& dataType) {
-    return "cl::sycl::marray<" + dataType + "," + std::to_string(nElements) +
-           ">";
+struct type_name_string<sycl::marray<T, nElements>> {
+  static std::string get(const std::string &dataType) {
+    return "sycl::marray<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
 
