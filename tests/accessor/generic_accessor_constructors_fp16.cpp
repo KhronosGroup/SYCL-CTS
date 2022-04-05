@@ -5,10 +5,15 @@
 //  Provides generic sycl::accessor test for the sycl::half type
 //
 *******************************************************************************/
-#include "../common/disabled_for_test_case.h"
+
+// FIXME: re-enable when sycl::target::host_task is supported
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
+    !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
-#include "catch2/catch_test_macros.hpp"
 #include "generic_accessor_constructors.hpp"
+#endif
+#include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
 namespace generic_accessor_constructors_fp16 {
 using namespace generic_accessor_constructors;
