@@ -107,7 +107,7 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
 }
 
 template <typename T, typename AccT, typename AccRes>
-void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res) {
+void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
   res_acc[0] = std::is_same_v<
