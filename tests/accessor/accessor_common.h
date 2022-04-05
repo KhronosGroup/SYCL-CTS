@@ -16,8 +16,6 @@
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
 
-#include "accessor_stub.hpp"
-
 namespace accessor_tests_common {
 
 using namespace sycl_cts;
@@ -122,10 +120,10 @@ inline auto get_dimensions() {
  * @brief Factory function for getting type_pack with target values
  */
 inline auto get_targets() {
-  static const auto targets = value_pack<
-      sycl_stub::target, sycl_stub::target::device,
-      sycl_stub::target::host_task>::generate_named("target::device",
-                                                    "target::host_task");
+  static const auto targets =
+      value_pack<sycl::target, sycl::target::device,
+                 sycl::target::host_task>::generate_named("target::device",
+                                                          "target::host_task");
   return targets;
 }
 
@@ -272,23 +270,23 @@ inline void change_val(sycl::marray<T, N>& left,
  * @brief Function helps to get TagT corresponding to ModeT and TargetT template
  * parameters
  */
-template <sycl::access_mode ModeT, sycl_stub::target TargetT>
+template <sycl::access_mode ModeT, sycl::target TargetT>
 auto get_tag() {
-  if constexpr (TargetT == sycl_stub::target::device) {
+  if constexpr (TargetT == sycl::target::device) {
     if constexpr (ModeT == sycl::access_mode::read) {
-      return sycl_stub::read_only;
+      return sycl::read_only;
     } else if constexpr (ModeT == sycl::access_mode::write) {
-      return sycl_stub::write_only;
+      return sycl::write_only;
     } else if constexpr (ModeT == sycl::access_mode::read_write) {
-      return sycl_stub::read_write;
+      return sycl::read_write;
     }
-  } else if constexpr (TargetT == sycl_stub::target::host_task) {
+  } else if constexpr (TargetT == sycl::target::host_task) {
     if constexpr (ModeT == sycl::access_mode::read) {
-      return sycl_stub::read_only_host_task;
+      return sycl::read_only_host_task;
     } else if constexpr (ModeT == sycl::access_mode::write) {
-      return sycl_stub::write_only_host_task;
+      return sycl::write_only_host_task;
     } else if constexpr (ModeT == sycl::access_mode::read_write) {
-      return sycl_stub::read_write_host_task;
+      return sycl::read_write_host_task;
     }
   }
 }
@@ -340,8 +338,7 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
  */
 template <accessor_type AccTypeT, typename DataT, int DimensionT,
           sycl::access_mode AccessModeT = sycl::access_mode::read_write,
-          sycl_stub::target TargetT = sycl_stub::target::device,
-          typename GetAccFunctorT>
+          sycl::target TargetT = sycl::target::device, typename GetAccFunctorT>
 void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
@@ -354,10 +351,10 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
         .submit([&](sycl::handler& cgh) {
           sycl::accessor res_acc(res_buf);
           auto acc = get_accessor_functor();
-          if constexpr (TargetT == sycl_stub::target::host_task) {
+          if constexpr (TargetT == sycl::target::host_task) {
             cgh.host_task(
                 [=] { check_def_constructor_post_conditions(acc, res_acc); });
-          } else if constexpr (TargetT == sycl_stub::target::device) {
+          } else if constexpr (TargetT == sycl::target::device) {
             cgh.parallel_for_work_group(r, [acc, res_acc](sycl::group<1>) {
               check_def_constructor_post_conditions(acc, res_acc);
             });
@@ -401,7 +398,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccTypeT, typename DataT, sycl::access_mode AccessModeT,
-          sycl_stub::target TargetT, typename GetAccFunctorT>
+          sycl::target TargetT, typename GetAccFunctorT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
@@ -417,11 +414,11 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
           sycl::accessor res_acc(res_buf);
 
           auto acc = get_accessor_functor(data_buf, cgh);
-          if constexpr (TargetT == sycl_stub::target::host_task) {
+          if constexpr (TargetT == sycl::target::host_task) {
             cgh.host_task([=] {
               read_write_zero_dim_acc<DataT, AccessModeT>(acc, res_acc);
             });
-          } else if constexpr (TargetT == sycl_stub::target::device) {
+          } else if constexpr (TargetT == sycl::target::device) {
             cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
               read_write_zero_dim_acc<DataT, AccessModeT>(acc, res_acc);
             });
@@ -467,7 +464,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccTypeT, typename DataT, int DimensionT,
-          sycl::access_mode AccessModeT, sycl_stub::target TargetT,
+          sycl::access_mode AccessModeT, sycl::target TargetT,
           typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
@@ -487,11 +484,11 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
             cgh.require(acc);
           }
 
-          if (TargetT == sycl_stub::target::host_task) {
+          if (TargetT == sycl::target::host_task) {
             cgh.host_task([=] {
               read_write_acc<DataT, DimensionT, AccessModeT>(acc, res_acc);
             });
-          } else if (TargetT == sycl_stub::target::device) {
+          } else if (TargetT == sycl::target::device) {
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               read_write_acc<DataT, DimensionT, AccessModeT>(acc, res_acc);
             });
@@ -515,7 +512,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccTypeT, typename DataT, int DimensionT,
-          sycl::access_mode AccessModeT, sycl_stub::target TargetT,
+          sycl::access_mode AccessModeT, sycl::target TargetT,
           typename GetAccFunctorT>
 void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
@@ -530,9 +527,9 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
           .submit([&](sycl::handler& cgh) {
             auto acc = get_accessor_functor(data_buf);
             is_placeholder = acc.is_placeholder();
-            if (TargetT == sycl_stub::target::host_task) {
+            if (TargetT == sycl::target::host_task) {
               cgh.host_task([=] {});
-            } else if (TargetT == sycl_stub::target::device) {
+            } else if (TargetT == sycl::target::device) {
               cgh.parallel_for_work_group(sycl::range(1),
                                           [=](sycl::group<1>) {});
             }
