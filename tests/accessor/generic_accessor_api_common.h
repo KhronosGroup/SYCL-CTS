@@ -13,9 +13,6 @@ namespace generic_accessor_api_common {
 using namespace sycl_cts;
 using namespace accessor_tests_common;
 
-constexpr int expected_val = 42;
-constexpr int changed_val = 1;
-
 template <typename AccT, int dims>
 void test_accessor_methods(const AccT &accessor,
                            const size_t expected_byte_size,
@@ -82,7 +79,7 @@ void test_accessor_methods(const AccT &accessor,
 }
 
 template <typename T, typename AccT>
-void test_accessor_ptr(AccT &accessor, T expected_data) {
+void test_accessor_ptr_host(AccT &accessor, T expected_data) {
   {
     INFO("check get_multi_ptr() method");
     auto acc_multi_ptr_no =
@@ -107,6 +104,28 @@ void test_accessor_ptr(AccT &accessor, T expected_data) {
     STATIC_CHECK(std::is_same_v<decltype(acc_pointer), std::add_pointer_t<T>>);
     CHECK(value_helper::compare_vals(*acc_pointer, expected_data));
   }
+}
+
+template <typename T, typename AccT, typename AccRes>
+void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res) {
+
+  auto acc_multi_ptr_no =
+      accessor.template get_multi_ptr<sycl::access::decorated::no>();
+  res_acc[0] = std::is_same_v<decltype(acc_multi_ptr_no),
+          typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &= value_helper::compare_vals(*acc_multi_ptr_no.get(), expected_data);
+
+  auto acc_multi_ptr_yes =
+      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
+  res_acc[0] &= std::is_same_v<decltype(acc_multi_ptr_yes),
+                              typename AccT::template accessor_ptr<
+                                  sycl::access::decorated::yes>>;
+  res_acc[0] &= value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data);
+
+  auto acc_pointer = accessor.get_pointer();
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer), std::add_pointer_t<T>>;
+  res_acc[0] &= value_helper::compare_vals(*acc_pointer, expected_data);
+
 }
 
 template <typename T, typename AccT, int dims>
@@ -189,9 +208,10 @@ class run_api_tests {
                                         1, 1, 1) /*expected_range*/,
                                     sycl::id<dims>() /*&expected_offset)*/);
 
-              test_accessor_ptr(acc, data);
+
               if constexpr (TargetT == sycl::target::host_task) {
                 cgh.host_task([=] {
+                  test_accessor_ptr_host(acc, expected_val);
                   auto &acc_ref = acc[sycl::id<dims>()];
                   CHECK(value_helper::compare_vals(acc_ref, expected_val));
                   STATIC_CHECK(std::is_same_v<decltype(acc_ref),
@@ -202,8 +222,9 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([acc, res_acc]() {
+                  test_accessor_ptr_device(acc, expected_val, res_acc);
                   auto &acc_ref = acc[sycl::id<dims>()];
-                  res_acc[0] =
+                  res_acc[0] &=
                       value_helper::compare_vals(acc_ref, expected_val);
                   res_acc[0] &= std::is_same_v<decltype(acc_ref),
                                                typename AccT::reference>;
@@ -254,9 +275,9 @@ class run_api_tests {
                   acc_range /*expected_range*/,
                   offset_id /*&expected_offset)*/);
 
-              test_accessor_ptr(acc, T(0));
               if constexpr (TargetT == sycl::target::host_task) {
                 cgh.host_task([=] {
+                  test_accessor_ptr_host(acc, T(0));
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
                   CHECK(value_helper::compare_vals(acc_ref, linear_index));
@@ -266,9 +287,10 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
+                  test_accessor_ptr_device(acc, T(0), res_acc);
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  res_acc[0] =
+                  res_acc[0] &=
                       value_helper::compare_vals(acc_ref, linear_index);
                   if constexpr (AccessModeT != sycl::access_mode::read)
                     value_helper::change_val(acc_ref, changed_val);
