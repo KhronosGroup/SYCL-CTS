@@ -29,19 +29,21 @@ void test_accessor_methods(const AccT &accessor,
   {
     INFO("check byte_size() method");
     auto acc_byte_size = accessor.byte_size();
-    STATIC_CHECK(std::is_same_v<decltype(acc_byte_size), size_t>);
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_byte_size), typename AccT::size_type>);
     CHECK(acc_byte_size == expected_byte_size);
   }
   {
     INFO("check size() method");
     auto acc_size = accessor.size();
-    STATIC_CHECK(std::is_same_v<decltype(acc_size), size_t>);
+    STATIC_CHECK(std::is_same_v<decltype(acc_size), typename AccT::size_type>);
     CHECK(acc_size == expected_size);
   }
   {
     INFO("check max_size() method");
     auto acc_max_size = accessor.max_size();
-    STATIC_CHECK(std::is_same_v<decltype(acc_max_size), size_t>);
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_max_size), typename AccT::size_type>);
   }
   {
     INFO("check empty() method");
@@ -101,7 +103,8 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
   {
     INFO("check get_pointer() method");
     auto acc_pointer = accessor.get_pointer();
-    STATIC_CHECK(std::is_same_v<decltype(acc_pointer), std::add_pointer_t<T>>);
+    STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
+                                std::add_pointer_t<typename AccT::value_type>>);
     CHECK(value_helper::compare_vals(*acc_pointer, expected_data));
   }
 }
@@ -125,7 +128,8 @@ void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) 
       value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
-  res_acc[0] &= std::is_same_v<decltype(acc_pointer), std::add_pointer_t<T>>;
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
+                               std::add_pointer_t<typename AccT::value_type>>;
   res_acc[0] &= value_helper::compare_vals(*acc_pointer, expected_data);
 }
 
@@ -134,6 +138,34 @@ T &get_subscript_overload(const AccT &accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
+}
+
+template <typename T, typename AccT, sycl::access_mode mode,
+          sycl::target target>
+void test_accessor_types() {
+  if constexpr (mode != sycl::access_mode::read) {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, T>);
+  } else {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, const T>);
+  }
+  STATIC_CHECK(
+      std::is_same_v<typename AccT::reference, typename AccT::value_type &>);
+  STATIC_CHECK(std::is_same_v<typename AccT::const_reference, const T &>);
+  if constexpr (target == sycl::target::device) {
+    STATIC_CHECK(
+        std::is_same_v<
+            typename AccT::template accessor_ptr<sycl::access::decorated::yes>,
+            sycl::multi_ptr<typename AccT::value_type,
+                                 sycl::access::address_space::global_space,
+                                 sycl::access::decorated::yes>>);
+    STATIC_CHECK(
+        std::is_same_v<
+            typename AccT::template accessor_ptr<sycl::access::decorated::no>,
+            sycl::multi_ptr<typename AccT::value_type,
+                                 sycl::access::address_space::global_space,
+                                 sycl::access::decorated::no>>);
+  }
+  STATIC_CHECK(std::is_same_v<typename AccT::size_type, size_t>);
 }
 
 template <typename T, typename AccessTypeT, typename DimensionTypeT,
@@ -150,6 +182,11 @@ class run_api_tests {
                   const std::string &target_name) {
     auto queue = util::get_cts_object::queue();
     auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
+
+    SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
+                                   "Check accessor alias types")) {
+      test_accessor_types<T, AccT, AccessModeT, TargetT>();
+    }
 
     SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                    "Check api for empty accessor")) {
