@@ -296,7 +296,7 @@ class run_api_tests {
           buff_range_size, buff_range_size, buff_range_size);
       auto offset_id =
           util::get_cts_object::id<dims>::get(offset, offset, offset);
-      T data[buff_size];
+      std::remove_const_t<T> data[buff_size];
       std::iota(data, (data + buff_range.size()), 0);
       bool res = false;
       {
@@ -375,6 +375,16 @@ class run_generic_api_for_type {
 
     for_all_combinations<run_api_tests>(cur_type, access_modes, dimensions,
                                         targets);
+
+    // For covering const types
+    const auto const_cur_type = named_type_pack<const T>::generate(
+        "const " + type_name_string<T>::get(type_name));
+    // const T can be only with access_mode::read
+    const auto read_only_acc_mode =
+        value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
+            "access_mode::read");
+    for_all_combinations<run_api_tests>(const_cur_type, read_only_acc_mode,
+                                        dimensions, targets);
   }
 };
 }  // namespace generic_accessor_api_common
