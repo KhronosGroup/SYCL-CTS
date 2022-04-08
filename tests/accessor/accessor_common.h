@@ -11,22 +11,33 @@
 
 // FIXME: fails the compilation with error message "no template named marray"
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
-#include "../../util/sycl_exceptions.h"
-#include "../common/common.h"
 #include "../common/type_coverage.h"
 #endif
+
+#include "../../util/sycl_exceptions.h"
+#include "../common/common.h"
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
 
 namespace accessor_tests_common {
+
+constexpr int expected_val = 42;
+constexpr int changed_val = 1;
+
+/**
+ * @brief Enum class for accessor type specification
+ */
+enum class accessor_type {
+  generic_accessor,
+  local_accessor,
+  host_accessor,
+};
+
 // FIXME: re-enable when sycl::accessor is implemented
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 using namespace sycl_cts;
-
-constexpr int expected_val = 42;
-constexpr int changed_val = 1;
 
 /**
  * @brief Function helps to get string section name that will contain template
@@ -293,15 +304,6 @@ auto get_tag() {
     }
   }
 }
-
-/**
- * @brief Enum class for accessor type specification
- */
-enum class accessor_type {
-  generic_accessor,
-  local_accessor,
-  host_accessor,
-};
 
 /**
  * @brief Common function that check default constructor post-conditions, and
