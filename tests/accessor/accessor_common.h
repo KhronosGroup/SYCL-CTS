@@ -8,15 +8,21 @@
 
 #ifndef SYCL_CTS_ACCESSOR_COMMON_H
 #define SYCL_CTS_ACCESSOR_COMMON_H
+
+// FIXME: fails the compilation with error message "no template named marray"
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#endif
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
 
 namespace accessor_tests_common {
-
+// FIXME: re-enable when sycl::accessor is implemented
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
+    !defined(__SYCL_COMPILER_VERSION)
 using namespace sycl_cts;
 
 constexpr int expected_val = 42;
@@ -117,19 +123,10 @@ inline auto get_dimensions() {
  * @brief Factory function for getting type_pack with target values
  */
 inline auto get_targets() {
-  // FIXME: re-enable when sycl::target::host_task is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
   static const auto targets =
       value_pack<sycl::target, sycl::target::device,
                  sycl::target::host_task>::generate_named("target::device",
                                                           "target::host_task");
-#else
-  static const auto targets =
-      value_pack<sycl::target, sycl::target::device>::generate_named(
-          "target::device");
-#endif
-
   return targets;
 }
 
@@ -272,9 +269,6 @@ inline void change_val(sycl::marray<T, N>& left,
 }
 }  // namespace value_helper
 
-// FIXME: re-enable when deduction tags for accessors is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
 /**
  * @brief Function helps to get TagT corresponding to ModeT and TargetT template
  * parameters
@@ -299,8 +293,6 @@ auto get_tag() {
     }
   }
 }
-#endif  // #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) &&
-        // !defined(__SYCL_COMPILER_VERSION)
 
 /**
  * @brief Enum class for accessor type specification
@@ -351,9 +343,6 @@ template <accessor_type AccTypeT, typename DataT, int DimensionT,
           sycl::access_mode AccessModeT = sycl::access_mode::read_write,
           sycl::target TargetT = sycl::target::device, typename GetAccFunctorT>
 void check_def_constructor(GetAccFunctorT get_accessor_functor) {
-  // FIXME: re-enable when sycl::target::host_task is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
   const size_t conditions_checks_size = 8;
@@ -380,7 +369,6 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   for (size_t i = 0; i < conditions_checks_size; i++) {
     CHECK(conditions_check[i]);
   }
-#endif
 }
 
 /**
@@ -415,9 +403,6 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 template <accessor_type AccTypeT, typename DataT, sycl::access_mode AccessModeT,
           sycl::target TargetT, typename GetAccFunctorT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
-  // FIXME: re-enable when sycl::target::host_task is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
   DataT some_data(expected_val);
@@ -451,7 +436,6 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   if constexpr (AccessModeT != sycl::access_mode::read) {
     CHECK(value_helper::compare_vals(some_data, changed_val));
   }
-#endif
 }
 
 /**
@@ -486,9 +470,6 @@ template <accessor_type AccTypeT, typename DataT, int DimensionT,
           sycl::access_mode AccessModeT, sycl::target TargetT,
           typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor) {
-  // FIXME: re-enable when sycl::target::host_task is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
@@ -525,7 +506,6 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
   if constexpr (AccessModeT != sycl::access_mode::read) {
     CHECK(value_helper::compare_vals(some_data, changed_val));
   }
-#endif
 }
 
 /**
@@ -538,9 +518,6 @@ template <accessor_type AccTypeT, typename DataT, int DimensionT,
           sycl::access_mode AccessModeT, sycl::target TargetT,
           typename GetAccFunctorT>
 void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
-  // FIXME: re-enable when sycl::target::host_task is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
   bool is_placeholder = false;
@@ -571,8 +548,8 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
         action, sycl::exception,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
-#endif
 }
+#endif
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
