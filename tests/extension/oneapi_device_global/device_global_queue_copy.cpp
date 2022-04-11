@@ -111,11 +111,11 @@ void run_test_copy_to_device_global(util::logger& log,
       auto is_cop_corr_acc =
           is_cop_corr_buf.template get_access<sycl::access_mode::write>(cgh);
       cgh.single_task<check_copy_to_dg_kernel<T>>([=] {
-        is_cop_corr_acc[0] = value_helper<T>::compare_val(dev_global1<T>, data);
+        is_cop_corr_acc[0] = value_helper::are_equal<T>(dev_global1<T>, data);
         is_cop_corr_acc[0] &=
-            value_helper<T>::compare_val(dev_global2<T>, data);
+            value_helper::are_equal<T>(dev_global2<T>, data);
         is_cop_corr_acc[0] &=
-            value_helper<T>::compare_val(dev_global3<T>, data);
+            value_helper::are_equal<T>(dev_global3<T>, data);
       });
     });
     queue.wait_and_throw();
@@ -205,9 +205,9 @@ void run_test_copy_from_device_global(util::logger& log,
          "Copy overloads from device_global didn't wait for depEvents to "
          "complete");
 
-  if (!value_helper<T>::compare_val(data1, new_val) ||
-      !value_helper<T>::compare_val(data2, new_val) ||
-      !value_helper<T>::compare_val(data3, new_val)) {
+  if (!value_helper::are_equal<T>(data1, new_val) ||
+      !value_helper::are_equal<T>(data2, new_val) ||
+      !value_helper::are_equal<T>(data3, new_val)) {
     FAIL(log, get_case_description(
                   "Overloads of sycl::queue::copy for device_global",
                   "Didn't copy correct data from device_global", type_name));
