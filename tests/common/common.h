@@ -754,5 +754,4 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
       }                                                                  \
     }                                                                    \
   }
-}
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
