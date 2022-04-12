@@ -23,12 +23,18 @@ void test_default_constructor(const std::string& type_name) {
       get_section_name<DimensionT>(type_name, "Default constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](){
+    auto get_acc_functor = [] {
       return sycl::local_accessor<DataT, DimensionT>();
     };
-    check_def_constructor<AccTypeT, DataT, DimensionT,
-                          sycl::access_mode::read_write,
-                          sycl::target::device>(get_acc_functor);
+    if constexpr (std::is_const_v<DataT>) {
+      check_def_constructor<AccTypeT, DataT, DimensionT,
+                            sycl::access_mode::read, sycl::target::device>(
+          get_acc_functor);
+    } else {
+      check_def_constructor<AccTypeT, DataT, DimensionT,
+                            sycl::access_mode::read_write,
+                            sycl::target::device>(get_acc_functor);
+    }
   }
 }
 
@@ -38,12 +44,17 @@ void test_zero_dimension_buffer_constructor(const std::string& type_name) {
       get_section_name<0>(type_name, "Zero dimension constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor =
-        [](sycl::buffer<DataT, 1> & data_buf, sycl::handler & cgh){
+    auto get_acc_functor = [](sycl::buffer<DataT, 1>& data_buf,
+                              sycl::handler& cgh) {
       return sycl::local_accessor<DataT, 0>(cgh);
     };
-    check_zero_dim_constructor<AccTypeT, DataT, sycl::access_mode::read_write,
-                               sycl::target::device>(get_acc_functor);
+    if constexpr (std::is_const_v<DataT>) {
+      check_zero_dim_constructor<AccTypeT, DataT, sycl::access_mode::read,
+                                 sycl::target::device>(get_acc_functor);
+    } else {
+      check_zero_dim_constructor<AccTypeT, DataT, sycl::access_mode::read_write,
+                                 sycl::target::device>(get_acc_functor);
+    }
   }
 }
 
@@ -56,14 +67,19 @@ void test_common_constructors(const std::string& type_name) {
       get_section_name<DimensionT>(type_name, "From sycl::range constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [r](
-        sycl::buffer<DataT, DimensionT> & data_buf,
-        sycl::handler & cgh){
+    auto get_acc_functor = [r](sycl::buffer<DataT, DimensionT>& data_buf,
+                               sycl::handler& cgh) {
       return sycl::local_accessor<DataT, DimensionT>(r, cgh);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT,
-                             sycl::access_mode::read_write,
-                             sycl::target::device>(get_acc_functor);
+    if constexpr (std::is_const_v<DataT>) {
+      check_common_constructor<AccTypeT, DataT, DimensionT,
+                               sycl::access_mode::read, sycl::target::device>(
+          get_acc_functor);
+    } else {
+      check_common_constructor<AccTypeT, DataT, DimensionT,
+                               sycl::access_mode::read_write,
+                               sycl::target::device>(get_acc_functor);
+    }
   }
 }
 
@@ -90,6 +106,12 @@ class run_local_constructors_test {
         named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
     for_all_combinations<run_tests_constructors>(cur_type, dimensions);
+
+    // For covering const types
+    const auto const_cur_type = named_type_pack<const T>::generate(
+        "const " + type_name_string<T>::get(type_name));
+    // const T can be only with access_mode::read
+    for_all_combinations<run_tests_constructors>(const_cur_type, dimensions);
   }
 };
 }  // namespace local_accessor_constructors
