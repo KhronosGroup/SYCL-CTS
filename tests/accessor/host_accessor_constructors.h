@@ -135,7 +135,7 @@ void test_common_buffer_constructors_tag_t_deduction(
 }
 
 template <typename T, typename AccessTypeT, typename DimensionTypeT>
-class run_tests {
+class run_tests_constructors {
   static constexpr sycl::access_mode AccessModeT = AccessTypeT::value;
   static constexpr int DimensionT = DimensionTypeT::value;
 
@@ -164,7 +164,18 @@ class run_host_constructors_test {
     const auto cur_type =
         named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests>(cur_type, access_modes, dimensions);
+    for_all_combinations<run_tests_constructors>(cur_type, access_modes,
+                                                 dimensions);
+
+    // For covering const types
+    const auto const_cur_type = named_type_pack<const T>::generate(
+        "const " + type_name_string<T>::get(type_name));
+    // const T can be only with access_mode::read
+    const auto read_only_acc_mode =
+        value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
+            "access_mode::read");
+    for_all_combinations<run_tests_constructors>(
+        const_cur_type, read_only_acc_mode, dimensions);
   }
 };
 }  // namespace host_accessor_constructors
