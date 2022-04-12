@@ -53,6 +53,34 @@ inline std::string get_section_name(const std::string& type_name,
 }
 
 /**
+ * @brief Function helps to get string section name that will contain template
+ * parameters and function arguments
+ *
+ * @tparam DimensionT Integer representing dimension
+ * @param type_name String with name of the testing type
+ * @param access_mode_name String with name of the testing access mode
+ * @param target_name String with name of the testing target
+ * @param section_description String with human-readable description of the test
+ * @return std::string String with name for section
+ */
+template <int DimensionT>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& access_mode_name,
+                                    const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
+
+  std::string name = "Test ";
+  name += section_description;
+  name += " with parameters: <";
+  name += type_name;
+  name += "><";
+  name += access_mode_name;
+  name += "><";
+  name += std::to_string(DimensionT) + ">";
+  return name;
+}
+
+/**
  * @brief Factory function for getting type_pack with fp16 type
  */
 inline auto get_fp16_type() {
@@ -444,6 +472,71 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
+
+/**
+ * @brief Function checks common buffer and local accessor member functions
+ */
+template <typename AccT, int dims>
+void test_accessor_methods_common(const AccT& accessor,
+                                  const size_t expected_byte_size,
+                                  const size_t expected_size,
+                                  const sycl::range<dims>& expected_range) {
+  {
+    INFO("check byte_size() method");
+    auto acc_byte_size = accessor.byte_size();
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_byte_size), typename AccT::size_type>);
+    CHECK(acc_byte_size == expected_byte_size);
+  }
+  {
+    INFO("check size() method");
+    auto acc_size = accessor.size();
+    STATIC_CHECK(std::is_same_v<decltype(acc_size), typename AccT::size_type>);
+    CHECK(acc_size == expected_size);
+  }
+  {
+    INFO("check max_size() method");
+    auto acc_max_size = accessor.max_size();
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_max_size), typename AccT::size_type>);
+  }
+  {
+    INFO("check empty() method");
+    auto acc_empty = accessor.empty();
+    STATIC_CHECK(std::is_same_v<decltype(acc_empty), bool>);
+    CHECK(acc_empty == (expected_size == 0));
+  }
+  {
+    INFO("check get_range() method");
+    auto acc_range = accessor.get_range();
+    STATIC_CHECK(std::is_same_v<decltype(acc_range), sycl::range<dims>>);
+    CHECK(acc_range == expected_range);
+  }
+}
+
+/**
+ * @brief Function checks common buffer and local accessor member types
+ */
+template <typename T, typename AccT, sycl::access_mode mode>
+void test_accessor_types_common() {
+  if constexpr (mode != sycl::access_mode::read) {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, T>);
+  } else {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, const T>);
+  }
+  STATIC_CHECK(
+      std::is_same_v<typename AccT::reference, typename AccT::value_type&>);
+  STATIC_CHECK(std::is_same_v<typename AccT::const_reference, const T&>);
+  STATIC_CHECK(std::is_same_v<typename AccT::size_type, size_t>);
+}
+
+template <typename T, typename AccT, int dims>
+T& get_subscript_overload(const AccT& accessor, size_t index) {
+  if constexpr (dims == 1) return accessor[index];
+  if constexpr (dims == 2) return accessor[index][index];
+  if constexpr (dims == 3) return accessor[index][index][index];
+}
+
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
