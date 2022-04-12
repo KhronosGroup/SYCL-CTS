@@ -83,7 +83,7 @@ void call_write_kernel(sycl::queue& q) {
   using kernel = write_kernel<T>;
   q.submit([&](sycl::handler& cgh) {
     cgh.single_task<kernel>(
-        [=] { value_helper<T>::change_val(dev_global<T>); });
+        [=] { value_helper::change_val<T>(dev_global<T>, 42); });
   });
 }
 
@@ -106,7 +106,7 @@ void call_read_kernel(sycl::queue& q, util::logger& log,
       cgh.single_task<kernel>([=] {
         T def_value{};
         is_default_val_acc[0] =
-            value_helper<T>::compare_val(dev_global<T>, def_value);
+            value_helper::are_equal<T>(dev_global<T>, def_value);
       });
     });
   }
