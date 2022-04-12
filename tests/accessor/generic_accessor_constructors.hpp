@@ -293,6 +293,16 @@ class run_generic_constructors_test {
 
     for_all_combinations<run_tests_constructors>(cur_type, access_modes,
                                                  targets, dimensions);
+                                                 
+    // For covering const types
+    const auto const_cur_type = named_type_pack<const T>::generate(
+        "const " + type_name_string<T>::get(type_name));
+    // const T can be only with access_mode::read
+    const auto read_only_acc_mode =
+        value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
+            "access_mode::read");
+    for_all_combinations<run_tests_constructors>(
+        const_cur_type, read_only_acc_mode, targets, dimensions);
   }
 };
 }  // namespace generic_accessor_constructors
