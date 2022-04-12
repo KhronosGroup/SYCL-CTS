@@ -12,6 +12,7 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../common/value_helper.h"
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
@@ -138,130 +139,6 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 8>",
                                   "vec<" + type_name + ", 16>");
 }
-
-/**
- * @brief Contains helper functions for change and compare generic types and
- * sycl::vec
- *
- */
-namespace value_helper {
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T, typename U = T>
-inline bool compare_vals(const T& left, const U& right) {
-  return left == right;
-}
-
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T>
-inline bool compare_vals(const T& left, const T& right) {
-  return check_equal_values(left, right);
-}
-
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T, typename U = T, int N>
-inline bool compare_vals(const sycl::vec<T, N>& left, const U& right) {
-  bool are_equal = true;
-  for (size_t i = 0; i < N; ++i) {
-    are_equal &= left[i] == right;
-  }
-  return are_equal;
-}
-
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T, typename U = T, int N>
-inline bool compare_vals(const sycl::marray<T, N>& left, const U& right) {
-  bool are_equal = true;
-  for (size_t i = 0; i < N; ++i) {
-    are_equal &= left[i] == right;
-  }
-  return are_equal;
-}
-
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T, typename U = T, int N>
-inline bool compare_vals(const sycl::vec<T, N>& left,
-                         const sycl::vec<T, N>& right) {
-  return check_equal_values(left, right);
-}
-
-/**
- * @brief Returns result of comparing of left and right
- * @return Returns true if left == right, false otherwise
- */
-template <typename T, typename U = T, int N>
-inline bool compare_vals(const sycl::marray<T, N>& left,
-                         const sycl::marray<T, N>& right) {
-  return check_equal_values(left, right);
-}
-
-/**
- * @brief Changing value of left instance to the value from the right instance
- */
-template <typename T, typename U = T>
-inline void change_val(T& left, const U& right) {
-  left = right;
-}
-
-/**
- * @brief Changing all values of the left instance to the value from the right
- * instance
- */
-template <typename T, typename U = T, int N>
-inline void change_val(sycl::vec<T, N>& left, const U& right) {
-  for (size_t i = 0; i < N; ++i) {
-    left[i] = right;
-  }
-}
-
-/**
- * @brief Changing all values of the left instance to the value from the right
- * instance
- */
-template <typename T, typename U = T, int N>
-inline void change_val(sycl::marray<T, N>& left, const U& right) {
-  for (size_t i = 0; i < N; ++i) {
-    left[i] = right;
-  }
-}
-
-/**
- * @brief Changing all values of the left instance to the correspond values from
- * the right instance
- */
-template <typename T, typename U = T, int N>
-inline void change_val(sycl::vec<T, N>& left, const sycl::vec<T, N>& right) {
-  for (size_t i = 0; i < N; ++i) {
-    left[i] = right[i];
-  }
-}
-
-/**
- * @brief Changing all values of the left instance to the correspond values from
- * the right instance
- */
-template <typename T, typename U = T, int N>
-inline void change_val(sycl::marray<T, N>& left,
-                       const sycl::marray<T, N>& right) {
-  for (size_t i = 0; i < N; ++i) {
-    left[i] = right[i];
-  }
-}
-}  // namespace value_helper
 
 /**
  * @brief Function helps to get TagT corresponding to ModeT and TargetT template
