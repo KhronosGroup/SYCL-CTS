@@ -20,36 +20,14 @@ void test_accessor_methods(const AccT &accessor,
                            const bool expected_isPlaceholder,
                            const sycl::range<dims> &expected_range,
                            const sycl::id<dims> &expected_offset) {
+  test_accessor_methods_common<AccT, dims>(accessor, expected_byte_size,
+                                           expected_size, expected_range);
+
   {
     INFO("check is_placeholder() method");
     auto acc_isPlaceholder = accessor.is_placeholder();
     STATIC_CHECK(std::is_same_v<decltype(acc_isPlaceholder), bool>);
     CHECK(acc_isPlaceholder == expected_isPlaceholder);
-  }
-  {
-    INFO("check byte_size() method");
-    auto acc_byte_size = accessor.byte_size();
-    STATIC_CHECK(
-        std::is_same_v<decltype(acc_byte_size), typename AccT::size_type>);
-    CHECK(acc_byte_size == expected_byte_size);
-  }
-  {
-    INFO("check size() method");
-    auto acc_size = accessor.size();
-    STATIC_CHECK(std::is_same_v<decltype(acc_size), typename AccT::size_type>);
-    CHECK(acc_size == expected_size);
-  }
-  {
-    INFO("check max_size() method");
-    auto acc_max_size = accessor.max_size();
-    STATIC_CHECK(
-        std::is_same_v<decltype(acc_max_size), typename AccT::size_type>);
-  }
-  {
-    INFO("check empty() method");
-    auto acc_empty = accessor.empty();
-    STATIC_CHECK(std::is_same_v<decltype(acc_empty), bool>);
-    CHECK(acc_empty == (expected_size == 0));
   }
 
 #ifdef SYCL_CTS_TEST_DEPRECATED_FEATURES
@@ -66,12 +44,6 @@ void test_accessor_methods(const AccT &accessor,
     CHECK(acc_get_count == expected_size);
   }
 #endif
-  {
-    INFO("check get_range() method");
-    auto acc_range = accessor.get_range();
-    STATIC_CHECK(std::is_same_v<decltype(acc_range), sycl::range<dims>>);
-    CHECK(acc_range == expected_range);
-  }
   {
     INFO("check get_offset() method");
     auto acc_offset = accessor.get_offset();
@@ -133,24 +105,10 @@ void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) 
   res_acc[0] &= value_helper::compare_vals(*acc_pointer, expected_data);
 }
 
-template <typename T, typename AccT, int dims>
-T &get_subscript_overload(const AccT &accessor, size_t index) {
-  if constexpr (dims == 1) return accessor[index];
-  if constexpr (dims == 2) return accessor[index][index];
-  if constexpr (dims == 3) return accessor[index][index][index];
-}
-
 template <typename T, typename AccT, sycl::access_mode mode,
           sycl::target target>
 void test_accessor_types() {
-  if constexpr (mode != sycl::access_mode::read) {
-    STATIC_CHECK(std::is_same_v<typename AccT::value_type, T>);
-  } else {
-    STATIC_CHECK(std::is_same_v<typename AccT::value_type, const T>);
-  }
-  STATIC_CHECK(
-      std::is_same_v<typename AccT::reference, typename AccT::value_type &>);
-  STATIC_CHECK(std::is_same_v<typename AccT::const_reference, const T &>);
+  test_accessor_types_common<T, AccT, mode>();
   if constexpr (target == sycl::target::device) {
     STATIC_CHECK(
         std::is_same_v<
@@ -165,7 +123,6 @@ void test_accessor_types() {
                                  sycl::access::address_space::global_space,
                                  sycl::access::decorated::no>>);
   }
-  STATIC_CHECK(std::is_same_v<typename AccT::size_type, size_t>);
 }
 
 template <typename T, typename AccessTypeT, typename DimensionTypeT,
