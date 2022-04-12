@@ -48,7 +48,7 @@ inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT>> change_val(
 template <typename LeftArrT, typename RightArrT>
 inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
                                  has_subscript_operator_v<LeftArrT>>
-change_val(LeftArrT& left, const RightNonArrT& right) {
+change_val(LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
     left[i] = right;
@@ -56,8 +56,9 @@ change_val(LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftNonArrT, typename RightNonArrT = LeftNonArrT>
-inline typename std::enable_if_t<!has_subscript_operator_v<T>> change_val(
-    LeftNonArrT& left, const RightNonArrT& right) {
+inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
+                                 !has_subscript_operator_v<RightNonArrT>>
+change_val(LeftNonArrT& left, const RightNonArrT& right) {
   left = right;
 }
 /////////////////////////// Modify functions
@@ -95,7 +96,7 @@ template <typename LeftArrT, typename RightArrT>
 inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
                                      has_subscript_operator_v<RightArrT>,
                                  bool>
-are_equal(const LeftArrT& left, const RightNonArrT& right) {
+are_equal(const LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] != right) return false;
@@ -104,8 +105,10 @@ are_equal(const LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftNonArrT, typename RightNonArrT = LeftNonArrT>
-inline typename std::enable_if_t<!has_subscript_operator_v<T>, bool> are_equal(
-    const LeftNonArrT& left, const RightNonArrT& right) {
+inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
+                                     !has_subscript_operator_v<RightNonArrT>,
+                                 bool>
+are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
   return (left == right);
 }
 //////////////////////////// Compare functions
