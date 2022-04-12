@@ -53,6 +53,34 @@ inline std::string get_section_name(const std::string& type_name,
 }
 
 /**
+ * @brief Function helps to get string section name that will contain template
+ * parameters and function arguments
+ *
+ * @tparam DimensionT Integer representing dimension
+ * @param type_name String with name of the testing type
+ * @param access_mode_name String with name of the testing access mode
+ * @param target_name String with name of the testing target
+ * @param section_description String with human-readable description of the test
+ * @return std::string String with name for section
+ */
+template <int DimensionT>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& access_mode_name,
+                                    const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
+
+  std::string name = "Test ";
+  name += section_description;
+  name += " with parameters: <";
+  name += type_name;
+  name += "><";
+  name += access_mode_name;
+  name += "><";
+  name += std::to_string(DimensionT) + ">";
+  return name;
+}
+
+/**
  * @brief Factory function for getting type_pack with fp16 type
  */
 inline auto get_fp16_type() {
@@ -218,7 +246,8 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   sycl::range<1> r(1);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size]{false};
-  {
+
+  if constexpr (AccTypeT != accessor_type::host_accessor) {
     sycl::buffer res_buf(conditions_check, sycl::range(conditions_checks_size));
 
     queue
@@ -235,6 +264,9 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor();
+    check_def_constructor_post_conditions(acc, conditions_check);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -279,7 +311,8 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   DataT some_data(expected_val);
 
   bool compare_res = false;
-  {
+
+  if constexpr (AccTypeT != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, r);
     sycl::buffer<DataT, 1> data_buf(&some_data, r);
 
@@ -299,6 +332,13 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, 1> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_zero_dim_acc<DataT, AccessModeT>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessModeT != sycl::access_mode::write) {
@@ -338,14 +378,16 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccTypeT, typename DataT, int DimensionT,
-          sycl::access_mode AccessModeT, sycl::target TargetT,
+          sycl::access_mode AccessModeT,
+          sycl::target TargetT = sycl::target::device,
           typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
   auto r = util::get_cts_object::range<DimensionT>::get(1, 1, 1);
-  {
+
+  if constexpr (AccTypeT != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
     sycl::buffer<DataT, DimensionT> data_buf(&some_data, r);
 
@@ -369,6 +411,13 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, DimensionT> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_acc<DataT, DimensionT, AccessModeT>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessModeT != sycl::access_mode::write) {
@@ -401,9 +450,9 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
           .submit([&](sycl::handler& cgh) {
             auto acc = get_accessor_functor(data_buf);
             is_placeholder = acc.is_placeholder();
-            if (TargetT == sycl::target::host_task) {
+            if constexpr (TargetT == sycl::target::host_task) {
               cgh.host_task([=] {});
-            } else if (TargetT == sycl::target::device) {
+            } else if constexpr (TargetT == sycl::target::device) {
               cgh.parallel_for_work_group(sycl::range(1),
                                           [=](sycl::group<1>) {});
             }
