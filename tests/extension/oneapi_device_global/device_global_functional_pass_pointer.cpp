@@ -61,7 +61,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel>([=] {
         // Change the device_global instance and store address to the ptr
         // through accessor
-        value_helper<T>::change_val(dev_global<T>);
+        value_helper::change_val<T>(dev_global<T>, 42);
         ptr_acc[0] = &(dev_global<T>.get());
       });
     });
@@ -73,7 +73,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   T new_val{};
   // The function change_val have default second parameter, so expect that all
   // values will change the same
-  value_helper<T>::change_val(new_val);
+  value_helper::change_val<T>(new_val, 42);
 
   bool is_read_correct{true};
   {
@@ -88,7 +88,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
       cgh.single_task<kernel>([=] {
         is_read_correct_acc[0] =
-            (value_helper<T>::compare_val(*(ptr), new_val));
+            (value_helper::are_equal<T>(*(ptr), new_val));
       });
     });
     queue.wait_and_throw();

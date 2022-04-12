@@ -82,7 +82,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
         is_copy_correct_acc[0] =
-            value_helper<T>::compare_val(dev_global<T>, *src);
+            value_helper::are_equal<T>(dev_global<T>, *src);
       });
     });
     queue.wait_and_throw();
@@ -105,7 +105,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         cgh.single_task<kernel2<T>>([=] {
           // dev_global have to be equal to *src after copy
           is_copy_correct_acc[0] &=
-              value_helper<T>::compare_val(dev_global<T>, *src);
+              value_helper::are_equal<T>(dev_global<T>, *src);
         });
       });
       queue.wait_and_throw();
@@ -174,7 +174,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
         is_copy_correct_acc[0] =
-            value_helper<T>::compare_val(dev_global<T>, *dest);
+            value_helper::are_equal<T>(dev_global<T>, *dest);
       });
     });
     queue.wait_and_throw();
@@ -201,7 +201,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &=
-              value_helper<T>::compare_val(dev_global<T>, *dest);
+              value_helper::are_equal<T>(dev_global<T>, *dest);
         });
       });
       queue.wait_and_throw();
@@ -269,7 +269,7 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
-        is_copy_correct_acc[0] = value_helper<T>::compare_val(
+        is_copy_correct_acc[0] = value_helper::are_equal<T>(
             dev_global<T>, *(static_cast<element_ptr>(src)));
       });
     });
@@ -293,7 +293,7 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] &= value_helper<T>::compare_val(
+          is_copy_correct_acc[0] &= value_helper::are_equal<T>(
               dev_global<T>, *(static_cast<element_ptr>(src)));
         });
       });
@@ -362,7 +362,7 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
-        is_copy_correct_acc[0] = value_helper<T>::compare_val(
+        is_copy_correct_acc[0] = value_helper::are_equal<T>(
             dev_global<T>, *(static_cast<element_ptr>(dest)));
       });
     });
@@ -389,7 +389,7 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] = value_helper<T>::compare_val(
+          is_copy_correct_acc[0] = value_helper::are_equal<T>(
               dev_global<T>, *(static_cast<element_type*>(dest)));
         });
       });

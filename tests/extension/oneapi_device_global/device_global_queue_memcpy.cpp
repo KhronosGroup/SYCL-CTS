@@ -110,11 +110,11 @@ void run_test_memcpy_to_device_global(util::logger& log,
           is_memcpy_corr_buf.template get_access<sycl::access_mode::write>(cgh);
       cgh.single_task<check_memcpy_to_dg_kernel<T>>([=] {
         is_memcpy_corr_acc[0] =
-            value_helper<T>::compare_val(dev_global1<T>, data);
+            value_helper::are_equal<T>(dev_global1<T>, data);
         is_memcpy_corr_acc[0] &=
-            value_helper<T>::compare_val(dev_global2<T>, data);
+            value_helper::are_equal<T>(dev_global2<T>, data);
         is_memcpy_corr_acc[0] &=
-            value_helper<T>::compare_val(dev_global3<T>, data);
+            value_helper::are_equal<T>(dev_global3<T>, data);
       });
     });
     queue.wait_and_throw();
@@ -213,9 +213,9 @@ void run_test_memcpy_from_device_global(util::logger& log,
          "Memcpy overloads from device_global didn't wait for depEvents to "
          "complete");
 
-  if (!value_helper<T>::compare_val(data1, expected) ||
-      !value_helper<T>::compare_val(data2, expected) ||
-      !value_helper<T>::compare_val(data3, expected)) {
+  if (!value_helper::are_equal<T>(data1, expected) ||
+      !value_helper::are_equal<T>(data2, expected) ||
+      !value_helper::are_equal<T>(data3, expected)) {
     FAIL(log, get_case_description(
                   "Overloads of sycl::queue::memcpy for device_global",
                   "Didn't copy correct data from device_global", type_name));

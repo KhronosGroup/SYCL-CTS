@@ -106,12 +106,12 @@ void run_test(util::logger& log, const std::string& type_name) {
         result_acc[integral(indx::correct_def_val_non_const)] =
             (*(mptr.get()) == def_value);
         // Change value, that multi_ptr points to
-        value_helper<T>::change_val(*mptr);
+        value_helper::change_val<T>(*mptr, 42);
         // Get current value from device_global, that should change in previous
         // step
         const T& current_value = dev_global<T>.get();
         result_acc[integral(indx::correct_changed_val)] =
-            value_helper<T>::compare_val(*mptr, current_value);
+            value_helper::are_equal<T>(*mptr, current_value);
       });
     });
   }
@@ -181,13 +181,13 @@ void run_test(util::logger& log, const std::string& type_name) {
             (default_value == const_instance);
 
         // Changing non-const value
-        value_helper<T>::change_val(dev_global<T>);
+        value_helper::change_val<T>(dev_global<T>, 42);
         // Get current value from the device_global, which should change in
         // previous step
         T& current_value = dev_global<T>.get();
         // Check, that the device_global object contains new value
         result_acc[integral(indx::correct_changed_val)] =
-            value_helper<T>::compare_val(dev_global<T>, current_value);
+            value_helper::are_equal<T>(dev_global<T>, current_value);
       });
     });
   }
@@ -263,9 +263,9 @@ void run_test(util::logger& log, const std::string& type_name) {
             (instance == def_value);
         // Assign new value an check that device_global instance contains new
         // value
-        value_helper<T>::change_val(instance);
+        value_helper::change_val<T>(instance, 42);
         result_acc[integral(indx::correct_changed_val)] =
-            value_helper<T>::compare_val(dev_global<T>, instance);
+            value_helper::are_equal<T>(dev_global<T>, instance);
       });
     });
   }

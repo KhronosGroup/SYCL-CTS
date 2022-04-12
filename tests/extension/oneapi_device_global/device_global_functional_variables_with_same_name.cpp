@@ -50,7 +50,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   bool is_changed_correctly{false};
   T def_val{};
   T new_val{};
-  value_helper<T>::change_val(new_val);
+  value_helper::change_val<T>(new_val, 42);
   auto queue = util::get_cts_object::queue();
   {
     sycl::buffer<bool, 1> is_changed_corr_buf(&is_changed_correctly,
@@ -67,14 +67,14 @@ void run_test(util::logger& log, const std::string& type_name) {
         // Write different values to instances
         value_helper<T>::change_val(dg1, def_val);
         value_helper<T>::change_val(dg2, new_val);
-        is_changed_corr_acc[0] = value_helper<T>::compare_val(dg1, def_val);
-        is_changed_corr_acc[0] &= value_helper<T>::compare_val(dg2, new_val);
+        is_changed_corr_acc[0] = value_helper::are_equal<T>(dg1, def_val);
+        is_changed_corr_acc[0] &= value_helper::are_equal<T>(dg2, new_val);
 
         // Write again but in different order
         value_helper<T>::change_val(dg1, new_val);
         value_helper<T>::change_val(dg2, def_val);
-        is_changed_corr_acc[0] &= value_helper<T>::compare_val(dg1, new_val);
-        is_changed_corr_acc[0] &= value_helper<T>::compare_val(dg2, def_val);
+        is_changed_corr_acc[0] &= value_helper::are_equal<T>(dg1, new_val);
+        is_changed_corr_acc[0] &= value_helper::are_equal<T>(dg2, def_val);
       });
     });
     queue.wait_and_throw();
