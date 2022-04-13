@@ -169,7 +169,8 @@ auto get_tag() {
  * @brief Enum class for accessor type specification
  */
 enum class accessor_type {
-  generic_accessor,
+  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
+                     // spec)
   local_accessor,
   host_accessor,
 };
