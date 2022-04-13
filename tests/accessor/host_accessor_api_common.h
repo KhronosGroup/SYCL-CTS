@@ -50,7 +50,6 @@ class run_api_tests {
  public:
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name) {
-    auto queue = util::get_cts_object::queue();
     auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
@@ -58,18 +57,13 @@ class run_api_tests {
       test_accessor_types_common<T, AccT, AccessModeT>();
     }
 
-    SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
+    SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check api for empty host_accessor")) {
-      queue
-          .submit([&](sycl::handler &cgh) {
-            AccT acc;
-            test_host_accessor_methods(acc, 0 /* expected_byte_size*/,
-                                       0 /*expected_size*/,
-                                       util::get_cts_object::range<dims>::get(
-                                           0, 0, 0) /*expected_range*/,
-                                       sycl::id<dims>() /*&expected_offset)*/);
-          })
-          .wait_and_throw();
+      AccT acc;
+      test_host_accessor_methods(
+          acc, 0 /* expected_byte_size*/, 0 /*expected_size*/,
+          util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
+          sycl::id<dims>() /*&expected_offset)*/);
     }
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,

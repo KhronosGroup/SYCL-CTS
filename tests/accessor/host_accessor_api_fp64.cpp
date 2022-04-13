@@ -8,7 +8,7 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::accessor is implemented
+// FIXME: re-enable when sycl::host_accessor is implemented
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
