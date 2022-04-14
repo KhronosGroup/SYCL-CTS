@@ -62,14 +62,14 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
         std::is_same_v<
             decltype(acc_multi_ptr_no),
             typename AccT::template accessor_ptr<sycl::access::decorated::no>>);
-    CHECK(value_helper::compare_vals(*acc_multi_ptr_no.get(), expected_data));
+    CHECK(value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data));
 
     auto acc_multi_ptr_yes =
         accessor.template get_multi_ptr<sycl::access::decorated::yes>();
     STATIC_CHECK(std::is_same_v<decltype(acc_multi_ptr_yes),
                                 typename AccT::template accessor_ptr<
                                     sycl::access::decorated::yes>>);
-    CHECK(value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data));
+    CHECK(value_helper::are_equal(*acc_multi_ptr_yes.get(), expected_data));
   }
 
   {
@@ -77,7 +77,7 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
     auto acc_pointer = accessor.get_pointer();
     STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
                                 std::add_pointer_t<typename AccT::value_type>>);
-    CHECK(value_helper::compare_vals(*acc_pointer, expected_data));
+    CHECK(value_helper::are_equal(*acc_pointer, expected_data));
   }
 }
 
@@ -88,8 +88,7 @@ void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) 
   res_acc[0] = std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &=
-      value_helper::compare_vals(*acc_multi_ptr_no.get(), expected_data);
+  res_acc[0] &= value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
@@ -97,12 +96,12 @@ void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) 
       decltype(acc_multi_ptr_yes),
       typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
   res_acc[0] &=
-      value_helper::compare_vals(*acc_multi_ptr_yes.get(), expected_data);
+      value_helper::are_equal(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
   res_acc[0] &= std::is_same_v<decltype(acc_pointer),
                                std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[0] &= value_helper::compare_vals(*acc_pointer, expected_data);
+  res_acc[0] &= value_helper::are_equal(*acc_pointer, expected_data);
 }
 
 template <typename T, typename AccT, sycl::access_mode mode,
@@ -207,7 +206,7 @@ class run_api_tests {
                 cgh.host_task([=] {
                   test_accessor_ptr_host(acc, expected_val);
                   auto &acc_ref = acc[sycl::id<dims>()];
-                  CHECK(value_helper::compare_vals(acc_ref, expected_val));
+                  CHECK(value_helper::are_equal(acc_ref, expected_val));
                   STATIC_CHECK(std::is_same_v<decltype(acc_ref),
                                               typename AccT::reference>);
                   if constexpr (AccessModeT != sycl::access_mode::read)
@@ -218,8 +217,7 @@ class run_api_tests {
                 cgh.single_task([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
                   auto &acc_ref = acc[sycl::id<dims>()];
-                  res_acc[0] &=
-                      value_helper::compare_vals(acc_ref, expected_val);
+                  res_acc[0] &= value_helper::are_equal(acc_ref, expected_val);
                   res_acc[0] &= std::is_same_v<decltype(acc_ref),
                                                typename AccT::reference>;
                   if constexpr (AccessModeT != sycl::access_mode::read)
@@ -231,7 +229,7 @@ class run_api_tests {
       }
       if constexpr (TargetT == sycl::target::device) CHECK(res);
       if constexpr (AccessModeT != sycl::access_mode::read)
-        CHECK(value_helper::compare_vals(data, changed_val));
+        CHECK(value_helper::are_equal(data, changed_val));
     }
     SECTION(
         get_section_name<dims>(type_name, access_mode_name, target_name,
@@ -274,7 +272,7 @@ class run_api_tests {
                   test_accessor_ptr_host(acc, T(0));
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  CHECK(value_helper::compare_vals(acc_ref, linear_index));
+                  CHECK(value_helper::are_equal(acc_ref, linear_index));
                   if constexpr (AccessModeT != sycl::access_mode::read)
                     value_helper::change_val(acc_ref, changed_val);
                 });
@@ -284,8 +282,7 @@ class run_api_tests {
                   test_accessor_ptr_device(acc, T(0), res_acc);
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  res_acc[0] &=
-                      value_helper::compare_vals(acc_ref, linear_index);
+                  res_acc[0] &= value_helper::are_equal(acc_ref, linear_index);
                   if constexpr (AccessModeT != sycl::access_mode::read)
                     value_helper::change_val(acc_ref, changed_val);
                 });
@@ -295,7 +292,7 @@ class run_api_tests {
       }
       if constexpr (TargetT == sycl::target::device) CHECK(res);
       if constexpr (AccessModeT != sycl::access_mode::read)
-        CHECK(value_helper::compare_vals(data[linear_index], changed_val));
+        CHECK(value_helper::are_equal(data[linear_index], changed_val));
     }
     if constexpr (std::is_const_v<T>) {
       SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
@@ -309,12 +306,16 @@ class run_api_tests {
               .submit([&](sycl::handler &cgh) {
                 AccT acc1(data_buf1);
                 AccT acc2(data_buf2);
-                acc1.swap(acc2);
+                if constexpr (TargetT == sycl::target::host_task) {
+                  cgh.host_task([=] { acc1.swap(acc2); });
+                } else {
+                  cgh.single_task([=]() { acc1.swap(acc2); });
+                }
               })
               .wait_and_throw();
         }
-        CHECK(value_helper::compare_vals(data1, changed_val));
-        CHECK(value_helper::compare_vals(data2, expected_val));
+        CHECK(value_helper::are_equal(data1, changed_val));
+        CHECK(value_helper::are_equal(data2, expected_val));
       }
     }
   }
