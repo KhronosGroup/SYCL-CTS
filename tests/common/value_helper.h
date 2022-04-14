@@ -38,8 +38,9 @@ inline void change_val(ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT>> change_val(
-    LeftArrT& left, const RightNonArrT& right) {
+inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
+                                 !has_subscript_operator_v<RightNonArrT>>
+change_val(LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     left[i] = right;
   }
@@ -47,11 +48,11 @@ inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT>> change_val(
 
 template <typename LeftArrT, typename RightArrT>
 inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
-                                 has_subscript_operator_v<LeftArrT>>
+                                 has_subscript_operator_v<RightArrT>>
 change_val(LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
-    left[i] = right;
+    left[i] = right[i];
   }
 }
 
@@ -84,7 +85,9 @@ inline bool are_equal(const ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT>, bool>
+inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
+                                     !has_subscript_operator_v<RightNonArrT>,
+                                 bool>
 are_equal(const LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] != right) return false;
