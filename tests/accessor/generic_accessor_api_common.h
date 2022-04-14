@@ -349,7 +349,11 @@ class run_api_tests {
               .submit([&](sycl::handler &cgh) {
                 AccT acc1(data_buf1);
                 AccT acc2(data_buf2);
-                acc1.swap(acc2);
+                if constexpr (TargetT == sycl::target::host_task) {
+                  cgh.host_task([=] { acc1.swap(acc2); });
+                } else {
+                  cgh.single_task([=]() { acc1.swap(acc2); });
+                }
               })
               .wait_and_throw();
         }
