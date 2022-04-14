@@ -259,7 +259,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 
   if constexpr (AccessModeT != sycl::access_mode::write) {
     DataT acc_ref(testing_acc);
-    res_acc[0] = value_helper::compare_vals(acc_ref, other_data);
+    res_acc[0] = value_helper::are_equal(acc_ref, other_data);
   }
   if constexpr (AccessModeT != sycl::access_mode::read) {
     DataT acc_ref(testing_acc);
@@ -306,7 +306,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(compare_res);
   }
   if constexpr (AccessModeT != sycl::access_mode::read) {
-    CHECK(value_helper::compare_vals(some_data, changed_val));
+    CHECK(value_helper::are_equal(some_data, changed_val));
   }
 }
 
@@ -326,7 +326,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
   auto id = util::get_cts_object::id<DimensionT>::get(0, 0, 0);
 
   if constexpr (AccessModeT != sycl::access_mode::write) {
-    res_acc[0] = value_helper::compare_vals(testing_acc[id], other_data);
+    res_acc[0] = value_helper::are_equal(testing_acc[id], other_data);
   }
   if constexpr (AccessModeT != sycl::access_mode::read) {
     value_helper::change_val(testing_acc[id], changed_val);
@@ -376,7 +376,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(compare_res);
   }
   if constexpr (AccessModeT != sycl::access_mode::read) {
-    CHECK(value_helper::compare_vals(some_data, changed_val));
+    CHECK(value_helper::are_equal(some_data, changed_val));
   }
 }
 
