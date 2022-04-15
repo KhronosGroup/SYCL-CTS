@@ -5,14 +5,12 @@
 //  This file provides functions for tests on accessor exceptions.
 //
 *******************************************************************************/
-#ifndef SYCL_CTS_GENERIC_ACCESSOR_PROPERTIES_H
-#define SYCL_CTS_GENERIC_ACCESSOR_PROPERTIES_H
+#ifndef SYCL_CTS_ACCESSOR_EXCEPTIONS_H
+#define SYCL_CTS_ACCESSOR_EXCEPTIONS_H
 
 #include "../../util/usm_helper.h"
 #include "accessor_common.h"
 #include "catch2/catch_test_macros.hpp"
-
-#include "accessor_stub.hpp"
 
 #include <type_traits>
 
@@ -392,4 +390,4 @@ class run_tests_with_types {
 
 }  // namespace accessor_exceptions_test
 
-#endif  // SYCL_CTS_GENERIC_ACCESSOR_PROPERTIES_H
+#endif  // SYCL_CTS_ACCESSOR_EXCEPTIONS_H
