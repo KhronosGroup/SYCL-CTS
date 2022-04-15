@@ -51,17 +51,13 @@ void check_exception(GetAccFunctorT construct_acc) {
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else if constexpr (AccType ==
                          accessor_tests_common::accessor_type::host_accessor) {
-      auto action = [&] {
-        queue.submit([&](sycl::handler& cgh) { construct_acc(cgh, data_buf); })
-            .wait();
-      };
+      auto action = [&] { construct_acc(data_buf); };
       CHECK_THROWS_MATCHES(
           action, sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else if constexpr (AccType ==
                          accessor_tests_common::accessor_type::local_accessor) {
       auto action = [&] { construct_acc(queue); };
-
       CHECK_THROWS_MATCHES(
           action, sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
@@ -139,12 +135,11 @@ void test_exception_for_host_acc(const std::string& type_name,
       "buffer and range. In case, the range exceeds the range of buffer "
       "in any dimension.");
   SECTION(section_name) {
-    auto construct_acc = [&great_range](
-                             sycl::handler& cgh,
-                             sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, great_range);
-    };
+    auto construct_acc =
+        [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
+          sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+              data_buf, great_range);
+        };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
 
@@ -154,12 +149,11 @@ void test_exception_for_host_acc(const std::string& type_name,
       "buffer, range and tag. In case, the range exceeds the range of buffer "
       "in any dimension.");
   SECTION(section_name) {
-    auto construct_acc = [&great_range](
-                             sycl::handler& cgh,
-                             sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, great_range, sycl_stub::write_only);
-    };
+    auto construct_acc =
+        [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
+          sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+              data_buf, great_range, sycl_stub::write_only);
+        };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
 
@@ -169,9 +163,8 @@ void test_exception_for_host_acc(const std::string& type_name,
       "buffer, and range and id. In case, when the sum of range and offset "
       "exceeds the range of buffer in any dimension.");
   SECTION(section_name) {
-    auto construct_acc = [&default_range, id](
-                             sycl::handler& cgh,
-                             sycl::buffer<DataT, Dimension> data_buf) {
+    auto construct_acc = [&default_range,
+                          id](sycl::buffer<DataT, Dimension> data_buf) {
       sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, default_range, id);
     };
@@ -184,9 +177,8 @@ void test_exception_for_host_acc(const std::string& type_name,
       "buffer, and range, id and tag. In case, when the sum of range and "
       "offset exceeds the range of buffer in any dimension.");
   SECTION(section_name) {
-    auto construct_acc = [&default_range, id](
-                             sycl::handler& cgh,
-                             sycl::buffer<DataT, Dimension> data_buf) {
+    auto construct_acc = [&default_range,
+                          id](sycl::buffer<DataT, Dimension> data_buf) {
       sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, default_range, id, sycl_stub::write_only);
     };
