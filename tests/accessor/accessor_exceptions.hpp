@@ -82,10 +82,10 @@ template <typename DataT, int Dimension, sycl_stub::target Target,
 void test_exception_for_local_acc(const std::string& type_name,
                                   const std::string& access_mode_name,
                                   const std::string& target_name) {
-  auto section_name = get_section_name<Dimension>(
-      type_name, access_mode_name, target_name,
-      "Expecting exception when attempting to interact with local_accessor on "
-      "device side.");
+  auto section_name =
+      get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                  "Expecting exception when attempting to "
+                                  "invoke local_accessor via single_task.");
   SECTION(section_name) {
     auto construct_acc = [](sycl::queue& queue) {
       // Use a variable to avoid device code optimisation.
