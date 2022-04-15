@@ -28,7 +28,7 @@ namespace accessor_exceptions_test {
  *         accessor
  */
 template <accessor_tests_common::accessor_type AccType, typename DataT,
-          int Dimension, sycl_stub::target Target, typename GetAccFunctorT>
+          int Dimension, sycl::target Target, typename GetAccFunctorT>
 void check_exception(GetAccFunctorT construct_acc) {
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
@@ -72,7 +72,7 @@ void check_exception(GetAccFunctorT construct_acc) {
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename DataT, int Dimension, sycl_stub::target Target,
+template <typename DataT, int Dimension, sycl::target Target,
           accessor_tests_common::accessor_type AccType>
 void test_exception_for_local_acc(const std::string& type_name,
                                   const std::string& access_mode_name,
@@ -90,12 +90,11 @@ void test_exception_for_local_acc(const std::string& type_name,
       queue
           .submit([&](sycl::handler& cgh) {
             auto is_empty_ptr = is_empty.get();
-            sycl_stub::local_accessor<DataT, Dimension> local_acc(cgh);
-            cgh.single_task(
-                [=](sycl::kernel_handler cgh) {
-                  // Some interactions to avoid device code optimisation.
-                  *is_empty_ptr = local_acc.empty();
-                });
+            sycl::local_accessor<DataT, Dimension> local_acc(cgh);
+            cgh.single_task([=](sycl::kernel_handler cgh) {
+              // Some interactions to avoid device code optimisation.
+              *is_empty_ptr = local_acc.empty();
+            });
           })
           .wait();
     };
@@ -115,7 +114,7 @@ void test_exception_for_local_acc(const std::string& type_name,
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename DataT, int Dimension, sycl_stub::target Target,
+template <typename DataT, int Dimension, sycl::target Target,
           accessor_tests_common::accessor_type AccType>
 void test_exception_for_host_acc(const std::string& type_name,
                                  const std::string& access_mode_name,
@@ -132,7 +131,7 @@ void test_exception_for_host_acc(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc =
         [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
-          sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+          sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
               data_buf, great_range);
         };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -146,8 +145,8 @@ void test_exception_for_host_acc(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc =
         [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
-          sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-              data_buf, great_range, sycl_stub::write_only);
+          sycl::host_accessor<DataT, Dimension>(data_buf, great_range,
+                                                sycl::read_only);
         };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -160,7 +159,7 @@ void test_exception_for_host_acc(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc = [&default_range,
                           id](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, default_range, id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -174,8 +173,8 @@ void test_exception_for_host_acc(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc = [&default_range,
                           id](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, default_range, id, sycl_stub::write_only);
+      sycl::host_accessor<DataT, Dimension>(data_buf, default_range, id,
+                                            sycl::read_only);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -193,7 +192,7 @@ void test_exception_for_host_acc(const std::string& type_name,
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename DataT, int Dimension, sycl_stub::target Target,
+template <typename DataT, int Dimension, sycl::target Target,
           accessor_tests_common::accessor_type AccType>
 void test_exception_for_generic_acc(const std::string& type_name,
                                     const std::string& access_mode_name,
@@ -211,7 +210,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, great_range);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -226,8 +225,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, great_range, sycl_stub::write_only);
+      sycl::accessor<DataT, Dimension>(data_buf, great_range, sycl::read_only);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -241,7 +239,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&default_range, id](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
+      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
           data_buf, default_range, id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -256,8 +254,8 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&default_range, id](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, default_range, id, sycl_stub::write_only);
+      sycl::accessor<DataT, Dimension>(data_buf, default_range, id,
+                                       sycl::read_only);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -271,7 +269,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
+      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
           data_buf, cgh, great_range);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -286,8 +284,8 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, cgh, great_range, sycl_stub::write_only);
+      sycl::accessor<DataT, Dimension>(data_buf, cgh, great_range,
+                                       sycl::read_only);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -301,7 +299,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&default_range, id](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
+      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
           data_buf, cgh, default_range, id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
@@ -326,7 +324,7 @@ template <typename AccT, typename T, typename AccessModeTypeT,
 class run_tests {
   static constexpr sycl::access_mode AccessModeT = AccessModeTypeT::value;
   static constexpr int Dimension = DimensionTypeT::value;
-  static constexpr sycl_stub::target Target = TargetTypeT::value;
+  static constexpr sycl::target Target = TargetTypeT::value;
 
  public:
   void operator()(const std::string& type_name,
