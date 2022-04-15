@@ -56,6 +56,8 @@ void check_exception(GetAccFunctorT construct_acc) {
       CHECK_THROWS_MATCHES(
           action, sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
+    } else {
+      static_assert(AccType != AccType, "Unexpected accessor type.");
     }
   }
 }
