@@ -14,6 +14,8 @@
 #define __SYCLCTS_TESTS_COMMON_VALUE_HELPER_H
 #include "../../util/type_traits.h"
 
+#include <cassert>
+
 namespace value_helper {
 
 template <typename T, size_t N>
@@ -102,7 +104,7 @@ inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
 are_equal(const LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
-    if (left[i] != right) return false;
+    if (left[i] != right[i]) return false;
   }
   return true;
 }
