@@ -16,11 +16,6 @@
 
 namespace accessor_exceptions_test {
 
-// Class used as a kernel ID.
-template <accessor_tests_common::accessor_type, typename, int,
-          sycl_stub::target>
-struct Kernel;
-
 /**
  * @brief Function helps to verify that constructors accessor really thrown
  *        exceptions.
@@ -96,7 +91,7 @@ void test_exception_for_local_acc(const std::string& type_name,
           .submit([&](sycl::handler& cgh) {
             auto is_empty_ptr = is_empty.get();
             sycl_stub::local_accessor<DataT, Dimension> local_acc(cgh);
-            cgh.single_task<Kernel<AccType, DataT, Dimension, Target>>(
+            cgh.single_task(
                 [=](sycl::kernel_handler cgh) {
                   // Some interactions to avoid device code optimisation.
                   *is_empty_ptr = local_acc.empty();
