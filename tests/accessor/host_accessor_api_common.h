@@ -41,11 +41,11 @@ void test_accessor_ptr(AccT &accessor, T expected_data) {
   }
 }
 
-template <typename T, typename AccessTypeT, typename DimensionTypeT>
+template <typename T, typename AccessT, typename DimensionT>
 class run_api_tests {
-  static constexpr sycl::access_mode AccessModeT = AccessTypeT::value;
-  static constexpr int dims = DimensionTypeT::value;
-  using AccT = sycl::host_accessor<T, dims, AccessModeT>;
+  static constexpr sycl::access_mode AccessMode = AccessT::value;
+  static constexpr int dims = DimensionT::value;
+  using AccT = sycl::host_accessor<T, dims, AccessMode>;
 
  public:
   void operator()(const std::string &type_name,
@@ -54,7 +54,7 @@ class run_api_tests {
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check host_accessor alias types")) {
-      test_accessor_types_common<T, AccT, AccessModeT>();
+      test_accessor_types_common<T, AccT, AccessMode>();
     }
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
@@ -83,10 +83,10 @@ class run_api_tests {
         CHECK(value_helper::are_equal(acc_ref, expected_val));
         STATIC_CHECK(
             std::is_same_v<decltype(acc_ref), typename AccT::reference>);
-        if constexpr (AccessModeT != sycl::access_mode::read)
+        if constexpr (AccessMode != sycl::access_mode::read)
           value_helper::change_val(acc_ref, changed_val);
       }
-      if constexpr (AccessModeT != sycl::access_mode::read)
+      if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_helper::are_equal(data, changed_val));
     }
 
@@ -123,10 +123,10 @@ class run_api_tests {
         test_accessor_ptr_host(acc, T(0));
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
         CHECK(value_helper::are_equal(acc_ref, linear_index));
-        if constexpr (AccessModeT != sycl::access_mode::read)
+        if constexpr (AccessMode != sycl::access_mode::read)
           value_helper::change_val(acc_ref, changed_val);
       }
-      if constexpr (AccessModeT != sycl::access_mode::read)
+      if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_helper::are_equal(data[linear_index], changed_val));
     }
     if constexpr (std::is_const_v<T>) {
