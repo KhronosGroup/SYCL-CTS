@@ -37,7 +37,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Local sycl::accessor constructor exceptions test.", "[accessor]")({
+("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
   typedef std::integral_constant<accessor_type, accessor_type::local_accessor>
       local_accessor;
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
@@ -49,7 +49,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Host sycl::accessor constructor exceptions test.", "[accessor]")({
+("sycl::host_accessor constructor exceptions test.", "[accessor]")({
   typedef std::integral_constant<accessor_type, accessor_type::host_accessor>
       host_accessor;
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
