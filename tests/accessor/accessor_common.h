@@ -340,7 +340,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
 
   // When testing local_accessor we should skip this check, as local
   // accessor can't modify host memory
-  if constexpr (AccTypeT != accessor_type::local_accessor) {
+  if constexpr (AccType != accessor_type::local_accessor) {
     if constexpr (AccessMode != sycl::access_mode::read) {
       CHECK(value_helper::are_equal(some_data, changed_val));
     }
@@ -400,7 +400,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
           sycl::accessor res_acc(res_buf);
           auto acc = get_accessor_functor(data_buf, cgh);
 
-          if constexpr (AccTypeT == accessor_type::generic_accessor) {
+          if constexpr (AccType == accessor_type::generic_accessor) {
             if (acc.is_placeholder()) {
               cgh.require(acc);
             }
@@ -425,7 +425,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
 
   // When testing local_accessor we should skip this check, as local
   // accessor can't modify host memory
-  if constexpr (AccTypeT != accessor_type::local_accessor) {
+  if constexpr (AccType != accessor_type::local_accessor) {
     if constexpr (AccessMode != sycl::access_mode::read) {
       CHECK(value_helper::are_equal(some_data, changed_val));
     }
