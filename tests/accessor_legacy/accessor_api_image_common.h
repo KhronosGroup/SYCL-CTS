@@ -666,12 +666,12 @@ class image_accessor_failure_storage {
   struct printer{
     template <typename valT = dataT>
     auto operator()(std::stringstream& stream, const valT& value)
-        -> typename std::enable_if<!is_cl_float_type<valT>::value, void>::type {
+        -> typename std::enable_if<!is_sycl_floating_point<valT>::value, void>::type {
       stream << value;
     }
     template <typename valT = dataT>
     auto operator()(std::stringstream& stream, const valT& value)
-        -> typename std::enable_if<is_cl_float_type<valT>::value, void>::type {
+        -> typename std::enable_if<is_sycl_floating_point<valT>::value, void>::type {
       const auto representation =
           reinterpret_cast<const typename data_type<valT>::base&>(value);
       stream << value << " 0x" << std::hex << representation;
@@ -1304,7 +1304,7 @@ class check_image_accessor_api_reads {
   using failure_item_t = typename failure_storage_t::item_t;
 
   static constexpr bool supportsLinearFilering =
-      is_cl_float_type<typename T::element_type>::value;
+      is_sycl_floating_point<typename T::element_type>::value;
 
  public:
   static constexpr auto isImageArray =
