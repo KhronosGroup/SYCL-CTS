@@ -29,7 +29,7 @@ using namespace device_global_common_functions;
 
 #if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-namespace oneapi = sycl_stub::ext::oneapi;
+namespace oneapi = sycl::ext::oneapi;
 
 namespace copy_to_dg {
 template <typename T>
