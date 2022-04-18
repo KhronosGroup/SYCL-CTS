@@ -27,9 +27,8 @@ void test_default_constructor(const std::string& type_name) {
       return sycl::local_accessor<DataT, Dimension>();
     };
     if constexpr (std::is_const_v<DataT>) {
-      check_def_constructor<AccType, DataT, Dimension,
-                            sycl::access_mode::read, sycl::target::device>(
-          get_acc_functor);
+      check_def_constructor<AccType, DataT, Dimension, sycl::access_mode::read,
+                            sycl::target::device>(get_acc_functor);
     } else {
       check_def_constructor<AccType, DataT, Dimension,
                             sycl::access_mode::read_write,
@@ -102,16 +101,13 @@ class run_local_constructors_test {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
     const auto dimensions = get_dimensions();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests_constructors>(cur_type, dimensions);
+    for_all_combinations<run_tests_constructors, T>(dimensions, type_name);
 
     // For covering const types
-    const auto const_cur_type = named_type_pack<const T>::generate(
-        "const " + type_name_string<T>::get(type_name));
-    // const T can be only with access_mode::read
-    for_all_combinations<run_tests_constructors>(const_cur_type, dimensions);
+    const auto const_type_name = std::string("const ") + type_name;
+    for_all_combinations<run_tests_constructors, T>(dimensions,
+                                                    const_type_name);
   }
 };
 }  // namespace local_accessor_constructors
