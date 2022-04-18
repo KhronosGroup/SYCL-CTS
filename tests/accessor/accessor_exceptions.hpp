@@ -342,7 +342,7 @@ class run_tests {
           type_name, access_mode_name, target_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::local_accessor) {
-      test_exception_for_local_acc<T, AccessMode, Dimension, Target, acc_type>(
+      test_exception_for_local_acc<T, Dimension, Target, acc_type>(
           type_name, access_mode_name, target_name);
     }
   }
