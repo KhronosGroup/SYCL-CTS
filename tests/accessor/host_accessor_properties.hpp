@@ -165,11 +165,9 @@ class run_host_properties_tests {
     // not compile
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests_properties>(cur_type, access_modes,
-                                               dimensions);
+    for_all_combinations<run_tests_properties, T>(access_modes, dimensions,
+                                                  type_name);
   }
 };
 }  // namespace host_accessor_properties

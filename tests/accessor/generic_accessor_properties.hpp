@@ -201,11 +201,9 @@ class run_generic_properties_tests {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
     const auto targets = get_targets();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests_properties>(cur_type, access_modes, targets,
-                                               dimensions);
+    for_all_combinations<run_tests_properties, T>(access_modes, targets,
+                                                  dimensions, type_name);
   }
 };
 }  // namespace generic_accessor_properties
