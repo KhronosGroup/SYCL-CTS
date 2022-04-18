@@ -26,7 +26,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    const auto types = get_fp16_type();
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     run_generic_constructors_test<sycl::half>{}("sycl::half");
 #else
