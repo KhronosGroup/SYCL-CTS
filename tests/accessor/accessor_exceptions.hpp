@@ -16,6 +16,18 @@
 
 namespace accessor_exceptions_test {
 
+typedef std::integral_constant<
+    accessor_tests_common::accessor_type,
+    accessor_tests_common::accessor_type::generic_accessor>
+    generic_accessor;
+typedef std::integral_constant<
+    accessor_tests_common::accessor_type,
+    accessor_tests_common::accessor_type::local_accessor>
+    local_accessor;
+typedef std::integral_constant<
+    accessor_tests_common::accessor_type,
+    accessor_tests_common::accessor_type::host_accessor>
+    host_accessor;
 /**
  * @brief Function helps to verify that constructors accessor really thrown
  *        exceptions.

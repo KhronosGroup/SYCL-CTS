@@ -4,8 +4,8 @@
 //
 //  Provides tests for accessor exceptions.
 //
-// This test provides verifications for generic accessor, host_accessor and
-// local_accessor.
+// This test provides verifications that exception really has been thrown for
+// generic accessor, host_accessor and local_accessor with generic types.
 //
 *******************************************************************************/
 
@@ -18,16 +18,16 @@
 
 #include "accessor_exceptions.hpp"
 
+using namespace accessor_exceptions_test;
 using namespace accessor_tests_common;
 #endif
 
-namespace accessor_exceptions_test {
+namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Generic sycl::accessor constructor exceptions test.", "[accessor]")({
-  typedef std::integral_constant<accessor_type, accessor_type::generic_accessor>
-      generic_accessor;
+("Generic sycl::accessor constructor exceptions test core types.",
+ "[accessor]")({
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   const auto types = get_lightweight_type_pack();
 #else
@@ -37,9 +37,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
-  typedef std::integral_constant<accessor_type, accessor_type::local_accessor>
-      local_accessor;
+("sycl::local_accessor  constructor exceptions test core types.",
+ "[accessor]")({
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   const auto types = get_lightweight_type_pack();
 #else
@@ -49,9 +48,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::host_accessor constructor exceptions test.", "[accessor]")({
-  typedef std::integral_constant<accessor_type, accessor_type::host_accessor>
-      host_accessor;
+("sycl::host_accessor constructor exceptions test core types.", "[accessor]")({
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   const auto types = get_lightweight_type_pack();
 #else
@@ -60,4 +57,4 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   for_all_types_vectors_marray<run_tests_with_types, host_accessor>(types);
 });
 
-}  // namespace accessor_exceptions_test
+}  // namespace accessor_exceptions_test_core
