@@ -53,7 +53,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
   auto offset = sycl::id<Dimension>();
 
   auto section_name = get_section_name<Dimension>(type_name, access_mode_name,
-                                                   "From buffer constructor");
+                                                  "From buffer constructor");
 
   SECTION(section_name) {
     auto get_acc_functor = [](sycl::buffer<DataT, Dimension> data_buf) {
@@ -81,7 +81,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
     auto get_acc_functor = [r,
                             offset](sycl::buffer<DataT, Dimension> data_buf) {
       return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
-                                                                 offset);
+                                                               offset);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         get_acc_functor);
@@ -100,8 +100,7 @@ void test_common_buffer_constructors_tag_t_deduction(
 
   SECTION(section_name) {
     auto get_acc_functor = [tagT](sycl::buffer<DataT, Dimension> data_buf) {
-      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
-                                                                 tagT);
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, tagT);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         get_acc_functor);
@@ -121,8 +120,8 @@ void test_common_buffer_constructors_tag_t_deduction(
 
   section_name =
       get_section_name<Dimension>(type_name, access_mode_name,
-                                   "TagT deduction from buffer,range and "
-                                   "offset constructor");
+                                  "TagT deduction from buffer,range and "
+                                  "offset constructor");
 
   SECTION(section_name) {
     auto get_acc_functor = [r, offset,
@@ -143,11 +142,11 @@ class run_tests_constructors {
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name) {
     test_zero_dimension_buffer_constructor<T, AccessMode>(access_mode_name,
-                                                           type_name);
+                                                          type_name);
     test_default_constructor<T, Dimension, AccessMode>(access_mode_name,
-                                                         type_name);
-    test_common_buffer_constructors<T, Dimension, AccessMode>(
-        access_mode_name, type_name);
+                                                       type_name);
+    test_common_buffer_constructors<T, Dimension, AccessMode>(access_mode_name,
+                                                              type_name);
     test_common_buffer_constructors_tag_t_deduction<T, Dimension, AccessMode>(
         access_mode_name, type_name);
   }
@@ -161,21 +160,18 @@ class run_host_constructors_test {
     // not compile
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests_constructors>(cur_type, access_modes,
-                                                 dimensions);
+    for_all_combinations<run_tests_constructors, T>(access_modes, dimensions,
+                                                    type_name);
 
     // For covering const types
-    const auto const_cur_type = named_type_pack<const T>::generate(
-        "const " + type_name_string<T>::get(type_name));
+    const auto const_type_name = std::string("const ") + type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_tests_constructors>(
-        const_cur_type, read_only_acc_mode, dimensions);
+    for_all_combinations<run_tests_constructors, T>(
+        read_only_acc_mode, dimensions, const_type_name);
   }
 };
 }  // namespace host_accessor_constructors
