@@ -116,8 +116,8 @@ void test_exception_for_local_acc(const std::string& type_name,
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename DataT, int Dimension, sycl::target Target,
-          accessor_tests_common::accessor_type AccType>
+template <typename DataT, sycl::access_mode AccessMode, int Dimension,
+          sycl::target Target, accessor_tests_common::accessor_type AccType>
 void test_exception_for_host_acc(const std::string& type_name,
                                  const std::string& access_mode_name,
                                  const std::string& target_name) {
@@ -131,11 +131,10 @@ void test_exception_for_host_acc(const std::string& type_name,
       "buffer and range. In case, the range exceeds the range of buffer "
       "in any dimension.");
   SECTION(section_name) {
-    auto construct_acc =
-        [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
-          sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-              data_buf, great_range);
-        };
+    auto construct_acc = [&great_range](
+                             sycl::buffer<DataT, Dimension> data_buf) {
+      sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, great_range);
+    };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
 
@@ -161,8 +160,8 @@ void test_exception_for_host_acc(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc = [&default_range,
                           id](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, default_range, id);
+      sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, default_range,
+                                                        id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -194,8 +193,8 @@ void test_exception_for_host_acc(const std::string& type_name,
  * @param access_mode_name Current access mode string representation
  * @param target_name Current target string representation
  */
-template <typename DataT, int Dimension, sycl::target Target,
-          accessor_tests_common::accessor_type AccType>
+template <typename DataT, sycl::access_mode AccessMode, int Dimension,
+          sycl::target Target, accessor_tests_common::accessor_type AccType>
 void test_exception_for_generic_acc(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& target_name) {
@@ -212,8 +211,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, great_range);
+      sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, great_range);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -241,8 +239,8 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&default_range, id](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, default_range, id);
+      sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
+                                                           default_range, id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -271,8 +269,8 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&great_range](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, cgh, great_range);
+      sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
+                                                           great_range);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -301,8 +299,8 @@ void test_exception_for_generic_acc(const std::string& type_name,
     auto construct_acc = [&default_range, id](
                              sycl::handler& cgh,
                              sycl::buffer<DataT, Dimension> data_buf) {
-      sycl::accessor<DataT, Dimension, sycl::access_mode::read, Target>(
-          data_buf, cgh, default_range, id);
+      sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
+                                                           default_range, id);
     };
     check_exception<AccType, DataT, Dimension, Target>(construct_acc);
   }
@@ -324,7 +322,7 @@ void test_exception_for_generic_acc(const std::string& type_name,
 template <typename AccT, typename T, typename AccessModeTypeT,
           typename TargetTypeT, typename DimensionTypeT>
 class run_tests {
-  static constexpr sycl::access_mode AccessModeT = AccessModeTypeT::value;
+  static constexpr sycl::access_mode AccessMode = AccessModeTypeT::value;
   static constexpr int Dimension = DimensionTypeT::value;
   static constexpr sycl::target Target = TargetTypeT::value;
 
@@ -335,15 +333,16 @@ class run_tests {
     constexpr accessor_tests_common::accessor_type acc_type = AccT::value;
     if constexpr (acc_type ==
                   accessor_tests_common::accessor_type::generic_accessor) {
-      test_exception_for_generic_acc<T, Dimension, Target, acc_type>(
-          type_name, access_mode_name, target_name);
+      test_exception_for_generic_acc<T, AccessMode, Dimension, Target,
+                                     acc_type>(type_name, access_mode_name,
+                                               target_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::host_accessor) {
-      test_exception_for_host_acc<T, Dimension, Target, acc_type>(
+      test_exception_for_host_acc<T, AccessMode, Dimension, Target, acc_type>(
           type_name, access_mode_name, target_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::local_accessor) {
-      test_exception_for_local_acc<T, Dimension, Target, acc_type>(
+      test_exception_for_local_acc<T, AccessMode, Dimension, Target, acc_type>(
           type_name, access_mode_name, target_name);
     }
   }
