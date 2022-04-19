@@ -106,8 +106,8 @@ class run_local_constructors_test {
 
     // For covering const types
     const auto const_type_name = std::string("const ") + type_name;
-    for_all_combinations<run_tests_constructors, T>(dimensions,
-                                                    const_type_name);
+    for_all_combinations<run_tests_constructors, const T>(dimensions,
+                                                          const_type_name);
   }
 };
 }  // namespace local_accessor_constructors
