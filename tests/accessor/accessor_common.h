@@ -80,6 +80,28 @@ inline std::string get_section_name(const std::string& type_name,
 }
 
 /**
+ * @brief Function helps to get string section name that will contain template
+ * parameters and function arguments
+ *
+ * @tparam DimensionT Integer representing dimension
+ * @param type_name String with name of the testing type
+ * @param section_description String with human-readable description of the test
+ * @return std::string String with name for section
+ */
+template <int DimensionT>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
+
+  std::string name = "Test ";
+  name += section_description;
+  name += " with parameters: <";
+  name += type_name + "><";
+  name += std::to_string(DimensionT) + ">";
+  return name;
+}
+
+/**
  * @brief Factory function for getting type_pack with fp16 type
  */
 inline auto get_fp16_type() {
@@ -544,7 +566,7 @@ void test_accessor_ptr_device(AccT& accessor, T expected_data,
                               AccRes& res_acc) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[0] = std::is_same_v<
+  res_acc[0] &= std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
   res_acc[0] &= value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data);

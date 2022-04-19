@@ -191,11 +191,11 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([acc, res_acc]() {
-                  test_accessor_ptr_device(acc, expected_val, res_acc);
                   auto &acc_ref = acc[sycl::id<dims>()];
-                  res_acc[0] &= value_helper::are_equal(acc_ref, expected_val);
+                  res_acc[0] = value_helper::are_equal(acc_ref, expected_val);
                   res_acc[0] &= std::is_same_v<decltype(acc_ref),
                                                typename AccT::reference>;
+                  test_accessor_ptr_device(acc, expected_val, res_acc);
                   if constexpr (AccessMode != sycl::access_mode::read)
                     value_helper::change_val(acc_ref, changed_val);
                 });
@@ -255,10 +255,10 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
-                  test_accessor_ptr_device(acc, T(0), res_acc);
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  res_acc[0] &= value_helper::are_equal(acc_ref, linear_index);
+                  res_acc[0] = value_helper::are_equal(acc_ref, linear_index);
+                  test_accessor_ptr_device(acc, T(0), res_acc);
                   if constexpr (AccessMode != sycl::access_mode::read)
                     value_helper::change_val(acc_ref, changed_val);
                 });
