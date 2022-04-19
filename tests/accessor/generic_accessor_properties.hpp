@@ -202,8 +202,8 @@ class run_generic_properties_tests {
     const auto dimensions = get_dimensions();
     const auto targets = get_targets();
 
-    for_all_combinations<run_tests_properties, T>(access_modes, targets,
-                                                  dimensions, type_name);
+    for_all_combinations<run_tests_properties, const T>(access_modes, targets,
+                                                        dimensions, type_name);
   }
 };
 }  // namespace generic_accessor_properties

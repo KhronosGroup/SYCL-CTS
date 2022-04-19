@@ -166,8 +166,8 @@ class run_host_properties_tests {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
 
-    for_all_combinations<run_tests_properties, T>(access_modes, dimensions,
-                                                  type_name);
+    for_all_combinations<run_tests_properties, const T>(access_modes,
+                                                        dimensions, type_name);
   }
 };
 }  // namespace host_accessor_properties
