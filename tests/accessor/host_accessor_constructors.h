@@ -170,7 +170,7 @@ class run_host_constructors_test {
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_tests_constructors, T>(
+    for_all_combinations<run_tests_constructors, const T>(
         read_only_acc_mode, dimensions, const_type_name);
   }
 };
