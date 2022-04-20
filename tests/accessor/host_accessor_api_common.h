@@ -154,20 +154,17 @@ class run_host_accessor_api_for_type {
   void operator()(const std::string &type_name) {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_api_tests>(cur_type, access_modes, dimensions);
+    for_all_combinations<run_api_tests>(access_modes, dimensions, type_name);
 
     // For covering const types
-    const auto const_cur_type = named_type_pack<const T>::generate(
-        "const " + type_name_string<T>::get(type_name));
+    const auto const_type_name = std::string("const ") + type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_api_tests>(const_cur_type, read_only_acc_mode,
-                                        dimensions);
+    for_all_combinations<run_api_tests, const T>(read_only_acc_mode, dimensions,
+                                                  const_type_name);
   }
 };
 }  // namespace host_accessor_api_common
