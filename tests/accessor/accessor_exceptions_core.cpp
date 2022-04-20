@@ -23,7 +23,6 @@ using namespace accessor_tests_common;
 #endif
 
 namespace accessor_exceptions_test_core {
-using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Generic sycl::accessor constructor exceptions test core types.",

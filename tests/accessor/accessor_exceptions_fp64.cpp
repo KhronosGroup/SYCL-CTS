@@ -20,7 +20,6 @@ using namespace accessor_tests_common;
 #endif
 
 namespace accessor_exceptions_test_fp64 {
-using namespace sycl_cts;
 
 TEST_CASE("Generic sycl::accessor constructor exceptions test.", "[accessor]") {
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE

@@ -16,18 +16,15 @@
 
 namespace accessor_exceptions_test {
 
-typedef std::integral_constant<
+using generic_accessor = std::integral_constant<
     accessor_tests_common::accessor_type,
-    accessor_tests_common::accessor_type::generic_accessor>
-    generic_accessor;
-typedef std::integral_constant<
+    accessor_tests_common::accessor_type::generic_accessor>;
+using local_accessor = std::integral_constant<
     accessor_tests_common::accessor_type,
-    accessor_tests_common::accessor_type::local_accessor>
-    local_accessor;
-typedef std::integral_constant<
-    accessor_tests_common::accessor_type,
-    accessor_tests_common::accessor_type::host_accessor>
-    host_accessor;
+    accessor_tests_common::accessor_type::local_accessor>;
+using host_accessor =
+    std::integral_constant<accessor_tests_common::accessor_type,
+                           accessor_tests_common::accessor_type::host_accessor>;
 
 /**
  * @brief Function helps to verify that constructors accessor really thrown
@@ -52,6 +49,8 @@ void check_exception(GetAccFunctorT construct_acc) {
 
     if constexpr (AccType == accessor_type::generic_accessor) {
       auto action = [&] {
+        // Submit an obtained lambda, then wait wait for lambda execution, then
+        // throw an exception if it should be thrown.
         queue.submit([&](sycl::handler& cgh) { construct_acc(cgh, data_buf); })
             .wait();
       };
@@ -66,6 +65,7 @@ void check_exception(GetAccFunctorT construct_acc) {
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else if constexpr (AccType ==
                          accessor_tests_common::accessor_type::local_accessor) {
+      static_cast<void>(data_buf);
       auto action = [&] { construct_acc(queue); };
       CHECK_THROWS_MATCHES(
           action, sycl::exception,
