@@ -361,7 +361,7 @@ class run_tests_with_types {
     // Type packs instances have to be const, otherwise for_all_combination
     // will not compile
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
     const auto cur_type =
         named_type_pack<T>::generate(type_name_string<T>::get(type_name));
