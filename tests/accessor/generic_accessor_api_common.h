@@ -293,7 +293,7 @@ class run_api_tests {
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_helper::are_equal(data[linear_index], changed_val));
     }
-    if constexpr (std::is_const_v<T>) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
       SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                      "Check swap for accessor")) {
         T data1(expected_val);
@@ -327,21 +327,18 @@ class run_generic_api_for_type {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
     const auto targets = get_targets();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_api_tests>(cur_type, access_modes, dimensions,
-                                        targets);
+    for_all_combinations<run_api_tests, T>(access_modes, dimensions,
+                                        targets, type_name);
 
     // For covering const types
-    const auto const_cur_type = named_type_pack<const T>::generate(
-        "const " + type_name_string<T>::get(type_name));
+    const auto const_type_name = std::string("const ") + type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_api_tests>(const_cur_type, read_only_acc_mode,
-                                        dimensions, targets);
+    for_all_combinations<run_api_tests, const T>(read_only_acc_mode,
+                                        dimensions, targets, const_type_name);
   }
 };
 }  // namespace generic_accessor_api_common
