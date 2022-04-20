@@ -15,7 +15,7 @@
 #include "host_accessor_api_common.h"
 #endif
 
-namespace host_accessor_api_common {
+namespace host_accessor_api_core {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor api. core types", "[accessor]")({
@@ -28,4 +28,5 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   for_all_types_vectors_marray<run_host_accessor_api_for_type>(types);
 });
 
-}  // namespace host_accessor_api_common
+}  // namespace namespace host_accessor_api_core {
+
