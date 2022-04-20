@@ -129,7 +129,7 @@ class run_api_tests {
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_helper::are_equal(data[linear_index], changed_val));
     }
-    if constexpr (std::is_const_v<T>) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
       SECTION(get_section_name<dims>(type_name, access_mode_name,
                                      "Check swap for host_accessor")) {
         T data1(expected_val);
