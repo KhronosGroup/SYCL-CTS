@@ -52,7 +52,7 @@ void check_exception(GetAccFunctorT construct_acc) {
         // Submit an obtained lambda, then wait wait for lambda execution, then
         // throw an exception if it should be thrown.
         queue.submit([&](sycl::handler& cgh) { construct_acc(cgh, data_buf); })
-            .wait();
+            .wait_and_throw();
       };
       CHECK_THROWS_MATCHES(
           action, sycl::exception,
