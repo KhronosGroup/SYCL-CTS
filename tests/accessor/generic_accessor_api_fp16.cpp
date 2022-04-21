@@ -22,7 +22,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace generic_accessor_api_common;
 
   auto queue = sycl_cts::util::get_cts_object::queue();
-  if (queue.get_device().has(sycl::aspect::fp16)) {
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
         "Device does not support half precision floating point operations. "
         "Skipping the test case.");
