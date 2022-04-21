@@ -1,8 +1,3 @@
-# Include SYCL implementation CMake module
-if (NOT SYCL_IMPLEMENTATION)
-  set (SYCL_IMPLEMENTATION ComputeCpp)
-endif()
-
 set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;DPCPP;ComputeCpp;hipSYCL")
 if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
     message(FATAL_ERROR
