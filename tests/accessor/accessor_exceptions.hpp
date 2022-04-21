@@ -111,7 +111,7 @@ class test_exception_for_local_acc {
                 *is_empty_ptr = local_acc.empty();
               });
             })
-            .wait();
+            .wait_and_throw();
       };
       check_exception<AccTypeT::value, DataT, Dimension>(construct_acc);
     }
