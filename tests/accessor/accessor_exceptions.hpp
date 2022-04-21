@@ -363,22 +363,20 @@ class run_tests_with_types {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
     constexpr accessor_tests_common::accessor_type acc_type = AccT::value;
     if constexpr (acc_type ==
                   accessor_tests_common::accessor_type::generic_accessor) {
-      for_all_combinations<test_exception_for_generic_acc, AccT>(
-          cur_type, access_modes, dimensions, targets);
+      for_all_combinations<test_exception_for_generic_acc, AccT, T>(
+          access_modes, dimensions, targets, type_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::host_accessor) {
-      for_all_combinations<test_exception_for_host_acc, AccT>(
-          cur_type, access_modes, dimensions, targets);
+      for_all_combinations<test_exception_for_host_acc, AccT, T>(
+          access_modes, dimensions, targets, type_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::local_accessor) {
-      for_all_combinations<test_exception_for_local_acc, AccT>(cur_type,
-                                                               dimensions);
+      for_all_combinations<test_exception_for_local_acc, AccT, T>(dimensions,
+                                                                  type_name);
     }
   }
 };
