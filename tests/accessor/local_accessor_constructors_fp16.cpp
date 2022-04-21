@@ -30,6 +30,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     for_type_vectors_marray<run_local_constructors_test, sycl::half>(
         "sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  } else {
+    WARN("Device does not support half precision floating point operations");
+    return;
   }
 });
 }  // namespace local_accessor_constructors_fp16

@@ -29,6 +29,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 #else
     for_type_vectors_marray<run_local_constructors_test, double>("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  } else {
+    WARN("Device does not support double precision floating point operations");
+    return;
   }
 });
 }  // namespace local_accessor_constructors_fp64
