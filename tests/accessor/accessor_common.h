@@ -91,8 +91,6 @@ inline std::string get_section_name(const std::string& type_name,
 template <int DimensionT>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& section_description) {
-  using namespace sycl_cts::get_cts_string;
-
   std::string name = "Test ";
   name += section_description;
   name += " with parameters: <";
