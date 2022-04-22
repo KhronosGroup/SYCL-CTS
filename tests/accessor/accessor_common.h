@@ -395,15 +395,16 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam AccessMode Access mode of the accessor
  * @tparam Target Target of accessor
  * @tparam GetAccFunctorT Type of functor for accessor creation
+ * @param r Range for accessors buffer
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode,
           sycl::target Target = sycl::target::device, typename GetAccFunctorT>
-void check_common_constructor(GetAccFunctorT get_accessor_functor) {
+void check_common_constructor(GetAccFunctorT get_accessor_functor,
+                              const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -456,15 +457,16 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor) {
  * @tparam AccessMode Access mode of the accessor
  * @tparam Target Target of accessor
  * @tparam GetAccFunctorT Type of functor for accessor creation
+ * @param r Range for accessors buffer
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target,
           typename GetAccFunctorT>
-void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor) {
+void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
+                                          const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
   bool is_placeholder = false;
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -522,13 +524,13 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode,
-          sycl_stub::target Target = sycl_stub::target::device,
+          sycl::target Target = sycl::target::device,
           typename GetAccFunctorT>
-void check_no_init_prop(GetAccFunctorT get_accessor_functor) {
+void check_no_init_prop(GetAccFunctorT get_accessor_functor,
+                        const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -573,12 +575,12 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor) {
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccType, typename DataT, int Dimension,
-          sycl_stub::target Target = sycl_stub::target::device,
+          sycl::target Target = sycl::target::device,
           typename GetAccFunctorT>
-void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
+void check_no_init_prop_exception(GetAccFunctorT construct_acc,
+                                  const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -604,9 +606,9 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
  */
 template <typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
-void check_has_property_member_func(GetAccFunctorT construct_acc) {
+void check_has_property_member_func(GetAccFunctorT construct_acc,
+                                    const sycl::range<Dimension> r) {
   DataT some_data(expected_val);
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
     auto accessor = construct_acc(data_buf);
@@ -622,9 +624,9 @@ void check_has_property_member_func(GetAccFunctorT construct_acc) {
  */
 template <typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
-void check_get_property_member_func(GetAccFunctorT construct_acc) {
+void check_get_property_member_func(GetAccFunctorT construct_acc,
+                                    const sycl::range<Dimension> r) {
   DataT some_data(expected_val);
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
     auto accessor = construct_acc(data_buf);
