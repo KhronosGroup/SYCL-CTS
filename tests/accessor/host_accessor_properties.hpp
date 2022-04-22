@@ -18,8 +18,8 @@ constexpr accessor_type AccType = accessor_type::host_accessor;
 template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_constructor_with_no_init(const std::string& type_name,
                                    const std::string& access_mode_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  auto offset = sycl::id<Dimension>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
   const sycl::property_list prop_list(sycl::no_init);
 
   auto section_name = get_section_name<Dimension>(
@@ -32,7 +32,7 @@ void test_constructor_with_no_init(const std::string& type_name,
                                                                     prop_list);
     };
 
-    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc);
+    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc, r);
   }
 
   section_name = get_section_name<Dimension>(
@@ -46,7 +46,7 @@ void test_constructor_with_no_init(const std::string& type_name,
                                                                     prop_list);
     };
 
-    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc);
+    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc, r);
   }
 
   section_name = get_section_name<Dimension>(
@@ -60,14 +60,14 @@ void test_constructor_with_no_init(const std::string& type_name,
           data_buf, r, offset, prop_list);
     };
 
-    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc);
+    check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc, r);
   }
 }
 
 template <typename DataT, int Dimension>
 void test_exception(const std::string& type_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  auto offset = sycl::id<Dimension>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
   const sycl::property_list prop_list(sycl::no_init);
 
   auto section_name = get_section_name<Dimension>(
@@ -79,7 +79,7 @@ void test_exception(const std::string& type_name) {
       sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, prop_list);
     };
-    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc);
+    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
   }
 
   section_name = get_section_name<Dimension>(
@@ -92,7 +92,7 @@ void test_exception(const std::string& type_name) {
       sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, r, prop_list);
     };
-    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc);
+    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
   }
 
   section_name = get_section_name<Dimension>(
@@ -105,15 +105,15 @@ void test_exception(const std::string& type_name) {
       sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, r, offset, prop_list);
     };
-    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc);
+    check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
   }
 }
 
 template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_property_member_functions(const std::string& type_name,
                                     const std::string& access_mode_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  auto offset = sycl::id<Dimension>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
   const sycl::property_list prop_list(sycl::no_init);
 
   const auto construct_acc =
@@ -126,13 +126,13 @@ void test_property_member_functions(const std::string& type_name,
       type_name, access_mode_name, "has_property member function invocation");
   SECTION(section_name) {
     check_has_property_member_func<DataT, Dimension, sycl::property::no_init>(
-        construct_acc);
+        construct_acc, r);
   }
   section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "get_property member function invocation");
   SECTION(section_name) {
     check_get_property_member_func<DataT, Dimension, sycl::property::no_init>(
-        construct_acc);
+        construct_acc, r);
   }
 }
 
