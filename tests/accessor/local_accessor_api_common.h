@@ -111,9 +111,9 @@ class run_api_tests {
 
               sycl::accessor res_acc(res_buf, cgh);
               cgh.parallel_for(nd_range, [=](sycl::nd_item<dim> item) {
-                auto ref_1 = acc[sycl::id<dims>()];
+                auto &&ref_1 = acc[sycl::id<dims>()];
 
-                auto ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
+                auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
                 size_t item_id = item.get_global_linear_id();
                 res_acc[0, item_id] =
                     std::is_same_v<decltype(ref_1), typename AccT::reference>;
