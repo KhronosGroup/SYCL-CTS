@@ -6,7 +6,6 @@
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
