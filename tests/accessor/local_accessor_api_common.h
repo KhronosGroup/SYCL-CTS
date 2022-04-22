@@ -13,6 +13,22 @@ namespace local_accessor_api_common {
 using namespace sycl_cts;
 using namespace accessor_tests_common;
 
+enum class check : size_t {
+  subscript_id_type = 0U,
+  subscript_size_t_type,
+  // only for non const
+  subscript_id_result,
+  subscript_size_t_result,
+  get_multi_ptr_no_type,
+  get_multi_ptr_no_result,
+  get_multi_ptr_yes_type,
+  get_multi_ptr_yes_result,
+  get_pointer_type,
+  get_pointer_result,
+  swap_result,
+  nChecks  // should be the latest one
+};
+
 template <typename T, typename AccT, sycl::access_mode mode,
           sycl::target target>
 void test_local_accessor_types() {
@@ -36,25 +52,27 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
                              size_t item_id) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[sycl::id<2>(4, item_id)] = std::is_same_v<
-      decltype(acc_multi_ptr_no),
-      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[sycl::id<2>(5, item_id)] =
+  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_type), item_id)] =
+      std::is_same_v<
+          decltype(acc_multi_ptr_no),
+          typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_result), item_id)] =
       value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[sycl::id<2>(6, item_id)] = std::is_same_v<
-      decltype(acc_multi_ptr_yes),
-      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[sycl::id<2>(7, item_id)] =
+  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_yes_type), item_id)] =
+      std::is_same_v<
+          decltype(acc_multi_ptr_yes),
+          typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_yes_result), item_id)] =
       value_helper::are_equal(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
-  res_acc[sycl::id<2>(8, item_id)] =
+  res_acc[sycl::id<2>(to_integral(check::get_pointer_type), item_id)] =
       std::is_same_v<decltype(acc_pointer),
                      std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[sycl::id<2>(9, item_id)] =
+  res_acc[sycl::id<2>(to_integral(check::get_pointer_result), item_id)] =
       value_helper::are_equal(*acc_pointer, expected_data);
 }
 
@@ -88,18 +106,26 @@ class run_api_tests {
     SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                    "Check api for local_accessor")) {
       constexpr size_t global_range_size = 4;
+      constexpr size_t global_range_buffer_size = (dims == 3)   ? 4 * 4 * 4
+                                                  : (dims == 2) ? 4 * 4
+                                                                : 4;
       constexpr size_t local_range_size = 2;
       auto global_range = util::get_cts_object::range<dims>::get(
           global_range_size, global_range_size, global_range_size);
       auto local_range = util::get_cts_object::range<dims>::get(
           local_range_size, local_range_size, local_range_size);
       sycl::nd_range<dim> nd_range(global_range, local_range);
-      constexpr size_t checks_count = 11;
-      bool res[checks_count, global_range.size()];
-      std::fill(res, (res + checks_count * global_range.size()), true);
+      std::array<std::array<bool, global_range_buffer_size>,
+                 to_integral(check::nChecks)>
+          res;
+      std::for_each(nums.begin(), nums.end(),
+                    [](std::array<bool, global_range_buffer_size> &arr) {
+                      arr.fill(false);
+                    });
       {
-        sycl::buffer res_buf(res,
-                             sycl::range<2>(checks_count, global_range.size()));
+        sycl::buffer res_buf(res.data(),
+                             sycl::range<2>(to_integral(check::nChecks),
+                                            global_range_buffer_size));
         queue
             .submit([&](sycl::handler &cgh) {
               AccT acc(local_range, cgh);
@@ -116,77 +142,54 @@ class run_api_tests {
 
                 auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
                 size_t item_id = item.get_global_linear_id();
-                res_acc[sycl::id<2>(0, item_id)] =
+                res_acc[sycl::id<2>(to_integral(check::subscript_id_type),
+                                    item_id)] =
                     std::is_same_v<decltype(ref_1), typename AccT::reference>;
-                res_acc[sycl::id<2>(1, item_id)] =
+                res_acc[sycl::id<2>(to_integral(check::subscript_size_t_type),
+                                    item_id)] =
                     std::is_same_v<decltype(ref_2), typename AccT::reference>;
                 if constexpr (!std::is_const_v<T>) {
                   value_helper::change_val(ref_1, expected_val);
                   value_helper::change_val(ref_2, changed_val);
 
-                  res_acc[sycl::id<2>(2, item_id]) =
+                  res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id]) =
                       value_helper::are_equal(ref_1, expected_val);
-                  res_acc[sycl::id<2>(3, item_id)] =
+                  res_acc[sycl::id<2>(to_integral(check::subscript_size_t_result), item_id)] =
                       value_helper::are_equal(ref_2, changed_val);
 
                   test_local_accessor_ptr(acc, expected_val, res_acc);
 
                   acc.swap(acc_other);
-                  res_acc[sycl::id<2>(10, item_id)] = value_helper::are_equal(
+                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] = value_helper::are_equal(
                       acc_other[sycl::id<dims>()], expected_val);
                   auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
-                  res_acc[sycl::id<2>(10, item_id)] &=
+                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] &=
                       value_helper::are_equal(acc_other[id], changed_val);
                 }
               });
             })
             .wait_and_throw();
       }
-      {
-        INFO("return type for operator[](id<Dimensions> index)");
-        for (size_t i = 0; i < global_range.size(), i++) CHECK(res[0, i]);
-      }
-      {
-        INFO("return type for operator[]](size_t index)");
-        for (size_t i = 0; i < global_range.size(), i++) CHECK(res[1, i]);
-      }
-      if constexpr (!std::is_const_v<T>) {
-        {
-          INFO("result for operator[](id<Dimensions> index)");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[2, i]);
-        }
-        {
-          INFO("result for operator[]](size_t index)");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[3, i]);
-        }
-        {
-          INFO("return type for get_multi_ptr<sycl::access::decorated::no>()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[4, i]);
-        }
-        {
-          INFO("result for get_multi_ptr<sycl::access::decorated::no>()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[5, i]);
-        }
-        {
-          INFO("return type for get_multi_ptr<sycl::access::decorated::yes>()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[6, i]);
-        }
-        {
-          INFO("result for get_multi_ptr<sycl::access::decorated::yes>()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[7, i]);
-        }
-        {
-          INFO("return type for get_pointer()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[8, i]);
-        }
-        {
-          INFO("result for get_pointer()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[9, i]);
-        }
-        {
-          INFO("result for swap()");
-          for (size_t i = 0; i < global_range.size(), i++) CHECK(res[10, i]);
-        }
+
+      std::string info_strings[integral(check::nChecks)]{
+          "return type for operator[](id<Dimensions> index)",
+          "return type for operator[]](size_t index)",
+          "result for operator[](id<Dimensions> index)",
+          "result for operator[]](size_t index)",
+          "return type for get_multi_ptr<sycl::access::decorated::no>()",
+          "result for get_multi_ptr<sycl::access::decorated::no>()",
+          "return type for get_multi_ptr<sycl::access::decorated::yes>()",
+          "result for get_multi_ptr<sycl::access::decorated::yes>()",
+          "return type for get_pointer()",
+          "result for get_pointer()",
+          "result for swap()"};
+
+      constexpr size_t N =
+          (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks;
+      for (size_t i = 0; i < N; i++) {
+        INFO(info_strings[i]);
+        CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
+                          [](bool v) { return v; }));
       }
     }
   }
