@@ -59,8 +59,8 @@ void test_zero_dimension_buffer_constructor(const std::string& type_name) {
 
 template <typename DataT, int Dimension>
 void test_common_constructors(const std::string& type_name) {
-  auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  auto offset = sycl::id<Dimension>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
 
   auto section_name =
       get_section_name<Dimension>(type_name, "From sycl::range constructor");
@@ -73,11 +73,11 @@ void test_common_constructors(const std::string& type_name) {
     if constexpr (std::is_const_v<DataT>) {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read, sycl::target::device>(
-          get_acc_functor);
+          get_acc_functor, r);
     } else {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read_write,
-                               sycl::target::device>(get_acc_functor);
+                               sycl::target::device>(get_acc_functor, r);
     }
   }
 }
