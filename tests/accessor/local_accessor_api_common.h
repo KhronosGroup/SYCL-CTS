@@ -36,25 +36,26 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
                              size_t item_id) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[4, item_id] = std::is_same_v<
+  res_acc[sycl::id<2>(4, item_id)] = std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[5, item_id] =
+  res_acc[sycl::id<2>(5, item_id)] =
       value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[6, item_id] = std::is_same_v<
+  res_acc[sycl::id<2>(6, item_id)] = std::is_same_v<
       decltype(acc_multi_ptr_yes),
       typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[7, item_id] =
+  res_acc[sycl::id<2>(7, item_id)] =
       value_helper::are_equal(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
-  res_acc[8, item_id] =
+  res_acc[sycl::id<2>(8, item_id)] =
       std::is_same_v<decltype(acc_pointer),
                      std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[9, item_id] = value_helper::are_equal(*acc_pointer, expected_data);
+  res_acc[sycl::id<2>(9, item_id)] =
+      value_helper::are_equal(*acc_pointer, expected_data);
 }
 
 template <typename T, typename DimensionTypeT>
@@ -115,26 +116,26 @@ class run_api_tests {
 
                 auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
                 size_t item_id = item.get_global_linear_id();
-                res_acc[0, item_id] =
+                res_acc[sycl::id<2>(0, item_id)] =
                     std::is_same_v<decltype(ref_1), typename AccT::reference>;
-                res_acc[1, item_id] =
+                res_acc[sycl::id<2>(1, item_id)] =
                     std::is_same_v<decltype(ref_2), typename AccT::reference>;
                 if constexpr (!std::is_const_v<T>) {
                   value_helper::change_val(ref_1, expected_val);
                   value_helper::change_val(ref_2, changed_val);
 
-                  res_acc[2, item_id] =
+                  res_acc[sycl::id<2>(2, item_id]) =
                       value_helper::are_equal(ref_1, expected_val);
-                  res_acc[3, item_id] =
+                  res_acc[sycl::id<2>(3, item_id)] =
                       value_helper::are_equal(ref_2, changed_val);
 
                   test_local_accessor_ptr(acc, expected_val, res_acc);
 
                   acc.swap(acc_other);
-                  res_acc[10, item_id] = value_helper::are_equal(
+                  res_acc[sycl::id<2>(10, item_id)] = value_helper::are_equal(
                       acc_other[sycl::id<dims>()], expected_val);
                   auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
-                  res_acc[10, item_id] &=
+                  res_acc[sycl::id<2>(10, item_id)] &=
                       value_helper::are_equal(acc_other[id], changed_val);
                 }
               });
