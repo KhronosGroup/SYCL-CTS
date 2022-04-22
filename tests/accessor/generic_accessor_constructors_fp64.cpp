@@ -16,7 +16,6 @@
 #endif
 
 #include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
 
 namespace generic_accessor_constructors_fp64 {
 

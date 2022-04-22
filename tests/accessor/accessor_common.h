@@ -14,8 +14,7 @@
 #include "../common/type_coverage.h"
 #include "../common/value_helper.h"
 
-#include "catch2/catch_test_macros.hpp"
-#include "catch2/matchers/catch_matchers.hpp"
+#include <catch2/matchers/catch_matchers.hpp>
 
 namespace accessor_tests_common {
 using namespace sycl_cts;
