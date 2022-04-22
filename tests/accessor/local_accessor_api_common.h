@@ -111,10 +111,9 @@ class run_api_tests {
 
               sycl::accessor res_acc(res_buf, cgh);
               cgh.parallel_for(nd_range, [=](sycl::nd_item<dim> item) {
-                auto ref_1 = acc[0];
+                auto ref_1 = acc[sycl::id<dims>()];
 
-                auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
-                auto ref_2 = get_subscript_overload<T, AccT, dims>(acc, id);
+                auto ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
                 size_t item_id = item.get_global_linear_id();
                 res_acc[0, item_id] =
                     std::is_same_v<decltype(ref_1), typename AccT::reference>;
@@ -132,10 +131,11 @@ class run_api_tests {
                   test_local_accessor_ptr(acc, expected_val, res_acc);
 
                   acc.swap(acc_other);
-                  res_acc[10, item_id] =
-                      value_helper::are_equal(acc_other[0], expected_val);
+                  res_acc[10, item_id] = value_helper::are_equal(
+                      acc_other[sycl::id<dims>()], expected_val);
+                  auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
                   res_acc[10, item_id] &=
-                      value_helper::are_equal(acc_other[1], changed_val);
+                      value_helper::are_equal(acc_other[id], changed_val);
                 }
               });
             })
