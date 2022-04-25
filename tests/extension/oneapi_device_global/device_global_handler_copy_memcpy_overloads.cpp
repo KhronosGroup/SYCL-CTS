@@ -60,7 +60,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_operations<T>::change_val(src_value, init_value);
+  value_operations<T>::assign(src_value, init_value);
 
   element_ptr src = pointer_helper(src_value);
 
@@ -151,7 +151,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_operations<T>::change_val(dest_value, changed_value);
+  value_operations<T>::assign(dest_value, changed_value);
 
   element_ptr dest = pointer_helper(dest_value);
 
@@ -248,7 +248,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_operations<T>::change_val(src_value, init_value);
+  value_operations<T>::assign(src_value, init_value);
   void_ptr src = static_cast<void_ptr>(pointer_helper(src_value));
 
   bool is_copy_correct{false};
@@ -340,7 +340,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_operations<T>::change_val(dest_value, changed_value);
+  value_operations<T>::assign(dest_value, changed_value);
 
   void_ptr dest = pointer_helper(dest_value);
 

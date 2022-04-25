@@ -56,7 +56,7 @@ template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
   T def_value{};
   T new_val{};
-  value_operations<T>::change_val(new_val, 1);
+  value_operations<T>::assign(new_val, 1);
 
   auto queue = util::get_cts_object::queue();
   bool is_defined_correctly = false;
@@ -80,9 +80,9 @@ void run_test(util::logger& log, const std::string& type_name) {
         is_default_acc[0] &= value_operations::are_equal<T>(dg2, def_value);
         is_default_acc[0] &= value_operations::are_equal<T>(dg3, def_value);
 
-        value_operations<T>::change_val(dg1, new_val);
-        value_operations<T>::change_val(dg2, new_val);
-        value_operations<T>::change_val(dg3, new_val);
+        value_operations<T>::assign(dg1, new_val);
+        value_operations<T>::assign(dg2, new_val);
+        value_operations<T>::assign(dg3, new_val);
 
         is_def_corr_acc[0] =
             value_operations::are_equal<T>(dev_global<T>, new_val);

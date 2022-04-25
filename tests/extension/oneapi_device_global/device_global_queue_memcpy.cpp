@@ -47,7 +47,7 @@ void run_test_memcpy_to_device_global(util::logger& log,
                                       const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T data{};
-  value_operations<T>::change_val(data, 1);
+  value_operations<T>::assign(data, 1);
   const void* src_data = pointer_helper(data);
 
   // to generate events with generator from usm_api.h
@@ -141,13 +141,13 @@ void run_test_memcpy_from_device_global(util::logger& log,
                                         bool val_default) {
   using element_type = std::remove_all_extents_t<T>;
   T new_val{};
-  value_operations<T>::change_val(new_val, 5);
+  value_operations<T>::assign(new_val, 5);
   T expected{};
   T data1{}, data2{}, data3{};
   if (val_default) {
-    value_operations<T>::change_val(data1, new_val);
-    value_operations<T>::change_val(data2, new_val);
-    value_operations<T>::change_val(data3, new_val);
+    value_operations<T>::assign(data1, new_val);
+    value_operations<T>::assign(data2, new_val);
+    value_operations<T>::assign(data3, new_val);
   }
   void* dst_data1 = pointer_helper(data1);
   void* dst_data2 = pointer_helper(data2);
@@ -156,10 +156,10 @@ void run_test_memcpy_from_device_global(util::logger& log,
   auto queue = util::get_cts_object::queue();
 
   if (!val_default) {
-    value_operations<T>::change_val(expected, new_val);
+    value_operations<T>::assign(expected, new_val);
     queue.submit([&](sycl::handler& cgh) {
       cgh.single_task<memcpy_change_dg_kernel<T>>(
-          [=] { value_operations<T>::change_val(dev_global<T>, new_val); });
+          [=] { value_operations<T>::assign(dev_global<T>, new_val); });
     });
     queue.wait_and_throw();
   }

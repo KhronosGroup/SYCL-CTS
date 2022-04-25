@@ -23,7 +23,7 @@ using ArrayT = T[N];
 
 // Modify functions
 template <typename T, size_t N>
-inline void change_val(ArrayT<T, N>& left, const T& right) {
+inline void assign(ArrayT<T, N>& left, const T& right) {
   for (size_t i = 0; i < N; ++i) {
     left[i] = right;
   }
@@ -31,8 +31,8 @@ inline void change_val(ArrayT<T, N>& left, const T& right) {
 
 template <typename LeftArrT, size_t LeftArrN, typename RightArrT,
           size_t RightArrN>
-inline void change_val(ArrayT<LeftArrT, LeftArrN>& left,
-                       const ArrayT<RightArrT, RightArrN>& right) {
+inline void assign(ArrayT<LeftArrT, LeftArrN>& left,
+                   const ArrayT<RightArrT, RightArrN>& right) {
   static_assert(LeftArrN == RightArrN, "Arrays have to be the same size");
   for (size_t i = 0; i < LeftArrN; ++i) {
     left[i] = right[i];
@@ -42,7 +42,7 @@ inline void change_val(ArrayT<LeftArrT, LeftArrN>& left,
 template <typename LeftArrT, typename RightNonArrT>
 inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
                                  !has_subscript_operator_v<RightNonArrT>>
-change_val(LeftArrT& left, const RightNonArrT& right) {
+assign(LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     left[i] = right;
   }
@@ -51,7 +51,7 @@ change_val(LeftArrT& left, const RightNonArrT& right) {
 template <typename LeftArrT, typename RightArrT>
 inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
                                  has_subscript_operator_v<RightArrT>>
-change_val(LeftArrT& left, const RightArrT& right) {
+assign(LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
     left[i] = right[i];
@@ -61,7 +61,7 @@ change_val(LeftArrT& left, const RightArrT& right) {
 template <typename LeftNonArrT, typename RightNonArrT = LeftNonArrT>
 inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
                                  !has_subscript_operator_v<RightNonArrT>>
-change_val(LeftNonArrT& left, const RightNonArrT& right) {
+assign(LeftNonArrT& left, const RightNonArrT& right) {
   left = right;
 }
 /////////////////////////// Modify functions

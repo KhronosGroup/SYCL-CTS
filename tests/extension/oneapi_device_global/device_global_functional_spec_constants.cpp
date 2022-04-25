@@ -77,7 +77,7 @@ class read_and_write_in_kernel {
     T def_val{};
     // Changed value of type T in case if we expect to read modified value
     T new_val{};
-    value_operations::change_val<T>(new_val, 42);
+    value_operations::assign<T>(new_val, 42);
 
     constexpr int initial_sc_val = 1;
     constexpr int changed_sc_val = 2;
@@ -113,7 +113,7 @@ class read_and_write_in_kernel {
 
           // Get specialization constant value for change device_global instance
           int sc_val = h.template get_specialization_constant<spec_const_id>();
-          value_operations<T>::change_val(dev_global<T>, sc_val);
+          value_operations<T>::assign(dev_global<T>, sc_val);
         });
       });
       queue.wait_and_throw();

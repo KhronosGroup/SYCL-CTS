@@ -38,7 +38,7 @@ template <typename T, size_t N>
 void run_test_copy_to_device_global_array(util::logger& log,
                                           const std::string& type_name) {
   T data[N];
-  value_operations<T[N]>::change_val(data, 1);
+  value_operations<T[N]>::assign(data, 1);
   const auto src_data = &data[0];
   size_t num_element = N / 2;
 
@@ -81,7 +81,7 @@ template <typename T, size_t N>
 void run_test_copy_from_device_global_array(util::logger& log,
                                             const std::string& type_name) {
   T new_val[N];
-  value_operations<T[N]>::change_val(new_val, 5);
+  value_operations<T[N]>::assign(new_val, 5);
   T data[N];
   auto dst_data = &data[0];
   size_t num_element = N / 2;
@@ -90,7 +90,7 @@ void run_test_copy_from_device_global_array(util::logger& log,
 
   queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<queue_array_change_dg_kernel<T>>(
-        [=] { value_operations<T[N]>::change_val(dev_global_in<T[N]>, new_val); });
+        [=] { value_operations<T[N]>::assign(dev_global_in<T[N]>, new_val); });
   });
   queue.wait_and_throw();
 

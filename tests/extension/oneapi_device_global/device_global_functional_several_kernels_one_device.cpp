@@ -58,7 +58,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   {
     queue.submit([&](sycl::handler& cgh) {
       cgh.single_task<first_kernel<T>>([=](sycl::kernel_handler h) {
-        value_operations::change_val<T>(dev_global<T>, 42);
+        value_operations::assign<T>(dev_global<T>, 42);
       });
     });
     queue.wait_and_throw();
@@ -78,7 +78,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   // For const value expecting that value not changed,so keep default value
   util::array<bool, checks_size> changed_correct;
-  value_operations<element_type>::change_val(
+  value_operations<element_type>::assign(
       expected_value[integral(indx::non_const_expected)]);
 
   {

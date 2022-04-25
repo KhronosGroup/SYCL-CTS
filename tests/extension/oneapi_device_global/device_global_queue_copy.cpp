@@ -47,7 +47,7 @@ void run_test_copy_to_device_global(util::logger& log,
                                     const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T data{};
-  value_operations<T>::change_val(data, 1);
+  value_operations<T>::assign(data, 1);
   const auto src_data = pointer_helper(data);
 
   // to generate events with generator from usm_api.h
@@ -139,7 +139,7 @@ void run_test_copy_from_device_global(util::logger& log,
                                       const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T new_val{};
-  value_operations<T>::change_val(new_val, 5);
+  value_operations<T>::assign(new_val, 5);
   T data1{}, data2{}, data3{};
   auto dst_data1 = pointer_helper(data1);
   auto dst_data2 = pointer_helper(data2);
@@ -150,7 +150,7 @@ void run_test_copy_from_device_global(util::logger& log,
 
   queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<change_dg_kernel<T>>(
-        [=] { value_operations<T>::change_val(dev_global<T>, new_val); });
+        [=] { value_operations<T>::assign(dev_global<T>, new_val); });
   });
   queue.wait_and_throw();
 

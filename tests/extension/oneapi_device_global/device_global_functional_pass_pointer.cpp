@@ -61,7 +61,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel>([=] {
         // Change the device_global instance and store address to the ptr
         // through accessor
-        value_operations::change_val<T>(dev_global<T>, 42);
+        value_operations::assign<T>(dev_global<T>, 42);
         ptr_acc[0] = &(dev_global<T>.get());
       });
     });
@@ -71,9 +71,9 @@ void run_test(util::logger& log, const std::string& type_name) {
   // Expecting to read the new_value that was set to the device_global instance
   // in previous kernel
   T new_val{};
-  // The function change_val have default second parameter, so expect that all
+  // The function assign have default second parameter, so expect that all
   // values will change the same
-  value_operations::change_val<T>(new_val, 42);
+  value_operations::assign<T>(new_val, 42);
 
   bool is_read_correct{true};
   {

@@ -83,7 +83,7 @@ void call_write_kernel(sycl::queue& q) {
   using kernel = write_kernel<T>;
   q.submit([&](sycl::handler& cgh) {
     cgh.single_task<kernel>(
-        [=] { value_operations::change_val<T>(dev_global<T>, 42); });
+        [=] { value_operations::assign<T>(dev_global<T>, 42); });
   });
 }
 
