@@ -433,10 +433,8 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
   }
 }
 
-/**/**
- * @brief 
- * 
- */
+/**
+ * @brief Function helps to check if passing of a placeholder accessor triggers
  * the exception
  *
  * @tparam AccType Type of the accessor
