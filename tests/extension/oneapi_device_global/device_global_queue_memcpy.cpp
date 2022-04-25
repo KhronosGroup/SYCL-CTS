@@ -47,7 +47,7 @@ void run_test_memcpy_to_device_global(util::logger& log,
                                       const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T data{};
-  value_helper<T>::change_val(data, 1);
+  value_operations<T>::change_val(data, 1);
   const void* src_data = pointer_helper(data);
 
   // to generate events with generator from usm_api.h
@@ -110,11 +110,11 @@ void run_test_memcpy_to_device_global(util::logger& log,
           is_memcpy_corr_buf.template get_access<sycl::access_mode::write>(cgh);
       cgh.single_task<check_memcpy_to_dg_kernel<T>>([=] {
         is_memcpy_corr_acc[0] =
-            value_helper::are_equal<T>(dev_global1<T>, data);
+            value_operations::are_equal<T>(dev_global1<T>, data);
         is_memcpy_corr_acc[0] &=
-            value_helper::are_equal<T>(dev_global2<T>, data);
+            value_operations::are_equal<T>(dev_global2<T>, data);
         is_memcpy_corr_acc[0] &=
-            value_helper::are_equal<T>(dev_global3<T>, data);
+            value_operations::are_equal<T>(dev_global3<T>, data);
       });
     });
     queue.wait_and_throw();
@@ -141,13 +141,13 @@ void run_test_memcpy_from_device_global(util::logger& log,
                                         bool val_default) {
   using element_type = std::remove_all_extents_t<T>;
   T new_val{};
-  value_helper<T>::change_val(new_val, 5);
+  value_operations<T>::change_val(new_val, 5);
   T expected{};
   T data1{}, data2{}, data3{};
   if (val_default) {
-    value_helper<T>::change_val(data1, new_val);
-    value_helper<T>::change_val(data2, new_val);
-    value_helper<T>::change_val(data3, new_val);
+    value_operations<T>::change_val(data1, new_val);
+    value_operations<T>::change_val(data2, new_val);
+    value_operations<T>::change_val(data3, new_val);
   }
   void* dst_data1 = pointer_helper(data1);
   void* dst_data2 = pointer_helper(data2);
@@ -156,10 +156,10 @@ void run_test_memcpy_from_device_global(util::logger& log,
   auto queue = util::get_cts_object::queue();
 
   if (!val_default) {
-    value_helper<T>::change_val(expected, new_val);
+    value_operations<T>::change_val(expected, new_val);
     queue.submit([&](sycl::handler& cgh) {
       cgh.single_task<memcpy_change_dg_kernel<T>>(
-          [=] { value_helper<T>::change_val(dev_global<T>, new_val); });
+          [=] { value_operations<T>::change_val(dev_global<T>, new_val); });
     });
     queue.wait_and_throw();
   }
@@ -213,9 +213,9 @@ void run_test_memcpy_from_device_global(util::logger& log,
          "Memcpy overloads from device_global didn't wait for depEvents to "
          "complete");
 
-  if (!value_helper::are_equal<T>(data1, expected) ||
-      !value_helper::are_equal<T>(data2, expected) ||
-      !value_helper::are_equal<T>(data3, expected)) {
+  if (!value_operations::are_equal<T>(data1, expected) ||
+      !value_operations::are_equal<T>(data2, expected) ||
+      !value_operations::are_equal<T>(data3, expected)) {
     FAIL(log, get_case_description(
                   "Overloads of sycl::queue::memcpy for device_global",
                   "Didn't copy correct data from device_global", type_name));

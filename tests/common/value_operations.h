@@ -10,13 +10,13 @@
 //
 *******************************************************************************/
 
-#ifndef __SYCLCTS_TESTS_COMMON_VALUE_HELPER_H
-#define __SYCLCTS_TESTS_COMMON_VALUE_HELPER_H
+#ifndef __SYCLCTS_TESTS_COMMON_VALUE_OPERATIONS_H
+#define __SYCLCTS_TESTS_COMMON_VALUE_OPERATIONS_H
 #include "../../util/type_traits.h"
 
 #include <cassert>
 
-namespace value_helper {
+namespace value_operations {
 
 template <typename T, size_t N>
 using ArrayT = T[N];
@@ -118,5 +118,5 @@ are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
 }
 //////////////////////////// Compare functions
 
-}  // namespace value_helper
-#endif  //__SYCLCTS_TESTS_COMMON_VALUE_HELPER_H
+}  // namespace value_operations
+#endif  //__SYCLCTS_TESTS_COMMON_VALUE_OPERATIONS_H

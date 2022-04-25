@@ -81,7 +81,7 @@ class read_and_write_in_kernel {
 
     // Changed value of type T in case if we expect to read modified value
     T new_val{};
-    value_helper::change_val<T>(new_val, 42);
+    value_operations::change_val<T>(new_val, 42);
 
     // is_read_correct will be set to true if device_global value is equal to
     // the expected value inside kernel
@@ -100,13 +100,13 @@ class read_and_write_in_kernel {
         // then write new value
         cgh.single_task<kernel>([=] {
           if (expect_def_value) {
-            is_read_correct_acc[0] = value_helper::are_equal<T>(
+            is_read_correct_acc[0] = value_operations::are_equal<T>(
                 dev_global<T, prop_value_t>, def_val);
           } else {
-            is_read_correct_acc[0] = value_helper::are_equal<T>(
+            is_read_correct_acc[0] = value_operations::are_equal<T>(
                 dev_global<T, prop_value_t>, new_val);
           }
-          value_helper::change_val<T>(dev_global<T, prop_value_t>, 42);
+          value_operations::change_val<T>(dev_global<T, prop_value_t>, 42);
         });
       });
       queue.wait_and_throw();

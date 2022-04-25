@@ -58,7 +58,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   {
     queue.submit([&](sycl::handler& cgh) {
       cgh.single_task<first_kernel<T>>([=](sycl::kernel_handler h) {
-        value_helper::change_val<T>(dev_global<T>, 42);
+        value_operations::change_val<T>(dev_global<T>, 42);
       });
     });
     queue.wait_and_throw();
@@ -78,7 +78,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
   // For const value expecting that value not changed,so keep default value
   util::array<bool, checks_size> changed_correct;
-  value_helper<element_type>::change_val(
+  value_operations<element_type>::change_val(
       expected_value[integral(indx::non_const_expected)]);
 
   {
@@ -91,11 +91,11 @@ void run_test(util::logger& log, const std::string& type_name) {
       // Comparing current device_global val with expected in second kernel
       cgh.single_task<second_kernel<T>>([=](sycl::kernel_handler h) {
         changed_corr[integral(indx::const_expected)] =
-            value_helper::are_equal<T>(
+            value_operations::are_equal<T>(
                 const_dev_global<T>,
                 expected_value[integral(indx::const_expected)]);
         changed_corr[integral(indx::non_const_expected)] =
-            value_helper::are_equal<T>(
+            value_operations::are_equal<T>(
                 dev_global<T>,
                 expected_value[integral(indx::non_const_expected)]);
       });
