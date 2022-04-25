@@ -378,11 +378,11 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
             cgh.require(acc);
           }
 
-          if (Target == sycl::target::host_task) {
+          if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
-          } else if (Target == sycl::target::device) {
+          } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
@@ -427,9 +427,9 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
           .submit([&](sycl::handler& cgh) {
             auto acc = get_accessor_functor(data_buf);
             is_placeholder = acc.is_placeholder();
-            if (Target == sycl::target::host_task) {
+            if constexpr (Target == sycl::target::host_task) {
               cgh.host_task([=] {});
-            } else if (Target == sycl::target::device) {
+            } else if constexpr (Target == sycl::target::device) {
               cgh.parallel_for_work_group(sycl::range(1),
                                           [=](sycl::group<1>) {});
             }
