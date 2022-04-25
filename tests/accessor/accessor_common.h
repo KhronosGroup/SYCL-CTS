@@ -12,7 +12,7 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
-#include "../common/value_helper.h"
+#include "../common/value_operations.h"
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers.hpp"
@@ -286,11 +286,11 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 
   if constexpr (AccessMode != sycl::access_mode::write) {
     DataT acc_ref(testing_acc);
-    res_acc[0] = value_helper::are_equal(acc_ref, other_data);
+    res_acc[0] = value_operations::are_equal(acc_ref, other_data);
   }
   if constexpr (AccessMode != sycl::access_mode::read) {
     DataT acc_ref(testing_acc);
-    value_helper::change_val(acc_ref, changed_val);
+    value_operations::assign(acc_ref, changed_val);
   }
 }
 
@@ -342,7 +342,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   // accessor can't modify host memory
   if constexpr (AccType != accessor_type::local_accessor) {
     if constexpr (AccessMode != sycl::access_mode::read) {
-      CHECK(value_helper::are_equal(some_data, changed_val));
+      CHECK(value_operations::are_equal(some_data, changed_val));
     }
   }
 }
@@ -366,10 +366,10 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   if constexpr (AccessMode != sycl::access_mode::write) {
-    res_acc[0] = value_helper::are_equal(testing_acc[id], other_data);
+    res_acc[0] = value_operations::are_equal(testing_acc[id], other_data);
   }
   if constexpr (AccessMode != sycl::access_mode::read) {
-    value_helper::change_val(testing_acc[id], changed_val);
+    value_operations::assign(testing_acc[id], changed_val);
   }
 }
 
@@ -428,13 +428,15 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
   // accessor can't modify host memory
   if constexpr (AccType != accessor_type::local_accessor) {
     if constexpr (AccessMode != sycl::access_mode::read) {
-      CHECK(value_helper::are_equal(some_data, changed_val));
+      CHECK(value_operations::are_equal(some_data, changed_val));
     }
   }
 }
 
-/**
- * @brief Function helps to check if passing of a placeholder accessor triggers
+/**/**
+ * @brief 
+ * 
+ */
  * the exception
  *
  * @tparam AccType Type of the accessor
