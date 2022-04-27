@@ -139,8 +139,11 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 16>");
 }
 
-template <accessor_type AccT>
-struct tag_factory {};
+template <accessor_type AccType>
+struct tag_factory {
+  static_assert(AccType != AccType,
+                "There is no tag support for such accessor type")
+};
 
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
@@ -192,15 +195,6 @@ struct tag_factory<accessor_type::host_accessor> {
     } else {
       static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
     }
-  }
-};
-
-template <>
-struct tag_factory<accessor_type::local_accessor> {
-  template <sycl::access_mode AccessMode>
-  inline static auto get_tag() {
-    static_assert(AccessMode != AccessMode,
-                  "sycl::local_accessor doesn't support tags")
   }
 };
 
