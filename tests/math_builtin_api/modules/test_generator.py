@@ -83,7 +83,11 @@ def generate_value(base_type, dim, unsigned):
     for i in range(dim):
         if base_type == "float" or base_type == "double" or base_type == "sycl::half":
             # 10 digits of precision for floats, doubles and half.
-            val += str(round(random.uniform(0.1, 0.9), 10)) + ","
+            val += str(round(random.uniform(0.1, 0.9), 10))
+            if base_type == "double":
+                val += ","
+            else:
+                val += "f,"
         # random 8 bit integer
         if base_type == "char" or base_type == "int8_t":
             if unsigned:
@@ -143,7 +147,7 @@ def generate_arguments(types, sig, memory):
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
 
-        # Identify whether aegument is a pointer.
+        # Identify whether argument is a pointer.
         is_pointer = False
         # Value 0 in pntr_indx is reserved for the return type.
         if (arg_index + 1) in sig.pntr_indx:

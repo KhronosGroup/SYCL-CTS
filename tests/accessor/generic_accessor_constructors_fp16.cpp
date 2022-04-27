@@ -16,7 +16,6 @@
 #endif
 
 #include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
 
 namespace generic_accessor_constructors_fp16 {
 
@@ -26,13 +25,15 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    const auto types = get_fp16_type();
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     run_generic_constructors_test<sycl::half>{}("sycl::half");
 #else
     for_type_vectors_marray<run_generic_constructors_test, sycl::half>(
         "sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  } else {
+    WARN("Device does not support half precision floating point operations");
+    return;
   }
 });
 }  // namespace generic_accessor_constructors_fp16
