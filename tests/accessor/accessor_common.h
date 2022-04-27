@@ -14,8 +14,7 @@
 #include "../common/type_coverage.h"
 #include "../common/value_operations.h"
 
-#include "catch2/catch_test_macros.hpp"
-#include "catch2/matchers/catch_matchers.hpp"
+#include <catch2/matchers/catch_matchers.hpp>
 
 namespace accessor_tests_common {
 using namespace sycl_cts;
@@ -191,7 +190,8 @@ auto get_tag() {
  * @brief Enum class for accessor type specification
  */
 enum class accessor_type {
-  generic_accessor,
+  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
+                     // spec)
   local_accessor,
   host_accessor,
 };
@@ -407,11 +407,11 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
             }
           }
 
-          if (Target == sycl::target::host_task) {
+          if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
-          } else if (Target == sycl::target::device) {
+          } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
@@ -461,9 +461,9 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
           .submit([&](sycl::handler& cgh) {
             auto acc = get_accessor_functor(data_buf);
             is_placeholder = acc.is_placeholder();
-            if (Target == sycl::target::host_task) {
+            if constexpr (Target == sycl::target::host_task) {
               cgh.host_task([=] {});
-            } else if (Target == sycl::target::device) {
+            } else if constexpr (Target == sycl::target::device) {
               cgh.parallel_for_work_group(sycl::range(1),
                                           [=](sycl::group<1>) {});
             }
