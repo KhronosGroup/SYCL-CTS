@@ -93,7 +93,7 @@ void test_common_buffer_constructors_tag_t_deduction(
     const std::string& access_mode_name, const std::string& type_name) {
   const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   const auto offset = sycl::id<Dimension>();
-  auto tagT = get_tag<AccessMode>();
+  auto tagT = tag_factory<AccType>::get_tag<AccessMode>();
 
   auto section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "TagT deduction from buffer constructor");
