@@ -16,6 +16,8 @@
 
 #include "../../util/type_traits.h"
 
+#include "catch2/catch_tostring.hpp"
+
 /**
  * @brief Retrieve type name; by default just forward the given one
  */
