@@ -152,7 +152,7 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
 template <accessor_type AccType>
 struct tag_factory {
   static_assert(AccType != AccType,
-                "There is no tag support for such accessor type")
+                "There is no tag support for such accessor type");
 };
 
 /**
@@ -171,7 +171,7 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
       }
     } else if constexpr (Target == sycl::target::host_task) {
       if constexpr (AccessMode == sycl::access_mode::read) {
@@ -181,10 +181,10 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write_host_task;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
       }
     } else {
-      static_assert(AccessMode != AccessMode, "Unsupported sycl::target")
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::target");
     }
   }
 };
@@ -203,7 +203,7 @@ struct tag_factory<accessor_type::host_accessor> {
     } else if constexpr (AccessMode == sycl::access_mode::read_write) {
       return sycl::read_write;
     } else {
-      static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
     }
   }
 };
