@@ -355,7 +355,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor for accessor creation
  */
 template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
-          sycl::target Target, typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
@@ -439,8 +439,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode,
-          sycl::target Target = sycl::target::device,
-          typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor,
                               const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
