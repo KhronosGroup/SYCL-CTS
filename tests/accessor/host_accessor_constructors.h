@@ -60,7 +60,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
       return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -71,7 +71,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
       return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -84,7 +84,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
                                                                offset);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 }
 
@@ -103,7 +103,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, tagT);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -115,7 +115,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::host_accessor(data_buf, r, tagT);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name =
@@ -129,7 +129,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::host_accessor(data_buf, r, offset, tagT);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 }
 

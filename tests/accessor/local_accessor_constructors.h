@@ -73,11 +73,11 @@ void test_common_constructors(const std::string& type_name) {
     if constexpr (std::is_const_v<DataT>) {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read, sycl::target::device>(
-          get_acc_functor, r);
+          r, get_acc_functor);
     } else {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read_write,
-                               sycl::target::device>(get_acc_functor, r);
+                               sycl::target::device>(r, get_acc_functor);
     }
   }
 }

@@ -539,14 +539,14 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam Dimension Dimensions of the accessor
  * @tparam AccessMode Access mode of the accessor
  * @tparam Target Target of accessor
- * @tparam GetAccFunctorT Type of functor for accessor creation
  * @param r Range for accessors buffer
+ * @param get_accessor_functor Functor for accessor creation
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode,
           sycl::target Target = sycl::target::device, typename GetAccFunctorT>
-void check_common_constructor(GetAccFunctorT get_accessor_functor,
-                              const sycl::range<Dimension> r) {
+void check_common_constructor(const sycl::range<Dimension>& r,
+                              GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
@@ -608,14 +608,14 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
  * @tparam Dimension Dimensions of the accessor
  * @tparam AccessMode Access mode of the accessor
  * @tparam Target Target of accessor
- * @tparam GetAccFunctorT Type of functor for accessor creation
  * @param r Range for accessors buffer
+ * @param get_accessor_functor Functor for accessor creation
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target,
           typename GetAccFunctorT>
-void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
-                                          const sycl::range<Dimension> r) {
+void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
+                                          GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
   bool is_placeholder = false;
