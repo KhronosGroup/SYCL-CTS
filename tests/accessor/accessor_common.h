@@ -171,7 +171,8 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
       }
     } else if constexpr (Target == sycl::target::host_task) {
       if constexpr (AccessMode == sycl::access_mode::read) {
@@ -181,7 +182,8 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write_host_task;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
       }
     } else {
       static_assert(AccessMode != AccessMode, "Unsupported sycl::target");
