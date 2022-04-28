@@ -23,6 +23,16 @@ constexpr int expected_val = 42;
 constexpr int changed_val = 1;
 
 /**
+ * @brief Enum class for accessor type specification
+ */
+enum class accessor_type {
+  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
+                     // spec)
+  local_accessor,
+  host_accessor,
+};
+
+/**
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
@@ -196,16 +206,6 @@ struct tag_factory<accessor_type::host_accessor> {
       static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
     }
   }
-};
-
-/**
- * @brief Enum class for accessor type specification
- */
-enum class accessor_type {
-  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
-                     // spec)
-  local_accessor,
-  host_accessor,
 };
 
 /**
