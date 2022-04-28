@@ -77,7 +77,7 @@ class read_and_write_in_kernel {
     T def_val{};
     // Changed value of type T in case if we expect to read modified value
     T new_val{};
-    value_helper::change_val<T>(new_val, 42);
+    value_operations::assign<T>(new_val, 42);
 
     constexpr int initial_sc_val = 1;
     constexpr int changed_sc_val = 2;
@@ -105,15 +105,15 @@ class read_and_write_in_kernel {
         cgh.single_task<kernel>([=](sycl::kernel_handler h) {
           if (is_def_val_expected) {
             is_read_correct_acc[0] =
-                value_helper::are_equal<T>(dev_global<T>, def_val);
+                value_operations::are_equal<T>(dev_global<T>, def_val);
           } else {
             is_read_correct_acc[0] =
-                value_helper::are_equal<T>(dev_global<T>, new_val);
+                value_operations::are_equal<T>(dev_global<T>, new_val);
           }
 
           // Get specialization constant value for change device_global instance
           int sc_val = h.template get_specialization_constant<spec_const_id>();
-          value_helper<T>::change_val(dev_global<T>, sc_val);
+          value_operations<T>::assign(dev_global<T>, sc_val);
         });
       });
       queue.wait_and_throw();

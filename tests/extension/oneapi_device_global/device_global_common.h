@@ -8,7 +8,7 @@
 #ifndef SYCL_CTS_TEST_DEVICE_GLOBAL_COMMON_H
 #define SYCL_CTS_TEST_DEVICE_GLOBAL_COMMON_H
 #include "../../common/get_cts_string.h"
-#include "../../common/value_helper.h"
+#include "../../common/value_operations.h"
 
 namespace device_global_common_functions {
 
