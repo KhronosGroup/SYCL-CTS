@@ -24,14 +24,15 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_fp64 {
 using namespace sycl_cts;
 
-TEST_CASE("Generic sycl::accessor constructor exceptions test.", "[accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("Generic sycl::accessor constructor exceptions test.", "[accessor]")({
 #ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   run_tests_with_types<double, generic_accessor>{}("double");
 #else
   for_type_vectors_marray<run_tests_with_types, double, generic_accessor>(
       "double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-}
+});
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
