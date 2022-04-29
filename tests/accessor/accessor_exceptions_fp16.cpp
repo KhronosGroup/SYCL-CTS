@@ -15,7 +15,7 @@
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 
-#include "accessor_exceptions.hpp"
+#include "accessor_exceptions.h"
 
 using namespace accessor_exceptions_test;
 using namespace accessor_tests_common;
