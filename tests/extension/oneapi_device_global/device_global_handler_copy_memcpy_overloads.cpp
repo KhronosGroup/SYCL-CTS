@@ -29,7 +29,7 @@ using namespace device_global_common_functions;
 
 #if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-namespace oneapi = sycl_stub::ext::oneapi;
+namespace oneapi = sycl::ext::oneapi;
 
 namespace copy_to_dg {
 template <typename T>
@@ -60,7 +60,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_helper<T>::change_val(src_value, init_value);
+  value_operations<T>::assign(src_value, init_value);
 
   element_ptr src = pointer_helper(src_value);
 
@@ -82,7 +82,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
         is_copy_correct_acc[0] =
-            value_helper<T>::compare_val(dev_global<T>, *src);
+            value_operations::are_equal<T>(dev_global<T>, *src);
       });
     });
     queue.wait_and_throw();
@@ -105,7 +105,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         cgh.single_task<kernel2<T>>([=] {
           // dev_global have to be equal to *src after copy
           is_copy_correct_acc[0] &=
-              value_helper<T>::compare_val(dev_global<T>, *src);
+              value_operations::are_equal<T>(dev_global<T>, *src);
         });
       });
       queue.wait_and_throw();
@@ -151,7 +151,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_helper<T>::change_val(dest_value, changed_value);
+  value_operations<T>::assign(dest_value, changed_value);
 
   element_ptr dest = pointer_helper(dest_value);
 
@@ -174,7 +174,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
         is_copy_correct_acc[0] =
-            value_helper<T>::compare_val(dev_global<T>, *dest);
+            value_operations::are_equal<T>(dev_global<T>, *dest);
       });
     });
     queue.wait_and_throw();
@@ -201,7 +201,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &=
-              value_helper<T>::compare_val(dev_global<T>, *dest);
+              value_operations::are_equal<T>(dev_global<T>, *dest);
         });
       });
       queue.wait_and_throw();
@@ -248,7 +248,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_helper<T>::change_val(src_value, init_value);
+  value_operations<T>::assign(src_value, init_value);
   void_ptr src = static_cast<void_ptr>(pointer_helper(src_value));
 
   bool is_copy_correct{false};
@@ -269,7 +269,7 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *src after copy
-        is_copy_correct_acc[0] = value_helper<T>::compare_val(
+        is_copy_correct_acc[0] = value_operations::are_equal<T>(
             dev_global<T>, *(static_cast<element_ptr>(src)));
       });
     });
@@ -293,7 +293,7 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] &= value_helper<T>::compare_val(
+          is_copy_correct_acc[0] &= value_operations::are_equal<T>(
               dev_global<T>, *(static_cast<element_ptr>(src)));
         });
       });
@@ -340,7 +340,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_helper<T>::change_val(dest_value, changed_value);
+  value_operations<T>::assign(dest_value, changed_value);
 
   void_ptr dest = pointer_helper(dest_value);
 
@@ -362,7 +362,7 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
-        is_copy_correct_acc[0] = value_helper<T>::compare_val(
+        is_copy_correct_acc[0] = value_operations::are_equal<T>(
             dev_global<T>, *(static_cast<element_ptr>(dest)));
       });
     });
@@ -389,7 +389,7 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] = value_helper<T>::compare_val(
+          is_copy_correct_acc[0] = value_operations::are_equal<T>(
               dev_global<T>, *(static_cast<element_type*>(dest)));
         });
       });
