@@ -4,8 +4,8 @@
 //
 //  Provides tests for accessor exceptions.
 //
-// This test provides verifications that exception really has been thrown for
-// generic accessor, host_accessor and local_accessor with generic types.
+//  This test provides verifications that exception really has been thrown for
+//  generic accessor, host_accessor and local_accessor with generic types.
 //
 *******************************************************************************/
 

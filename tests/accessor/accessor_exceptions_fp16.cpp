@@ -2,8 +2,10 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-// This test provides verifications that exception really has been thrown for
-// generic accessor, host_accessor and local_accessor with sycl::half type.
+//  Provides tests for accessor exceptions.
+//
+//  This test provides verifications that exception really has been thrown for
+//  generic accessor, host_accessor and local_accessor with sycl::half type.
 //
 *******************************************************************************/
 #include "../common/common.h"
