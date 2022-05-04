@@ -55,14 +55,14 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
- * @tparam DimensionT Integer representing dimension
+ * @tparam Dimension Integer representing dimension
  * @param type_name String with name of the testing type
  * @param access_mode_name String with name of the testing access mode
  * @param target_name String with name of the testing target
  * @param section_description String with human-readable description of the test
  * @return std::string String with name for section
  */
-template <int DimensionT>
+template <int Dimension>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& section_description) {
@@ -75,7 +75,7 @@ inline std::string get_section_name(const std::string& type_name,
   name += "><";
   name += access_mode_name;
   name += "><";
-  name += std::to_string(DimensionT) + ">";
+  name += std::to_string(Dimension) + ">";
   return name;
 }
 
@@ -83,12 +83,12 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
- * @tparam DimensionT Integer representing dimension
+ * @tparam Dimension Integer representing dimension
  * @param type_name String with name of the testing type
  * @param section_description String with human-readable description of the test
  * @return std::string String with name for section
  */
-template <int DimensionT>
+template <int Dimension>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& section_description) {
   using namespace sycl_cts::get_cts_string;
@@ -97,7 +97,7 @@ inline std::string get_section_name(const std::string& type_name,
   name += section_description;
   name += " with parameters: <";
   name += type_name + "><";
-  name += std::to_string(DimensionT) + ">";
+  name += std::to_string(Dimension) + ">";
   return name;
 }
 
