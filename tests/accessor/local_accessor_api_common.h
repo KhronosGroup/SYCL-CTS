@@ -57,7 +57,7 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
           decltype(acc_multi_ptr_no),
           typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
   res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_result), item_id)] =
-      value_helper::are_equal(*acc_multi_ptr_no.get(), expected_data);
+      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
@@ -66,14 +66,14 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
           decltype(acc_multi_ptr_yes),
           typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
   res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_yes_result), item_id)] =
-      value_helper::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
   res_acc[sycl::id<2>(to_integral(check::get_pointer_type), item_id)] =
       std::is_same_v<decltype(acc_pointer),
                      std::add_pointer_t<typename AccT::value_type>>;
   res_acc[sycl::id<2>(to_integral(check::get_pointer_result), item_id)] =
-      value_helper::are_equal(*acc_pointer, expected_data);
+      value_operations::are_equal(*acc_pointer, expected_data);
 }
 
 template <typename T, typename DimensionTypeT>
@@ -149,22 +149,23 @@ class run_api_tests {
                                     item_id)] =
                     std::is_same_v<decltype(ref_2), typename AccT::reference>;
                 if constexpr (!std::is_const_v<T>) {
-                  value_helper::change_val(ref_1, expected_val);
-                  value_helper::change_val(ref_2, changed_val);
+                  value_operations::change_val(ref_1, expected_val);
+                  value_operations::change_val(ref_2, changed_val);
 
                   res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id]) =
-                      value_helper::are_equal(ref_1, expected_val);
+                      value_operations::are_equal(ref_1, expected_val);
                   res_acc[sycl::id<2>(to_integral(check::subscript_size_t_result), item_id)] =
-                      value_helper::are_equal(ref_2, changed_val);
+                      value_operations::are_equal(ref_2, changed_val);
 
                   test_local_accessor_ptr(acc, expected_val, res_acc);
 
                   acc.swap(acc_other);
-                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] = value_helper::are_equal(
-                      acc_other[sycl::id<dims>()], expected_val);
+                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] =
+                        value_operations::are_equal(
+                          acc_other[sycl::id<dims>()], expected_val);
                   auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
                   res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] &=
-                      value_helper::are_equal(acc_other[id], changed_val);
+                      value_operations::are_equal(acc_other[id], changed_val);
                 }
               });
             })

@@ -37,7 +37,7 @@ void test_accessor_ptr(AccT &accessor, T expected_data) {
     auto acc_pointer = accessor.get_pointer();
     STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
                                 std::add_pointer_t<typename AccT::value_type>>);
-    CHECK(value_helper::are_equal(*acc_pointer, expected_data));
+    CHECK(value_operations::are_equal(*acc_pointer, expected_data));
   }
 }
 
@@ -80,14 +80,14 @@ class run_api_tests {
             sycl::id<dims>() /*&expected_offset)*/);
         test_accessor_ptr(acc, expected_val);
         auto &acc_ref = acc[sycl::id<dims>()];
-        CHECK(value_helper::are_equal(acc_ref, expected_val));
+        CHECK(value_operations::are_equal(acc_ref, expected_val));
         STATIC_CHECK(
             std::is_same_v<decltype(acc_ref), typename AccT::reference>);
         if constexpr (AccessMode != sycl::access_mode::read)
-          value_helper::change_val(acc_ref, changed_val);
+          value_operations::change_val(acc_ref, changed_val);
       }
       if constexpr (AccessMode != sycl::access_mode::read)
-        CHECK(value_helper::are_equal(data, changed_val));
+        CHECK(value_operations::are_equal(data, changed_val));
     }
 
     SECTION(get_section_name<dims>(
@@ -122,12 +122,12 @@ class run_api_tests {
 
         test_accessor_ptr_host(acc, T(0));
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
-        CHECK(value_helper::are_equal(acc_ref, linear_index));
+        CHECK(value_operations::are_equal(acc_ref, linear_index));
         if constexpr (AccessMode != sycl::access_mode::read)
-          value_helper::change_val(acc_ref, changed_val);
+          value_operations::change_val(acc_ref, changed_val);
       }
       if constexpr (AccessMode != sycl::access_mode::read)
-        CHECK(value_helper::are_equal(data[linear_index], changed_val));
+        CHECK(value_operations::are_equal(data[linear_index], changed_val));
     }
     if constexpr (AccessMode != sycl::access_mode::read) {
       SECTION(get_section_name<dims>(type_name, access_mode_name,
@@ -141,8 +141,8 @@ class run_api_tests {
           AccT acc2(data_buf2);
           acc1.swap(acc2);
         }
-        CHECK(value_helper::are_equal(data1, changed_val));
-        CHECK(value_helper::are_equal(data2, expected_val));
+        CHECK(value_operations::are_equal(data1, changed_val));
+        CHECK(value_operations::are_equal(data2, expected_val));
       }
     }
   }
