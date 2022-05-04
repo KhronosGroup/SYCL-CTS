@@ -5,6 +5,8 @@
 //  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
 //
 *******************************************************************************/
+#ifndef __SYCLCTS_TESTS_HANDLER_COPY_COMMON_H
+#define __SYCLCTS_TESTS_HANDLER_COPY_COMMON_H
 
 #include <memory>
 #include <mutex>
@@ -13,15 +15,14 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME handler_copy
-
-namespace TEST_NAMESPACE {
+namespace handler_copy_common {
 using namespace sycl_cts;
 
 using mode_t = sycl::access_mode;
 using target_t = sycl::target;
 
-namespace {
+// TODO: Also test image accessors
+// TODO: Also test copying between buffers of different data types.
 
 /**
  * @brief Helper class designed to construct useful failure messages for all
@@ -29,7 +30,7 @@ namespace {
  */
 class log_helper {
  public:
-  log_helper(util::logger* logger) : logger(logger) {}
+  log_helper() {}
 
   template <typename dataT>
   log_helper set_data_type() const {
@@ -104,15 +105,14 @@ class log_helper {
   }
 
   void fail(const std::string& reason) const {
-    logger->fail(make_description() + " failed: " + reason, line);
+    FAIL(make_description() + " failed: " + reason, line);
   }
 
   void note(const std::string& message) const {
-    logger->note(make_description() + " info: " + message);
+    WARN(make_description() + " info: " + message);
   }
 
  private:
-  util::logger* logger;
   std::string dataType = "(unknown data type)";
   int dimSrc = -1;
   int dimDst = -1;
@@ -921,49 +921,5 @@ static void test_all_variants(log_helper lh, sycl::queue& queue) {
   test_all_dimensions<dataT, true, true>(lh, queue);
 }
 
-}  // namespace
-
-/** tests the API for sycl::handler
- * TODO: Also test image accessors
- * TODO: Also test copying between buffers of different data types.
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    {
-      auto queue = util::get_cts_object::queue();
-
-      log_helper lh(&log);
-
-      test_all_variants<int>(lh, queue);
-      test_all_variants<double>(lh, queue);
-      test_all_variants<sycl::double16>(lh, queue);
-
-#if defined(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
-      test_all_variants<char>(lh, queue);
-      test_all_variants<short>(lh, queue);
-      test_all_variants<long>(lh, queue);
-      test_all_variants<float>(lh, queue);
-
-      test_all_variants<sycl::char2>(lh, queue);
-      test_all_variants<sycl::short3>(lh, queue);
-      test_all_variants<sycl::int4>(lh, queue);
-      test_all_variants<sycl::long8>(lh, queue);
-      test_all_variants<sycl::float8>(lh, queue);
-#endif
-    }
-  }
-};
-
-// register this test with the test_collection
-util::test_proxy<TEST_NAME> proxy;
-
-} /* namespace TEST_NAMESPACE */
+}  // namespace handler_copy_common
+#endif  // __SYCLCTS_TESTS_HANDLER_COPY_COMMON_H

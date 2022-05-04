@@ -22,12 +22,16 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace generic_accessor_api_common;
 
   auto queue = sycl_cts::util::get_cts_object::queue();
-  if (queue.get_device().has(sycl::aspect::fp64)) {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    run_generic_api_for_type<double>{}("double");
-#else
-    for_type_vectors_marray<run_generic_api_for_type, double>("double");
-#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
   }
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  run_generic_api_for_type<double>{}("double");
+#else
+  for_type_vectors_marray<run_generic_api_for_type, double>("double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace generic_accessor_api_fp64
