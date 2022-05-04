@@ -66,6 +66,7 @@ template <int DimensionT>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
 
   std::string name = "Test ";
   name += section_description;
@@ -532,10 +533,37 @@ void test_accessor_types_common() {
 }
 
 template <typename T, typename AccT, int dims>
-T& get_subscript_overload(const AccT& accessor, size_t index) {
+decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
+}
+
+/**
+ * @brief Function checks common buffer and local accessor ptr getters
+ */
+template <typename T, typename AccT, typename AccRes>
+void test_accessor_ptr_device(AccT& accessor, T expected_data,
+                              AccRes& res_acc) {
+  auto acc_multi_ptr_no =
+      accessor.template get_multi_ptr<sycl::access::decorated::no>();
+  res_acc[0] = std::is_same_v<
+      decltype(acc_multi_ptr_no),
+      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &= value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+
+  auto acc_multi_ptr_yes =
+      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
+  res_acc[0] &= std::is_same_v<
+      decltype(acc_multi_ptr_yes),
+      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+
+  auto acc_pointer = accessor.get_pointer();
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
+                               std::add_pointer_t<typename AccT::value_type>>;
+  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
 }
 
 }  // namespace accessor_tests_common
