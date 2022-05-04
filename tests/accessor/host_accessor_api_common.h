@@ -84,7 +84,7 @@ class run_api_tests {
         STATIC_CHECK(
             std::is_same_v<decltype(acc_ref), typename AccT::reference>);
         if constexpr (AccessMode != sycl::access_mode::read)
-          value_operations::change_val(acc_ref, changed_val);
+          value_operations::assign(acc_ref, changed_val);
       }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
@@ -124,7 +124,7 @@ class run_api_tests {
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
         CHECK(value_operations::are_equal(acc_ref, linear_index));
         if constexpr (AccessMode != sycl::access_mode::read)
-          value_operations::change_val(acc_ref, changed_val);
+          value_operations::assign(acc_ref, changed_val);
       }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data[linear_index], changed_val));

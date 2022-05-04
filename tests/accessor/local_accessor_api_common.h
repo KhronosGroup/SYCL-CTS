@@ -149,8 +149,8 @@ class run_api_tests {
                                     item_id)] =
                     std::is_same_v<decltype(ref_2), typename AccT::reference>;
                 if constexpr (!std::is_const_v<T>) {
-                  value_operations::change_val(ref_1, expected_val);
-                  value_operations::change_val(ref_2, changed_val);
+                  value_operations::assign(ref_1, expected_val);
+                  value_operations::assign(ref_2, changed_val);
 
                   res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id]) =
                       value_operations::are_equal(ref_1, expected_val);
