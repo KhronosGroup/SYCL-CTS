@@ -564,8 +564,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
  */
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode,
-          sycl::target Target = sycl::target::device,
-          typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_no_init_prop(GetAccFunctorT get_accessor_functor,
                         const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
@@ -615,8 +614,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::target Target = sycl::target::device,
-          typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_no_init_prop_exception(GetAccFunctorT construct_acc,
                                   const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
@@ -635,6 +633,47 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
           action, sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
+  }
+}
+
+/**
+ * @brief Function checks common buffer and local accessor member functions
+ */
+template <typename AccT, int dims>
+void test_accessor_methods_common(const AccT& accessor,
+                                  const size_t expected_byte_size,
+                                  const size_t expected_size,
+                                  const sycl::range<dims>& expected_range) {
+  {
+    INFO("check byte_size() method");
+    auto acc_byte_size = accessor.byte_size();
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_byte_size), typename AccT::size_type>);
+    CHECK(acc_byte_size == expected_byte_size);
+  }
+  {
+    INFO("check size() method");
+    auto acc_size = accessor.size();
+    STATIC_CHECK(std::is_same_v<decltype(acc_size), typename AccT::size_type>);
+    CHECK(acc_size == expected_size);
+  }
+  {
+    INFO("check max_size() method");
+    auto acc_max_size = accessor.max_size();
+    STATIC_CHECK(
+        std::is_same_v<decltype(acc_max_size), typename AccT::size_type>);
+  }
+  {
+    INFO("check empty() method");
+    auto acc_empty = accessor.empty();
+    STATIC_CHECK(std::is_same_v<decltype(acc_empty), bool>);
+    CHECK(acc_empty == (expected_size == 0));
+  }
+  {
+    INFO("check get_range() method");
+    auto acc_range = accessor.get_range();
+    STATIC_CHECK(std::is_same_v<decltype(acc_range), sycl::range<dims>>);
+    CHECK(acc_range == expected_range);
   }
 }
 
@@ -675,6 +714,58 @@ void check_get_property_member_func(GetAccFunctorT construct_acc,
     CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
   }
 }
+
+/**
+ * @brief Function checks common buffer and local accessor member types
+ */
+template <typename T, typename AccT, sycl::access_mode mode>
+void test_accessor_types_common() {
+  if constexpr (mode != sycl::access_mode::read) {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, T>);
+  } else {
+    STATIC_CHECK(std::is_same_v<typename AccT::value_type, const T>);
+  }
+  STATIC_CHECK(
+      std::is_same_v<typename AccT::reference, typename AccT::value_type&>);
+  STATIC_CHECK(std::is_same_v<typename AccT::const_reference, const T&>);
+  STATIC_CHECK(std::is_same_v<typename AccT::size_type, size_t>);
+}
+
+template <typename T, typename AccT, int dims>
+decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
+  if constexpr (dims == 1) return accessor[index];
+  if constexpr (dims == 2) return accessor[index][index];
+  if constexpr (dims == 3) return accessor[index][index][index];
+}
+
+/**
+ * @brief Function checks common buffer and local accessor ptr getters
+ */
+template <typename T, typename AccT, typename AccRes>
+void test_accessor_ptr_device(AccT& accessor, T expected_data,
+                              AccRes& res_acc) {
+  auto acc_multi_ptr_no =
+      accessor.template get_multi_ptr<sycl::access::decorated::no>();
+  res_acc[0] = std::is_same_v<
+      decltype(acc_multi_ptr_no),
+      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+
+  auto acc_multi_ptr_yes =
+      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
+  res_acc[0] &= std::is_same_v<
+      decltype(acc_multi_ptr_yes),
+      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+
+  auto acc_pointer = accessor.get_pointer();
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
+                               std::add_pointer_t<typename AccT::value_type>>;
+  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
+}
+
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
