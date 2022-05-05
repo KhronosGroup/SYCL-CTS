@@ -12,7 +12,7 @@
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
-#include "host_accessor_properties.hpp"
+#include "host_accessor_properties.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
