@@ -9,16 +9,20 @@
 #define SYCL_CTS_ACCESSOR_DEFAULT_VALUES_H
 
 #include "accessor_common.h"
-#include "catch2/catch_test_macros.hpp"
 
 #include <type_traits>
 
 namespace accessor_default_values_test {
 
+namespace detail {
 constexpr int expected_dims = 1;
 constexpr sycl::target expected_target = sycl::target::device;
 constexpr sycl::access::placeholder expected_placeholder =
     sycl::access::placeholder::false_t;
+template <typename T>
+constexpr auto expected_mode =
+    std::is_const_v<T> ? sycl::access_mode::read : sycl::access_mode::read_write
+}  // namespace detail
 
 /**
  * @brief Provides functor that lets verify that local_accessor's template
@@ -27,15 +31,18 @@ constexpr sycl::access::placeholder expected_placeholder =
  * @param type_name Current data type string representation
  */
 template <typename T>
-void test_exception_for_local_acc(const std::string& type_name) {
-  auto section_name =
-      "Verify default value for dimensions template parameter for " +
-      type_name + " data type. [local_accessor]";
-  SECTION(section_name) {
-    REQUIRE(std::is_same_v<sycl::local_accessor<T>,
-                           sycl::local_accessor<T, expected_dims>>);
+class test_for_local_acc {
+ public:
+  void operator()(const std::string& type_name) {
+    auto section_name =
+        "Verify default value for dimensions template parameter for " +
+        type_name + " data type. [local_accessor]";
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::local_accessor<T>,
+                             sycl::local_accessor<T, detail::expected_dims>>);
+    }
   }
-}
+};
 
 /**
  * @brief Provides functor that lets verify that host_accessor's template
@@ -43,26 +50,35 @@ void test_exception_for_local_acc(const std::string& type_name) {
  * @tparam T Current data type
  * @param type_name Current data type string representation
  */
-template <typename T>
-void test_for_host_acc(const std::string& type_name) {
-  auto section_name =
-      "Verify default value for dimensions template parameter for " +
-      type_name + " data type. [host_accessor]";
-  SECTION(section_name) {
-    REQUIRE(std::is_same_v<sycl::host_accessor<T>,
-                           sycl::host_accessor<T, expected_dims>>);
+
+template <typename T, typename AccessModeT, typename DimensionT,
+          typename TargetT>
+class test_for_host_acc {
+  static constexpr sycl::access_mode AccessMode = AccessModeT::value;
+  static constexpr int Dimension = DimensionT::value;
+  static constexpr sycl::target Target = TargetT::value;
+
+ public:
+  void operator()(const std::string& type_name,
+                  const std::string& access_mode_name,
+                  const std::string& target_name) {
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for dimensions template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::host_accessor<T>,
+                             sycl::host_accessor<T, detail::expected_dims>>);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for accessMode template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<
+              sycl::host_accessor<T, Dimension>,
+              sycl::host_accessor<T, Dimension, detail::expected_mode<T>>>);
+    }
   }
-  section_name = "Verify default value for accessMode template parameter for " +
-                 type_name + " data type. [host_accessor]";
-  SECTION(section_name) {
-    REQUIRE(std::is_same_v<
-            sycl::host_accessor<T, expected_dims>,
-            sycl::host_accessor<T, expected_dims,
-                                std::is_const_v<T>
-                                    ? sycl::access_mode::read
-                                    : sycl::access_mode::read_write>>);
-  }
-}
+};
 
 /**
  * @brief Provides functor that lets verify that generic accessor's template
@@ -70,63 +86,50 @@ void test_for_host_acc(const std::string& type_name) {
  * @tparam T Current data type
  * @param type_name Current data type string representation
  */
-template <typename T>
-void test_for_generic_acc(const std::string& type_name) {
-  auto section_name =
-      "Verify default value for dimensions template parameter for " +
-      type_name + " data type. [generic accessor]";
-  SECTION(section_name) {
-    REQUIRE(
-        std::is_same_v<sycl::accessor<T>, sycl::accessor<T, expected_dims>>);
+template <typename T, typename AccessModeT, typename DimensionT,
+          typename TargetT>
+class test_for_generic_acc {
+  static constexpr sycl::access_mode AccessMode = AccessModeT::value;
+  static constexpr int Dimension = DimensionT::value;
+  static constexpr sycl::target Target = TargetT::value;
+
+ public:
+  void operator()(const std::string& type_name,
+                  const std::string& access_mode_name,
+                  const std::string& target_name) {
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for dimensions template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::accessor<T>,
+                             sycl::accessor<T, detail::expected_dims>>);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for accessMode template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<
+              sycl::accessor<T, Dimension>,
+              sycl::accessor<T, Dimension, detail::expected_mode<T>>>);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for accessTarget template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode>,
+                             sycl::accessor<T, Dimension, AccessMode,
+                                            detail::expected_target>>);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Verify default value for isPlaceholder template parameter.");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode, Target>,
+                             sycl::accessor<T, Dimension, AccessMode, Target,
+                                            detail::expected_placeholder>>);
+    }
   }
-  section_name = "Verify default value for accessMode template parameter for " +
-                 type_name + " data type. [generic accessor]";
-  SECTION(section_name) {
-    REQUIRE(
-        std::is_same_v<sycl::accessor<T, expected_dims>,
-                       sycl::accessor<T, expected_dims,
-                                      std::is_const_v<T>
-                                          ? sycl::access_mode::read
-                                          : sycl::access_mode::read_write>>);
-  }
-  section_name = "Verify default value for accessMode template parameter for " +
-                 type_name + " data type. [generic accessor]";
-  SECTION(section_name) {
-    REQUIRE(
-        std::is_same_v<sycl::accessor<T, expected_dims>,
-                       sycl::accessor<T, expected_dims,
-                                      std::is_const_v<T>
-                                          ? sycl::access_mode::read
-                                          : sycl::access_mode::read_write>>);
-  }
-  section_name =
-      "Verify default value for accessTarget template parameter for " +
-      type_name + " data type. [generic accessor]";
-  SECTION(section_name) {
-    REQUIRE(std::is_same_v<
-            sycl::accessor<T, expected_dims,
-                           std::is_const_v<T> ? sycl::access_mode::read
-                                              : sycl::access_mode::read_write>,
-            sycl::accessor<T, expected_dims,
-                           std::is_const_v<T> ? sycl::access_mode::read
-                                              : sycl::access_mode::read_write,
-                           expected_target>>);
-  }
-  section_name =
-      "Verify default value for isPlaceholder template parameter for " +
-      type_name + " data type. [generic accessor]";
-  SECTION(section_name) {
-    REQUIRE(std::is_same_v<
-            sycl::accessor<T, expected_dims,
-                           std::is_const_v<T> ? sycl::access_mode::read
-                                              : sycl::access_mode::read_write,
-                           expected_target>,
-            sycl::accessor<T, expected_dims,
-                           std::is_const_v<T> ? sycl::access_mode::read
-                                              : sycl::access_mode::read_write,
-                           expected_target, expected_placeholder>>);
-  }
-}
+};
 
 /**
  * @brief Struct with functor that will be used in type coverage to call all
@@ -138,9 +141,25 @@ template <typename T>
 class run_tests {
  public:
   void operator()(const std::string& type_name) {
-    test_for_generic_acc<T>(type_name);
-    test_for_host_acc<T>(type_name);
-    test_exception_for_local_acc<T>(type_name);
+    // Type packs instances have to be const, otherwise for_all_combination
+    // will not compile
+    const auto access_modes = get_access_modes();
+    const auto dimensions = get_all_dimensions();
+    const auto targets = get_targets();
+
+    // Run test with non const data type
+    for_all_combinations<test_for_generic_acc, T>(access_modes, dimensions,
+                                                  targets, type_name);
+    for_all_combinations<test_for_host_acc, T>(access_modes, dimensions,
+                                               targets, type_name);
+    test_for_local_acc<T>(type_name);
+    // Run test with const data type
+    const auto const_type_name = "const " + type_name;
+    for_all_combinations<test_for_generic_acc, const T>(
+        access_modes, dimensions, targets, const_type_name);
+    for_all_combinations<test_for_host_acc, const T>(access_modes, dimensions,
+                                                     targets, const_type_name);
+    test_for_local_acc<const T>(const_type_name);
   }
 };
 
