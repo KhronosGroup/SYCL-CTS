@@ -62,16 +62,18 @@ class test_for_host_acc {
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name,
                   const std::string& target_name) {
-    auto section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for dimensions template parameter.");
+    auto section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for dimensions "
+                                    "template parameter. [host_accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<sycl::host_accessor<T>,
                              sycl::host_accessor<T, detail::expected_dims>>);
     }
-    section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for accessMode template parameter.");
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for accessMode "
+                                    "template parameter. [host_accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<
               sycl::host_accessor<T, Dimension>,
@@ -97,32 +99,36 @@ class test_for_generic_acc {
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name,
                   const std::string& target_name) {
-    auto section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for dimensions template parameter.");
+    auto section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for dimensions "
+                                    "template parameter. [generic accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<sycl::accessor<T>,
                              sycl::accessor<T, detail::expected_dims>>);
     }
-    section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for accessMode template parameter.");
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for accessMode "
+                                    "template parameter. [generic accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<
               sycl::accessor<T, Dimension>,
               sycl::accessor<T, Dimension, detail::expected_mode<T>>>);
     }
-    section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for accessTarget template parameter.");
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for accessTarget "
+                                    "template parameter. [generic accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode>,
                              sycl::accessor<T, Dimension, AccessMode,
                                             detail::expected_target>>);
     }
-    section_name = get_section_name<Dimension>(
-        type_name, access_mode_name, target_name,
-        "Verify default value for isPlaceholder template parameter.");
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "Verify default value for isPlaceholder "
+                                    "template parameter. [generic accessor]");
     SECTION(section_name) {
       REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode, Target>,
                              sycl::accessor<T, Dimension, AccessMode, Target,
