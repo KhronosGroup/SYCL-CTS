@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 #include "../../util/test_base_cuda.h"
 #include "cuda_interop_kernel_func_tests.hpp"
 #endif
@@ -22,7 +22,7 @@ using namespace sycl_cts;
 /** tests the get_native() methods for CUDA inter-op
  */
 class TEST_NAME :
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     public sycl_cts::util::test_base_cuda
 #else
     public util::test_base
@@ -38,10 +38,10 @@ class TEST_NAME :
   /** execute this test
    */
   void run(util::logger &log) override {
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     {
       auto queue = util::get_cts_object::queue();
-      if (queue.get_backend() != sycl::backend::ext_oneapi_cuda) {
+      if (queue.get_backend() != sycl::backend::cuda) {
         WARN(
             "CUDA interoperability part is not supported on non-CUDA "
             "backend types");
@@ -64,7 +64,7 @@ class TEST_NAME :
     }
 #else
     log.note("The test is skipped because CUDA back-end is not supported");
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
   }
 };
 

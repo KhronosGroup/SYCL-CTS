@@ -108,7 +108,7 @@ void test_accessor(sycl::queue &queue, sycl_cts::util::logger &log,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
       });
     });
@@ -142,7 +142,7 @@ void test_constant_buffer_accessor(sycl::queue &queue,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
       });
     });
@@ -177,7 +177,7 @@ void test_local_target_accessor(sycl::queue &queue, sycl_cts::util::logger &log,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
       });
     });
@@ -209,7 +209,7 @@ void test_local_accessor(sycl::queue &queue, sycl_cts::util::logger &log,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
       });
     });
@@ -252,7 +252,7 @@ void test_accessor<c2>(sycl::queue &queue, sycl_cts::util::logger &log,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
       });
     });
@@ -286,7 +286,7 @@ void test_constant_buffer_accessor<c2>(sycl::queue &queue,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
       });
     });
@@ -321,7 +321,7 @@ void test_local_target_accessor<c2>(sycl::queue &queue,
 
       cgh.single_task([=]() {
         auto native_handle =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc);
+            sycl::get_native<sycl::backend::cuda>(acc);
         is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
       });
     });

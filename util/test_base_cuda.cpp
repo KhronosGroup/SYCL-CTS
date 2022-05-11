@@ -16,7 +16,7 @@
 #else
 #include <unistd.h>
 #endif
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 // conformance test suite namespace
 namespace sycl_cts {
 namespace util {

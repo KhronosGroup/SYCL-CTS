@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 #include "../../util/test_base_cuda.h"
 
 #endif
@@ -21,7 +21,7 @@ using namespace sycl_cts;
 /** tests the get_native() methods for CUDA inter-op
  */
 class TEST_NAME :
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     public sycl_cts::util::test_base_cuda
 #else
     public util::test_base
@@ -37,10 +37,10 @@ class TEST_NAME :
   /** execute this test
    */
   void run(util::logger &log) override {
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     {
       auto queue = util::get_cts_object::queue();
-      if (queue.get_backend() != sycl::backend::ext_oneapi_cuda) {
+      if (queue.get_backend() != sycl::backend::cuda) {
         WARN(
             "CUDA interoperability part is not supported on non-CUDA "
             "backend types");
@@ -53,7 +53,7 @@ class TEST_NAME :
       {
         auto platform = util::get_cts_object::platform(ctsSelector);
         auto interopPlatform =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(platform);
+            sycl::get_native<sycl::backend::cuda>(platform);
         check_return_type<std::vector<CUdevice>>(log, interopPlatform,
                                                  "get_native(platform)");
 
@@ -69,7 +69,7 @@ class TEST_NAME :
       {
         auto device = util::get_cts_object::device(ctsSelector);
         auto interopDevice =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(device);
+            sycl::get_native<sycl::backend::cuda>(device);
         check_return_type<CUdevice>(log, interopDevice, "get_native(device)");
         int n_devices;
         cuDeviceGetCount(&n_devices);
@@ -84,7 +84,7 @@ class TEST_NAME :
       {
         auto context = util::get_cts_object::context(ctsSelector);
         auto interopContext =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(context);
+            sycl::get_native<sycl::backend::cuda>(context);
         check_return_type<std::vector<CUcontext>>(log, interopContext,
                                                   "get_native(context)");
 
@@ -100,7 +100,7 @@ class TEST_NAME :
       {
         auto ctsQueue = util::get_cts_object::queue(ctsSelector);
         auto interopQueue =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(ctsQueue);
+            sycl::get_native<sycl::backend::cuda>(ctsQueue);
         check_return_type<CUstream>(log, interopQueue, "get_native(queue)");
       }
 
@@ -114,13 +114,13 @@ class TEST_NAME :
         });
 
         auto interopEvent =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(event);
+            sycl::get_native<sycl::backend::cuda>(event);
         check_return_type<CUevent>(log, interopEvent, "get_native(event)");
       }
     }
 #else
     log.note("The test is skipped because CUDA back-end is not supported");
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
   }
 };
 

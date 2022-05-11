@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 #include "../../util/test_base_cuda.h"
 
 #endif
@@ -21,7 +21,7 @@ using namespace sycl_cts;
 /** tests the constructors for CUDA inter-op
  */
 class TEST_NAME :
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     public util::test_base_cuda
 #else
     public util::test_base
@@ -37,10 +37,10 @@ class TEST_NAME :
   /** execute this test
    */
   void run(util::logger &log) override {
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     {
       auto queue = util::get_cts_object::queue();
-      if (queue.get_backend() != sycl::backend::ext_oneapi_cuda) {
+      if (queue.get_backend() != sycl::backend::cuda) {
         WARN(
             "CUDA interoperability part is not supported on non-CUDA "
             "backend types");
@@ -61,10 +61,10 @@ class TEST_NAME :
        */
       {
         sycl::platform platform =
-            sycl::make_platform<sycl::backend::ext_oneapi_cuda>(m_cu_platform);
+            sycl::make_platform<sycl::backend::cuda>(m_cu_platform);
 
         std::vector<CUdevice> interopPlatformID =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(platform);
+            sycl::get_native<sycl::backend::cuda>(platform);
         if (interopPlatformID != m_cu_platform) {
           FAIL(log, "platform was not constructed correctly");
         }
@@ -74,10 +74,10 @@ class TEST_NAME :
        */
       {
         sycl::device device =
-            sycl::make_device<sycl::backend::ext_oneapi_cuda>(m_cu_device);
+            sycl::make_device<sycl::backend::cuda>(m_cu_device);
 
         CUdevice interopDeviceID =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(device);
+            sycl::get_native<sycl::backend::cuda>(device);
         if (interopDeviceID != m_cu_device) {
           FAIL(log, "device was not constructed correctly");
         }
@@ -89,10 +89,10 @@ class TEST_NAME :
         assert(0 == cuCtxCreate(&m_cu_context, CU_CTX_MAP_HOST, m_cu_device));
 
         sycl::context context =
-            sycl::make_context<sycl::backend::ext_oneapi_cuda>(m_cu_context);
+            sycl::make_context<sycl::backend::cuda>(m_cu_context);
 
         auto interopContext =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(context);
+            sycl::get_native<sycl::backend::cuda>(context);
 
         if (interopContext != m_cu_context) {
           FAIL(log, "context was not constructed correctly");
@@ -106,11 +106,11 @@ class TEST_NAME :
 
         cts_async_handler asyncHandler;
         sycl::context context =
-            sycl::make_context<sycl::backend::ext_oneapi_cuda>(m_cu_context,
+            sycl::make_context<sycl::backend::cuda>(m_cu_context,
                                                                asyncHandler);
 
         auto interopContext =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(context);
+            sycl::get_native<sycl::backend::cuda>(context);
         if (interopContext != m_cu_context) {
           FAIL(log, "context was not constructed correctly");
         }
@@ -121,18 +121,18 @@ class TEST_NAME :
       {
         cuStreamCreate(&m_cu_stream, CU_STREAM_DEFAULT);
 
-        sycl::queue queue = sycl::make_queue<sycl::backend::ext_oneapi_cuda>(
+        sycl::queue queue = sycl::make_queue<sycl::backend::cuda>(
             m_cu_stream, ctsContext);
 
         auto interopQueue =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(queue);
+            sycl::get_native<sycl::backend::cuda>(queue);
         if (interopQueue != m_cu_stream) {
           FAIL(log, "queue was not constructed correctly");
         }
 
         sycl::queue queueCopy(queue);
         auto interopQueueCopy =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(queueCopy);
+            sycl::get_native<sycl::backend::cuda>(queueCopy);
         if (interopQueue != interopQueueCopy) {
           FAIL(log, "queue destination was not copy constructed correctly");
         }
@@ -143,11 +143,11 @@ class TEST_NAME :
       {
         cuStreamCreate(&m_cu_stream, CU_STREAM_DEFAULT);
         cts_async_handler asyncHandler;
-        sycl::queue queue = sycl::make_queue<sycl::backend::ext_oneapi_cuda>(
+        sycl::queue queue = sycl::make_queue<sycl::backend::cuda>(
             m_cu_stream, ctsContext, asyncHandler);
 
         auto interopQueue =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(queue);
+            sycl::get_native<sycl::backend::cuda>(queue);
         if (interopQueue != m_cu_stream) {
           FAIL(log, "queue was not constructed correctly");
         }
@@ -159,11 +159,11 @@ class TEST_NAME :
         CUevent cuEvent;
         auto res = cuEventCreate(&cuEvent, CU_EVENT_DEFAULT);
 
-        sycl::event event = sycl::make_event<sycl::backend::ext_oneapi_cuda>(
+        sycl::event event = sycl::make_event<sycl::backend::cuda>(
             cuEvent, ctsContext);
 
         CUevent interopEvent =
-            sycl::get_native<sycl::backend::ext_oneapi_cuda>(event);
+            sycl::get_native<sycl::backend::cuda>(event);
 
         if (interopEvent != cuEvent) {
           FAIL(log, "event was not constructed correctly");
@@ -172,7 +172,7 @@ class TEST_NAME :
     }
 #else
     log.note("The test is skipped because CUDA back-end is not supported");
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
   }
 };
 

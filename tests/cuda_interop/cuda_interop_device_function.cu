@@ -8,7 +8,7 @@
 
 #include "../common/common.h"
 
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 #include "../../util/test_base_cuda.h"
 
 #endif
@@ -45,7 +45,7 @@ void test_device_function_buffer(sycl::queue &queue,
 
       cgh.single_task([=]() {
         result_acc[0] =
-            func<T>(sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc)) == 1;
+            func<T>(sycl::get_native<sycl::backend::cuda>(acc)) == 1;
       });
     });
   }
@@ -76,7 +76,7 @@ void test_device_function_local(sycl::queue &queue, sycl_cts::util::logger &log,
       cgh.single_task([=]() {
         acc[0] = 0;
         result_acc[0] =
-            func<T>(sycl::get_native<sycl::backend::ext_oneapi_cuda>(acc)) == 1;
+            func<T>(sycl::get_native<sycl::backend::cuda>(acc)) == 1;
       });
     });
   }
@@ -93,7 +93,7 @@ void test_device_function_local(sycl::queue &queue, sycl_cts::util::logger &log,
 /** tests the get_native() methods for CUDA inter-op
  */
 class TEST_NAME :
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     public sycl_cts::util::test_base_cuda
 #else
     public util::test_base
@@ -109,10 +109,10 @@ class TEST_NAME :
   /** execute this test
    */
   void run(util::logger &log) override {
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     {
       auto queue = util::get_cts_object::queue();
-      if (queue.get_backend() != sycl::backend::ext_oneapi_cuda) {
+      if (queue.get_backend() != sycl::backend::cuda) {
         WARN(
             "CUDA interoperability part is not supported on non-CUDA "
             "backend types");
@@ -125,7 +125,7 @@ class TEST_NAME :
     }
 #else
     log.note("The test is skipped because CUDA back-end is not supported");
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
   }
 };
 

@@ -122,8 +122,7 @@ if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
     find_package(CUDA REQUIRED)
 
     add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_CUDA_INTEROP)
-    add_host_and_device_compiler_definitions(-DSYCL_EXT_ONEAPI_BACKEND_CUDA_EXPERIMENTAL)
-    add_host_and_device_compiler_definitions(-DSYCL_EXT_ONEAPI_BACKEND_CUDA)
+    add_host_and_device_compiler_definitions(-DSYCL_BACKEND_CUDA)
 endif()
 # ------------------
 

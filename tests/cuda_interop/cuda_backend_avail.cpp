@@ -8,18 +8,13 @@
 
 #include "../common/common.h"
 
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
 
 #include <cuda.h>
-#include <sycl/ext/oneapi/experimental/backend/cuda.hpp>
 
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
 
 #define TEST_NAME cuda_backend_availability
-
-// now -> future
-// SYCL_EXT_ONEAPI_BACKEND_CUDA -> SYCL_BACKEND_CUDA
-// ext_oneapi_cuda -> cuda (present but deprecated)
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -44,19 +39,19 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute this test
    */
   void run(util::logger& log) override {
-#ifdef SYCL_EXT_ONEAPI_BACKEND_CUDA
+#ifdef SYCL_BACKEND_CUDA
     {
       sycl::queue q{cuda_selector()};
 
       if (sycl::is_backend_active<sycl::backend::cuda>::value)
         FAIL(log, "sycl::backend::cuda is not active.");
 
-      if (q.get_backend() != sycl::backend::ext_oneapi_cuda)
-        FAIL(log, "sycl::backend::ext_oneapi_cuda is not available.");
+      if (q.get_backend() != sycl::backend::cuda)
+        FAIL(log, "sycl::backend::cuda is not available.");
     }
 #else
     FAIL(log, "SYCL_BACKEND_CUDA preprocessor macro is not defined.");
-#endif  // SYCL_EXT_ONEAPI_BACKEND_CUDA
+#endif  // SYCL_BACKEND_CUDA
   }
 };
 
