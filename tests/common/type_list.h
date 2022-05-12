@@ -69,10 +69,10 @@ struct def_cnstr {
   char c;
 
  public:
-  constexpr def_cnstr() : a(3.0), b(2), c('c') {}
+  constexpr def_cnstr() : a(3.0f), b(2), c('c') {}
 
   constexpr void assign(int val) {
-    a = val * 3.0;
+    a = val * 3.0f;
     b = val * 2;
     c = val;
   }
@@ -101,7 +101,7 @@ class no_def_cnstr {
  public:
   no_def_cnstr() = delete;
 
-  constexpr no_def_cnstr(int val) : a(val * 3.0), b(val * 2), c(val) {}
+  constexpr no_def_cnstr(int val) : a(val * 3.0f), b(val * 2), c(val) {}
 
   friend bool operator==(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
