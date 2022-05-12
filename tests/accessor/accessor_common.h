@@ -15,6 +15,7 @@
 #include "../common/value_operations.h"
 
 #include <catch2/matchers/catch_matchers.hpp>
+#include <sstream>
 #include <utility>
 
 namespace accessor_tests_common {
