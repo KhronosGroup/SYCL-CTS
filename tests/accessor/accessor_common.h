@@ -23,6 +23,16 @@ constexpr int expected_val = 42;
 constexpr int changed_val = 1;
 
 /**
+ * @brief Enum class for accessor type specification
+ */
+enum class accessor_type {
+  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
+                     // spec)
+  local_accessor,
+  host_accessor,
+};
+
+/**
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
@@ -165,8 +175,11 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 16>");
 }
 
-template <accessor_type AccT>
-struct tag_factory {};
+template <accessor_type AccType>
+struct tag_factory {
+  static_assert(AccType != AccType,
+                "There is no tag support for such accessor type");
+};
 
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
@@ -184,7 +197,8 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
       }
     } else if constexpr (Target == sycl::target::host_task) {
       if constexpr (AccessMode == sycl::access_mode::read) {
@@ -194,10 +208,11 @@ struct tag_factory<accessor_type::generic_accessor> {
       } else if constexpr (AccessMode == sycl::access_mode::read_write) {
         return sycl::read_write_host_task;
       } else {
-        static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
       }
     } else {
-      static_assert(AccessMode != AccessMode, "Unsupported sycl::target")
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::target");
     }
   }
 };
@@ -216,28 +231,9 @@ struct tag_factory<accessor_type::host_accessor> {
     } else if constexpr (AccessMode == sycl::access_mode::read_write) {
       return sycl::read_write;
     } else {
-      static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode")
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
     }
   }
-};
-
-template <>
-struct tag_factory<accessor_type::local_accessor> {
-  template <sycl::access_mode AccessMode>
-  inline static auto get_tag() {
-    static_assert(AccessMode != AccessMode,
-                  "sycl::local_accessor doesn't support tags")
-  }
-};
-
-/**
- * @brief Enum class for accessor type specification
- */
-enum class accessor_type {
-  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
-                     // spec)
-  local_accessor,
-  host_accessor,
 };
 
 /**
