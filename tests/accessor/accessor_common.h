@@ -109,11 +109,7 @@ class section_name {
   // Avoid implicit move constructor removal
   section_name(section_name&& other) = default;
 
-  section_name(const std::string& description) : m_description(description) {
-    if (m_description.empty()) {
-      m_description = "run";
-    }
-  }
+  section_name(const std::string& description) : m_description(description) {}
 
   template <typename T>
   section_name& with(const std::string& name, T&& value) {
@@ -124,12 +120,12 @@ class section_name {
   }
 
   std::string create() const {
-    std::string result("Test " + m_description);
+    std::string result(m_description);
 
     const auto parameters = m_parameters.str();
     if (!parameters.empty()) {
-      // remove last comma
-      result += " with " + parameters + "\b \b";
+      // remove last comma and re-use first space from parameters
+      result += " with" + parameters + "\b \b";
     }
     return result;
   }
