@@ -24,7 +24,7 @@ void test_default_constructor(const std::string& access_mode_name,
       type_name, access_mode_name, "Default constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = []() {
+    auto get_acc_functor = [] {
       return sycl::host_accessor<DataT, Dimension, AccessMode>();
     };
     check_def_constructor<AccType, DataT, Dimension, AccessMode>(
