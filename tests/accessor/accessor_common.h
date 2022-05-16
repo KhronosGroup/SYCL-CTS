@@ -500,37 +500,34 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
-              if constexpr (sizeof...(ModifyAccFunctorsT) == 0) {
-                read_write_zero_dim_acc<DataT, AccessMode>(acc, res_acc);
-              } else {
-                // We are free either to create new accessor instance or to
-                // modify original accessor and provide reference to it
-                auto&& acc_instance =
-                    ((detail::invoke_helper{modify_accessor}) = ... = acc);
-                read_write_zero_dim_acc<DataT, AccessMode>(acc_instance,
-                                                           res_acc);
-              }
+              // We are free either to create new accessor instance or to
+              // modify original accessor and provide reference to it;
+              // a reference to original accessor would be used if there was
+              // no any modify_accessor functor passed
+              auto&& acc_instance =
+                  ((detail::invoke_helper{modify_accessor}) = ... = acc);
+              read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
-              if constexpr (sizeof...(ModifyAccFunctorsT) == 0) {
-                read_write_zero_dim_acc<DataT, AccessMode>(acc, res_acc);
-              } else {
-                auto&& acc_instance =
-                    ((detail::invoke_helper{modify_accessor}) = ... = acc);
-                read_write_zero_dim_acc<DataT, AccessMode>(acc_instance,
-                                                           res_acc);
-              }
+              auto&& acc_instance =
+                  ((detail::invoke_helper{modify_accessor}) = ... = acc);
+              read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
+          } else {
+            static_assert(Target != Target, "Unexpected accessor type");
           }
         })
         .wait_and_throw();
   } else {
     sycl::buffer<DataT, 1> data_buf(&some_data, r);
     auto acc = get_accessor_functor(data_buf);
+    auto&& acc_instance =
+        ((detail::invoke_helper{modify_accessor}) = ... = acc);
+
     // Argument for storing result should support subscript operator
     bool compare_res_arr[1]{false};
-    read_write_zero_dim_acc<DataT, AccessMode>(acc, compare_res_arr);
+    read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, compare_res_arr);
     compare_res = compare_res_arr[0];
   }
 
@@ -615,33 +612,32 @@ void check_common_constructor(const sycl::range<Dimension>& r,
 
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
-              if constexpr (sizeof...(ModifyAccFunctorsT) == 0) {
-                read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-              } else {
-                auto&& acc_instance =
-                    ((detail::invoke_helper{modify_accessor}) = ... = acc);
-                read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-              }
+              auto&& acc_instance =
+                  ((detail::invoke_helper{modify_accessor}) = ... = acc);
+              read_write_acc<DataT, Dimension, AccessMode>(acc_instance,
+                                                           res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
-              if constexpr (sizeof...(ModifyAccFunctorsT) == 0) {
-                read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-              } else {
-                auto&& acc_instance =
-                    ((detail::invoke_helper{modify_accessor}) = ... = acc);
-                read_write_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-              }
+              auto&& acc_instance =
+                  ((detail::invoke_helper{modify_accessor}) = ... = acc);
+              read_write_acc<DataT, Dimension, AccessMode>(acc_instance,
+                                                           res_acc);
             });
+          } else {
+            static_assert(Target != Target, "Unexpected accessor type");
           }
         })
         .wait_and_throw();
   } else {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
     auto acc = get_accessor_functor(data_buf);
+    auto&& acc_instance =
+        ((detail::invoke_helper{modify_accessor}) = ... = acc);
+
     // Argument for storing result should support subscript operator
     bool compare_res_arr[1]{false};
-    read_write_acc<DataT, Dimension, AccessMode>(acc, compare_res_arr);
+    read_write_acc<DataT, Dimension, AccessMode>(acc_instance, compare_res_arr);
     compare_res = compare_res_arr[0];
   }
 
