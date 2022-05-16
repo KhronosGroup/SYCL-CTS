@@ -179,20 +179,13 @@ class check_conversion_local {
   template <typename SrcDataT, typename DstDataT>
   inline void run_check() const {
     // Workarounds to use generic algorithm
+    // TODO: Refactor `check_common_constructor` to make it more generic
     constexpr auto Target = sycl::target::device;
     constexpr auto DstAccessMode = std::is_const_v<DstDataT>
                                        ? sycl::access_mode::read
                                        : sycl::access_mode::read_write;
     constexpr int BufferDimension = (Dimension == 0) ? 1 : Dimension;
     using src_buffer_t = sycl::buffer<SrcDataT, BufferDimension>;
-    // TODO: Make `check_common_constructor` more generic.
-    // (1) May use `AccType` instead of `Target` to trigger either host_task or
-    // device-side kernel creation within `check_common_constructor`
-    // (2) May use partial specialization of templated class
-    // `check_common_constructor`
-    // (3) May move zero dimension constexpr check into the
-    // `check_common_constructor`
-
     using src_accessor_t = sycl::local_accessor<SrcDataT, Dimension>;
     using dst_accessor_t = sycl::local_accessor<DstDataT, Dimension>;
 
@@ -219,14 +212,13 @@ class check_conversion_local {
       check_zero_dim_constructor<AccType, SrcDataT, DstAccessMode, Target>(
           get_acc_functor, modify_acc_functor);
     } else {
-      const auto get_acc_functor = [](src_buffer_t&, sycl::handler& cgh) {
-        // TODO: Align with `check_common_constructor` API changes in #326
-        const auto range = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-        const src_accessor_t src_acc(range, cgh);
+      const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+      const auto get_acc_functor = [=](src_buffer_t&, sycl::handler& cgh) {
+        const src_accessor_t src_acc(r, cgh);
         return src_acc;
       };
       check_common_constructor<AccType, SrcDataT, Dimension, DstAccessMode,
-                               Target>(get_acc_functor, modify_acc_functor);
+                               Target>(r, get_acc_functor, modify_acc_functor);
     }
   }
 
