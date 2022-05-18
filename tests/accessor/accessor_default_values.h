@@ -52,19 +52,14 @@ class test_for_local_acc {
  * @param type_name Current data type string representation
  */
 
-template <typename T, typename AccessModeT, typename DimensionT,
-          typename TargetT>
+template <typename T, typename DimensionTI>
 class test_for_host_acc {
-  static constexpr sycl::access_mode AccessMode = AccessModeT::value;
   static constexpr int Dimension = DimensionT::value;
-  static constexpr sycl::target Target = TargetT::value;
 
  public:
-  void operator()(const std::string& type_name,
-                  const std::string& access_mode_name,
-                  const std::string& target_name) {
+  void operator()(const std::string& type_name) {
     auto section_name =
-        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+        get_section_name<Dimension>(type_name,
                                     "Verify default value for dimensions "
                                     "template parameter. [host_accessor]");
     SECTION(section_name) {
@@ -72,7 +67,7 @@ class test_for_host_acc {
                              sycl::host_accessor<T, detail::expected_dims>>);
     }
     section_name =
-        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+        get_section_name<Dimension>(type_name,
                                     "Verify default value for accessMode "
                                     "template parameter. [host_accessor]");
     SECTION(section_name) {
@@ -157,16 +152,15 @@ class run_tests {
     // Run test with non const data type
     for_all_combinations<test_for_generic_acc, T>(access_modes, dimensions,
                                                   targets, type_name);
-    for_all_combinations<test_for_host_acc, T>(access_modes, dimensions,
-                                               targets, type_name);
+    for_all_combinations<test_for_host_acc, T>(dimensions, type_name);
     test_for_local_acc<T>(type_name);
 
     // Run test with const data type
     const auto const_type_name = "const " + type_name;
     for_all_combinations<test_for_generic_acc, const T>(
         access_modes, dimensions, targets, const_type_name);
-    for_all_combinations<test_for_host_acc, const T>(access_modes, dimensions,
-                                                     targets, const_type_name);
+    for_all_combinations<test_for_host_acc, const T>(dimensions,
+                                                     const_type_name);
     test_for_local_acc<const T>(const_type_name);
   }
 };
