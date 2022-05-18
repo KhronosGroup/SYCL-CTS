@@ -15,13 +15,14 @@
 namespace accessor_default_values_test {
 
 namespace detail {
+
 constexpr int expected_dims = 1;
-constexpr sycl::target expected_target = sycl::target::device;
-constexpr sycl::access::placeholder expected_placeholder =
-    sycl::access::placeholder::false_t;
+constexpr auto expected_target = sycl::target::device;
+constexpr auto expected_placeholder = sycl::access::placeholder::false_t;
 template <typename T>
 constexpr auto expected_mode =
     std::is_const_v<T> ? sycl::access_mode::read : sycl::access_mode::read_write
+
 }  // namespace detail
 
 /**
@@ -159,6 +160,7 @@ class run_tests {
     for_all_combinations<test_for_host_acc, T>(access_modes, dimensions,
                                                targets, type_name);
     test_for_local_acc<T>(type_name);
+
     // Run test with const data type
     const auto const_type_name = "const " + type_name;
     for_all_combinations<test_for_generic_acc, const T>(
