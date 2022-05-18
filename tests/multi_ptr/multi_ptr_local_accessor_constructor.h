@@ -14,13 +14,11 @@
 
 namespace multi_ptr_local_accessor_constructors {
 
-constexpr int expected_val = 42;
-
 template <typename T, typename Address_SpaceT, typename DimensionT>
 class run_local_accessor_cnstr_tests {
-  static constexpr sycl::access::address_space Space = Address_SpaceT::value;
+  static constexpr sycl::access::address_space space = Address_SpaceT::value;
   static constexpr int dims = DimensionT::value;
-  using multi_ptr_t = sycl::multi_ptr<T, Space, sycl::access::decorated::no>;
+  using multi_ptr_t = sycl::multi_ptr<T, space, sycl::access::decorated::no>;
 
  public:
   void operator()(const std::string &type_name,
@@ -42,7 +40,7 @@ class run_local_accessor_cnstr_tests {
           cgh.parallel_for(sycl::nd_range<dims>(r, r),
                            [=](sycl::nd_item<dims> item) {
                              auto ref = acc[sycl::id<dims>()];
-                             value_operations::assign(ref, expected_val);
+                             value_operations::assign(ref, 5);
                              // Creating multi_ptr object with local_accessor
                              // constructor
                              multi_ptr_t mptr(acc);
