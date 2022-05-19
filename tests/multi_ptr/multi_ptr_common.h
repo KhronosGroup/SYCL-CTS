@@ -29,7 +29,7 @@ struct StringMaker<sycl::access::address_space> {
         return "access::address_space::generic_space";
       default:
         // no stringification for deprecated ones
-        return "unknown address_space";
+        return "unknown or deprecated address_space";
     }
   }
 };
