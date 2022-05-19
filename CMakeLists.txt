@@ -6,11 +6,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
+option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
+	"Enable CUDA interoperability tests." OFF)
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Threads REQUIRED)
 find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
+if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
+    find_package(CUDA REQUIRED)
+endif()
 
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
     message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
@@ -116,13 +122,15 @@ endif()
 
 # ------------------
 # CUDA interoperability
-option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
-	"Enable CUDA interoperability tests." ON)
 if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
-    find_package(CUDA REQUIRED)
-
     add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_CUDA_INTEROP)
     add_host_and_device_compiler_definitions(-DSYCL_BACKEND_CUDA)
+
+    add_library(CUDA::CUDA INTERFACE IMPORTED GLOBAL)
+    set_target_properties(
+      CUDA::CUDA PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${CUDA_TOOLKIT_INCLUDE}
+    )
 endif()
 # ------------------
 

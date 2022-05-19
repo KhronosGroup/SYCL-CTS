@@ -43,9 +43,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
     {
       sycl::queue q{cuda_selector()};
 
-      if (sycl::is_backend_active<sycl::backend::cuda>::value)
-        FAIL(log, "sycl::backend::cuda is not active.");
-
       if (q.get_backend() != sycl::backend::cuda)
         FAIL(log, "sycl::backend::cuda is not available.");
     }

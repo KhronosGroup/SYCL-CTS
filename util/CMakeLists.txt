@@ -13,6 +13,3 @@ add_library(util ${source_files} ${util_headers})
 add_library(CTS::util ALIAS util)
 
 target_link_libraries(util PUBLIC OpenCL::OpenCL SYCL::SYCL Catch2::Catch2)
-if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
-    target_link_libraries(util PUBLIC cuda)
-endif()

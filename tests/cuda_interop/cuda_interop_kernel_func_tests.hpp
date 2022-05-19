@@ -62,8 +62,8 @@ static auto get_types() {
                       unsigned long int, long long int, unsigned long long int,
                       float, bool, std::byte, std::int8_t, std::int16_t,
                       std::int32_t, std::int64_t, std::uint8_t, std::uint16_t,
-                      std::uint32_t, std::uint64_t, std::size_t>(
-          {"char",
+                      std::uint32_t, std::uint64_t, std::size_t>::generate(
+           "char",
            "signed char",
            "unsigned char",
            "short int",
@@ -85,7 +85,7 @@ static auto get_types() {
            "std::uint16_t",
            "std::uint32_t",
            "std::uint64_t",
-           "std::size_t"});
+           "std::size_t");
   return types;
 }
 

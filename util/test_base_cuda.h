@@ -54,7 +54,6 @@ class test_base_cuda : public sycl_cts::util::test_base {
   /* instances of OpenCL objects */
   CUdevice m_cu_device;
   std::vector<CUdevice> m_cu_platform;
-  CUcontext m_cu_context;
   CUstream m_cu_stream;
   CUevent m_cu_event;
 

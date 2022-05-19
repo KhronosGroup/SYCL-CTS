@@ -86,7 +86,10 @@ class TEST_NAME :
       /** check make_context (CUcontext)
        */
       {
-        assert(0 == cuCtxCreate(&m_cu_context, CU_CTX_MAP_HOST, m_cu_device));
+        CUcontext curr_context, m_cu_context;
+        assert(0 == cuCtxGetCurrent(&curr_context));
+        cuCtxCreate(&m_cu_context, CU_CTX_MAP_HOST, m_cu_device);
+        assert(0 == cuCtxSetCurrent(curr_context));
 
         sycl::context context =
             sycl::make_context<sycl::backend::cuda>(m_cu_context);
@@ -94,15 +97,23 @@ class TEST_NAME :
         auto interopContext =
             sycl::get_native<sycl::backend::cuda>(context);
 
-        if (interopContext != m_cu_context) {
-          FAIL(log, "context was not constructed correctly");
+        bool found_m_cu_context = false;
+        for (const auto &ctx : interopContext) {
+            if (ctx == m_cu_context)
+                found_m_cu_context = true;
         }
+
+        if (!found_m_cu_context)
+          FAIL(log, "context was not constructed correctly");
       }
 
       /** check make_context (CUcontext, async_handler)
        */
       {
-        assert(0 == cuCtxCreate(&m_cu_context, CU_CTX_MAP_HOST, m_cu_device));
+        CUcontext curr_context, m_cu_context;
+        assert(0 == cuCtxGetCurrent(&curr_context));
+        cuCtxCreate(&m_cu_context, CU_CTX_MAP_HOST, m_cu_device);
+        assert(0 == cuCtxSetCurrent(curr_context));
 
         cts_async_handler asyncHandler;
         sycl::context context =
@@ -111,9 +122,15 @@ class TEST_NAME :
 
         auto interopContext =
             sycl::get_native<sycl::backend::cuda>(context);
-        if (interopContext != m_cu_context) {
-          FAIL(log, "context was not constructed correctly");
+
+        bool found_m_cu_context = false;
+        for (const auto &ctx : interopContext) {
+            if (ctx == m_cu_context)
+                found_m_cu_context = true;
         }
+
+        if (!found_m_cu_context)
+          FAIL(log, "context was not constructed correctly");
       }
 
       /** check make_queue (CUstream, const context&)
