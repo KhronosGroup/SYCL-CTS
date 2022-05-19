@@ -25,6 +25,7 @@
 #include "get_cts_object.h"
 #include "macros.h"
 #include "string_makers.h"
+#include "value_operations.h"
 
 #include <cinttypes>
 #include <numeric>
@@ -193,7 +194,8 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
 };
 
 /**
- * @brief Helper function to test two arrays have equal elements
+ * @brief Helper function to test two arrays have equal elements. Deprecated.
+ * Use \c value_operations::are_equal instead
  */
 template <typename arrT, int size>
 void check_array_equality(arrT* arr1, arrT* arr2) {
@@ -205,7 +207,8 @@ void check_array_equality(arrT* arr1, arrT* arr2) {
 }
 
 /**
- * @deprecated Use overload without logger.
+ * @deprecated Use overload without logger. Deprecated.
+ * Use \c value_operations::are_equal instead
  */
 template <typename arrT, int size>
 void check_array_equality(sycl_cts::util::logger& log, arrT* arr1, arrT* arr2) {
@@ -266,15 +269,17 @@ void check_type_min_size_sign_log(sycl_cts::util::logger& log, size_t minSize,
 }
 
 /**
- * @brief Verify two values are equal
+ * @brief Verify two values are equal. Deprecated.
+ * Use \c value_operations::are_equal instead
  */
 template <typename T>
 bool check_equal_values(const T& lhs, const T& rhs) {
-  return lhs == rhs;
+  return value_operations::are_equal(lhs, rhs);
 }
 
 /**
- * @brief Instantiation for vectors with the same API as for scalar values
+ * @brief Instantiation for vectors with the same API as for scalar values. 
+ * Deprecated. Use \c value_operations::are_equal instead
  */
 template <typename T, int numElements>
 bool check_equal_values(const sycl::vec<T, numElements>& lhs,
@@ -291,6 +296,7 @@ bool check_equal_values(const sycl::vec<T, numElements>& lhs,
 #if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
 /**
  * @brief Instantiation for marray with the same API as for scalar values
+ * Deprecated. Use \c value_operations::are_equal instead
  */
 template <typename T, std::size_t numElements>
 bool check_equal_values(const sycl::marray<T, numElements>& lhs,
@@ -748,5 +754,4 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
       }                                                                  \
     }                                                                    \
   }
-
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H

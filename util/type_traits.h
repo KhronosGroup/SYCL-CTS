@@ -10,8 +10,8 @@
 #define __SYCLCTS_UTIL_TYPE_TRAITS_H
 
 #include <climits>
-#include <type_traits>
 #include <sycl/sycl.hpp>
+#include <type_traits>
 
 namespace {
 
@@ -76,6 +76,30 @@ template <typename T>
 struct to_string<T, std::void_t<decltype(T::to_string())>> : std::true_type {};
 
 }  // namespace has_static_member
+
+/**
+ * @brief Verify \c T has subscript subscript operator
+ */
+template <typename T, typename = void>
+struct has_subscript_operator : std::false_type {};
+
+template <typename T>
+struct has_subscript_operator<
+    T, std::void_t<decltype(std::declval<T>()[std::declval<size_t>()])>>
+    : std::true_type {};
+
+/**
+ * @brief Shortcut for has_subscript_operator::type
+ */
+template <typename T>
+using has_subscript_operator_t = typename has_subscript_operator<T>::type;
+
+/**
+ * @brief Shortcut for has_subscript_operator::value
+ */
+template <typename T>
+inline constexpr bool has_subscript_operator_v =
+    has_subscript_operator_t<T>::value;
 
 }  // namespace
 

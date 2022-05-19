@@ -1,4 +1,6 @@
 buffer
 exceptions
+host_task
+math_builtin_api
 multi_ptr
 reduction
