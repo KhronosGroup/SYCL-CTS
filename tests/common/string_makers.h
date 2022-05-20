@@ -15,6 +15,24 @@
 #include <sycl/sycl.hpp>
 
 namespace Catch {
+template <>
+struct StringMaker<sycl::access_mode> {
+  using type = sycl::access_mode;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::read:
+        return "access_mode::read";
+      case type::write:
+        return "access_mode::write";
+      case type::read_write:
+        return "access_mode::read_write";
+      default:
+        // no stringification for deprecated ones
+        return "unknown access mode";
+    }
+  }
+};
+
 template <int Dimensions>
 struct StringMaker<sycl::id<Dimensions>> {
   static std::string convert(const sycl::id<Dimensions>& id) {

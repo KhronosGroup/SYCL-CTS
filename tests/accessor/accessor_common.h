@@ -53,24 +53,6 @@ struct StringMaker<accessor_tests_common::accessor_type> {
 };
 
 template <>
-struct StringMaker<sycl::access_mode> {
-  using type = sycl::access_mode;
-  static std::string convert(type value) {
-    switch (value) {
-      case type::read:
-        return "access_mode::read";
-      case type::write:
-        return "access_mode::write";
-      case type::read_write:
-        return "access_mode::read_write";
-      default:
-        // no stringification for deprecated ones
-        return "unknown access mode";
-    }
-  }
-};
-
-template <>
 struct StringMaker<sycl::target> {
   using type = sycl::target;
   static std::string convert(type value) {
