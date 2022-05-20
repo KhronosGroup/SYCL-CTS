@@ -11,12 +11,11 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
+#include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
 #include "../common/value_operations.h"
 
 #include <catch2/matchers/catch_matchers.hpp>
-#include <sstream>
-#include <utility>
 
 namespace accessor_tests_common {
 using namespace sycl_cts;
@@ -89,47 +88,6 @@ struct StringMaker<sycl::target> {
 }  // namespace Catch
 
 namespace accessor_tests_common {
-/**
- * @brief Builder for a section name with the fluent interface
- * @details Be aware that Catch2 doesn't support nested sections with the same
- *          name, see https://github.com/catchorg/Catch2/issues/816 for details.
- *          So if you see
- *              Assertion `m_parent' failed.
- *          that's probably the case.
- */
-class section_name {
-  std::string m_description;
-  std::ostringstream m_parameters;
-
- public:
-  section_name(const section_name& other)
-      : m_description(other.m_description),
-        m_parameters(other.m_parameters.str()) {}
-
-  // Avoid implicit move constructor removal
-  section_name(section_name&& other) = default;
-
-  section_name(const std::string& description) : m_description(description) {}
-
-  template <typename T>
-  section_name& with(const std::string& name, T&& value) {
-    m_parameters << ' ' << name << ": "
-                 << Catch::StringMaker<T>::convert(std::forward<T>(value))
-                 << ',';
-    return *this;
-  }
-
-  std::string create() const {
-    std::string result(m_description);
-
-    const auto parameters = m_parameters.str();
-    if (!parameters.empty()) {
-      // remove last comma and re-use first space from parameters
-      result += " with" + parameters + "\b \b";
-    }
-    return result;
-  }
-};
 
 /**
  * @brief Function helps to get string section name that will contain template
