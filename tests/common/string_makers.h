@@ -26,8 +26,13 @@ struct StringMaker<sycl::access_mode> {
         return "access_mode::write";
       case type::read_write:
         return "access_mode::read_write";
+      case type::discard_write:
+        return "access_mode::discard_write (deprecated)";
+      case type::discard_read_write:
+        return "access_mode::discard_read_write (deprecated)";
+      case type::atomic:
+        return "access_mode::atomic (deprecated)";
       default:
-        // no stringification for deprecated ones
         return "unknown access mode";
     }
   }
