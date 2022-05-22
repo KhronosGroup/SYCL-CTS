@@ -53,6 +53,32 @@ struct StringMaker<sycl::id<Dimensions>> {
     return ss.str();
   }
 };
+
+template <>
+struct StringMaker<sycl::target> {
+  using type = sycl::target;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::device:
+        return "target::device";
+
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
+    !defined(__SYCL_COMPILER_VERSION)
+      case type::host_task:
+        return "target::host_task";
+#endif
+
+      case type::constant_buffer:
+        return "target::constant_buffer (deprecated)";
+      case type::local:
+        return "target::local (deprecated)";
+      case type::host_buffer:
+        return "target::host_buffer (deprecated)";
+      default:
+        return "unknown target";
+    }
+  }
+};
 }  // namespace Catch
 
 #endif  // __SYCLCTS_TESTS_COMMON_STRING_MAKERS_H

@@ -51,22 +51,6 @@ struct StringMaker<accessor_tests_common::accessor_type> {
     }
   }
 };
-
-template <>
-struct StringMaker<sycl::target> {
-  using type = sycl::target;
-  static std::string convert(type value) {
-    switch (value) {
-      case type::device:
-        return "target::device";
-      case type::host_task:
-        return "target::host_task";
-      default:
-        // no stringification for deprecated ones
-        return "unknown target";
-    }
-  }
-};
 }  // namespace Catch
 
 namespace accessor_tests_common {
