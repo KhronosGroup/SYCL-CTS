@@ -99,7 +99,7 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
- * @tparam DimensionT Integer representing dimension
+ * @tparam Dimension Integer representing dimension
  * @param type_name String with name of the testing type
  * @param access_mode_name String with name of the testing access mode
  * @param target_name String with name of the testing target
@@ -330,7 +330,8 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   sycl::range<1> r(1);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size]{false};
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(conditions_check, sycl::range(conditions_checks_size));
 
     queue
@@ -347,6 +348,9 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor();
+    check_def_constructor_post_conditions(acc, conditions_check);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -391,14 +395,15 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor for accessor creation
  */
 template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
-          sycl::target Target, typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
   DataT some_data(expected_val);
 
   bool compare_res = false;
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, r);
     sycl::buffer<DataT, 1> data_buf(&some_data, r);
 
@@ -418,6 +423,13 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, 1> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_zero_dim_acc<DataT, AccessMode>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessMode != sycl::access_mode::write) {
@@ -466,14 +478,15 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @param r Range for accessors buffer
  */
 template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::access_mode AccessMode, sycl::target Target,
-          typename GetAccFunctorT>
+          sycl::access_mode AccessMode,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor,
                               const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -497,6 +510,13 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_acc<DataT, Dimension, AccessMode>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessMode != sycl::access_mode::write) {

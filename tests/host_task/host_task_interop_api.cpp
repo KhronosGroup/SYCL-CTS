@@ -103,8 +103,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
           auto buf_acc_dev{buf.get_access<sycl::access_mode::read_write>(cgh)};
           cgh.host_task([=](sycl::interop_handle ih) {
             cl_command_queue native_queue = ih.get_native_queue();
-            cl_mem native_mem = ih.get_native_mem(buf_acc_dev);
-            call_opencl(native_queue, native_mem, size, pattern);
+            std::vector<cl_mem> native_mems = ih.get_native_mem(buf_acc_dev);
+            for (auto native_mem : native_mems)
+              call_opencl(native_queue, native_mem, size, pattern);
           });
         });
 
