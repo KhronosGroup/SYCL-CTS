@@ -88,6 +88,28 @@ inline std::string get_section_name(const std::string& type_name,
 }
 
 /**
+ * @brief Function helps to get string section name that will contain template
+ * parameters and function arguments
+ *
+ * @tparam Dimension Integer representing dimension
+ * @param type_name String with name of the testing type
+ * @param section_description String with human-readable description of the test
+ * @return std::string String with name for section
+ */
+template <int Dimension>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
+
+  std::string name = "Test ";
+  name += section_description;
+  name += " with parameters: <";
+  name += type_name + "><";
+  name += std::to_string(Dimension) + ">";
+  return name;
+}
+
+/**
  * @brief Factory function for getting type_pack with fp16 type
  */
 inline auto get_fp16_type() {
@@ -389,8 +411,13 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   if constexpr (AccessMode != sycl::access_mode::write) {
     CHECK(compare_res);
   }
-  if constexpr (AccessMode != sycl::access_mode::read) {
-    CHECK(value_operations::are_equal(some_data, changed_val));
+
+  // When testing local_accessor we should skip this check, as local
+  // accessor can't modify host memory
+  if constexpr (AccType != accessor_type::local_accessor) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      CHECK(value_operations::are_equal(some_data, changed_val));
+    }
   }
 }
 
@@ -449,8 +476,10 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
           sycl::accessor res_acc(res_buf);
           auto acc = get_accessor_functor(data_buf, cgh);
 
-          if (acc.is_placeholder()) {
-            cgh.require(acc);
+          if constexpr (AccType == accessor_type::generic_accessor) {
+            if (acc.is_placeholder()) {
+              cgh.require(acc);
+            }
           }
 
           if constexpr (Target == sycl::target::host_task) {
@@ -476,8 +505,13 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
   if constexpr (AccessMode != sycl::access_mode::write) {
     CHECK(compare_res);
   }
-  if constexpr (AccessMode != sycl::access_mode::read) {
-    CHECK(value_operations::are_equal(some_data, changed_val));
+
+  // When testing local_accessor we should skip this check, as local
+  // accessor can't modify host memory
+  if constexpr (AccType != accessor_type::local_accessor) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      CHECK(value_operations::are_equal(some_data, changed_val));
+    }
   }
 }
 
@@ -604,7 +638,8 @@ void test_accessor_ptr_device(AccT& accessor, T expected_data,
   res_acc[0] = std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &= value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
