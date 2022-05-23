@@ -91,35 +91,21 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
-<<<<<<< HEAD
- * @tparam DimensionT Integer representing dimension
-=======
  * @tparam Dimension Integer representing dimension
->>>>>>> SYCL-2020
  * @param type_name String with name of the testing type
  * @param section_description String with human-readable description of the test
  * @return std::string String with name for section
  */
-<<<<<<< HEAD
-template <int DimensionT>
-inline std::string get_section_name(const std::string& type_name,
-                                    const std::string& section_description) {
-=======
 template <int Dimension>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& section_description) {
   using namespace sycl_cts::get_cts_string;
 
->>>>>>> SYCL-2020
   std::string name = "Test ";
   name += section_description;
   name += " with parameters: <";
   name += type_name + "><";
-<<<<<<< HEAD
-  name += std::to_string(DimensionT) + ">";
-=======
   name += std::to_string(Dimension) + ">";
->>>>>>> SYCL-2020
   return name;
 }
 
@@ -780,37 +766,6 @@ decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
-<<<<<<< HEAD
-=======
-/**
- * @brief Function checks common buffer and local accessor ptr getters
- */
-template <typename T, typename AccT, typename AccRes>
-void test_accessor_ptr_device(AccT& accessor, T expected_data,
-                              AccRes& res_acc) {
-  auto acc_multi_ptr_no =
-      accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[0] = std::is_same_v<
-      decltype(acc_multi_ptr_no),
-      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
-
-  auto acc_multi_ptr_yes =
-      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[0] &= std::is_same_v<
-      decltype(acc_multi_ptr_yes),
-      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
-
-  auto acc_pointer = accessor.get_pointer();
-  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
-                               std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
-}
-
->>>>>>> SYCL-2020
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H

@@ -81,7 +81,6 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
   }
 }
 
-<<<<<<< HEAD
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) {
   auto acc_multi_ptr_no =
@@ -106,8 +105,6 @@ void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) 
   res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
 }
 
-=======
->>>>>>> SYCL-2020
 template <typename T, typename AccT, sycl::access_mode mode,
           sycl::target target>
 void test_accessor_types() {
