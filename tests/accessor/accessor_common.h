@@ -23,6 +23,16 @@ constexpr int expected_val = 42;
 constexpr int changed_val = 1;
 
 /**
+ * @brief Enum class for accessor type specification
+ */
+enum class accessor_type {
+  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
+                     // spec)
+  local_accessor,
+  host_accessor,
+};
+
+/**
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
@@ -55,19 +65,17 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
- * @tparam DimensionT Integer representing dimension
+ * @tparam Dimension Integer representing dimension
  * @param type_name String with name of the testing type
  * @param access_mode_name String with name of the testing access mode
  * @param target_name String with name of the testing target
  * @param section_description String with human-readable description of the test
  * @return std::string String with name for section
  */
-template <int DimensionT>
+template <int Dimension>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& section_description) {
-  using namespace sycl_cts::get_cts_string;
-
   std::string name = "Test ";
   name += section_description;
   name += " with parameters: <";
@@ -75,7 +83,7 @@ inline std::string get_section_name(const std::string& type_name,
   name += "><";
   name += access_mode_name;
   name += "><";
-  name += std::to_string(DimensionT) + ">";
+  name += std::to_string(Dimension) + ">";
   return name;
 }
 
@@ -187,39 +195,65 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 16>");
 }
 
+template <accessor_type AccType>
+struct tag_factory {
+  static_assert(AccType != AccType,
+                "There is no tag support for such accessor type");
+};
+
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
  * template parameters
  */
-template <sycl::access_mode AccessMode, sycl::target Target>
-auto get_tag() {
-  if constexpr (Target == sycl::target::device) {
+template <>
+struct tag_factory<accessor_type::generic_accessor> {
+  template <sycl::access_mode AccessMode, sycl::target Target>
+  inline static auto get_tag() {
+    if constexpr (Target == sycl::target::device) {
+      if constexpr (AccessMode == sycl::access_mode::read) {
+        return sycl::read_only;
+      } else if constexpr (AccessMode == sycl::access_mode::write) {
+        return sycl::write_only;
+      } else if constexpr (AccessMode == sycl::access_mode::read_write) {
+        return sycl::read_write;
+      } else {
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
+      }
+    } else if constexpr (Target == sycl::target::host_task) {
+      if constexpr (AccessMode == sycl::access_mode::read) {
+        return sycl::read_only_host_task;
+      } else if constexpr (AccessMode == sycl::access_mode::write) {
+        return sycl::write_only_host_task;
+      } else if constexpr (AccessMode == sycl::access_mode::read_write) {
+        return sycl::read_write_host_task;
+      } else {
+        static_assert(AccessMode != AccessMode,
+                      "Unsupported sycl::access_mode");
+      }
+    } else {
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::target");
+    }
+  }
+};
+
+/**
+ * @brief Function helps to get TagT corresponding to AccessMode parameter
+ */
+template <>
+struct tag_factory<accessor_type::host_accessor> {
+  template <sycl::access_mode AccessMode>
+  inline static auto get_tag() {
     if constexpr (AccessMode == sycl::access_mode::read) {
       return sycl::read_only;
     } else if constexpr (AccessMode == sycl::access_mode::write) {
       return sycl::write_only;
     } else if constexpr (AccessMode == sycl::access_mode::read_write) {
       return sycl::read_write;
-    }
-  } else if constexpr (Target == sycl::target::host_task) {
-    if constexpr (AccessMode == sycl::access_mode::read) {
-      return sycl::read_only_host_task;
-    } else if constexpr (AccessMode == sycl::access_mode::write) {
-      return sycl::write_only_host_task;
-    } else if constexpr (AccessMode == sycl::access_mode::read_write) {
-      return sycl::read_write_host_task;
+    } else {
+      static_assert(AccessMode != AccessMode, "Unsupported sycl::access_mode");
     }
   }
-}
-
-/**
- * @brief Enum class for accessor type specification
- */
-enum class accessor_type {
-  generic_accessor,  // Buffer accessor for commands (Paragraph 4.7.6.9. of the
-                     // spec)
-  local_accessor,
-  host_accessor,
 };
 
 /**
@@ -270,7 +304,8 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
   sycl::range<1> r(1);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size]{false};
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(conditions_check, sycl::range(conditions_checks_size));
 
     queue
@@ -287,6 +322,9 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor();
+    check_def_constructor_post_conditions(acc, conditions_check);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
@@ -331,14 +369,15 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
  * @tparam GetAccFunctorT Type of functor for accessor creation
  */
 template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
-          sycl::target Target, typename GetAccFunctorT>
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
   DataT some_data(expected_val);
 
   bool compare_res = false;
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, r);
     sycl::buffer<DataT, 1> data_buf(&some_data, r);
 
@@ -358,6 +397,13 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, 1> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_zero_dim_acc<DataT, AccessMode>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessMode != sycl::access_mode::write) {
@@ -406,14 +452,15 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
  * @param r Range for accessors buffer
  */
 template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::access_mode AccessMode, sycl::target Target,
-          typename GetAccFunctorT>
+          sycl::access_mode AccessMode,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_common_constructor(GetAccFunctorT get_accessor_functor,
                               const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data(expected_val);
-  {
+
+  if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -437,6 +484,13 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
           }
         })
         .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    read_write_acc<DataT, Dimension, AccessMode>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
   }
 
   if constexpr (AccessMode != sycl::access_mode::write) {
