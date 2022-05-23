@@ -2,129 +2,82 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright:	(c) 2017 by Codeplay Software LTD. All Rights Reserved.
+//  Copyright (c) 2022 The Khronos Group Inc.
 //
 *******************************************************************************/
 
-#include "../common/common.h"
+#include "cuda_helper.hpp"
 
+using namespace sycl_cts::util;
+
+TEST_CASE("CUDA interop get test") {
 #ifdef SYCL_BACKEND_CUDA
-#include "../../util/test_base_cuda.h"
+  cts_selector ctsSelector;
+  auto queue = get_cts_object::queue();
 
-#endif
+  INFO("Checking queue is using CUDA backend");
+  REQUIRE(queue.get_backend() == sycl::backend::cuda);
 
-#define TEST_NAME cuda_interop_get
-
-namespace cuda_interop_get__ {
-using namespace sycl_cts;
-
-/** tests the get_native() methods for CUDA inter-op
- */
-class TEST_NAME :
-#ifdef SYCL_BACKEND_CUDA
-    public sycl_cts::util::test_base_cuda
-#else
-    public util::test_base
-#endif
-{
- public:
-  /** return information about this test
+  /** check get_native() for platform
    */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  {
+    auto platform = get_cts_object::platform(ctsSelector);
+    auto interopPlatform = sycl::get_native<sycl::backend::cuda>(platform);
+    check_return_type<std::vector<CUdevice>>(interopPlatform,
+                                             "get_native(platform)");
+
+    INFO("Checking get_native(platform) returned valid std::vector<CUdevice>");
+    CHECK(interopPlatform.size() != 0);
   }
 
-  /** execute this test
+  /** check get_native() for device
    */
-  void run(util::logger &log) override {
-#ifdef SYCL_BACKEND_CUDA
-    {
-      auto queue = util::get_cts_object::queue();
-      if (queue.get_backend() != sycl::backend::cuda) {
-        WARN(
-            "CUDA interoperability part is not supported on non-CUDA "
-            "backend types");
-        return;
-      }
-      cts_selector ctsSelector;
+  {
+    auto device = get_cts_object::device(ctsSelector);
+    auto interopDevice = sycl::get_native<sycl::backend::cuda>(device);
+    check_return_type<CUdevice>(interopDevice, "get_native(device)");
+    int n_devices;
+    CUDA_CHECK(cuDeviceGetCount(&n_devices));
 
-      /** check get_native() for platform
-       */
-      {
-        auto platform = util::get_cts_object::platform(ctsSelector);
-        auto interopPlatform =
-            sycl::get_native<sycl::backend::cuda>(platform);
-        check_return_type<std::vector<CUdevice>>(log, interopPlatform,
-                                                 "get_native(platform)");
+    INFO("Checking get_native(device) returned valid CUdevice");
+    bool is_valid_device = (interopDevice >= 0) && (interopDevice < n_devices);
+    CHECK(is_valid_device);
+  }
 
-        if (interopPlatform.size() == 0) {
-          FAIL(log,
-               "get_native(platform) did not return a valid "
-               "std::vector<CUdevice>");
-        }
-      }
+  /** check get_native() for context
+   */
+  {
+    auto context = get_cts_object::context(ctsSelector);
+    auto interopContext = sycl::get_native<sycl::backend::cuda>(context);
+    check_return_type<std::vector<CUcontext>>(interopContext,
+                                              "get_native(context)");
 
-      /** check get_native() for device
-       */
-      {
-        auto device = util::get_cts_object::device(ctsSelector);
-        auto interopDevice =
-            sycl::get_native<sycl::backend::cuda>(device);
-        check_return_type<CUdevice>(log, interopDevice, "get_native(device)");
-        int n_devices;
-        cuDeviceGetCount(&n_devices);
+    INFO(
+        "Checking get_native(Context) returned a valid std::vector<CUcontext>");
+    CHECK(interopContext.size() != 0);
+  }
 
-        if (interopDevice < 0 || interopDevice >= n_devices) {
-          FAIL(log, "get_native(device) did not return a valid CUdevice");
-        }
-      }
+  /** check get_native() for queue
+   */
+  {
+    auto ctsQueue = get_cts_object::queue(ctsSelector);
+    auto interopQueue = sycl::get_native<sycl::backend::cuda>(ctsQueue);
+    check_return_type<CUstream>(interopQueue, "get_native(queue)");
+  }
 
-      /** check get_native() for context
-       */
-      {
-        auto context = util::get_cts_object::context(ctsSelector);
-        auto interopContext =
-            sycl::get_native<sycl::backend::cuda>(context);
-        check_return_type<std::vector<CUcontext>>(log, interopContext,
-                                                  "get_native(context)");
+  /** check get_native() for event
+   */
+  {
+    auto ctsQueue = get_cts_object::queue(ctsSelector);
 
-        if (interopContext.size() == 0) {
-          FAIL(log,
-               "get_native(Context) did not return a valid "
-               "std::vector<CUcontext>");
-        }
-      }
+    sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
+      cgh.single_task<class event_kernel>([] {});
+    });
 
-      /** check get_native() for queue
-       */
-      {
-        auto ctsQueue = util::get_cts_object::queue(ctsSelector);
-        auto interopQueue =
-            sycl::get_native<sycl::backend::cuda>(ctsQueue);
-        check_return_type<CUstream>(log, interopQueue, "get_native(queue)");
-      }
-
-      /** check get_native() for event
-       */
-      {
-        auto ctsQueue = util::get_cts_object::queue(ctsSelector);
-
-        sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
-          cgh.single_task<class event_kernel>([](){});
-        });
-
-        auto interopEvent =
-            sycl::get_native<sycl::backend::cuda>(event);
-        check_return_type<CUevent>(log, interopEvent, "get_native(event)");
-      }
-    }
+    auto interopEvent = sycl::get_native<sycl::backend::cuda>(event);
+    check_return_type<CUevent>(interopEvent, "get_native(event)");
+  }
 #else
-    log.note("The test is skipped because CUDA back-end is not supported");
+  INFO("The test is skipped because CUDA back-end is not supported");
 #endif  // SYCL_BACKEND_CUDA
-  }
 };
-
-// register this test with the test_collection
-util::test_proxy<TEST_NAME> proxy;
-
-} /* namespace cuda_interop_get__ */

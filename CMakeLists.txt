@@ -114,7 +114,7 @@ endif()
 # ------------------
 # OpenCL interoperability
 option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
-       "Enable OpenCL interoperability tests." ON)
+       "Enable OpenCL interoperability tests." OFF)
 if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
     add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
 endif()
