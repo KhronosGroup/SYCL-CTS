@@ -219,7 +219,7 @@ Verify that:
 For default-constructed `exception_list` check that:
 
 * `exception_list::size()` is zero
-* `++exception_list::begin()` is equal to `exception_list::end()`
+* `exception_list::begin()` is equal to `exception_list::end()`
 
 === sycl::async_handler
 

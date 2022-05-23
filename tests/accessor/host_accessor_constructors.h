@@ -15,24 +15,24 @@ namespace host_accessor_constructors {
 using namespace sycl_cts;
 using namespace accessor_tests_common;
 
-constexpr accessor_type AccTypeT = accessor_type::host_accessor;
+constexpr accessor_type AccType = accessor_type::host_accessor;
 
-template <typename DataT, int DimensionT, sycl::access_mode AccessModeT>
+template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_default_constructor(const std::string& access_mode_name,
                               const std::string& type_name) {
-  const auto section_name = get_section_name<DimensionT>(
+  const auto section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "Default constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = []() {
-      return sycl::host_accessor<DataT, DimensionT, AccessModeT>();
+    auto get_acc_functor = [] {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>();
     };
-    check_def_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
+    check_def_constructor<AccType, DataT, Dimension, AccessMode>(
         get_acc_functor);
   }
 }
 
-template <typename DataT, sycl::access_mode AccessModeT>
+template <typename DataT, sycl::access_mode AccessMode>
 void test_zero_dimension_buffer_constructor(const std::string& access_mode_name,
                                             const std::string& type_name) {
   const auto section_name = get_section_name<0>(type_name, access_mode_name,
@@ -40,115 +40,114 @@ void test_zero_dimension_buffer_constructor(const std::string& access_mode_name,
 
   SECTION(section_name) {
     auto get_acc_functor = [](sycl::buffer<DataT, 1> data_buf) {
-      return sycl::host_accessor<DataT, 0, AccessModeT>(data_buf);
+      return sycl::host_accessor<DataT, 0, AccessMode>(data_buf);
     };
-    check_zero_dim_constructor<AccTypeT, DataT, AccessModeT>(get_acc_functor);
+    check_zero_dim_constructor<AccType, DataT, AccessMode>(get_acc_functor);
   }
 }
 
-template <typename DataT, int DimensionT, sycl::access_mode AccessModeT>
+template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_common_buffer_constructors(const std::string& access_mode_name,
                                      const std::string& type_name) {
-  auto r = util::get_cts_object::range<DimensionT>::get(1, 1, 1);
-  auto offset = sycl::id<DimensionT>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
 
-  auto section_name = get_section_name<DimensionT>(type_name, access_mode_name,
-                                                   "From buffer constructor");
+  auto section_name = get_section_name<Dimension>(type_name, access_mode_name,
+                                                  "From buffer constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](sycl::buffer<DataT, DimensionT> data_buf) {
-      return sycl::host_accessor<DataT, DimensionT, AccessModeT>(data_buf);
+    auto get_acc_functor = [](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 
-  section_name = get_section_name<DimensionT>(
+  section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "From buffer and range constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [r](sycl::buffer<DataT, DimensionT> data_buf) {
-      return sycl::host_accessor<DataT, DimensionT, AccessModeT>(data_buf, r);
+    auto get_acc_functor = [r](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 
-  section_name = get_section_name<DimensionT>(
+  section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "From buffer,range and offset constructor");
 
   SECTION(section_name) {
     auto get_acc_functor = [r,
-                            offset](sycl::buffer<DataT, DimensionT> data_buf) {
-      return sycl::host_accessor<DataT, DimensionT, AccessModeT>(data_buf, r,
-                                                                 offset);
+                            offset](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
+                                                               offset);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 }
 
-template <typename DataT, int DimensionT, sycl::access_mode AccessModeT>
+template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_common_buffer_constructors_tag_t_deduction(
     const std::string& access_mode_name, const std::string& type_name) {
-  auto r = util::get_cts_object::range<DimensionT>::get(1, 1, 1);
-  auto offset = sycl::id<DimensionT>();
-  auto tagT = get_tag<AccessModeT>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
+  auto tagT = tag_factory<AccType>::get_tag<AccessMode>();
 
-  auto section_name = get_section_name<DimensionT>(
+  auto section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "TagT deduction from buffer constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [tagT](sycl::buffer<DataT, DimensionT> data_buf) {
-      return sycl::host_accessor<DataT, DimensionT, AccessModeT>(data_buf,
-                                                                 tagT);
+    auto get_acc_functor = [tagT](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, tagT);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 
-  section_name = get_section_name<DimensionT>(
+  section_name = get_section_name<Dimension>(
       type_name, access_mode_name,
       "TagT deduction from buffer and range constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [r, tagT](sycl::buffer<DataT, DimensionT> data_buf) {
+    auto get_acc_functor = [r, tagT](sycl::buffer<DataT, Dimension> data_buf) {
       return sycl::host_accessor(data_buf, r, tagT);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 
   section_name =
-      get_section_name<DimensionT>(type_name, access_mode_name,
-                                   "TagT deduction from buffer,range and "
-                                   "offset constructor");
+      get_section_name<Dimension>(type_name, access_mode_name,
+                                  "TagT deduction from buffer,range and "
+                                  "offset constructor");
 
   SECTION(section_name) {
     auto get_acc_functor = [r, offset,
-                            tagT](sycl::buffer<DataT, DimensionT> data_buf) {
+                            tagT](sycl::buffer<DataT, Dimension> data_buf) {
       return sycl::host_accessor(data_buf, r, offset, tagT);
     };
-    check_common_constructor<AccTypeT, DataT, DimensionT, AccessModeT>(
-        get_acc_functor);
+    check_common_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor, r);
   }
 }
 
-template <typename T, typename AccessTypeT, typename DimensionTypeT>
+template <typename T, typename AccessModeT, typename DimensionT>
 class run_tests_constructors {
-  static constexpr sycl::access_mode AccessModeT = AccessTypeT::value;
-  static constexpr int DimensionT = DimensionTypeT::value;
+  static constexpr sycl::access_mode AccessMode = AccessModeT::value;
+  static constexpr int Dimension = DimensionT::value;
 
  public:
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name) {
-    test_zero_dimension_buffer_constructor<T, AccessModeT>(access_mode_name,
-                                                           type_name);
-    test_default_constructor<T, DimensionT, AccessModeT>(access_mode_name,
-                                                         type_name);
-    test_common_buffer_constructors<T, DimensionT, AccessModeT>(
-        access_mode_name, type_name);
-    test_common_buffer_constructors_tag_t_deduction<T, DimensionT, AccessModeT>(
+    test_zero_dimension_buffer_constructor<T, AccessMode>(access_mode_name,
+                                                          type_name);
+    test_default_constructor<T, Dimension, AccessMode>(access_mode_name,
+                                                       type_name);
+    test_common_buffer_constructors<T, Dimension, AccessMode>(access_mode_name,
+                                                              type_name);
+    test_common_buffer_constructors_tag_t_deduction<T, Dimension, AccessMode>(
         access_mode_name, type_name);
   }
 };
@@ -161,21 +160,18 @@ class run_host_constructors_test {
     // not compile
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
-    const auto cur_type =
-        named_type_pack<T>::generate(type_name_string<T>::get(type_name));
 
-    for_all_combinations<run_tests_constructors>(cur_type, access_modes,
-                                                 dimensions);
+    for_all_combinations<run_tests_constructors, T>(access_modes, dimensions,
+                                                    type_name);
 
     // For covering const types
-    const auto const_cur_type = named_type_pack<const T>::generate(
-        "const " + type_name_string<T>::get(type_name));
+    const auto const_type_name = std::string("const ") + type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_tests_constructors>(
-        const_cur_type, read_only_acc_mode, dimensions);
+    for_all_combinations<run_tests_constructors, const T>(
+        read_only_acc_mode, dimensions, const_type_name);
   }
 };
 }  // namespace host_accessor_constructors
