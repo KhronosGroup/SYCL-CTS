@@ -91,19 +91,35 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Function helps to get string section name that will contain template
  * parameters and function arguments
  *
+<<<<<<< HEAD
  * @tparam DimensionT Integer representing dimension
+=======
+ * @tparam Dimension Integer representing dimension
+>>>>>>> SYCL-2020
  * @param type_name String with name of the testing type
  * @param section_description String with human-readable description of the test
  * @return std::string String with name for section
  */
+<<<<<<< HEAD
 template <int DimensionT>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& section_description) {
+=======
+template <int Dimension>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& section_description) {
+  using namespace sycl_cts::get_cts_string;
+
+>>>>>>> SYCL-2020
   std::string name = "Test ";
   name += section_description;
   name += " with parameters: <";
   name += type_name + "><";
+<<<<<<< HEAD
   name += std::to_string(DimensionT) + ">";
+=======
+  name += std::to_string(Dimension) + ">";
+>>>>>>> SYCL-2020
   return name;
 }
 
@@ -409,8 +425,13 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor) {
   if constexpr (AccessMode != sycl::access_mode::write) {
     CHECK(compare_res);
   }
-  if constexpr (AccessMode != sycl::access_mode::read) {
-    CHECK(value_operations::are_equal(some_data, changed_val));
+
+  // When testing local_accessor we should skip this check, as local
+  // accessor can't modify host memory
+  if constexpr (AccType != accessor_type::local_accessor) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      CHECK(value_operations::are_equal(some_data, changed_val));
+    }
   }
 }
 
@@ -469,8 +490,10 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
           sycl::accessor res_acc(res_buf);
           auto acc = get_accessor_functor(data_buf, cgh);
 
-          if (acc.is_placeholder()) {
-            cgh.require(acc);
+          if constexpr (AccType == accessor_type::generic_accessor) {
+            if (acc.is_placeholder()) {
+              cgh.require(acc);
+            }
           }
 
           if constexpr (Target == sycl::target::host_task) {
@@ -496,8 +519,13 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
   if constexpr (AccessMode != sycl::access_mode::write) {
     CHECK(compare_res);
   }
-  if constexpr (AccessMode != sycl::access_mode::read) {
-    CHECK(value_operations::are_equal(some_data, changed_val));
+
+  // When testing local_accessor we should skip this check, as local
+  // accessor can't modify host memory
+  if constexpr (AccType != accessor_type::local_accessor) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      CHECK(value_operations::are_equal(some_data, changed_val));
+    }
   }
 }
 
@@ -550,6 +578,107 @@ void check_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
 }
 
 /**
+ * @brief Function mainly for testing no_init property. The function tries to
+ * write to the accessor and only after that tries to read from the accessor.
+ *
+ * @tparam AccT Type of testing accessor
+ * @tparam ResultAccT Type of accessor for storing result
+ * @param testing_acc Instance of sycl::accessor to read/write
+ * @param res_acc Accessor for storing result
+ */
+template <typename DataT, int Dimension, sycl::access_mode AccessMode,
+          typename AccT, typename ResultAccT>
+void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
+  DataT expected_data(changed_val);
+  auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
+
+  value_operations::assign(testing_acc[id], changed_val);
+
+  if constexpr (AccessMode == sycl::access_mode::read_write) {
+    res_acc[0] = value_operations::are_equal(testing_acc[id], expected_data);
+  }
+}
+
+/**
+ * @brief Function helps to check accessor constructor with no_init property
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_no_init_prop(GetAccFunctorT get_accessor_functor,
+                        const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  bool compare_res = false;
+  DataT some_data(expected_val);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    sycl::buffer res_buf(&compare_res, sycl::range(1));
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+    queue
+        .submit([&](sycl::handler& cgh) {
+          sycl::accessor res_acc(res_buf);
+
+          auto acc = get_accessor_functor(data_buf, cgh);
+
+          if (Target == sycl_stub::target::host_task) {
+            cgh.host_task([=] {
+              write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
+            });
+          } else if (Target == sycl_stub::target::device) {
+            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
+              write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
+            });
+          }
+        })
+        .wait_and_throw();
+  } else {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+    auto acc = get_accessor_functor(data_buf);
+    // Argument for storing result should support subscript operator
+    bool compare_res_arr[1]{false};
+    write_read_acc<DataT, Dimension, AccessMode>(acc, compare_res_arr);
+    compare_res = compare_res_arr[0];
+  }
+
+  CHECK(value_operations::are_equal(some_data, changed_val));
+  if constexpr (AccessMode == sycl::access_mode::read_write) {
+    CHECK(compare_res);
+  }
+}
+
+/**
+ * @brief Function helps to verify that constructor of accessor with no_init
+ * property and access_mode::read triggers an exception
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_no_init_prop_exception(GetAccFunctorT construct_acc,
+                                  const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  DataT some_data(expected_val);
+  {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+    if constexpr (AccType != accessor_type::host_accessor) {
+      auto action = [&] { construct_acc(queue, data_buf); };
+      CHECK_THROWS_MATCHES(
+          action, sycl::exception,
+          sycl_cts::util::equals_exception(sycl::errc::invalid));
+    } else {
+      auto action = [&] { construct_acc(data_buf); };
+      CHECK_THROWS_MATCHES(
+          action, sycl::exception,
+          sycl_cts::util::equals_exception(sycl::errc::invalid));
+    }
+  }
+}
+
+/**
  * @brief Function checks common buffer and local accessor member functions
  */
 template <typename AccT, int dims>
@@ -591,6 +720,44 @@ void test_accessor_methods_common(const AccT& accessor,
 }
 
 /**
+ * @brief Function invokes \c has_property() member function with \c PropT
+ * property and verifies that true returns
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <typename DataT, int Dimension, typename PropT,
+          typename GetAccFunctorT>
+void check_has_property_member_func(GetAccFunctorT construct_acc,
+                                    const sycl::range<Dimension> r) {
+  DataT some_data(expected_val);
+  {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+    auto accessor = construct_acc(data_buf);
+    CHECK(accessor.template has_property<PropT>());
+  }
+}
+
+/**
+ * @brief Function invokes \c get_property() member function with \c PropT
+ * property and verifies that returned object has same type as \c PropT
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <typename DataT, int Dimension, typename PropT,
+          typename GetAccFunctorT>
+void check_get_property_member_func(GetAccFunctorT construct_acc,
+                                    const sycl::range<Dimension> r) {
+  DataT some_data(expected_val);
+  {
+    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+    auto accessor = construct_acc(data_buf);
+    auto acc_prop = accessor.template get_property<PropT>();
+
+    CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
+  }
+}
+
+/**
  * @brief Function checks common buffer and local accessor member types
  */
 template <typename T, typename AccT, sycl::access_mode mode>
@@ -613,6 +780,37 @@ decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * @brief Function checks common buffer and local accessor ptr getters
+ */
+template <typename T, typename AccT, typename AccRes>
+void test_accessor_ptr_device(AccT& accessor, T expected_data,
+                              AccRes& res_acc) {
+  auto acc_multi_ptr_no =
+      accessor.template get_multi_ptr<sycl::access::decorated::no>();
+  res_acc[0] = std::is_same_v<
+      decltype(acc_multi_ptr_no),
+      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+
+  auto acc_multi_ptr_yes =
+      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
+  res_acc[0] &= std::is_same_v<
+      decltype(acc_multi_ptr_yes),
+      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+
+  auto acc_pointer = accessor.get_pointer();
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
+                               std::add_pointer_t<typename AccT::value_type>>;
+  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
+}
+
+>>>>>>> SYCL-2020
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
