@@ -189,7 +189,7 @@ inline auto get_lightweight_type_pack() {
  * @return lightweight or full named_type_pack
  */
 inline auto get_conformance_type_pack() {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return get_lightweight_type_pack();
 #else
   return get_full_conformance_type_pack();

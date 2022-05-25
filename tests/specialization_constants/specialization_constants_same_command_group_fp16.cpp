@@ -37,7 +37,7 @@ public:
                  "operations");
         return;
       }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_specialization_constants_same_command_group<sycl::half> fp16_test{};
       fp16_test(log, "sycl::half");
 #else

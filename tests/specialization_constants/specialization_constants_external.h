@@ -30,7 +30,7 @@ inline constexpr sycl::specialization_id<T> spec_const_external(
       sycl::kernel_handler h, TYPE);
 
 #ifdef TEST_CORE
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
 CORE_TYPES(FUNC_DECLARE)
 #else
 CORE_TYPES_PARAM(SYCL_VECTORS_MARRAYS, FUNC_DECLARE)
@@ -41,7 +41,7 @@ FUNC_DECLARE(user_def_types::no_def_cnstr)
 #endif  // TEST_CORE
 
 #ifdef TEST_FP64
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DECLARE(double)
 #else
 SYCL_VECTORS_MARRAYS(double, FUNC_DECLARE)
@@ -49,7 +49,7 @@ SYCL_VECTORS_MARRAYS(double, FUNC_DECLARE)
 #endif  // TEST_FP64
 
 #ifdef TEST_FP16
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
 FUNC_DECLARE(sycl::half)
 #else
 SYCL_VECTORS_MARRAYS(sycl::half, FUNC_DECLARE)
