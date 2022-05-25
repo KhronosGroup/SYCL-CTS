@@ -1,4 +1,5 @@
 set(SYCL_CTS_DETAIL_AVAILABLE_OPTIONS "")
+set(SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS "")
 
 #
 # Adds a new CTS option with the given name, description and default value.
@@ -25,7 +26,8 @@ function(add_cts_option option_name option_description option_default)
         set("${option_name}_WARN_IF_OFF" ${args_WARN_IF_OFF} PARENT_SCOPE)
     endif()
 
-    add_host_and_device_compiler_definitions("-D${option_name}=$<BOOL:${${option_name}}>")
+    list(APPEND SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS "${option_name}=$<BOOL:${${option_name}}>")
+    set(SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS ${SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS} PARENT_SCOPE)
 endfunction()
 
 function(print_cts_config_summary)
