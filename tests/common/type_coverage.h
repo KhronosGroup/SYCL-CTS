@@ -11,6 +11,7 @@
 
 #include <string>
 #include <utility>
+#include <variant>
 
 #include <sycl/sycl.hpp>
 
@@ -33,7 +34,7 @@ struct type_name_string {
  */
 template <typename T, size_t nElements>
 struct type_name_string<sycl::vec<T, nElements>> {
-  static std::string get(const std::string& dataType) {
+  static std::string get(const std::string &dataType) {
     return "sycl::vec<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
@@ -342,7 +343,7 @@ inline void for_all_types(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_type_and_vectors(argsT&&... args) {
+void for_type_and_vectors(argsT &&...args) {
   static const auto types = type_pack<
       T, typename sycl::template vec<T, 1>, typename sycl::template vec<T, 2>,
       typename sycl::template vec<T, 3>, typename sycl::template vec<T, 4>,
@@ -431,6 +432,39 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
   size_t typeNameIndex = 0;
 
   ((for_type_vectors_marray<action, types, actionArgsT...>(
+        std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
+    ++typeNameIndex),
+   ...);
+
+  // Ensure there is no silent miss for coverage
+  assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
+}
+
+/**
+ * @brief TBD
+ */
+template <template <typename, typename...> class action, typename T,
+          typename... actionArgsT, typename... argsT>
+void for_dev_copyable_containers(argsT &&...args) {
+  for_all_types<action, actionArgsT...>(
+      type_pack<std::array<T, 5>, std::optional<T>, std::pair<T, T>,
+                std::tuple<T, T>, std::variant<T>>{},
+      std::forward<argsT>(args)...);
+}
+
+/**
+ * @brief TBD
+ */
+template <template <typename, typename...> class action,
+          typename... actionArgsT, typename... types, typename... argsT>
+void for_all_dev_copyable_containers(const named_type_pack<types...> &typeList,
+                                     argsT &&...args) {
+  // run action for each type from types... parameter pack
+  // Using fold expression to iterate over all types within type pack
+
+  size_t typeNameIndex = 0;
+
+  ((for_dev_copyable_containers<action, types, actionArgsT...>(
         std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
     ++typeNameIndex),
    ...);
