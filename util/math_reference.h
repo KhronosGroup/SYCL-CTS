@@ -867,11 +867,9 @@ sycl::vec<T, N> fmod(sycl::vec<T, N> a, sycl::vec<T, N> b) {
       [](T x, T y) { return fmod(x, y); }, a, b);
 }
 
-template <typename T>
-T fract(T a, T *b) {
-  *b = std::floor(a);
-  return std::fmin(a - *b, nextafter(T(1.0), T(0.0)));
-}
+sycl::half fract(sycl::half a, sycl::half *b);
+float fract(float a, float *b);
+double fract(double a, double *b);
 template <typename T, int N>
 sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
   sycl::vec<T, N> res;
