@@ -26,47 +26,55 @@ constexpr auto expected_mode =
 }  // namespace detail
 
 /**
- * @brief Provides functor that lets verify that local_accessor's template
- *        parameters have expected default values
+ * @brief Provides verification that local_accessor's dimension default value
+ *        is equal to expected one
  * @tparam T Current data type
  * @param type_name Current data type string representation
  */
 template <typename T>
-class test_for_local_acc {
- public:
-  void operator()(const std::string& type_name) {
-    auto section_name =
-        "Verify default value for dimensions template parameter for " +
-        type_name + " data type. [local_accessor]";
-    SECTION(section_name) {
-      REQUIRE(std::is_same_v<sycl::local_accessor<T>,
-                             sycl::local_accessor<T, detail::expected_dims>>);
-    }
+void verify_local_acc_dim_value(const std::string& type_name) {
+  auto section_name = get_section_name<detail::expected_dims>(
+      type_name,
+      "Verify default value for dimensions "
+      "template parameter. [local_accessor]");
+  SECTION(section_name) {
+    REQUIRE(std::is_same_v<sycl::local_accessor<T>,
+                           sycl::local_accessor<T, detail::expected_dims>>);
   }
-};
+}
 
 /**
- * @brief Provides functor that lets verify that host_accessor's template
- *        parameters have expected default values
+ * @brief Provides verification that local_accessor's dimension default value
+ *        is equal to expected one
  * @tparam T Current data type
  * @param type_name Current data type string representation
  */
+template <typename T>
+void verify_host_acc_dim_value(const std::string& type_name) {
+  auto section_name = get_section_name<detail::expected_dims>(
+      type_name,
+      "Verify default value for dimensions "
+      "template parameter. [local_accessor]");
+  SECTION(section_name) {
+    REQUIRE(std::is_same_v<sycl::local_accessor<T>,
+                           sycl::local_accessor<T, detail::expected_dims>>);
+  }
+}
 
-template <typename T, typename DimensionTI>
-class test_for_host_acc {
+/**
+ * @brief Provides verification that host_accessor's access_mode default
+ * value is equal to expected one
+ * @tparam T Current data type
+ * @tparam DimensionT Current dimension size
+ * @param type_name Current data type string representation
+ */
+template <typename T, typename DimensionT>
+class test_for_host_acc_access_mode_val_verification {
   static constexpr int Dimension = DimensionT::value;
 
  public:
   void operator()(const std::string& type_name) {
     auto section_name =
-        get_section_name<Dimension>(type_name,
-                                    "Verify default value for dimensions "
-                                    "template parameter. [host_accessor]");
-    SECTION(section_name) {
-      REQUIRE(std::is_same_v<sycl::host_accessor<T>,
-                             sycl::host_accessor<T, detail::expected_dims>>);
-    }
-    section_name =
         get_section_name<Dimension>(type_name,
                                     "Verify default value for accessMode "
                                     "template parameter. [host_accessor]");
@@ -79,14 +87,90 @@ class test_for_host_acc {
 };
 
 /**
- * @brief Provides functor that lets verify that generic accessor's template
- *        parameters have expected default values
+ * @brief Provides verification that generic accessor's dimension default value
+ *        is equal to expected one
  * @tparam T Current data type
  * @param type_name Current data type string representation
  */
+template <typename T>
+void verify_generic_acc_dim_value(const std::string& type_name) {
+  auto section_name = get_section_name<detail::expected_dims>(
+      type_name,
+      "Verify default value for dimensions "
+      "template parameter. [generic accessor]");
+  SECTION(section_name) {
+    REQUIRE(std::is_same_v<sycl::accessor<T>,
+                           sycl::accessor<T, detail::expected_dims>>);
+  }
+}
+
+/**
+ * @brief Provides verification that generic accessor's access_mode default
+ * value is equal to expected one
+ * @tparam T Current data type
+ * @param type_name Current data type string representation
+ */
+template <typename T, typename DimensionT>
+class test_for_generic_acc_acc_mode_val_verification {
+  static constexpr int Dimension = DimensionT::value;
+
+ public:
+  void operator()(const std::string& type_name) {
+    auto section_name =
+        get_section_name<Dimension>(type_name,
+                                    "Verify default value for accessMode "
+                                    "template parameter. [generic accessor]");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<
+              sycl::accessor<T, Dimension>,
+              sycl::accessor<T, Dimension, detail::expected_mode<T>>>);
+    }
+  }
+};
+
+/**
+ * @brief Provides verification that generic accessor's sycl::target default
+ *        value is equal to expected one
+ * @tparam T Current data type
+ * @tparam AccessModeT sycl::access_mode enumeration's field
+ * @tparam DimensionT Current dimension size
+ * @param type_name Current data type string representation
+ * @param access_mode_name Current sycl::access_mode string representation
+ */
+template <typename T, typename AccessModeT, typename DimensionT>
+class test_for_generic_acc_target_val_verification {
+  static constexpr sycl::access_mode AccessMode = AccessModeT::value;
+  static constexpr int Dimension = DimensionT::value;
+
+ public:
+  void operator()(const std::string& type_name,
+                  const std::string& access_mode_name) {
+    auto section_name =
+        get_section_name<Dimension>(type_name, access_mode_name,
+                                    "Verify default value for accessTarget "
+                                    "template parameter. [generic accessor]");
+    SECTION(section_name) {
+      REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode>,
+                             sycl::accessor<T, Dimension, AccessMode,
+                                            detail::expected_target>>);
+    }
+  }
+};
+
+/**
+ * @brief Provides verification that generic accessor's
+ *        sycl::access::placeholder default value is equal to expected one
+ * @tparam T Current data type
+ * @tparam AccessModeT sycl::access_mode enumeration's field
+ * @tparam DimensionT Current dimension size
+ * @tparam TargetT sycl::target enumeration's field
+ * @param type_name Current data type string representation
+ * @param access_mode_name Current sycl::access_mode string representation
+ * @param target_name Current sycl::target string representation
+ */
 template <typename T, typename AccessModeT, typename DimensionT,
           typename TargetT>
-class test_for_generic_acc {
+class test_for_generic_acc_placeholder_val_verification {
   static constexpr sycl::access_mode AccessMode = AccessModeT::value;
   static constexpr int Dimension = DimensionT::value;
   static constexpr sycl::target Target = TargetT::value;
@@ -96,32 +180,6 @@ class test_for_generic_acc {
                   const std::string& access_mode_name,
                   const std::string& target_name) {
     auto section_name =
-        get_section_name<Dimension>(type_name, access_mode_name, target_name,
-                                    "Verify default value for dimensions "
-                                    "template parameter. [generic accessor]");
-    SECTION(section_name) {
-      REQUIRE(std::is_same_v<sycl::accessor<T>,
-                             sycl::accessor<T, detail::expected_dims>>);
-    }
-    section_name =
-        get_section_name<Dimension>(type_name, access_mode_name, target_name,
-                                    "Verify default value for accessMode "
-                                    "template parameter. [generic accessor]");
-    SECTION(section_name) {
-      REQUIRE(std::is_same_v<
-              sycl::accessor<T, Dimension>,
-              sycl::accessor<T, Dimension, detail::expected_mode<T>>>);
-    }
-    section_name =
-        get_section_name<Dimension>(type_name, access_mode_name, target_name,
-                                    "Verify default value for accessTarget "
-                                    "template parameter. [generic accessor]");
-    SECTION(section_name) {
-      REQUIRE(std::is_same_v<sycl::accessor<T, Dimension, AccessMode>,
-                             sycl::accessor<T, Dimension, AccessMode,
-                                            detail::expected_target>>);
-    }
-    section_name =
         get_section_name<Dimension>(type_name, access_mode_name, target_name,
                                     "Verify default value for isPlaceholder "
                                     "template parameter. [generic accessor]");
@@ -150,18 +208,43 @@ class run_tests {
     const auto targets = get_targets();
 
     // Run test with non const data type
-    for_all_combinations<test_for_generic_acc, T>(access_modes, dimensions,
-                                                  targets, type_name);
-    for_all_combinations<test_for_host_acc, T>(dimensions, type_name);
-    test_for_local_acc<T>(type_name);
+    // Run test for local_accessor
+    verify_local_acc_dim_value<T>(type_name);
+    // Run test for host_accessor
+    verify_host_acc_dim_value<T>(type_name);
+    for_all_combinations<test_for_host_acc_access_mode_val_verification, T>(
+        dimensions, type_name);
+    // Run test for generic accessor
+    verify_generic_acc_dim_value<T>(type_name);
+    for_all_combinations<test_for_generic_acc_acc_mode_val_verification, T>(
+        dimensions, type_name);
+    for_all_combinations<test_for_generic_acc_target_val_verification, T>(
+        access_modes, dimensions, type_name);
+    for_all_combinations<test_for_generic_acc_placeholder_val_verification, T>(
+        access_modes, dimensions, targets, type_name);
 
     // Run test with const data type
     const auto const_type_name = "const " + type_name;
-    for_all_combinations<test_for_generic_acc, const T>(
-        access_modes, dimensions, targets, const_type_name);
-    for_all_combinations<test_for_host_acc, const T>(dimensions,
-                                                     const_type_name);
-    test_for_local_acc<const T>(const_type_name);
+    using const_T = const T;
+    // Run test for local_accessor
+    verify_local_acc_dim_value<const_T>(type_name);
+    // Run test for host_accessor
+    verify_host_acc_dim_value<const_T>(type_name);
+    for_all_combinations<test_for_host_acc_access_mode_val_verification,
+                         const_T>(dimensions, type_name);
+    // Run test for generic accessor
+    verify_generic_acc_dim_value<const_T>(type_name);
+    for_all_combinations<test_for_generic_acc_acc_mode_val_verification,
+                         const_T>(dimensions, type_name);
+    // const T can be only with access_mode::read
+    const auto read_only_acc_mode =
+        value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
+            "access_mode::read");
+    for_all_combinations<test_for_generic_acc_target_val_verification, const_T>(
+        read_only_acc_mode, dimensions, type_name);
+    for_all_combinations<test_for_generic_acc_placeholder_val_verification,
+                         const_T>(read_only_acc_mode, dimensions, targets,
+                                  type_name);
   }
 };
 
