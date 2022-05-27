@@ -78,12 +78,9 @@ void test_device_function_local(sycl::queue &queue,
 TEST_CASE("CUDA interop device function test") {
 #ifdef SYCL_BACKEND_CUDA
   auto queue = get_cts_object::queue();
-  if (queue.get_backend() != sycl::backend::cuda) {
-    WARN(
-        "CUDA interoperability part is not supported on non-CUDA "
-        "backend types");
-    return;
-  }
+
+  INFO("Checking queue is using CUDA backend");
+  REQUIRE(queue.get_backend() == sycl::backend::cuda);
 
   test_device_function_buffer<int>(queue, "int");
   test_device_function_local<int>(queue, "int");

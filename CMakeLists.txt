@@ -114,7 +114,7 @@ endif()
 # ------------------
 # OpenCL interoperability
 option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
-       "Enable OpenCL interoperability tests." OFF)
+       "Enable OpenCL interoperability tests." ON)
 if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
     add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
 endif()
@@ -123,8 +123,8 @@ endif()
 # ------------------
 # CUDA interoperability
 if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_CUDA_INTEROP)
-    add_host_and_device_compiler_definitions(-DSYCL_BACKEND_CUDA)
+    set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+    enable_language(CUDA)
 
     add_library(CUDA::CUDA INTERFACE IMPORTED GLOBAL)
     set_target_properties(
