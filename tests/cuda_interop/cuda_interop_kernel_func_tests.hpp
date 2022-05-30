@@ -152,10 +152,11 @@ void test_local_target_accessor(sycl::queue &queue,
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.single_task([=] {
-        auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
-        is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
-      });
+      cgh.parallel_for_work_group(
+          sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
+            auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
+            is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
+          });
     });
   }
 
@@ -179,10 +180,11 @@ void test_local_accessor(sycl::queue &queue, const std::string &typeName) {
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.single_task([=] {
-        auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
-        is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
-      });
+      cgh.parallel_for_work_group(
+          sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
+            auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
+            is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
+          });
     });
   }
 
@@ -280,10 +282,11 @@ void test_local_target_accessor<c2>(sycl::queue &queue,
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.single_task([=] {
-        auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
-        is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
-      });
+      cgh.parallel_for_work_group(
+          sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
+            auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
+            is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
+          });
     });
   }
 

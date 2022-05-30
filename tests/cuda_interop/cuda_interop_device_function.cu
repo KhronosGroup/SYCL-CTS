@@ -60,11 +60,12 @@ void test_device_function_local(sycl::queue &queue,
       sycl::local_accessor<T> acc(size, cgh);
       auto result_acc = result_buf.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.single_task([=] {
-        acc[0] = 0;
-        result_acc[0] =
-            func<T>(sycl::get_native<sycl::backend::cuda>(acc)) == 1;
-      });
+      cgh.parallel_for_work_group(
+          sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
+            acc[0] = 0;
+            result_acc[0] =
+                func<T>(sycl::get_native<sycl::backend::cuda>(acc)) == 1;
+          });
     });
   }
 
