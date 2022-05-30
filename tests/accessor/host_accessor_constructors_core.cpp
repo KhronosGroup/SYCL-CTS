@@ -23,7 +23,7 @@ namespace host_accessor_constructors_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor constructors. core types", "[accessor]")({
   using namespace host_accessor_constructors;
-const auto types = get_conformance_type_pack();
+  const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_host_constructors_test>(types);
 });
 
