@@ -33,6 +33,23 @@ struct StringMaker<sycl::access::address_space> {
     }
   }
 };
+
+template <>
+struct StringMaker<sycl::access::decorated> {
+  using type = sycl::access::decorated;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::yes:
+        return "access::decorated::yes";
+      case type::no:
+        return "access::decorated::no";
+      case type::legacy:
+        return "access::decorated::legacy";
+      default:
+        return "unknown";
+    }
+  }
+};
 }  // namespace Catch
 
 namespace multi_ptr_common {
