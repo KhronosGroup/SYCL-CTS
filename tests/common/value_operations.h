@@ -64,6 +64,19 @@ inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
 assign(LeftNonArrT& left, const RightNonArrT& right) {
   left = right;
 }
+
+// template <typename ... Types>
+// void assign(std::tuple<Types...>& left, const std::tuple<Types...>& right) {
+//   left = right;
+// }
+
+template <typename... Types, typename U>
+void assign(std::tuple<Types...>& left, const U right) {
+  size_t index = 0;
+  ((std::get<index>(left) = right, sizeof(Types)), ...)
+  // std::get<0>(left) = right;
+  // std::get<1>(left) = right;
+}
 /////////////////////////// Modify functions
 
 // Compare functions
