@@ -27,11 +27,7 @@ using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Accessors constructor default values test core types.", "[accessor]")({
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  const auto types = get_lightweight_type_pack();
-#else
-  const auto types = get_full_conformance_type_pack();
-#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests, generic_accessor>(types);
 });
 
