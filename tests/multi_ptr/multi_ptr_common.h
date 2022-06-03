@@ -14,6 +14,27 @@
 
 namespace multi_ptr_common {
 
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_address_spaces() {
+  return value_pack<
+      sycl::access::address_space, sycl::access::address_space::global_space,
+      sycl::access::address_space::local_space,
+      sycl::access::address_space::private_space,
+      sycl::access::address_space::generic_space>::generate_named();
+}
+
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_decorated() {
+  return value_pack<sycl::access::decorated, sycl::access::decorated::yes,
+                    sycl::access::decorated::no>::generate_named();
+}
+
 /** @brief Legacy multi_ptr alias to enforce the access::decorated::legacy
  *         usage with no dependency on default multi_ptr template parameter
  *         values
