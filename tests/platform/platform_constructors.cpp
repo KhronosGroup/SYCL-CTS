@@ -59,7 +59,7 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformA(selector);
         sycl::platform platformB(platformA);
 
-        if (platformA != platformB ) {
+        if (platformA != platformB) {
           FAIL(log, "platform was not copy constructed correctly (is_host)");
         }
 
