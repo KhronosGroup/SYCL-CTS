@@ -31,9 +31,12 @@ class TEST_NAME : public util::test_base {
       */
       {
         sycl::platform platform;
-
-        if (!platform.is_host()) {
-          FAIL(log, "platform was not constructed correctly (is_host)");
+        sycl::device device;
+        //Check if the devices platform contain the device returned by the `default_selector_v`
+        // Assume that `device` default constructor use `default_selector_v` as by the spec
+        auto platform_devices = platform.get_devices();
+        if (std::find(platform_devices.begin(), platform_devices.end(), device) == platform_devices.end()) {
+          FAIL(log, "platform was not constructed correctly (doesn't contain default)");
         }
       }
 
@@ -42,9 +45,10 @@ class TEST_NAME : public util::test_base {
       {
         const cts_selector selector;
         sycl::platform platform(selector);
-
-        if (platform.is_host() != selector.is_host()) {
-          FAIL(log, "platform was not constructed correctly (is_host)");
+        sycl::device device(selector);
+        const auto platform_devices = platform.get_devices();
+        if (std::find(platform_devices.begin(), platform_devices.end(), device) == platform_devices.end()) {
+          FAIL(log, "platform was not constructed correctly (doesn't contain asked device)");
         }
       }
 
@@ -55,16 +59,15 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformA(selector);
         sycl::platform platformB(platformA);
 
-        if (platformA.is_host() != platformB.is_host()) {
+        if (platformA != platformB ) {
           FAIL(log, "platform was not copy constructed correctly (is_host)");
         }
 
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
-          if (!selector.is_host() &&
-              sycl::get_native<sycl::backend::opencl>(platformA) !=
-                  sycl::get_native<sycl::backend::opencl>(platformB)) {
+          if (sycl::get_native<sycl::backend::opencl>(platformA) !=
+              sycl::get_native<sycl::backend::opencl>(platformB)) {
             FAIL(log, "platform was not copy constructed correctly");
           }
         }
@@ -78,7 +81,8 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformA(selector);
         sycl::platform platformB = platformA;
 
-        if (platformA.is_host() != platformB.is_host()) {
+        //Assume `==` work
+        if (platformA != platformB) {
           FAIL(log, "platform was not copy assigned correctly (is_host)");
         }
 
@@ -98,9 +102,10 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         sycl::platform platformA(selector);
-        sycl::platform platformB(std::move(platformA));
+        sycl::platform platformB(platformA);
+        sycl::platform platformC(std::move(platformA));
 
-        if (selector.is_host() != platformB.is_host()) {
+        if (platformB==platformC) {
           FAIL(log, "platform was not move constructed correctly (is_host)");
         }
       }
@@ -110,9 +115,10 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         sycl::platform platformA(selector);
-        sycl::platform platformB = std::move(platformA);
+        sycl::platform platformB(platformA);
+        sycl::platform platformC = std::move(platformA);
 
-        if (selector.is_host() != platformB.is_host()) {
+        if (platformB==platformC) {
           FAIL(log, "platform was not move assigned correctly (is_host)");
         }
       }
