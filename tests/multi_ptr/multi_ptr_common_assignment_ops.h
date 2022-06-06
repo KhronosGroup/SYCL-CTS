@@ -114,15 +114,8 @@ template <typename T>
 class check_multi_ptr_common_assign_for_type {
  public:
   void operator()(const std::string &type_name) {
-    const auto address_spaces = value_pack<
-        sycl::access::address_space, sycl::access::address_space::global_space,
-        sycl::access::address_space::local_space,
-        sycl::access::address_space::private_space,
-        sycl::access::address_space::generic_space>::generate_named();
-
-    const auto is_decorated =
-        value_pack<sycl::access::decorated, sycl::access::decorated::yes,
-                   sycl::access::decorated::no>::generate_named();
+    const auto address_spaces = multi_ptr_common::get_address_spaces();
+    const auto is_decorated = multi_ptr_common::get_decorated();
 
     for_all_combinations<run_common_assign_tests, T>(address_spaces,
                                                      is_decorated, type_name);
