@@ -36,7 +36,7 @@ class run_common_assign_tests {
                 .create()) {
       bool res = false;
       {
-        sycl::buffer<bool, 1> res_buf(&res, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
         sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -64,7 +64,7 @@ class run_common_assign_tests {
                 .create()) {
       bool res = false;
       {
-        sycl::buffer<bool, 1> res_buf(&res, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
         sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
@@ -92,7 +92,7 @@ class run_common_assign_tests {
                 .create()) {
       bool res = false;
       {
-        sycl::buffer<bool, 1> res_buf(&res, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
