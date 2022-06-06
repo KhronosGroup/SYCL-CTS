@@ -50,7 +50,7 @@ class run_common_assign_tests {
             mptr_out = mptr_in;
 
             // Check that second mptr has the same value as first mptr
-            res_acc[0] = *(mptr_out.get()) == val_acc[0];
+            res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
           });
         });
       }
@@ -78,7 +78,7 @@ class run_common_assign_tests {
             mptr_out = std::move(mptr_in);
 
             // Check that second mptr has the same value as first mptr
-            res_acc[0] = *(mptr_out.get()) == val_acc[0];
+            res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
           });
         });
       }
@@ -101,7 +101,7 @@ class run_common_assign_tests {
             mptr_out = nullptr;
 
             // Check that new mptr is nullptr
-            res_acc[0] = mptr_out.get() == nullptr;
+            res_acc[0] = mptr_out.get_raw() == nullptr;
           });
         });
       }
