@@ -49,19 +49,19 @@ class run_access_members_tests {
     bool get_raw_result = false;
     bool get_decorated_result = false;
 
-    T dereference_value = 0;
-    T dereference_op_value = 0;
-    T get_member_value = 0;
-    T get_raw_member_value = 0;
+    T dereference_value;
+    T dereference_op_value;
+    T get_member_value;
+    T get_raw_member_value;
     {
-      sycl::buffer<int> dereference_value_buffer(&dereference_value,
-                                                 sycl::range<1>(1));
-      sycl::buffer<int> dereference_op_value_buffer(&dereference_op_value,
-                                                    sycl::range<1>(1));
-      sycl::buffer<int> get_member_value_buffer(&get_member_value,
-                                                sycl::range<1>(1));
-      sycl::buffer<int> get_raw_member_value_buffer(&get_raw_member_value,
-                                                    sycl::range<1>(1));
+      sycl::buffer<T> dereference_value_buffer(&dereference_value,
+                                               sycl::range<1>(1));
+      sycl::buffer<T> dereference_op_value_buffer(&dereference_op_value,
+                                                  sycl::range<1>(1));
+      sycl::buffer<T> get_member_value_buffer(&get_member_value,
+                                              sycl::range<1>(1));
+      sycl::buffer<T> get_raw_member_value_buffer(&get_raw_member_value,
+                                                  sycl::range<1>(1));
 
       sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
       sycl::buffer<bool, 1> dereference_result_buf(&dereference_result,
