@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for multi_ptr explicit conversions for dpuble type
+//  Provides tests for multi_ptr explicit conversions for double type
 //
 *******************************************************************************/
 

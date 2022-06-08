@@ -149,7 +149,7 @@ class check_multi_ptr_explicit_convert_for_type {
         sycl::access::address_space, sycl::access::address_space::global_space,
         sycl::access::address_space::local_space,
         sycl::access::address_space::private_space>::generate_named();
-    ;
+
     const auto is_decorated = multi_ptr_common::get_decorated();
 
     for_all_combinations<run_explicit_convert_tests, T>(
