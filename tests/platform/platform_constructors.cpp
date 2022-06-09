@@ -14,46 +14,54 @@ namespace platform_constructors__ {
 using namespace sycl_cts;
 
 /** tests the constructors for sycl::platform
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute this test
-  */
+   */
   void run(util::logger &log) override {
     {
       /** check default constructor and destructor
-      */
+       */
       {
         sycl::platform platform;
         sycl::device device;
-        //Check if the devices platform contain the device returned by the `default_selector_v`
-        // Assume that `device` default constructor use `default_selector_v` as by the spec
+        // Check if the devices platform contain the device returned by the
+        // `default_selector_v`
+        // Assume that `device` default constructor use `default_selector_v` as
+        // by the spec
         auto platform_devices = platform.get_devices();
-        if (std::find(platform_devices.begin(), platform_devices.end(), device) == platform_devices.end()) {
-          FAIL(log, "platform was not constructed correctly (doesn't contain default)");
+        if (std::find(platform_devices.begin(), platform_devices.end(),
+                      device) == platform_devices.end()) {
+          FAIL(log,
+               "platform was not constructed correctly (doesn't contain "
+               "default)");
         }
       }
 
       /** check (const device_selector) constructor
-      */
+       */
       {
         const cts_selector selector;
         sycl::platform platform(selector);
         sycl::device device(selector);
         const auto platform_devices = platform.get_devices();
-        if (std::find(platform_devices.begin(), platform_devices.end(), device) == platform_devices.end()) {
-          FAIL(log, "platform was not constructed correctly (doesn't contain asked device)");
+        if (std::find(platform_devices.begin(), platform_devices.end(),
+                      device) == platform_devices.end()) {
+          FAIL(log,
+               "platform was not constructed correctly (doesn't contain asked "
+               "device)");
         }
       }
 
       /** check copy constructor
-      */
+       */
       {
         cts_selector selector;
         sycl::platform platformA(selector);
@@ -75,13 +83,13 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check assignment operator
-      */
+       */
       {
         cts_selector selector;
         sycl::platform platformA(selector);
         sycl::platform platformB = platformA;
 
-        //Assume `==` work
+        // Assume `==` work
         if (platformA != platformB) {
           FAIL(log, "platform was not copy assigned correctly (is_host)");
         }
@@ -105,7 +113,7 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformB(platformA);
         sycl::platform platformC(std::move(platformA));
 
-        if (platformB==platformC) {
+        if (platformB == platformC) {
           FAIL(log, "platform was not move constructed correctly (is_host)");
         }
       }
@@ -118,7 +126,7 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformB(platformA);
         sycl::platform platformC = std::move(platformA);
 
-        if (platformB==platformC) {
+        if (platformB == platformC) {
           FAIL(log, "platform was not move assigned correctly (is_host)");
         }
       }
