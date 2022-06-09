@@ -28,10 +28,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         "Skipping the test case.");
     return;
   }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_host_accessor_api_for_type<double>{}("double");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_host_accessor_api_for_type, double>("double");
+#else
+  run_host_accessor_api_for_type<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace host_accessor_api_fp64

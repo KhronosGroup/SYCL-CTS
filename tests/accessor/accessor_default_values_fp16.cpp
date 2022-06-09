@@ -27,10 +27,18 @@ using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Accessors constructor default values test fp16 types.", "[accessor]")({
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_tests<sycl::half>{}("sycl::half");
-#else
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
+    WARN(
+        "Device does not support half precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests, sycl::half>("sycl::half");
+#else
+  run_tests<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

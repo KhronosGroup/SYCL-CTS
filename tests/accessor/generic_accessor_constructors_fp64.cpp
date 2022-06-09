@@ -25,10 +25,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    run_generic_constructors_test<double>{}("double");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_vectors_marray<run_generic_constructors_test, double>("double");
+#else
+    run_generic_constructors_test<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   } else {
     WARN("Device does not support double precision floating point operations");

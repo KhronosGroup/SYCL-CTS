@@ -24,10 +24,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor properties. fp16 type", "[accessor]")({
   using namespace host_accessor_properties;
   auto queue = sycl_cts::util::get_cts_object::queue();
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_host_properties_tests<sycl::half>{}("sycl::half");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_host_properties_tests, sycl::half>("sycl::half");
+#else
+  run_host_properties_tests<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace host_accessor_properties_fp16

@@ -25,11 +25,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    run_generic_constructors_test<sycl::half>{}("sycl::half");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_vectors_marray<run_generic_constructors_test, sycl::half>(
         "sycl::half");
+#else
+    run_generic_constructors_test<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   } else {
     WARN("Device does not support half precision floating point operations");

@@ -21,7 +21,8 @@ constexpr auto expected_target = sycl::target::device;
 constexpr auto expected_placeholder = sycl::access::placeholder::false_t;
 template <typename T>
 constexpr auto expected_mode =
-    std::is_const_v<T> ? sycl::access_mode::read : sycl::access_mode::read_write
+    std::is_const_v<T> ? sycl::access_mode::read
+                       : sycl::access_mode::read_write;
 
 }  // namespace detail
 
@@ -44,7 +45,7 @@ void verify_local_acc_dim_value(const std::string& type_name) {
 }
 
 /**
- * @brief Provides verification that local_accessor's dimension default value
+ * @brief Provides verification that host_accessor's dimension default value
  *        is equal to expected one
  * @tparam T Current data type
  * @param type_name Current data type string representation
@@ -54,10 +55,10 @@ void verify_host_acc_dim_value(const std::string& type_name) {
   auto section_name = get_section_name<detail::expected_dims>(
       type_name,
       "Verify default value for dimensions "
-      "template parameter. [local_accessor]");
+      "template parameter. [host_accessor]");
   SECTION(section_name) {
-    REQUIRE(std::is_same_v<sycl::local_accessor<T>,
-                           sycl::local_accessor<T, detail::expected_dims>>);
+    REQUIRE(std::is_same_v<sycl::host_accessor<T>,
+                           sycl::host_accessor<T, detail::expected_dims>>);
   }
 }
 
