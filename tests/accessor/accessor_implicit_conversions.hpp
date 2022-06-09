@@ -20,21 +20,34 @@ namespace accessor_implicit_conversions {
 using namespace accessor_tests_common;
 
 namespace detail {
+
+/**
+ * @brief Struct that provides implicitly conversion from SrcAccT to DstAccT
+ * @tparam SrcAccT Source accessor type
+ * @tparam DstAccT Destination accessor type, that will be used in implicit
+ *         conversion
+ * @param src_acc Instance of source accessor type
+ */
 template <typename SrcAccT, typename DstAccT>
 struct invoke_implicit_conversion {
-  auto operator()(const SrcAccT& srcAcc) const {
-    // We might safely go with returning `srcAcc` parameter as `DstAccT` type,
+  auto operator()(const SrcAccT& src_acc) const {
+    // We might safely go with returning `src_acc` parameter as `DstAccT` type,
     // still better to make it explicit
-    const DstAccT result = srcAcc;
+    const DstAccT result = src_acc;
     return result;
   }
 };
 
+/**
+ * @brief Struct that avoided implicitly conversion from AccT
+ * @tparam AccT Accessor type
+ * @param src_acc Instance of source accessor type
+ */
 template <typename AccT>
 struct avoid_implicit_conversion {
-  const AccT& operator()(const AccT& srcAcc) const {
+  const AccT& operator()(const AccT& src_acc) const {
     // Just forward parameter further with no copy/move constructor call
-    return srcAcc;
+    return src_acc;
   }
 };
 
@@ -58,7 +71,7 @@ struct section_name_prototype {
 template <typename DataT, typename DimensionT, typename TargetT>
 class check_conversion_generic {
   // TODO: refactor into `check_conversion<AccessorT, ...>` with separate
-  // specialization for local accesor once `accessor_tests_common` refactoring
+  // specialization for local accessor once `accessor_tests_common` refactoring
   // is done
   static constexpr auto AccType = accessor_type::generic_accessor;
   static constexpr sycl::target Target = TargetT::value;
@@ -84,7 +97,7 @@ class check_conversion_generic {
 
     // We don't want to fail compilation of entire test every time conversion
     // is not available for some of accessor template instantiations
-    // So first we check precodition, and only in case of conversion
+    // So first we check precondition, and only in case of conversion
     // availability we try to go on with functionality check
     REQUIRE(has_implicit_conversion_available);
     // Execution would never pass the 'REQUIRE' call in case there is no
