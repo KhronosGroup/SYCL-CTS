@@ -91,7 +91,7 @@ class TEST_NAME : public util::test_base {
 
         // Assume `==` work
         if (platformA != platformB) {
-          FAIL(log, "platform was not copy assigned correctly (is_host)");
+          FAIL(log, "platform was not copy assigned correctly");
         }
 
 #ifdef SYCL_BACKEND_OPENCL
