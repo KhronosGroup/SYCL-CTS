@@ -68,7 +68,7 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformB(platformA);
 
         if (platformA != platformB) {
-          FAIL(log, "platform was not copy constructed correctly (is_host)");
+          FAIL(log, "platform was not copy constructed correctly");
         }
 
 #ifdef SYCL_BACKEND_OPENCL
