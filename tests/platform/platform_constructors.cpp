@@ -114,7 +114,7 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformC(std::move(platformA));
 
         if (platformB == platformC) {
-          FAIL(log, "platform was not move constructed correctly (is_host)");
+          FAIL(log, "platform was not move constructed correctly");
         }
       }
 
