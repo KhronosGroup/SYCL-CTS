@@ -52,6 +52,62 @@ struct type_name_string<sycl::marray<T, nElements>> {
 };
 
 /**
+ * @brief Specialization of type name retrieve for std::array class
+ * @param T Type of the data stored in std::array
+ * @param nElements Number of elements stored in std::array
+ */
+template <typename T, size_t nElements>
+struct type_name_string<std::array<T, nElements>> {
+  static std::string get(const std::string &dataType) {
+    return "std::array<" + dataType + "," + std::to_string(nElements) + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::optional class
+ * @param T Type of the data stored in std::optional
+ */
+template <typename T>
+struct type_name_string<std::optional<T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::optional<" + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::pair class
+ * @param T Type of the data stored in std::pair
+ */
+template <typename T>
+struct type_name_string<std::pair<T, T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::pair<" + dataType + "," + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::tuple class
+ * @param T Type of the data stored in std::tuple
+ */
+template <typename T>
+struct type_name_string<std::tuple<T, T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::tuple<" + dataType + "," + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::variant class
+ * @param T Type of the data stored in std::variant
+ */
+template <typename T>
+struct type_name_string<std::variant<T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::variant<" + dataType + ">";
+  }
+};
+
+/**
  * @brief Type pack to store types
  */
 template <typename... T>
