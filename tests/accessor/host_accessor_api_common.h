@@ -95,8 +95,9 @@ class run_api_tests {
         "Check api for ranged host_accessor with offset")) {
       constexpr size_t acc_range_size = 4;
       constexpr size_t buff_range_size = 8;
-      constexpr size_t buff_size =
-          (dims == 3) ? 8 * 8 * 8 : (dims == 2) ? 8 * 8 : 8;
+      constexpr size_t buff_size = (dims == 3)   ? 8 * 8 * 8
+                                   : (dims == 2) ? 8 * 8
+                                                 : 8;
       constexpr size_t offset = 4;
       constexpr size_t index = 2;
       int linear_index = 0;
@@ -155,16 +156,23 @@ class run_host_accessor_api_for_type {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
 
-    for_all_combinations<run_api_tests>(access_modes, dimensions, type_name);
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
+    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
+    // see just type even if T was container for T
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
+    for_all_combinations<run_api_tests>(access_modes, dimensions,
+                                        actual_type_name);
 
     // For covering const types
-    const auto const_type_name = std::string("const ") + type_name;
+    actual_type_name = std::string("const ") + actual_type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
     for_all_combinations<run_api_tests, const T>(read_only_acc_mode, dimensions,
-                                                  const_type_name);
+                                                 actual_type_name);
   }
 };
 }  // namespace host_accessor_api_common

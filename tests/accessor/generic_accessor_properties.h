@@ -202,8 +202,14 @@ class run_generic_properties_tests {
     const auto dimensions = get_dimensions();
     const auto targets = get_targets();
 
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
+    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
+    // see just type even if T was container for T
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
     for_all_combinations<run_tests_properties, const T>(access_modes, targets,
-                                                        dimensions, type_name);
+                                                        dimensions, actual_type_name);
   }
 };
 }  // namespace generic_accessor_properties

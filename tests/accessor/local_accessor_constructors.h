@@ -102,12 +102,19 @@ class run_local_constructors_test {
     // not compile
     const auto dimensions = get_dimensions();
 
-    for_all_combinations<run_tests_constructors, T>(dimensions, type_name);
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
+    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
+    // see just type even if T was container for T
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
+    for_all_combinations<run_tests_constructors, T>(dimensions,
+                                                    actual_type_name);
 
     // For covering const types
-    const auto const_type_name = std::string("const ") + type_name;
+    actual_type_name = std::string("const ") + actual_type_name;
     for_all_combinations<run_tests_constructors, const T>(dimensions,
-                                                          const_type_name);
+                                                          actual_type_name);
   }
 };
 }  // namespace local_accessor_constructors

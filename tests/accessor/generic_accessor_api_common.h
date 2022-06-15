@@ -329,17 +329,23 @@ class run_generic_api_for_type {
     const auto dimensions = get_dimensions();
     const auto targets = get_targets();
 
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
+    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
+    // see just type even if T was container for T
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
     for_all_combinations<run_api_tests, T>(access_modes, dimensions,
-                                        targets, type_name);
+                                        targets, actual_type_name);
 
     // For covering const types
-    const auto const_type_name = std::string("const ") + type_name;
+    actual_type_name = std::string("const ") + actual_type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
     for_all_combinations<run_api_tests, const T>(read_only_acc_mode,
-                                        dimensions, targets, const_type_name);
+                                        dimensions, targets, actual_type_name);
   }
 };
 }  // namespace generic_accessor_api_common
