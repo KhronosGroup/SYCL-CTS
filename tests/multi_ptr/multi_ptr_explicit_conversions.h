@@ -18,21 +18,22 @@ namespace multi_ptr_explicit_conversions {
 constexpr int expected_val = 42;
 template <typename T, typename AddrSpaceT, typename IsDecorated>
 class run_explicit_convert_tests {
-  static constexpr sycl::access::address_space source_space = AddrSpaceT::value;
+  static constexpr sycl::access::address_space target_space = AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecorated::value;
   using multi_ptr_t =
       sycl::multi_ptr<T, sycl::access::address_space::generic_space, decorated>;
 
  public:
   void operator()(const std::string &type_name,
-                  const std::string &source_address_space_name,
+                  const std::string &target_address_space_name,
                   const std::string &is_decorated_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
+    auto r = sycl::range(1);
     SECTION(
-        section_name("Check multi_ptr<T, source_address_space, IsDecorated>()")
+        section_name("Check multi_ptr<T, target_address_space, IsDecorated>()")
             .with("T", type_name)
-            .with("source address_space", source_address_space_name)
+            .with("target address_space", target_address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
       bool res = false;
@@ -42,25 +43,54 @@ class run_explicit_convert_tests {
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto val_acc =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          cgh.single_task([=] {
-            multi_ptr_t mptr_in(val_acc);
-            auto mptr_out =
-                sycl::multi_ptr<T, source_space, decorated>(mptr_in);
+          if constexpr (target_space ==
+                        sycl::access::address_space::global_space) {
+            auto val_acc =
+                val_buffer.template get_access<sycl::access_mode::read>(cgh);
+            cgh.single_task([=] {
+              multi_ptr_t mptr_in(val_acc);
+              auto mptr_out =
+                  sycl::multi_ptr<T, target_space, decorated>(mptr_in);
 
-            // Check that second mptr has the same value as first mptr
-            res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
-          });
+              // Check that second mptr has the same value as first mptr
+              res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
+            });
+          } else {
+            sycl::local_accessor<T> local_acc(r, cgh);
+            cgh.parallel_for(
+                sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+                  if constexpr (target_space ==
+                                sycl::access::address_space::local_space) {
+                    auto ref = local_acc[0];
+                    value_operations::assign(ref, expected_val);
+                    multi_ptr_t mptr_in(local_acc);
+
+                    auto mptr_out =
+                        sycl::multi_ptr<T, target_space, decorated>(mptr_in);
+                    res_acc[0] = (*(mptr_out.get()) == ref);
+                  } else {
+                    T private_val =
+                        user_def_types::get_init_value_helper<T>(expected_val);
+
+                    multi_ptr_t mptr_in = sycl::address_space_cast<
+                        sycl::access::address_space::generic_space, decorated,
+                        T>(&private_val);
+
+                    auto mptr_out =
+                        sycl::multi_ptr<T, target_space, decorated>(mptr_in);
+                    res_acc[0] = *(mptr_out.get_raw()) == private_val;
+                  }
+                });
+          }
         });
       }
       CHECK(res);
     }
 
-    SECTION(section_name("Check multi_ptr<const T, source_address_space, "
+    SECTION(section_name("Check multi_ptr<const T, target_address_space, "
                          "IsDecorated>() const")
                 .with("T", type_name)
-                .with("source address_space", source_address_space_name)
+                .with("target address_space", target_address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       bool res = false;
@@ -70,16 +100,45 @@ class run_explicit_convert_tests {
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto val_acc =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          cgh.single_task([=] {
-            const multi_ptr_t mptr_in(val_acc);
-            auto mptr_out =
-                sycl::multi_ptr<const T, source_space, decorated>(mptr_in);
+          if constexpr (target_space ==
+                        sycl::access::address_space::global_space) {
+            auto val_acc =
+                val_buffer.template get_access<sycl::access_mode::read>(cgh);
+            cgh.single_task([=] {
+              const multi_ptr_t mptr_in(val_acc);
+              auto mptr_out =
+                  sycl::multi_ptr<const T, target_space, decorated>(mptr_in);
 
-            // Check that second mptr has the same value as first mptr
-            res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
-          });
+              // Check that second mptr has the same value as first mptr
+              res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
+            });
+          } else {
+            sycl::local_accessor<T> local_acc(r, cgh);
+            cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1>
+                                                              item) {
+              if constexpr (target_space ==
+                            sycl::access::address_space::local_space) {
+                auto ref = local_acc[0];
+                value_operations::assign(ref, expected_val);
+                const multi_ptr_t mptr_in(local_acc);
+
+                auto mptr_out =
+                    sycl::multi_ptr<const T, target_space, decorated>(mptr_in);
+                res_acc[0] = (*(mptr_out.get()) == ref);
+              } else {
+                T private_val =
+                    user_def_types::get_init_value_helper<T>(expected_val);
+
+                const multi_ptr_t mptr_in = sycl::address_space_cast<
+                    sycl::access::address_space::generic_space, decorated, T>(
+                    &private_val);
+
+                auto mptr_out =
+                    sycl::multi_ptr<const T, target_space, decorated>(mptr_in);
+                res_acc[0] = *(mptr_out.get_raw()) == private_val;
+              }
+            });
+          }
         });
       }
       CHECK(res);
@@ -145,7 +204,7 @@ class check_multi_ptr_explicit_convert_for_type {
   void operator()(const std::string &type_name) {
     check_pointer_aliases<T>(type_name);
 
-    const auto source_address_spaces = value_pack<
+    const auto target_address_spaces = value_pack<
         sycl::access::address_space, sycl::access::address_space::global_space,
         sycl::access::address_space::local_space,
         sycl::access::address_space::private_space>::generate_named();
@@ -153,7 +212,7 @@ class check_multi_ptr_explicit_convert_for_type {
     const auto is_decorated = multi_ptr_common::get_decorated();
 
     for_all_combinations<run_explicit_convert_tests, T>(
-        source_address_spaces, is_decorated, type_name);
+        target_address_spaces, is_decorated, type_name);
   }
 };
 
