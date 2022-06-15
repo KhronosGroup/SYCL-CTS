@@ -113,6 +113,8 @@ class legacy_output_iterator_requirement {
     }
 
     const bool is_satisfied = !m_errors.has_errors();
+    // According to spec std::pair with device_copyable types(in this case:
+    // bool, string_view) can be used on device side
     return std::make_pair(is_satisfied, m_errors.get_array());
   }
 };

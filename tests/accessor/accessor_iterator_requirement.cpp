@@ -39,7 +39,8 @@ inline void print_errors(const std::array<string_view, N>& errors) {
 }
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("LegacyRandomAccessIterator requirement verification for sycl::accessor",
+("LegacyRandomAccessIterator requirement verification for sycl::accessor "
+ "iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -80,7 +81,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("LegacyRandomAccessIterator requirement verification for sycl::local_accessor",
+("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
+ "iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -124,7 +126,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("LegacyRandomAccessIterator requirement verification for sycl::host_accessor",
+("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
+ "iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
