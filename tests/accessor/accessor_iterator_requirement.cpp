@@ -68,7 +68,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
                 dummy_acc_it, size_of_dummy);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
-            if (verification_result.second[i] != "") {
+            if (!verification_result.second[i].empty()) {
+              // Copy errors to the host side
               res_acc[i] = verification_result.second[i];
             }
           }
@@ -113,7 +114,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
                 dummy_acc_it, size_of_dummy);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
-            if (verification_result.second[i] != "") {
+            if (!verification_result.second[i].empty()) {
+              // Copy errors to the host side
               res_acc[i] = verification_result.second[i];
             }
           }
