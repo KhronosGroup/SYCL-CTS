@@ -441,7 +441,11 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
 }
 
 /**
- * @brief TBD
+ * @brief Run action for std device_copyable containers with type T
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param args Arguments to forward into the call
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
@@ -453,7 +457,14 @@ void for_dev_copyable_containers(argsT &&...args) {
 }
 
 /**
- * @brief TBD
+ * @brief Run action for std device_copyable containers with types from given
+ * named_type_pack
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam types Deduced from type_pack parameter pack for list of types to use
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param typeList Named type pack instance with underlying type names stored
+ * @param args Arguments to forward into the call
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
