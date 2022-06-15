@@ -11,6 +11,7 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
+#include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
 #include "../common/value_operations.h"
 
@@ -31,6 +32,28 @@ enum class accessor_type {
   local_accessor,
   host_accessor,
 };
+}  // namespace accessor_tests_common
+
+namespace Catch {
+template <>
+struct StringMaker<accessor_tests_common::accessor_type> {
+  using type = accessor_tests_common::accessor_type;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::generic_accessor:
+        return "sycl::accessor";
+      case type::local_accessor:
+        return "sycl::local_accessor";
+      case type::host_accessor:
+        return "sycl::host_accessor";
+      default:
+        return "unknown accessor type";
+    }
+  }
+};
+}  // namespace Catch
+
+namespace accessor_tests_common {
 
 /**
  * @brief Function helps to get string section name that will contain template
@@ -48,17 +71,12 @@ inline std::string get_section_name(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& target_name,
                                     const std::string& section_description) {
-  std::string name = "Test ";
-  name += section_description;
-  name += " with parameters: <";
-  name += type_name;
-  name += "><";
-  name += access_mode_name;
-  name += "><";
-  name += target_name;
-  name += "><";
-  name += std::to_string(Dimension) + ">";
-  return name;
+  return section_name(section_description)
+      .with("T", type_name)
+      .with("access mode", access_mode_name)
+      .with("target", target_name)
+      .with("dimension", Dimension)
+      .create();
 }
 
 /**
@@ -76,15 +94,29 @@ template <int Dimension>
 inline std::string get_section_name(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& section_description) {
-  std::string name = "Test ";
-  name += section_description;
-  name += " with parameters: <";
-  name += type_name;
-  name += "><";
-  name += access_mode_name;
-  name += "><";
-  name += std::to_string(Dimension) + ">";
-  return name;
+  return section_name(section_description)
+      .with("T", type_name)
+      .with("access mode", access_mode_name)
+      .with("dimension", Dimension)
+      .create();
+}
+
+/**
+ * @brief Function helps to get string section name that will contain template
+ * parameters and function arguments
+ *
+ * @tparam Dimension Integer representing dimension
+ * @param type_name String with name of the testing type
+ * @param section_description String with human-readable description of the test
+ * @return std::string String with name for section
+ */
+template <int Dimension>
+inline std::string get_section_name(const std::string& type_name,
+                                    const std::string& section_description) {
+  return section_name(section_description)
+      .with("T", type_name)
+      .with("dimension", Dimension)
+      .create();
 }
 
 /**
@@ -152,14 +184,26 @@ inline auto get_lightweight_type_pack() {
 }
 
 /**
+ * @brief Factory function for getting type_pack with types that depends on full
+ *        conformance mode enabling status
+ * @return lightweight or full named_type_pack
+ */
+inline auto get_conformance_type_pack() {
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  return get_lightweight_type_pack();
+#else
+  return get_full_conformance_type_pack();
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+}
+
+/**
  * @brief Factory function for getting type_pack with access modes values
  */
 inline auto get_access_modes() {
-  static const auto access_modes = value_pack<
-      sycl::access_mode, sycl::access_mode::read, sycl::access_mode::write,
-      sycl::access_mode::read_write>::generate_named("access_mode::read",
-                                                     "access_mode::write",
-                                                     "access_mode::read_write");
+  static const auto access_modes =
+      value_pack<sycl::access_mode, sycl::access_mode::read,
+                 sycl::access_mode::write,
+                 sycl::access_mode::read_write>::generate_named();
   return access_modes;
 }
 
@@ -172,13 +216,21 @@ inline auto get_dimensions() {
 }
 
 /**
+ * @brief Factory function for getting type_pack with all (including zero)
+ *        dimensions values
+ */
+inline auto get_all_dimensions() {
+  static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
+  return dimensions;
+}
+
+/**
  * @brief Factory function for getting type_pack with target values
  */
 inline auto get_targets() {
   static const auto targets =
       value_pack<sycl::target, sycl::target::device,
-                 sycl::target::host_task>::generate_named("target::device",
-                                                          "target::host_task");
+                 sycl::target::host_task>::generate_named();
   return targets;
 }
 
@@ -764,34 +816,6 @@ decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
-}
-
-/**
- * @brief Function checks common buffer and local accessor ptr getters
- */
-template <typename T, typename AccT, typename AccRes>
-void test_accessor_ptr_device(AccT& accessor, T expected_data,
-                              AccRes& res_acc) {
-  auto acc_multi_ptr_no =
-      accessor.template get_multi_ptr<sycl::access::decorated::no>();
-  res_acc[0] = std::is_same_v<
-      decltype(acc_multi_ptr_no),
-      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
-
-  auto acc_multi_ptr_yes =
-      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
-  res_acc[0] &= std::is_same_v<
-      decltype(acc_multi_ptr_yes),
-      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
-
-  auto acc_pointer = accessor.get_pointer();
-  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
-                               std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
 }
 
 }  // namespace accessor_tests_common

@@ -2,22 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Builder for a section name with the fluent interface
-//
 *******************************************************************************/
 
 #ifndef __SYCLCTS_TESTS_COMMON_SECTION_NAME_BUILDER_H
 #define __SYCLCTS_TESTS_COMMON_SECTION_NAME_BUILDER_H
 
-#include <catch2/catch_test_macros.hpp>
+#include "string_makers.h"
 
-namespace {
+#include <sstream>
+#include <utility>
+
+namespace sycl_cts {
+
 /**
  * @brief Builder for a section name with the fluent interface
  * @details Be aware that Catch2 doesn't support nested sections with the same
  *          name, see https://github.com/catchorg/Catch2/issues/816 for details.
  *          So if you see
- *              Assertion `m_parent' failed.
+ *              "Assertion `m_parent' failed."
  *          that's probably the case.
  */
 class section_name {
@@ -53,6 +55,7 @@ class section_name {
     return result;
   }
 };
-}  // namespace
+
+}  // namespace sycl_cts
 
 #endif  // __SYCLCTS_TESTS_COMMON_SECTION_NAME_BUILDER_H
