@@ -13,6 +13,45 @@
 #include "../common/type_coverage.h"
 #include "../common/type_list.h"
 
+namespace Catch {
+template <>
+struct StringMaker<sycl::access::address_space> {
+  using type = sycl::access::address_space;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::global_space:
+        return "access::address_space::global_space";
+      case type::local_space:
+        return "access::address_space::local_space";
+      case type::private_space:
+        return "access::address_space::private_space";
+      case type::generic_space:
+        return "access::address_space::generic_space";
+      default:
+        // no stringification for deprecated ones
+        return "unknown or deprecated address_space";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::access::decorated> {
+  using type = sycl::access::decorated;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::yes:
+        return "access::decorated::yes";
+      case type::no:
+        return "access::decorated::no";
+      case type::legacy:
+        return "access::decorated::legacy";
+      default:
+        return "unknown";
+    }
+  }
+};
+}  // namespace Catch
+
 namespace multi_ptr_common {
 
 /**
