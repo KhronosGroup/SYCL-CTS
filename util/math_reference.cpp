@@ -455,6 +455,19 @@ sycl::half fdim(sycl::half a, sycl::half b) {
 }
 #endif
 
+sycl::half fract(sycl::half a, sycl::half *b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(sycl::half(1.0), sycl::half(0.0)));
+}
+float fract(float a, float *b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(1.0f, 0.0f));
+}
+double fract(double a, double *b) {
+  *b = std::floor(a);
+  return std::fmin(a - *b, nextafter(1.0, 0.0));
+}
+
 float nan(unsigned int a) { return std::nanf(std::to_string(a).c_str()); }
 double nan(unsigned long a) { return std::nan(std::to_string(a).c_str()); }
 double nan(unsigned long long a) { return std::nan(std::to_string(a).c_str()); }

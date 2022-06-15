@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides host_accessor constructors test for generic types
+//  Provides tests for host_accessor properties with double type
 //
 *******************************************************************************/
 
@@ -12,19 +12,22 @@
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
-#include "host_accessor_constructors.h"
+#include "host_accessor_properties.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-namespace host_accessor_constructors_core {
+namespace host_accessor_properties_fp64 {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::host_accessor constructors. core types", "[accessor]")({
-  using namespace host_accessor_constructors;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_host_constructors_test>(types);
+("sycl::host_accessor properties. fp64 type", "[accessor]")({
+  using namespace host_accessor_properties;
+  auto queue = sycl_cts::util::get_cts_object::queue();
+#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  run_host_properties_tests<double>{}("double");
+#else
+  for_type_vectors_marray<run_host_properties_tests, double>("double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
-
-}  // namespace host_accessor_constructors_core
+}  // namespace host_accessor_properties_fp64
