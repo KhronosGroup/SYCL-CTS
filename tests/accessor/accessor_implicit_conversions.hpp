@@ -22,11 +22,10 @@ using namespace accessor_tests_common;
 namespace detail {
 
 /**
- * @brief Struct that provides implicitly conversion from SrcAccT to DstAccT
- * @tparam SrcAccT Source accessor type
- * @tparam DstAccT Destination accessor type, that will be used in implicit
- *         conversion
- * @param src_acc Instance of source accessor type
+ * @brief Functor to invoke implicit conversion
+ * @tparam SrcAccT Source accessor type, enforced to be stated explicitly
+ * @tparam DstAccT Destination accessor type
+ * @param src_acc Instance of a source accessor type
  */
 template <typename SrcAccT, typename DstAccT>
 struct invoke_implicit_conversion {
@@ -39,9 +38,10 @@ struct invoke_implicit_conversion {
 };
 
 /**
- * @brief Struct that avoided implicitly conversion from AccT
- * @tparam AccT Accessor type
- * @param src_acc Instance of source accessor type
+ * @brief Stub functor to use if no implicit conversion is available
+ * @param src_acc Reference to the source accessor instance
+ * @returns The same input reference with no side effects
+ * @details Invocation signature is aligned with `invoke_implicit_conversion`
  */
 template <typename AccT>
 struct avoid_implicit_conversion {
