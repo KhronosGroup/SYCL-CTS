@@ -12,7 +12,7 @@
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
-#include "accessor_implicit_conversions.hpp"
+#include "accessor_implicit_conversions.h"
 
 namespace accessor_implicit_conversions_fp64 {
 using namespace accessor_implicit_conversions;
