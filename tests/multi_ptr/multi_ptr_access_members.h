@@ -43,6 +43,7 @@ class run_access_members_tests {
     auto queue = sycl_cts::util::get_cts_object::queue();
     constexpr int val_to_init = 42;
     T value = user_def_types::get_init_value_helper<T>(val_to_init);
+
     bool dereference_result = false;
     bool dereference_op_result = false;
     bool get_result = false;
@@ -53,6 +54,7 @@ class run_access_members_tests {
     T dereference_op_value;
     T get_member_value;
     T get_raw_member_value;
+    sycl::range r = sycl::range(1);
     {
       sycl::buffer<T> dereference_value_buffer(&dereference_value,
                                                sycl::range<1>(1));
@@ -103,9 +105,10 @@ class run_access_members_tests {
             get_decorated_result_buf
                 .template get_access<sycl::access_mode::write>(cgh);
 
-        auto acc_for_multi_ptr =
-            val_buffer.template get_access<sycl::access_mode::read>(cgh);
-        cgh.single_task([=] {
+        auto acc_for_multi_ptr = val_buffer.template get_access<
+            user_def_types::get_init_value_helper::access_mode::read>(cgh);
+
+        auto test_device_code = [=] {
           const multi_ptr_t multi_ptr(acc_for_multi_ptr);
 
           // Dereference and multi_ptr::operator->() available only when:
@@ -126,6 +129,7 @@ class run_access_members_tests {
           get_result_acc[0] =
               std::is_same_v<decltype(multi_ptr.get()), multi_ptr_t::pointer>;
           get_member_value_acc[0] = *(multi_ptr.get());
+
           // Check get_raw() return value and type correctness
           get_raw_result_acc[0] =
               std::is_same_v<decltype(multi_ptr.get_raw()),
@@ -134,7 +138,19 @@ class run_access_members_tests {
           // Check get_decorated() return type correctness
           get_decorated_result_acc[0] =
               std::is_pointer_v<decltype(multi_ptr.get_decorated())>;
-        });
+        };
+
+        if constexpr (space == sycl::access::address_space::global_space) {
+          cgh.single_task([=] { test_device_code(); });
+        } else {
+          cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+            if constexpr (space == sycl::access::address_space::local_space) {
+              test_device_code();
+            } else {
+              test_device_code();
+            }
+          });
+        }
       });
     }
     T expected_value = user_def_types::get_init_value_helper<T>(val_to_init);
