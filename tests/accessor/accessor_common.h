@@ -661,11 +661,11 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
 
           auto acc = get_accessor_functor(data_buf, cgh);
 
-          if (Target == sycl_stub::target::host_task) {
+          if (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
-          } else if (Target == sycl_stub::target::device) {
+          } else if (Target == sycl::target::device) {
             cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
