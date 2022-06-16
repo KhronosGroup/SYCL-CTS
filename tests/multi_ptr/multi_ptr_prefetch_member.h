@@ -40,7 +40,7 @@ class run_prefetch_test {
                   const std::string &is_decorated_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
-    SECTION(section_name("Check multi_ptr::prefetch")
+    SECTION(section_name("Check multi_ptr::prefetch()")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
@@ -57,7 +57,7 @@ class run_prefetch_test {
           cgh.single_task([=] {
             const multi_ptr_t mptr(acc_for_mptr);
 
-            // Check call and const correctness for multi_ptr::prefetch, then
+            // Check call and const correctness for multi_ptr::prefetch(), then
             // verify that multi_ptr contained expected value
             mptr_in.prefetch(0);
             res_acc[0] = mptr_in[0] == acc_for_mptr[0];
