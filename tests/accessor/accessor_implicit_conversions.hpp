@@ -358,7 +358,7 @@ template <typename DataT>
 struct run_test_generic {
   void operator()(const std::string& type_name) {
     // TODO: make for_all_combinations recognize non-const type packs
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     for_all_combinations<check_conversion_generic, DataT>(dimensions, targets,
@@ -372,7 +372,7 @@ struct run_test_generic {
 template <typename DataT>
 struct run_test_local {
   void operator()(const std::string& type_name) {
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
 
     for_all_combinations<check_conversion_local, DataT>(dimensions, type_name);
   }
@@ -384,7 +384,7 @@ struct run_test_local {
 template <typename DataT>
 struct run_test_host {
   void operator()(const std::string& type_name) {
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
 
     for_all_combinations<check_conversion_host, DataT>(dimensions, type_name);
   }
