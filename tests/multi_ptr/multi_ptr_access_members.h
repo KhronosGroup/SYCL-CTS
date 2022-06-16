@@ -128,8 +128,10 @@ class run_access_members_tests {
           // Check get() return value and type correctness
           get_result_acc[0] =
               std::is_same_v<decltype(multi_ptr.get()), multi_ptr_t::pointer>;
-          get_member_value_acc[0] = *(multi_ptr.get());
-
+          // Skip verification if pointer is decorated
+          if constexpr (decorated == sycl::access::decorated::yes) {
+            get_member_value_acc[0] = *(multi_ptr.get());
+          }
           // Check get_raw() return value and type correctness
           get_raw_result_acc[0] =
               std::is_same_v<decltype(multi_ptr.get_raw()),
@@ -182,7 +184,10 @@ class run_access_members_tests {
                 .with("decorated", is_decorated_name)
                 .create()) {
       CHECK(get_result);
-      CHECK(get_member_value == expected_value);
+      // Skip verification if pointer is decorated
+      if constexpr (decorated == sycl::access::decorated::yes) {
+        CHECK(get_member_value == expected_value);
+      }
     }
     SECTION(section_name("Check get_raw() return value and type")
                 .with("T", type_name)
