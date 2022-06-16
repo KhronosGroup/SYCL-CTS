@@ -22,20 +22,19 @@ constexpr int expected_val = 42;
 template <typename T, typename SrcAddrSpaceT, typename SrcIsDecorated,
           typename DstIsDecorated>
 class run_convert_assignment_operators_tests {
-  static constexpr sycl::access::address_space target_space =
-      SrcAddrSpaceT::value;
+  static constexpr sycl::access::address_space src_space = SrcAddrSpaceT::value;
   static constexpr sycl::access::decorated src_decorated =
       SrcIsDecorated::value;
   static constexpr sycl::access::decorated dst_decorated =
       DstIsDecorated::value;
-  using src_multi_ptr_t = sycl::multi_ptr<T, target_space, src_decorated>;
+  using src_multi_ptr_t = sycl::multi_ptr<T, src_space, src_decorated>;
   using dst_multi_ptr_t =
       sycl::multi_ptr<T, sycl::access::address_space::generic_space,
                       src_decorated>;
 
  public:
   void operator()(const std::string &type_name,
-                  const std::string &target_address_space_name,
+                  const std::string &src_address_space_name,
                   const std::string &src_is_decorated_name,
                   const std::string &dst_is_decorated_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
@@ -45,7 +44,7 @@ class run_convert_assignment_operators_tests {
         section_name(
             "Check &operator=(const multi_ptr<value_type, ASP, IsDecorated>&)")
             .with("T", type_name)
-            .with("src address_space", target_address_space_name)
+            .with("src address_space", src_address_space_name)
             .with("src decorated", src_is_decorated_name)
             .with("dst address_space", "access::address_space::generic_space")
             .with("dst decorated", dst_is_decorated_name)
@@ -60,7 +59,7 @@ class run_convert_assignment_operators_tests {
           auto acc_for_mptr =
               val_buffer.template get_access<sycl::access_mode::read>(cgh);
 
-          if constexpr (target_space ==
+          if constexpr (src_space ==
                         sycl::access::address_space::global_space) {
             auto val_acc =
                 val_buffer.template get_access<sycl::access_mode::read>(cgh);
@@ -77,7 +76,7 @@ class run_convert_assignment_operators_tests {
             sycl::local_accessor<T> local_acc(r, cgh);
             cgh.parallel_for(
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
-                  if constexpr (target_space ==
+                  if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {
                     auto ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
@@ -114,7 +113,7 @@ class run_convert_assignment_operators_tests {
         section_name(
             "Check &operator=(multi_ptr<value_type, AS, IsDecorated>&&)")
             .with("T", type_name)
-            .with("src address_space", target_address_space_name)
+            .with("src address_space", src_address_space_name)
             .with("src decorated", src_is_decorated_name)
             .with("dst address_space", "access::address_space::generic_space")
             .with("dst decorated", dst_is_decorated_name)
@@ -129,7 +128,7 @@ class run_convert_assignment_operators_tests {
           auto acc_for_mptr =
               val_buffer.template get_access<sycl::access_mode::read>(cgh);
 
-          if constexpr (target_space ==
+          if constexpr (src_space ==
                         sycl::access::address_space::global_space) {
             auto val_acc =
                 val_buffer.template get_access<sycl::access_mode::read>(cgh);
@@ -146,7 +145,7 @@ class run_convert_assignment_operators_tests {
             sycl::local_accessor<T> local_acc(r, cgh);
             cgh.parallel_for(
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
-                  if constexpr (target_space ==
+                  if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {
                     auto ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
