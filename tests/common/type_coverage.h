@@ -505,7 +505,7 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_dev_copyable_containers(argsT &&...args) {
+void for_device_copyable_std_containers(argsT &&...args) {
   for_all_types<action, actionArgsT...>(
       type_pack<std::array<T, 5>, std::optional<T>, std::pair<T, T>,
                 std::tuple<T, T>, std::variant<T>>{},
@@ -524,14 +524,14 @@ void for_dev_copyable_containers(argsT &&...args) {
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
-void for_all_dev_copyable_containers(const named_type_pack<types...> &typeList,
+void for_all_device_copyable_std_containers(const named_type_pack<types...> &typeList,
                                      argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
   size_t typeNameIndex = 0;
 
-  ((for_dev_copyable_containers<action, types, actionArgsT...>(
+  ((for_device_copyable_std_containers<action, types, actionArgsT...>(
         std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
     ++typeNameIndex),
    ...);

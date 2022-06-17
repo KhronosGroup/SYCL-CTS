@@ -25,7 +25,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace host_accessor_properties;
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_host_properties_tests>(types);
-  for_all_dev_copyable_containers<run_host_properties_tests>(types);
+  for_all_device_copyable_std_containers<run_host_properties_tests>(types);
 });
 
 }  // namespace host_accessor_properties_core
