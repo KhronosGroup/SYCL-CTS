@@ -28,8 +28,8 @@ void test_constructor_with_no_init(const std::string& type_name,
 
   SECTION(section_name) {
     auto construct_acc = [&prop_list](sycl::buffer<DataT, Dimension> data_buf) {
-      return sycl_stub::host_accessor<DataT, Dimension, AccessMode>(data_buf,
-                                                                    prop_list);
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
+                                                               prop_list);
     };
 
     check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc, r);
@@ -42,8 +42,8 @@ void test_constructor_with_no_init(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc = [&prop_list,
                           r](sycl::buffer<DataT, Dimension> data_buf) {
-      return sycl_stub::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
-                                                                    prop_list);
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
+                                                               prop_list);
     };
 
     check_no_init_prop<AccType, DataT, Dimension, AccessMode>(construct_acc, r);
@@ -56,7 +56,7 @@ void test_constructor_with_no_init(const std::string& type_name,
   SECTION(section_name) {
     auto construct_acc = [&prop_list, r,
                           offset](sycl::buffer<DataT, Dimension> data_buf) {
-      return sycl_stub::host_accessor<DataT, Dimension, AccessMode>(
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(
           data_buf, r, offset, prop_list);
     };
 
@@ -76,8 +76,8 @@ void test_exception(const std::string& type_name) {
       "with no_init property and access_mode::read");
   SECTION(section_name) {
     auto construct_acc = [&prop_list](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
-          data_buf, prop_list);
+      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(data_buf,
+                                                                     prop_list);
     };
     check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
   }
@@ -89,7 +89,7 @@ void test_exception(const std::string& type_name) {
   SECTION(section_name) {
     auto construct_acc = [&prop_list,
                           r](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, r, prop_list);
     };
     check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
@@ -102,7 +102,7 @@ void test_exception(const std::string& type_name) {
   SECTION(section_name) {
     auto construct_acc = [&prop_list, r,
                           offset](sycl::buffer<DataT, Dimension> data_buf) {
-      sycl_stub::host_accessor<DataT, Dimension, sycl::access_mode::read>(
+      sycl::host_accessor<DataT, Dimension, sycl::access_mode::read>(
           data_buf, r, offset, prop_list);
     };
     check_no_init_prop_exception<AccType, DataT, Dimension>(construct_acc, r);
@@ -118,8 +118,8 @@ void test_property_member_functions(const std::string& type_name,
 
   const auto construct_acc =
       [&prop_list](sycl::buffer<DataT, Dimension> data_buf) {
-        return sycl_stub::host_accessor<DataT, Dimension, AccessMode>(
-            data_buf, prop_list);
+        return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
+                                                                 prop_list);
       };
 
   auto section_name = get_section_name<Dimension>(
