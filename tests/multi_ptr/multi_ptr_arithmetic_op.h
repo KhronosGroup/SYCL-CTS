@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 //
 //  SYCL 2020 Conformance Test Suite
@@ -49,31 +48,42 @@ class run_multi_ptr_arithmetic_op_test {
       arr[i] = i;
     }
     size_t middle_elem_index = array_size / 2;
+    // Expected value that will be returned after multi_ptr's operator will be
+    // called
     T op_return_result_expected_val;
+    // Expected value that will be stored into multi_ptr after
+    // multi_ptr's operator will be called
     T op_calling_expected_val;
 
     auto queue = sycl_cts::util::get_cts_object::queue();
-    T value = user_def_types::get_init_value_helper<T>(expected_val);
-    SECTION(section_name("Check multi_ptr preincrement operator")
+    SECTION(section_name("Check multi_ptr operator++(multi_ptr& mp)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      op_return_result_expected_val = arr[middle_elem_index + 1];
-      op_calling_expected_val = arr[middle_elem_index + 1];
+      op_return_result_expected_val = arr[1];
+      op_calling_expected_val = arr[1];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_return_res_val_buffer(&op_calling_result_val,
-                                                 sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+                                                 sycl::range(1));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
           auto op_return_res_val_acc =
               op_return_res_val_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
@@ -81,34 +91,42 @@ class run_multi_ptr_arithmetic_op_test {
             multi_ptr_t mptr(acc_for_mptr);
             multi_ptr_t result_mptr = ++mptr;
 
-            op_return_res_val_acc[0] = result_mptr[0];
-            op_res_val_acc[0] = mptr[0];
+            op_return_res_val_acc[0] = *result_mptr;
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
       CHECK(op_calling_result_val == op_return_result_expected_val);
       CHECK(op_calling_val == op_calling_expected_val);
     }
-    SECTION(section_name("Check multi_ptr postincrement operator")
+    SECTION(section_name("Check multi_ptr operator++(multi_ptr&, int)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
-      op_return_result_expected_val = arr[middle_elem_index];
-      op_calling_expected_val = arr[middle_elem_index + 1];
+      op_return_result_expected_val = arr[0];
+      op_calling_expected_val = arr[1];
+     // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_return_res_val_buffer(&op_calling_result_val,
-                                                 sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+                                                 sycl::range(1));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
           auto op_return_res_val_acc =
               op_return_res_val_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
@@ -116,78 +134,100 @@ class run_multi_ptr_arithmetic_op_test {
             multi_ptr_t mptr(acc_for_mptr);
             multi_ptr_t result_mptr = mptr++;
 
-            op_return_res_val_acc[0] = result_mptr[0];
-            op_res_val_acc[0] = mptr[0];
+            op_return_res_val_acc[0] = *result_mptr;
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
       CHECK(op_calling_result_val == op_return_result_expected_val);
       CHECK(op_calling_val == op_calling_expected_val);
     }
-    SECTION(section_name("Check multi_ptr predecrement operator")
+    SECTION(section_name("Check multi_ptr operator--(multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
       op_return_result_expected_val = arr[middle_elem_index - 1];
       op_calling_expected_val = arr[middle_elem_index - 1];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_return_res_val_buffer(&op_calling_result_val,
-                                                 sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+                                                 sycl::range(1));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
           auto op_return_res_val_acc =
               op_return_res_val_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             multi_ptr_t mptr(acc_for_mptr);
+            // Shift multi_ptr that he is pointed to the middle element, to have
+            // possibe decrease pointed value index
+            mptr += middle_elem_index;
             multi_ptr_t result_mptr = --mptr;
 
-            op_return_res_val_acc[0] = result_mptr[0];
-            op_res_val_acc[0] = mptr[0];
+            op_return_res_val_acc[0] = *result_mptr;
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
       CHECK(op_calling_result_val == op_return_result_expected_val);
       CHECK(op_calling_val == op_calling_expected_val);
     }
-    SECTION(section_name("Check multi_ptr postdecrement operator")
+    SECTION(section_name("Check multi_ptr operator--(multi_ptr&, int)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
       op_return_result_expected_val = arr[middle_elem_index];
       op_calling_expected_val = arr[middle_elem_index - 1];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_return_res_val_buffer(&op_calling_result_val,
-                                                 sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+                                                 sycl::range(1));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
           auto op_return_res_val_acc =
               op_return_res_val_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             multi_ptr_t mptr(acc_for_mptr);
+            // Shift multi_ptr that he is pointed to the middle element, to have
+            // possibe decrease pointed value index
+            mptr += middle_elem_index;
             multi_ptr_t result_mptr = mptr--;
 
-            op_return_res_val_acc[0] = result_mptr[0];
-            op_res_val_acc[0] = mptr[0];
+            op_return_res_val_acc[0] = *result_mptr;
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
@@ -197,20 +237,23 @@ class run_multi_ptr_arithmetic_op_test {
 
     using diff_t = multi_ptr_t::difference_type;
     diff_t shift = array_size / 3;
-
-    SECTION(section_name("Check multi_ptr operator+=")
+    SECTION(section_name("Check multi_ptr operator+=(multi_ptr&, diff_type)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
-      op_calling_expected_val = arr[middle_elem_index + shift];
+      op_calling_expected_val = arr[shift];
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
@@ -218,113 +261,137 @@ class run_multi_ptr_arithmetic_op_test {
             multi_ptr_t mptr(acc_for_mptr);
             mptr += shift;
 
-            op_res_val_acc[0] = mptr[0];
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
       CHECK(op_calling_val == op_calling_expected_val);
     }
-    SECTION(section_name("Check multi_ptr operator-=")
+    SECTION(section_name("Check multi_ptr operator-=(multi_ptr&, diff_type)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
       op_calling_expected_val = arr[middle_elem_index - shift];
+      // Variable that will be used to store the multi_ptr's value after
+      // multi_ptr's operator will be called
       T op_calling_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
-        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
+        sycl::buffer<T> op_res_val_buffer(&op_calling_val, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the multi_ptr's value after
+          // multi_ptr's operator will be called
           auto op_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             multi_ptr_t mptr(acc_for_mptr);
+            // Shift multi_ptr that he is pointed to the middle element, to have
+            // possibe decrease pointed value index
+            mptr += middle_elem_index;
             mptr -= shift;
 
-            op_res_val_acc[0] = mptr[0];
+            op_res_val_acc[0] = *mptr;
           });
         });
       }
       CHECK(op_calling_val == op_calling_expected_val);
     }
-    SECTION(section_name("Check multi_ptr operator+")
-                .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
-                .with("decorated", is_decorated_name)
-                .create()) {
-      op_return_result_expected_val = arr[middle_elem_index + shift];
+    SECTION(
+        section_name("Check multi_ptr operator+(const multi_ptr&, diff_type)")
+            .with("T", type_name)
+            .with("address_space", "access::address_space::global_space")
+            .with("decorated", is_decorated_name)
+            .create()) {
+      op_return_result_expected_val = arr[shift];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_res_val_buffer(&op_calling_result_val,
-                                          sycl::range<1>(1));
+                                          sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          auto op_res_val_acc =
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
+          auto op_return_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             const multi_ptr_t mptr(acc_for_mptr);
             multi_ptr_t result_mptr = mptr + shift;
 
-            op_res_val_acc[0] = *result_mptr;
+            op_return_res_val_acc[0] = *result_mptr;
           });
         });
       }
       CHECK(op_calling_result_val == op_return_result_expected_val);
     }
-    SECTION(section_name("Check multi_ptr operator-")
-                .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
-                .with("decorated", is_decorated_name)
-                .create()) {
+    SECTION(
+        section_name("Check multi_ptr operator-(const multi_ptr&, diff_type)")
+            .with("T", type_name)
+            .with("address_space", "access::address_space::global_space")
+            .with("decorated", is_decorated_name)
+            .create()) {
       op_return_result_expected_val = arr[middle_elem_index - shift];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_res_val_buffer(&op_calling_result_val,
-                                          sycl::range<1>(1));
+                                          sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          auto op_res_val_acc =
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
+          auto op_return_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             const multi_ptr_t mptr(acc_for_mptr);
+            // Shift multi_ptr that he is pointed to the middle element, to have
+            // possibe decrease pointed value index
+            mptr += middle_elem_index;
             multi_ptr_t result_mptr = mptr - shift;
 
-            op_res_val_acc[0] = *result_mptr;
+            op_return_res_val_acc[0] = *result_mptr;
           });
         });
       }
       CHECK(op_calling_result_val == op_return_result_expected_val);
     }
-    SECTION(section_name("Check multi_ptr dereference operator")
+    SECTION(section_name("Check multi_ptr operator*(const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)
                 .create()) {
-      op_return_result_expected_val = arr[middle_elem_index];
+      op_return_result_expected_val = arr[0];
+      // Variable that will be used to store the value that will be returned
+      // after calling multi_ptr's operator
       T op_calling_result_val;
       {
-        sycl::buffer<T> val_buffer(&arr[middle_elem_index], sycl::range<1>(1));
+        sycl::buffer<T> buffer_for_mptr(arr, sycl::range(array_size));
         sycl::buffer<T> op_res_val_buffer(&op_calling_result_val,
-                                          sycl::range<1>(1));
+                                          sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          auto op_res_val_acc =
+              buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+          // Accessor that will be used to store the value that will be returned
+          // after calling multi_ptr's operator
+          auto op_return_res_val_acc =
               op_res_val_buffer.template get_access<sycl::access_mode::write>(
                   cgh);
           cgh.single_task([=] {
             const multi_ptr_t mptr(acc_for_mptr);
 
-            op_res_val_acc[0] = *mptr;
+            op_return_res_val_acc[0] = *mptr;
           });
         });
       }
