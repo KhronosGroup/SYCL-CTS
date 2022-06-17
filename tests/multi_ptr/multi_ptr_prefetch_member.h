@@ -59,9 +59,9 @@ class run_prefetch_test {
 
             // Check call and const correctness for multi_ptr::prefetch(), then
             // verify that multi_ptr contained expected value
-            mptr_in.prefetch(0);
+            mptr.prefetch(0);
             // Check that data is not corrupted
-            res_acc[0] = mptr_in[0] == acc_for_mptr[0];
+            res_acc[0] = mptr[0] == acc_for_mptr[0];
           });
         });
       }
