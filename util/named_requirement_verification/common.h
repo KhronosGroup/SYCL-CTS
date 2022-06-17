@@ -27,9 +27,12 @@ namespace named_requirement_verification {
 template <size_t Size>
 class error_messages_container {
  private:
-  // Array for storing error messages
-  // We can't use std::string as it's not supported in kernel
-  // According to SYCL 2020 std::array and std::basic_string_view<char> are supported on device side
+  /* Array for storing error messages
+   * We can't use std::string since it's not supported in kernel
+   *
+   * According to SYCL 2020 std::array and std::basic_string_view<char> are
+   * supported on device side
+   */
   std::array<std::basic_string_view<char>, Size> m_error_msgs_container;
   // Index for storing next error message
   size_t m_index = 0;
