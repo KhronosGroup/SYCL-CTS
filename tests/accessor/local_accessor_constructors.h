@@ -104,8 +104,8 @@ class run_local_constructors_test {
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
-    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
-    // see just type even if T was container for T
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_tests_constructors, T>(dimensions,

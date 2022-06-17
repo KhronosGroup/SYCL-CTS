@@ -364,19 +364,25 @@ class run_tests_with_types {
     const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
     constexpr accessor_tests_common::accessor_type acc_type = AccT::value;
     if constexpr (acc_type ==
                   accessor_tests_common::accessor_type::generic_accessor) {
       for_all_combinations<test_exception_for_generic_acc, AccT, T>(
-          access_modes, dimensions, targets, type_name);
+          access_modes, dimensions, targets, actual_type_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::host_accessor) {
       for_all_combinations<test_exception_for_host_acc, AccT, T>(
-          access_modes, dimensions, targets, type_name);
+          access_modes, dimensions, targets, actual_type_name);
     } else if constexpr (acc_type ==
                          accessor_tests_common::accessor_type::local_accessor) {
-      for_all_combinations<test_exception_for_local_acc, AccT, T>(dimensions,
-                                                                  type_name);
+      for_all_combinations<test_exception_for_local_acc, AccT, T>(
+          dimensions, actual_type_name);
     }
   }
 };

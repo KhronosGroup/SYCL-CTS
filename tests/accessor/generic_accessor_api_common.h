@@ -82,7 +82,8 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
 }
 
 template <typename T, typename AccT, typename AccRes>
-void test_accessor_ptr_device(AccT &accessor, T expected_data, AccRes &res_acc) {
+void test_accessor_ptr_device(AccT &accessor, T expected_data,
+                              AccRes &res_acc) {
   auto acc_multi_ptr_no =
       accessor.template get_multi_ptr<sycl::access::decorated::no>();
   res_acc[0] = std::is_same_v<
@@ -114,14 +115,14 @@ void test_accessor_types() {
         std::is_same_v<
             typename AccT::template accessor_ptr<sycl::access::decorated::yes>,
             sycl::multi_ptr<typename AccT::value_type,
-                                 sycl::access::address_space::global_space,
-                                 sycl::access::decorated::yes>>);
+                            sycl::access::address_space::global_space,
+                            sycl::access::decorated::yes>>);
     STATIC_CHECK(
         std::is_same_v<
             typename AccT::template accessor_ptr<sycl::access::decorated::no>,
             sycl::multi_ptr<typename AccT::value_type,
-                                 sycl::access::address_space::global_space,
-                                 sycl::access::decorated::no>>);
+                            sycl::access::address_space::global_space,
+                            sycl::access::decorated::no>>);
   }
 }
 
@@ -217,7 +218,8 @@ class run_api_tests {
                 cgh.single_task([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
                   auto &acc_ref = acc[sycl::id<dims>()];
-                  res_acc[0] &= value_operations::are_equal(acc_ref, expected_val);
+                  res_acc[0] &=
+                      value_operations::are_equal(acc_ref, expected_val);
                   res_acc[0] &= std::is_same_v<decltype(acc_ref),
                                                typename AccT::reference>;
                   if constexpr (AccessMode != sycl::access_mode::read)
@@ -282,7 +284,8 @@ class run_api_tests {
                   test_accessor_ptr_device(acc, T(0), res_acc);
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  res_acc[0] &= value_operations::are_equal(acc_ref, linear_index);
+                  res_acc[0] &=
+                      value_operations::are_equal(acc_ref, linear_index);
                   if constexpr (AccessMode != sycl::access_mode::read)
                     value_operations::assign(acc_ref, changed_val);
                 });
@@ -331,12 +334,12 @@ class run_generic_api_for_type {
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_dev_copyable_containers.
-    // This will wrap T to std::array<T,N> of T is array. Otherwise user will
-    // see just type even if T was container for T
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_api_tests, T>(access_modes, dimensions,
-                                        targets, actual_type_name);
+    for_all_combinations<run_api_tests, T>(access_modes, dimensions, targets,
+                                           actual_type_name);
 
     // For covering const types
     actual_type_name = std::string("const ") + actual_type_name;
@@ -344,8 +347,8 @@ class run_generic_api_for_type {
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
-    for_all_combinations<run_api_tests, const T>(read_only_acc_mode,
-                                        dimensions, targets, actual_type_name);
+    for_all_combinations<run_api_tests, const T>(read_only_acc_mode, dimensions,
+                                                 targets, actual_type_name);
   }
 };
 }  // namespace generic_accessor_api_common
