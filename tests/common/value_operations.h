@@ -86,22 +86,11 @@ assign(LeftNonArrT& left, const RightNonArrT& right) {
   left = right;
 }
 
-template <typename... Types>
-void assign(std::tuple<Types...>& left, const std::tuple<Types...>& right) {
-  left = right;
-}
-
 template <typename... Types, typename U>
 void assign(std::tuple<Types...>& left, const U& right) {
   using tuple_t = std::remove_reference_t<decltype(left)>;
   using indexes = std::make_index_sequence<std::tuple_size<tuple_t>::value>;
   detail::assign_by_index_sequence(left, right, indexes());
-}
-
-template <typename FirstT, typename SecondT = FirstT>
-void assign(std::pair<FirstT, SecondT>& left,
-            const std::pair<FirstT, SecondT>& right) {
-  left = right;
 }
 
 template <typename FirstT, typename SecondT = FirstT, typename U>
@@ -110,17 +99,6 @@ void assign(std::pair<FirstT, SecondT>& left, const U& right) {
   using indexes = std::make_index_sequence<pair_size>;
   detail::assign_by_index_sequence(left, right, indexes());
 }
-
-template <typename... Types>
-void assign(std::variant<Types...>& left, const std::variant<Types...>& right) {
-  left = right;
-}
-
-template <typename... Types, typename U>
-void assign(std::variant<Types...>& left, const U& right) {
-  left = right;
-}
-
 /////////////////////////// Modify functions
 
 // Compare functions
@@ -174,11 +152,6 @@ are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
   return (left == right);
 }
 
-template <typename... Types>
-bool are_equal(std::tuple<Types...>& left, const std::tuple<Types...>& right) {
-  return left == right;
-}
-
 template <typename... Types, typename U>
 bool are_equal(std::tuple<Types...>& left, const U& right) {
   using tuple_t = std::remove_reference_t<decltype(left)>;
@@ -186,22 +159,11 @@ bool are_equal(std::tuple<Types...>& left, const U& right) {
   return detail::are_equal_by_index_sequence(left, right, indexes());
 }
 
-template <typename FirstT, typename SecondT = FirstT>
-bool are_equal(std::pair<FirstT, SecondT>& left,
-               const std::pair<FirstT, SecondT>& right) {
-  return left == right;
-}
-
 template <typename FirstT, typename SecondT = FirstT, typename U>
 bool are_equal(std::pair<FirstT, SecondT>& left, const U& right) {
   constexpr size_t pair_size = 2;
   using indexes = std::make_index_sequence<pair_size>;
   return detail::are_equal_by_index_sequence(left, right, indexes());
-}
-
-template <typename... Types>
-bool are_equal(std::variant<Types...>& left, const std::variant<Types...>& right) {
-  return left == right;
 }
 
 template <typename... Types, typename U>
