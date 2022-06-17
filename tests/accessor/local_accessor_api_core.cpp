@@ -26,6 +26,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   const auto types = get_full_conformance_type_pack();
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_all_types_vectors_marray<run_local_api_for_type>(types);
+  for_all_dev_copyable_containers<run_local_api_for_type>(types);
 });
 
 }  // namespace local_accessor_api_core

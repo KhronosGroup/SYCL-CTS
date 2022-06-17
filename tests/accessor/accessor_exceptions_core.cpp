@@ -30,6 +30,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
  "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, generic_accessor>(types);
+  for_all_dev_copyable_containers<run_tests_with_types, generic_accessor>(types);
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
@@ -37,12 +38,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
  "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, local_accessor>(types);
+  for_all_dev_copyable_containers<run_tests_with_types, local_accessor>(types);
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor constructor exceptions test core types.", "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, host_accessor>(types);
+  for_all_dev_copyable_containers<run_tests_with_types, host_accessor>(types);
 });
 
 }  // namespace accessor_exceptions_test_core
