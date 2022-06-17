@@ -47,8 +47,8 @@ class run_prefetch_test {
                 .create()) {
       bool res = false;
       {
-        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
-        sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, sycl::range(1));
+        sycl::buffer<T> val_buffer(&value, sycl::range(1));
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
