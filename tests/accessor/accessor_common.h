@@ -374,7 +374,7 @@ class invoke_helper {
   const InvocableT& m_action;
 
  public:
-  invoke_helper(const InvocableT& action) : m_action(action){};
+  invoke_helper(const InvocableT& action) : m_action(action){}
 
   template <typename... ArgsT>
   decltype(auto) operator=(ArgsT&&... args) {
