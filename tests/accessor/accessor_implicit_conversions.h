@@ -15,6 +15,8 @@
 #include "accessor_common.h"
 
 #include <type_traits>
+// for std::function
+#include <functional>
 
 namespace accessor_implicit_conversions {
 using namespace accessor_tests_common;
@@ -64,6 +66,57 @@ struct section_name_prototype {
   }
 };
 }  // namespace detail
+
+/**
+ * @brief Run verification for differentcombinations of source and destination
+ *        data types and access modes
+ */
+template <typename VerifierT>
+void run_verification(
+    std::function<void(sycl::access_mode, sycl::access_mode, std::string)>
+        make_section_name) {
+  // From read-only accessor to read-only accessor
+  {
+    constexpr auto access_mode = sycl::access_mode::read;
+
+    SECTION(
+        make_section_name(access_mode, access_mode, "from 'T' to 'const T'")) {
+      using SrcDataT = DataT;
+      using DstDataT = const DataT;
+      VerifierT{}
+          .template run_check<SrcDataT, access_mode, DstDataT, access_mode>();
+    }
+    SECTION(
+        make_section_name(access_mode, access_mode, "from 'const T' to 'T'")) {
+      using SrcDataT = const DataT;
+      using DstDataT = DataT;
+      VerifierT{}
+          .template run_check<SrcDataT, access_mode, DstDataT, access_mode>();
+    }
+  }
+  // From read-write accessor to read-only accessor
+  {
+    constexpr auto src_access_mode = sycl::access_mode::read_write;
+    constexpr auto dst_access_mode = sycl::access_mode::read;
+
+    SECTION(make_section_name(src_access_mode, dst_access_mode,
+                              "from 'T' to 'const T'")) {
+      using SrcDataT = DataT;
+      using DstDataT = const DataT;
+      VerifierT{}
+          .template run_check<SrcDataT, src_access_mode, DstDataT,
+                              dst_access_mode>();
+    }
+    SECTION(make_section_name(src_access_mode, dst_access_mode,
+                              "from 'const T' to 'T'")) {
+      using SrcDataT = const DataT;
+      using DstDataT = DataT;
+      VerifierT{}
+          .template run_check<SrcDataT, src_access_mode, DstDataT,
+                              dst_access_mode>();
+    }
+  }
+}
 
 /**
  * @brief Validates implicit conversion within command
@@ -140,42 +193,8 @@ class check_conversion_generic {
           .with("case", details)
           .create();
     };
-
-    // From read-only accessor to read-only accessor
-    {
-      constexpr auto AccessMode = sycl::access_mode::read;
-
-      SECTION((
-          make_section_name(AccessMode, AccessMode, "from 'T' to 'const T'"))) {
-        using SrcDataT = DataT;
-        using DstDataT = const DataT;
-        run_check<SrcDataT, AccessMode, DstDataT, AccessMode>();
-      }
-      SECTION((
-          make_section_name(AccessMode, AccessMode, "from 'const T' to 'T'"))) {
-        using SrcDataT = const DataT;
-        using DstDataT = DataT;
-        run_check<SrcDataT, AccessMode, DstDataT, AccessMode>();
-      }
-    }
-    // From read-write accessor to read-only accessor
-    {
-      constexpr auto SrcAccessMode = sycl::access_mode::read_write;
-      constexpr auto DstAccessMode = sycl::access_mode::read;
-
-      SECTION((make_section_name(SrcAccessMode, DstAccessMode,
-                                 "from 'T' to 'const T'"))) {
-        using SrcDataT = DataT;
-        using DstDataT = const DataT;
-        run_check<SrcDataT, SrcAccessMode, DstDataT, DstAccessMode>();
-      }
-      SECTION((make_section_name(SrcAccessMode, DstAccessMode,
-                                 "from 'const T' to 'T'"))) {
-        using SrcDataT = const DataT;
-        using DstDataT = DataT;
-        run_check<SrcDataT, SrcAccessMode, DstDataT, DstAccessMode>();
-      }
-    }
+    run_verification<check_conversion_generic<DataT, DimensionT, TargetT>>(
+        make_section_name);
   }
 };
 
@@ -310,42 +329,8 @@ class check_conversion_host {
           .with("case", details)
           .create();
     };
-
-    // From read-only accessor to read-only accessor
-    {
-      constexpr auto AccessMode = sycl::access_mode::read;
-
-      SECTION((
-          make_section_name(AccessMode, AccessMode, "from 'T' to 'const T'"))) {
-        using SrcDataT = DataT;
-        using DstDataT = const DataT;
-        run_check<SrcDataT, AccessMode, DstDataT, AccessMode>();
-      }
-      SECTION((
-          make_section_name(AccessMode, AccessMode, "from 'const T' to 'T'"))) {
-        using SrcDataT = const DataT;
-        using DstDataT = DataT;
-        run_check<SrcDataT, AccessMode, DstDataT, AccessMode>();
-      }
-    }
-    // From read-write accessor to read-only accessor
-    {
-      constexpr auto SrcAccessMode = sycl::access_mode::read_write;
-      constexpr auto DstAccessMode = sycl::access_mode::read;
-
-      SECTION((make_section_name(SrcAccessMode, DstAccessMode,
-                                 "from 'T' to 'const T'"))) {
-        using SrcDataT = DataT;
-        using DstDataT = const DataT;
-        run_check<SrcDataT, SrcAccessMode, DstDataT, DstAccessMode>();
-      }
-      SECTION((make_section_name(SrcAccessMode, DstAccessMode,
-                                 "from 'const T' to 'T'"))) {
-        using SrcDataT = const DataT;
-        using DstDataT = DataT;
-        run_check<SrcDataT, SrcAccessMode, DstDataT, DstAccessMode>();
-      }
-    }
+    run_verification<check_conversion_host<DataT, DimensionT>>(
+        make_section_name);
   }
 };
 
