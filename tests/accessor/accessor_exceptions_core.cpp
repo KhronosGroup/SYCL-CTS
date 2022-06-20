@@ -26,21 +26,21 @@ namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Generic sycl::accessor constructor exceptions test core types.",
+("Generic sycl::accessor constructor exceptions test. core types.",
  "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, generic_accessor>(types);
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::local_accessor  constructor exceptions test core types.",
+("sycl::local_accessor  constructor exceptions test. core types.",
  "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, local_accessor>(types);
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::host_accessor constructor exceptions test core types.", "[accessor]")({
+("sycl::host_accessor constructor exceptions test. core types.", "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, host_accessor>(types);
 });
