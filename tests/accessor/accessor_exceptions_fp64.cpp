@@ -26,6 +26,14 @@ using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Generic sycl::accessor constructor exceptions. fp64 type", "[accessor]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, generic_accessor>(
       "double");
@@ -36,6 +44,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::local_accessor  constructor exceptions. fp64 type", "[accessor]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, local_accessor>(
       "double");
@@ -46,6 +62,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor constructor exceptions. fp64 type", "[accessor]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, host_accessor>(
       "double");
