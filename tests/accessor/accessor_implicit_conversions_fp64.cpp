@@ -35,10 +35,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_generic<double>{}("double");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_generic, double>("double");
+#else
+  run_test_generic<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
@@ -52,10 +52,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_local<double>{}("double");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_local, double>("double");
+#else
+  run_test_local<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
@@ -69,10 +69,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_host<double>{}("double");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_host, double>("double");
+#else
+  run_test_host<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

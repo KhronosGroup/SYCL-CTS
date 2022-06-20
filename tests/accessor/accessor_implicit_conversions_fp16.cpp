@@ -35,9 +35,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_generic<sycl::half>{}("sycl::half");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   // TODO: implement factory functions for extending type packs and remove
   //       for_all_types/for_type_and_vectors/for_all_types_and_vectors/
   //       for_type_vectors_marray/for_all_types_vectors_marray/
@@ -59,6 +57,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   //        types, targets, dimensions);
   //
   for_type_vectors_marray<run_test_generic, sycl::half>("sycl::half");
+#else
+  run_test_generic<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
@@ -72,10 +72,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_local<sycl::half>{}("sycl::half");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_local, sycl::half>("sycl::half");
+#else
+  run_test_local<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
@@ -89,10 +89,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_test_host<sycl::half>{}("sycl::half");
-#else
+#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_host, sycl::half>("sycl::half");
+#else
+  run_test_host<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
