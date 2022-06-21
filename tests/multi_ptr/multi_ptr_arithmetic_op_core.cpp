@@ -12,7 +12,7 @@
 
 namespace multi_ptr_arithmetic_op_core {
 
-TEST_CASE("Arithmetic operators. core types", "[multi_ptr]") {
+TEST_CASE("Arithmetic operators. Core types.", "[multi_ptr]") {
   using namespace multi_ptr_arithmetic_op;
   auto types = multi_ptr_convert::get_types();
   auto composite_types = multi_ptr_convert::get_composite_types();
