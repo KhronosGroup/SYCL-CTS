@@ -89,7 +89,7 @@ Additionally, the following SYCL implementation-specific options can be used:
  Set additional compiler flags for DPC++ compiler. This options applies only if `SYCL_IMPLEMENTATION` is set to `DPCPP`.
 
 `DPCPP_TARGET_TRIPLES` (default: None)
- Configures compialtion for specified target triple.
+ Configures compilation for specified target triple.
 
 `DPCPP_DISABLE_SYCL2020_DEPRECATION_WARNINGS` (default: `ON`)
  Disables warnings about using features deprecated by SYCL 2020.
