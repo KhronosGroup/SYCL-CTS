@@ -33,7 +33,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::local_accessor  constructor exceptions test. Core types.",
+("sycl::local_accessor constructor exceptions test. Core types.",
  "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests_with_types, local_accessor>(types);

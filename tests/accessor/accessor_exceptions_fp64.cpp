@@ -43,7 +43,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::local_accessor  constructor exceptions. fp64 type", "[accessor]")({
+("sycl::local_accessor constructor exceptions. fp64 type", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
