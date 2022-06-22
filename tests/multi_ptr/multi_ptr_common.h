@@ -11,8 +11,69 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../common/type_list.h"
+
+namespace Catch {
+template <>
+struct StringMaker<sycl::access::address_space> {
+  using type = sycl::access::address_space;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::global_space:
+        return "access::address_space::global_space";
+      case type::local_space:
+        return "access::address_space::local_space";
+      case type::private_space:
+        return "access::address_space::private_space";
+      case type::generic_space:
+        return "access::address_space::generic_space";
+      default:
+        // no stringification for deprecated ones
+        return "unknown or deprecated address_space";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::access::decorated> {
+  using type = sycl::access::decorated;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::yes:
+        return "access::decorated::yes";
+      case type::no:
+        return "access::decorated::no";
+      case type::legacy:
+        return "access::decorated::legacy";
+      default:
+        return "unknown";
+    }
+  }
+};
+}  // namespace Catch
 
 namespace multi_ptr_common {
+
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_address_spaces() {
+  return value_pack<
+      sycl::access::address_space, sycl::access::address_space::global_space,
+      sycl::access::address_space::local_space,
+      sycl::access::address_space::private_space,
+      sycl::access::address_space::generic_space>::generate_named();
+}
+
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_decorated() {
+  return value_pack<sycl::access::decorated, sycl::access::decorated::yes,
+                    sycl::access::decorated::no>::generate_named();
+}
 
 /** @brief Legacy multi_ptr alias to enforce the access::decorated::legacy
  *         usage with no dependency on default multi_ptr template parameter
