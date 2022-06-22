@@ -17,6 +17,10 @@ namespace multi_ptr_access_members {
 
 namespace detail {
 
+/**
+ * @brief Structure that combines variables used to validate test results
+ * @tparam T Data type that will be used in test
+ */
 template <typename T>
 struct test_result {
   // Variables that will be used to check that access members returns correct
