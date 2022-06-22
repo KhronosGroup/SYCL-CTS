@@ -12,7 +12,7 @@
 
 namespace multi_ptr_access_members_core {
 
-TEST_CASE("Access members. core types", "[multi_ptr]") {
+TEST_CASE("multi_ptr access members. Core types", "[multi_ptr]") {
   using namespace multi_ptr_access_members;
 
   auto types = multi_ptr_common::get_types();
