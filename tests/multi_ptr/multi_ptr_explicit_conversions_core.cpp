@@ -12,7 +12,7 @@
 
 namespace multi_ptr_explicit_conversions_core {
 
-TEST_CASE("multi_ptr explicit conversions. core types", "[multi_ptr]") {
+TEST_CASE("multi_ptr explicit conversions. Core types", "[multi_ptr]") {
   using namespace multi_ptr_explicit_conversions;
   auto types = multi_ptr_common::get_types();
   auto composite_types = multi_ptr_common::get_composite_types();
