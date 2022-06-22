@@ -16,6 +16,31 @@
 
 namespace multi_ptr_access_members {
 
+namespace detail {
+
+template <typename T>
+struct test_result {
+  // Variables that will be used to check that access members returns correct
+  // data type
+  bool dereference_return_type_is_correct = false;
+  bool dereference_op_return_type_is_correct = false;
+  bool get_return_type_is_correct = false;
+  bool get_raw_return_type_is_correct = false;
+  bool get_decorated_return_type_is_correct = false;
+
+  // Value that will be used to initialze variables with random values to avoid
+  // false positive test result
+  int value_to_init = 49;
+  // Variables that will be used to check that access members returns correct
+  // value
+  T dereference_ret_value = value_to_init;
+  T dereference_op_ret_value = value_to_init;
+  T get_member_ret_value = value_to_init;
+  T get_raw_member_ret_value = value_to_init;
+};
+
+}  // namespace detail
+
 /**
  * @brief Provides functions for verification multi_ptr access operators that
  *        they returns correct data
@@ -43,42 +68,33 @@ class run_access_members_tests {
     auto queue = sycl_cts::util::get_cts_object::queue();
     constexpr int val_to_init = 42;
     T value = user_def_types::get_init_value_helper<T>(val_to_init);
-    // Variables that will be used to check that access members returns correct
-    // data type
-    bool dereference_return_type_is_correct = false;
-    bool dereference_op_return_type_is_correct = false;
-    bool get_return_type_is_correct = false;
-    bool get_raw_return_type_is_correct = false;
-    bool get_decorated_return_type_is_correct = false;
-    // Variables that will be used to check that access members returns correct
-    // value
-    T dereference_ret_value;
-    T dereference_op_ret_value;
-    T get_member_ret_value;
-    T get_raw_member_ret_value;
+
+    // Variable that contains all variables that will be used to verify test
+    // result
+    detail::test_result<T> test_result;
 
     sycl::range r = sycl::range(1);
     {
-      sycl::buffer<T> dereference_ret_value_buffer(&dereference_ret_value,
-                                                   sycl::range(1));
-      sycl::buffer<T> dereference_op_ret_value_buffer(&dereference_op_ret_value,
-                                                      sycl::range(1));
-      sycl::buffer<T> get_member_ret_value_buffer(&get_member_ret_value,
-                                                  sycl::range(1));
-      sycl::buffer<T> get_raw_member_ret_value_buffer(&get_raw_member_ret_value,
-                                                      sycl::range(1));
+      sycl::buffer<T> dereference_ret_value_buffer(
+          &test_result.dereference_ret_value, sycl::range(1));
+      sycl::buffer<T> dereference_op_ret_value_buffer(
+          &test_result.dereference_op_ret_value, sycl::range(1));
+      sycl::buffer<T> get_member_ret_value_buffer(
+          &test_result.get_member_ret_value, sycl::range(1));
+      sycl::buffer<T> get_raw_member_ret_value_buffer(
+          &test_result.get_raw_member_ret_value, sycl::range(1));
 
       sycl::buffer<T> val_buffer(&value, sycl::range(1));
       sycl::buffer<bool> dereference_return_type_buf(
-          &dereference_return_type_is_correct, sycl::range(1));
+          &test_result.dereference_return_type_is_correct, sycl::range(1));
       sycl::buffer<bool> dereference_op_return_type_buf(
-          &dereference_op_return_type_is_correct, sycl::range(1));
-      sycl::buffer<bool> get_return_type_buf(&get_return_type_is_correct,
-                                             sycl::range(1));
+          &test_result.dereference_op_return_type_is_correct, sycl::range(1));
+      sycl::buffer<bool> get_return_type_buf(
+          &test_result.get_return_type_is_correct, sycl::range(1));
       sycl::buffer<bool> get_raw_return_type_buf(
-          &get_raw_return_type_is_correct, sycl::range(1));
+          &test_result.get_raw_return_type_is_correct, sycl::range(1));
       sycl::buffer<bool> get_decorated_return_type_buf(
-          &get_decorated_return_type_is_correct, sycl::range(1));
+          &test_result.get_decorated_return_type_is_correct, sycl::range(1));
 
       queue.submit([&](sycl::handler &cgh) {
         auto dereference_ret_value_acc =
@@ -169,8 +185,8 @@ class run_access_members_tests {
                   .with("address_space", address_space_name)
                   .with("decorated", is_decorated_name)
                   .create()) {
-        CHECK(dereference_return_type_is_correct);
-        CHECK(dereference_ret_value == expected_value);
+        CHECK(test_result.dereference_return_type_is_correct);
+        CHECK(test_result.dereference_ret_value == expected_value);
       }
       SECTION(
           section_name(
@@ -179,8 +195,8 @@ class run_access_members_tests {
               .with("address_space", address_space_name)
               .with("decorated", is_decorated_name)
               .create()) {
-        CHECK(dereference_op_return_type_is_correct);
-        CHECK(dereference_op_ret_value == expected_value);
+        CHECK(test_result.dereference_op_return_type_is_correct);
+        CHECK(test_result.dereference_op_ret_value == expected_value);
       }
     }
     SECTION(section_name("Check get() return value and type")
@@ -188,10 +204,10 @@ class run_access_members_tests {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      CHECK(get_return_type_is_correct);
+      CHECK(test_result.get_return_type_is_correct);
       // Skip verification if pointer is decorated
       if constexpr (decorated == sycl::access::decorated::yes) {
-        CHECK(get_member_ret_value == expected_value);
+        CHECK(test_result.get_member_ret_value == expected_value);
       }
     }
     SECTION(section_name("Check get_raw() return value and type")
@@ -199,15 +215,15 @@ class run_access_members_tests {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      CHECK(get_raw_return_type_is_correct);
-      CHECK(get_raw_member_ret_value == expected_value);
+      CHECK(test_result.get_raw_return_type_is_correct);
+      CHECK(test_result.get_raw_member_ret_value == expected_value);
     }
     SECTION(section_name("Check that get_decorated() returns pointer")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      CHECK(get_decorated_return_type_is_correct);
+      CHECK(test_result.get_decorated_return_type_is_correct);
     }
   }
 };
