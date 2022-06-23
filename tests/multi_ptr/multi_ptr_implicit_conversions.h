@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for tests for multi_ptr explicit conversions
+//  Provides code for tests for multi_ptr implicit conversions
 //
 *******************************************************************************/
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_IMPLICIT_CONVERSIONS_H
@@ -11,7 +11,7 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
-namespace multi_ptr_implcit_conversions {
+namespace multi_ptr_implicit_conversions {
 
 namespace detail {
 
@@ -48,7 +48,7 @@ struct avoid_implicit_conversion {
 
 constexpr int expected_val = 42;
 template <typename T, typename AddrSpaceT, typename IsDecoratedT>
-class run_explicit_convert_tests {
+class run_implicit_convert_tests {
   using namespace detail;
   static constexpr sycl::access::address_space address_space =
       AddrSpaceT::value;
@@ -232,6 +232,6 @@ class check_multi_ptr_implicit_convert_for_type {
         address_spaces_pack, is_decorated_pack, type_name);
   }
 };
-}  // namespace multi_ptr_implcit_conversions
+}  // namespace multi_ptr_implicit_conversions
 
 #endif  // __SYCLCTS_TESTS_MULTI_PTR_IMPLICIT_CONVERSIONS_H
