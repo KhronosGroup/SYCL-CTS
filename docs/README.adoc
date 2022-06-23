@@ -1,29 +1,65 @@
 = SYCL CTS Developer Documentation
 :toc:
+:toclevels: 3
 :tip-caption: 💡
 :important-caption: ❗
 :warning-caption: ⚠️
+:note-caption: ✏️
 
-This document is intended as a comprehensive reference for developers wanting to contribute to the SYCL CTS.
+This document is intended as a comprehensive reference for developers wanting to contribute to the Khronos SYCL Conformance Test Suite.
+
+NOTE: This document is still a work-in-progress.
+Pull requests are welcome!
+If you are uncertain how to approach a task while developing for the CTS, and it is not covered by this document, please link:https://github.com/KhronosGroup/SYCL-CTS/issues/new[open an issue].
 
 == General
 
-- Overview of the SYCL Conformance Test Suite
+The SYCL CTS is a C++17 application that uses https://github.com/catchorg/Catch2/[Catch2] as its underlying testing framework.
 
-== Procedures
+=== Directory Structure
 
-- Test Plans
-- Pull Requests
-- Continuous Integration (CI)
+After first cloning the repository, you will find the following directory structure:
 
-== Coding Guidelines
+[listing]
+----
+SYCL-CTS
+├── .github
+├── ci
+├── cmake
+├── docker
+├── docs
+├── oclmath
+├── test_plans
+├── tests
+│   ├── common
+│   └── <test categories>
+├── tools
+├── util
+└── vendor
+----
 
-** TODO **
+The link:../.github[`.github`], link:../ci[`ci`] and link:../docker[`docker`] folders contain files related to the continuous integration setup, such as workflow definitions, testing containers and per SYCL implementation test category filters.
+For more information, see <<Continuous Integration (CI)>>.
 
-== Writing Tests
+The link:../cmake[`cmake`] folder contains helper functions and find modules for all supported SYCL implementations.
+You may find it helpful to browse these files if you run into problems configuring the CTS for a given SYCL implementation.
 
-This section contains guidelines on how to write test cases for the SYCL CTS.
-We recommend that you try and stick to these guidelines, however, they are not to be considered hard and fast rules, and best practices are still being developed.
+link:../oclmath[`oclmath`] contains reference implementations for many of the math functions provided by the SYCL API.
+To ensure the correct behavior of the latter, they are compared against these reference implementations, which were borrowed from the https://github.com/KhronosGroup/OpenCL-CTS[Khronos OpenCL CTS] (this is one of the reasons why the SYCL CTS currently requires OpenCL to compile).
+
+The link:../test_plans[`test_plans`] directory contains documents describing in detail how certain SYCL features are to be tested.
+See <<Test Plans>> for more information.
+
+The link:../tests[`tests`] directory lies at the heart of the SYCL CTS.
+It contains many subfolders, one for each <<Test Categories,test category>>.
+Additionally, it contains a link:../tests/common[`common`] directory with header-only functionalities that are shared between many or all test cases.
+
+Similarly to link:../tests/common[`tests/common`], the link:../util[`util`] folder contains functionality shared by many of the tests in the CTS.
+It also contains framework-level functionality that underpins the execution of the CTS, for example device selection logic.
+
+TIP: The distinction between `util` and `tests/common` is blurry and we may revise this structure in the future.
+If you are unsure where to put new functionality, consider whether it requires a separate translation unit (`.cpp` file).
+If so, move it to `util`; otherwise check if either of the two folders already contains similar/related functionality, and move it there.
 
 === Test Categories
 
@@ -34,7 +70,76 @@ Each category is comprised of one or more translation units and is compiled into
 TIP: Before adding a test case, consider whether there already exists a category it would fit into, or whether a new category is required.
 
 TIP: The CTS supports disabling the compilation of entire categories for certain SYCL implementations.
-See link:procedures.adoc[Procedures] for more information.
+See <<Procedures>> for more information.
+
+== Procedures
+
+NOTE: #**TODO:** Explain supporting multiple SYCL implementations (test category filters, compile-time macros).#
+
+=== Test Plans
+
+For SYCL 2020, the SYCL CTS has adopted _test plans_ as a way of planning how a given feature is going to be tested.
+Using test plans, you can get feedback on your planned testing approach and scope without spending effort on code that may then have to be changed during review.
+
+You can find existing test plans in the link:../test_plans[`test_plans`] directory.
+
+TIP: Consider creating a test plan when tackling a new test category.
+For smaller contributions, such as the addition of a new test case to an existing test category, the creation of a test plan can usually be skipped.
+
+=== Pull Requests
+
+The SYCL CTS uses pull requests and code reviews before merging any changes, including test cases, bugfixes and improvements to the testing infrastructure.
+
+Before a pull request can be merged, the following steps need to be addressed:
+
+. To be able to contribute code to the SYCL CTS, you will have to sign the link:https://cla-assistant.io/KhronosGroup/SYCL-CTS[Khronos Open Source Contributer License Agreement (CLA)].
+. All CI checks must be green.
+. A pull request requires at least one review approval from a Khronos member.
+.. If you work for an organization that is a Khronos member, at least one approval from a different member is required.
+
+Merging is done by the author of the pull request or someone from the same organization (for Khronos members), or by @bader or @psalz for third party contributions.
+
+TIP: Bumping the version of a SYCL implementation used in CI requires no review approvals if the PR was opened by the respective implementer.
+See <<Continuous Integration (CI)>> for more information.
+
+=== Continuous Integration (CI)
+
+IMPORTANT: The CTS is currently only _compiled_ during CI, but not _executed_.
+This means that passing CI does not imply anything about the quality of your testing logic.
+
+NOTE: #**TODO:** Explain process for updating CI docker images.#
+
+== Coding Guidelines
+
+=== Code Style
+
+The CTS uses clang-format to ensure a consistent coding style.
+While some parts of the CTS are not yet formatted according to clang-format, all new additions and modifications must be.
+
+IMPORTANT: Please format your code using `clang-format` before submitting a pull request.
+However, make sure to only format the parts that you actually modified (for example using `clang-format-diff.py`), to avoid noise in your patch.
+
+=== Copyright Header
+
+Each file in the SYCL CTS should be prefaced by the Khronos copyright header:
+
+[source,c++]
+----
+/*******************************************************************************
+//
+//  SYCL 2020 Conformance Test Suite
+//
+//  Copyright (c) <YEAR> The Khronos Group Inc.
+//
+*******************************************************************************/
+----
+
+where `<YEAR>` refers to the current year when creating a new file, or a range (e.g. `2020 - 2022`) when updating an existing file.
+
+== Writing Tests
+
+This section contains guidelines on how to write test cases for the SYCL CTS.
+We recommend that you try and stick to these guidelines, however, they are not to be considered hard and fast rules, and best practices are still being developed.
 
 === Setting up a Simple Category & Test Case
 
@@ -105,12 +210,12 @@ The test case is then instantiated separately for each type.
 - `TEMPLATE_TEST_CASE_SIG` can be used to make one or more template parameters (including non-type template parameters) available under a custom name.
 
 TIP: Use `TEMPLATE_TEST_CASE_SIG("my test", "[my-tag]", ((int D), D), 1, 2, 3)` to test APIs that support multiple dimensions.
-The test case will be executed three times, with `D` having a value of `1`, `2` and `3`.
+The test case will be executed three times, with `D` having a value of `1`, `2` and `3`, respectively.
 
 ==== Assertion Macros
 
 * `CHECK(condition)` asserts that the provided condition is true. If it is false, the assertion failure will be reported and the test case continues execution.
-* `REQUIRE(condition)` like `CHECK`, but will abort the current test case upon failure.
+* `REQUIRE(condition)` works like `CHECK`, but will abort the current test case upon failure.
 
 TIP: Use `CHECK` by default, only resort to `REQUIRE` when further execution of a test case would result in a crash (for example `REQUIRE(arr.size() >= 2); if(arr[1] == 123) { /* ... */ }`).
 
@@ -139,7 +244,26 @@ TEST_CASE("my test case") {
 
 ==== Sections
 
-**TODO**
+Sections provide a way of sharing code between related yet distinct testing logic.
+For example this test case will be executed twice, once for each section.
+While only one section is entered each time, `setup_something()` and `tear_something_down()` will be executed in both cases:
+
+[source,c++]
+----
+TEST_CASE("my test case with sections") {
+    setup_something();
+
+    SECTION("testing one thing") {
+        /* ... */
+    }
+
+    SECTION("testing another thing") {
+        /* ... */
+    }
+
+    tear_something_down();
+}
+----
 
 === Special Macros & Custom Matchers
 
@@ -147,8 +271,34 @@ The SYCL CTS extends Catch2's functionality with several custom macros and match
 
 ==== Compile-Time Disabled Test Cases
 
-* `DISABLED_FOR_TEST_CASE`
-* `DISABLED_FOR_TEMPLATE_TEST_CASE_SIG`
+While writing test cases for the CTS, you may want to test features that have not yet been implemented by all of the SYCL implementations.
+Test category filters (see <<Procedures>>) offer a way of disabling entire test categories for a set of implementations.
+However this is often too coarse grained of an approach:
+In many cases, a certain feature may exist partially in an implementation, but may not yet offer all of the APIs prescribed by the specification.
+Unfortunately, using such missing APIs in test cases (for example constructor overloads or member functions) will then prevent the entire test category from compiling (for the SYCL implementation in question).
+To allow testing of features that _are_ present, while not compiling those that are missing, the SYCL CTS offers special macros for disabling individual test cases at compile time.
+
+Their usage is best explained in an example:
+
+[source,c++]
+----
+DISABLED_FOR_TEST_CASE(hipSYCL)("some feature works as expected", "[some-feature]")({
+    CHECK(sycl::something_that_hipsycl_does_not_yet_support() == 123);
+});
+----
+
+While for other SYCL implementations the test case will compile as if it were a normal `TEST_CASE`, for hipSYCL it will instead compile to a test case that fails at runtime with the message `"This test case has been compile-time disabled."`.
+
+Note that unlike the normal `TEST_CASE` macro, `DISABLED_FOR_TEST_CASE` requires that the body of the test is wrapped in parentheses and followed by a semicolon.
+
+The CTS currently provides the following macros for compile-time disabling test cases:
+
+* `DISABLED_FOR_TEST_CASE(<impls...>)(<description>, <tags>)(<body>)`
+* `DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(<impls...>)(<description>, <tags>, <signature>, <types...>)(<body>)`
+
+where `<impls...>` is a comma-separated list of `hipSYCL`, `ComputeCpp` and/or `DPCPP`.
+
+NOTE: #**TODO:** Custom matchers.#
 
 === Best Practices
 
