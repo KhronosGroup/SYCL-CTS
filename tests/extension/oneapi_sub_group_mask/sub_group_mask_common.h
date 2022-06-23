@@ -15,7 +15,7 @@
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
 namespace {
 
-#ifdef SYCL_CTS_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
 static const auto types =
     named_type_pack<char, signed char, unsigned char, short, unsigned short,
                     int, unsigned int, long, unsigned long, long long,
@@ -26,7 +26,7 @@ static const auto types =
 #else
 static const auto types =
     named_type_pack<char, int>::generate("char", "int");
-#endif  // SYCL_CTS_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 
 template <typename funT, typename PredT, typename T, size_t SGSize>
 class test_kernel;
@@ -75,7 +75,7 @@ inline auto get_result_array() {
 }
 
 inline bool if_check(const sycl::sub_group &sub_group) {
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return true;
 #else
   return sub_group.leader();

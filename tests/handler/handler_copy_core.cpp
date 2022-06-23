@@ -20,7 +20,7 @@ TEST_CASE("Tests the API for sycl::handler::copy", "[handler]") {
 
   test_all_variants<int>(lh, queue);
 
-#if defined(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   test_all_variants<char>(lh, queue);
   test_all_variants<short>(lh, queue);
   test_all_variants<long>(lh, queue);
