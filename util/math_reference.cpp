@@ -434,7 +434,7 @@ double fma(double a, double b, double c) { return reference_fmal(a, b, c); }
 
 // ComputeCpp and hipSYCL do not yet support sycl::bit_cast,
 // which is used in `nextafter`.
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::half fdim(sycl::half a, sycl::half b) {
   if (a > b) {
     // to get rounding to nearest even
@@ -480,7 +480,7 @@ sycl::half modf(sycl::half a, sycl::half *b) {
 }
 
 // ComputeCpp and hipSYCL do not yet support sycl::bit_cast
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::half nextafter(sycl::half x, sycl::half y) {
   if (std::isnan(x))
     return x;

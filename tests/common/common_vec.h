@@ -282,7 +282,7 @@ bool check_vector_convert_modes(sycl::vec<vecType, N> inputVec) {
   flag &=
       check_vector_convert_result<vecType, N, convertType,
                                   sycl::rounding_mode::automatic>(inputVec);
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   flag &= check_vector_convert_result<vecType, N, convertType,
                                       sycl::rounding_mode::rte>(inputVec);
   flag &= check_vector_convert_result<vecType, N, convertType,
@@ -502,7 +502,7 @@ bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   result +=
       check_convert_as_all_dims<vecType, N, unsigned long long int>(inputVec);
   result += check_convert_as_all_dims<vecType, N, float>(inputVec);
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   result += check_convert_as_all_dims<vecType, N, sycl::byte>(inputVec);
 
 #ifdef INT8_MAX
@@ -529,7 +529,7 @@ bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
 #ifdef UINT64_MAX
   result += check_convert_as_all_dims<vecType, N, std::uint64_t>(inputVec);
 #endif
-#endif  // ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#endif  // if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return result;
 }
 

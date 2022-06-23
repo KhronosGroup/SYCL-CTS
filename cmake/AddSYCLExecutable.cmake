@@ -1,13 +1,14 @@
-# Include SYCL implementation CMake module
-if (NOT SYCL_IMPLEMENTATION)
-  set (SYCL_IMPLEMENTATION ComputeCpp)
-endif()
-
 set (KNOWN_SYCL_IMPLEMENTATIONS "Intel_SYCL;DPCPP;ComputeCpp;hipSYCL")
 if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
     message(FATAL_ERROR
         "The SYCL CTS requires specifying a SYCL implementation with "
         "-DSYCL_IMPLEMENTATION=[Intel_SYCL,DPCPP;ComputeCpp,hipSYCL]")
+endif()
+
+if(${SYCL_IMPLEMENTATION} STREQUAL "Intel_SYCL")
+    set(CANONICAL_SYCL_IMPLEMENTATION "DPCPP")
+else()
+    string(TOUPPER ${SYCL_IMPLEMENTATION} CANONICAL_SYCL_IMPLEMENTATION)
 endif()
 
 find_package(${SYCL_IMPLEMENTATION} REQUIRED)
@@ -20,6 +21,9 @@ if(NOT TARGET SYCL::SYCL)
         "contain device code."
     )
 endif()
+
+set(SYCL_IMPLEMENTATION_DETECTION_MACRO "SYCL_CTS_COMPILING_WITH_${CANONICAL_SYCL_IMPLEMENTATION}")
+target_compile_options(SYCL::SYCL INTERFACE "-D${SYCL_IMPLEMENTATION_DETECTION_MACRO}")
 
 if(NOT COMMAND add_sycl_executable_implementation)
     message(FATAL_ERROR
@@ -57,19 +61,6 @@ function(add_sycl_executable)
         NAME           "${args_NAME}"
         OBJECT_LIBRARY "${args_OBJECT_LIBRARY}"
         TESTS          "${args_TESTS}")
-endfunction()
 
-# Adds preprocessor definitions to the device compiler,
-# to mimic the add_definitions CMake function, but only for the device compiler
-# If the implementation uses a single compiler for host and device code,
-# then this function is expected to be a no-op
-# because add_definitions should take care of everything
-function(add_device_compiler_definitions)
-    add_device_compiler_definitions_implementation(${ARGN})
-endfunction()
-
-# Adds preprocessor definitions to both host and device compilers
-function(add_host_and_device_compiler_definitions)
-    add_definitions(${ARGN})
-    add_device_compiler_definitions(${ARGN})
+    target_compile_definitions(${args_NAME} PUBLIC "-D${SYCL_IMPLEMENTATION_DETECTION_MACRO}")
 endfunction()
