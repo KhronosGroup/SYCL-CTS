@@ -82,7 +82,7 @@ class run_explicit_convert_tests {
         avoid_implicit_conversion<from_multi_ptr_t>>;
 
     {
-      sycl::range<1> r(1);
+      sycl::range r(1);
       sycl::buffer<bool> res_buf(&res, r);
       sycl::buffer<T> expected_val_buffer(&value, r);
       queue.submit([&](sycl::handler &cgh) {
