@@ -56,7 +56,7 @@ bool test_base_opencl::setup(logger &log) {
   }
   const auto ctsDevice = ctsContext.get_devices()[0];
 
-#if !defined(__COMPUTECPP__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   m_cl_platform_id =
       sycl::get_native<sycl::backend::opencl>(ctsDevice.get_platform());
   m_cl_device_id = sycl::get_native<sycl::backend::opencl>(ctsDevice);

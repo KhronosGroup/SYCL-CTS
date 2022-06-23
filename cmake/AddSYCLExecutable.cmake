@@ -52,4 +52,12 @@ function(add_sycl_executable)
         NAME           "${args_NAME}"
         OBJECT_LIBRARY "${args_OBJECT_LIBRARY}"
         TESTS          "${args_TESTS}")
+
+    if(${SYCL_IMPLEMENTATION} STREQUAL "Intel_SYCL")
+        set(CANONICAL_SYCL_IMPLEMENTATION "DPCPP")
+    else()
+        string(TOUPPER ${SYCL_IMPLEMENTATION} CANONICAL_SYCL_IMPLEMENTATION)
+    endif()
+
+    target_compile_definitions(${args_NAME} PUBLIC "-DSYCL_CTS_COMPILING_WITH_${CANONICAL_SYCL_IMPLEMENTATION}")
 endfunction()

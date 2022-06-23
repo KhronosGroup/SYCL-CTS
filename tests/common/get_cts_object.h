@@ -63,7 +63,7 @@ struct get_cts_object {
   static sycl::queue queue(
       const sycl::device_selector &selector = cts_selector()) {
     static cts_async_handler asyncHandler;
-#if !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
     return sycl::queue(selector, asyncHandler, sycl::property_list{});
 #else
     return sycl::queue(selector.select_device(), asyncHandler,
@@ -97,7 +97,7 @@ struct get_cts_object {
     template <class kernel_name>
     static sycl::kernel prebuilt(sycl::queue &queue) {
 // ComputeCpp and hipSYCL do not yet support sycl::get_kernel_bundle
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP  && !SYCL_CTS_COMPILING_WITH_HIPSYCL
       auto ctx = queue.get_context();
       auto kb_exe =
           sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(
