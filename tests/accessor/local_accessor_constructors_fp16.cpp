@@ -8,8 +8,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
+    !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
 #include "local_accessor_constructors.h"
 #endif
@@ -24,7 +24,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace local_accessor_constructors;
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     run_local_constructors_test<sycl::half>{}("sycl::half");
 #else
     for_type_vectors_marray<run_local_constructors_test, sycl::half>(

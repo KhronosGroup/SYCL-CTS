@@ -9,8 +9,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
+    !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
 #include "generic_accessor_constructors.h"
 #endif
@@ -25,7 +25,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     run_generic_constructors_test<sycl::half>{}("sycl::half");
 #else
     for_type_vectors_marray<run_generic_constructors_test, sycl::half>(

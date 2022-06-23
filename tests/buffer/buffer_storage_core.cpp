@@ -32,7 +32,7 @@ public:
    */
   void run(util::logger &log) override {
     {
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types_and_vectors<
           buffer_storage_common::check_buffer_storage_for_type>(
           get_cts_types::vector_types, log);

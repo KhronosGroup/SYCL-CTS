@@ -47,7 +47,7 @@ bool check_buffer_constructor(sycl::buffer<T, dims, allocT> buf,
                               sycl::range<dims> r,
                               bool data_verify = false) {
   bool res = buf.get_range() == r;
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   if (data_verify) {
     res &= check_data(buf, r);
   }

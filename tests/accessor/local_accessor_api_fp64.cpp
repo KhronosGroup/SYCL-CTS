@@ -9,8 +9,8 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
+    !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
 #include "local_accessor_api_common.h"
 #endif
@@ -28,7 +28,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         "Skipping the test case.");
     return;
   }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
   run_local_api_for_type<double>{}("double");
 #else
   for_type_vectors_marray<run_local_api_for_type, double>("double");

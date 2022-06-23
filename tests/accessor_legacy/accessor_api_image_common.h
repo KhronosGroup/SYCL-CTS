@@ -1189,10 +1189,10 @@ class check_image_accessor_api_methods {
   void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string& typeName) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_methods",
                                         typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     auto data = get_image_input_data<T>(size);
     auto image = image_t(data.data(), image_format_channel<T>::order,
@@ -1239,9 +1239,9 @@ class check_image_accessor_api_methods {
     {
       // check get_range() method
       auto accessorRange = accessor.get_range();
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
       log.note("Checking get_range");
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
       check_acc_return_type<image_range_t<dims, target>>(
           log, accessor.get_range(), "get_range()", typeName);
       if (accessorRange != range) {
@@ -1317,10 +1317,10 @@ class check_image_accessor_api_reads {
   void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string& typeName) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_reads",
                                         typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     const auto tag = acc_type_tag::get<target, acc_placeholder::image>();
     image_accessor_samplers samplers;
@@ -1512,10 +1512,10 @@ class check_image_accessor_api_writes {
   void operator()(util::logger &log, sycl::queue &queue,
                   image_range_t<dims, target> range,
                   const std::string typeName) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target>("check_image_accessor_api_writes",
                                         typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     static constexpr bool initialize = false;
     auto dataCoordsSyntax = get_image_input_data<T>(size, initialize);
@@ -1651,7 +1651,7 @@ void check_image_accessor_api_mode(util::logger &log,
                                    size_t count, size_t size,
                                    sycl::queue &queue,
                                    image_range_t<dims, target> range) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
   log_accessor<T, dims, mode, target>("", typeName, log);
 #endif
 
