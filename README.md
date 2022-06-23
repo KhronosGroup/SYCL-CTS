@@ -85,6 +85,18 @@ Additionally, the following SYCL implementation-specific options can be used:
 
 `DPCPP_INSTALL_DIR` (default: None)
 
+`DPCPP_FLAGS` (default: None)
+ Set additional compiler flags for DPC++ compiler. This options applies only if `SYCL_IMPLEMENTATION` is set to `DPCPP`.
+
+`DPCPP_TARGET_TRIPLES` (default: None)
+ Configures compilation for specified target triple.
+
+`DPCPP_DISABLE_SYCL2020_DEPRECATION_WARNINGS` (default: `ON`)
+ Disables warnings about using features deprecated by SYCL 2020.
+
+`DPCPP_SYCL2020_CONFORMANT_APIS` (default: `ON`)
+ Enables conformant SYCL 2020 API in DPC++ implementation. Current DPC++ version exposes SYCL 1.2.1 compatible API version by default.
+
 ## Running the Test Suite
 
 Each of the executables produced in the `build/bin` directory acts as a
