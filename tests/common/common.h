@@ -173,7 +173,7 @@ void check_equality(T& a, T& b) {
    */
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_backend() == sycl::backend::opencl) {
-#if !defined(__COMPUTECPP__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     if (sycl::get_native<sycl::backend::opencl>(a) !=
         sycl::get_native<sycl::backend::opencl>(b)) {
 #else
@@ -293,7 +293,7 @@ bool check_equal_values(const sycl::vec<T, numElements>& lhs,
 }
 
 // ComputeCpp and hipSYCL do not yet support sycl::marray
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Instantiation for marray with the same API as for scalar values
  * Deprecated. Use \c value_operations::are_equal instead
@@ -414,7 +414,7 @@ namespace pixel_tag {
 
 // ComputeCpp does not yet support operator[] on sycl::vec
 // hipSYCL does not yet support images
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Helps with retrieving the right access type for reading/writing
@@ -626,7 +626,7 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 // ComputeCpp and hipSYCL do not yet support sycl::get_kernel_bundle
-#if !defined(__COMPUTECPP__) && !defined(__HIPSYCL__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
   auto kb =
       sycl::get_kernel_bundle<kernelT, sycl::bundle_state::executable>(context);
   auto kernel = kb.get_kernel(sycl::get_kernel_id<kernelT>());

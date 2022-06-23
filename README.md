@@ -53,7 +53,7 @@ for all categories.
 
 The CTS can be configured using the following CMake configuration options:
 
-`SYCL_IMPLEMENTATION` (default: `ComputeCpp`)
+`SYCL_IMPLEMENTATION` (default: None)
  One of `ComputeCpp`, `DPCPP` or `hipSYCL`.
 
 `SYCL_CTS_EXCLUDE_TEST_CATEGORIES` (default: None)
