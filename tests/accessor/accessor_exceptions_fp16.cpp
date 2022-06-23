@@ -34,7 +34,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, generic_accessor>(
       "sycl::half");
 #else
@@ -52,7 +52,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, local_accessor>(
       "sycl::half");
 #else
@@ -70,11 +70,12 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, host_accessor>(
       "sycl::half");
 #else
   run_tests_with_types<sycl::half, host_accessor>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
+
 }  // namespace accessor_exceptions_test_fp16

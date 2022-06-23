@@ -91,7 +91,7 @@ inline void set_test_info(sycl_cts::util::test_base::info& out,
     FAIL("This test case is not yet implemented.");           \
   }
 
-#if defined(SYCL_CTS_TEST_OPENCL_INTEROP)
+#if SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
 #define CHECK_CL_SUCCESS(log, error) \
   ([&] {                             \
     CHECK(error == CL_SUCCESS);      \

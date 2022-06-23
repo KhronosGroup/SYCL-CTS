@@ -165,6 +165,7 @@ function(add_cts_test_helper)
                       TESTS          ${test_cases_list})
 
   target_include_directories(${test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+  target_compile_definitions(${test_exe_name} PUBLIC ${SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS})
 
   set(info_dump_dir "${CMAKE_BINARY_DIR}/Testing")
   add_test(NAME ${test_exe_name}

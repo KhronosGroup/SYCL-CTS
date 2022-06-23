@@ -47,7 +47,7 @@ public:
     if (!availability::check(queue, log))
       return;
 
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     // Specific set of types to cover during ordinary compilation
 
     /** check specific accessor api for double
