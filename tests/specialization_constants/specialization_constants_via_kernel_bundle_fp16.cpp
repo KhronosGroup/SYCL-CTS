@@ -37,7 +37,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
             "Device does not support half precision floating point operations");
         return;
       }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
       check_all<sycl::half>{}(log, "sycl::half");
 #else
       for_type_vectors_marray<check_all, sycl::half>(log, "sycl::half");

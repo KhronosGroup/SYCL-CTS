@@ -383,7 +383,7 @@ class SwizzleData:
             if (!check_vector_size_byte_size<${type}, ${size}>(swizzledVec)) {
                 resAcc[0] = false;
             }
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
             if (!check_convert_as_all_types<${type}, ${size}>(swizzledVec)) {
                 resAcc[0] = false;
             }
@@ -431,7 +431,7 @@ class SwizzleData:
             if (!check_vector_size_byte_size<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
             if (!check_convert_as_all_types<${type}, ${size}>(inOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
@@ -451,7 +451,7 @@ class SwizzleData:
             if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
             if (!check_convert_as_all_types<${type}, ${size}>(reverseOrderSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
@@ -471,7 +471,7 @@ class SwizzleData:
             if (!check_vector_size_byte_size<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
             if (!check_convert_as_all_types<${type}, ${size}>(inOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
@@ -491,7 +491,7 @@ class SwizzleData:
             if (!check_vector_size_byte_size<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
             if (!check_convert_as_all_types<${type}, ${size}>(reverseOrderReversedPairSwizzleFunctionVec)) {
                 resAcc[0] = false;
             }

@@ -31,7 +31,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger &log) override {
     {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<check_all>(get_spec_const::testing_types::types, log);
 #else
       for_all_types_vectors_marray<check_all>(
