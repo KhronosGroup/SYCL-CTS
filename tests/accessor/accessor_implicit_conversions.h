@@ -14,9 +14,8 @@
 
 #include "accessor_common.h"
 
+#include <functional>  // for std::function
 #include <type_traits>
-// for std::function
-#include <functional>
 
 namespace accessor_implicit_conversions {
 using namespace accessor_tests_common;
