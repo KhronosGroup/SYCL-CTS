@@ -26,12 +26,34 @@ namespace detail {
 template <typename T, size_t N>
 using ArrayT = T[N];
 
+/**
+ * @brief Function allows to make assignemt operations to elements of the
+ * container using std::get and std::index_sequence
+ *
+ * @tparam ContainerT Type of container for assignment
+ * @tparam U Right operand for assignment operation
+ * @tparam I Indexes for assignment
+ * @param left Container for assignment
+ * @param right New value to assign
+ */
 template <typename ContainerT, typename U, std::size_t... I>
 void assign_by_index_sequence(ContainerT& left, const U& right,
                               std::index_sequence<I...>) {
   ((std::get<I>(left) = right), ...);
 }
 
+/**
+ * @brief Function allows to compare elements of the
+ * container using std::get and std::index_sequence
+ *
+ * @tparam ContainerT Type of container for assignment
+ * @tparam U Right operand for assignment operation
+ * @tparam I Indexes for assignment
+ * @param left Left operand of comparison
+ * @param right Right operand of comparison
+ * @return Function returns true if all elements of the left operand are equal
+ * to the right operand. False otherwise
+ */
 template <typename ContainerT, typename U, std::size_t... I>
 bool are_equal_by_index_sequence(const ContainerT& left, const U& right,
                                  std::index_sequence<I...>) {
