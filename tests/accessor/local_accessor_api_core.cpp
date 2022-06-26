@@ -20,11 +20,7 @@ namespace local_accessor_api_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::local_accessor api. core types", "[accessor]")({
   using namespace local_accessor_api_common;
-#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  const auto types = get_lightweight_type_pack();
-#else
-  const auto types = get_full_conformance_type_pack();
-#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_local_api_for_type>(types);
 });
 
