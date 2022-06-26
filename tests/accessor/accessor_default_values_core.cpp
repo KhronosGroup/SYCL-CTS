@@ -13,8 +13,8 @@
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
+    !SYCL_CTS_COMPILING_WITH_DPCPP
 
 #include "accessor_default_values.h"
 
