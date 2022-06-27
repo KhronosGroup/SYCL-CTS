@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
-option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
-	"Enable CUDA interoperability tests." OFF)
+add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
+    "Enable CUDA interoperability tests", OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -69,7 +69,7 @@ add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
     "Enable OpenCL interoperability tests" ON)
 
 # ------------------
-# CUDA interoperability
+# Enable CUDA language and add library, for CUDA interop tests
 if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
     set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
     enable_language(CUDA)
