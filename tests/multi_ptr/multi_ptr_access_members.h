@@ -78,91 +78,47 @@ class run_access_members_tests {
 
     sycl::range r = sycl::range(1);
     {
-      sycl::buffer<T> dereference_ret_value_buffer(
-          &test_result.dereference_ret_value, sycl::range(1));
-      sycl::buffer<T> dereference_op_ret_value_buffer(
-          &test_result.dereference_op_ret_value, sycl::range(1));
-      sycl::buffer<T> get_member_ret_value_buffer(
-          &test_result.get_member_ret_value, sycl::range(1));
-      sycl::buffer<T> get_raw_member_ret_value_buffer(
-          &test_result.get_raw_member_ret_value, sycl::range(1));
-
+      sycl::buffer<detail::test_result<T>> test_result_buffer(&test_result,
+                                                              sycl::range(1));
       sycl::buffer<T> val_buffer(&value, sycl::range(1));
-      sycl::buffer<bool> dereference_return_type_buf(
-          &test_result.dereference_return_type_is_correct, sycl::range(1));
-      sycl::buffer<bool> dereference_op_return_type_buf(
-          &test_result.dereference_op_return_type_is_correct, sycl::range(1));
-      sycl::buffer<bool> get_return_type_buf(
-          &test_result.get_return_type_is_correct, sycl::range(1));
-      sycl::buffer<bool> get_raw_return_type_buf(
-          &test_result.get_raw_return_type_is_correct, sycl::range(1));
-      sycl::buffer<bool> get_decorated_return_type_buf(
-          &test_result.get_decorated_return_type_is_correct, sycl::range(1));
-
       queue.submit([&](sycl::handler &cgh) {
-        auto dereference_ret_value_acc =
-            dereference_ret_value_buffer
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto dereference_op_ret_value_acc =
-            dereference_op_ret_value_buffer
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto get_member_ret_value_acc =
-            get_member_ret_value_buffer
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto get_raw_member_ret_value_acc =
-            get_raw_member_ret_value_buffer
-                .template get_access<sycl::access_mode::write>(cgh);
-
-        auto dereference_return_type_acc =
-            dereference_return_type_buf
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto dereference_op_return_type_acc =
-            dereference_op_return_type_buf
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto get_return_type_acc =
-            get_return_type_buf.template get_access<sycl::access_mode::write>(
+        auto test_result_acc =
+            test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
-        auto get_raw_return_type_acc =
-            get_raw_return_type_buf
-                .template get_access<sycl::access_mode::write>(cgh);
-        auto get_decorated_return_type_acc =
-            get_decorated_return_type_buf
-                .template get_access<sycl::access_mode::write>(cgh);
-
         auto acc_for_multi_ptr = val_buffer.template get_access<
             user_def_types::get_init_value_helper::access_mode::read>(cgh);
-
         auto test_device_code = [=] {
           const multi_ptr_t multi_ptr(acc_for_multi_ptr);
+          detail::test_result<T> &test_result = test_result_acc[0];
 
           // Dereference and multi_ptr::operator->() available only when:
           // !std::is_void<sycl::multi_ptr::value_type>::value
           if constexpr (!std::is_void_v<multi_ptr_t::value_type>) {
             // Check dereference operator return value and type correctness
-            dereference_return_type_acc[0] =
+            test_result.dereference_return_type_is_correct =
                 std::is_same_v<decltype(*multi_ptr), multi_ptr_t::reference>;
-            dereference_ret_value_acc[0] = *multi_ptr;
+            test_result.dereference_ret_value = *multi_ptr;
             // Check operator->() return value and type correctness
-            dereference_op_return_type_acc[0] =
+            test_result.dereference_op_return_type_is_correct =
                 std::is_same_v<decltype(multi_ptr.operator->()),
                                multi_ptr_t::pointer>;
-            dereference_op_ret_value_acc[0] = *(multi_ptr.operator->());
+            test_result.dereference_op_ret_value = *(multi_ptr.operator->());
           }
 
           // Check get() return value and type correctness
-          get_return_type_acc[0] =
+          test_result.get_return_type_is_correct =
               std::is_same_v<decltype(multi_ptr.get()), multi_ptr_t::pointer>;
           // Skip verification if pointer is decorated
           if constexpr (decorated == sycl::access::decorated::yes) {
-            get_member_ret_value_acc[0] = *(multi_ptr.get());
+            test_result.get_member_ret_value = *(multi_ptr.get());
           }
           // Check get_raw() return value and type correctness
-          get_raw_return_type_acc[0] =
+          test_result.get_raw_return_type_is_correct =
               std::is_same_v<decltype(multi_ptr.get_raw()),
                              std::add_pointer_t<multi_ptr_t::value_type>>;
-          get_raw_member_ret_value_acc[0] = *(multi_ptr.get_raw());
+          test_result.get_raw_member_ret_value = *(multi_ptr.get_raw());
           // Check get_decorated() return type correctness
-          get_decorated_return_type_acc[0] =
+          test_result.get_decorated_return_type_is_correct =
               std::is_pointer_v<decltype(multi_ptr.get_decorated())>;
         };
 
