@@ -26,31 +26,52 @@ using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Generic sycl::accessor constructor exceptions test.", "[accessor]")({
-#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_tests_with_types<sycl::half, generic_accessor>{}("sycl::half");
-#else
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
+    WARN(
+        "Device does not support half precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, generic_accessor>(
       "sycl::half");
+#else
+  run_tests_with_types<sycl::half, generic_accessor>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
-#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_tests_with_types<sycl::half, local_accessor>{}("sycl::half");
-#else
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
+    WARN(
+        "Device does not support half precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, local_accessor>(
       "sycl::half");
+#else
+  run_tests_with_types<sycl::half, local_accessor>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor constructor exceptions test.", "[accessor]")({
-#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_tests_with_types<sycl::half, host_accessor>{}("sycl::half");
-#else
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp16)) {
+    WARN(
+        "Device does not support half precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, sycl::half, host_accessor>(
       "sycl::half");
+#else
+  run_tests_with_types<sycl::half, host_accessor>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 }  // namespace accessor_exceptions_test_fp16

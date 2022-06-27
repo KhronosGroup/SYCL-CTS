@@ -24,10 +24,17 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::host_accessor constructors. fp64 type", "[accessor]")({
   using namespace host_accessor_constructors;
   auto queue = sycl_cts::util::get_cts_object::queue();
-#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  run_host_constructors_test<double>{}("double");
-#else
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    WARN(
+        "Device does not support double precision floating point operations. "
+        "Skipping the test case.");
+    return;
+  }
+
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_host_constructors_test, double>("double");
+#else
+  run_host_constructors_test<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-})
+});
 }  // namespace host_accessor_constructors_fp64

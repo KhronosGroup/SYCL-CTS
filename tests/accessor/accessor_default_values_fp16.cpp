@@ -2,27 +2,31 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for generic accessor properties with sycl::half type
+//  Provides tests for accessor default values.
+//
+//  This test provides verifications that template parameters has default values
+//  for generic accessor, host_accessor and local_accessor with sycl::half type.
 //
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
-#include "accessor_common.h"
-#include "generic_accessor_properties.h"
+
+#include "accessor_default_values.h"
+
+using namespace accessor_default_values_test;
+using namespace accessor_tests_common;
 #endif
 
-#include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
-
-namespace generic_accessor_properties_fp16 {
+namespace accessor_exceptions_test_fp16 {
+using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Generic sycl::accessor properties test. fp16 type", "[accessor]")({
-  using namespace generic_accessor_properties;
+("Accessors constructor default values test fp16 types.", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
@@ -32,11 +36,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   }
 
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  for_type_vectors_marray<run_generic_properties_tests, sycl::half>(
-      "sycl::half");
+  for_type_vectors_marray<run_tests, sycl::half>("sycl::half");
 #else
-  run_generic_properties_tests<sycl::half>{}("sycl::half");
+  run_tests<sycl::half>{}("sycl::half");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-}  // namespace generic_accessor_properties_fp16
+}  // namespace accessor_exceptions_test_fp16
