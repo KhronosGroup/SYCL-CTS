@@ -22,7 +22,7 @@ TEST_CASE("multi_ptr implicit conversions. fp64 type", "[multi_ptr]") {
         "Skipping the test case.");
     return;
   }
-  check_multi_ptr_implicit_convert_for_type<double>("double");
+  check_multi_ptr_implicit_convert_for_type<double>{}("double");
 }
 
 }  // namespace multi_ptr_implicit_conversions_core

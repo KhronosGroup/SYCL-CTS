@@ -22,7 +22,7 @@ TEST_CASE("multi_ptr implicit conversions. fp16 types", "[multi_ptr]") {
         "Skipping the test case.");
     return;
   }
-  check_multi_ptr_implicit_convert_for_type<sycl::half>("sycl::half");
+  check_multi_ptr_implicit_convert_for_type<sycl::half>{}("sycl::half");
 }
 
 }  // namespace multi_ptr_implicit_conversions_fp16
