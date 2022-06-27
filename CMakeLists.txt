@@ -6,10 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(AddSYCLExecutable)
+include(AddCTSOption)
+
 add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
     "Enable CUDA interoperability tests", OFF)
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Threads REQUIRED)
 find_package(OpenCL REQUIRED)
@@ -32,10 +34,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wall -Wno-unused-variable)
 endif()
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(AddSYCLExecutable)
-include(AddCTSOption)
 
 add_cts_option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
     "Enable full conformance with extensive tests" OFF
