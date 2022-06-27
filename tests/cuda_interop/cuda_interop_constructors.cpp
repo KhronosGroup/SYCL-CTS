@@ -20,26 +20,11 @@ TEST_CASE("CUDA interop constructor test") {
   /** create native objects
    */
   CUdevice m_cu_device;
-  std::vector<CUdevice> m_cu_platform;
   CUstream m_cu_stream;
   CUevent m_cu_event;
 
   const auto ctsContext = queue.get_context();
   CUDA_CHECK(cuDeviceGet(&m_cu_device, 0));
-  m_cu_platform.push_back(m_cu_device);
-
-  /** check make_platform (std::vector<CUdevice>)
-   */
-  {
-    sycl::platform platform =
-        sycl::make_platform<sycl::backend::cuda>(m_cu_platform);
-
-    std::vector<CUdevice> interopPlatformID =
-        sycl::get_native<sycl::backend::cuda>(platform);
-
-    INFO("Checking platform was constructed correctly");
-    CHECK(interopPlatformID == m_cu_platform);
-  }
 
   /** check make_device (CUdevice)
    */

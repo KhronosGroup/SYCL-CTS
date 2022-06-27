@@ -18,18 +18,6 @@ TEST_CASE("CUDA interop get test") {
   INFO("Checking queue is using CUDA backend");
   REQUIRE(queue.get_backend() == sycl::backend::cuda);
 
-  /** check get_native() for platform
-   */
-  {
-    auto platform = get_cts_object::platform(ctsSelector);
-    auto interopPlatform = sycl::get_native<sycl::backend::cuda>(platform);
-    check_return_type<std::vector<CUdevice>>(interopPlatform,
-                                             "get_native(platform)");
-
-    INFO("Checking get_native(platform) returned valid std::vector<CUdevice>");
-    CHECK(interopPlatform.size() != 0);
-  }
-
   /** check get_native() for device
    */
   {
