@@ -8,6 +8,7 @@ endif()
 add_library(util ${source_files} ${util_headers})
 add_library(CTS::util ALIAS util)
 
+target_compile_definitions(util PUBLIC ${SYCL_CTS_DETAIL_OPTION_COMPILE_DEFINITIONS})
 set(link_libraries OpenCL::OpenCL SYCL::SYCL Catch2::Catch2)
 if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
     list(APPEND link_libraries ${CUDA_CUDA_LIBRARY})

@@ -94,7 +94,7 @@ inline void check_exception(sycl::exception e, const std::error_code errcode,
 
 TEST_CASE("Constructors for sycl::exception with sycl::errc error codes",
           "[exception]") {
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   std::array testing_errs = get_err_codes();
 #else
   std::array testing_errs{sycl::errc::success};

@@ -11,8 +11,69 @@
 
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+#include "../common/type_list.h"
+
+namespace Catch {
+template <>
+struct StringMaker<sycl::access::address_space> {
+  using type = sycl::access::address_space;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::global_space:
+        return "access::address_space::global_space";
+      case type::local_space:
+        return "access::address_space::local_space";
+      case type::private_space:
+        return "access::address_space::private_space";
+      case type::generic_space:
+        return "access::address_space::generic_space";
+      default:
+        // no stringification for deprecated ones
+        return "unknown or deprecated address_space";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::access::decorated> {
+  using type = sycl::access::decorated;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::yes:
+        return "access::decorated::yes";
+      case type::no:
+        return "access::decorated::no";
+      case type::legacy:
+        return "access::decorated::legacy";
+      default:
+        return "unknown";
+    }
+  }
+};
+}  // namespace Catch
 
 namespace multi_ptr_common {
+
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_address_spaces() {
+  return value_pack<
+      sycl::access::address_space, sycl::access::address_space::global_space,
+      sycl::access::address_space::local_space,
+      sycl::access::address_space::private_space,
+      sycl::access::address_space::generic_space>::generate_named();
+}
+
+/**
+ * @brief Factory function for getting type_pack with fields of
+ *        sycl::access::address_space enums
+ */
+inline auto get_decorated() {
+  return value_pack<sycl::access::decorated, sycl::access::decorated::yes,
+                    sycl::access::decorated::no>::generate_named();
+}
 
 /** @brief Legacy multi_ptr alias to enforce the access::decorated::legacy
  *         usage with no dependency on default multi_ptr template parameter
@@ -41,7 +102,7 @@ using constant_ptr_legacy =
 /** @brief Factory method to enforce the same coverage for constructors and API
  */
 inline auto get_types() {
-#ifdef SYCL_CTS_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return named_type_pack<bool, float, double, char,   // types grouped
                          signed char, unsigned char,  // by sign
                          short, unsigned short,       //
@@ -57,18 +118,18 @@ inline auto get_types() {
       "long long",   "unsigned long long");
 #else
   return named_type_pack<int, float>::generate("int", "float");
-#endif  // SYCL_CTS_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 }
 
 // custom data types that will be used in type coverage
 inline auto get_composite_types() {
-#ifdef SYCL_CTS_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return named_type_pack<user_def_types::no_cnstr, user_def_types::def_cnstr,
                          user_def_types::no_def_cnstr>::generate(
       "no_cnstr", "def_cnstr", "no_def_cnstr");
 #else
   return named_type_pack<user_def_types::def_cnstr>::generate("def_cnstr");
-#endif  // SYCL_CTS_FULL_CONFORMANCE
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 }
 
 template <typename... argsT>

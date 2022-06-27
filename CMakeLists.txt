@@ -33,92 +33,40 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     add_compile_options(-Wall -Wno-unused-variable)
 endif()
 
-
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(AddSYCLExecutable)
+include(AddCTSOption)
 
-# ------------------
-# Extensive mode for full coverage
-option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
-       "Enable full conformance mode with extensive tests" OFF)
-if(SYCL_CTS_ENABLE_FULL_CONFORMANCE)
-    message(STATUS "Full conformance mode: ON")
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_ENABLE_FULL_CONFORMANCE)
-else()
-    message(STATUS "Full conformance mode: OFF")
-    message(WARNING
-            "Full conformance mode should be used for conformance submission")
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
+    "Enable full conformance with extensive tests" OFF
+    WARN_IF_OFF "Full conformance mode (SYCL_CTS_ENABLE_FULL_CONFORMANCE) should be used for conformance submission")
 
-# ------------------
-# Extensive mode for running extension oneAPI compile-time property list tests
-option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
-       "Enable extension oneAPI compile-time property list tests" OFF)
-if(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS)
-    message(STATUS "oneAPI extension compile-time property list tests mode: ON")
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_PROPERTIES_TESTS
+    "Enable extension oneAPI compile-time property list tests" OFF)
 
-# ------------------
-# Extensive mode for running legacy tests
-option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-       "Enable tests for the deprecated SYCL features" ON)
-if(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
-    message(STATUS "Tests for the deprecated SYCL features are enabled")
-    add_definitions(-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS)
-else()
-    message(STATUS "Tests for the deprecated SYCL features are disabled")
-    message(WARNING
-            "Tests for the deprecated SYCL features should be enabled for conformance submission")
-endif()
-# ------------------
+# TODO: Should SYCL_CTS_ENABLE_FULL_CONFORMANCE=ON imply this?
+add_cts_option(SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    "Enable tests for deprecated SYCL features" ON
+    WARN_IF_OFF "Tests for deprecated SYCL features should be enabled for conformance submission")
 
-# ------------------
-# Extensive mode for running extension oneAPI sub_group_mask tests
-option(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
-       "Enable extension oneAPI sub_group_mask tests" OFF)
-if(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS)
-    message(STATUS "oneAPI extension sub_group_mask tests mode: ON")
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
+    "Enable extension oneAPI sub_group_mask tests" OFF)
 
-# ------------------
-# Extensive mode for running extension oneAPI device_global tests
-option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
-       "Enable extension oneAPI device_global tests" OFF)
-if(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS)
-    message(STATUS "oneAPI extension device_global tests mode: ON")
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
+    "Enable extension oneAPI device_global tests" OFF)
 
-# ------------------
-# Debug-level verbose logging
-option(SYCL_CTS_ENABLE_VERBOSE_LOG "Enable debug-level logs" OFF)
-if(SYCL_CTS_ENABLE_VERBOSE_LOG)
-    add_definitions(-DSYCL_CTS_VERBOSE_LOG)
-endif()
-# ------------------
+# TODO: Deprecated - remove
+add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
+    "Enable debug-level logs (deprecated)" OFF)
 
-# ------------------
-# Double and Half variables
-option(SYCL_CTS_ENABLE_DOUBLE_TESTS "Enable Double tests." ON)
-option(SYCL_CTS_ENABLE_HALF_TESTS "Enable Half tests." ON)
-if(SYCL_CTS_ENABLE_DOUBLE_TESTS)
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_DOUBLE)
-endif()
-if(SYCL_CTS_ENABLE_HALF_TESTS)
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_HALF)
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_DOUBLE_TESTS
+    "Enable tests that require double precision floating point capabilities" ON)
 
-# ------------------
-# OpenCL interoperability
-option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
-       "Enable OpenCL interoperability tests." ON)
-if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS)
-    add_host_and_device_compiler_definitions(-DSYCL_CTS_TEST_OPENCL_INTEROP)
-endif()
-# ------------------
+add_cts_option(SYCL_CTS_ENABLE_HALF_TESTS
+    "Enable tests that require half precision floating point capabilities" ON)
+
+add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
+    "Enable OpenCL interoperability tests" ON)
 
 # ------------------
 # CUDA interoperability
@@ -161,3 +109,6 @@ enable_testing()
 add_subdirectory(util)
 add_subdirectory(tests)
 add_subdirectory(oclmath)
+
+# This should be the last line
+print_cts_config_summary()

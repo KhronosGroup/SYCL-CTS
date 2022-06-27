@@ -1,0 +1,56 @@
+/*******************************************************************************
+//
+//  SYCL 2020 Conformance Test Suite
+//
+//  Provides tests for accessor exceptions.
+//
+//  This test provides verifications that exception really has been thrown for
+//  generic accessor, host_accessor and local_accessor with double type.
+//
+*******************************************************************************/
+#include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+
+// FIXME: re-enable when sycl::accessor is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
+    !SYCL_CTS_COMPILING_WITH_DPCPP
+
+#include "accessor_exceptions.h"
+
+using namespace accessor_exceptions_test;
+using namespace accessor_tests_common;
+#endif
+
+namespace accessor_exceptions_test_fp64 {
+using namespace sycl_cts;
+
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("Generic sycl::accessor constructor exceptions test.", "[accessor]")({
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  run_tests_with_types<double, generic_accessor>{}("double");
+#else
+  for_type_vectors_marray<run_tests_with_types, double, generic_accessor>(
+      "double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+});
+
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  run_tests_with_types<double, local_accessor>{}("double");
+#else
+  for_type_vectors_marray<run_tests_with_types, double, local_accessor>(
+      "double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+});
+
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("sycl::host_accessor constructor exceptions test.", "[accessor]")({
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  run_tests_with_types<double, host_accessor>{}("double");
+#else
+  for_type_vectors_marray<run_tests_with_types, double, host_accessor>(
+      "double");
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+});
+}  // namespace accessor_exceptions_test_fp64

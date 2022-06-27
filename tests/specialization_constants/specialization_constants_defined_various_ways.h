@@ -164,7 +164,7 @@ template <typename via_kb>
 static void sc_run_test_core(util::logger &log) {
   using namespace specialization_constants_defined_various_ways;
   {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_all_types<check_specialization_constants_defined_various_ways_for_type,
                   via_kb>(get_spec_const::testing_types::types, log);
 #else
@@ -188,7 +188,7 @@ static void sc_run_test_fp16(util::logger &log) {
           "operations");
       return;
     }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     check_specialization_constants_defined_various_ways_for_type<sycl::half,
                                                                  via_kb>
         fp16_test{};
@@ -212,7 +212,7 @@ static void sc_run_test_fp64(util::logger &log) {
           "operations");
       return;
     }
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
     check_specialization_constants_defined_various_ways_for_type<double, via_kb>
         fp64_test{};
     fp64_test(log, "double");
