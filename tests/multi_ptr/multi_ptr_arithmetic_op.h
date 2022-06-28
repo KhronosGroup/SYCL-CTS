@@ -14,7 +14,7 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
-namespace multi_ptr_prefetch_member {
+namespace multi_ptr_arithmetic_op {
 
 namespace detail {
 
@@ -369,6 +369,6 @@ class check_multi_ptr_arithmetic_op_for_type {
   }
 };
 
-}  // namespace multi_ptr_prefetch_member
+}  // namespace multi_ptr_arithmetic_op
 
 #endif  // __SYCLCTS_TESTS_MULTI_PTR_ARITHMETIC_OP_H
