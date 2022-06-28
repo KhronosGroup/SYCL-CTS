@@ -94,7 +94,7 @@ class run_implicit_convert_tests {
         cgh.single_task([=] {
           from_multi_ptr_t mptr_from(expected_val_acc);
 
-          // from cppreference.com
+          // From cppreference.com
           //  Implicit conversions are performed whenever an
           //  expression of some type T1 is used in context
           //  that does not accept that type, but accepts some
@@ -142,10 +142,9 @@ class run_implicit_convert_tests {
                                            dest_multi_ptr_not_decorated_t>();
         }
       }
-      // clang-format off
       SECTION(
-        "Implicit conversion from multi_ptr<const T> to multi_ptr<const void>") {
-        // clang-format on
+          "Implicit conversion from multi_ptr<const T> to multi_ptr<const "
+          "void>") {
         using from_multi_ptr_t =
             sycl::multi_ptr<const T, address_space, decorated>;
 
@@ -198,18 +197,16 @@ class run_implicit_convert_tests {
                             sycl::access::decorated::yes>;
 
         if constexpr (from_multi_ptr_t::is_decorated) {
-          // clang-format off
           SECTION(
-              "Conversion from multi_ptr<T, decorated::yes> to multi_ptr<T, decorated::no>") {
-            // clang-format on
+              "Conversion from multi_ptr<T, decorated::yes> to multi_ptr<T, "
+              "decorated::no>") {
             preform_implicit_conversion_test<from_multi_ptr_t,
                                              dest_multi_ptr_not_decorated_t>();
           }
         } else {
-          // clang-format off
           SECTION(
-              "Conversion from multi_ptr<T, decorated::no> to multi_ptr<T, decorated::yes>") {
-            // clang-format on
+              "Conversion from multi_ptr<T, decorated::no> to multi_ptr<T, "
+              "decorated::yes>") {
             preform_implicit_conversion_test<from_multi_ptr_t,
                                              dest_multi_ptr_decorated_t>();
           }
