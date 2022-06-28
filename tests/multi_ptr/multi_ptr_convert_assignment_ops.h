@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 //
 //  SYCL 2020 Conformance Test Suite
@@ -51,8 +50,8 @@ class run_convert_assignment_operators_tests {
             .create()) {
       bool res = false;
       {
-        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
-        sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, r);
+        sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
@@ -120,8 +119,8 @@ class run_convert_assignment_operators_tests {
             .create()) {
       bool res = false;
       {
-        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
-        sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
+        sycl::buffer<bool> res_buf(&res, r);
+        sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
