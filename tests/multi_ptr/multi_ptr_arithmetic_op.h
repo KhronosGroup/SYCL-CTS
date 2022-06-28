@@ -142,7 +142,7 @@ class run_multi_ptr_arithmetic_op_test {
     }
     SECTION(section_name("Check multi_ptr operator++(multi_ptr&, int)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -166,7 +166,7 @@ class run_multi_ptr_arithmetic_op_test {
     }
     SECTION(section_name("Check multi_ptr operator--(multi_ptr&)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -195,7 +195,7 @@ class run_multi_ptr_arithmetic_op_test {
     }
     SECTION(section_name("Check multi_ptr operator--(multi_ptr&, int)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -227,7 +227,7 @@ class run_multi_ptr_arithmetic_op_test {
     diff_t shift = m_array_size / 3;
     SECTION(section_name("Check multi_ptr operator+=(multi_ptr&, diff_type)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -251,7 +251,7 @@ class run_multi_ptr_arithmetic_op_test {
     }
     SECTION(section_name("Check multi_ptr operator-=(multi_ptr&, diff_type)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -280,7 +280,7 @@ class run_multi_ptr_arithmetic_op_test {
     SECTION(
         section_name("Check multi_ptr operator+(const multi_ptr&, diff_type)")
             .with("T", type_name)
-            .with("address_space", "access::address_space::global_space")
+            .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -305,7 +305,7 @@ class run_multi_ptr_arithmetic_op_test {
     SECTION(
         section_name("Check multi_ptr operator-(const multi_ptr&, diff_type)")
             .with("T", type_name)
-            .with("address_space", "access::address_space::global_space")
+            .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
       // Variable that contains all variables that will be used to verify test
@@ -334,7 +334,7 @@ class run_multi_ptr_arithmetic_op_test {
     }
     SECTION(section_name("Check multi_ptr operator*(const multi_ptr&)")
                 .with("T", type_name)
-                .with("address_space", "access::address_space::global_space")
+                .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
