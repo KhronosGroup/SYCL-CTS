@@ -56,7 +56,7 @@ class run_multi_ptr_arithmetic_op_test {
   T m_arr[m_array_size];
   size_t m_middle_elem_index = m_array_size / 2;
 
-  sycl::range m_r = sycl::range(1);
+  sycl::range m_r(1);
 
   template <typename TestActionT>
   void run_test(sycl::queue &queue, TestActionT test_action,
@@ -67,7 +67,7 @@ class run_multi_ptr_arithmetic_op_test {
 
     {
       sycl::buffer<detail::test_results<T>> test_result_buffer(&test_results,
-                                                               sycl::range(1));
+                                                               m_r);
 
       sycl::buffer<T> buffer_for_mptr(m_arr, sycl::range(m_array_size));
       queue.submit([&](sycl::handler &cgh) {
