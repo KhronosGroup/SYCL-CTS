@@ -14,6 +14,8 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
+#include <optional>  // for std::optional
+
 namespace multi_ptr_arithmetic_op {
 
 namespace detail {
@@ -24,15 +26,15 @@ namespace detail {
  */
 template <typename T>
 struct test_results {
-  // Value that will be used to initialze variables with random values to avoid
-  // false positive test result
-  constexpr int value_to_init = 49;
+  // Use std::optional to disable verification if some member hasn't been
+  // initialised by some value
+
   // Expected value that will be returned after multi_ptr's operator will be
   // called
-  T op_return_result_val = value_to_init;
+  std::optional<T> op_return_result_val;
   // Expected value that will be stored into multi_ptr after
   // multi_ptr's operator will be called
-  T op_calling_val = value_to_init;
+  std::optional<T> op_calling_val;
 };
 
 }  // namespace detail
@@ -55,7 +57,6 @@ class run_multi_ptr_arithmetic_op_test {
   size_t m_middle_elem_index = m_array_size / 2;
 
   sycl::range m_r = sycl::range(1);
-  T m_default_expected_val = 55;
 
   template <typename TestActionT>
   void run_test(sycl::queue &queue, TestActionT test_action,
@@ -85,15 +86,15 @@ class run_multi_ptr_arithmetic_op_test {
         }
       });
     }
-    // If expected value is equal to default value, then verification should be
+    // If expected value isn't initialized, then this verification should be
     // skipped
-    if (expected_results.op_return_result_val != m_default_expected_val) {
+    if (expected_results.op_return_result_val) {
       CHECK(expected_results.op_return_result_val ==
             test_results.op_return_result_val);
     }
-    // If expected value is equal to default value, then verification should be
+    // If expected value isn't initialized, then this verification should be
     // skipped
-    if (expected_results.op_calling_val != m_default_expected_val) {
+    if (expected_results.op_calling_val) {
       CHECK(expected_results.op_calling_val == test_results.op_calling_val);
     }
   }
@@ -236,8 +237,6 @@ class run_multi_ptr_arithmetic_op_test {
       // Expected value that be contained into multi_ptr after multi_ptr's
       // operator will be called
       verification_points.op_calling_val = m_arr[shift];
-      // Assing m_default_expected_val to skip verification of this value
-      verification_points.op_return_result_val = m_default_expected_val;
 
       const auto run_test_action = [=](auto acc_for_mptr,
                                        auto test_result_acc) {
@@ -260,8 +259,6 @@ class run_multi_ptr_arithmetic_op_test {
       // Expected value that be contained into multi_ptr after multi_ptr's
       // operator will be called
       verification_points.op_calling_val = m_arr[m_middle_elem_index - shift];
-      // Assing m_default_expected_val to skip verification of this value
-      verification_points.op_return_result_val = m_default_expected_val;
 
       const auto run_test_action = [=](auto acc_for_mptr,
                                        auto test_result_acc) {
@@ -289,8 +286,6 @@ class run_multi_ptr_arithmetic_op_test {
       // Expected value that be contained into multi_ptr after multi_ptr's
       // operator will be called
       verification_points.op_return_result_val = m_arr[shift];
-      // Assing m_default_expected_val to skip verification of this value
-      verification_points.op_calling_val = m_default_expected_val;
 
       const auto run_test_action = [=](auto acc_for_mptr,
                                        auto test_result_acc) {
@@ -315,8 +310,6 @@ class run_multi_ptr_arithmetic_op_test {
       // operator will be called
       verification_points.op_return_result_val =
           m_arr[m_middle_elem_index - shift];
-      // Assing m_default_expected_val to skip verification of this value
-      verification_points.op_calling_val = m_default_expected_val;
 
       const auto run_test_action = [=](auto acc_for_mptr,
                                        auto test_result_acc) {
@@ -343,8 +336,6 @@ class run_multi_ptr_arithmetic_op_test {
       // Expected value that be contained into multi_ptr after multi_ptr's
       // operator will be called
       verification_points.op_return_result_val = m_arr[0];
-      // Assing m_default_expected_val to skip verification of this value
-      verification_points.op_calling_val = m_default_expected_val;
 
       const auto run_test_action = [](auto acc_for_mptr, auto test_result_acc) {
         const multi_ptr_t mptr(acc_for_mptr);
