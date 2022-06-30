@@ -54,14 +54,14 @@ class run_implicit_convert_tests {
       AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
 
-  template <typename from_multi_ptr_t, typename dest_multi_ptr_t>
+  template <typename src_multi_ptr_t, typename dest_multi_ptr_t>
   void preform_implicit_conversion_test() {
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     bool res = false;
 
     constexpr bool has_implicit_conversion_available =
-        std::is_convertible_v<from_multi_ptr_t, dest_multi_ptr_t>;
+        std::is_convertible_v<src_multi_ptr_t, dest_multi_ptr_t>;
 
     // We don't want to fail compilation of entire test every time
     // conversion is not available for some of accessor template instantiations
@@ -77,8 +77,8 @@ class run_implicit_convert_tests {
 
     using invoke_conversion_t = std::conditional_t<
         has_implicit_conversion_available,
-        invoke_implicit_conversion<from_multi_ptr_t, dest_multi_ptr_t>,
-        avoid_implicit_conversion<from_multi_ptr_t>>;
+        invoke_implicit_conversion<src_multi_ptr_t, dest_multi_ptr_t>,
+        avoid_implicit_conversion<src_multi_ptr_t>>;
 
     {
       sycl::range r(1);
@@ -91,7 +91,7 @@ class run_implicit_convert_tests {
             expected_val_buffer.template get_access<sycl::access_mode::read>(
                 cgh);
         cgh.single_task([=] {
-          from_multi_ptr_t mptr_from(expected_val_acc);
+          src_multi_ptr_t mptr_from(expected_val_acc);
 
           // From cppreference.com
           //  Implicit conversions are performed whenever an
@@ -125,7 +125,7 @@ class run_implicit_convert_tests {
                 .with("decorated", is_decorated_str)
                 .create()) {
       SECTION("Implicit conversion from multi_ptr<T> to multi_ptr<void>") {
-        using from_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
+        using src_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
 
         using dest_multi_ptr_not_decorated_t =
             sycl::multi_ptr<void, address_space, sycl::access::decorated::no>;
@@ -133,18 +133,18 @@ class run_implicit_convert_tests {
             sycl::multi_ptr<void, address_space, sycl::access::decorated::yes>;
 
         SECTION("Conversion to multi_ptr<void, decorated::yes>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_decorated_t>();
         }
         SECTION("Conversion to multi_ptr<void, decorated::no>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_not_decorated_t>();
         }
       }
       SECTION(
           "Implicit conversion from multi_ptr<const T> to multi_ptr<const "
           "void>") {
-        using from_multi_ptr_t =
+        using src_multi_ptr_t =
             sycl::multi_ptr<const T, address_space, decorated>;
 
         using dest_multi_ptr_not_decorated_t =
@@ -155,17 +155,17 @@ class run_implicit_convert_tests {
                             sycl::access::decorated::yes>;
 
         SECTION("Conversion to multi_ptr<const void, decorated::yes>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_decorated_t>();
         }
         SECTION("Conversion to multi_ptr<const void, decorated::no>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_not_decorated_t>();
         }
       }
 
       SECTION("Implicit conversion from multi_ptr<T> to multi_ptr<const T>") {
-        using from_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
+        using src_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
 
         using dest_multi_ptr_not_decorated_t =
             sycl::multi_ptr<const T, address_space,
@@ -174,19 +174,19 @@ class run_implicit_convert_tests {
             sycl::multi_ptr<const T, address_space,
                             sycl::access::decorated::yes>;
 
-        preform_implicit_conversion_test<from_multi_ptr_t, dest_multi_ptr_t>();
+        preform_implicit_conversion_test<src_multi_ptr_t, dest_multi_ptr_t>();
         SECTION("Conversion to multi_ptr<const T, decorated::yes>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_decorated_t>();
         }
         SECTION("Conversion to multi_ptr<const T, decorated::no>") {
-          preform_implicit_conversion_test<from_multi_ptr_t,
+          preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_not_decorated_t>();
         }
       }
 
       SECTION("Implicit conversion from multi_ptr<T> to multi_ptr<T>") {
-        using from_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
+        using src_multi_ptr_t = sycl::multi_ptr<T, address_space, decorated>;
 
         using dest_multi_ptr_not_decorated_t =
             sycl::multi_ptr<const T, address_space,
@@ -195,18 +195,18 @@ class run_implicit_convert_tests {
             sycl::multi_ptr<const T, address_space,
                             sycl::access::decorated::yes>;
 
-        if constexpr (from_multi_ptr_t::is_decorated) {
+        if constexpr (src_multi_ptr_t::is_decorated) {
           SECTION(
               "Conversion from multi_ptr<T, decorated::yes> to multi_ptr<T, "
               "decorated::no>") {
-            preform_implicit_conversion_test<from_multi_ptr_t,
+            preform_implicit_conversion_test<src_multi_ptr_t,
                                              dest_multi_ptr_not_decorated_t>();
           }
         } else {
           SECTION(
               "Conversion from multi_ptr<T, decorated::no> to multi_ptr<T, "
               "decorated::yes>") {
-            preform_implicit_conversion_test<from_multi_ptr_t,
+            preform_implicit_conversion_test<src_multi_ptr_t,
                                              dest_multi_ptr_decorated_t>();
           }
         }
