@@ -65,9 +65,9 @@ class run_implicit_convert_tests {
         std::is_convertible_v<src_multi_ptr_t, dest_multi_ptr_t>;
 
     // We don't want to fail compilation of entire test every time
-    // conversion is not available for some of accessor template instantiations
+    // conversion is not available for some of accessor template instantiations.
     // So first we check precondition, and only in case of conversion
-    // availability we try to go on with functionality check
+    // availability we try to go on with functionality check.
     {
       INFO("Implicit conversion is not avaliable.");
       REQUIRE(has_implicit_conversion_available);
