@@ -46,13 +46,14 @@ struct avoid_implicit_conversion {
 };
 }  // namespace detail
 
-constexpr int expected_val = 42;
 template <typename T, typename AddrSpaceT, typename IsDecoratedT>
 class run_implicit_convert_tests {
   using namespace detail;
   static constexpr sycl::access::address_space address_space =
       AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
+
+  static constexpr int expected_val = 42;
 
   template <typename src_multi_ptr_t, typename dest_multi_ptr_t>
   void preform_implicit_conversion_test() {
