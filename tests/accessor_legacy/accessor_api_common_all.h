@@ -28,12 +28,12 @@ template <typename T, int dims, sycl::access_mode mode,
               sycl::access::placeholder::false_t>
 void check_accessor_members(sycl_cts::util::logger &log,
                             const std::string& typeName) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
   log_accessor<T, dims, mode, target, placeholder>("check_accessor_members",
                                                    typeName, log);
 #else
   static_cast<void>(typeName);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
 

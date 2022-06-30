@@ -45,13 +45,14 @@
 
 // ------------------------------------------------------------------------------------
 
-#if defined(__COMPUTECPP__)
+#if SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #define INTERNAL_CTS_SYCL_IMPL_ComputeCpp ()
-#elif defined(__HIPSYCL__)
+#elif SYCL_CTS_COMPILING_WITH_DPCPP
+#define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
+#elif SYCL_CTS_COMPILING_WITH_HIPSYCL
 #define INTERNAL_CTS_SYCL_IMPL_hipSYCL ()
 #else
-// FIXME Don't assume DPC++ by default
-#define INTERNAL_CTS_SYCL_IMPL_DPCPP ()
+#error Unknown SYCL implementation
 #endif
 
 // Clang 8 does not properly handle _Pragma inside macro expansions.

@@ -30,7 +30,7 @@ public:
   void run(util::logger &log) override {
     using namespace specialization_constants_via_handler_common;
     {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<check_spec_constant_with_handler_for_type>(
           get_spec_const::testing_types::types, log);
 #else

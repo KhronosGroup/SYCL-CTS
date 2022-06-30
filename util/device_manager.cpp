@@ -102,7 +102,7 @@ void device_manager::dump_info(const std::string& infoDumpFile) {
       chosenDevice.has(sycl::aspect::fp16) ? "Supported" : "Not Supported";
   auto doesDeviceSupportDouble =
       chosenDevice.has(sycl::aspect::fp64) ? "Supported" : "Not Supported";
-#if !defined(__COMPUTECPP__)
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   auto doesDeviceSupportAtomics =
       chosenDevice.has(sycl::aspect::atomic64) ? "Supported" : "Not Supported";
 #else

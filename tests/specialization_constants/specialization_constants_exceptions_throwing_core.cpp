@@ -29,7 +29,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-#ifndef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
       for_all_types<check_spec_constant_exception_throw_for_type>(
           get_spec_const::testing_types::types, log);
 #else
