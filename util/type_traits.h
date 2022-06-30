@@ -122,20 +122,19 @@ using has_size_t = typename has_size<T>::type;
  * @brief Shortcut for has_size::value
  */
 template <typename T>
-constexpr bool has_size_v = has_size_t<T>::value;
+constexpr inline bool has_size_v = has_size_t<T>::value;
 
 /**
  * @brief Verify \c T has both subscript operator and size member function
  */
-template <typename T> struct has_subscript_and_size {
-    static constexpr bool value = has_subscript_operator_v<T> && has_size_v<T>;
-};
+template <typename T>
+using has_subscript_and_size = std::conjunction<has_subscript_operator<T>, has_size<T>>;
 
 /**
  * @brief Shortcut for has_subscript_and_size::value
  */
 template <typename T>
-constexpr bool has_subscript_and_size_v = has_subscript_and_size<T>::value;
+constexpr inline bool has_subscript_and_size_v = has_subscript_and_size<T>::value;
 
 }  // namespace
 
