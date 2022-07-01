@@ -69,7 +69,7 @@ void test_common_buffer_constructors(const std::string& type_name,
                                                                   cgh);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name =
@@ -83,7 +83,7 @@ void test_common_buffer_constructors(const std::string& type_name,
                                                                   r);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name =
@@ -97,7 +97,7 @@ void test_common_buffer_constructors(const std::string& type_name,
                                                                   r, offset);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 }
 
@@ -120,7 +120,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -133,7 +133,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, r, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name =
@@ -148,7 +148,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, r, offset, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 }
 
@@ -170,7 +170,7 @@ void test_placeholder_constructors(const std::string& type_name,
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -183,7 +183,7 @@ void test_placeholder_constructors(const std::string& type_name,
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, r);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -197,7 +197,7 @@ void test_placeholder_constructors(const std::string& type_name,
                                                                   offset);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        get_acc_functor, r);
+        r, get_acc_functor);
   }
 }
 
@@ -218,7 +218,7 @@ void test_placeholder_accessors_exception(const std::string& type_name,
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
     check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor, r);
+                                         Target>(r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -230,7 +230,7 @@ void test_placeholder_accessors_exception(const std::string& type_name,
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, r);
     };
     check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor, r);
+                                         Target>(r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -244,7 +244,7 @@ void test_placeholder_accessors_exception(const std::string& type_name,
                                                                   offset);
     };
     check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor, r);
+                                         Target>(r, get_acc_functor);
   }
 }
 

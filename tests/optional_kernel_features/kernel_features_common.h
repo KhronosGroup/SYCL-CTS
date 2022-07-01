@@ -13,7 +13,7 @@
 #include "catch2/matchers/catch_matchers.hpp"
 namespace kernel_features_common {
 // FIXME: re-enable compilation with hipSYCL or computecpp when `sycl::errc` is supported
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #ifdef SYCL_EXTERNAL
 /**
@@ -490,7 +490,7 @@ void run_functor(const bool is_exception_expected,
         IS_EXCEPTION_EXPECTED, ERRC, QUEUE, "submission call",               \
         single_task_action, parallel_for_action, parallel_for_action);       \
   }
-#endif  //#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
+#endif  //#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 };      // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
