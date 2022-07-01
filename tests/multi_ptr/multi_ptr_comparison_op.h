@@ -139,12 +139,14 @@ template <typename T, typename AddrSpaceT, typename IsDecoratedT>
 class run_multi_ptr_comparison_op_test {
   static constexpr sycl::access::address_space space = AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
-  const T low_value = 1;
-  const T great_value = 2;
+
+  using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
+
+  const T m_low_value = 1;
+  const T m_great_value = 2;
   // Use an array to be sure that we have two elements that has subsequence
   // memory addereses
-  const T values_arr[2] = {low_value, great_value};
-  using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
+  const T m_values_arr[2] = {m_low_value, m_great_value};
   sycl::range m_r(1);
 
   template <typename TestActionT, typename ExpectedTestResultT>
@@ -154,7 +156,7 @@ class run_multi_ptr_comparison_op_test {
     // result
     ExpectedTestResultT test_results;
     {
-      sycl::buffer<T> array_buffer(values_arr, std::size(values_arr));
+      sycl::buffer<T> array_buffer(m_values_arr, std::size(m_values_arr));
       sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results, m_r);
       queue.submit([&](sycl::handler &cgh) {
         auto array_acc =
