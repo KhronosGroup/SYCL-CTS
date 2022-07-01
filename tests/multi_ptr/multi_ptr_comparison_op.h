@@ -33,15 +33,15 @@ struct mptr_mptr_test_results {
   // Use std::optional to disable verification if some member hasn't been
   // initialised by some value
 
-  // Expected value that will be returned after "lower_mptr *current operator*
-  // lower_mptr" operator will be called
-  std::optional<bool> lower_lower_mptr_result_val;
-  // Expected value that will be returned after "greater_mptr *current operator*
-  // lower_mptr" operator will be called
-  std::optional<bool> greater_lower_mptr_result_val;
-  // Expected value that will be returned after "lower_mptr *current operator*
-  // greater_mptr" operator will be called
-  std::optional<bool> lower_greater_mptr_result_val;
+  // Expected value that will be returned after "first_mptr *current operator*
+  // first_mptr" operator will be called
+  std::optional<bool> first_first_mptr_result_val;
+  // Expected value that will be returned after "second_mptr *current operator*
+  // first_mptr" operator will be called
+  std::optional<bool> second_first_mptr_result_val;
+  // Expected value that will be returned after "first_mptr *current operator*
+  // second_mptr" operator will be called
+  std::optional<bool> first_second_mptr_result_val;
 
   /**
    * @brief Verified test result. The object's data, that will call this
@@ -51,21 +51,21 @@ struct mptr_mptr_test_results {
   void verify_resuts(const mptr_mptr_test_results<T> &retreived_results) const {
     // If expected value isn't initialized, then this verification should be
     // skipped
-    if (lower_lower_mptr_result_val) {
-      CHECK(lower_lower_mptr_result_val ==
-            retreived_results.lower_lower_mptr_result_val);
+    if (first_first_mptr_result_val) {
+      CHECK(first_first_mptr_result_val ==
+            retreived_results.first_first_mptr_result_val);
     }
     // If expected value isn't initialized, then this verification should be
     // skipped
-    if (greater_lower_mptr_result_val) {
-      CHECK(greater_lower_mptr_result_val ==
-            retreived_results.greater_lower_mptr_result_val);
+    if (second_first_mptr_result_val) {
+      CHECK(second_first_mptr_result_val ==
+            retreived_results.second_first_mptr_result_val);
     }
     // If expected value isn't initialized, then this verification should be
     // skipped
-    if (lower_greater_mptr_result_val) {
-      CHECK(lower_greater_mptr_result_val ==
-            retreived_results.lower_greater_mptr_result_val);
+    if (first_second_mptr_result_val) {
+      CHECK(first_second_mptr_result_val ==
+            retreived_results.first_second_mptr_result_val);
     }
   }
 };
@@ -155,8 +155,7 @@ class run_multi_ptr_comparison_op_test {
     ExpectedTestResultT test_results;
     {
       sycl::buffer<T> array_buffer(values_arr, std::size(values_arr));
-      sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results,
-                                                           m_r);
+      sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results, m_r);
       queue.submit([&](sycl::handler &cgh) {
         auto array_acc =
             array_buffer.template get_access<sycl::access_mode::read>(cgh);
@@ -198,12 +197,12 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr == lower_mptr"
+      // Expected value that will be returned after "first_mptr == first_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = true;
-      // Expected value that will be returned after "lower_mptr == greater_mptr"
+      expected_results.first_first_mptr_result_val = true;
+      // Expected value that will be returned after "first_mptr == second_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = false;
+      expected_results.first_second_mptr_result_val = false;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -214,8 +213,8 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 == mptr_1;
-        test_result.lower_greater_mptr_result_val = mptr_1 == mptr_2;
+        test_result.first_first_mptr_result_val = mptr_1 == mptr_1;
+        test_result.first_second_mptr_result_val = mptr_1 == mptr_2;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -230,12 +229,12 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr != lower_mptr"
+      // Expected value that will be returned after "first_mptr != first_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = false;
-      // Expected value that will be returned after "lower_mptr != greater_mptr"
+      expected_results.first_first_mptr_result_val = false;
+      // Expected value that will be returned after "first_mptr != second_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = true;
+      expected_results.first_second_mptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -246,8 +245,8 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 != mptr_1;
-        test_result.lower_greater_mptr_result_val = mptr_1 != mptr_2;
+        test_result.first_first_mptr_result_val = mptr_1 != mptr_1;
+        test_result.first_second_mptr_result_val = mptr_1 != mptr_2;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -261,12 +260,12 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr < lower_mptr"
+      // Expected value that will be returned after "first_mptr < first_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = false;
-      // Expected value that will be returned after "lower_mptr < greater_mptr"
+      expected_results.first_first_mptr_result_val = false;
+      // Expected value that will be returned after "first_mptr < second_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = true;
+      expected_results.first_second_mptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -277,8 +276,8 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 < mptr_1;
-        test_result.lower_greater_mptr_result_val = mptr_1 < mptr_2;
+        test_result.first_first_mptr_result_val = mptr_1 < mptr_1;
+        test_result.first_second_mptr_result_val = mptr_1 < mptr_2;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -292,12 +291,12 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr > greater_mptr"
+      // Expected value that will be returned after "first_mptr > second_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = false;
-      // Expected value that will be returned after "greater_mptr > lower_mptr"
+      expected_results.first_first_mptr_result_val = false;
+      // Expected value that will be returned after "second_mptr > first_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = true;
+      expected_results.first_second_mptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -308,8 +307,8 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 > mptr_2;
-        test_result.lower_greater_mptr_result_val = mptr_2 > mptr_1;
+        test_result.first_first_mptr_result_val = mptr_1 > mptr_2;
+        test_result.first_second_mptr_result_val = mptr_2 > mptr_1;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -324,15 +323,15 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr <= lower_mptr"
+      // Expected value that will be returned after "first_mptr <= first_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = true;
-      // Expected value that will be returned after "lower_mptr <= greater_mptr"
+      expected_results.first_first_mptr_result_val = true;
+      // Expected value that will be returned after "first_mptr <= second_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = true;
-      // Expected value that will be returned after "greater_mptr <= lower_mptr"
+      expected_results.first_second_mptr_result_val = true;
+      // Expected value that will be returned after "second_mptr <= first_mptr"
       // operator will be called
-      expected_results.greater_lower_mptr_result_val = false;
+      expected_results.second_first_mptr_result_val = false;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -343,9 +342,9 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 <= mptr_1;
-        test_result.lower_greater_mptr_result_val = mptr_1 <= mptr_2;
-        test_result.greater_lower_mptr_result_val = mptr_2 <= mptr_1;
+        test_result.first_first_mptr_result_val = mptr_1 <= mptr_1;
+        test_result.first_second_mptr_result_val = mptr_1 <= mptr_2;
+        test_result.second_first_mptr_result_val = mptr_2 <= mptr_1;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -360,15 +359,15 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "lower_mptr >= lower_mptr"
+      // Expected value that will be returned after "first_mptr >= first_mptr"
       // operator will be called
-      expected_results.lower_lower_mptr_result_val = true;
-      // Expected value that will be returned after "greater_mptr >= lower_mptr"
+      expected_results.first_first_mptr_result_val = true;
+      // Expected value that will be returned after "second_mptr >= first_mptr"
       // operator will be called
-      expected_results.lower_greater_mptr_result_val = true;
-      // Expected value that will be returned after "lower_mptr >= greater_mptr"
+      expected_results.first_second_mptr_result_val = true;
+      // Expected value that will be returned after "first_mptr >= second_mptr"
       // operator will be called
-      expected_results.greater_lower_mptr_result_val = false;
+      expected_results.second_first_mptr_result_val = false;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -379,9 +378,9 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.lower_lower_mptr_result_val = mptr_1 >= mptr_1;
-        test_result.lower_greater_mptr_result_val = mptr_2 >= mptr_1;
-        test_result.greater_lower_mptr_result_val = mptr_1 >= mptr_2;
+        test_result.first_first_mptr_result_val = mptr_1 >= mptr_1;
+        test_result.first_second_mptr_result_val = mptr_2 >= mptr_1;
+        test_result.second_first_mptr_result_val = mptr_1 >= mptr_2;
       };
 
       run_test(queue, run_test_action, expected_results);
