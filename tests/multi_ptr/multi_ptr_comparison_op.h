@@ -15,10 +15,119 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
-#include <array>    // for std::array
-#include <cstddef>  // for std::size_t
+#include <array>     // for std::array
+#include <cstddef>   // for std::size_t
+#include <optional>  // for std::optional
 
 namespace multi_ptr_comparison_op {
+
+namespace detail {
+
+/**
+ * @brief Structure that combines variables used to validate test results for
+ *        operators that compares two multi_ptr's
+ * @tparam T Data type that will be used in test
+ */
+template <typename T>
+struct mptr_mptr_test_results {
+  // Use std::optional to disable verification if some member hasn't been
+  // initialised by some value
+
+  // Expected value that will be returned after "lower_mptr *current operator*
+  // lower_mptr" operator will be called
+  std::optional<bool> lower_lower_mptr_result_val;
+  // Expected value that will be returned after "greater_mptr *current operator*
+  // lower_mptr" operator will be called
+  std::optional<bool> greater_lower_mptr_result_val;
+  // Expected value that will be returned after "lower_mptr *current operator*
+  // greater_mptr" operator will be called
+  std::optional<bool> lower_greater_mptr_result_val;
+
+  /**
+   * @brief Verified test result. The object's data, that will call this
+   *        function, will used as expected results
+   * @param retreived_results Retreived test results
+   */
+  void verify_resuts(const mptr_mptr_test_results<T> &retreived_results) const {
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (lower_lower_mptr_result_val) {
+      CHECK(lower_lower_mptr_result_val ==
+            retreived_results.lower_lower_mptr_result_val);
+    }
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (greater_lower_mptr_result_val) {
+      CHECK(greater_lower_mptr_result_val ==
+            retreived_results.greater_lower_mptr_result_val);
+    }
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (lower_greater_mptr_result_val) {
+      CHECK(lower_greater_mptr_result_val ==
+            retreived_results.lower_greater_mptr_result_val);
+    }
+  }
+};
+
+/**
+ * @brief Structure that combines variables used to validate test results for
+ *        operators that compares multi_ptr and nullptr
+ * @tparam T Data type that will be used in test
+ */
+template <typename T>
+struct mptr_nillptr_mptr_test_results {
+  // Use std::optional to disable verification if some member hasn't been
+  // initialised by some value
+
+  // Expected value that will be returned after "nullptr *current operator*
+  // nullptr_mptr" operator will be called
+  std::optional<bool> nullptr_nullptr_mptr_result_val;
+  // Expected value that will be returned after "nullptr_mptr *current operator*
+  // nullptr" operator will be called
+  std::optional<bool> nullptr_mptr_nullptr_result_val;
+  // Expected value that will be returned after "nullptr *current operator*
+  // value_mptr" operator will be called
+  std::optional<bool> nullptr_value_mptr_result_val;
+  // Expected value that will be returned after "value_mptr *current operator*
+  // nullptr" operator will be called
+  std::optional<bool> value_mptr_nullptr_result_val;
+
+  /**
+   * @brief Verified test result. The object's data, that will call this
+   *        function, will used as expected results
+   * @param retreived_results Retreived test results
+   */
+  void verify_resuts(
+      const mptr_nillptr_mptr_test_results<T> &retreived_results) const {
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (nullptr_nullptr_mptr_result_val) {
+      CHECK(nullptr_nullptr_mptr_result_val ==
+            retreived_results.nullptr_nullptr_mptr_result_val);
+    }
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (nullptr_mptr_nullptr_result_val) {
+      CHECK(nullptr_mptr_nullptr_result_val ==
+            retreived_results.nullptr_mptr_nullptr_result_val);
+    }
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (nullptr_value_mptr_result_val) {
+      CHECK(nullptr_value_mptr_result_val ==
+            retreived_results.nullptr_value_mptr_result_val);
+    }
+    // If expected value isn't initialized, then this verification should be
+    // skipped
+    if (value_mptr_nullptr_result_val) {
+      CHECK(value_mptr_nullptr_result_val ==
+            retreived_results.value_mptr_nullptr_result_val);
+    }
+  }
+};
+
+}  // namespace detail
 
 /**
  * @brief Provides functor for verification on multi_ptr comparison operators
@@ -30,37 +139,41 @@ template <typename T, typename AddrSpaceT, typename IsDecoratedT>
 class run_multi_ptr_comparison_op_test {
   static constexpr sycl::access::address_space space = AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
-  T low_value = 1;
-  T great_value = 2;
+  const T low_value = 1;
+  const T great_value = 2;
+  // Use an array to be sure that we have two elements that has subsequence
+  // memory addereses
+  const T values_arr[2] = {low_value, great_value};
   using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
-  sycl::range m_r = sycl::range(1);
+  sycl::range m_r(1);
 
-  template <typename TestActionA, std::size_t N>
-  void run_test(sycl::queue &queue, TestActionA test_action,
-                std::array<bool, N> &test_results) {
-    sycl::buffer<T> low_value_buffer(&low_value, m_r);
-    sycl::buffer<T> great_value_buffer(&great_value, m_r);
-    sycl::buffer<bool> nullptr_nullptr_res_buffer(test_results.data(),
-                                                  sycl::range(N));
-    queue.submit([&](sycl::handler &cgh) {
-      auto low_value_acc =
-          low_value_buffer.template get_access<sycl::access_mode::read>(cgh);
-      auto great_value_acc =
-          great_value_buffer.template get_access<sycl::access_mode::read>(cgh);
-      auto nullptr_nullptr_res_acc =
-          nullptr_nullptr_res_buffer
-              .template get_access<sycl::access_mode::write>(cgh);
+  template <typename TestActionT, typename ExpectedTestResultT>
+  void run_test(sycl::queue &queue, TestActionT test_action,
+                const ExpectedTestResultT &expected_results) {
+    // Variable that contains all variables that will be used to verify test
+    // result
+    ExpectedTestResultT test_results;
+    {
+      sycl::buffer<T> array_buffer(values_arr, std::size(values_arr));
+      sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results,
+                                                           m_r);
+      queue.submit([&](sycl::handler &cgh) {
+        auto array_acc =
+            array_buffer.template get_access<sycl::access_mode::read>(cgh);
+        auto test_result_acc =
+            test_result_buffer.template get_access<sycl::access_mode::write>(
+                cgh);
 
-      if constexpr (space == sycl::access::address_space::global_space) {
-        cgh.single_task([=] {
-          test_action(low_value_acc, great_value_acc, nullptr_nullptr_res_acc);
-        });
-      } else {
-        cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item item) {
-          test_action(low_value_acc, great_value_acc, nullptr_nullptr_res_acc);
-        });
-      }
-    });
+        if constexpr (space == sycl::access::address_space::global_space) {
+          cgh.single_task([=] { test_action(array_acc, test_result_acc); });
+        } else {
+          cgh.parallel_for(sycl::nd_range(m_r, m_r), [=](sycl::nd_item item) {
+            test_action(array_acc, test_result_acc);
+          });
+        }
+      });
+    }
+    expected_results.verify_resuts(test_results);
   }
 
  public:
@@ -82,34 +195,31 @@ class run_multi_ptr_comparison_op_test {
             .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr == lower_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = true;
+      expected_results.lower_lower_mptr_result_val = true;
       // Expected value that will be returned after "lower_mptr == greater_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = false;
+      expected_results.lower_greater_mptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr == lower_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "lower_mptr == greater_mptr" operator will be called
-      std::array<bool, 2> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 == mptr_1;
-        result_acc[1] = mptr_1 == mptr_2;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 == mptr_1;
+        test_result.lower_greater_mptr_result_val = mptr_1 == mptr_2;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == first_second_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(
         section_name(
             "Check multi_ptr operator!=(const multi_ptr&, const multi_ptr&)")
@@ -117,32 +227,30 @@ class run_multi_ptr_comparison_op_test {
             .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr != lower_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = false;
+      expected_results.lower_lower_mptr_result_val = false;
       // Expected value that will be returned after "lower_mptr != greater_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = true;
+      expected_results.lower_greater_mptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr != lower_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "lower_mptr != greater_mptr" operator will be called
-      std::array<bool, 2> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 != mptr_1;
-        result_acc[1] = mptr_1 != mptr_2;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 != mptr_1;
+        test_result.lower_greater_mptr_result_val = mptr_1 != mptr_2;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == first_second_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
     SECTION(section_name(
                 "Check multi_ptr operator<(const multi_ptr&, const multi_ptr&)")
@@ -150,68 +258,62 @@ class run_multi_ptr_comparison_op_test {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr < lower_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = false;
+      expected_results.lower_lower_mptr_result_val = false;
       // Expected value that will be returned after "lower_mptr < greater_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = true;
+      expected_results.lower_greater_mptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr < lower_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "lower_mptr < greater_mptr" operator will be called
-      std::array<bool, 2> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 < mptr_1;
-        result_acc[1] = mptr_1 < mptr_2;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 < mptr_1;
+        test_result.lower_greater_mptr_result_val = mptr_1 < mptr_2;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == first_second_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(section_name(
                 "Check multi_ptr operator>(const multi_ptr&, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr > greater_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = false;
+      expected_results.lower_lower_mptr_result_val = false;
       // Expected value that will be returned after "greater_mptr > lower_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = true;
+      expected_results.lower_greater_mptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr > greater_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "greater_mptr > lower_mptr" operator will be called
-      std::array<bool, 2> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 > mptr_2;
-        result_acc[1] = mptr_2 > mptr_1;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 > mptr_2;
+        test_result.lower_greater_mptr_result_val = mptr_2 > mptr_1;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == first_second_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(
         section_name(
             "Check multi_ptr operator<=(const multi_ptr&, const multi_ptr&)")
@@ -219,39 +321,34 @@ class run_multi_ptr_comparison_op_test {
             .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr <= lower_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = true;
+      expected_results.lower_lower_mptr_result_val = true;
       // Expected value that will be returned after "lower_mptr <= greater_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = true;
+      expected_results.lower_greater_mptr_result_val = true;
       // Expected value that will be returned after "greater_mptr <= lower_mptr"
       // operator will be called
-      bool second_first_mptr_expected_val = false;
+      expected_results.greater_lower_mptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr <= lower_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "lower_mptr <= greater_mptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "greater_mptr <= lower_mptr" operator will be called
-      std::array<bool, 3> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 <= mptr_1;
-        result_acc[1] = mptr_1 <= mptr_2;
-        result_acc[2] = mptr_2 <= mptr_1;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 <= mptr_1;
+        test_result.lower_greater_mptr_result_val = mptr_1 <= mptr_2;
+        test_result.greater_lower_mptr_result_val = mptr_2 <= mptr_1;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == first_second_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == second_first_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
     SECTION(
         section_name(
@@ -260,41 +357,35 @@ class run_multi_ptr_comparison_op_test {
             .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "lower_mptr >= lower_mptr"
       // operator will be called
-      bool first_first_mptr_expected_val = true;
+      expected_results.lower_lower_mptr_result_val = true;
       // Expected value that will be returned after "greater_mptr >= lower_mptr"
       // operator will be called
-      bool second_first_mptr_expected_val = true;
+      expected_results.lower_greater_mptr_result_val = true;
       // Expected value that will be returned after "lower_mptr >= greater_mptr"
       // operator will be called
-      bool first_second_mptr_expected_val = false;
+      expected_results.greater_lower_mptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "lower_mptr >= lower_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "greater_mptr >= lower_mptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "lower_mptr >= greater_mptr" operator will be called
-      std::array<bool, 3> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
-        multi_ptr_t mptr_1(low_value_acc);
-        multi_ptr_t mptr_2(great_value_acc);
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
+        multi_ptr_t arr_mptr(arr_acc);
+        // multi_ptr that pointed at the first element
+        multi_ptr_t mptr_1(arr_mptr);
+        // multi_ptr that pointed at the second element
+        multi_ptr_t mptr_2(arr_mptr + 1);
 
-        result_acc[0] = mptr_1 >= mptr_1;
-        result_acc[1] = mptr_2 >= mptr_1;
-        result_acc[2] = mptr_1 >= mptr_2;
+        auto &test_result = result_acc[0];
+
+        test_result.lower_lower_mptr_result_val = mptr_1 >= mptr_1;
+        test_result.lower_greater_mptr_result_val = mptr_2 >= mptr_1;
+        test_result.greater_lower_mptr_result_val = mptr_1 >= mptr_2;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == first_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == second_first_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == first_second_mptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(
         section_name(
             "Check multi_ptr operator==(const multi_ptr& lhs, std::nullptr_t)")
@@ -302,42 +393,35 @@ class run_multi_ptr_comparison_op_test {
             .with("address_space", address_space_name)
             .with("decorated", is_decorated_name)
             .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr_mptr == nullptr"
       // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = true;
+      expected_results.nullptr_nullptr_mptr_result_val = true;
       // Expected value that will be returned after "nullptr == nullptr_mptr"
       // operator will be called
-      bool mptr_nullptr_nullptr_expected_val = true;
+      expected_results.nullptr_mptr_nullptr_result_val = true;
       // Expected value that will be returned after "nullptr == value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = false;
+      expected_results.nullptr_value_mptr_result_val = false;
       // Expected value that will be returned after "value_mptr == nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = false;
+      expected_results.value_mptr_nullptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr_mptr == nullptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "value_mptr == nullptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr_mptr == nullptr;
-        result_acc[1] = nullptr == nullptr_mptr;
-        result_acc[2] = value_mptr == nullptr;
-        result_acc[3] = nullptr == value_mptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr_mptr == nullptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr == nullptr_mptr;
+        test_result.nullptr_value_mptr_result_val = value_mptr == nullptr;
+        test_result.value_mptr_nullptr_result_val = nullptr == value_mptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == mptr_nullptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[3] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
     SECTION(section_name(
                 "Check multi_ptr operator!=(std::nullptr_t, const multi_ptr&)")
@@ -345,88 +429,71 @@ class run_multi_ptr_comparison_op_test {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      // Expected value that will be returned after "nullptr_mptr != nullptr"
-      // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = false;
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr != nullptr_mptr"
       // operator will be called
-      bool mptr_nullptr_nullptr_expected_val = false;
+      expected_results.nullptr_nullptr_mptr_result_val = false;
+      // Expected value that will be returned after "nullptr_mptr != nullptr"
+      // operator will be called
+      expected_results.nullptr_mptr_nullptr_result_val = false;
       // Expected value that will be returned after "nullptr != value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = true;
+      expected_results.nullptr_value_mptr_result_val = true;
       // Expected value that will be returned after "value_mptr != nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = false;
+      expected_results.value_mptr_nullptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr_mptr != nullptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "nullptr != value_mptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr != nullptr_mptr;
-        result_acc[1] = nullptr_mptr != nullptr;
-        result_acc[3] = nullptr != value_mptr;
-        result_acc[2] = value_mptr != nullptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr != nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr != nullptr;
+        test_result.nullptr_value_mptr_result_val = nullptr != value_mptr;
+        test_result.value_mptr_nullptr_result_val = value_mptr != nullptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == mptr_nullptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[3] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(section_name(
                 "Check multi_ptr operator<(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr < nullptr_mptr"
       // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = false;
+      expected_results.nullptr_nullptr_mptr_result_val = false;
       // Expected value that will be returned after "nullptr_mptr < nullptr"
       // operator will be called
-      bool nullptr_mptr_nullptr_expected_val = true;
+      expected_results.nullptr_mptr_nullptr_result_val = false;
       // Expected value that will be returned after "nullptr < value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = false;
+      expected_results.nullptr_value_mptr_result_val = true;
       // Expected value that will be returned after "value_mptr < nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = false;
+      expected_results.value_mptr_nullptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr < nullptr_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "nullptr < value_mptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "value_mptr < nullptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr < nullptr_mptr;
-        result_acc[0] = nullptr_mptr < nullptr;
-        result_acc[1] = nullptr < value_mptr;
-        result_acc[2] = value_mptr < nullptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr < nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr < nullptr;
+        test_result.nullptr_value_mptr_result_val = nullptr < value_mptr;
+        test_result.value_mptr_nullptr_result_val = value_mptr < nullptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == nullptr_mptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[3] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
     SECTION(section_name(
                 "Check multi_ptr operator>(std::nullptr_t, const multi_ptr&)")
@@ -434,44 +501,35 @@ class run_multi_ptr_comparison_op_test {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
-      // Expected value that will be returned after "nullptr < nullptr_mptr"
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      // Expected value that will be returned after "nullptr > nullptr_mptr"
       // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = false;
-      // Expected value that will be returned after "nullptr_mptr < nullptr"
+      expected_results.nullptr_nullptr_mptr_result_val = false;
+      // Expected value that will be returned after "nullptr_mptr > nullptr"
       // operator will be called
-      bool nullptr_mptr_nullptr_expected_val = false;
-      // Expected value that will be returned after "nullptr < value_mptr"
+      expected_results.nullptr_mptr_nullptr_result_val = false;
+      // Expected value that will be returned after "nullptr > value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = true;
-      // Expected value that will be returned after "value_mptr < nullptr"
+      expected_results.nullptr_value_mptr_result_val = false;
+      // Expected value that will be returned after "value_mptr > nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = false;
+      expected_results.value_mptr_nullptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr > nullptr_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "nullptr > value_mptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "value_mptr > nullptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr > nullptr_mptr;
-        result_acc[0] = nullptr_mptr > nullptr;
-        result_acc[1] = nullptr > value_mptr;
-        result_acc[2] = value_mptr > nullptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr > nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr > nullptr;
+        test_result.nullptr_value_mptr_result_val = nullptr > value_mptr;
+        test_result.value_mptr_nullptr_result_val = value_mptr > nullptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == nullptr_mptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[3] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
     SECTION(section_name(
                 "Check multi_ptr operator<=(std::nullptr_t, const multi_ptr&)")
@@ -479,92 +537,71 @@ class run_multi_ptr_comparison_op_test {
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr <= nullptr_mptr"
       // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = true;
+      expected_results.nullptr_nullptr_mptr_result_val = true;
       // Expected value that will be returned after "nullptr_mptr <= nullptr"
       // operator will be called
-      bool nullptr_mptr_nullptr_expected_val = true;
+      expected_results.nullptr_mptr_nullptr_result_val = true;
       // Expected value that will be returned after "nullptr <= value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = false;
+      expected_results.nullptr_value_mptr_result_val = false;
       // Expected value that will be returned after "value_mptr <= nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = false;
+      expected_results.value_mptr_nullptr_result_val = false;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr <= nullptr_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "nullptr <= value_mptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "value_mptr <= nullptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr <= nullptr_mptr;
-        result_acc[1] = nullptr_mptr <= nullptr;
-        result_acc[2] = nullptr <= value_mptr;
-        result_acc[3] = value_mptr <= nullptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr <= nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr <= nullptr;
+        test_result.nullptr_value_mptr_result_val = nullptr <= value_mptr;
+        test_result.value_mptr_nullptr_result_val = value_mptr <= nullptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == nullptr_mptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[3] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
-
     SECTION(section_name(
                 "Check multi_ptr operator>=(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
                 .create()) {
+      // Variable that contains all variables that will be used to verify test
+      // result
+      detail::mptr_nillptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr >= nullptr_mptr"
       // operator will be called
-      bool nullptr_nullptr_mptr_expected_val = true;
+      expected_results.nullptr_nullptr_mptr_result_val = true;
       // Expected value that will be returned after "nullptr_mptr >= nullptr"
       // operator will be called
-      bool nullptr_mptr_nullptr_expected_val = true;
+      expected_results.nullptr_mptr_nullptr_result_val = true;
       // Expected value that will be returned after "nullptr >= value_mptr"
       // operator will be called
-      bool nullptr_value_expected_val = false;
+      expected_results.nullptr_value_mptr_result_val = false;
       // Expected value that will be returned after "value_mptr >= nullptr"
       // operator will be called
-      bool value_nullptr_expected_val = true;
+      expected_results.value_mptr_nullptr_result_val = true;
 
-      // Array that contained operator calling result:
-      //   - At the first position will contains value that will be returned
-      //     after "nullptr >= nullptr_mptr" operator will be called
-      //   - At the second position will contains value that will be returned
-      //     after "nullptr_mptr >= nullptr" operator will be called
-      //   - At the third position will contains value that will be returned
-      //     after "nullptr >= value_mptr" operator will be called
-      //   - At the fourth position will contains value that will be returned
-      //     after "value_mptr >= nullptr" operator will be called
-      std::array<bool, 4> mpr_comparison_ops_results;
-      const auto run_test_action = [](auto low_value_acc, auto great_value_acc,
-                                      auto result_acc) {
+      const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
-        multi_ptr_t value_mptr(low_value_acc);
+        multi_ptr_t value_mptr(arr_acc);
 
-        result_acc[0] = nullptr >= nullptr_mptr;
-        result_acc[1] = nullptr_mptr >= nullptr;
-        result_acc[2] = nullptr >= value_mptr;
-        result_acc[3] = value_mptr >= nullptr;
+        auto &test_result = result_acc[0];
+
+        test_result.nullptr_nullptr_mptr_result_val = nullptr >= nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr >= nullptr;
+        test_result.nullptr_value_mptr_result_val = nullptr >= value_mptr;
+        test_result.value_mptr_nullptr_result_val = value_mptr >= nullptr;
       };
 
-      run_test(queue, run_test_action, mpr_comparison_ops_results);
-
-      CHECK(mpr_comparison_ops_results[0] == nullptr_nullptr_mptr_expected_val);
-      CHECK(mpr_comparison_ops_results[0] == nullptr_mptr_nullptr_expected_val);
-      CHECK(mpr_comparison_ops_results[1] == nullptr_value_expected_val);
-      CHECK(mpr_comparison_ops_results[2] == value_nullptr_expected_val);
+      run_test(queue, run_test_action, expected_results);
     }
   }
 };
