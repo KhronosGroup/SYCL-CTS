@@ -25,7 +25,7 @@ namespace accessor_exceptions_test_fp64 {
 using namespace sycl_cts;
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Generic sycl::accessor constructor exceptions test.", "[accessor]")({
+("Generic sycl::accessor constructor exceptions. fp64 type", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -33,6 +33,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         "Skipping the test case.");
     return;
   }
+
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, generic_accessor>(
       "double");
@@ -42,7 +43,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::local_accessor  constructor exceptions test.", "[accessor]")({
+("sycl::local_accessor constructor exceptions. fp64 type", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -50,6 +51,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         "Skipping the test case.");
     return;
   }
+
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, local_accessor>(
       "double");
@@ -59,7 +61,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::host_accessor constructor exceptions test.", "[accessor]")({
+("sycl::host_accessor constructor exceptions. fp64 type", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -67,6 +69,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         "Skipping the test case.");
     return;
   }
+
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_tests_with_types, double, host_accessor>(
       "double");
@@ -74,4 +77,5 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   run_tests_with_types<double, host_accessor>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
+
 }  // namespace accessor_exceptions_test_fp64
