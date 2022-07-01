@@ -101,6 +101,41 @@ template <typename T>
 inline constexpr bool has_subscript_operator_v =
     has_subscript_operator_t<T>::value;
 
+/**
+ * @brief Verify \c T has size member function
+ */
+template <typename T, typename = void>
+struct has_size : std::false_type {};
+
+template <typename T>
+struct has_size<
+    T, std::void_t<decltype(std::declval<T>().size())>>
+    : std::true_type {};
+
+/**
+ * @brief Shortcut for has_size::type
+ */
+template <typename T>
+using has_size_t = typename has_size<T>::type;
+
+/**
+ * @brief Shortcut for has_size::value
+ */
+template <typename T>
+constexpr inline bool has_size_v = has_size_t<T>::value;
+
+/**
+ * @brief Verify \c T has both subscript operator and size member function
+ */
+template <typename T>
+using has_subscript_and_size = std::conjunction<has_subscript_operator<T>, has_size<T>>;
+
+/**
+ * @brief Shortcut for has_subscript_and_size::value
+ */
+template <typename T>
+constexpr inline bool has_subscript_and_size_v = has_subscript_and_size<T>::value;
+
 }  // namespace
 
 #endif  // __SYCLCTS_UTIL_TYPE_TRAITS_H

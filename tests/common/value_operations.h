@@ -40,8 +40,8 @@ inline void assign(ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
-                                 !has_subscript_operator_v<RightNonArrT>>
+inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
+                                 !has_subscript_and_size_v<RightNonArrT>>
 assign(LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     left[i] = right;
@@ -49,8 +49,8 @@ assign(LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftArrT, typename RightArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
-                                 has_subscript_operator_v<RightArrT>>
+inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
+                                 has_subscript_and_size_v<RightArrT>>
 assign(LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
@@ -59,8 +59,8 @@ assign(LeftArrT& left, const RightArrT& right) {
 }
 
 template <typename LeftNonArrT, typename RightNonArrT = LeftNonArrT>
-inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
-                                 !has_subscript_operator_v<RightNonArrT>>
+inline typename std::enable_if_t<!has_subscript_and_size_v<LeftNonArrT> &&
+                                 !has_subscript_and_size_v<RightNonArrT>>
 assign(LeftNonArrT& left, const RightNonArrT& right) {
   left = right;
 }
@@ -87,8 +87,8 @@ inline bool are_equal(const ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
-                                     !has_subscript_operator_v<RightNonArrT>,
+inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
+                                     !has_subscript_and_size_v<RightNonArrT>,
                                  bool>
 are_equal(const LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
@@ -98,8 +98,8 @@ are_equal(const LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftArrT, typename RightArrT>
-inline typename std::enable_if_t<has_subscript_operator_v<LeftArrT> &&
-                                     has_subscript_operator_v<RightArrT>,
+inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
+                                     has_subscript_and_size_v<RightArrT>,
                                  bool>
 are_equal(const LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
@@ -110,8 +110,8 @@ are_equal(const LeftArrT& left, const RightArrT& right) {
 }
 
 template <typename LeftNonArrT, typename RightNonArrT = LeftNonArrT>
-inline typename std::enable_if_t<!has_subscript_operator_v<LeftNonArrT> &&
-                                     !has_subscript_operator_v<RightNonArrT>,
+inline typename std::enable_if_t<!has_subscript_and_size_v<LeftNonArrT> &&
+                                     !has_subscript_and_size_v<RightNonArrT>,
                                  bool>
 are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
   return (left == right);
