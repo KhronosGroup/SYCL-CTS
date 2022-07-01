@@ -15,6 +15,8 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
+#include <type_traits>  // for std::is_same
+
 namespace multi_ptr_prefetch_member {
 
 constexpr int expected_val = 42;
@@ -38,6 +40,9 @@ class run_prefetch_test {
    */
   void operator()(const std::string &type_name,
                   const std::string &is_decorated_name) {
+    static_assert(!std::is_same_v<T, void>,
+                  "Data type shouldn't be is same to void type");
+
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     SECTION(section_name("Check multi_ptr::prefetch()")
