@@ -42,10 +42,10 @@ class check_buffer_accessor_api_methods {
   void operator()(util::logger &log, sycl::queue &queue,
                   const sycl_range_t<dims> &range,
                   const std::string& typeName) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     auto data = get_buffer_input_data<T>(count, dims);
     buffer_t<T, dims> buffer(data.data(), range);
@@ -135,10 +135,10 @@ class check_buffer_accessor_api_methods {
   void check_get_pointer(util::logger &log, const std::string& typeName,
                          const sycl_id_t<dims> &accessOffset,
                          const acc_t &accessor) const {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::host", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
     static constexpr auto errorTarget = sycl::target::host_buffer;
 
     auto errors = get_error_data(2);
@@ -179,10 +179,10 @@ class check_buffer_accessor_api_methods {
                          const sycl_id_t<dims> &accessOffset,
                          sycl::queue& queue,
                          accLambdaT makeAccessor) const {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::device", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
     static constexpr auto errorTarget = sycl::target::device;
 
     auto errors = get_error_data(2);
@@ -391,10 +391,10 @@ class check_buffer_accessor_api {
   void operator()(util::logger &log, sycl::queue &queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::read_only) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::reads", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
     auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims);
@@ -566,10 +566,10 @@ class check_buffer_accessor_api {
   void operator()(util::logger &log, sycl::queue &queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::write_only) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::writes", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     static constexpr bool useIndexes = false;
     auto dataIdSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
@@ -710,10 +710,10 @@ class check_buffer_accessor_api {
   void operator()(util::logger &log, sycl::queue &queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::generic) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api::reads_and_writes", typeName, log);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     // In case of dims == 0, there will be a read from dataIdSyntax
     // and a write to dataMultiDimSyntax
@@ -940,7 +940,7 @@ void check_buffer_accessor_api_mode(util::logger &log,
                                     size_t count, size_t size,
                                     sycl::queue &queue,
                                     sycl_range_t<dims> range) {
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
   log_accessor<T, dims, mode, target, placeholder>("", typeName, log);
 #endif
 
@@ -1055,14 +1055,14 @@ struct check_buffer_accessor_api_target<generic_path_t> {
   static void run(acc_target_tag::atomic64<accTagT>,
                   util::logger &log, const std::string& typeName, argsT&& ...) {
     // Do not run atomic64 checks
-#ifdef VERBOSE_LOG
+#if SYCL_CTS_ENABLE_VERBOSE_LOG
     constexpr auto mode = sycl::access_mode::atomic;
     log_accessor<T, dims, mode, target, placeholder>(
         "skip_buffer_accessor_atomic64", typeName, log);
 #else
     static_cast<void>(log);
     static_cast<void>(typeName);
-#endif  // VERBOSE_LOG
+#endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
   }
 
   /**

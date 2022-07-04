@@ -152,7 +152,7 @@ class run_api_tests {
                   value_operations::assign(ref_1, expected_val);
                   value_operations::assign(ref_2, changed_val);
 
-                  res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id]) =
+                  res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id)] =
                       value_operations::are_equal(ref_1, expected_val);
                   res_acc[sycl::id<2>(to_integral(check::subscript_size_t_result), item_id)] =
                       value_operations::are_equal(ref_2, changed_val);

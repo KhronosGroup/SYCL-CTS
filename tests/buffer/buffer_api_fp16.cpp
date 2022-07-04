@@ -36,7 +36,7 @@ public:
     }
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
                          sycl::half>(log, "sycl::half");
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
                          sycl::cl_half>(log, "sycl::cl_half");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE

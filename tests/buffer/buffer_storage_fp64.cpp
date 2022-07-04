@@ -36,7 +36,7 @@ public:
     }
     for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
                          double>(log, "double");
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_type_and_vectors<buffer_storage_common::check_buffer_storage_for_type,
                          sycl::cl_double>(log, "sycl::cl_double");
 #endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
