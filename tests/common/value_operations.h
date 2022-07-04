@@ -27,7 +27,7 @@ template <typename T, size_t N>
 using ArrayT = T[N];
 
 /**
- * @brief Function allows to make assignemt operations to elements of the
+ * @brief Function allows to make assignment operations to elements of the
  * container using std::get and std::index_sequence
  *
  * @tparam ContainerT Type of container for assignment
