@@ -15,9 +15,10 @@
 #include "../common/section_name_builder.h"
 #include "multi_ptr_common.h"
 
-#include <array>     // for std::array
-#include <cstddef>   // for std::size_t
-#include <optional>  // for std::optional
+#include <array>       // for std::array
+#include <cstddef>     // for std::size_t
+#include <functional>  // for std::less/greater/less_equal/greater_equal
+#include <optional>    // for std::optional
 
 namespace multi_ptr_comparison_op {
 
@@ -469,18 +470,18 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_nillptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "nullptr < nullptr_mptr"
-      // operator will be called
-      expected_results.nullptr_nullptr_mptr_result_val = false;
-      // Expected value that will be returned after "nullptr_mptr < nullptr"
-      // operator will be called
-      expected_results.nullptr_mptr_nullptr_result_val = false;
-      // Expected value that will be returned after "nullptr < value_mptr"
-      // operator will be called
+      // We expect that "nullptr < nullptr_mptr" result should be equal to
+      // std::less<multi_ptr_t<()(nullptr, nullptr_mptr) result
+      expected_results.nullptr_nullptr_mptr_result_val = true;
+      // We expect that "nullptr_mptr < nullptr" result should be equal to
+      // std::less<multi_ptr_t<()(nullptr_mptr, nullptr) result
+      expected_results.nullptr_mptr_nullptr_result_val = true;
+      // We expect that "nullptr < value_mptr" result should be equal to
+      // std::less<multi_ptr_t<()(nullptr, value_mptr) result
       expected_results.nullptr_value_mptr_result_val = true;
-      // Expected value that will be returned after "value_mptr < nullptr"
-      // operator will be called
-      expected_results.value_mptr_nullptr_result_val = false;
+      // We expect that "value_mptr < nullptr" result should be equal to
+      // std::less<multi_ptr_t<()(value_mptr, nullptr) result
+      expected_results.value_mptr_nullptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
@@ -488,10 +489,18 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.nullptr_nullptr_mptr_result_val = nullptr < nullptr_mptr;
-        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr < nullptr;
-        test_result.nullptr_value_mptr_result_val = nullptr < value_mptr;
-        test_result.value_mptr_nullptr_result_val = value_mptr < nullptr;
+        test_result.nullptr_nullptr_mptr_result_val =
+            std::less < multi_ptr_t < ()(nullptr, nullptr_mptr.get()) ==
+            nullptr < nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val =
+            std::less < multi_ptr_t < ()(nullptr_mptr.get(), nullptr) ==
+            nullptr_mptr < nullptr;
+        test_result.nullptr_value_mptr_result_val =
+            std::less < multi_ptr_t < ()(nullptr, value_mptr.get()) ==
+            nullptr < value_mptr;
+        test_result.value_mptr_nullptr_result_val =
+            std::less < multi_ptr_t < ()(value_mptr.get(), nullptr) ==
+            value_mptr < nullptr;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -505,17 +514,17 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_nillptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "nullptr > nullptr_mptr"
-      // operator will be called
-      expected_results.nullptr_nullptr_mptr_result_val = false;
-      // Expected value that will be returned after "nullptr_mptr > nullptr"
-      // operator will be called
-      expected_results.nullptr_mptr_nullptr_result_val = false;
-      // Expected value that will be returned after "nullptr > value_mptr"
-      // operator will be called
-      expected_results.nullptr_value_mptr_result_val = false;
-      // Expected value that will be returned after "value_mptr > nullptr"
-      // operator will be called
+      // We expect that "nullptr > nullptr_mptr" result should be equal to
+      // std::greater<multi_ptr_t>()(nullptr, nullptr_mptr) result
+      expected_results.nullptr_nullptr_mptr_result_val = true;
+      // We expect that "nullptr_mptr > nullptr" result should be equal to
+      // std::greater<multi_ptr_t>()(nullptr_mptr, nullptr) result
+      expected_results.nullptr_mptr_nullptr_result_val = true;
+      // We expect that "nullptr > value_mptr" result should be equal to
+      // std::greater<multi_ptr_t>()(nullptr, value_mptr) result
+      expected_results.nullptr_value_mptr_result_val = true;
+      // We expect that "value_mptr > nullptr" result should be equal to
+      // std::greater<multi_ptr_t>()(value_mptr, nullptr) result
       expected_results.value_mptr_nullptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
@@ -524,10 +533,18 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.nullptr_nullptr_mptr_result_val = nullptr > nullptr_mptr;
-        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr > nullptr;
-        test_result.nullptr_value_mptr_result_val = nullptr > value_mptr;
-        test_result.value_mptr_nullptr_result_val = value_mptr > nullptr;
+        test_result.nullptr_nullptr_mptr_result_val =
+            std::greater<multi_ptr_t>()(nullptr, nullptr_mptr) ==
+            nullptr > nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val =
+            std::greater<multi_ptr_t>()(nullptr_mptr, nullptr) ==
+            nullptr_mptr > nullptr;
+        test_result.nullptr_value_mptr_result_val =
+            std::greater<multi_ptr_t>()(nullptr, value_mptr) ==
+            nullptr > value_mptr;
+        test_result.value_mptr_nullptr_result_val =
+            std::greater<multi_ptr_t>()(value_mptr, nullptr) ==
+            value_mptr > nullptr;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -541,18 +558,18 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_nillptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "nullptr <= nullptr_mptr"
-      // operator will be called
+      // We expect that "nullptr <= nullptr_mptr" result should be equal to
+      // std::less_equal<multi_ptr_t>()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
-      // Expected value that will be returned after "nullptr_mptr <= nullptr"
-      // operator will be called
+      // We expect that "nullptr_mptr <= nullptr" result should be equal to
+      // std::less_equal<multi_ptr_t>()(nullptr_mptr, nullptr) result
       expected_results.nullptr_mptr_nullptr_result_val = true;
-      // Expected value that will be returned after "nullptr <= value_mptr"
-      // operator will be called
-      expected_results.nullptr_value_mptr_result_val = false;
-      // Expected value that will be returned after "value_mptr <= nullptr"
-      // operator will be called
-      expected_results.value_mptr_nullptr_result_val = false;
+      // We expect that "nullptr <= value_mptr" result should be equal to
+      // std::less_equal<multi_ptr_t>()(nullptr, value_mptr) result
+      expected_results.nullptr_value_mptr_result_val = true;
+      // We expect that "value_mptr <= nullptr" result should be equal to
+      // std::less_equal<multi_ptr_t>()(value_mptr, nullptr) result
+      expected_results.value_mptr_nullptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t nullptr_mptr(nullptr);
@@ -560,10 +577,18 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.nullptr_nullptr_mptr_result_val = nullptr <= nullptr_mptr;
-        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr <= nullptr;
-        test_result.nullptr_value_mptr_result_val = nullptr <= value_mptr;
-        test_result.value_mptr_nullptr_result_val = value_mptr <= nullptr;
+        test_result.nullptr_nullptr_mptr_result_val =
+            std::less_equal<multi_ptr_t>()(nullptr, nullptr_mptr) ==
+            nullptr <= nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val =
+            std::less_equal<multi_ptr_t>()(nullptr_mptr, nullptr) ==
+            nullptr_mptr <= nullptr;
+        test_result.nullptr_value_mptr_result_val =
+            std::less_equal<multi_ptr_t>()(nullptr, value_mptr) ==
+            nullptr <= value_mptr;
+        test_result.value_mptr_nullptr_result_val =
+            std::less_equal<multi_ptr_t>()(value_mptr, nullptr) ==
+            value_mptr <= nullptr;
       };
 
       run_test(queue, run_test_action, expected_results);
@@ -577,17 +602,17 @@ class run_multi_ptr_comparison_op_test {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::mptr_nillptr_mptr_test_results<T> expected_results;
-      // Expected value that will be returned after "nullptr >= nullptr_mptr"
-      // operator will be called
+      // We expect that "nullptr >= nullptr_mptr" result should be equal to
+      // std::greater_equal<multi_ptr_t>()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
-      // Expected value that will be returned after "nullptr_mptr >= nullptr"
-      // operator will be called
+      // We expect that "nullptr_mptr >= nullptr" result should be equal to
+      // std::greater_equal<multi_ptr_t>()(nullptr_mptr, nullptr) result
       expected_results.nullptr_mptr_nullptr_result_val = true;
-      // Expected value that will be returned after "nullptr >= value_mptr"
-      // operator will be called
-      expected_results.nullptr_value_mptr_result_val = false;
-      // Expected value that will be returned after "value_mptr >= nullptr"
-      // operator will be called
+      // We expect that "nullptr >= value_mptr" result should be equal to
+      // std::greater_equal<multi_ptr_t>()(nullptr, value_mptr) result
+      expected_results.nullptr_value_mptr_result_val = true;
+      // We expect that "value_mptr >= nullptr" result should be equal to
+      // std::greater_equal<multi_ptr_t>()(value_mptr, nullptr) result
       expected_results.value_mptr_nullptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
@@ -596,10 +621,18 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.nullptr_nullptr_mptr_result_val = nullptr >= nullptr_mptr;
-        test_result.nullptr_mptr_nullptr_result_val = nullptr_mptr >= nullptr;
-        test_result.nullptr_value_mptr_result_val = nullptr >= value_mptr;
-        test_result.value_mptr_nullptr_result_val = value_mptr >= nullptr;
+        test_result.nullptr_nullptr_mptr_result_val =
+            std::greater_equal<multi_ptr_t>()(nullptr, nullptr_mptr) ==
+            nullptr >= nullptr_mptr;
+        test_result.nullptr_mptr_nullptr_result_val =
+            std::greater_equal<multi_ptr_t>()(nullptr_mptr, nullptr) ==
+            nullptr_mptr >= nullptr;
+        test_result.nullptr_value_mptr_result_val =
+            std::greater_equal<multi_ptr_t>()(nullptr, value_mptr) ==
+            nullptr >= value_mptr;
+        test_result.value_mptr_nullptr_result_val =
+            std::greater_equal<multi_ptr_t>()(value_mptr, nullptr) ==
+            value_mptr >= nullptr;
       };
 
       run_test(queue, run_test_action, expected_results);
