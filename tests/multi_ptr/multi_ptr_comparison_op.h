@@ -77,7 +77,7 @@ struct mptr_mptr_test_results {
  * @tparam T Data type that will be used in test
  */
 template <typename T>
-struct mptr_nillptr_mptr_test_results {
+struct mptr_nullptr_mptr_test_results {
   // Use std::optional to disable verification if some member hasn't been
   // initialised by some value
 
@@ -100,7 +100,7 @@ struct mptr_nillptr_mptr_test_results {
    * @param retreived_results Retreived test results
    */
   void verify_resuts(
-      const mptr_nillptr_mptr_test_results<T> &retreived_results) const {
+      const mptr_nullptr_mptr_test_results<T> &retreived_results) const {
     // If expected value isn't initialized, then this verification should be
     // skipped
     if (nullptr_nullptr_mptr_result_val) {
@@ -397,7 +397,7 @@ class run_multi_ptr_comparison_op_test {
             .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr_mptr == nullptr"
       // operator will be called
       expected_results.nullptr_nullptr_mptr_result_val = true;
@@ -433,7 +433,7 @@ class run_multi_ptr_comparison_op_test {
                 .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "nullptr != nullptr_mptr"
       // operator will be called
       expected_results.nullptr_nullptr_mptr_result_val = false;
@@ -469,7 +469,7 @@ class run_multi_ptr_comparison_op_test {
                 .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // We expect that "nullptr < nullptr_mptr" result should be equal to
       // std::less<multi_ptr_t<()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
@@ -513,7 +513,7 @@ class run_multi_ptr_comparison_op_test {
                 .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // We expect that "nullptr > nullptr_mptr" result should be equal to
       // std::greater<multi_ptr_t>()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
@@ -557,7 +557,7 @@ class run_multi_ptr_comparison_op_test {
                 .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // We expect that "nullptr <= nullptr_mptr" result should be equal to
       // std::less_equal<multi_ptr_t>()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
@@ -601,7 +601,7 @@ class run_multi_ptr_comparison_op_test {
                 .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
-      detail::mptr_nillptr_mptr_test_results<T> expected_results;
+      detail::mptr_nullptr_mptr_test_results<T> expected_results;
       // We expect that "nullptr >= nullptr_mptr" result should be equal to
       // std::greater_equal<multi_ptr_t>()(nullptr, nullptr_mptr) result
       expected_results.nullptr_nullptr_mptr_result_val = true;
