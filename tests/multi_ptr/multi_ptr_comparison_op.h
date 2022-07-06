@@ -79,9 +79,6 @@ struct mptr_mptr_test_results {
  */
 template <typename T>
 struct mptr_nullptr_mptr_test_results {
-  // Use std::optional to disable verification if some member hasn't been
-  // initialised by some value
-
   // Expected value that will be returned after "nullptr *current operator*
   // nullptr_mptr" operator will be called
   bool nullptr_nullptr_mptr_result_val = true;
@@ -453,7 +450,7 @@ class run_multi_ptr_comparison_op_test {
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
-      // result
+      // result. We expect that all of them will be true.
       detail::mptr_nullptr_mptr_test_results<T> expected_results;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
@@ -485,7 +482,7 @@ class run_multi_ptr_comparison_op_test {
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
-      // result
+      // result. We expect that all of them will be true.
       detail::mptr_nullptr_mptr_test_results<T> expected_results;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
@@ -517,7 +514,7 @@ class run_multi_ptr_comparison_op_test {
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
-      // result
+      // result. We expect that all of them will be true.
       detail::mptr_nullptr_mptr_test_results<T> expected_results;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
@@ -549,7 +546,7 @@ class run_multi_ptr_comparison_op_test {
                 .with("decorated", is_decorated_name)
                 .create()) {
       // Variable that contains all variables that will be used to verify test
-      // result
+      // result. We expect that all of them will be true.
       detail::mptr_nullptr_mptr_test_results<T> expected_results;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
