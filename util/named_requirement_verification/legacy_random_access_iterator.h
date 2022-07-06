@@ -47,7 +47,7 @@ class legacy_random_access_iterator_requirement {
     auto legacy_bidir_iterator_res =
         legacy_bidirectional_iterator_requirement{}.is_satisfied_for<It>(
             valid_iterator, container_size);
-    if (legacy_bidir_iterator_res.first == false) {
+    if (!legacy_bidir_iterator_res.first) {
       m_errors.add_errors(legacy_bidir_iterator_res.second);
     }
 
@@ -176,7 +176,7 @@ class legacy_random_access_iterator_requirement {
       It a{};
       diff_t n = 1;
 
-      if (std::is_same_v<decltype(a - n), It> == false) {
+      if (!std::is_same_v<decltype(a - n), It>) {
         m_errors.add_error(
             "Iterator object minus iterator_traits::difference_type "
             "have to return Iterator instance");
@@ -197,16 +197,16 @@ class legacy_random_access_iterator_requirement {
         b = b + n;
         using it_traits = std::iterator_traits<It>;
         if constexpr (has_iterator_minus_iterator_operator && difference_type) {
-          if (std::is_same_v<decltype(b - a),
-                             typename it_traits::difference_type> == false) {
+          if (!std::is_same_v<decltype(b - a),
+                              typename it_traits::difference_type>) {
             m_errors.add_error(
                 "operator-() of It instances have to return "
                 "iterator_traits::difference_type");
           }
         }
         if constexpr (has_subscript_operator && has_reference_member) {
-          if (std::is_convertible_v<decltype(a[0]),
-                                    typename it_traits::reference> == false) {
+          if (!std::is_convertible_v<decltype(a[0]),
+                                     typename it_traits::reference>) {
             m_errors.add_error(
                 "operator[]() have to return convertible to "
                 "iterator_traits::reference");
@@ -219,28 +219,28 @@ class legacy_random_access_iterator_requirement {
       It a{};
       It b{};
       if constexpr (has_greater_than_operator) {
-        if (std::is_convertible_v<decltype(a > b), bool> == false) {
+        if (!std::is_convertible_v<decltype(a > b), bool>) {
           m_errors.add_error(
               "operator>() return value have to contextually convertible to "
               "bool");
         }
       }
       if constexpr (has_less_than_operator) {
-        if (std::is_convertible_v<decltype(a < b), bool> == false) {
+        if (!std::is_convertible_v<decltype(a < b), bool>) {
           m_errors.add_error(
               "operator<() return value have to contextually convertible to "
               "bool");
         }
       }
       if constexpr (has_greater_or_equal_operator) {
-        if (std::is_convertible_v<decltype(a >= b), bool> == false) {
+        if (!std::is_convertible_v<decltype(a >= b), bool>) {
           m_errors.add_error(
               "operator>=() return value have to contextually convertible to "
               "bool");
         }
       }
       if constexpr (has_less_or_equal_operator) {
-        if (std::is_convertible_v<decltype(a <= b), bool> == false) {
+        if (!std::is_convertible_v<decltype(a <= b), bool>) {
           m_errors.add_error(
               "operator<=() return value have to contextually convertible to "
               "bool");

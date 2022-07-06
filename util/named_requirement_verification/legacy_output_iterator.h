@@ -46,7 +46,7 @@ class legacy_output_iterator_requirement {
   auto is_satisfied_for() {
     auto legacy_iterator_res =
         legacy_iterator_requirement{}.is_satisfied_for<It>();
-    if (legacy_iterator_res.first == false) {
+    if (!legacy_iterator_res.first) {
       m_errors.add_errors(legacy_iterator_res.second);
     }
 
@@ -75,19 +75,18 @@ class legacy_output_iterator_requirement {
     using it_traits = std::iterator_traits<It>;
 
     if constexpr (has_value_type_member && is_dereferenceable) {
-      if (std::is_assignable_v<decltype(*std::declval<It>()),
-                               typename it_traits::value_type> == false)
+      if (!std::is_assignable_v<decltype(*std::declval<It>()),
+                                typename it_traits::value_type>)
         m_errors.add_error(
             "Iterator have to return iterator_traits::value_type from "
             "operator*()");
     }
 
     if constexpr (can_pre_increment) {
-      if (std::is_same_v<decltype(++std::declval<It&>()), It&> == false) {
+      if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
         m_errors.add_error("Iterator have to return It& from operator++()");
       }
-      if (std::is_convertible_v<decltype(++std::declval<It&>()), const It> ==
-          false) {
+      if (!std::is_convertible_v<decltype(++std::declval<It&>()), const It>) {
         m_errors.add_error(
             "Iterator have to return convertble to const It from operator++()");
       }
@@ -95,8 +94,8 @@ class legacy_output_iterator_requirement {
 
     if constexpr (can_post_increment && is_dereferenceable &&
                   has_value_type_member) {
-      if (std::is_assignable_v<decltype(*(std::declval<It&>()++)),
-                               typename it_traits::value_type> == false) {
+      if (!std::is_assignable_v<decltype(*(std::declval<It&>()++)),
+                                typename it_traits::value_type>) {
         m_errors.add_error(
             "Iterator have to be assignable with iterator_traits::value_type "
             "after useage of operator++() and operator*()");
@@ -104,8 +103,8 @@ class legacy_output_iterator_requirement {
     }
 
     if constexpr (is_dereferenceable && has_value_type_member) {
-      if (std::is_assignable_v<decltype(*std::declval<It>()),
-                               typename it_traits::value_type> == false) {
+      if (!std::is_assignable_v<decltype(*std::declval<It>()),
+                                typename it_traits::value_type>) {
         m_errors.add_error(
             "Iterator have to be assignable with iterator_traits::value_type "
             "after useage of operator*()");

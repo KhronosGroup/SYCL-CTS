@@ -46,7 +46,7 @@ class legacy_input_iterator_requirement {
   auto is_satisfied_for() {
     auto legacy_iterator_res =
         legacy_iterator_requirement{}.is_satisfied_for<It>();
-    if (legacy_iterator_res.first == false) {
+    if (!legacy_iterator_res.first) {
       m_errors.add_errors(legacy_iterator_res.second);
     }
 
@@ -93,13 +93,13 @@ class legacy_input_iterator_requirement {
       // As "Legacy Iterator" implements increment operator we can get two not
       // equal iterators
       ++i;
-      if ((i != j) == false) {
+      if (i == j) {
         m_errors.add_error(
             "Two not equal iterators have to return true with NOT EQUAL "
             "operator");
       }
 
-      if (std::is_convertible_v<decltype((i != j)), bool> == false) {
+      if (!std::is_convertible_v<decltype((i != j)), bool>) {
         m_errors.add_error(
             "Two not equal iterators have to return implicit convertible to "
             "bool value with NOT EQUAL operator");
@@ -107,7 +107,7 @@ class legacy_input_iterator_requirement {
     }
 
     if constexpr (can_pre_increment) {
-      if (std::is_same_v<decltype(++std::declval<It&>()), It&> == false) {
+      if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
         m_errors.add_error("Iterator have to return It& from operator++()");
       }
     }
@@ -116,8 +116,8 @@ class legacy_input_iterator_requirement {
 
     if constexpr (is_dereferenceable && can_post_increment &&
                   has_value_type_member) {
-      if (std::is_convertible_v<decltype(*(std::declval<It&>()++)),
-                                typename it_traits::value_type> == false) {
+      if (!std::is_convertible_v<decltype(*(std::declval<It&>()++)),
+                                 typename it_traits::value_type>) {
         m_errors.add_error(
             "Iterator expression *i++ have to be convertible to "
             "iterator_traits::value_type");
@@ -125,8 +125,8 @@ class legacy_input_iterator_requirement {
     }
 
     if constexpr (is_dereferenceable && has_reference_member) {
-      if (std::is_same_v<decltype(*std::declval<It>()),
-                         typename it_traits::reference> == false) {
+      if (!std::is_same_v<decltype(*std::declval<It>()),
+                          typename it_traits::reference>) {
         m_errors.add_error(
             "Iterator have to return iterator_traits::reference from "
             "operator*()");
@@ -134,8 +134,8 @@ class legacy_input_iterator_requirement {
     }
 
     if constexpr (is_dereferenceable && has_value_type_member) {
-      if (std::is_convertible_v<decltype(*std::declval<It>()),
-                                typename it_traits::value_type> == false)
+      if (!std::is_convertible_v<decltype(*std::declval<It>()),
+                                 typename it_traits::value_type>)
         m_errors.add_error(
             "operator*() result have to be convertible to "
             "iterator_traits::value_type");

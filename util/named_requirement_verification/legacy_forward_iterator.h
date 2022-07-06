@@ -48,7 +48,7 @@ class legacy_forward_iterator_requirement {
   auto is_satisfied_for(It valid_iterator, const size_t container_size) {
     auto legacy_input_iterator_res =
         legacy_input_iterator_requirement{}.is_satisfied_for<It>();
-    if (legacy_input_iterator_res.first == false) {
+    if (!legacy_input_iterator_res.first) {
       m_errors.add_errors(legacy_input_iterator_res.second);
     }
 
@@ -77,13 +77,13 @@ class legacy_forward_iterator_requirement {
           legacy_output_iterator_requirement{}.is_satisfied_for<It>().first;
 
       if (is_output_iterator_req_satisfied) {
-        if (std::is_const_v<typename it_traits::reference> == true) {
+        if (std::is_const_v<typename it_traits::reference>) {
           m_errors.add_error(
               "Provided iterator satisfy to LegacyOutputIterator "
               "requirement. iterator_traits::reference have to be non const");
         }
       } else {
-        if (std::is_const_v<typename it_traits::reference> == false) {
+        if (!std::is_const_v<typename it_traits::reference>) {
           m_errors.add_error(
               "Provided iterator not satisfy to LegacyOutputIterator "
               "requirement. iterator_traits::reference have to be const");
@@ -92,15 +92,15 @@ class legacy_forward_iterator_requirement {
     }
 
     if constexpr (can_post_increment) {
-      if (std::is_same_v<decltype(std::declval<It&>()++), It> == false) {
+      if (!std::is_same_v<decltype(std::declval<It&>()++), It>) {
         m_errors.add_error("operator++(int) have to return It");
       }
     }
 
     if constexpr (can_post_increment && is_dereferenceable &&
                   has_reference_member) {
-      if (std::is_convertible_v<decltype(*(std::declval<It&>()++)),
-                                typename it_traits::reference> == false) {
+      if (!std::is_convertible_v<decltype(*(std::declval<It&>()++)),
+                                 typename it_traits::reference>) {
         m_errors.add_error(
             "Expression *i++ have to be convertible to "
             "iterator_traits::reference");
@@ -118,19 +118,19 @@ class legacy_forward_iterator_requirement {
         {
           It a = valid_iterator;
           It b = valid_iterator;
-          if ((*a == *b) == false) {
+          if (*a != *b) {
             m_errors.add_error(
                 "If a and b compare equal (a == b) then *a and *b "
                 "are references bound to the same object");
           }
 
-          if ((a == b) == false) {
+          if (a != b) {
             m_errors.add_error(
                 "If *a and *b refer to the same object, then a == b equals "
                 "true");
           }
 
-          if ((++a == ++b) == false) {
+          if (++a != ++b) {
             m_errors.add_error(
                 "If a == b equals true then ++a == ++b also equals true");
           }
@@ -147,7 +147,7 @@ class legacy_forward_iterator_requirement {
             const auto zero_pos_value = *valid_iterator;
             It zero_pos_it = valid_iterator;
             ++zero_pos_it;
-            if ((zero_pos_value == *valid_iterator) == false) {
+            if (zero_pos_value != *valid_iterator) {
               m_errors.add_error(
                   "Incrementing copy of iterator instance have to not affect "
                   "on the value read from original object");

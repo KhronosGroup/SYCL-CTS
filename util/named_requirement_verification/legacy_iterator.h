@@ -39,56 +39,56 @@ class legacy_iterator_requirement {
    */
   template <typename It>
   auto is_satisfied_for() {
-    if (std::is_copy_constructible_v<It> == false) {
+    if (!std::is_copy_constructible_v<It>) {
       m_errors.add_error("Iterator have to be copy constructable");
     }
 
-    if (std::is_copy_assignable_v<It> == false) {
+    if (!std::is_copy_assignable_v<It>) {
       m_errors.add_error("Iterator have to be copy assignable");
     }
 
-    if (std::is_destructible_v<It> == false) {
+    if (!std::is_destructible_v<It>) {
       m_errors.add_error("Iterator have to be destructible");
     }
 
-    if (std::is_swappable_v<It> == false) {
+    if (!std::is_swappable_v<It>) {
       m_errors.add_error("Iterator have to be swappable");
     }
 
-    if (type_traits::has_field::value_type_v<It> == false) {
+    if (!type_traits::has_field::value_type_v<It>) {
       m_errors.add_error("Iterator doesn't have value_type member typedef");
     }
 
-    if (type_traits::has_field::difference_type_v<It> == false) {
+    if (!type_traits::has_field::difference_type_v<It>) {
       m_errors.add_error(
           "Iterator doesn't have difference_type member typedef");
     }
 
-    if (type_traits::has_field::reference_v<It> == false) {
+    if (!type_traits::has_field::reference_v<It>) {
       m_errors.add_error("Iterator doesn't have reference member typedef");
     }
 
-    if (type_traits::has_field::pointer_v<It> == false) {
+    if (!type_traits::has_field::pointer_v<It>) {
       m_errors.add_error("Iterator doesn't have pointer member typedef");
     }
 
-    if (type_traits::has_field::iterator_category_v<It> == false) {
+    if (!type_traits::has_field::iterator_category_v<It>) {
       m_errors.add_error(
           "Iterator doesn't have iterator_category member typedef");
     }
 
-    if (type_traits::has_arithmetic::pre_increment_v<It> == false) {
+    if (!type_traits::has_arithmetic::pre_increment_v<It>) {
       m_errors.add_error("Iterator doesn't have implemented operator++()");
     }
 
     if constexpr (type_traits::has_arithmetic::pre_increment_v<It>) {
-      if (std::is_same_v<decltype(++std::declval<It&>()), It&> == false) {
+      if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
         m_errors.add_error(
             "Iterator have to return It& after useage of operator++()");
       }
     }
 
-    if (is_dereferenceable_v<It> == false) {
+    if (!is_dereferenceable_v<It>) {
       m_errors.add_error("Iterator doesn't have implemented operator*()");
     }
 
