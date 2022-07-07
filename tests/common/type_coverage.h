@@ -19,6 +19,8 @@
 
 #include "catch2/catch_tostring.hpp"
 
+#include <cstddef> // for std::size_t
+
 /**
  * @brief Retrieve type name; by default just forward the given one
  */
@@ -447,23 +449,29 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
 void for_type_vectors_marray(argsT &&...args) {
+  constexpr std::size_t small_marray_size = 2;
+  constexpr std::size_t medium_marray_size = 5;
+  constexpr std::size_t large_marray_size = 10;
   if constexpr (std::is_same<T, bool>::value) {
     for_all_types<action, actionArgsT...>(
-        type_pack<T, typename sycl::template marray<T, 2>,
-                  typename sycl::template marray<T, 5>,
-                  typename sycl::template marray<T, 10>>{},
+        type_pack<T, typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+                  typename sycl::template marray<T, large_marray_size>>{},
         std::forward<argsT>(args)...);
   } else {
     for_all_types<action, actionArgsT...>(
+        // Provides all possible sizes (according to SYCL-2020 rev.5) for
+        // sycl::vec
         type_pack<T, typename sycl::template vec<T, 1>,
                   typename sycl::template vec<T, 2>,
                   typename sycl::template vec<T, 3>,
                   typename sycl::template vec<T, 4>,
                   typename sycl::template vec<T, 8>,
                   typename sycl::template vec<T, 16>,
-                  typename sycl::template marray<T, 2>,
-                  typename sycl::template marray<T, 5>,
-                  typename sycl::template marray<T, 10>>{},
+                  // Provide different sizes for sycl::marray
+                  typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+                  typename sycl::template marray<T, large_marray_size>>{},
         std::forward<argsT>(args)...);
   }
 }
@@ -506,9 +514,10 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
 void for_device_copyable_std_containers(argsT &&...args) {
+  constexpr std::size_t medium_array_size = 5;
   for_all_types<action, actionArgsT...>(
-      type_pack<std::array<T, 5>, std::optional<T>, std::pair<T, T>,
-                std::tuple<T, T>, std::variant<T>>{},
+      type_pack<std::array<T, medium_array_size>, std::optional<T>,
+                std::pair<T, T>, std::tuple<T, T>, std::variant<T>>{},
       std::forward<argsT>(args)...);
 }
 
