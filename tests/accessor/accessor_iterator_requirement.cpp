@@ -18,8 +18,6 @@
 
 namespace accessor_iterator_requirement {
 
-using string_view = std::basic_string_view<char>;
-
 /**
  * @brief Function helps to fail catch2 test and print errors from array through
  * a INFO invocations
@@ -49,12 +47,12 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;
-  std::basic_string_view<char> errors[size_of_res_array];
+  named_requirement_verification::string_view errors[size_of_res_array];
 
   constexpr size_t size_of_dummy = 5;
   int dummy[size_of_dummy] = {1, 2, 3, 4, 5};
   {
-    sycl::buffer<std::basic_string_view<char>, 1> res_buf(
+    sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
         errors, sycl::range(size_of_res_array));
     sycl::buffer<int, 1> dummy_buf(dummy, sycl::range(size_of_dummy));
 
@@ -92,11 +90,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;
-  std::basic_string_view<char> errors[size_of_res_array];
+  named_requirement_verification::string_view errors[size_of_res_array];
 
   constexpr size_t alloc_size = 5;
   {
-    sycl::buffer<std::basic_string_view<char>, 1> res_buf(
+    sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
         errors, sycl::range(size_of_res_array));
 
     q.submit([&](sycl::handler& cgh) {
