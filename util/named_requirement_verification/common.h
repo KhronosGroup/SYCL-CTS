@@ -50,7 +50,7 @@ class error_messages_container {
       m_error_msgs_container[m_index] = msg;
       ++m_index;
     } else {
-      // If Size of container was doesn't fit
+      // If Size of container doesn't fit
       m_error_msgs_container[Size - 1] =
           "Size for error_messages_container setted wrong!";
     }

@@ -22,20 +22,20 @@ namespace named_requirement_verification {
  */
 class legacy_random_access_iterator_requirement {
  public:
-  // Will be used as size of container for error messages
-  // Value should be equal to the number of add_error invocations
-  // Don't forget to update this value if there is any changes in class
+  // Will be used as size of container for error messages.
+  // Value should be equal to the number of add_error invocations.
+  // Don't forget to update this value if there is any changes in class.
   // As we also verify other requirements, we have to keep in mind that result
-  // of those verifications also increase size of container with messages
+  // of those verifications also increase size of container with messages.
   static constexpr int count_of_possible_errors =
       legacy_bidirectional_iterator_requirement::count_of_possible_errors + 21;
 
  private:
-  error_messages_container<count_of_possible_errors> m_errors;
+  error_messages_container<count_of_possible_errors> m_test_error_messages;
 
  public:
   /**
-   * @brief Member function preform different checks for the requirement
+   * @brief Member function preforms different checks for the requirement
    * verification
    *
    * @tparam It Type of iterator for verification
@@ -48,7 +48,7 @@ class legacy_random_access_iterator_requirement {
         legacy_bidirectional_iterator_requirement{}.is_satisfied_for<It>(
             valid_iterator, container_size);
     if (!legacy_bidir_iterator_res.first) {
-      m_errors.add_errors(legacy_bidir_iterator_res.second);
+      m_test_error_messages.add_errors(legacy_bidir_iterator_res.second);
     }
 
     using diff_t = typename std::iterator_traits<It>::difference_type;
@@ -84,49 +84,49 @@ class legacy_random_access_iterator_requirement {
 
     if (!has_diff_type_plus_iterator_operator ||
         !has_iterator_plus_diff_type_operator) {
-      m_errors.add_error(
-          "Iterator have to implement operator+() with "
-          "iterator_traits::difference_type operator");
+      m_test_error_messages.add_error(
+          "Iterator should have operator+() with "
+          "iterator_traits::difference_type operator.");
     }
 
     if (!has_iterator_minus_diff_type_operator) {
-      m_errors.add_error(
-          "Iterator have to implement operator-() with "
-          "iterator_traits::difference_type operator");
+      m_test_error_messages.add_error(
+          "Iterator should have operator-() with "
+          "iterator_traits::difference_type operator.");
     }
 
     if (!has_addition_compound_operator) {
-      m_errors.add_error(
-          "Iterator have to implement operator+=() between Iterator instance "
-          "and iterator_traits::difference_type");
+      m_test_error_messages.add_error(
+          "Iterator should have operator+=() between Iterator instance and "
+          "iterator_traits::difference_type.");
     }
 
     if (!has_subtraction_compound_operator) {
-      m_errors.add_error(
-          "Iterator have to implement operator-=() between Iterator instance "
-          "and iterator_traits::difference_type");
+      m_test_error_messages.add_error(
+          "Iterator should have operator-=() between Iterator instance and "
+          "iterator_traits::difference_type.");
     }
 
     if (!has_iterator_minus_iterator_operator) {
-      m_errors.add_error(
-          "Iterator have to implement subtraction between iterators");
+      m_test_error_messages.add_error(
+          "Iterator should have subtraction between iterators.");
     }
 
     if (!has_subscript_operator) {
-      m_errors.add_error("Iterator have to implement operator[]");
+      m_test_error_messages.add_error("Iterator should have operator[].");
     }
 
     if (!has_greater_than_operator) {
-      m_errors.add_error("Iterator have to implement operator>()");
+      m_test_error_messages.add_error("Iterator should have operator>().");
     }
     if (!has_less_than_operator) {
-      m_errors.add_error("Iterator have to implement operator<()");
+      m_test_error_messages.add_error("Iterator should have operator<().");
     }
     if (!has_greater_or_equal_operator) {
-      m_errors.add_error("Iterator have to implement operator>=()");
+      m_test_error_messages.add_error("Iterator should have operator>=().");
     }
     if (!has_less_or_equal_operator) {
-      m_errors.add_error("Iterator have to implement operator<=()");
+      m_test_error_messages.add_error("Iterator should have operator<=().");
     }
 
     if constexpr (has_addition_compound_operator &&
@@ -141,9 +141,9 @@ class legacy_random_access_iterator_requirement {
           decltype(std::declval<It&>() -= -std::declval<diff_t>()), It&>;
 
       if (!is_compund_ops_correct)
-        m_errors.add_error(
-            "operator+=() and operator-=() should return It& for "
-            "positive and negative vales");
+        m_test_error_messages.add_error(
+            "operator+=() and operator-=() should return It& for positive and "
+            "negative vales.");
     }
 
     if constexpr (has_diff_type_plus_iterator_operator &&
@@ -158,16 +158,17 @@ class legacy_random_access_iterator_requirement {
             // For negative n
             !std::is_same_v<decltype(a - n), It> ||
             !std::is_same_v<decltype(-n + a), It>) {
-          m_errors.add_error(
-              "operator+() and operator-() should return It& for "
-              "positive and negative vales");
+          m_test_error_messages.add_error(
+              "operator+() and operator-() should return It& for positive and "
+              "negative vales.");
         }
       }
 
       {
         It a = valid_iterator;
         if (!(a + n == n + a)) {
-          m_errors.add_error("Iterator operator+=() have to be commutative");
+          m_test_error_messages.add_error(
+              "Iterator operator+=() should be commutative.");
         }
       }
     }
@@ -177,16 +178,16 @@ class legacy_random_access_iterator_requirement {
       diff_t n = 1;
 
       if (!std::is_same_v<decltype(a - n), It>) {
-        m_errors.add_error(
-            "Iterator object minus iterator_traits::difference_type "
-            "have to return Iterator instance");
+        m_test_error_messages.add_error(
+            "Iterator object minus iterator_traits::difference_type should "
+            "return Iterator instance.");
       }
     }
 
     if (container_size == 0) {
-      m_errors.add_error(
+      m_test_error_messages.add_error(
           "Some of the test requires container size more than 0. These tests "
-          "have been skipped");
+          "have been skipped.");
     } else {
       It a{};
       It b{};
@@ -199,17 +200,17 @@ class legacy_random_access_iterator_requirement {
         if constexpr (has_iterator_minus_iterator_operator && difference_type) {
           if (!std::is_same_v<decltype(b - a),
                               typename it_traits::difference_type>) {
-            m_errors.add_error(
-                "operator-() of It instances have to return "
-                "iterator_traits::difference_type");
+            m_test_error_messages.add_error(
+                "operator-() of It instances should return "
+                "iterator_traits::difference_type.");
           }
         }
         if constexpr (has_subscript_operator && has_reference_member) {
           if (!std::is_convertible_v<decltype(a[0]),
                                      typename it_traits::reference>) {
-            m_errors.add_error(
-                "operator[]() have to return convertible to "
-                "iterator_traits::reference");
+            m_test_error_messages.add_error(
+                "operator[]() return value should be convertible to "
+                "iterator_traits::reference.");
           }
         }
       }
@@ -220,38 +221,38 @@ class legacy_random_access_iterator_requirement {
       It b{};
       if constexpr (has_greater_than_operator) {
         if (!std::is_convertible_v<decltype(a > b), bool>) {
-          m_errors.add_error(
-              "operator>() return value have to contextually convertible to "
-              "bool");
+          m_test_error_messages.add_error(
+              "operator>() return value should be contextually convertible to "
+              "bool.");
         }
       }
       if constexpr (has_less_than_operator) {
         if (!std::is_convertible_v<decltype(a < b), bool>) {
-          m_errors.add_error(
-              "operator<() return value have to contextually convertible to "
-              "bool");
+          m_test_error_messages.add_error(
+              "operator<() return value should be contextually convertible to "
+              "bool.");
         }
       }
       if constexpr (has_greater_or_equal_operator) {
         if (!std::is_convertible_v<decltype(a >= b), bool>) {
-          m_errors.add_error(
-              "operator>=() return value have to contextually convertible to "
-              "bool");
+          m_test_error_messages.add_error(
+              "operator>=() return value should be contextually convertible to "
+              "bool.");
         }
       }
       if constexpr (has_less_or_equal_operator) {
         if (!std::is_convertible_v<decltype(a <= b), bool>) {
-          m_errors.add_error(
-              "operator<=() return value have to contextually convertible to "
-              "bool");
+          m_test_error_messages.add_error(
+              "operator<=() return value should be contextually convertible to "
+              "bool.");
         }
       }
     }
 
-    const bool is_satisfied = !m_errors.has_errors();
+    const bool is_satisfied = !m_test_error_messages.has_errors();
     // According to spec std::pair with device_copyable types(in this case:
     // bool, string_view) can be used on device side
-    return std::make_pair(is_satisfied, m_errors.get_array());
+    return std::make_pair(is_satisfied, m_test_error_messages.get_array());
   }
 };
 }  // namespace named_requirement_verification
