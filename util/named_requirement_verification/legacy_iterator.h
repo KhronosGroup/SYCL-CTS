@@ -37,7 +37,8 @@ class legacy_iterator_requirement {
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  auto is_satisfied_for() {
+  std::pair<bool, std::array<string_view, count_of_possible_errors>>
+  is_satisfied_for() {
     if (!std::is_copy_constructible_v<It>) {
       m_test_error_messages.add_error("Iterator should be copy constructable.");
     }

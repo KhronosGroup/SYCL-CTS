@@ -43,7 +43,8 @@ class equality_comparable_requirement {
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename T>
-  auto is_satisfied_for() {
+  std::pair<bool, std::array<string_view, count_of_possible_errors>>
+  is_satisfied_for() {
     if (!type_traits::has_comparison::is_equal_v<T>) {
       m_test_error_messages.add_error("Iterator should have operator==().");
     }

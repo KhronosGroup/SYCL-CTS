@@ -43,7 +43,8 @@ class legacy_input_iterator_requirement {
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  auto is_satisfied_for() {
+  std::pair<bool, std::array<string_view, count_of_possible_errors>>
+  is_satisfied_for() {
     auto legacy_iterator_res =
         legacy_iterator_requirement{}.is_satisfied_for<It>();
     if (!legacy_iterator_res.first) {
