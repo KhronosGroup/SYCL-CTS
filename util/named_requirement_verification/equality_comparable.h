@@ -45,10 +45,6 @@ class equality_comparable_requirement {
   template <typename T>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
   is_satisfied_for() {
-    if (!type_traits::has_comparison::is_equal_v<T>) {
-      m_test_error_messages.add_error("Iterator should have operator==().");
-    }
-
     // It will delete branch from code in compile time to not fail a compilation
     if constexpr (type_traits::has_comparison::is_equal_v<T>) {
       T a;
@@ -88,6 +84,8 @@ class equality_comparable_requirement {
             "Const same objects doesn't convertible to bool value after "
             "comparing.");
       }
+    } else {
+      m_test_error_messages.add_error("Iterator should have operator==().");
     }
 
     const bool is_satisfied = !m_test_error_messages.has_errors();
