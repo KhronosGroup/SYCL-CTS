@@ -26,7 +26,8 @@ namespace accessor_iterator_requirement {
  * @param errors Array with error messages
  */
 template <size_t N>
-inline void print_errors(const std::array<string_view, N>& errors) {
+inline void print_errors(
+    const std::array<named_requirement_verification::string_view, N>& errors) {
   const bool false_to_fail_test = false;
   for (size_t i = 0; i < N; ++i) {
     if (!errors[i].empty()) {
