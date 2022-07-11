@@ -38,8 +38,6 @@ class error_messages_container {
   std::array<string_view, Size> m_error_msgs_container;
   // Index for storing next error message
   size_t m_index = 0;
-  // Variable will be set to true if add_error was called
-  bool m_has_errors = false;
 
  public:
   /**
@@ -54,7 +52,6 @@ class error_messages_container {
       m_error_msgs_container[Size - 1] =
           "Size for error_messages_container setted wrong!";
     }
-    m_has_errors = true;
   }
 
   /**
@@ -70,7 +67,7 @@ class error_messages_container {
     }
   }
 
-  bool has_errors() const { return m_has_errors; }
+  bool has_errors() const { return m_index != 0; }
 
   const std::array<string_view, Size>& get_array() const {
     return m_error_msgs_container;
