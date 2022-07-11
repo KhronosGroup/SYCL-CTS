@@ -59,20 +59,6 @@ class legacy_output_iterator_requirement {
     constexpr bool has_value_type_member =
         type_traits::has_field::value_type_v<It>;
 
-    if (!is_dereferenceable) {
-      m_test_error_messages.add_error("Iterator should have operator*().");
-    }
-
-    if (!can_pre_increment || !can_post_increment) {
-      m_test_error_messages.add_error(
-          "Iterator should have operator++() and operator++(int).");
-    }
-
-    if (!has_value_type_member) {
-      m_test_error_messages.add_error(
-          "Iterator should have iterator_traits::value_type.");
-    }
-
     using it_traits = std::iterator_traits<It>;
 
     if constexpr (has_value_type_member && is_dereferenceable) {

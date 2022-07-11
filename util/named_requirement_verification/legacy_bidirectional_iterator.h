@@ -76,6 +76,10 @@ class legacy_bidirectional_iterator_requirement {
       }
     }
 
+    if (!can_post_decrement) {
+      m_errors.add_error("Iterator doesn't have implemented operator--(int)");
+    }
+
     if (container_size == 0) {
       m_test_error_messages.add_error(
           "Some of the test requires container size more than 0. These tests "
@@ -116,6 +120,8 @@ class legacy_bidirectional_iterator_requirement {
         m_test_error_messages.add_error(
             "Iterator expression --i should return It& data type.");
       }
+    } else {
+      m_test_error_messages.add_error("Iterator should have operator--().");
     }
 
     if constexpr (can_post_increment && can_post_decrement &&

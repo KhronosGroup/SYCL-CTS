@@ -97,6 +97,8 @@ class legacy_forward_iterator_requirement {
       if (!std::is_same_v<decltype(std::declval<It&>()++), It>) {
         m_test_error_messages.add_error("operator++(int) should return It.");
       }
+    } else {
+      m_errors.add_error("Iterator doesn't have implemented operator++(int)");
     }
 
     if constexpr (can_post_increment && is_dereferenceable &&

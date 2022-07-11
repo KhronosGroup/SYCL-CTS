@@ -75,20 +75,9 @@ class legacy_input_iterator_requirement {
           "Iterator should have implemented operator!=().");
     }
 
-    if (!is_dereferenceable) {
+    if (!can_post_increment) {
       m_test_error_messages.add_error(
-          "Iterator should have implemented operator*().");
-    }
-
-    if (!can_pre_increment || !can_post_increment) {
-      m_test_error_messages.add_error(
-          "Iterator should have implemented operator++() or operator++(int).");
-    }
-
-    if (!has_reference_member || !has_value_type_member) {
-      m_test_error_messages.add_error(
-          "Iterator should have implemented iterator_traits::reference or "
-          "iterator_traits::value_type.");
+          "Iterator should have implemented operator++(int).");
     }
 
     if constexpr (can_pre_increment && has_not_equal_operator) {
