@@ -50,8 +50,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       legacy_random_access_iterator_requirement::count_of_possible_errors;
   named_requirement_verification::string_view errors[size_of_res_array];
 
-  constexpr size_t size_of_dummy = 5;
-  int dummy[size_of_dummy] = {1, 2, 3, 4, 5};
+  constexpr size_t size_of_dummy = 1;
+  int dummy[size_of_dummy] = {1};
   {
     sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
         errors, sycl::range(size_of_res_array));
@@ -93,7 +93,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       legacy_random_access_iterator_requirement::count_of_possible_errors;
   named_requirement_verification::string_view errors[size_of_res_array];
 
-  constexpr size_t alloc_size = 5;
+  constexpr size_t alloc_size = 1;
   {
     sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
         errors, sycl::range(size_of_res_array));
@@ -103,10 +103,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       sycl::local_accessor<int, 1> dummy_acc(sycl::range(alloc_size), cgh);
 
       cgh.single_task([=] {
-        for (int i = 0; i < alloc_size; ++i) {
-          dummy_acc[i] = i + 1;
-        }
-
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
