@@ -77,7 +77,8 @@ class legacy_bidirectional_iterator_requirement {
     }
 
     if (!can_post_decrement) {
-      m_errors.add_error("Iterator doesn't have implemented operator--(int)");
+      m_test_error_messages.add_error(
+          "Iterator doesn't have implemented operator--(int)");
     }
 
     if (container_size == 0) {

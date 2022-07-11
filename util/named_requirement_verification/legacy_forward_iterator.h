@@ -99,7 +99,8 @@ class legacy_forward_iterator_requirement {
         m_test_error_messages.add_error("operator++(int) must return It.");
       }
     } else {
-      m_errors.add_error("Iterator doesn't have implemented operator++(int)");
+      m_test_error_messages.add_error(
+          "Iterator doesn't have implemented operator++(int)");
     }
 
     if constexpr (can_post_increment && is_dereferenceable &&
