@@ -65,18 +65,18 @@ class legacy_output_iterator_requirement {
       if (!std::is_assignable_v<decltype(*std::declval<It>()),
                                 typename it_traits::value_type>)
         m_test_error_messages.add_error(
-            "Iterator should return iterator_traits::value_type from "
+            "Iterator must return iterator_traits::value_type from "
             "operator*().");
     }
 
     if constexpr (can_pre_increment) {
       if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
         m_test_error_messages.add_error(
-            "Iterator should return It& from operator++().");
+            "Iterator must return It& from operator++().");
       }
       if (!std::is_convertible_v<decltype(++std::declval<It&>()), const It>) {
         m_test_error_messages.add_error(
-            "Iterator should return convertible to const It from "
+            "Iterator must return convertible to const It from "
             "operator++().");
       }
     }
@@ -86,7 +86,7 @@ class legacy_output_iterator_requirement {
       if (!std::is_assignable_v<decltype(*(std::declval<It&>()++)),
                                 typename it_traits::value_type>) {
         m_test_error_messages.add_error(
-            "Iterator should be assignable with iterator_traits::value_type "
+            "Iterator must be assignable with iterator_traits::value_type "
             "after usage of operator++() and operator*().");
       }
     }
@@ -95,7 +95,7 @@ class legacy_output_iterator_requirement {
       if (!std::is_assignable_v<decltype(*std::declval<It>()),
                                 typename it_traits::value_type>) {
         m_test_error_messages.add_error(
-            "Iterator should be assignable with iterator_traits::value_type "
+            "Iterator must be assignable with iterator_traits::value_type "
             "after usage of operator*().");
       }
     }

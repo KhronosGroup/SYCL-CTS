@@ -81,7 +81,7 @@ class equality_comparable_requirement {
             "after comparing.");
       }
     } else {
-      m_test_error_messages.add_error("Iterator should have operator==().");
+      m_test_error_messages.add_error("Iterator must have operator==().");
     }
 
     const bool is_satisfied = !m_test_error_messages.has_errors();

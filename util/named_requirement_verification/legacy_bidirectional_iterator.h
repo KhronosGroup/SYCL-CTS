@@ -72,7 +72,7 @@ class legacy_bidirectional_iterator_requirement {
     if constexpr (can_pre_increment && can_pre_decrement) {
       if (!std::is_same_v<decltype(--(++std::declval<It&>())), It&>) {
         m_test_error_messages.add_error(
-            "Iterator expression --(++i) should return It& type.");
+            "Iterator expression --(++i) must return It& type.");
       }
     }
 
@@ -94,7 +94,7 @@ class legacy_bidirectional_iterator_requirement {
           --a;
           if (a != saved_a) {
             m_test_error_messages.add_error(
-                "Iterator expression --(++i) should be equal to i.");
+                "Iterator expression --(++i) must be equal to i.");
           }
         }
         {
@@ -105,11 +105,11 @@ class legacy_bidirectional_iterator_requirement {
           if (--a == --b) {
             if (a != b) {
               m_test_error_messages.add_error(
-                  "If --a == --b then a == b should be true.");
+                  "If --a == --b then a == b must be true.");
             }
           } else {
             m_test_error_messages.add_error(
-                "--a should be equal to --b, if they are copy of same object.");
+                "--a must be equal to --b, if they are copy of same object.");
           }
         }
       }
@@ -118,10 +118,10 @@ class legacy_bidirectional_iterator_requirement {
     if constexpr (can_pre_decrement) {
       if (!std::is_same_v<decltype(--(std::declval<It&>())), It&>) {
         m_test_error_messages.add_error(
-            "Iterator expression --i should return It& data type.");
+            "Iterator expression --i must return It& data type.");
       }
     } else {
-      m_test_error_messages.add_error("Iterator should have operator--().");
+      m_test_error_messages.add_error("Iterator must have operator--().");
     }
 
     if constexpr (can_post_increment && can_post_decrement &&
@@ -129,7 +129,7 @@ class legacy_bidirectional_iterator_requirement {
       if (!std::is_convertible_v<decltype((++std::declval<It&>())--),
                                  const It&>) {
         m_test_error_messages.add_error(
-            "Iterator expression (i++)-- should be convertible to const It&.");
+            "Iterator expression (i++)-- must be convertible to const It&.");
       }
     }
 
@@ -138,7 +138,7 @@ class legacy_bidirectional_iterator_requirement {
       if (!std::is_same_v<decltype(*(std::declval<It&>()--)),
                           typename it_traits::reference>) {
         m_test_error_messages.add_error(
-            "Iterator expression *i-- should return reference data type.");
+            "Iterator expression *i-- must return reference data type.");
       }
     }
 

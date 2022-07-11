@@ -75,17 +75,17 @@ class legacy_input_iterator_requirement {
 
     if (!has_equal_operator) {
       m_test_error_messages.add_error(
-          "Iterator should have implemented operator==().");
+          "Iterator must have implemented operator==().");
     }
 
     if (!has_not_equal_operator) {
       m_test_error_messages.add_error(
-          "Iterator should have implemented operator!=().");
+          "Iterator must have implemented operator!=().");
     }
 
     if (!can_post_increment) {
       m_test_error_messages.add_error(
-          "Iterator should have implemented operator++(int).");
+          "Iterator must have implemented operator++(int).");
     }
 
     if constexpr (can_pre_increment && has_not_equal_operator) {
@@ -101,7 +101,7 @@ class legacy_input_iterator_requirement {
 
       if (!std::is_convertible_v<decltype((i != j)), bool>) {
         m_test_error_messages.add_error(
-            "Two not equal iterators should return implicit convertible to "
+            "Two not equal iterators must return implicit convertible to "
             "bool value with NOT EQUAL operator.");
       }
     }
@@ -109,7 +109,7 @@ class legacy_input_iterator_requirement {
     if constexpr (can_pre_increment) {
       if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
         m_test_error_messages.add_error(
-            "Iterator should return It& from operator++().");
+            "Iterator must return It& from operator++().");
       }
     }
 
@@ -120,7 +120,7 @@ class legacy_input_iterator_requirement {
       if (!std::is_convertible_v<decltype(*(std::declval<It&>()++)),
                                  typename it_traits::value_type>) {
         m_test_error_messages.add_error(
-            "Iterator expression *i++ should be convertible to "
+            "Iterator expression *i++ must be convertible to "
             "iterator_traits::value_type.");
       }
     }
@@ -129,7 +129,7 @@ class legacy_input_iterator_requirement {
       if (!std::is_same_v<decltype(*std::declval<It>()),
                           typename it_traits::reference>) {
         m_test_error_messages.add_error(
-            "Iterator should return iterator_traits::reference from "
+            "Iterator must return iterator_traits::reference from "
             "operator*().");
       }
     }
@@ -138,7 +138,7 @@ class legacy_input_iterator_requirement {
       if (!std::is_convertible_v<decltype(*std::declval<It>()),
                                  typename it_traits::value_type>)
         m_test_error_messages.add_error(
-            "operator*() result should be convertible to "
+            "operator*() result must be convertible to "
             "iterator_traits::value_type.");
     }
 

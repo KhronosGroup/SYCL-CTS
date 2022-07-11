@@ -69,7 +69,7 @@ class legacy_forward_iterator_requirement {
 
     if (!is_def_constructable) {
       m_test_error_messages.add_error(
-          "Iterator should be default constructible.");
+          "Iterator must be default constructible.");
     }
 
     using it_traits = std::iterator_traits<It>;
@@ -83,20 +83,20 @@ class legacy_forward_iterator_requirement {
         if (std::is_const_v<typename it_traits::reference>) {
           m_test_error_messages.add_error(
               "Provided iterator satisfy to LegacyOutputIterator requirement. "
-              "iterator_traits::reference should be non const.");
+              "iterator_traits::reference must be non const.");
         }
       } else {
         if (!std::is_const_v<typename it_traits::reference>) {
           m_test_error_messages.add_error(
               "Provided iterator not satisfy to LegacyOutputIterator "
-              "requirement. iterator_traits::reference should be const.");
+              "requirement. iterator_traits::reference must be const.");
         }
       }
     }
 
     if constexpr (can_post_increment) {
       if (!std::is_same_v<decltype(std::declval<It&>()++), It>) {
-        m_test_error_messages.add_error("operator++(int) should return It.");
+        m_test_error_messages.add_error("operator++(int) must return It.");
       }
     } else {
       m_errors.add_error("Iterator doesn't have implemented operator++(int)");
@@ -107,7 +107,7 @@ class legacy_forward_iterator_requirement {
       if (!std::is_convertible_v<decltype(*(std::declval<It&>()++)),
                                  typename it_traits::reference>) {
         m_test_error_messages.add_error(
-            "Expression *i++ should be convertible to "
+            "Expression *i++ must be convertible to "
             "iterator_traits::reference.");
       }
     }
@@ -154,7 +154,7 @@ class legacy_forward_iterator_requirement {
             ++zero_pos_it;
             if (zero_pos_value != *valid_iterator) {
               m_test_error_messages.add_error(
-                  "Incrementing copy of iterator instance should not affect "
+                  "Incrementing copy of iterator instance must not affect "
                   "on the value read from original object.");
             }
           }
