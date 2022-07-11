@@ -48,7 +48,8 @@ class legacy_forward_iterator_requirement {
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
   is_satisfied_for(It valid_iterator, const size_t container_size) {
     auto legacy_input_iterator_res =
-        legacy_input_iterator_requirement{}.is_satisfied_for<It>();
+        legacy_input_iterator_requirement{}.is_satisfied_for<It>(
+            valid_iterator);
     if (!legacy_input_iterator_res.first) {
       m_test_error_messages.add_errors(legacy_input_iterator_res.second);
     }

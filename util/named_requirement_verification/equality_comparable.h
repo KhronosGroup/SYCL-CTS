@@ -35,29 +35,25 @@ class equality_comparable_requirement {
    * verification
    *
    * @tparam T Type for verification
-   * T should satisfy to the following requirements:
-   *   - T must have a default constructor
-   *   - default-constructed object must be equal. i.e. RNG types can't be use
-   *       here
    * @return std::pair<bool,array<string_view>> First represents
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename T>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for() {
+  is_satisfied_for(T valid_iterator) {
     // It will delete branch from code in compile time to not fail a compilation
     if constexpr (type_traits::has_comparison::is_equal_v<T>) {
-      T a;
-      T b;
-      T c;
-      const T const_a;
-      const T const_b;
-      const T const_c;
+      T a = valid_iterator;
+      T b = valid_iterator;
+      T c = valid_iterator;
+      const T const_a = valid_iterator;
+      const T const_b = valid_iterator;
+      const T const_c = valid_iterator;
 
       if (!(a == b) || !(b == a) || !(b == c) || !(a == c)) {
         m_test_error_messages.add_error(
-            "Non-const same objects doesn't equal to each other equal during "
-            "comparing.");
+            "Non-const copies of one object doesn't equal to each other equal "
+            "during comparing.");
       }
 
       if ((!std::is_convertible_v<decltype((a == b)), bool>) ||
@@ -65,15 +61,15 @@ class equality_comparable_requirement {
           (!std::is_convertible_v<decltype((b == c)), bool>) ||
           (!std::is_convertible_v<decltype((a == c)), bool>)) {
         m_test_error_messages.add_error(
-            "Non-const same objects doesn't convertible to bool value after "
-            "comparing.");
+            "Non-const copies of one object doesn't return convertible to bool "
+            "after comparing.");
       }
 
       if (!(const_a == const_b) || !(const_b == const_a) ||
           !(const_b == const_c) || !(const_a == const_c)) {
         m_test_error_messages.add_error(
-            "Const same objects doesn't equal to each other equal during "
-            "comparing.");
+            "Const copies of one object doesn't equal to each other equal "
+            "during comparing.");
       }
 
       if ((!std::is_convertible_v<decltype((const_a == const_b)), bool>) ||
@@ -81,8 +77,8 @@ class equality_comparable_requirement {
           (!std::is_convertible_v<decltype((const_a == const_c)), bool>) ||
           (!std::is_convertible_v<decltype((const_b == const_a)), bool>)) {
         m_test_error_messages.add_error(
-            "Const same objects doesn't convertible to bool value after "
-            "comparing.");
+            "Const copies of one object doesn't return convertible to bool "
+            "after comparing.");
       }
     } else {
       m_test_error_messages.add_error("Iterator should have operator==().");

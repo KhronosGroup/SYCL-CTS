@@ -11,6 +11,7 @@
 #define __SYCLCTS_TESTS_ITERATOR_REQUIREMENTS_LEGACY_INPUT_ITERATOR_H
 
 #include "common.h"
+#include "equality_comparable.h"
 #include "legacy_iterator.h"
 
 namespace named_requirement_verification {
@@ -28,7 +29,8 @@ class legacy_input_iterator_requirement {
   // As we also verify other requirements, we have to keep in mind that result
   // of those verifications also increase size of container with messages.
   static constexpr size_t count_of_possible_errors =
-      legacy_iterator_requirement::count_of_possible_errors + 11;
+      legacy_iterator_requirement::count_of_possible_errors +
+      equality_comparable_requirement::count_of_possible_errors + 11;
 
  private:
   error_messages_container<count_of_possible_errors> m_test_error_messages;
@@ -44,9 +46,15 @@ class legacy_input_iterator_requirement {
    */
   template <typename It>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for() {
+  is_satisfied_for(It valid_iterator) {
     auto legacy_iterator_res =
         legacy_iterator_requirement{}.is_satisfied_for<It>();
+    if (!legacy_iterator_res.first) {
+      m_test_error_messages.add_errors(legacy_iterator_res.second);
+    }
+
+    auto equal_comparable_res =
+        equality_comparable_requirement{}.is_satisfied_for<It>(valid_iterator);
     if (!legacy_iterator_res.first) {
       m_test_error_messages.add_errors(legacy_iterator_res.second);
     }
