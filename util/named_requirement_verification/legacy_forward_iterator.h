@@ -14,6 +14,8 @@
 #include "legacy_input_iterator.h"
 #include "legacy_output_iterator.h"
 
+#include "catch2/catch_test_macros.hpp"  // for WARN macro
+
 namespace named_requirement_verification {
 
 /**

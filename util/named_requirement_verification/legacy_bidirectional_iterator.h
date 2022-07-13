@@ -13,6 +13,8 @@
 #include "common.h"
 #include "legacy_forward_iterator.h"
 
+#include "catch2/catch_test_macros.hpp"  // for WARN macro
+
 namespace named_requirement_verification {
 
 /**
