@@ -31,8 +31,7 @@ inline void print_errors(
   const bool false_to_fail_test = false;
   for (size_t i = 0; i < N; ++i) {
     if (!errors[i].empty()) {
-      INFO(errors[i]);
-      CHECK(false_to_fail_test);
+      FAIL_CHECK(errors[i]);
     }
   }
 }
