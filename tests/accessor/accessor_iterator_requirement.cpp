@@ -20,7 +20,7 @@ namespace accessor_iterator_requirement {
 
 /**
  * @brief Function helps to fail catch2 test and print errors from array through
- * a INFO invocations
+ * a FAIL_CHECK invocations
  *
  * @tparam N Size of array with error messages
  * @param errors Array with error messages
