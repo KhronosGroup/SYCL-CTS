@@ -31,7 +31,7 @@ class equality_comparable_requirement {
 
  public:
   /**
-   * @brief Member function preforms different checks for the requirement
+   * @brief Member function performs different checks for the requirement
    * verification
    *
    * @tparam T Type for verification

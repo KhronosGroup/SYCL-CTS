@@ -29,7 +29,7 @@ class legacy_iterator_requirement {
 
  public:
   /**
-   * @brief Member function preforms different checks for the requirement
+   * @brief Member function performs different checks for the requirement
    * verification
    *
    * @tparam It Type of iterator for verification
