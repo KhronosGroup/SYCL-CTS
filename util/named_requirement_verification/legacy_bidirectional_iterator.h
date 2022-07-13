@@ -82,7 +82,7 @@ class legacy_bidirectional_iterator_requirement {
     }
 
     if (container_size == 0) {
-      m_test_error_messages.add_error(
+      WARN(
           "Some of the test requires container size more than 0. These tests "
           "have been skipped.");
     } else {
