@@ -2,8 +2,8 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for the properties of sycl::local_accessor that can access to
-//  the memory shared among work-items
+//  Provides tests that the sycl::local_accessor can access to the memory shared
+//  among work-items.
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_LOCAL_ACCESSOR_ACCESS_AMONG_WORK_ITEMS_H
@@ -42,19 +42,22 @@ class run_test {
       const sycl::range range(2);
       constexpr T new_value = 5;
       constexpr T new_assign_val = 20;
-      bool acc_val_is_equal_to_expected = false;
+      bool is_acc_val_equal_to_expected = false;
       {
         sycl::buffer<bool> val_is_equal_to_expected_buffer(
-            &acc_val_is_equal_to_expected, sycl::range(1));
+            &is_acc_val_equal_to_expected, sycl::range(1));
         queue.submit([&](sycl::handler& cgh) {
           auto val_is_equal_to_expected_acc =
               val_is_equal_to_expected_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
+          sycl::local_accessor<T, Dimension> acc(range, cgh);
           cgh.parallel_for(
               sycl::nd_range(range, range), [=](sycl::nd_item item) {
-                sycl::local_accessor<T, Dimension> acc(range, cgh);
                 T& acc_elem = array_acc[0];
 
+                // We going to set value in one work-item, synchronize
+                // work-items by sycl::group_barrier() calling and check that
+                // value have been set correctly from another work item.
                 if (item.get_global_id(0) != 0) {
                   acc_elem = new_value;
                 }
@@ -70,7 +73,7 @@ class run_test {
               });
         });
       }
-      CHECK(acc_val_is_equal_to_expected);
+      CHECK(is_acc_val_equal_to_expected);
     }
   }
 };
