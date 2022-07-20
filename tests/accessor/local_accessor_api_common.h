@@ -202,11 +202,17 @@ class run_local_api_for_type {
   void operator()(const std::string &type_name) {
     const auto dimensions = get_dimensions();
 
-    for_all_combinations<run_api_tests, T>(dimensions, type_name);
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
+    for_all_combinations<run_api_tests, T>(dimensions, actual_type_name);
 
     // For covering const types
-    const auto const_type_name = std::string("const ") + type_name;
-    for_all_combinations<run_api_tests, const T>(dimensions, const_type_name);
+    actual_type_name = std::string("const ") + actual_type_name;
+    for_all_combinations<run_api_tests, const T>(dimensions, actual_type_name);
   }
 };
 }  // namespace local_accessor_api_common

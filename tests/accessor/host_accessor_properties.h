@@ -166,8 +166,14 @@ class run_host_properties_tests {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
 
-    for_all_combinations<run_tests_properties, const T>(access_modes,
-                                                        dimensions, type_name);
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
+    for_all_combinations<run_tests_properties, const T>(
+        access_modes, dimensions, actual_type_name);
   }
 };
 }  // namespace host_accessor_properties

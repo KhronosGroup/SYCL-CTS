@@ -11,12 +11,15 @@
 
 #include <string>
 #include <utility>
+#include <variant>
 
 #include <sycl/sycl.hpp>
 
 #include "../../util/type_traits.h"
 
 #include "catch2/catch_tostring.hpp"
+
+#include <cstddef> // for std::size_t
 
 /**
  * @brief Retrieve type name; by default just forward the given one
@@ -33,7 +36,7 @@ struct type_name_string {
  */
 template <typename T, size_t nElements>
 struct type_name_string<sycl::vec<T, nElements>> {
-  static std::string get(const std::string& dataType) {
+  static std::string get(const std::string &dataType) {
     return "sycl::vec<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
@@ -47,6 +50,62 @@ template <typename T, size_t nElements>
 struct type_name_string<sycl::marray<T, nElements>> {
   static std::string get(const std::string &dataType) {
     return "sycl::marray<" + dataType + "," + std::to_string(nElements) + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::array class
+ * @param T Type of the data stored in std::array
+ * @param nElements Number of elements stored in std::array
+ */
+template <typename T, size_t nElements>
+struct type_name_string<std::array<T, nElements>> {
+  static std::string get(const std::string &dataType) {
+    return "std::array<" + dataType + "," + std::to_string(nElements) + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::optional class
+ * @param T Type of the data stored in std::optional
+ */
+template <typename T>
+struct type_name_string<std::optional<T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::optional<" + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::pair class
+ * @param T Type of the data stored in std::pair
+ */
+template <typename T>
+struct type_name_string<std::pair<T, T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::pair<" + dataType + "," + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::tuple class
+ * @param T Type of the data stored in std::tuple
+ */
+template <typename T>
+struct type_name_string<std::tuple<T, T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::tuple<" + dataType + "," + dataType + ">";
+  }
+};
+
+/**
+ * @brief Specialization of type name retrieve for std::variant class
+ * @param T Type of the data stored in std::variant
+ */
+template <typename T>
+struct type_name_string<std::variant<T>> {
+  static std::string get(const std::string &dataType) {
+    return "std::variant<" + dataType + ">";
   }
 };
 
@@ -342,7 +401,7 @@ inline void for_all_types(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_type_and_vectors(argsT&&... args) {
+void for_type_and_vectors(argsT &&...args) {
   static const auto types = type_pack<
       T, typename sycl::template vec<T, 1>, typename sycl::template vec<T, 2>,
       typename sycl::template vec<T, 3>, typename sycl::template vec<T, 4>,
@@ -390,23 +449,29 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
 void for_type_vectors_marray(argsT &&...args) {
+  constexpr std::size_t small_marray_size = 2;
+  constexpr std::size_t medium_marray_size = 5;
+  constexpr std::size_t large_marray_size = 10;
   if constexpr (std::is_same<T, bool>::value) {
     for_all_types<action, actionArgsT...>(
-        type_pack<T, typename sycl::template marray<T, 2>,
-                  typename sycl::template marray<T, 5>,
-                  typename sycl::template marray<T, 10>>{},
+        type_pack<T, typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+                  typename sycl::template marray<T, large_marray_size>>{},
         std::forward<argsT>(args)...);
   } else {
     for_all_types<action, actionArgsT...>(
+        // Provides all possible sizes (according to SYCL-2020 rev.5) for
+        // sycl::vec
         type_pack<T, typename sycl::template vec<T, 1>,
                   typename sycl::template vec<T, 2>,
                   typename sycl::template vec<T, 3>,
                   typename sycl::template vec<T, 4>,
                   typename sycl::template vec<T, 8>,
                   typename sycl::template vec<T, 16>,
-                  typename sycl::template marray<T, 2>,
-                  typename sycl::template marray<T, 5>,
-                  typename sycl::template marray<T, 10>>{},
+                  // Provide different sizes for sycl::marray
+                  typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+                  typename sycl::template marray<T, large_marray_size>>{},
         std::forward<argsT>(args)...);
   }
 }
@@ -431,6 +496,51 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
   size_t typeNameIndex = 0;
 
   ((for_type_vectors_marray<action, types, actionArgsT...>(
+        std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
+    ++typeNameIndex),
+   ...);
+
+  // Ensure there is no silent miss for coverage
+  assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
+}
+
+/**
+ * @brief Run action for std device_copyable containers with type T
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action, typename T,
+          typename... actionArgsT, typename... argsT>
+void for_device_copyable_std_containers(argsT &&...args) {
+  constexpr std::size_t medium_array_size = 5;
+  for_all_types<action, actionArgsT...>(
+      type_pack<std::array<T, medium_array_size>, std::optional<T>,
+                std::pair<T, T>, std::tuple<T, T>, std::variant<T>>{},
+      std::forward<argsT>(args)...);
+}
+
+/**
+ * @brief Run action for std device_copyable containers with types from given
+ * named_type_pack
+ * @tparam action Functor template for action to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam types Deduced from type_pack parameter pack for list of types to use
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param typeList Named type pack instance with underlying type names stored
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action,
+          typename... actionArgsT, typename... types, typename... argsT>
+void for_all_device_copyable_std_containers(const named_type_pack<types...> &typeList,
+                                     argsT &&...args) {
+  // run action for each type from types... parameter pack
+  // Using fold expression to iterate over all types within type pack
+
+  size_t typeNameIndex = 0;
+
+  ((for_device_copyable_std_containers<action, types, actionArgsT...>(
         std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
     ++typeNameIndex),
    ...);

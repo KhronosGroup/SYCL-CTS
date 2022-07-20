@@ -161,17 +161,23 @@ class run_host_constructors_test {
     const auto access_modes = get_access_modes();
     const auto dimensions = get_dimensions();
 
+    // To handle cases when class was called from functions
+    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
+    // This will wrap string with type T to string with container<T> if T is
+    // an array or other kind of container.
+    auto actual_type_name = type_name_string<T>::get(type_name);
+
     for_all_combinations<run_tests_constructors, T>(access_modes, dimensions,
-                                                    type_name);
+                                                    actual_type_name);
 
     // For covering const types
-    const auto const_type_name = std::string("const ") + type_name;
+    actual_type_name = std::string("const ") + actual_type_name;
     // const T can be only with access_mode::read
     const auto read_only_acc_mode =
         value_pack<sycl::access_mode, sycl::access_mode::read>::generate_named(
             "access_mode::read");
     for_all_combinations<run_tests_constructors, const T>(
-        read_only_acc_mode, dimensions, const_type_name);
+        read_only_acc_mode, dimensions, actual_type_name);
   }
 };
 }  // namespace host_accessor_constructors
