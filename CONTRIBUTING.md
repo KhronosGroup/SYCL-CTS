@@ -1,1 +1,1 @@
-Please make sure to read the [SYCL CTS Developer Documentation](docs/README.md).
+Please make sure to read the [SYCL CTS Developer Documentation](docs/README.adoc).
