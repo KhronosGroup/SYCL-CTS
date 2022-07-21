@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 //
 //  SYCL 2020 Conformance Test Suite
@@ -125,11 +124,11 @@ class run_multi_ptr_comparison_op_test {
 
   using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
 
-  const T m_low_value = 1;
+  const T m_small_value = 1;
   const T m_great_value = 2;
   // Use an array to be sure that we have two elements that has subsequence
   // memory addresses
-  const T m_values_arr[2] = {m_low_value, m_great_value};
+  const T m_values_arr[2] = {m_small_value, m_great_value};
   sycl::range m_r(1);
 
   template <typename TestActionT, typename ExpectedTestResultT>
@@ -148,13 +147,9 @@ class run_multi_ptr_comparison_op_test {
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        if constexpr (space == sycl::access::address_space::global_space) {
-          cgh.single_task([=] { test_action(array_acc, test_result_acc); });
-        } else {
-          cgh.parallel_for(sycl::nd_range(m_r, m_r), [=](sycl::nd_item item) {
-            test_action(array_acc, test_result_acc);
-          });
-        }
+        cgh.parallel_for(sycl::nd_range(m_r, m_r), [=](sycl::nd_item item) {
+          test_action(array_acc, test_result_acc);
+        });
       });
     }
     expected_results.verify_results(test_results);
@@ -278,10 +273,10 @@ class run_multi_ptr_comparison_op_test {
       detail::mptr_mptr_test_results<T> expected_results;
       // Expected value that will be returned after "first_mptr > second_mptr"
       // operator will be called
-      expected_results.first_first_mptr_result_val = false;
+      expected_results.first_second_mptr_result_val = false;
       // Expected value that will be returned after "second_mptr > first_mptr"
       // operator will be called
-      expected_results.first_second_mptr_result_val = true;
+      expected_results.second_first_mptr_result_val = true;
 
       const auto run_test_action = [](auto arr_acc, auto result_acc) {
         multi_ptr_t arr_mptr(arr_acc);
@@ -292,8 +287,8 @@ class run_multi_ptr_comparison_op_test {
 
         auto &test_result = result_acc[0];
 
-        test_result.first_first_mptr_result_val = mptr_1 > mptr_2;
-        test_result.first_second_mptr_result_val = mptr_2 > mptr_1;
+        test_result.first_second_mptr_result_val = mptr_1 > mptr_2;
+        test_result.second_first_mptr_result_val = mptr_2 > mptr_1;
       };
 
       run_test(queue, run_test_action, expected_results);
