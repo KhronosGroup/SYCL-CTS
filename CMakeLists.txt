@@ -6,19 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(AddSYCLExecutable)
-include(AddCTSOption)
-
-add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
-    "Enable CUDA interoperability tests", OFF)
-
 find_package(Threads REQUIRED)
 find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
-if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
-    find_package(CUDA REQUIRED)
-endif()
 
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
     message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
@@ -34,6 +24,10 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wall -Wno-unused-variable)
 endif()
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(AddSYCLExecutable)
+include(AddCTSOption)
 
 add_cts_option(SYCL_CTS_ENABLE_FULL_CONFORMANCE
     "Enable full conformance with extensive tests" OFF
@@ -66,9 +60,14 @@ add_cts_option(SYCL_CTS_ENABLE_HALF_TESTS
 add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
     "Enable OpenCL interoperability tests" ON)
 
+add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
+    "Enable CUDA interoperability tests", OFF)
 # ------------------
 # Enable CUDA language and add library, for CUDA interop tests
+
 if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
+    find_package(CUDA REQUIRED)
+
     set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
     enable_language(CUDA)
 
