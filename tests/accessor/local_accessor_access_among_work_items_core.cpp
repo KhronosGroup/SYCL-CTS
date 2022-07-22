@@ -4,8 +4,8 @@
 //
 //  Provides tests for local_accessor.
 //
-//  This test provides verifications that local_accessor can access to the
-//  memory shared among work-items.
+//  This test provides verifications that local_accessor can access the memory
+//  shared among work-items.
 //
 *******************************************************************************/
 

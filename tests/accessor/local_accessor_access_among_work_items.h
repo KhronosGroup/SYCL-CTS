@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests that the sycl::local_accessor can access to the memory shared
+//  Provides tests that the sycl::local_accessor can access the memory shared
 //  among work-items.
 //
 *******************************************************************************/
@@ -16,7 +16,7 @@ using namespace accessor_tests_common;
 
 /**
  * @brief Provides a functor that provides verification that local_accessor can
- *        access to the memory shared among work-items
+ *        access the memory shared among work-items
  * @tparam T Current data type
  * @tparam DimensionTypeT Current current dimension size
  */
@@ -35,7 +35,7 @@ class run_test {
 
     auto section_name = get_section_name<Dimension>(
         type_name,
-        "Verify possibility to access to the memory shared among work-items. "
+        "Verify possibility to access the memory shared among work-items. "
         "[local_accessor]");
     SECTION(section_name) {
       T values_arr[2] = {1, 2};
@@ -53,7 +53,7 @@ class run_test {
           sycl::local_accessor<T, Dimension> acc(range, cgh);
           cgh.parallel_for(
               sycl::nd_range(range, range), [=](sycl::nd_item item) {
-                T& acc_elem = array_acc[0];
+                T& acc_elem = acc[0];
 
                 // We going to set value in one work-item, synchronize
                 // work-items by sycl::group_barrier() calling and check that
