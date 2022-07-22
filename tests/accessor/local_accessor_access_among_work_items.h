@@ -26,7 +26,7 @@ class run_test {
 
  public:
   /**
-   * @brief Functor that provides verification that local_accessor can access to
+   * @brief Functor that provides verification that local_accessor can access
    *        the memory shared among work-items
    * @param type_name Current data type string representation
    */
