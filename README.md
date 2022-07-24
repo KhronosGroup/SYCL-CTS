@@ -121,3 +121,7 @@ compilation and execution times.
 
 Please see `run_conformance_tests.py --help` for a complete list of available
 options.
+
+## Contributing to the CTS
+
+See the [SYCL CTS Developer Documentation](docs).
