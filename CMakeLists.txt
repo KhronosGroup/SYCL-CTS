@@ -60,6 +60,25 @@ add_cts_option(SYCL_CTS_ENABLE_HALF_TESTS
 add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
     "Enable OpenCL interoperability tests" ON)
 
+add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
+    "Enable CUDA interoperability tests", OFF)
+# ------------------
+# Enable CUDA language and add library, for CUDA interop tests
+
+if(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS)
+    find_package(CUDA REQUIRED)
+
+    set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+    enable_language(CUDA)
+
+    add_library(CUDA::CUDA INTERFACE IMPORTED GLOBAL)
+    set_target_properties(
+      CUDA::CUDA PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${CUDA_TOOLKIT_INCLUDE}
+    )
+endif()
+# ------------------
+
 # ------------------
 # Device used for running with CTest (e.g. during conformance report generation)
 set(SYCL_CTS_CTEST_DEVICE "" CACHE STRING "Device used when running with CTest")
