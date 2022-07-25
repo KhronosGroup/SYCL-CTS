@@ -40,7 +40,9 @@ class run_test {
     SECTION(section_name) {
       T values_arr[2] = {1, 2};
       const sycl::range range(2);
-      constexpr T new_value = 5;
+      constexpr T valid_new_value = 5;
+      constexpr T invalid_new_value = 5;
+
       bool is_acc_val_equal_to_expected = false;
       {
         sycl::buffer<bool> val_is_equal_to_expected_buffer(
@@ -58,13 +60,15 @@ class run_test {
                 // work-items by sycl::group_barrier() calling and check that
                 // value have been set correctly from another work item.
                 if (item.get_local_id(0) != 0) {
-                  acc_elem = new_value;
+                  acc_elem = valid_new_value;
+                } else {
+                  acc_elem = invalid_new_value;
                 }
 
                 // Wait until the code above will be completed in all work-items
                 sycl::group_barrier(item.get_group());
 
-                if (item.get_local_id(0) == 0 && acc_elem == new_value) {
+                if (item.get_local_id(0) == 0 && acc_elem == valid_new_value) {
                   val_is_equal_to_expected_acc[0] = true;
                 }
               });
