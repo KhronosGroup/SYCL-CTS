@@ -126,7 +126,7 @@ class run_multi_ptr_comparison_op_test {
 
   const T m_small_value = 1;
   const T m_great_value = 2;
-  // Use an array to be sure that we have two elements that has subsequence
+  // Use an array to be sure that we have two elements that has consecutive
   // memory addresses
   const T m_values_arr[2] = {m_small_value, m_great_value};
   sycl::range m_r(1);
