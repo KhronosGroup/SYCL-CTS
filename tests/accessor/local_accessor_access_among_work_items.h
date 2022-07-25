@@ -41,7 +41,7 @@ class run_test {
       T values_arr[2] = {1, 2};
       const sycl::range range(2);
       constexpr T valid_new_value = 5;
-      constexpr T invalid_new_value = 5;
+      constexpr T invalid_new_value = 6;
 
       bool is_acc_val_equal_to_expected = false;
       {
