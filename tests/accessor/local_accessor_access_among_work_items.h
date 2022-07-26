@@ -40,8 +40,8 @@ class run_test {
     SECTION(section_name) {
       T values_arr[2] = {1, 2};
       const sycl::range range(2);
-      constexpr T valid_new_value = 5;
-      constexpr T invalid_new_value = 6;
+      constexpr T valid_value = 5;
+      constexpr T invalid_value = 6;
 
       bool is_acc_val_equal_to_expected = false;
       {
@@ -54,22 +54,23 @@ class run_test {
           sycl::local_accessor<T, Dimension> acc(range, cgh);
           cgh.parallel_for(
               sycl::nd_range(range, range), [=](sycl::nd_item item) {
-                T& acc_elem = acc[0];
-
-                // We going to set value in one work-item, synchronize
-                // work-items by sycl::group_barrier() calling and check that
-                // value have been set correctly from another work item.
-                if (item.get_local_id(0) != 0) {
-                  acc_elem = valid_new_value;
-                } else {
-                  acc_elem = invalid_new_value;
-                }
-
-                // Wait until the code above will be completed in all work-items
+                auto lid = item.get_local_id(0);
+                // Initialize local memory with invalid value
+                acc[lid] = invalid_value;
+                // Wait for work-items to finish initialization
                 sycl::group_barrier(item.get_group());
 
-                if (item.get_local_id(0) == 0 && acc_elem == valid_new_value) {
-                  val_is_equal_to_expected_acc[0] = true;
+                // Work-items with index greater than 0 writes to valid data to
+                // the first element of the local data
+                if (lid != 0) {
+                  acc[0] = valid_value;
+                }
+
+                // Wait for data store to finish
+                sycl::group_barrier(item.get_group());
+                // 0th work-item reports the result
+                if (lid == 0) {
+                  val_is_equal_to_expected_acc[0] = acc[0] == valid_value;
                 }
               });
         });
