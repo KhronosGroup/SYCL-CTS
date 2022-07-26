@@ -71,19 +71,21 @@ class TEST_NAME : public sycl_cts::util::test_base {
       auto dev = util::get_cts_object::device();
       if (dev.get_info<sycl::info::device::device_type>() ==
           sycl::info::device_type::custom) {
-        range3Ret = kernel.get_work_group_info<
-            sycl::info::kernel_work_group::global_work_size>(dev);
+        range3Ret =
+            kernel
+                .get_info<sycl::info::kernel_device_specific::global_work_size>(
+                    dev);
       }
-      range3Ret = kernel.get_work_group_info<
-          sycl::info::kernel_work_group::compile_work_group_size>(dev);
-      sizeTRet =
-          kernel.get_work_group_info<sycl::info::kernel_work_group::
-                                          preferred_work_group_size_multiple>(
+      range3Ret = kernel.get_info<
+          sycl::info::kernel_device_specific::compile_work_group_size>(dev);
+      sizeTRet = kernel.get_info<sycl::info::kernel_device_specific::
+                                     preferred_work_group_size_multiple>(dev);
+      clUlongRet =
+          kernel.get_info<sycl::info::kernel_device_specific::private_mem_size>(
               dev);
-      clUlongRet = kernel.get_work_group_info<
-          sycl::info::kernel_work_group::private_mem_size>(dev);
-      sizeTRet = kernel.get_work_group_info<
-          sycl::info::kernel_work_group::work_group_size>(dev);
+      sizeTRet =
+          kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
+              dev);
 
       TEST_TYPE_TRAIT(kernel, reference_count, kernel);
       TEST_TYPE_TRAIT(kernel, function_name, kernel);
