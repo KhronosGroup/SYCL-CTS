@@ -98,6 +98,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
 };
 
 // register this test with the test_collection
+
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 util::test_proxy<TEST_NAME> proxy;
+#endif
 
 } /* namespace kernel_info__ */

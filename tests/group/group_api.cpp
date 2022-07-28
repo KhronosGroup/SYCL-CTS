@@ -383,8 +383,8 @@ bool reduce_size(sycl::queue& queue) {
   auto kernel = kb.get_kernel(sycl::get_kernel_id<k_name>());
   auto device = queue.get_device();
 
-  auto work_group_size_limit = kernel.template get_info<
-      sycl::info::kernel_device_specific::work_group_size>(device);
+  auto work_group_size_limit =
+      device.template get_info<sycl::info::device::max_work_group_size>();
 
   size_t default_wg_size = 1;
   for (size_t dim = 0; dim < dimensions; ++dim) {
