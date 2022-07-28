@@ -8,6 +8,10 @@
 
 #include "../common/common.h"
 
+// Disable test when compiling with ComputeCpp
+// ComputeCpp doesn't fully support kernel::get_info of SYCL 2020 spec
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 #define TEST_NAME kernel_info
 
 namespace kernel_info__ {
@@ -98,11 +102,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
 };
 
 // register this test with the test_collection
-
-// Disable test when compiling with ComputeCpp
-// doesn't fully support kernel::get_info of SYCL 2020 spec
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 util::test_proxy<TEST_NAME> proxy;
-#endif
 
 } /* namespace kernel_info__ */
+#endif // SYCL_CTS_COMPILING_WITH_COMPUTECPP
