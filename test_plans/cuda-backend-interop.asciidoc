@@ -75,9 +75,6 @@ When `T` is the data type for `unsampled_image_accessor` or
 
 * Check that the macro `SYCL_BACKEND_CUDA` is defined.
 * Check that the `sycl::backend` enum has the member `cuda`.
-* Check that the `sycl::is_backend_active` type specialization for
-`sycl::backend::cuda` is defined with a boolan member variabled called `value`
-which resolves to `true`.
 
 === Application interoperability
 
@@ -85,21 +82,14 @@ All of the tests in this section are run within SYCL application scope.
 
 ==== Check availability of backend interop traits
 
-* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::platform>`
-is available and resolves to an alias of `std::vector<CUdevice>`.
 * Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::device>`
 is available and resolves to an alias of `CUdevice`.
 * Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::context>`
-is available and resolves to an alias of `std::vector<CUcontext>`.
+is available and resolves to an alias of `CUcontext`.
 * Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::queue>`
 is available and resolves to an alias of `CUstream`.
 * Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::event>`
 is available and resolves to an alias of `CUevent`.
-* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::buffer>`
-is available and resolves to an alias of
-`struct { CUdeviceptr ptr; size_t size; }`.
-* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::platform>`
-is available and resolves to an alias of `std::vector<CUdevice>`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::device>`
 is available and resolves to an alias of `CUdevice`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::context>`
@@ -109,19 +99,16 @@ is available and resolves to an alias of `CUstream`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::event>`
 is available and resolves to an alias of `CUevent`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::buffer>`
-is available and resolves to an alias of `CUdeviceptr`.
+is available and resolves to an alias of `void *`.
 
 ==== Check availability of make_* interop functions
 
-* Check that the `sycl::make_platform` template function specialization for
-`sycl::backend::cuda` is defined and can take a valid `std::vector<CUdevice>`
-and returns a valid `sycl::platform`.
 * Check that the `sycl::make_device` template function specialization for
 `sycl::backend::cuda` is defined and can take a valid `CUdevice` and returns a
 valid `sycl::device`.
 * Check that the `sycl::make_context` template function specialization for
-`sycl::backend::cuda` is defined and can take a valid `std::vector<CUcontext>`
-and returns a valid `sycl::context`.
+`sycl::backend::cuda` is defined and can take a valid `CUcontext` and returns a
+valid `sycl::context`.
 * Check that the `sycl::make_queue` template function specialization for
 `sycl::backend::cuda` is defined and can take a valid `CUstream` and returns a
 valid `sycl::queue`.
@@ -131,9 +118,6 @@ valid `sycl::event`.
 
 ==== Check availability of get_native interop functions
 
-* Check that the `sycl::get_native` template function specialization for
-`sycl::backend::cuda` and `sycl::platform` is defined and can take a valid
-`sycl::platform` and returns a valid `std::vector<CUdevice>`.
 * Check that the `sycl::get_native` template function specialization for
 `sycl::backend::cuda` and `sycl::device` is defined and can take a valid
 `sycl::device` and returns a valid `CUdevice`.
@@ -160,7 +144,12 @@ function specialization for `sycl::backend::cuda` is defined and returns a valid
 `std::vector<CUcontext>`.
 * Check that the `sycl::interop_handle::get_native_mem` template member
 function specialization for `sycl::backend::cuda` and `sycl::buffer` is defined
-and returns a valid `struct { CUdeviceptr ptr; size_t size; }`.
+and returns a valid `void *`.
+
+==== Check availability of CUDA backend-specific functions
+
+* Check that the `sycl::cuda::has_native_event(sycl::event)` function is defined
+and returns a valid `bool`.
 
 === Kernel function interoperability
 
