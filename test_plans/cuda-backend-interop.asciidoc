@@ -193,8 +193,6 @@ resolves to an alias of `sycl::cuda::surface<T, 2>`.
 * Check that the `sycl::backend_input_t<sycl::backend::cuda,
 unsampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
 resolves to an alias of `sycl::cuda::surface<T, 3>`.
-* Check that the `sycl::backend_input_t<sycl::backend::cuda, sycl::stream>` is
-available and resolves to an alias of `signed char *`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::accessor<T,
 Dims, Mode, target::device>>` is available and resolves to an alias of
 `T *`.
@@ -224,8 +222,6 @@ resolves to an alias of `sycl::cuda::surface<T, 2>`.
 * Check that the `sycl::backend_return_t<sycl::backend::cuda,
 unsampled_image_accessor<T, 3, Mode, image_target::device>>` is available and
 resolves to an alias of `sycl::cuda::surface<T, 3>`.
-* Check that the `sycl::backend_return_t<sycl::backend::cuda, sycl::stream>` is
-available and resolves to an alias of `signed char *`.
 
 ==== Check calling a CUDA function
 
