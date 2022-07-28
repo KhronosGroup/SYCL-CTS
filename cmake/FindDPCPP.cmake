@@ -12,7 +12,7 @@ else()
         "${CMAKE_CREATE_CONSOLE_EXE}")
     string(REPLACE "/subsystem:console" "" CMAKE_CXX_CREATE_CONSOLE_EXE
         "${CMAKE_CXX_CREATE_CONSOLE_EXE}")
-    find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp clang-cl
+    find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp-cl clang-cl
         HINTS ${DPCPP_INSTALL_DIR}
         PATH_SUFFIXES bin)
 endif()
