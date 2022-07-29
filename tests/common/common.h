@@ -635,8 +635,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   program.build_with_kernel_type<kernelT>("");
   auto kernel = program.get_kernel<kernelT>();
 #endif
-  auto maxKernelWorkGroupSize = kernel.template get_work_group_info<
-      sycl::info::kernel_work_group::work_group_size>(device);
+  auto maxKernelWorkGroupSize =
+      device.template get_info<sycl::info::device::max_work_group_size>();
 
   const bool supports = maxKernelWorkGroupSize >= wgSize;
   if (!supports) {
