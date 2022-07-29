@@ -5,7 +5,7 @@
 //  Provides tests for local_accessor.
 //
 //  This test provides verifications that local_accessor can access the memory
-//  shared among work-items.
+//  shared among work-items. For the sycl::half type.
 //
 *******************************************************************************/
 #include "../common/common.h"
