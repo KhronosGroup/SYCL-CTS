@@ -10,7 +10,7 @@
 #include "../common/common.h"
 
 #ifdef SYCL_BACKEND_OPENCL
-#include <CL/sycl/backend/opencl.hpp>
+#include <sycl/backend/opencl.hpp>
 #endif  // SYCL_BACKEND_OPENCL
 
 #define TEST_NAME host_task_interop_api
