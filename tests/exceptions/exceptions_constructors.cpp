@@ -27,7 +27,7 @@ inline void check_exception(sycl::exception e, const std::error_code errcode,
   CHECK(e.category() == errcat);
   CHECK(e.what() != nullptr);
   CHECK(e.has_context() == false);
-  CHECK_THROWS_MATCHES([&e] { e.get_context(); }, sycl::exception,
+  CHECK_THROWS_MATCHES([&e] { e.get_context(); }(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
 }
 
@@ -48,7 +48,7 @@ inline void check_exception(sycl::exception e, const std::error_code errcode,
   CHECK(e.category() == errcat);
   CHECK(e.what() == what_arg);
   CHECK(e.has_context() == false);
-  CHECK_THROWS_MATCHES([&e] { e.get_context(); }, sycl::exception,
+  CHECK_THROWS_MATCHES([&e] { e.get_context(); }(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
 }
 
