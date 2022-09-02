@@ -148,25 +148,23 @@ void check_enum_underlying_type(sycl_cts::util::logger& log) {
 /**
  * @brief Helper function to check an info parameter.
  */
-template <typename enumT, typename returnT, enumT kValue, typename objectT>
+template <typename infoDesc, typename returnT, typename objectT>
 void check_get_info_param(const objectT& object) {
-  // Check param_traits return type
-  using paramTraitsType =
-      typename sycl::info::param_traits<enumT, kValue>::return_type;
-  INFO("param_traits specialization has incorrect return type");
-  CHECK(std::is_same_v<paramTraitsType, returnT>);
+  // Check return_type specified in the descriptor
+  INFO("Information descriptor has incorrect return_type");
+  CHECK(std::is_same_v<typename infoDesc::return_type, returnT>);
 
   // Check get_info return type
-  auto returnValue = object.template get_info<kValue>();
+  auto returnValue = object.template get_info<infoDesc>();
   check_return_type<returnT>(returnValue, "object::get_info()");
 }
 
 /**
  * @deprecated Use overload without logger.
  */
-template <typename enumT, typename returnT, enumT kValue, typename objectT>
+template <typename infoDesc, typename returnT, typename objectT>
 void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
-  check_get_info_param<enumT, returnT, kValue>(object);
+  check_get_info_param<infoDesc, returnT>(object);
 }
 
 /**
@@ -319,18 +317,6 @@ bool check_equal_values(const sycl::marray<T, numElements>& lhs,
   });
 }
 #endif
-
-#define TEST_TYPE_TRAIT(syclType, param, syclObject)                    \
-  if (typeid(sycl::info::param_traits<                              \
-             sycl::info::syclType,                                  \
-             sycl::info::syclType::param>::return_type) !=          \
-      typeid(syclObject.get_info<sycl::info::syclType::param>())) { \
-    FAIL(log, #syclType                                                 \
-         ".get_info<sycl::info::" #syclType "::" #param             \
-         ">() does not return "                                         \
-         "sycl::info::param_traits<sycl::info::" #syclType      \
-         ", sycl::info::" #syclType "::" #param ">::return_type");  \
-  }
 
 /** Enables concept checking ahead of the Concepts TS
  *  Idea for macro taken from Eric Niebler's range-v3

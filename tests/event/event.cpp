@@ -394,9 +394,8 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
 TEST_CASE("event::get_info returns correct command execution status",
           "[event]") {
   // First check that return value is of expected type
-  check_get_info_param<sycl::info::event, sycl::info::event_command_status,
-                       sycl::info::event::command_execution_status>(
-      make_device_event());
+  check_get_info_param<sycl::info::event::command_execution_status,
+                       sycl::info::event_command_status>(make_device_event());
 
   SECTION("for host_task event") {
     resolvable_host_event rhe;
@@ -435,12 +434,9 @@ TEST_CASE("event::get_info returns correct command execution status",
 TODO_TEST_CASE("event::get_backend_info returns backend-specific information",
                "[event]");
 
-template <sycl::info::event_profiling descriptor>
+template <typename descriptor>
 static void check_get_profiling_info_return_type() {
-  using paramTraitsType =
-      typename sycl::info::param_traits<sycl::info::event_profiling,
-                                        descriptor>::return_type;
-  CHECK(std::is_same<paramTraitsType, uint64_t>::value);
+  CHECK(std::is_same<typename descriptor::return_type, uint64_t>::value);
   CHECK(std::is_same_v<
         decltype(std::declval<sycl::event>().get_profiling_info<descriptor>()),
         uint64_t>);
