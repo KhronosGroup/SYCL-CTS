@@ -41,24 +41,15 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
     {
-      /** check sycl::info::queue
-      */
-      check_enum_class_value(sycl::info::queue::reference_count);
-      check_enum_class_value(sycl::info::queue::context);
-      check_enum_class_value(sycl::info::queue::device);
-
       /** check get_info parameters
       */
       {
         cts_selector selector;
         auto queue = util::get_cts_object::queue(selector);
-        check_get_info_param<sycl::info::queue, sycl::cl_uint,
-                             sycl::info::queue::reference_count>(log,
-                                                                     queue);
-        check_get_info_param<sycl::info::queue, sycl::context,
-                             sycl::info::queue::context>(log, queue);
-        check_get_info_param<sycl::info::queue, sycl::device,
-                             sycl::info::queue::device>(log, queue);
+        check_get_info_param<sycl::info::queue::context, sycl::context>(log,
+                                                                        queue);
+        check_get_info_param<sycl::info::queue::device, sycl::device>(log,
+                                                                      queue);
       }
     }
   }

@@ -40,30 +40,20 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-      /** check info::platform
-       */
-      check_enum_class_value(sycl::info::platform::profile);
-      check_enum_class_value(sycl::info::platform::version);
-      check_enum_class_value(sycl::info::platform::name);
-      check_enum_class_value(sycl::info::platform::vendor);
-      check_enum_class_value(sycl::info::platform::extensions);
-
       /** check get_info parameters
        */
       {
         cts_selector selector;
         auto plt = util::get_cts_object::platform(selector);
-        check_get_info_param<sycl::info::platform, std::string,
-                             sycl::info::platform::profile>(log, plt);
-        check_get_info_param<sycl::info::platform, std::string,
-                             sycl::info::platform::version>(log, plt);
-        check_get_info_param<sycl::info::platform, std::string,
-                             sycl::info::platform::name>(log, plt);
-        check_get_info_param<sycl::info::platform, std::string,
-                             sycl::info::platform::vendor>(log, plt);
-        check_get_info_param<sycl::info::platform,
-                             std::vector<std::string>,
-                             sycl::info::platform::extensions>(log, plt);
+        check_get_info_param<sycl::info::platform::profile, std::string>(log,
+                                                                         plt);
+        check_get_info_param<sycl::info::platform::version, std::string>(log,
+                                                                         plt);
+        check_get_info_param<sycl::info::platform::name, std::string>(log, plt);
+        check_get_info_param<sycl::info::platform::vendor, std::string>(log,
+                                                                        plt);
+        check_get_info_param<sycl::info::platform::extensions,
+                             std::vector<std::string>>(log, plt);
       }
     }
   }
