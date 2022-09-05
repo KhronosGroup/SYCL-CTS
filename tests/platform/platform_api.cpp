@@ -94,15 +94,6 @@ class TEST_NAME : public util::test_base {
                                                   "platform::get_info()");
       }
 
-      /** check is_host() member function
-      */
-      {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
-        auto isHost = plt.is_host();
-        check_return_type<bool>(log, isHost, "platform::is_host()");
-      }
-
       /** check get_platforms() static method
       */
       {

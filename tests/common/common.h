@@ -174,10 +174,10 @@ void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
  */
 template <typename T>
 void check_equality(T& a, T& b) {
-  /** check is_host
+  /** check get_backend
    */
-  if (a.is_host() != b.is_host()) {
-    FAIL("two objects are not equal (is_host)");
+  if (a.get_backend() != b.get_backend()) {
+    FAIL("two objects are not equal (get_backend)");
   }
 
 #ifdef SYCL_BACKEND_OPENCL

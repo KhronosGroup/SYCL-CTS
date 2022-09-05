@@ -45,16 +45,6 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-      /** check is_host() member function
-       */
-      {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
-
-        auto isHost = queue.is_host();
-        check_return_type<bool>(log, isHost, "sycl::queue::is_host()");
-      }
-
       /** check get_context() member function
        */
       {

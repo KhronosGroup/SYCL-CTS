@@ -45,7 +45,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     {
       auto ctsQueue = util::get_cts_object::queue();
-      const auto isHostCtx = ctsQueue.is_host();
       auto deviceList = ctsQueue.get_context().get_devices();
       auto ctx = ctsQueue.get_context();
 
@@ -57,9 +56,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
       ctsQueue.submit(
           [&](sycl::handler &h) { h.single_task(k_name{}); });
       ctsQueue.wait_and_throw();
-
-      // Check is_host()
-      bool isHost = kernel.is_host();
 
       // Check get_context()
       auto cxt = kernel.get_context();

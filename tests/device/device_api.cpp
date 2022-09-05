@@ -86,15 +86,6 @@ class TEST_NAME : public util::test_base {
                                               "device::get_platform()");
       }
 
-      /** check is_host() member function
-       */
-      {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
-        auto isHost = dev.is_host();
-        check_return_type<bool>(log, isHost, "device::is_host()");
-      }
-
       /** check is_cpu() member function
        */
       {

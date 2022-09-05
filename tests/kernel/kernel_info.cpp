@@ -78,10 +78,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       /** check program info parameters
        */
-      if (!queue.is_host()) {
-        clUintRet =
-            kernel.get_info<sycl::info::kernel::reference_count>();
-      }
       stringRet = kernel.get_info<sycl::info::kernel::function_name>();
       clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
       stringRet = kernel.get_info<sycl::info::kernel::attributes>();
