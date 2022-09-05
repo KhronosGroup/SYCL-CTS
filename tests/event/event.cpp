@@ -444,7 +444,9 @@ static void check_get_profiling_info_return_type() {
         uint64_t>);
 }
 
-TEST_CASE("event::get_profiling_info works as expected", "[event]") {
+// FIXME: reenable when struct information descriptors are implemented
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCPP)
+("event::get_profiling_info works as expected", "[event]")({
   // Check that queries return the expected type.
   check_get_profiling_info_return_type<
       sycl::info::event_profiling::command_submit>();
@@ -478,4 +480,4 @@ TEST_CASE("event::get_profiling_info works as expected", "[event]") {
   // perform some basic sanity checks.
   CHECK(submit_time <= start_time);
   CHECK(start_time <= end_time);
-}
+});
