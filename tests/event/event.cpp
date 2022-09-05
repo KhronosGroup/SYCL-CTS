@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 
 using namespace sycl_cts;
 
@@ -391,8 +392,9 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
   CHECK(teh.has("another-error"));
 }
 
-TEST_CASE("event::get_info returns correct command execution status",
-          "[event]") {
+// FIXME: reenable when struct information descriptors are implemented
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("event::get_info returns correct command execution status", "[event]")({
   // First check that return value is of expected type
   check_get_info_param<sycl::info::event::command_execution_status,
                        sycl::info::event_command_status>(make_device_event());
@@ -425,7 +427,7 @@ TEST_CASE("event::get_info returns correct command execution status",
         e1.get_info<sycl::info::event::command_execution_status>();
     CHECK(status == sycl::info::event_command_status::complete);
   }
-}
+});
 
 // TODO: Figure out if/how we want to test this.
 // => Must throw exception w/ errc::backend_mismatch if querying a parameter

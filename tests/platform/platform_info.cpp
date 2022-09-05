@@ -40,6 +40,8 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
+      // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       /** check get_info parameters
        */
       {
@@ -55,6 +57,7 @@ class TEST_NAME : public util::test_base {
         check_get_info_param<sycl::info::platform::extensions,
                              std::vector<std::string>>(log, plt);
       }
+#endif
     }
   }
 };
