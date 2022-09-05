@@ -445,7 +445,7 @@ static void check_get_profiling_info_return_type() {
 }
 
 // FIXME: reenable when struct information descriptors are implemented
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCPP)
+DISABLED_FOR_TEST_CASE(ComputeCPP)
 ("event::get_profiling_info works as expected", "[event]")({
   // Check that queries return the expected type.
   check_get_profiling_info_return_type<
