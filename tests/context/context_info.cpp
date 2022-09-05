@@ -46,16 +46,22 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto platform = context.get_info<sycl::info::context::platform>();
+        // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
         check_get_info_param<sycl::info::context::platform, sycl::platform>(
             log, context);
+#endif
       }
 
       /** check get_info for info::context::devices
        */
       {
         auto devs = context.get_info<sycl::info::context::devices>();
+        // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
         check_get_info_param<sycl::info::context::devices,
                              std::vector<sycl::device>>(log, context);
+#endif
       }
     }
   }

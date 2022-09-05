@@ -95,9 +95,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
               dev);
 
+      // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       check_get_info_param<sycl::info::kernel::num_args, uint32_t>(log, kernel);
       check_get_info_param<sycl::info::kernel::attributes, std::string>(log,
                                                                         kernel);
+#endif
 
       queue.wait_and_throw();
     }

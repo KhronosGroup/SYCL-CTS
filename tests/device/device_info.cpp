@@ -109,6 +109,8 @@ class TEST_NAME : public util::test_base {
 
       /** check get_info parameters
        */
+      // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       {
         cts_selector selector;
         auto dev = util::get_cts_object::device(selector);
@@ -272,6 +274,7 @@ class TEST_NAME : public util::test_base {
         check_get_info_param<sycl::info::device::partition_type_affinity_domain,
                              sycl::info::partition_affinity_domain>(log, dev);
       }
+#endif
     }
   }
 };
