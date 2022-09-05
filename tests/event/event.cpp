@@ -393,7 +393,7 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
 }
 
 // FIXME: reenable when struct information descriptors are implemented
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("event::get_info returns correct command execution status", "[event]")({
   // First check that return value is of expected type
   check_get_info_param<sycl::info::event::command_execution_status,
