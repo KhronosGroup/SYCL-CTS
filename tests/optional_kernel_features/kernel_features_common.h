@@ -301,19 +301,19 @@ void execute_tasks_and_check_exception(
   if (is_exception_expected) {
     {
       INFO(single_task_desc);
-      CHECK_THROWS_MATCHES(single_task_action, sycl::exception,
+      CHECK_THROWS_MATCHES(single_task_action(), sycl::exception,
                            sycl_cts::util::equals_exception(errc_expected));
       check_async_exception(queue, false);
     }
     {
       INFO(parallel_for_desc);
-      CHECK_THROWS_MATCHES(parallel_for_action, sycl::exception,
+      CHECK_THROWS_MATCHES(parallel_for_action(), sycl::exception,
                            sycl_cts::util::equals_exception(errc_expected));
       check_async_exception(queue, false);
     }
     {
       INFO(parallel_for_wg_desc);
-      CHECK_THROWS_MATCHES(parallel_for_wg_action, sycl::exception,
+      CHECK_THROWS_MATCHES(parallel_for_wg_action(), sycl::exception,
                            sycl_cts::util::equals_exception(errc_expected));
       check_async_exception(queue, false);
     }

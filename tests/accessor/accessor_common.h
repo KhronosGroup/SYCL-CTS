@@ -641,7 +641,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         "sycl::errc::kernel_argument when a placeholder accessor is passed to "
         "the command");
     CHECK_THROWS_MATCHES(
-        action, sycl::exception,
+        action(), sycl::exception,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
@@ -736,12 +736,12 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
     if constexpr (AccType != accessor_type::host_accessor) {
       auto action = [&] { construct_acc(queue, data_buf); };
       CHECK_THROWS_MATCHES(
-          action, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else {
       auto action = [&] { construct_acc(data_buf); };
       CHECK_THROWS_MATCHES(
-          action, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
   }
