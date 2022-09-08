@@ -71,56 +71,56 @@ void check_return_value(sycl_cts::util::logger& log, const T& a, const T& b,
 /**
  * @brief Helper function to check the return type of a function.
  */
-template <typename expectedT, typename returnT>
-void check_return_type(returnT returnVal, std::string functionName) {
+template <typename ExpectedT, typename ReturnT>
+void check_return_type(ReturnT returnVal, std::string functionName) {
   INFO(functionName + " has incorrect return type -> " +
-       typeid(returnT).name());
-  CHECK(std::is_same<returnT, expectedT>::value);
+       typeid(ReturnT).name());
+  CHECK(std::is_same<ReturnT, ExpectedT>::value);
 }
 
 /**
  * @deprecated Use overload without logger.
  */
-template <typename expectedT, typename returnT>
-void check_return_type(sycl_cts::util::logger& log, returnT returnVal,
+template <typename ExpectedT, typename ReturnT>
+void check_return_type(sycl_cts::util::logger& log, ReturnT returnVal,
                        std::string functionName) {
-  check_return_type<expectedT>(returnVal, functionName);
+  check_return_type<ExpectedT>(returnVal, functionName);
 }
 
 /**
  * @brief Helper function to check the return type of a function.
  */
-template <typename expectedT, typename returnT>
-bool check_return_type_bool(returnT returnVal) {
-  return std::is_same<expectedT, returnT>::value;
+template <typename ExpectedT, typename ReturnT>
+bool check_return_type_bool(ReturnT returnVal) {
+  return std::is_same<ExpectedT, ReturnT>::value;
 }
 
 /**
  * @brief Helper function to check two types are equal.
  */
-template <typename expectedT, typename actualT>
-void check_equal_type(actualT actualVal, std::string logMsg) {
-  if (typeid(expectedT) != typeid(actualT)) {
-    FAIL(logMsg << "\nGot type -> " << typeid(actualT).name()
-                << "\nExpected type -> " << typeid(expectedT).name());
+template <typename ExpectedT, typename ActualT>
+void check_equal_type(ActualT actualVal, std::string logMsg) {
+  if (typeid(ExpectedT) != typeid(ActualT)) {
+    FAIL(logMsg << "\nGot type -> " << typeid(ActualT).name()
+                << "\nExpected type -> " << typeid(ExpectedT).name());
   }
 }
 
 /**
  * @deprecated Use overload without logger.
  */
-template <typename expectedT, typename actualT>
-void check_equal_type(sycl_cts::util::logger& log, actualT actualVal,
+template <typename ExpectedT, typename ActualT>
+void check_equal_type(sycl_cts::util::logger& log, ActualT actualVal,
                       std::string logMsg) {
-  check_equal_type<expectedT>(actualVal, logMsg);
+  check_equal_type<ExpectedT>(actualVal, logMsg);
 }
 
 /**
  * @brief Helper function to check two types are equal.
  */
-template <typename expectedT, typename actualT>
-bool check_equal_type_bool(actualT actualVal) {
-  return std::is_same<expectedT, actualT>::value;
+template <typename ExpectedT, typename ActualT>
+bool check_equal_type_bool(ActualT actualVal) {
+  return std::is_same<ExpectedT, ActualT>::value;
 }
 
 /**
@@ -148,23 +148,23 @@ void check_enum_underlying_type(sycl_cts::util::logger& log) {
 /**
  * @brief Helper function to check an info parameter.
  */
-template <typename infoDesc, typename returnT, typename objectT>
-void check_get_info_param(const objectT& object) {
+template <typename InfoDesc, typename ReturnT, typename ObjectT>
+void check_get_info_param(const ObjectT& object) {
   // Check return_type specified in the descriptor
   INFO("Information descriptor has incorrect return_type");
-  CHECK(std::is_same_v<typename infoDesc::return_type, returnT>);
+  CHECK(std::is_same_v<typename InfoDesc::return_type, ReturnT>);
 
   // Check get_info return type
-  auto returnValue = object.template get_info<infoDesc>();
-  check_return_type<returnT>(returnValue, "object::get_info()");
+  auto returnValue = object.template get_info<InfoDesc>();
+  check_return_type<ReturnT>(returnValue, "object::get_info()");
 }
 
 /**
  * @deprecated Use overload without logger.
  */
-template <typename infoDesc, typename returnT, typename objectT>
-void check_get_info_param(sycl_cts::util::logger& log, const objectT& object) {
-  check_get_info_param<infoDesc, returnT>(object);
+template <typename InfoDesc, typename ReturnT, typename ObjectT>
+void check_get_info_param(sycl_cts::util::logger& log, const ObjectT& object) {
+  check_get_info_param<InfoDesc, ReturnT>(object);
 }
 
 /**
@@ -207,8 +207,8 @@ void check_equality(sycl_cts::util::logger& log, T& a, T& b) {
  * @brief Helper function to test two arrays have equal elements. Deprecated.
  * Use \c value_operations::are_equal instead
  */
-template <typename arrT, int size>
-void check_array_equality(arrT* arr1, arrT* arr2) {
+template <typename ArrT, int size>
+void check_array_equality(ArrT* arr1, ArrT* arr2) {
   for (int i = 0; i < size; i++) {
     if (arr1[i] != arr2[i]) {
       FAIL("arrays are not equal");
@@ -220,9 +220,9 @@ void check_array_equality(arrT* arr1, arrT* arr2) {
  * @deprecated Use overload without logger. Deprecated.
  * Use \c value_operations::are_equal instead
  */
-template <typename arrT, int size>
-void check_array_equality(sycl_cts::util::logger& log, arrT* arr1, arrT* arr2) {
-  check_array_equality<arrT, size>(arr1, arr2);
+template <typename ArrT, int size>
+void check_array_equality(sycl_cts::util::logger& log, ArrT* arr1, ArrT* arr2) {
+  check_array_equality<ArrT, size>(arr1, arr2);
 }
 
 /**
