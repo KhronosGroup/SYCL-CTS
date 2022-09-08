@@ -38,11 +38,6 @@ std::string get_case_description(const std::string &info, size_t overload_index,
   return message;
 }
 
-template <sycl::access::address_space Space>
-constexpr bool use_local_accessor =
-    (Space == sycl::access::address_space::local_space) ||
-    (Space == sycl::access::address_space::private_space);
-
 /** @brief Provides verification of multi_ptr common constructors with template
  *         parameters given
  *  @tparam T Variable type for type coverage
@@ -71,13 +66,17 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   T ref_value{user_def_types::get_init_value_helper<T>(0)};
   auto queue = util::get_cts_object::queue();
 
-  using CommonAccType = sycl::accessor<T, 1, sycl::access_mode::read>;
+  using GlobalAccType = sycl::accessor<T, 1, sycl::access_mode::read>;
   using LocalAccType = sycl::local_accessor<T, 1>;
+  using PrivateAccType =
+      sycl::multi_ptr<T, sycl::access::address_space::private_space, Decorated>;
 
-  // Accessor for ref value depending on sycl::access::address_space
-  using RefAccType =
-      typename std::conditional<use_local_accessor<Space>, LocalAccType,
-                                CommonAccType>::type;
+  // Accessor for ref value depending on sycl::access::address_space. For
+  // private use multi_ptr instead of an accessor.
+  using RefAccType = std::conditional_t<
+      Space == sycl::access::address_space::local_space, LocalAccType,
+      std::conditional_t<Space == sycl::access::address_space::private_space,
+                         PrivateAccType, GlobalAccType>>;
   using ResultAccType = sycl::accessor<bool, 1, sycl::access_mode::write>;
 
   // Main check lambda
@@ -147,11 +146,22 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
       auto same_value_acc =
           same_value_buf.template get_access<sycl::access_mode::write>(cgh);
 
-      if constexpr (use_local_accessor<Space>) {
+      if constexpr (Space == sycl::access::address_space::local_space) {
         sycl::local_accessor<T, 1> loc_acc(sycl::range<1>(1), cgh);
         cgh.parallel_for<k_name>(sycl::range<1>(1), [=](sycl::item<1>) {
           loc_acc[0] = ref_acc[0];
           run_and_check(loc_acc, same_type_acc, same_value_acc);
+        });
+      } else if constexpr (Space ==
+                           sycl::access::address_space::private_space) {
+        cgh.parallel_for<k_name>(sycl::range<1>(1), [=](sycl::item<1>) {
+          T priv_val = ref_acc[0];
+          sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                          Decorated>
+              priv_val_mptr = sycl::address_space_cast<
+                  sycl::access::address_space::private_space, Decorated>(
+                  &priv_val);
+          run_and_check(priv_val_mptr, same_type_acc, same_value_acc);
         });
       } else {
         cgh.single_task<k_name>(
@@ -161,16 +171,18 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   }
   for (size_t i = 0; i < types_size; ++i) {
     if (!same_type[i]) {
-      FAIL(log, (get_case_description<Space, Decorated>("Incorrect type", i,
-                                                        type_name)));
+      std::string fail_msg = get_case_description<Space, Decorated>(
+          "Incorrect type", i, type_name);
+      FAIL(log, fail_msg);
     }
   }
   for (size_t i = 0; i < values_size; ++i) {
     if (!same_value[i]) {
+      std::string fail_msg = get_case_description<Space, Decorated>(
+          "Incorrect value", i + 1, type_name);
       // We use i + 1 overload index because we have one extra check for
       // multi_ptr::pointer type for default constructor
-      FAIL(log, (get_case_description<Space, Decorated>("Incorrect value",
-                                                        i + 1, type_name)));
+      FAIL(log, fail_msg);
     }
   }
 }
@@ -190,8 +202,6 @@ class check_multi_ptr_common_constructors_for_type {
               sycl::access::decorated::yes>(log, type_name);
     run_tests<T, sycl::access::address_space::generic_space,
               sycl::access::decorated::yes>(log, type_name);
-    run_tests<T, sycl::access::address_space::constant_space,
-              sycl::access::decorated::yes>(log, type_name);
     run_tests<T, sycl::access::address_space::global_space,
               sycl::access::decorated::no>(log, type_name);
     run_tests<T, sycl::access::address_space::local_space,
@@ -199,8 +209,6 @@ class check_multi_ptr_common_constructors_for_type {
     run_tests<T, sycl::access::address_space::private_space,
               sycl::access::decorated::no>(log, type_name);
     run_tests<T, sycl::access::address_space::generic_space,
-              sycl::access::decorated::no>(log, type_name);
-    run_tests<T, sycl::access::address_space::constant_space,
               sycl::access::decorated::no>(log, type_name);
   }
 };

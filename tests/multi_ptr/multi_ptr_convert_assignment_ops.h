@@ -40,7 +40,7 @@ class run_convert_assignment_operators_tests {
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     auto r = sycl::range(1);
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check &operator=(const multi_ptr<value_type, ASP, IsDecorated>&)")
             .with("T", type_name)
             .with("src address_space", src_address_space_name)
@@ -77,23 +77,24 @@ class run_convert_assignment_operators_tests {
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
                   if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {
-                    auto ref = local_acc[0];
+                    auto &ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
 
-                    const src_multi_ptr_t mptr_in(acc_for_mptr);
+                    const src_multi_ptr_t mptr_in(local_acc);
                     dst_multi_ptr_t mptr_out;
 
                     mptr_out = mptr_in;
 
                     // Check that second mptr has the same value as first mptr
-                    res_acc[0] = *(mptr_out.get_raw()) == acc_for_mptr[0];
+                    res_acc[0] = *(mptr_out.get_raw()) == ref;
                   } else {
                     T private_val =
                         user_def_types::get_init_value_helper<T>(expected_val);
 
-                    const src_multi_ptr_t mptr_in = sycl::address_space_cast<
-                        sycl::access::address_space::generic_space, decorated,
-                        T>(&private_val);
+                    const src_multi_ptr_t mptr_in(
+                        sycl::address_space_cast<
+                            sycl::access::address_space::generic_space,
+                            src_decorated, T>(&private_val));
                     dst_multi_ptr_t mptr_out;
 
                     mptr_out = mptr_in;
@@ -109,7 +110,7 @@ class run_convert_assignment_operators_tests {
     }
 
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check &operator=(multi_ptr<value_type, AS, IsDecorated>&&)")
             .with("T", type_name)
             .with("src address_space", src_address_space_name)
@@ -124,21 +125,19 @@ class run_convert_assignment_operators_tests {
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
 
           if constexpr (src_space ==
                         sycl::access::address_space::global_space) {
             auto val_acc =
                 val_buffer.template get_access<sycl::access_mode::read>(cgh);
             cgh.single_task([=] {
-              const src_multi_ptr_t mptr_in(acc_for_mptr);
+              const src_multi_ptr_t mptr_in(val_acc);
               dst_multi_ptr_t mptr_out;
 
               mptr_out = std::move(mptr_in);
 
               // Check that second mptr has the same value as first mptr
-              res_acc[0] = *(mptr_out.get_raw()) == acc_for_mptr[0];
+              res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
             });
           } else {
             sycl::local_accessor<T> local_acc(r, cgh);
@@ -146,29 +145,30 @@ class run_convert_assignment_operators_tests {
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
                   if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {
-                    auto ref = local_acc[0];
+                    auto &ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
 
-                    const src_multi_ptr_t mptr_in(acc_for_mptr);
+                    const src_multi_ptr_t mptr_in(local_acc);
                     dst_multi_ptr_t mptr_out;
 
                     mptr_out = std::move(mptr_in);
 
                     // Check that second mptr has the same value as first mptr
-                    res_acc[0] = *(mptr_out.get_raw()) == acc_for_mptr[0];
+                    res_acc[0] = *(mptr_out.get_raw()) == ref;
                   } else {
                     T private_val =
                         user_def_types::get_init_value_helper<T>(expected_val);
 
-                    const src_multi_ptr_t mptr_in = sycl::address_space_cast<
-                        sycl::access::address_space::generic_space, decorated,
-                        T>(&private_val);
+                    const src_multi_ptr_t mptr_in(
+                        sycl::address_space_cast<
+                            sycl::access::address_space::generic_space,
+                            src_decorated, T>(&private_val));
                     dst_multi_ptr_t mptr_out;
 
                     mptr_out = std::move(mptr_in);
 
                     // Check that second mptr has the same value as first mptr
-                    res_acc[0] = *(mptr_out.get_raw()) == acc_for_mptr[0];
+                    res_acc[0] = *(mptr_out.get_raw()) == private_val;
                   }
                 });
           }

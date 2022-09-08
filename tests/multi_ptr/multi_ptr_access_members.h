@@ -36,10 +36,14 @@ struct test_result {
   int value_to_init = 49;
   // Variables that will be used to check that access members returns correct
   // value
-  T dereference_ret_value = value_to_init;
-  T dereference_op_ret_value = value_to_init;
-  T get_member_ret_value = value_to_init;
-  T get_raw_member_ret_value = value_to_init;
+  T dereference_ret_value =
+      user_def_types::get_init_value_helper<T>(value_to_init);
+  T dereference_op_ret_value =
+      user_def_types::get_init_value_helper<T>(value_to_init);
+  T get_member_ret_value =
+      user_def_types::get_init_value_helper<T>(value_to_init);
+  T get_raw_member_ret_value =
+      user_def_types::get_init_value_helper<T>(value_to_init);
 };
 
 }  // namespace detail
@@ -85,61 +89,72 @@ class run_access_members_tests {
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
-        auto acc_for_multi_ptr = val_buffer.template get_access<
-            user_def_types::get_init_value_helper::access_mode::read>(cgh);
-        auto test_device_code = [=] {
+        auto test_device_code = [=](auto acc_for_multi_ptr) {
           const multi_ptr_t multi_ptr(acc_for_multi_ptr);
           detail::test_result<T> &test_result = test_result_acc[0];
 
           // Dereference and multi_ptr::operator->() available only when:
           // !std::is_void<sycl::multi_ptr::value_type>::value
-          if constexpr (!std::is_void_v<multi_ptr_t::value_type>) {
+          if constexpr (!std::is_void_v<typename multi_ptr_t::value_type>) {
             // Check dereference operator return value and type correctness
             test_result.dereference_return_type_is_correct =
-                std::is_same_v<decltype(*multi_ptr), multi_ptr_t::reference>;
+                std::is_same_v<decltype(*multi_ptr),
+                               typename multi_ptr_t::reference>;
             test_result.dereference_ret_value = *multi_ptr;
             // Check operator->() return value and type correctness
             test_result.dereference_op_return_type_is_correct =
                 std::is_same_v<decltype(multi_ptr.operator->()),
-                               multi_ptr_t::pointer>;
+                               typename multi_ptr_t::pointer>;
             test_result.dereference_op_ret_value = *(multi_ptr.operator->());
           }
 
           // Check get() return value and type correctness
           test_result.get_return_type_is_correct =
-              std::is_same_v<decltype(multi_ptr.get()), multi_ptr_t::pointer>;
+              std::is_same_v<decltype(multi_ptr.get()),
+                             typename multi_ptr_t::pointer>;
           // Skip verification if pointer is decorated
           if constexpr (decorated == sycl::access::decorated::yes) {
             test_result.get_member_ret_value = *(multi_ptr.get());
           }
           // Check get_raw() return value and type correctness
-          test_result.get_raw_return_type_is_correct =
-              std::is_same_v<decltype(multi_ptr.get_raw()),
-                             std::add_pointer_t<multi_ptr_t::value_type>>;
+          test_result.get_raw_return_type_is_correct = std::is_same_v<
+              decltype(multi_ptr.get_raw()),
+              std::add_pointer_t<typename multi_ptr_t::value_type>>;
           test_result.get_raw_member_ret_value = *(multi_ptr.get_raw());
           // Check get_decorated() return type correctness
           test_result.get_decorated_return_type_is_correct =
               std::is_pointer_v<decltype(multi_ptr.get_decorated())>;
         };
 
-        if constexpr (space == sycl::access::address_space::global_space) {
-          cgh.single_task([=] { test_device_code(); });
-        } else {
-          cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item item) {
-            if constexpr (space == sycl::access::address_space::local_space) {
-              test_device_code();
-            } else {
-              test_device_code();
-            }
+        if constexpr (space == sycl::access::address_space::local_space) {
+          sycl::local_accessor<T> acc_for_multi_ptr{sycl::range(1), cgh};
+          cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+            value_operations::assign(acc_for_multi_ptr, value);
+            test_device_code(acc_for_multi_ptr);
           });
+        } else if constexpr (space ==
+                             sycl::access::address_space::private_space) {
+          cgh.single_task([=] {
+            T priv_val = value;
+            sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                            decorated>
+                priv_val_mptr = sycl::address_space_cast<
+                    sycl::access::address_space::private_space, decorated>(
+                    &priv_val);
+            test_device_code(priv_val_mptr);
+          });
+        } else {
+          auto acc_for_multi_ptr =
+              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          cgh.single_task([=] { test_device_code(acc_for_multi_ptr); });
         }
       });
     }
     T expected_value = user_def_types::get_init_value_helper<T>(val_to_init);
     // Dereference and multi_ptr::operator->() available only when:
     // !std::is_void<sycl::multi_ptr::value_type>::value
-    if constexpr (!std::is_void_v<multi_ptr_t::value_type>) {
-      SECTION(section_name("Check dereference return value and type")
+    if constexpr (!std::is_void_v<typename multi_ptr_t::value_type>) {
+      SECTION(sycl_cts::section_name("Check dereference return value and type")
                   .with("T", type_name)
                   .with("address_space", address_space_name)
                   .with("decorated", is_decorated_name)
@@ -148,7 +163,7 @@ class run_access_members_tests {
         CHECK(test_result.dereference_ret_value == expected_value);
       }
       SECTION(
-          section_name(
+          sycl_cts::section_name(
               "Check dereference operator (operator->()) return value and type")
               .with("T", type_name)
               .with("address_space", address_space_name)
@@ -158,7 +173,7 @@ class run_access_members_tests {
         CHECK(test_result.dereference_op_ret_value == expected_value);
       }
     }
-    SECTION(section_name("Check get() return value and type")
+    SECTION(sycl_cts::section_name("Check get() return value and type")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -169,7 +184,7 @@ class run_access_members_tests {
         CHECK(test_result.get_member_ret_value == expected_value);
       }
     }
-    SECTION(section_name("Check get_raw() return value and type")
+    SECTION(sycl_cts::section_name("Check get_raw() return value and type")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -177,7 +192,7 @@ class run_access_members_tests {
       CHECK(test_result.get_raw_return_type_is_correct);
       CHECK(test_result.get_raw_member_ret_value == expected_value);
     }
-    SECTION(section_name("Check that get_decorated() returns pointer")
+    SECTION(sycl_cts::section_name("Check that get_decorated() returns pointer")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)

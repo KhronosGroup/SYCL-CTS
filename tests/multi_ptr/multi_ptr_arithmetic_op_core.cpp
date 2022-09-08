@@ -14,8 +14,8 @@ namespace multi_ptr_arithmetic_op_core {
 
 TEST_CASE("Arithmetic operators. Core types.", "[multi_ptr]") {
   using namespace multi_ptr_arithmetic_op;
-  auto types = multi_ptr_convert::get_types();
-  auto composite_types = multi_ptr_convert::get_composite_types();
+  auto types = multi_ptr_common::get_types();
+  auto composite_types = multi_ptr_common::get_composite_types();
 
   for_all_types<check_multi_ptr_arithmetic_op_for_type>(types);
   for_all_types<check_multi_ptr_arithmetic_op_for_type>(composite_types);

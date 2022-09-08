@@ -45,7 +45,7 @@ class run_prefetch_test {
 
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
-    SECTION(section_name("Check multi_ptr::prefetch()")
+    SECTION(sycl_cts::section_name("Check multi_ptr::prefetch()")
                 .with("T", type_name)
                 .with("address_space", "access::address_space::global_space")
                 .with("decorated", is_decorated_name)

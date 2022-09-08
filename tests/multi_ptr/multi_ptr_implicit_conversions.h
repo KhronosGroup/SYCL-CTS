@@ -48,7 +48,6 @@ struct avoid_implicit_conversion {
 
 template <typename T, typename AddrSpaceT, typename IsDecoratedT>
 class run_implicit_convert_tests {
-  using namespace detail;
   static constexpr sycl::access::address_space address_space =
       AddrSpaceT::value;
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
@@ -60,6 +59,10 @@ class run_implicit_convert_tests {
     auto queue = sycl_cts::util::get_cts_object::queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     bool res = false;
+
+    constexpr sycl::access::decorated src_multi_ptr_decorated =
+        src_multi_ptr_t::is_decorated ? sycl::access::decorated::yes
+                                      : sycl::access::decorated::no;
 
     constexpr bool has_implicit_conversion_available =
         std::is_convertible_v<src_multi_ptr_t, dest_multi_ptr_t>;
@@ -78,8 +81,8 @@ class run_implicit_convert_tests {
 
     using invoke_conversion_t = std::conditional_t<
         has_implicit_conversion_available,
-        invoke_implicit_conversion<src_multi_ptr_t, dest_multi_ptr_t>,
-        avoid_implicit_conversion<src_multi_ptr_t>>;
+        detail::invoke_implicit_conversion<src_multi_ptr_t, dest_multi_ptr_t>,
+        detail::avoid_implicit_conversion<src_multi_ptr_t>>;
 
     {
       sycl::range r(1);
@@ -88,11 +91,8 @@ class run_implicit_convert_tests {
       queue.submit([&](sycl::handler &cgh) {
         auto res_acc =
             res_buf.template get_access<sycl::access_mode::write>(cgh);
-        auto expected_val_acc =
-            expected_val_buffer.template get_access<sycl::access_mode::read>(
-                cgh);
-        cgh.single_task([=] {
-          src_multi_ptr_t mptr_from(expected_val_acc);
+        auto test_device_code = [=](auto acc_for_multi_ptr) {
+          src_multi_ptr_t mptr_from(acc_for_multi_ptr);
 
           // From cppreference.com
           //  Implicit conversions are performed whenever an
@@ -106,10 +106,36 @@ class run_implicit_convert_tests {
           dest_multi_ptr_t mptr_dest = invoke_conversion_t{}(mptr_from);
 
           // for cases, when dest_multi_ptr_t equals to multi_ptr<void>
-          T value_dest = static_cast<T>(*(mptr_dest.get()));
+          const T value_dest = *(reinterpret_cast<const T *>(mptr_dest.get()));
 
-          res_acc[0] = (value_dest == expected_val);
-        });
+          res_acc[0] = (value_dest ==
+                        user_def_types::get_init_value_helper<T>(expected_val));
+        };
+
+        if constexpr (address_space ==
+                      sycl::access::address_space::local_space) {
+          sycl::local_accessor<T> expected_val_acc{sycl::range(1), cgh};
+          cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+            value_operations::assign(expected_val_acc, value);
+            test_device_code(expected_val_acc);
+          });
+        } else if constexpr (address_space ==
+                             sycl::access::address_space::private_space) {
+          cgh.single_task([=] {
+            T priv_val = value;
+            sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                            decorated>
+                priv_val_mptr = sycl::address_space_cast<
+                    sycl::access::address_space::private_space, decorated>(
+                    &priv_val);
+            test_device_code(priv_val_mptr);
+          });
+        } else {
+          auto expected_val_acc =
+              expected_val_buffer.template get_access<sycl::access_mode::read>(
+                  cgh);
+          cgh.single_task([=] { test_device_code(expected_val_acc); });
+        }
       });
     }
     CHECK(res);
@@ -119,8 +145,8 @@ class run_implicit_convert_tests {
   void operator()(const std::string &type_name,
                   const std::string &address_space_str,
                   const std::string &is_decorated_str) {
-    SECTION(section_name("Verifying implicit conversion from "
-                         "multi_ptr<T,address_space,decorated>")
+    SECTION(sycl_cts::section_name("Verifying implicit conversion from "
+                                   "multi_ptr<T,address_space,decorated>")
                 .with("T", type_name)
                 .with("address_space", address_space_str)
                 .with("decorated", is_decorated_str)
@@ -175,7 +201,6 @@ class run_implicit_convert_tests {
             sycl::multi_ptr<const T, address_space,
                             sycl::access::decorated::yes>;
 
-        preform_implicit_conversion_test<src_multi_ptr_t, dest_multi_ptr_t>();
         SECTION("Conversion to multi_ptr<const T, decorated::yes>") {
           preform_implicit_conversion_test<src_multi_ptr_t,
                                            dest_multi_ptr_decorated_t>();
@@ -220,7 +245,7 @@ template <typename T>
 class check_multi_ptr_implicit_convert_for_type {
  public:
   void operator()(const std::string &type_name) {
-    using multi_ptr_common;
+    using namespace multi_ptr_common;
 
     const auto address_spaces_pack = get_address_spaces();
     const auto is_decorated_pack = get_decorated();

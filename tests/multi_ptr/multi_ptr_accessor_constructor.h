@@ -94,14 +94,16 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
     });
   }
   if (!same_type) {
-    FAIL(log, (get_case_description<dimension, Space, Mode,
-                                    sycl::access::target::device>(
-                  "Incorrect type", type_name)));
+    std::string fail_msg = get_case_description<dimension, Space, Mode,
+                                                sycl::access::target::device>(
+        "Incorrect type", type_name);
+    FAIL(log, fail_msg);
   }
   if (!same_value) {
-    FAIL(log, (get_case_description<dimension, Space, Mode,
-                                    sycl::access::target::device>(
-                  "Incorrect value", type_name)));
+    std::string fail_msg = get_case_description<dimension, Space, Mode,
+                                                sycl::access::target::device>(
+        "Incorrect value", type_name);
+    FAIL(log, fail_msg);
   }
 }
 

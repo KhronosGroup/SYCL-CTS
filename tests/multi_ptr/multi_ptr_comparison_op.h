@@ -124,12 +124,13 @@ class run_multi_ptr_comparison_op_test {
 
   using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
 
-  const T m_small_value = 1;
-  const T m_great_value = 2;
+  const T m_small_value = user_def_types::get_init_value_helper<T>(1);
+  const T m_great_value = user_def_types::get_init_value_helper<T>(2);
   // Use an array to be sure that we have two elements that has consecutive
   // memory addresses
   const T m_values_arr[2] = {m_small_value, m_great_value};
-  sycl::range m_r(1);
+  static constexpr size_t m_values_arr_size =
+      sizeof(m_values_arr) / sizeof(*m_values_arr);
 
   template <typename TestActionT, typename ExpectedTestResultT>
   void run_test(sycl::queue &queue, TestActionT test_action,
@@ -138,7 +139,8 @@ class run_multi_ptr_comparison_op_test {
     // result
     ExpectedTestResultT test_results;
     {
-      sycl::buffer<T> array_buffer(m_values_arr, std::size(m_values_arr));
+      sycl::range m_r(1);
+      sycl::buffer<T> array_buffer(m_values_arr, m_values_arr_size);
       sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results, m_r);
       queue.submit([&](sycl::handler &cgh) {
         auto array_acc =
@@ -147,9 +149,31 @@ class run_multi_ptr_comparison_op_test {
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
 
-        cgh.parallel_for(sycl::nd_range(m_r, m_r), [=](sycl::nd_item item) {
-          test_action(array_acc, test_result_acc);
-        });
+        if constexpr (space == sycl::access::address_space::local_space) {
+          sycl::local_accessor<T, 1> acc_for_mptr{
+              sycl::range(m_values_arr_size), cgh};
+          cgh.parallel_for(sycl::nd_range(m_r, m_r),
+                           [=](sycl::nd_item<1> item) {
+                             for (size_t i = 0; i < m_values_arr_size; ++i)
+                               acc_for_mptr[i] = array_acc[i];
+                             test_action(acc_for_mptr, test_result_acc);
+                           });
+        } else if constexpr (space ==
+                             sycl::access::address_space::private_space) {
+          cgh.single_task([=] {
+            T priv_arr[m_values_arr_size];
+            for (size_t i = 0; i < m_values_arr_size; ++i)
+              priv_arr[i] = array_acc[i];
+            sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                            decorated>
+                priv_arr_mptr = sycl::address_space_cast<
+                    sycl::access::address_space::private_space, decorated>(
+                    priv_arr);
+            test_action(priv_arr_mptr, test_result_acc);
+          });
+        } else {
+          cgh.single_task([=] { test_action(array_acc, test_result_acc); });
+        }
       });
     }
     expected_results.verify_results(test_results);
@@ -168,7 +192,7 @@ class run_multi_ptr_comparison_op_test {
                   const std::string &is_decorated_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check multi_ptr operator==(const multi_ptr&, const multi_ptr&)")
             .with("T", type_name)
             .with("address_space", address_space_name)
@@ -200,7 +224,7 @@ class run_multi_ptr_comparison_op_test {
       run_test(queue, run_test_action, expected_results);
     }
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check multi_ptr operator!=(const multi_ptr&, const multi_ptr&)")
             .with("T", type_name)
             .with("address_space", address_space_name)
@@ -231,7 +255,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<(const multi_ptr&, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -262,7 +286,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>(const multi_ptr&, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -294,7 +318,7 @@ class run_multi_ptr_comparison_op_test {
       run_test(queue, run_test_action, expected_results);
     }
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check multi_ptr operator<=(const multi_ptr&, const multi_ptr&)")
             .with("T", type_name)
             .with("address_space", address_space_name)
@@ -330,7 +354,7 @@ class run_multi_ptr_comparison_op_test {
       run_test(queue, run_test_action, expected_results);
     }
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check multi_ptr operator>=(const multi_ptr&, const multi_ptr&)")
             .with("T", type_name)
             .with("address_space", address_space_name)
@@ -366,7 +390,7 @@ class run_multi_ptr_comparison_op_test {
       run_test(queue, run_test_action, expected_results);
     }
     SECTION(
-        section_name(
+        sycl_cts::section_name(
             "Check multi_ptr operator==(const multi_ptr& lhs, std::nullptr_t)")
             .with("T", type_name)
             .with("address_space", address_space_name)
@@ -402,7 +426,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator!=(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -438,7 +462,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -455,22 +479,22 @@ class run_multi_ptr_comparison_op_test {
         auto &test_result = result_acc[0];
 
         test_result.nullptr_nullptr_mptr_result_val =
-            std::less < multi_ptr_t < ()(nullptr, nullptr_mptr.get()) ==
+            std::less<multi_ptr_t>()(nullptr, nullptr_mptr) ==
             nullptr < nullptr_mptr;
         test_result.nullptr_mptr_nullptr_result_val =
-            std::less < multi_ptr_t < ()(nullptr_mptr.get(), nullptr) ==
+            std::less<multi_ptr_t>()(nullptr_mptr, nullptr) ==
             nullptr_mptr < nullptr;
         test_result.nullptr_value_mptr_result_val =
-            std::less < multi_ptr_t < ()(nullptr, value_mptr.get()) ==
+            std::less<multi_ptr_t>()(nullptr, value_mptr) ==
             nullptr < value_mptr;
         test_result.value_mptr_nullptr_result_val =
-            std::less < multi_ptr_t < ()(value_mptr.get(), nullptr) ==
+            std::less<multi_ptr_t>()(value_mptr, nullptr) ==
             value_mptr < nullptr;
       };
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -502,7 +526,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<=(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
@@ -534,7 +558,7 @@ class run_multi_ptr_comparison_op_test {
 
       run_test(queue, run_test_action, expected_results);
     }
-    SECTION(section_name(
+    SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>=(std::nullptr_t, const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
