@@ -35,6 +35,35 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
+  void check_context_after_ctor(sycl::context &context,
+                                sycl::device &expectedDevice,
+                                util::logger &log) {
+    if (context.get_devices().size() != 1) {
+      FAIL(log, "context was not constructed correctly (get_devices size)");
+    }
+
+    if (context.get_devices()[0] != expectedDevice) {
+      FAIL(log, "context was not constructed correctly (device equality)");
+    }
+  }
+
+  void check_context_after_ctor(sycl::context &context,
+                                std::vector<sycl::device> &expectedDevices,
+                                util::logger &log) {
+    if (context.get_devices().size() != expectedDevices.size()) {
+      FAIL(log, "context was not constructed correctly (get_devices size)");
+    }
+
+    for (auto &device : context.get_devices()) {
+      if (std::find(expectedDevices.begin(), expectedDevices.end(), device) ==
+          expectedDevices.end()) {
+        FAIL(log,
+             "context was not constructed correctly (device not in passed "
+             "device list)");
+      }
+    }
+  }
+
   /** execute the test
    */
   void run(util::logger &log) override {
@@ -60,13 +89,7 @@ class TEST_NAME : public util::test_base {
         auto device = util::get_cts_object::device(selector);
         sycl::context context(device);
 
-        if (context.get_devices().size() != 1) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        if (context.get_devices()[0] != device) {
-          FAIL(log, "context was not constructed correctly (device equality)");
-        }
+        check_context_after_ctor(context, device, log);
       }
 
       /** check (device, async_handler) constructor
@@ -77,13 +100,7 @@ class TEST_NAME : public util::test_base {
         auto device = util::get_cts_object::device(selector);
         sycl::context context(device, asyncHandler);
 
-        if (context.get_devices().size() != 1) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        if (context.get_devices()[0] != device) {
-          FAIL(log, "context was not constructed correctly (device equality)");
-        }
+        check_context_after_ctor(context, device, log);
       }
 
       /** check (std::vector<device>) constructor
@@ -94,24 +111,7 @@ class TEST_NAME : public util::test_base {
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList);
 
-        if (context.get_devices().size() != deviceList.size()) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        for (auto &device : context.get_devices()) {
-          if (std::find(deviceList.begin(), deviceList.end(), device) ==
-              deviceList.end()) {
-            FAIL(log,
-                 "context was not constructed correctly (device not in passed "
-                 "device list)");
-          }
-
-          if (std::count(context.get_devices().begin(),
-                         context.get_devices().end(), device) != 1) {
-            FAIL(log,
-                 "context was not constructed correctly (duplicate devices)");
-          }
-        }
+        check_context_after_ctor(context, deviceList, log);
       }
 
       /** check (std::vector<device>, async_handler) constructor
@@ -123,24 +123,7 @@ class TEST_NAME : public util::test_base {
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList, asyncHandler);
 
-        if (context.get_devices().size() != deviceList.size()) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        for (auto &device : context.get_devices()) {
-          if (std::find(deviceList.begin(), deviceList.end(), device) ==
-              deviceList.end()) {
-            FAIL(log,
-                 "context was not constructed correctly (device not in passed "
-                 "device list)");
-          }
-
-          if (std::count(context.get_devices().begin(),
-                         context.get_devices().end(), device) != 1) {
-            FAIL(log,
-                 "context was not constructed correctly (duplicate devices)");
-          }
-        }
+        check_context_after_ctor(context, deviceList, log);
       }
 
       /** check (platform) constructor
@@ -148,27 +131,10 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto platform = util::get_cts_object::platform(selector);
+        auto deviceList = platform.get_devices();
         sycl::context context(platform);
 
-        if (context.get_devices().size() != platform.get_devices().size()) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        for (auto &device : context.get_devices()) {
-          if (std::find(platform.get_devices().begin(),
-                        platform.get_devices().end(),
-                        device) == platform.get_devices().end()) {
-            FAIL(log,
-                 "context was not constructed correctly (device not in "
-                 "platform)");
-          }
-
-          if (std::count(context.get_devices().begin(),
-                         context.get_devices().end(), device) != 1) {
-            FAIL(log,
-                 "context was not constructed correctly (duplicate devices)");
-          }
-        }
+        check_context_after_ctor(context, deviceList, log);
       }
 
       /** check (platform, async_handler) constructor
@@ -177,27 +143,10 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(selector);
+        auto deviceList = platform.get_devices();
         sycl::context context(platform, asyncHandler);
 
-        if (context.get_devices().size() != platform.get_devices().size()) {
-          FAIL(log, "context was not constructed correctly (get_devices size)");
-        }
-
-        for (auto &device : context.get_devices()) {
-          if (std::find(platform.get_devices().begin(),
-                        platform.get_devices().end(),
-                        device) == platform.get_devices().end()) {
-            FAIL(log,
-                 "context was not constructed correctly (device not in "
-                 "platform)");
-          }
-
-          if (std::count(context.get_devices().begin(),
-                         context.get_devices().end(), device) != 1) {
-            FAIL(log,
-                 "context was not constructed correctly (duplicate devices)");
-          }
-        }
+        check_context_after_ctor(context, deviceList, log);
       }
 
       /** check copy constructor
