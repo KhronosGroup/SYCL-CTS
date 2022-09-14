@@ -1,6 +1,6 @@
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp clang++
+    find_program(DPCPP_CXX_EXECUTABLE NAMES icpx clang++ dpcpp
         HINTS ${DPCPP_INSTALL_DIR}
         PATH_SUFFIXES bin)
 else()
@@ -12,7 +12,7 @@ else()
         "${CMAKE_CREATE_CONSOLE_EXE}")
     string(REPLACE "/subsystem:console" "" CMAKE_CXX_CREATE_CONSOLE_EXE
         "${CMAKE_CXX_CREATE_CONSOLE_EXE}")
-    find_program(DPCPP_CXX_EXECUTABLE NAMES dpcpp-cl clang-cl
+    find_program(DPCPP_CXX_EXECUTABLE NAMES icx clang-cl dpcpp-cl
         HINTS ${DPCPP_INSTALL_DIR}
         PATH_SUFFIXES bin)
 endif()
