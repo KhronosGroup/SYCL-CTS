@@ -108,7 +108,7 @@ class TEST_NAME : public util::test_base {
       */
       {
         auto devices = sycl::device::get_devices();
-        if(devices.size() > 1) {
+        if (devices.size() > 1) {
           auto excludedDevice = devices[0];
           negative_selector selector{excludedDevice};
           auto device = util::get_cts_object::device(selector);
