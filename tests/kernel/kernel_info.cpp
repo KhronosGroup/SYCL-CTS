@@ -59,10 +59,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cgh.single_task<k_name>([=]() {});
       });
 
-      /** check types
-       */
-      check_type_existence<sycl::info::kernel>();
-
       /** initialize return values
        */
       cl_uint clUintRet;
@@ -78,11 +74,6 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
       /** check program info parameters
        */
-      if (!queue.is_host()) {
-        clUintRet =
-            kernel.get_info<sycl::info::kernel::reference_count>();
-      }
-      stringRet = kernel.get_info<sycl::info::kernel::function_name>();
       clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
       stringRet = kernel.get_info<sycl::info::kernel::attributes>();
       auto dev = util::get_cts_object::device();
@@ -104,10 +95,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
           kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
               dev);
 
-      TEST_TYPE_TRAIT(kernel, reference_count, kernel);
-      TEST_TYPE_TRAIT(kernel, function_name, kernel);
-      TEST_TYPE_TRAIT(kernel, num_args, kernel);
-      TEST_TYPE_TRAIT(kernel, attributes, kernel);
+      // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      check_get_info_param<sycl::info::kernel::num_args, uint32_t>(log, kernel);
+      check_get_info_param<sycl::info::kernel::attributes, std::string>(log,
+                                                                        kernel);
+#endif
 
       queue.wait_and_throw();
     }
