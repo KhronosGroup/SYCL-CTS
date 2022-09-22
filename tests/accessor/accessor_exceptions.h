@@ -55,20 +55,20 @@ void check_exception(GetAccFunctorT construct_acc) {
             .wait_and_throw();
       };
       CHECK_THROWS_MATCHES(
-          action, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else if constexpr (AccType ==
                          accessor_tests_common::accessor_type::host_accessor) {
       auto action = [&] { construct_acc(data_buf); };
       CHECK_THROWS_MATCHES(
-          action, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     } else if constexpr (AccType ==
                          accessor_tests_common::accessor_type::local_accessor) {
       static_cast<void>(data_buf);
       auto action = [&] { construct_acc(queue); };
       CHECK_THROWS_MATCHES(
-          action, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
     } else {
       static_assert(AccType != AccType, "Unexpected accessor type.");

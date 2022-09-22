@@ -42,33 +42,26 @@ class TEST_NAME : public util::test_base {
     {
       auto context = util::get_cts_object::context();
 
-      /** check get_info for info::context::reference_count
-       */
-      {
-        auto ref_count =
-            context.get_info<sycl::info::context::reference_count>();
-        check_return_type<cl_uint>(
-            log, ref_count,
-            "get_info<sycl::info::context::reference_count>()");
-        TEST_TYPE_TRAIT(context, reference_count, context);
-      }
-
       /** check get_info for info::context::platform
        */
       {
         auto platform = context.get_info<sycl::info::context::platform>();
-        check_return_type<sycl::platform>(
-            log, platform, "get_info<sycl::info::context::platform>()");
-        TEST_TYPE_TRAIT(context, platform, context);
+        // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        check_get_info_param<sycl::info::context::platform, sycl::platform>(
+            log, context);
+#endif
       }
 
       /** check get_info for info::context::devices
        */
       {
         auto devs = context.get_info<sycl::info::context::devices>();
-        check_return_type<std::vector<sycl::device>>(
-            log, devs, "get_info<sycl::info::context::devices>()");
-        TEST_TYPE_TRAIT(context, devices, context);
+        // FIXME: Reenable when struct information descriptors are implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        check_get_info_param<sycl::info::context::devices,
+                             std::vector<sycl::device>>(log, context);
+#endif
       }
     }
   }

@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 
 using namespace sycl_cts;
 
@@ -391,12 +392,12 @@ TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
   CHECK(teh.has("another-error"));
 }
 
-TEST_CASE("event::get_info returns correct command execution status",
-          "[event]") {
+// FIXME: reenable when struct information descriptors are implemented
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("event::get_info returns correct command execution status", "[event]")({
   // First check that return value is of expected type
-  check_get_info_param<sycl::info::event, sycl::info::event_command_status,
-                       sycl::info::event::command_execution_status>(
-      make_device_event());
+  check_get_info_param<sycl::info::event::command_execution_status,
+                       sycl::info::event_command_status>(make_device_event());
 
   SECTION("for host_task event") {
     resolvable_host_event rhe;
@@ -426,7 +427,7 @@ TEST_CASE("event::get_info returns correct command execution status",
         e1.get_info<sycl::info::event::command_execution_status>();
     CHECK(status == sycl::info::event_command_status::complete);
   }
-}
+});
 
 // TODO: Figure out if/how we want to test this.
 // => Must throw exception w/ errc::backend_mismatch if querying a parameter
@@ -435,18 +436,17 @@ TEST_CASE("event::get_info returns correct command execution status",
 TODO_TEST_CASE("event::get_backend_info returns backend-specific information",
                "[event]");
 
-template <sycl::info::event_profiling descriptor>
+template <typename descriptor>
 static void check_get_profiling_info_return_type() {
-  using paramTraitsType =
-      typename sycl::info::param_traits<sycl::info::event_profiling,
-                                        descriptor>::return_type;
-  CHECK(std::is_same<paramTraitsType, uint64_t>::value);
+  CHECK(std::is_same<typename descriptor::return_type, uint64_t>::value);
   CHECK(std::is_same_v<
         decltype(std::declval<sycl::event>().get_profiling_info<descriptor>()),
         uint64_t>);
 }
 
-TEST_CASE("event::get_profiling_info works as expected", "[event]") {
+// FIXME: reenable when struct information descriptors are implemented
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("event::get_profiling_info works as expected", "[event]")({
   // Check that queries return the expected type.
   check_get_profiling_info_return_type<
       sycl::info::event_profiling::command_submit>();
@@ -480,4 +480,4 @@ TEST_CASE("event::get_profiling_info works as expected", "[event]") {
   // perform some basic sanity checks.
   CHECK(submit_time <= start_time);
   CHECK(start_time <= end_time);
-}
+});

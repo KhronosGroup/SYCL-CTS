@@ -59,7 +59,7 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.8.0
           - sycl-impl: dpcpp
-            version: 7ee07ba
+            version: b3cbda5
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -98,7 +98,7 @@ jobs:
           - sycl-impl: computecpp
             version: 2.8.0
           - sycl-impl: dpcpp
-            version: 7ee07ba
+            version: b3cbda5
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:
@@ -149,3 +149,19 @@ jobs:
         with:
           name: build-times-${{ matrix.sycl-impl }}
           path: ${{ env.container-workspace }}/build/build_times.log
+
+  # This job simply summarizes the results of the "compile-cts" matrix build job above.
+  # It can then be used in a branch protection rule instead of having to enumerate all
+  # entries of the matrix manually (and having to update it whenever the matrix changes).
+  cts-compiles-for-all-implementations:
+    needs: [compile-cts]
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Summarize matrix build results
+        run: |
+          if [[ "${{ needs.compile-cts.result }}" == "success" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
