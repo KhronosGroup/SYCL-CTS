@@ -104,10 +104,43 @@ See <<Continuous Integration (CI)>> for more information.
 
 === Continuous Integration (CI)
 
+To ensure that the SYCL CTS remains compatible with all three supported SYCL implementations, a continuous integration (CI) pipeline is run on every pull request.
+To pass the pipeline, the CTS needs to compile for all SYCL implementations.
+If this is not feasible, parts of the CTS may have to be compile-time disabled.
+See <<Disabling Test Categories>> and <<Compile-Time Disabled Test Cases>> for more information.
+
 IMPORTANT: The CTS is currently only _compiled_ during CI, but not _executed_.
 This means that passing CI does not imply anything about the quality of your testing logic.
 
-NOTE: #**TODO:** Explain process for updating CI docker images.#
+Compilation takes place inside of Docker containers, with a separate container used for each SYCL implementation.
+The container images are available at the link:https://hub.docker.com/r/khronosgroup/sycl-cts-ci[Khronos DockerHub repository] and the corresponding Dockerfiles can be found in the link:../docker[`docker`] directory.
+
+TIP: Using the CTS CI container images locally can be a quick and easy way to spin up a working development environment when debugging an issue for a given SYCL implementation.
+
+==== Disabling Test Categories
+
+As the CTS and different SYCL implementations are being independently developed, it is not always possible to guarantee that all tests compile for all SYCL implementations.
+To enable the CI pipeline to discover actual bugs and regressions while ignoring cases that are known to be non-working, the CTS allows to disable the compilation of entire test categories during CMake configuration time.
+
+To disable one or more test categories, simply configure the CTS with the option `-DSYCL_CTS_EXCLUDE_TEST_CATEGORIES=<filter-file>`,
+where `<filter-file>` is a file containing a list of categories to ignore.
+
+A test category filter for each SYCL implementation corresponding to the version currently tested in CI can be found in the link:../ci[`ci`] directory.
+
+TIP: While test category filters provide a convenient way of ensuring the CTS passes CI, it can be a heavy-handed approach in scenarios where only _some_ parts of a category don't compile for a given implementation.
+To address this issue, the CTS offers finer-grained control over which parts of a test are being compiled through <<Compile-Time Disabled Test Cases>>.
+
+==== Updating a SYCL Implementation's Version
+
+The version of each SYCL implementation is specified in the link:../.github/workflows/cts_ci.yml[GitHub workflow definition file].
+
+The GitHub actions workflow needs to interact with DockerHub to push new Docker images for use in subsequent CI runs.
+This requires credentials that, for security reasons, are only available to the workflow when it is run on a branch in the main repository, not from a fork.
+
+IMPORTANT: To update the version of a SYCL implementation, always push the commit to the main CTS repository directly.
+
+TIP: After updating the version of a SYCL implementation, the category filters should be regenerated.
+To do so, simply run `ci/generate_exclude_filter.py`.
 
 == Coding Guidelines
 
@@ -130,6 +163,18 @@ Each file in the SYCL CTS should be prefaced by the Khronos copyright header:
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) <YEAR> The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
 ----
