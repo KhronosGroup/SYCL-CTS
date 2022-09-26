@@ -59,7 +59,7 @@ jobs:
           # - sycl-impl: computecpp
           # version: 2.8.0
           - sycl-impl: dpcpp
-            version: b3cbda5
+            version: c81f957
           - sycl-impl: hipsycl
             version: 3d8b1cd
     steps:
@@ -85,6 +85,27 @@ jobs:
           build-args: |
             IMPL_VERSION=${{ matrix.version }}
 
+  check-clang-format:
+    if: github.event_name == 'pull_request'
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Need to check out base branch as well
+      - name: Run clang-format on changed files
+        run: |
+          set -o errexit -o pipefail -o noclobber -o nounset
+          DIFF=$( git diff -U0 --no-color ${{ github.event.pull_request.base.sha }} | clang-format-diff-14 -p1 )
+          if [ ! -z "$DIFF" ]; then
+            echo 'The following changes are not formatted according to `clang-format`:' >> $GITHUB_STEP_SUMMARY
+            echo '```diff' >> $GITHUB_STEP_SUMMARY
+            echo "$DIFF" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Not all files are formatted according to clang-format. See workflow summary for details."
+            exit 1 # Fail CI run
+          fi
+
   compile-cts:
     needs: build-image-for-sycl-impl
     # Wait for Docker image builds, but run even if they're skipped
@@ -98,7 +119,7 @@ jobs:
           - sycl-impl: computecpp
             version: 2.8.0
           - sycl-impl: dpcpp
-            version: b3cbda5
+            version: c81f957
           - sycl-impl: hipsycl
             version: 3d8b1cd
     env:
