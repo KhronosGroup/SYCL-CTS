@@ -441,7 +441,8 @@ asType check_as_result(sycl::vec<vecType, N> inputVec,
   for (size_t i = 0; i < N; ++i) {
     tmp_ptr[i] = getElement(inputVec, i);
   }
-  asType* exp_ptr = reinterpret_cast<asType*>(tmp_ptr);
+  asType exp_ptr[asN];
+  memcpy(exp_ptr, tmp_ptr, sizeof(exp_ptr));
   for (size_t i = 0; i < asN; ++i) {
     if (exp_ptr[i] != getElement(asVec, i)) {
       return false;
