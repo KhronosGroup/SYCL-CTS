@@ -361,8 +361,7 @@ class TEST_NAME : public util::test_base {
         sycl::queue queueB(std::move(queueA));
 
         if (queueB != queueACopy) {
-          FAIL(log,
-               "queue was not move constructed correctly (equality)");
+          FAIL(log, "queue was not move constructed correctly (equality)");
         }
       }
 
@@ -377,8 +376,7 @@ class TEST_NAME : public util::test_base {
         queueB = std::move(queueA);
 
         if (queueB != queueACopy) {
-          FAIL(log,
-               "queue was not move assigned (=) correctly (equality)");
+          FAIL(log, "queue was not move assigned (=) correctly (equality)");
         }
       }
 

@@ -50,8 +50,9 @@ class negative_selector : public sycl::device_selector {
   virtual int operator()(const sycl::device &device) const {
     return device == excludedDevice ? -1 : 1;
   }
-private:
-  const sycl::device excludedDevice; 
+
+ private:
+  const sycl::device excludedDevice;
 };
 
 /** check that we can use a custom device selector
