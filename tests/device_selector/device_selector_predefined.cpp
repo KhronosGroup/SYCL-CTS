@@ -63,7 +63,8 @@ class TEST_NAME : public util::test_base {
         sycl::default_selector defaultSelector;
         try {
           auto defaultDevice = util::get_cts_object::device(defaultSelector);
-          if (!defaultDevice.is_host()) {
+          if (defaultDevice.get_info<sycl::info::device::device_type>() !=
+              sycl::info::device_type::host) {
             std::string errorMsg =
                 "a SYCL exception occured when default_selector tried to "
                 "select a device when no opencl devices available";
@@ -75,15 +76,6 @@ class TEST_NAME : public util::test_base {
                "default_selector failed to select a host device when no opencl "
                "devices available");
         }
-      }
-
-      /** check host_selector
-      */
-      sycl::host_selector hostSelector;
-      auto hostDevice = util::get_cts_object::device(hostSelector);
-
-      if (!hostDevice.is_host()) {
-        FAIL(log, "host_selector failed to select an appropriate device");
       }
 
       /** check cpu_selector

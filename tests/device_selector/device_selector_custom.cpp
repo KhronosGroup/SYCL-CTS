@@ -44,15 +44,15 @@ class call_selector : public sycl::device_selector {
  */
 class negative_selector : public sycl::device_selector {
  public:
-  negative_selector() {}
+  negative_selector(const sycl::device &excludeDevice)
+      : excludedDevice{excludeDevice} {}
 
   virtual int operator()(const sycl::device &device) const {
-    if (!device.is_host()) {
-      return -1;
-    } else {
-      return 1;
-    }
+    return device == excludedDevice ? -1 : 1;
   }
+
+ private:
+  const sycl::device excludedDevice;
 };
 
 /** check that we can use a custom device selector
@@ -108,12 +108,17 @@ class TEST_NAME : public util::test_base {
       /** check the ability to set negative scores
       */
       {
-        negative_selector selector;
-        auto device = util::get_cts_object::device(selector);
+        auto devices = sycl::device::get_devices();
+        if (devices.size() > 1) {
+          auto excludedDevice = devices[0];
+          negative_selector selector{excludedDevice};
+          auto device = util::get_cts_object::device(selector);
 
-        /* check our device selector was used */
-        if (!device.is_host()) {
-          FAIL(log, "custom selector selected a device with a negative score");
+          /* check our device selector was used */
+          if (device == excludedDevice) {
+            FAIL(log,
+                 "custom selector selected a device with a negative score");
+          }
         }
       }
     }

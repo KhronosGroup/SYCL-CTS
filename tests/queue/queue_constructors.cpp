@@ -88,10 +88,10 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         sycl::queue queue(selector);
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with device_selector was not constructed correctly "
-               "(is_host)");
+               "(device equality)");
         }
       }
 
@@ -102,10 +102,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(selector,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with device_selector and property list was not "
-               "constructed correctly (is_host)");
+               "constructed correctly (device equality)");
         }
 
         if (!queue
@@ -123,10 +123,10 @@ class TEST_NAME : public util::test_base {
         cts_async_handler asyncHandler;
         sycl::queue queue(selector, asyncHandler);
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with device_selector and async_handler was not "
-               "constructed correctly (is_host)");
+               "constructed correctly (device equality)");
         }
       }
 
@@ -138,10 +138,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(selector, asyncHandler,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with device_selector, async_handler and "
-               "property_list was not constructed correctly (is_host)");
+               "property_list was not constructed correctly (device equality)");
         }
 
         if (!queue
@@ -158,10 +158,10 @@ class TEST_NAME : public util::test_base {
         sycl::device device = util::get_cts_object::device();
         sycl::queue queue(device);
 
-        if (queue.is_host() != device.is_host()) {
+        if (queue.get_device() != device) {
           FAIL(log,
                "queue with device was not constructed correctly "
-               "(is_host)");
+               "(device equality)");
         }
       }
 
@@ -172,10 +172,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(device,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != device.is_host()) {
+        if (queue.get_device() != device) {
           FAIL(log,
                "queue with device was not constructed correctly "
-               "(is_host)");
+               "(device equality)");
         }
 
         if (!queue
@@ -193,10 +193,10 @@ class TEST_NAME : public util::test_base {
         cts_async_handler asyncHandler;
         sycl::queue queue(device, asyncHandler);
 
-        if (queue.is_host() != device.is_host()) {
+        if (queue.get_device() != device) {
           FAIL(log,
                "queue with device and async_hander was not constructed "
-               "correctly (is_host)");
+               "correctly (device equality)");
         }
       }
 
@@ -208,10 +208,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(device, asyncHandler,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != device.is_host()) {
+        if (queue.get_device() != device) {
           FAIL(log,
                "queue with device and async_hander was not constructed "
-               "correctly (is_host)");
+               "correctly (device equality)");
         }
 
         if (!queue
@@ -229,10 +229,10 @@ class TEST_NAME : public util::test_base {
         auto context = util::get_cts_object::context(selector);
         sycl::queue queue(context, selector);
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with context and device_selector was not "
-               "constructed correctly (is_host)");
+               "constructed correctly (device equality)");
         }
       }
 
@@ -244,10 +244,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(context, selector,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with context and device_selector was not "
-               "constructed correctly (is_host)");
+               "constructed correctly (device equality)");
         }
 
         if (!queue
@@ -266,10 +266,10 @@ class TEST_NAME : public util::test_base {
         cts_async_handler asyncHandler;
         sycl::queue queue(context, selector, asyncHandler);
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with context, device_selector and async_handler was "
-               "not constructed correctly (is_host)");
+               "not constructed correctly (device equality)");
         }
       }
 
@@ -283,10 +283,10 @@ class TEST_NAME : public util::test_base {
         sycl::queue queue(context, selector, asyncHandler,
                               {sycl::property::queue::enable_profiling()});
 
-        if (queue.is_host() != selector.is_host()) {
+        if (queue.get_device() != sycl::device(selector)) {
           FAIL(log,
                "queue with context, device_selector, async_handler and "
-               "property_list was not constructed correctly (is_host)");
+               "property_list was not constructed correctly (device equality)");
         }
 
         if (!queue
@@ -304,14 +304,15 @@ class TEST_NAME : public util::test_base {
         auto queueA = util::get_cts_object::queue(selector);
         sycl::queue queueB(queueA);
 
-        if (queueA.is_host() != selector.is_host()) {
-          FAIL(log, "queue source after copy construction failed (is_host)");
+        if (queueA.get_device() != sycl::device(selector)) {
+          FAIL(log,
+               "queue source after copy construction failed (device equality)");
         }
 
-        if (queueA.is_host() != queueB.is_host()) {
+        if (queueA != queueB) {
           FAIL(log,
                "queue destination was not copy constructed correctly "
-               "(is_host)");
+               "(equality)");
         }
 
         if (!selector.is_host()) {
@@ -330,14 +331,16 @@ class TEST_NAME : public util::test_base {
         sycl::queue queueB;
         queueB = queueA;
 
-        if (queueA.is_host() != selector.is_host()) {
-          FAIL(log, "queue source after copy assignment (=) failed (is_host)");
+        if (queueA.get_device() != sycl::device(selector)) {
+          FAIL(log,
+               "queue source after copy assignment (=) failed (device "
+               "equality)");
         }
 
-        if (queueA.is_host() != queueB.is_host()) {
+        if (queueA != queueB) {
           FAIL(log,
                "queue destination was not copy assigned (=) correctly "
-               "(is_host)");
+               "(equality)");
         }
 
         if (!selector.is_host()) {
@@ -354,10 +357,11 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
+        auto queueACopy = queueA;
         sycl::queue queueB(std::move(queueA));
 
-        if (queueB.is_host() != selector.is_host()) {
-          FAIL(log, "queue was not move constructed correctly (is_host)");
+        if (queueB != queueACopy) {
+          FAIL(log, "queue was not move constructed correctly (equality)");
         }
       }
 
@@ -366,12 +370,13 @@ class TEST_NAME : public util::test_base {
       {
         cts_selector selector;
         auto queueA = util::get_cts_object::queue(selector);
+        auto queueACopy = queueA;
 
         sycl::queue queueB;
         queueB = std::move(queueA);
 
-        if (queueB.is_host() != selector.is_host()) {
-          FAIL(log, "queue was not move assigned (=) correctly (is_host)");
+        if (queueB != queueACopy) {
+          FAIL(log, "queue was not move assigned (=) correctly (equality)");
         }
       }
 

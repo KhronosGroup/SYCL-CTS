@@ -42,13 +42,6 @@ class TEST_NAME : public util::test_base {
     {
       auto context = util::get_cts_object::context();
 
-      /** check is_host() method
-       */
-      {
-        auto isHost = context.is_host();
-        check_return_type<bool>(log, isHost, "is_host()");
-      }
-
       /** check get_devices() method
        */
       {

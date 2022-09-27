@@ -45,8 +45,8 @@ class TEST_NAME : public util::test_base {
       {
         sycl::device device;
 
-        if (!device.is_host()) {
-          FAIL(log, "device was not constructed correctly (is_host)");
+        if (device == sycl::device(sycl::default_selector_v)) {
+          FAIL(log, "device was not constructed correctly (equality)");
         }
       }
 
@@ -56,8 +56,8 @@ class TEST_NAME : public util::test_base {
         cts_selector selector;
         sycl::device device(selector);
 
-        if (device.is_host() != selector.is_host()) {
-          FAIL(log, "device was not constructed correctly (is_host)");
+        if (device != sycl::device(selector)) {
+          FAIL(log, "device was not constructed correctly (equality)");
         }
       }
 
@@ -68,8 +68,8 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB(deviceA);
 
-        if (deviceA.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not copied correctly (is_host)");
+        if (deviceA != deviceB) {
+          FAIL(log, "device was not copied correctly (equality)");
         }
 
 #ifdef SYCL_BACKEND_OPENCL
@@ -90,8 +90,8 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB = deviceA;
 
-        if (deviceA.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not assigned correctly (is_host)");
+        if (deviceA != deviceB) {
+          FAIL(log, "device was not assigned correctly (equality)");
         }
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
@@ -111,8 +111,8 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB(std::move(deviceA));
 
-        if (selector.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not move constructed correctly (is_host)");
+        if (sycl::device(selector) != deviceB) {
+          FAIL(log, "device was not move constructed correctly (equality)");
         }
       }
 
@@ -123,8 +123,8 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB = std::move(deviceA);
 
-        if (selector.is_host() != deviceB.is_host()) {
-          FAIL(log, "device was not move assigned correctly (is_host)");
+        if (sycl::device(selector) != deviceB) {
+          FAIL(log, "device was not move assigned correctly (equality)");
         }
       }
 
