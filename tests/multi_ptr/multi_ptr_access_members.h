@@ -130,6 +130,7 @@ class run_access_members_tests {
           sycl::local_accessor<T> acc_for_multi_ptr{sycl::range(1), cgh};
           cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
             value_operations::assign(acc_for_multi_ptr, value);
+            sycl::group_barrier(item.get_group());
             test_device_code(acc_for_multi_ptr);
           });
         } else if constexpr (space ==

@@ -74,6 +74,8 @@ class run_explicit_convert_tests {
                           sycl::access::address_space::local_space) {
               auto &ref = local_acc[0];
               value_operations::assign(ref, expected_val);
+              sycl::group_barrier(item.get_group());
+
               input_multi_ptr_t<T> mptr_in(local_acc);
 
               auto mptr_out =

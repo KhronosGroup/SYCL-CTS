@@ -117,6 +117,7 @@ class run_implicit_convert_tests {
           sycl::local_accessor<T> expected_val_acc{sycl::range(1), cgh};
           cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
             value_operations::assign(expected_val_acc, value);
+            sycl::group_barrier(item.get_group());
             test_device_code(expected_val_acc);
           });
         } else if constexpr (address_space ==

@@ -52,9 +52,6 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   using other_decorated_ptr_t =
       sycl::multi_ptr<T, Space, sycl::access::decorated::yes>;
 
-  // Kernel name
-  using k_name = multi_ptr_kernel_name<T, Space, Decorated>;
-
   // In the test, there are 5 verifies for type correctness and only 4 verifies
   // for value correctness because we can't predict what value will contain
   // multi_ptr created with the default constructor
@@ -133,6 +130,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   };
 
   {
+    sycl::range r(1);
     sycl::range<1> types_range(types_size);
     sycl::range<1> values_range(values_size);
     sycl::buffer<T, 1> ref_buf(&ref_value, sycl::range<1>{1});
@@ -148,13 +146,14 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
       if constexpr (Space == sycl::access::address_space::local_space) {
         sycl::local_accessor<T, 1> loc_acc(sycl::range<1>(1), cgh);
-        cgh.parallel_for<k_name>(sycl::range<1>(1), [=](sycl::item<1>) {
-          loc_acc[0] = ref_acc[0];
+        cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+          value_operations::assign(loc_acc[0], ref_acc[0]);
+          sycl::group_barrier(item.get_group());
           run_and_check(loc_acc, same_type_acc, same_value_acc);
         });
       } else if constexpr (Space ==
                            sycl::access::address_space::private_space) {
-        cgh.parallel_for<k_name>(sycl::range<1>(1), [=](sycl::item<1>) {
+        cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
           T priv_val = ref_acc[0];
           sycl::multi_ptr<T, sycl::access::address_space::private_space,
                           Decorated>
@@ -164,7 +163,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
           run_and_check(priv_val_mptr, same_type_acc, same_value_acc);
         });
       } else {
-        cgh.single_task<k_name>(
+        cgh.single_task(
             [=] { run_and_check(ref_acc, same_type_acc, same_value_acc); });
       }
     });

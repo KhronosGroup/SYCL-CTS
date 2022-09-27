@@ -79,6 +79,7 @@ class run_convert_assignment_operators_tests {
                                 sycl::access::address_space::local_space) {
                     auto &ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
+                    sycl::group_barrier(item.get_group());
 
                     const src_multi_ptr_t mptr_in(local_acc);
                     dst_multi_ptr_t mptr_out;
@@ -147,6 +148,7 @@ class run_convert_assignment_operators_tests {
                                 sycl::access::address_space::local_space) {
                     auto &ref = local_acc[0];
                     value_operations::assign(ref, expected_val);
+                    sycl::group_barrier(item.get_group());
 
                     const src_multi_ptr_t mptr_in(local_acc);
                     dst_multi_ptr_t mptr_out;

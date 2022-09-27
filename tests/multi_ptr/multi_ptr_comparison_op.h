@@ -152,18 +152,19 @@ class run_multi_ptr_comparison_op_test {
         if constexpr (space == sycl::access::address_space::local_space) {
           sycl::local_accessor<T, 1> acc_for_mptr{
               sycl::range(m_values_arr_size), cgh};
-          cgh.parallel_for(sycl::nd_range(m_r, m_r),
-                           [=](sycl::nd_item<1> item) {
-                             for (size_t i = 0; i < m_values_arr_size; ++i)
-                               acc_for_mptr[i] = array_acc[i];
-                             test_action(acc_for_mptr, test_result_acc);
-                           });
+          cgh.parallel_for(
+              sycl::nd_range(m_r, m_r), [=](sycl::nd_item<1> item) {
+                for (size_t i = 0; i < m_values_arr_size; ++i)
+                  value_operations::assign(acc_for_mptr[i], array_acc[i]);
+                sycl::group_barrier(item.get_group());
+                test_action(acc_for_mptr, test_result_acc);
+              });
         } else if constexpr (space ==
                              sycl::access::address_space::private_space) {
           cgh.single_task([=] {
             T priv_arr[m_values_arr_size];
             for (size_t i = 0; i < m_values_arr_size; ++i)
-              priv_arr[i] = array_acc[i];
+              value_operations::assign(priv_arr[i], array_acc[i]);
             sycl::multi_ptr<T, sycl::access::address_space::private_space,
                             decorated>
                 priv_arr_mptr = sycl::address_space_cast<
