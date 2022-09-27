@@ -99,17 +99,17 @@ struct run_test_with_chosen_data_type {
   void operator()(sycl_cts::util::logger &log, const std::string &type_name) {
     verify_members<VariableT, sycl::access::address_space::global_space,
                    sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT, sycl::access::address_space::local_space,
-                   sycl::access::decorated::no>(log, type_name);
-    verify_members<VariableT, sycl::access::address_space::private_space,
-                   sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT, sycl::access::address_space::generic_space,
-                   sycl::access::decorated::no>(log, type_name);
     verify_members<VariableT, sycl::access::address_space::global_space,
+                   sycl::access::decorated::no>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::local_space,
                    sycl::access::decorated::yes>(log, type_name);
     verify_members<VariableT, sycl::access::address_space::local_space,
                    sycl::access::decorated::no>(log, type_name);
     verify_members<VariableT, sycl::access::address_space::private_space,
+                   sycl::access::decorated::yes>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::private_space,
+                   sycl::access::decorated::no>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::generic_space,
                    sycl::access::decorated::yes>(log, type_name);
     verify_members<VariableT, sycl::access::address_space::generic_space,
                    sycl::access::decorated::no>(log, type_name);
