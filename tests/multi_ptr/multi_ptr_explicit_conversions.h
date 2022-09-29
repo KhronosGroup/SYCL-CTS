@@ -46,7 +46,7 @@ class run_explicit_convert_tests {
    * @param r sycl::range that will be used in parallel_for
    */
   template <typename T1>
-  void run_test(sycl::queue &queue, sycl::range &r) {
+  void run_test(sycl::queue &queue, sycl::range<1> &r) {
     bool res = false;
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     {
@@ -60,9 +60,9 @@ class run_explicit_convert_tests {
           auto val_acc =
               val_buffer.template get_access<sycl::access_mode::read>(cgh);
           cgh.single_task([=] {
-            input_multi_ptr_t<T1> mptr_in(val_acc);
+            input_multi_ptr_t<T> mptr_in(val_acc);
             auto mptr_out =
-                sycl::multi_ptr<T, target_space, decorated>(mptr_in);
+                sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
 
             // Check that second mptr has the same value as first mptr
             res_acc[0] = *(mptr_out.get_raw()) == val_acc[0];
@@ -72,23 +72,25 @@ class run_explicit_convert_tests {
           cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
             if constexpr (target_space ==
                           sycl::access::address_space::local_space) {
-              auto ref = local_acc[0];
+              auto &ref = local_acc[0];
               value_operations::assign(ref, expected_val);
-              input_multi_ptr_t<T1> mptr_in(local_acc);
+              sycl::group_barrier(item.get_group());
+
+              input_multi_ptr_t<T> mptr_in(local_acc);
 
               auto mptr_out =
-                  sycl::multi_ptr<T, target_space, decorated>(mptr_in);
+                  sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
               res_acc[0] = (*(mptr_out.get()) == ref);
             } else {
               T private_val =
                   user_def_types::get_init_value_helper<T>(expected_val);
 
-              input_multi_ptr_t<T1> mptr_in = sycl::address_space_cast<
+              input_multi_ptr_t<T> mptr_in = sycl::address_space_cast<
                   sycl::access::address_space::generic_space, decorated, T>(
                   &private_val);
 
               auto mptr_out =
-                  sycl::multi_ptr<T, target_space, decorated>(mptr_in);
+                  sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
               res_acc[0] = *(mptr_out.get_raw()) == private_val;
             }
           });
@@ -113,17 +115,17 @@ class run_explicit_convert_tests {
     auto queue = sycl_cts::util::get_cts_object::queue();
     auto r = sycl::range(1);
 
-    SECTION(
-        section_name("Check multi_ptr<T, target_address_space, IsDecorated>()")
-            .with("T", type_name)
-            .with("target address_space", target_address_space_name)
-            .with("decorated", is_decorated_name)
-            .create()) {
+    SECTION(sycl_cts::section_name(
+                "Check multi_ptr<T, target_address_space, IsDecorated>()")
+                .with("T", type_name)
+                .with("target address_space", target_address_space_name)
+                .with("decorated", is_decorated_name)
+                .create()) {
       run_test<T>(queue, r);
     }
 
-    SECTION(section_name("Check multi_ptr<const T, target_address_space, "
-                         "IsDecorated>() const")
+    SECTION(sycl_cts::section_name("Check multi_ptr<const T, "
+                                   "target_address_space, IsDecorated>() const")
                 .with("T", type_name)
                 .with("target address_space", target_address_space_name)
                 .with("decorated", is_decorated_name)
@@ -134,8 +136,8 @@ class run_explicit_convert_tests {
 };
 
 template <typename T>
-bool check_pointer_aliases(const std::string &type_name) {
-  SECTION(section_name("Check explicit pointer aliases")
+void check_pointer_aliases(const std::string &type_name) {
+  SECTION(sycl_cts::section_name("Check explicit pointer aliases")
               .with("T", type_name)
               .create()) {
     {

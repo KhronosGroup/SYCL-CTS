@@ -27,7 +27,7 @@ class run_local_accessor_cnstr_tests {
                   const std::string &address_space_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
     auto r = sycl_cts::util::get_cts_object::range<dims>::get(1, 1, 1);
-    SECTION(section_name("Check multi_ptr(local_accessor<T, dims>)")
+    SECTION(sycl_cts::section_name("Check multi_ptr(local_accessor<T, dims>)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("dimension", dims)
@@ -41,7 +41,7 @@ class run_local_accessor_cnstr_tests {
           sycl::local_accessor<T, dims> acc(r, cgh);
           cgh.parallel_for(sycl::nd_range<dims>(r, r),
                            [=](sycl::nd_item<dims> item) {
-                             auto ref = acc[sycl::id<dims>()];
+                             auto &ref = acc[sycl::id<dims>()];
                              value_operations::assign(ref, expected_val);
                              // Creating multi_ptr object with local_accessor
                              // constructor

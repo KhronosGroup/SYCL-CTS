@@ -67,8 +67,10 @@ class run_common_assign_tests {
           sycl::local_accessor<T> local_acc(r, cgh);
           cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
             if constexpr (space == sycl::access::address_space::local_space) {
-              auto ref = local_acc[0];
+              auto &ref = local_acc[0];
               value_operations::assign(ref, expected_val);
+              sycl::group_barrier(item.get_group());
+
               const multi_ptr_t const_mptr_in(local_acc);
               multi_ptr_t mptr_in(local_acc);
 
@@ -88,7 +90,7 @@ class run_common_assign_tests {
         }
       });
     }
-    SECTION(section_name("Check &operator=(const multi_ptr&)")
+    SECTION(sycl_cts::section_name("Check &operator=(const multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -96,7 +98,7 @@ class run_common_assign_tests {
       CHECK(res[0]);
     }
 
-    SECTION(section_name("Check &operator=(multi_ptr&&)")
+    SECTION(sycl_cts::section_name("Check &operator=(multi_ptr&&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -104,7 +106,7 @@ class run_common_assign_tests {
       CHECK(res[1]);
     }
 
-    SECTION(section_name("Check &operator=(std::nullptr_t)")
+    SECTION(sycl_cts::section_name("Check &operator=(std::nullptr_t)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)

@@ -14,46 +14,6 @@
 
 namespace multi_ptr_members {
 
-/** @brief Dummy struct with overloaded call operator that will be called in
- *         "for_all_types" function
- *  @tparam VariableT Variable type for type coverage
- */
-template <typename VariableT>
-struct run_test_with_chosen_data_type {
-  /** @brief Run verification's function with provided variable type and
-   *         sycl::access::address_space and sycl::access::decorated
-   *         enumerations fields
-   *  @param log sycl_cts::util::logger class object
-   *  @param type_name a string representing the currently tested type
-   */
-  void operator()(sycl_cts::util::logger &log, const std::string &type_name) {
-    verify_members<VariableT,
-                   sycl::access::address_space::global_space,
-                   sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::local_space,
-                   sycl::access::decorated::no>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::private_space,
-                   sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::generic_space,
-                   sycl::access::decorated::no>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::global_space,
-                   sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::local_space,
-                   sycl::access::decorated::no>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::private_space,
-                   sycl::access::decorated::yes>(log, type_name);
-    verify_members<VariableT,
-                   sycl::access::address_space::generic_space,
-                   sycl::access::decorated::no>(log, type_name);
-  }
-};
-
 /** @brief Verify that sycl::multi_ptr members are equal to:
  *          1) sycl::multi_ptr::value_type is same as provided element type
  *          2) sycl::multi_ptr::iterator_category is same as
@@ -87,17 +47,18 @@ static void verify_members(sycl_cts::util::logger &log,
   std::string log_suffix{" with address type: " + address_type_str +
                          ", with decorated type: " + decorated_str +
                          ", with tested type: " + type_name};
-  if (!std::is_same_v<decltype(multi_ptr)::value_type, VariableT>) {
+  if (!std::is_same_v<typename decltype(multi_ptr)::value_type, VariableT>) {
     FAIL(log,
          "sycl::multi_ptr::value_type doesn't equal to provided value type" +
              log_suffix);
   }
-  if (!std::is_same_v<decltype(multi_ptr)::difference_type, std::ptrdiff_t>) {
+  if (!std::is_same_v<typename decltype(multi_ptr)::difference_type,
+                      std::ptrdiff_t>) {
     FAIL(log,
          "sycl::multi_ptr::difference_type doesn't equal to std::ptrdiff_t" +
              log_suffix);
   }
-  if (!std::is_same_v<decltype(multi_ptr)::iterator_category,
+  if (!std::is_same_v<typename decltype(multi_ptr)::iterator_category,
                       std::random_access_iterator_tag>) {
     FAIL(log,
          "sycl::multi_ptr::iterator_category doesn't equal to "
@@ -106,14 +67,14 @@ static void verify_members(sycl_cts::util::logger &log,
   }
 
   if constexpr (Decorated == sycl::access::decorated::no) {
-    if (!std::is_same_v<decltype(multi_ptr)::pointer,
+    if (!std::is_same_v<typename decltype(multi_ptr)::pointer,
                         std::add_pointer_t<VariableT>>) {
       FAIL(log,
            "sycl::multi_ptr::pointer doesen't equal to "
            "std::add_pointer_t<value_type>" +
                log_suffix);
     }
-    if (!std::is_same_v<decltype(multi_ptr)::reference,
+    if (!std::is_same_v<typename decltype(multi_ptr)::reference,
                         std::add_lvalue_reference_t<VariableT>>) {
       FAIL(log,
            "sycl::multi_ptr::reference doesn't equal to "
@@ -122,6 +83,38 @@ static void verify_members(sycl_cts::util::logger &log,
     }
   }
 }
+
+/** @brief Dummy struct with overloaded call operator that will be called in
+ *         "for_all_types" function
+ *  @tparam VariableT Variable type for type coverage
+ */
+template <typename VariableT>
+struct run_test_with_chosen_data_type {
+  /** @brief Run verification's function with provided variable type and
+   *         sycl::access::address_space and sycl::access::decorated
+   *         enumerations fields
+   *  @param log sycl_cts::util::logger class object
+   *  @param type_name a string representing the currently tested type
+   */
+  void operator()(sycl_cts::util::logger &log, const std::string &type_name) {
+    verify_members<VariableT, sycl::access::address_space::global_space,
+                   sycl::access::decorated::yes>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::global_space,
+                   sycl::access::decorated::no>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::local_space,
+                   sycl::access::decorated::yes>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::local_space,
+                   sycl::access::decorated::no>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::private_space,
+                   sycl::access::decorated::yes>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::private_space,
+                   sycl::access::decorated::no>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::generic_space,
+                   sycl::access::decorated::yes>(log, type_name);
+    verify_members<VariableT, sycl::access::address_space::generic_space,
+                   sycl::access::decorated::no>(log, type_name);
+  }
+};
 
 }  // namespace multi_ptr_members
 

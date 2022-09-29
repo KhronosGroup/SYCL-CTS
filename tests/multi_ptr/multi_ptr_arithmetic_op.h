@@ -51,12 +51,10 @@ class run_multi_ptr_arithmetic_op_test {
   static constexpr sycl::access::decorated decorated = IsDecoratedT::value;
   using multi_ptr_t = sycl::multi_ptr<T, space, decorated>;
 
-  constexpr size_t m_array_size = 10;
+  static constexpr size_t m_array_size = 10;
   // Array that will be used in multi_ptr
   T m_arr[m_array_size];
-  size_t m_middle_elem_index = m_array_size / 2;
-
-  sycl::range m_r(1);
+  static constexpr size_t m_middle_elem_index = m_array_size / 2;
 
   template <typename TestActionT>
   void run_test(sycl::queue &queue, TestActionT test_action,
@@ -66,23 +64,43 @@ class run_multi_ptr_arithmetic_op_test {
     detail::test_results<T> test_results;
 
     {
+      sycl::range m_r(1);
       sycl::buffer<detail::test_results<T>> test_result_buffer(&test_results,
                                                                m_r);
 
-      sycl::buffer<T> buffer_for_mptr(m_arr, sycl::range(m_array_size));
+      sycl::buffer<T> arr_buffer(m_arr, sycl::range(m_array_size));
       queue.submit([&](sycl::handler &cgh) {
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
-        auto acc_for_mptr =
-            buffer_for_mptr.template get_access<sycl::access_mode::read>(cgh);
+        auto arr_acc =
+            arr_buffer.template get_access<sycl::access_mode::read>(cgh);
 
-        if constexpr (space == sycl::access::address_space::global_space) {
-          cgh.single_task([=] { test_action(acc_for_mptr, test_result_acc); });
-        } else {
-          cgh.parallel_for(sycl::nd_range(m_r, m_r), [=](sycl::nd_item item) {
-            test_action(acc_for_mptr, test_result_acc);
+        if constexpr (space == sycl::access::address_space::local_space) {
+          sycl::local_accessor<T, 1> acc_for_mptr{sycl::range(m_array_size),
+                                                  cgh};
+          cgh.parallel_for(
+              sycl::nd_range(m_r, m_r), [=](sycl::nd_item<1> item) {
+                for (size_t i = 0; i < m_array_size; ++i)
+                  value_operations::assign(acc_for_mptr[i], arr_acc[i]);
+                sycl::group_barrier(item.get_group());
+                test_action(acc_for_mptr, test_result_acc);
+              });
+        } else if constexpr (space ==
+                             sycl::access::address_space::private_space) {
+          cgh.single_task([=] {
+            T priv_arr[m_array_size];
+            for (size_t i = 0; i < m_array_size; ++i)
+              value_operations::assign(priv_arr[i], arr_acc[i]);
+            sycl::multi_ptr<T, sycl::access::address_space::private_space,
+                            decorated>
+                priv_arr_mptr = sycl::address_space_cast<
+                    sycl::access::address_space::private_space, decorated>(
+                    priv_arr);
+            test_action(priv_arr_mptr, test_result_acc);
           });
+        } else {
+          cgh.single_task([=] { test_action(arr_acc, test_result_acc); });
         }
       });
     }
@@ -116,7 +134,7 @@ class run_multi_ptr_arithmetic_op_test {
       m_arr[i] = i;
     }
 
-    SECTION(section_name("Check multi_ptr operator++(multi_ptr& mp)")
+    SECTION(sycl_cts::section_name("Check multi_ptr operator++(multi_ptr& mp)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -141,11 +159,12 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(section_name("Check multi_ptr operator++(multi_ptr&, int)")
-                .with("T", type_name)
-                .with("address_space", address_space_name)
-                .with("decorated", is_decorated_name)
-                .create()) {
+    SECTION(
+        sycl_cts::section_name("Check multi_ptr operator++(multi_ptr&, int)")
+            .with("T", type_name)
+            .with("address_space", address_space_name)
+            .with("decorated", is_decorated_name)
+            .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::test_results<T> verification_points;
@@ -165,7 +184,7 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(section_name("Check multi_ptr operator--(multi_ptr&)")
+    SECTION(sycl_cts::section_name("Check multi_ptr operator--(multi_ptr&)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -194,11 +213,12 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(section_name("Check multi_ptr operator--(multi_ptr&, int)")
-                .with("T", type_name)
-                .with("address_space", address_space_name)
-                .with("decorated", is_decorated_name)
-                .create()) {
+    SECTION(
+        sycl_cts::section_name("Check multi_ptr operator--(multi_ptr&, int)")
+            .with("T", type_name)
+            .with("address_space", address_space_name)
+            .with("decorated", is_decorated_name)
+            .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::test_results<T> verification_points;
@@ -224,9 +244,10 @@ class run_multi_ptr_arithmetic_op_test {
       run_test(queue, run_test_action, verification_points);
     }
 
-    using diff_t = multi_ptr_t::difference_type;
+    using diff_t = typename multi_ptr_t::difference_type;
     diff_t shift = m_array_size / 3;
-    SECTION(section_name("Check multi_ptr operator+=(multi_ptr&, diff_type)")
+    SECTION(sycl_cts::section_name(
+                "Check multi_ptr operator+=(multi_ptr&, diff_type)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -248,7 +269,8 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(section_name("Check multi_ptr operator-=(multi_ptr&, diff_type)")
+    SECTION(sycl_cts::section_name(
+                "Check multi_ptr operator-=(multi_ptr&, diff_type)")
                 .with("T", type_name)
                 .with("address_space", address_space_name)
                 .with("decorated", is_decorated_name)
@@ -274,12 +296,12 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(
-        section_name("Check multi_ptr operator+(const multi_ptr&, diff_type)")
-            .with("T", type_name)
-            .with("address_space", address_space_name)
-            .with("decorated", is_decorated_name)
-            .create()) {
+    SECTION(sycl_cts::section_name(
+                "Check multi_ptr operator+(const multi_ptr&, diff_type)")
+                .with("T", type_name)
+                .with("address_space", address_space_name)
+                .with("decorated", is_decorated_name)
+                .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::test_results<T> verification_points;
@@ -297,12 +319,12 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(
-        section_name("Check multi_ptr operator-(const multi_ptr&, diff_type)")
-            .with("T", type_name)
-            .with("address_space", address_space_name)
-            .with("decorated", is_decorated_name)
-            .create()) {
+    SECTION(sycl_cts::section_name(
+                "Check multi_ptr operator-(const multi_ptr&, diff_type)")
+                .with("T", type_name)
+                .with("address_space", address_space_name)
+                .with("decorated", is_decorated_name)
+                .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::test_results<T> verification_points;
@@ -325,11 +347,12 @@ class run_multi_ptr_arithmetic_op_test {
       };
       run_test(queue, run_test_action, verification_points);
     }
-    SECTION(section_name("Check multi_ptr operator*(const multi_ptr&)")
-                .with("T", type_name)
-                .with("address_space", address_space_name)
-                .with("decorated", is_decorated_name)
-                .create()) {
+    SECTION(
+        sycl_cts::section_name("Check multi_ptr operator*(const multi_ptr&)")
+            .with("T", type_name)
+            .with("address_space", address_space_name)
+            .with("decorated", is_decorated_name)
+            .create()) {
       // Variable that contains all variables that will be used to verify test
       // result
       detail::test_results<T> verification_points;
