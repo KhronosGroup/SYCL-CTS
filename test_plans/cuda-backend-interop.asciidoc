@@ -39,6 +39,7 @@ the following types:
 * `long long int`
 * `unsigned long long int`
 * `float`
+* `double`
 * `bool`
 * `std::byte`
 * `std::int8_t`
@@ -53,7 +54,7 @@ the following types:
 * `vec<T, int dim>` where `T` is each of the scalar types listed above except
    for `bool` and `dim` is `1`, `2`, `3`, `4`, `8`, and `16`.
 * `marray<T, size_t dim>` where `T` is each of the scalar types listed above
-  and `dim` is `2`, `5`, and `10`.
+  and `dim` is `1`, `2`, `5`, and `10`.
 * A user-defined struct with several scalar member variables, no constructor,
   destructor or member functions.
 * A user-defined class with several scalar member variables and a user-defined
