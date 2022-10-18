@@ -45,7 +45,7 @@ class TEST_NAME : public util::test_base {
       {
         sycl::device device;
 
-        if (device == sycl::device(sycl::default_selector_v)) {
+        if (device != sycl::device(sycl::default_selector_v)) {
           FAIL(log, "device was not constructed correctly (equality)");
         }
       }
