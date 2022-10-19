@@ -208,9 +208,6 @@ class legacy_random_access_iterator_requirement {
             }
           }
         }
-        m_test_error_messages.add_error(
-            "Iterator must have operator+() with "
-            "iterator_traits::difference_type operator.");
       }
     }
 
