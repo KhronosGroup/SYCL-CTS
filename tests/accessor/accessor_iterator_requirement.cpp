@@ -63,7 +63,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
-                dummy_acc_it, size_of_dummy);
+                dummy_acc_it);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
             if (!verification_result.second[i].empty()) {
@@ -105,7 +105,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
-                dummy_acc_it, size_of_dummy);
+                dummy_acc_it);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
             if (!verification_result.second[i].empty()) {
@@ -139,7 +139,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     auto dummy_acc_it = dummy_acc.begin();
     auto verification_result =
         legacy_random_access_iterator_requirement{}.is_satisfied_for(
-            dummy_acc_it, size_of_dummy);
+            dummy_acc_it);
     if (!verification_result.first) {
       print_errors(verification_result.second);
     }

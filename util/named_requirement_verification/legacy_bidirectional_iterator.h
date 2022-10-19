@@ -13,8 +13,6 @@
 #include "common.h"
 #include "legacy_forward_iterator.h"
 
-#include "catch2/catch_test_macros.hpp"  // for WARN macro
-
 namespace named_requirement_verification {
 
 /**
@@ -46,10 +44,10 @@ class legacy_bidirectional_iterator_requirement {
    */
   template <typename It>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for(It valid_iterator, const size_t container_size) {
+  is_satisfied_for(It valid_iterator) {
     auto legacy_forward_iterator_res =
         legacy_forward_iterator_requirement{}.is_satisfied_for<It>(
-            valid_iterator, container_size);
+            valid_iterator);
 
     if (!legacy_forward_iterator_res.first) {
       m_test_error_messages.add_errors(legacy_forward_iterator_res.second);
@@ -83,37 +81,31 @@ class legacy_bidirectional_iterator_requirement {
           "Iterator doesn't have implemented operator--(int)");
     }
 
-    if (container_size == 0) {
-      WARN(
-          "Some of the test requires container size more than 0. These tests "
-          "have been skipped.");
-    } else {
-      if constexpr (can_pre_decrement && can_pre_increment &&
-                    is_dereferenceable) {
-        {
-          It a = valid_iterator;
-          It saved_a = a;
-          ++a;
-          --a;
-          if (a != saved_a) {
-            m_test_error_messages.add_error(
-                "Iterator expression --(++i) must be equal to i.");
-          }
+    if constexpr (can_pre_decrement && can_pre_increment &&
+                  is_dereferenceable) {
+      {
+        It a = valid_iterator;
+        It saved_a = a;
+        ++a;
+        --a;
+        if (a != saved_a) {
+          m_test_error_messages.add_error(
+              "Iterator expression --(++i) must be equal to i.");
         }
-        {
-          It a = valid_iterator;
-          It b = a;
-          ++a;
-          ++b;
-          if (--a == --b) {
-            if (a != b) {
-              m_test_error_messages.add_error(
-                  "If --a == --b then a == b must be true.");
-            }
-          } else {
+      }
+      {
+        It a = valid_iterator;
+        It b = a;
+        ++a;
+        ++b;
+        if (--a == --b) {
+          if (a != b) {
             m_test_error_messages.add_error(
-                "--a must be equal to --b, if they are copy of same object.");
+                "If --a == --b then a == b must be true.");
           }
+        } else {
+          m_test_error_messages.add_error(
+              "--a must be equal to --b, if they are copy of same object.");
         }
       }
     }

@@ -14,8 +14,6 @@
 #include "legacy_input_iterator.h"
 #include "legacy_output_iterator.h"
 
-#include "catch2/catch_test_macros.hpp"  // for WARN macro
-
 namespace named_requirement_verification {
 
 /**
@@ -48,7 +46,7 @@ class legacy_forward_iterator_requirement {
    */
   template <typename It>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for(It valid_iterator, const size_t container_size) {
+  is_satisfied_for(It valid_iterator) {
     auto legacy_input_iterator_res =
         legacy_input_iterator_requirement{}.is_satisfied_for<It>(
             valid_iterator);
@@ -115,51 +113,45 @@ class legacy_forward_iterator_requirement {
       }
     }
 
-    if (container_size == 0) {
-      WARN(
-          "Some of the test requires container size more than 0. These tests "
-          "have been skipped.");
-    } else {
-      // Verify multipass guarantee
-      if constexpr (has_equal_operator && is_dereferenceable &&
-                    can_pre_increment) {
-        {
-          It a = valid_iterator;
-          It b = valid_iterator;
-          if (*a != *b) {
-            m_test_error_messages.add_error(
-                "If a and b compare equal (a == b) then *a and *b "
-                "are references bound to the same object.");
-          }
-
-          if (a != b) {
-            m_test_error_messages.add_error(
-                "If *a and *b refer to the same object, then a == b equals "
-                "true.");
-          }
-
-          if (++a != ++b) {
-            m_test_error_messages.add_error(
-                "If a == b equals true then ++a == ++b also equals true.");
-          }
+    // Verify multipass guarantee
+    if constexpr (has_equal_operator && is_dereferenceable &&
+                  can_pre_increment) {
+      {
+        It a = valid_iterator;
+        It b = valid_iterator;
+        if (*a != *b) {
+          m_test_error_messages.add_error(
+              "If a and b compare equal (a == b) then *a and *b "
+              "are references bound to the same object.");
         }
 
-        if constexpr (has_value_type_member) {
-          // Allows us to compare values without compilation error
-          constexpr bool is_value_type_comparable =
-              type_traits::has_comparison::is_equal_v<
-                  typename it_traits::value_type>;
+        if (a != b) {
+          m_test_error_messages.add_error(
+              "If *a and *b refer to the same object, then a == b equals "
+              "true.");
+        }
 
-          if constexpr (is_dereferenceable && can_pre_increment &&
-                        is_value_type_comparable) {
-            const auto zero_pos_value = *valid_iterator;
-            It zero_pos_it = valid_iterator;
-            ++zero_pos_it;
-            if (zero_pos_value != *valid_iterator) {
-              m_test_error_messages.add_error(
-                  "Incrementing copy of iterator instance must not affect "
-                  "on the value read from original object.");
-            }
+        if (++a != ++b) {
+          m_test_error_messages.add_error(
+              "If a == b equals true then ++a == ++b also equals true.");
+        }
+      }
+
+      if constexpr (has_value_type_member) {
+        // Allows us to compare values without compilation error
+        constexpr bool is_value_type_comparable =
+            type_traits::has_comparison::is_equal_v<
+                typename it_traits::value_type>;
+
+        if constexpr (is_dereferenceable && can_pre_increment &&
+                      is_value_type_comparable) {
+          const auto zero_pos_value = *valid_iterator;
+          It zero_pos_it = valid_iterator;
+          ++zero_pos_it;
+          if (zero_pos_value != *valid_iterator) {
+            m_test_error_messages.add_error(
+                "Incrementing copy of iterator instance must not affect "
+                "on the value read from original object.");
           }
         }
       }
