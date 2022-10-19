@@ -24,7 +24,7 @@ using namespace accessor_tests_common;
 namespace local_accessor_access_among_work_items_core {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("sycl::host_accessor properties. core types", "[accessor]")({
+("sycl::local_accessor access among work items. core types", "[accessor]")({
   const auto types = get_conformance_type_pack();
 
   for_all_types_vectors_marray<

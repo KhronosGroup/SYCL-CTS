@@ -24,7 +24,7 @@ using namespace accessor_tests_common;
 namespace local_accessor_access_among_work_items_fp64 {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Generic sycl::accessor constructor exceptions. fp64 type", "[accessor]")({
+("sycl::local_accessor access among work items. fp64 type", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
