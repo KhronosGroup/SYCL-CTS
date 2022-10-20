@@ -24,9 +24,9 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::experimental;
 
 template <typename T, test_names name>
 struct device_global_kernel_name;
@@ -71,17 +71,18 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto result_acc =
           result_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
+      T value_ref_zero_init;
+      std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
-        // Check that arrow operator reference to default value
-        T value_ref_default{};
+        // Check that arrow operator reference to zero-initialized value
         result_acc[integral(indx::correct_def_val_const)] =
-            (const_dev_global<T>->a == value_ref_default->a &&
-             const_dev_global<T>->b == value_ref_default->b &&
-             const_dev_global<T>->c == value_ref_default->c);
+            (const_dev_global<T>->a == value_ref_zero_init->a &&
+             const_dev_global<T>->b == value_ref_zero_init->b &&
+             const_dev_global<T>->c == value_ref_zero_init->c);
         result_acc[integral(indx::correct_def_val_non_const)] &=
-            (dev_global<T>->a == value_ref_default->a &&
-             dev_global<T>->b == value_ref_default->b &&
-             dev_global<T>->c == value_ref_default->c);
+            (dev_global<T>->a == value_ref_zero_init->a &&
+             dev_global<T>->b == value_ref_zero_init->b &&
+             dev_global<T>->c == value_ref_zero_init->c);
 
         T new_values{10, 10, 10};
         // Changing non const values
@@ -100,8 +101,9 @@ void run_test(util::logger& log, const std::string& type_name) {
   for (size_t i = integral(indx::correct_def_val_const);
        i < integral(indx::size); ++i) {
     if (!result[i]) {
-      FAIL(log, (get_case_description<T>("Device global: operator->()",
-                                         error_strings[i], type_name)));
+      std::string fail_msg = get_case_description("Device global: operator->()",
+                                                  error_strings[i], type_name);
+      FAIL(log, fail_msg);
     }
   }
 }
@@ -129,8 +131,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

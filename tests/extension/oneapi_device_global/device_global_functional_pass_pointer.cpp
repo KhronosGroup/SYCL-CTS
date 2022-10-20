@@ -28,13 +28,13 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
 namespace pass_pointer_to_another_kernel {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 template <typename T>
 struct write_kernel;
@@ -61,7 +61,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       cgh.single_task<kernel>([=] {
         // Change the device_global instance and store address to the ptr
         // through accessor
-        value_operations::assign<T>(dev_global<T>, 42);
+        value_operations::assign(dev_global<T>, 42);
         ptr_acc[0] = &(dev_global<T>.get());
       });
     });
@@ -73,7 +73,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   T new_val{};
   // The function assign have default second parameter, so expect that all
   // values will change the same
-  value_operations::assign<T>(new_val, 42);
+  value_operations::assign(new_val, 42);
 
   bool is_read_correct{true};
   {
@@ -81,24 +81,24 @@ void run_test(util::logger& log, const std::string& type_name) {
     sycl::buffer<bool, 1> is_read_corr_buf(&is_read_correct, sycl::range<1>(1));
 
     queue.submit([&](sycl::handler& cgh) {
-      using kernel = write_kernel<T>;
+      using kernel = read_kernel<T>;
 
       auto is_read_correct_acc =
           is_read_corr_buf.template get_access<sycl::access_mode::write>(cgh);
 
       cgh.single_task<kernel>([=] {
         is_read_correct_acc[0] =
-            (value_operations::are_equal<T>(*(ptr), new_val));
+            (value_operations::are_equal(*(ptr), new_val));
       });
     });
     queue.wait_and_throw();
   }
   if (is_read_correct == false) {
-    FAIL(log, get_case_description(
-                  "device_global: Passing a pointer to the "
-                  "underlying value to another kernel",
-                  "Wrong value after dereferencing pointer in another kernel",
-                  type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: Passing a pointer to the "
+        "underlying value to another kernel",
+        "Wrong value after dereferencing pointer in another kernel", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace pass_pointer_to_another_kernel
@@ -126,8 +126,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

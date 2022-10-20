@@ -23,15 +23,15 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
 namespace several_kernel_in_one_device {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 template <typename T>
-const oneapi::device_global<T> const_dev_global;
+const oneapi::experimental::device_global<T> const_dev_global;
 
 template <typename T>
 struct first_kernel;
@@ -53,17 +53,6 @@ constexpr auto integral(const indx& i) { return to_integral<indx>(i); }
  */
 template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
-  // Changing non-const value in first kernel
-  auto queue = util::get_cts_object::queue();
-  {
-    queue.submit([&](sycl::handler& cgh) {
-      cgh.single_task<first_kernel<T>>([=](sycl::kernel_handler h) {
-        value_operations::assign<T>(dev_global<T>, 42);
-      });
-    });
-    queue.wait_and_throw();
-  }
-
   // Using remove_extent for get type of element when T is array
   // If T is not array then element_type == T
   // As we fill the array with the same numbers with type of the array element,
@@ -73,14 +62,30 @@ void run_test(util::logger& log, const std::string& type_name) {
   // Creating variables for store result of comparing
   constexpr size_t checks_size = integral(indx::size);
 
-  // For non-const expecting changed value
+  element_type new_value;
+  value_operations::assign(new_value, 42);
+
+  // Changing value in first kernel
+  auto queue = util::get_cts_object::queue();
+  {
+    queue.submit([&](sycl::handler& cgh) {
+      cgh.single_task<first_kernel<T>>(
+          [=]() { value_operations::assign(dev_global<T>, new_value); });
+    });
+    queue.wait_and_throw();
+  }
+
   util::array<element_type, checks_size> expected_value;
 
-  // For const value expecting that value not changed,so keep default value
-  util::array<bool, checks_size> changed_correct;
-  value_operations<element_type>::assign(
-      expected_value[integral(indx::non_const_expected)]);
+  // For non-const expecting changed value
+  value_operations::assign(expected_value[integral(indx::non_const_expected)],
+                           new_value);
 
+  // For const value expecting that value is zero-initialized
+  std::memset(&expected_value[integral(indx::const_expected)], 0,
+              sizeof(element_type));
+
+  util::array<bool, checks_size> changed_correct;
   {
     sycl::buffer<bool> changed_corr_buf(changed_correct.values,
                                         sycl::range<1>(checks_size));
@@ -91,11 +96,11 @@ void run_test(util::logger& log, const std::string& type_name) {
       // Comparing current device_global val with expected in second kernel
       cgh.single_task<second_kernel<T>>([=](sycl::kernel_handler h) {
         changed_corr[integral(indx::const_expected)] =
-            value_operations::are_equal<T>(
+            value_operations::are_equal(
                 const_dev_global<T>,
                 expected_value[integral(indx::const_expected)]);
         changed_corr[integral(indx::non_const_expected)] =
-            value_operations::are_equal<T>(
+            value_operations::are_equal(
                 dev_global<T>,
                 expected_value[integral(indx::non_const_expected)]);
       });
@@ -138,11 +143,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
+    auto types = device_global_types::get_types();
     for_all_types<check_device_global_serveal_kernels_one_device_for_type>(
         types, log);
 #endif

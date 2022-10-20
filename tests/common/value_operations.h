@@ -111,11 +111,27 @@ bool are_equal_by_index_sequence(const ContainerT& left, const U& right,
   return result;
 }
 
+template <typename T>
+struct is_array : std::false_type {};
+template <typename T, size_t N>
+struct is_array<ArrayT<T, N>> : std::true_type {};
+template <typename T>
+constexpr bool is_array_v = is_array<T>::value;
+
+template <typename T>
+struct is_non_array_with_subscript_and_size {
+  static constexpr bool value =
+      !is_array<T>::value && has_subscript_and_size_v<T>;
+};
+template <typename T>
+constexpr bool is_non_array_with_subscript_and_size_v =
+    is_non_array_with_subscript_and_size<T>::value;
+
 }  // namespace detail
 
 // Modify functions
-template <typename T, size_t N>
-inline void assign(detail::ArrayT<T, N>& left, const T& right) {
+template <typename T, size_t N, typename RightNonArrT = T>
+inline void assign(detail::ArrayT<T, N>& left, const RightNonArrT& right) {
   for (size_t i = 0; i < N; ++i) {
     detail::assign_value_or_even(left[i], right);
   }
@@ -132,8 +148,9 @@ inline void assign(detail::ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
-                                 !has_subscript_and_size_v<RightNonArrT>>
+inline typename std::enable_if_t<
+    detail::is_non_array_with_subscript_and_size_v<LeftArrT> &&
+    !has_subscript_and_size_v<RightNonArrT>>
 assign(LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     detail::assign_value_or_even(left[i], right);
@@ -141,8 +158,9 @@ assign(LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftArrT, typename RightArrT>
-inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
-                                 has_subscript_and_size_v<RightArrT>>
+inline typename std::enable_if_t<
+    detail::is_non_array_with_subscript_and_size_v<LeftArrT> &&
+    detail::is_non_array_with_subscript_and_size_v<RightArrT>>
 assign(LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
@@ -170,6 +188,17 @@ void assign(std::pair<FirstT, SecondT>& left, const U& right) {
   using indexes = std::make_index_sequence<pair_size>;
   detail::assign_by_index_sequence(left, right, indexes());
 }
+
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
+    defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
+
+template <typename T, typename Props, typename RightNonArrT>
+void assign(sycl::ext::oneapi::experimental::device_global<T, Props>& left,
+            const RightNonArrT& right) {
+  assign(left.get(), right);
+}
+
+#endif
 /////////////////////////// Modify functions
 
 // Compare functions
@@ -193,9 +222,10 @@ inline bool are_equal(const detail::ArrayT<LeftArrT, LeftArrN>& left,
 }
 
 template <typename LeftArrT, typename RightNonArrT>
-inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
-                                     !has_subscript_and_size_v<RightNonArrT>,
-                                 bool>
+inline typename std::enable_if_t<
+    detail::is_non_array_with_subscript_and_size_v<LeftArrT> &&
+        !has_subscript_and_size_v<RightNonArrT>,
+    bool>
 are_equal(const LeftArrT& left, const RightNonArrT& right) {
   for (size_t i = 0; i < left.size(); ++i) {
     if (!detail::are_equal_value_or_even(left[i], right)) return false;
@@ -204,9 +234,10 @@ are_equal(const LeftArrT& left, const RightNonArrT& right) {
 }
 
 template <typename LeftArrT, typename RightArrT>
-inline typename std::enable_if_t<has_subscript_and_size_v<LeftArrT> &&
-                                     has_subscript_and_size_v<RightArrT>,
-                                 bool>
+inline typename std::enable_if_t<
+    detail::is_non_array_with_subscript_and_size_v<LeftArrT> &&
+        detail::is_non_array_with_subscript_and_size_v<RightArrT>,
+    bool>
 are_equal(const LeftArrT& left, const RightArrT& right) {
   assert((left.size() == right.size()) && "Arrays have to be the same size");
   for (size_t i = 0; i < left.size(); ++i) {
@@ -244,6 +275,28 @@ typename std::enable_if_t<!std::is_same_v<std::variant<Types...>, U>, bool>
 are_equal(const std::variant<Types...>& left, const U& right) {
   return std::get<U>(left) == right;
 }
+
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
+    defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
+
+template <typename T, typename Props, typename RightT>
+bool are_equal(
+    const sycl::ext::oneapi::experimental::device_global<T, Props>& left,
+    const RightT& right) {
+  return are_equal(left.get(), right);
+}
+
+template <typename LeftT, typename LeftProps, typename RightT,
+          typename RightProps>
+bool are_equal(
+    const sycl::ext::oneapi::experimental::device_global<LeftT, LeftProps>&
+        left,
+    const sycl::ext::oneapi::experimental::device_global<RightT, RightProps>&
+        right) {
+  return are_equal(left.get(), right.get());
+}
+
+#endif
 //////////////////////////// Compare functions
 
 template <typename T>

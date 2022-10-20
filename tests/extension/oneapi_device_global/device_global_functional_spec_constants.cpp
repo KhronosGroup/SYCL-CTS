@@ -23,13 +23,13 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
 namespace spec_constants_interaction {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 constexpr sycl::specialization_id<int> spec_const_id;
 
@@ -48,9 +48,9 @@ class read_and_write_in_kernel {
    * new value from specialization constants in instance. Test will fail if
    * value from device_global instance not equal to default value
    */
-  static inline void expect_def_val(util::logger& log,
+  static inline void expect_def_val(sycl::queue &queue, util::logger& log,
                                     const std::string& type_name) {
-    run(true, "Expect to read default value", log, type_name);
+    run(queue, true, "Expect to read default value", log, type_name);
   }
 
   /**
@@ -58,9 +58,9 @@ class read_and_write_in_kernel {
    * new value from specialization constants in instance. Test will be failed if
    * value from device_global instance not equal to T{1}
    */
-  static inline void expect_new_val(util::logger& log,
+  static inline void expect_new_val(sycl::queue &queue, util::logger& log,
                                     const std::string& type_name) {
-    run(false, "Expect to read modified value", log, type_name);
+    run(queue, false, "Expect to read modified value", log, type_name);
   }
 
  private:
@@ -70,18 +70,19 @@ class read_and_write_in_kernel {
    * @param is_def_val_expected The flag shows if default value expected
    * @param error_info String to display, when test fails
    */
-  static inline void run(const bool is_def_val_expected,
+  static inline void run(sycl::queue &queue, const bool is_def_val_expected,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
-    // Default value of type T in case if we expect to read default value
-    T def_val{};
-    // Changed value of type T in case if we expect to read modified value
-    T new_val{};
-    value_operations::assign<T>(new_val, 42);
 
     constexpr int initial_sc_val = 1;
     constexpr int changed_sc_val = 2;
     const int sc_val = is_def_val_expected ? initial_sc_val : changed_sc_val;
+    
+    // Default value of type T in case if we expect to read default value
+    T def_val{};
+    // Changed value of type T in case if we expect to read modified value
+    T new_val{};
+    value_operations::assign(new_val, initial_sc_val);
 
     // is_read_correct will be set to true if device_global value is equal to
     // the expected_val inside kernel
@@ -91,7 +92,6 @@ class read_and_write_in_kernel {
       // Creating result buffer
       sycl::buffer<bool, 1> is_read_corr_buf(&is_read_correct,
                                              sycl::range<1>(1));
-      auto queue = util::get_cts_object::queue();
       queue.submit([&](sycl::handler& cgh) {
         using kernel = kernel_read_then_write<T>;
 
@@ -105,23 +105,24 @@ class read_and_write_in_kernel {
         cgh.single_task<kernel>([=](sycl::kernel_handler h) {
           if (is_def_val_expected) {
             is_read_correct_acc[0] =
-                value_operations::are_equal<T>(dev_global<T>, def_val);
+                value_operations::are_equal(dev_global<T>, def_val);
           } else {
             is_read_correct_acc[0] =
-                value_operations::are_equal<T>(dev_global<T>, new_val);
+                value_operations::are_equal(dev_global<T>, new_val);
           }
 
           // Get specialization constant value for change device_global instance
           int sc_val = h.template get_specialization_constant<spec_const_id>();
-          value_operations<T>::assign(dev_global<T>, sc_val);
+          value_operations::assign(dev_global<T>, sc_val);
         });
       });
       queue.wait_and_throw();
     }
     if (is_read_correct == false) {
-      FAIL(log, get_case_description(
-                    "device_global: Interaction with specialization constants",
-                    error_info, type_name));
+      std::string fail_msg = get_case_description(
+          "device_global: Interaction with specialization constants",
+          error_info, type_name);
+      FAIL(log, fail_msg);
     }
   }
 };
@@ -134,11 +135,13 @@ class read_and_write_in_kernel {
 template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
   using VerifierT = read_and_write_in_kernel<T>;
+  auto queue = util::get_cts_object::queue();
+
   // At the first run expect default value
-  VerifierT::expect_def_val(log, type_name);
+  VerifierT::expect_def_val(queue, log, type_name);
 
   // At the second run expect changed value
-  VerifierT::expect_new_val(log, type_name);
+  VerifierT::expect_new_val(queue, log, type_name);
 }
 }  // namespace spec_constants_interaction
 
@@ -165,8 +168,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

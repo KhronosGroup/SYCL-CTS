@@ -23,11 +23,11 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::experimental;
 
-template <typename T, test_names name>
+template <typename T, size_t sizeOfArray, test_names name>
 struct device_global_kernel_name;
 
 namespace subscript_operator {
@@ -55,7 +55,8 @@ constexpr size_t integral(const indx& i) { return to_integral(i); }
  */
 template <typename T, size_t sizeOfArray>
 void run_test(util::logger& log, const std::string& type_name) {
-  using kernel = device_global_kernel_name<T, test_names::subscript_operator>;
+  using kernel =
+      device_global_kernel_name<T, sizeOfArray, test_names::subscript_operator>;
 
   std::string error_strings[integral(indx::size)]{
       "Wrong default value returned by subscript operator of const instance",
@@ -76,14 +77,15 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto result_acc =
           result_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
+      T value_ref_zero_init{};
+      std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
-        T value_default{};
         for (size_t i = 0; i < sizeOfArray; ++i) {
           // Check that array element contains default value
           result_acc[integral(indx::correct_def_val_const)] =
-              const_dev_global<T, sizeOfArray>[i] == value_default;
+              const_dev_global<T, sizeOfArray>[i] == value_ref_zero_init;
           result_acc[integral(indx::correct_def_val_non_const)] =
-              dev_global<T, sizeOfArray>[i] == value_default;
+              dev_global<T, sizeOfArray>[i] == value_ref_zero_init;
 
           // Check that array element contains correct type
           result_acc[integral(indx::same_type_const)] =
@@ -115,8 +117,9 @@ void run_test(util::logger& log, const std::string& type_name) {
   for (size_t i = integral(indx::correct_def_val_const);
        i < integral(indx::size); ++i) {
     if (!result[i]) {
-      FAIL(log, (get_case_description<T>("Device global: operator[]()",
-                                         error_strings[i], type_name)));
+      std::string fail_msg = get_case_description("Device global: operator[]()",
+                                                  error_strings[i], type_name);
+      FAIL(log, fail_msg);
     }
   }
 }
@@ -146,8 +149,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
