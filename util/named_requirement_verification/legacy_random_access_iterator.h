@@ -44,10 +44,10 @@ class legacy_random_access_iterator_requirement {
    */
   template <typename It>
   std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for(It valid_iterator, const size_t container_size) {
+  is_satisfied_for(It valid_iterator) {
     auto legacy_bidir_iterator_res =
         legacy_bidirectional_iterator_requirement{}.is_satisfied_for<It>(
-            valid_iterator, container_size);
+            valid_iterator);
     if (!legacy_bidir_iterator_res.first) {
       m_test_error_messages.add_errors(legacy_bidir_iterator_res.second);
     }
@@ -177,40 +177,31 @@ class legacy_random_access_iterator_requirement {
             "iterator_traits::difference_type operator.");
       }
 
-      if (container_size == 0) {
-        m_test_error_messages.add_error(
-            "Some of the test requires container size more than 0. These tests "
-            "have been skipped.");
-      } else {
-        It a{};
-        It b{};
-        diff_t n = 1;
-        // If current iterator has iterator plus difference_type make `b`
-        // iterator differ than `a` iterator
-        if constexpr (has_iterator_plus_diff_type_operator) {
-          b = b + n;
-          using it_traits = std::iterator_traits<It>;
-          if constexpr (has_iterator_minus_iterator_operator &&
-                        has_difference_type_member) {
-            if (!std::is_same_v<decltype(b - a),
-                                typename it_traits::difference_type>) {
-              m_test_error_messages.add_error(
-                  "operator-() of It instances must return "
-                  "iterator_traits::difference_type.");
-            }
-          }
-          if constexpr (has_subscript_operator && has_reference_member) {
-            if (!std::is_convertible_v<decltype(a[0]),
-                                       typename it_traits::reference>) {
-              m_test_error_messages.add_error(
-                  "operator[]() return value must be convertible to "
-                  "iterator_traits::reference.");
-            }
+      It a{};
+      It b{};
+      diff_t n = 1;
+      // If current iterator has iterator plus difference_type make `b`
+      // iterator differ than `a` iterator
+      if constexpr (has_iterator_plus_diff_type_operator) {
+        b = b + n;
+        using it_traits = std::iterator_traits<It>;
+        if constexpr (has_iterator_minus_iterator_operator &&
+                      has_difference_type_member) {
+          if (!std::is_same_v<decltype(b - a),
+                              typename it_traits::difference_type>) {
+            m_test_error_messages.add_error(
+                "operator-() of It instances must return "
+                "iterator_traits::difference_type.");
           }
         }
-        m_test_error_messages.add_error(
-            "Iterator must have operator+() with "
-            "iterator_traits::difference_type operator.");
+        if constexpr (has_subscript_operator && has_reference_member) {
+          if (!std::is_convertible_v<decltype(a[0]),
+                                     typename it_traits::reference>) {
+            m_test_error_messages.add_error(
+                "operator[]() return value must be convertible to "
+                "iterator_traits::reference.");
+          }
+        }
       }
     }
 

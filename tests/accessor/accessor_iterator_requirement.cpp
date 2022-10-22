@@ -8,6 +8,7 @@
 *******************************************************************************/
 #include "../../util/named_requirement_verification/legacy_random_access_iterator.h"
 #include "../common/disabled_for_test_case.h"
+#include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::accessor is implemented
@@ -63,7 +64,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
-                dummy_acc_it, size_of_dummy);
+                dummy_acc_it);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
             if (!verification_result.second[i].empty()) {
@@ -79,7 +80,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
  "iterator",
  "[accessor]")({
@@ -90,12 +91,13 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;
-  named_requirement_verification::string_view errors[size_of_res_array];
+  std::array<named_requirement_verification::string_view, size_of_res_array>
+      errors;
 
   constexpr size_t alloc_size = 1;
   {
     sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
-        errors, sycl::range(size_of_res_array));
+        errors.data(), sycl::range(size_of_res_array));
 
     q.submit([&](sycl::handler& cgh) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
@@ -105,7 +107,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
-                dummy_acc_it, size_of_dummy);
+                dummy_acc_it);
         if (!verification_result.first) {
           for (int i = 0; i < size_of_res_array; ++i) {
             if (!verification_result.second[i].empty()) {
@@ -139,7 +141,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     auto dummy_acc_it = dummy_acc.begin();
     auto verification_result =
         legacy_random_access_iterator_requirement{}.is_satisfied_for(
-            dummy_acc_it, size_of_dummy);
+            dummy_acc_it);
     if (!verification_result.first) {
       print_errors(verification_result.second);
     }
