@@ -37,7 +37,9 @@
 #include "../common/get_cts_object.h"
 #include "macros.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <type_traits>
 
@@ -442,7 +444,10 @@ asType check_as_result(sycl::vec<vecType, N> inputVec,
     tmp_ptr[i] = getElement(inputVec, i);
   }
   asType exp_ptr[asN];
-  memcpy(exp_ptr, tmp_ptr, sizeof(exp_ptr));
+  for (size_t i = 0; i < asN; ++i) {
+    exp_ptr[i] = getElement(asVec, i);
+  }
+  std::memcpy(exp_ptr, tmp_ptr, std::min(sizeof(exp_ptr), sizeof(tmp_ptr)));
   for (size_t i = 0; i < asN; ++i) {
     if (exp_ptr[i] != getElement(asVec, i)) {
       return false;
