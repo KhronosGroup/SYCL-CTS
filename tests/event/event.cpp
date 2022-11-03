@@ -288,9 +288,8 @@ class test_exception_handler {
   }
 };
 
-// TODO SPEC: It is unclear whether uncaught exceptions inside
-//            host tasks get reported as asynchronous errors.
-// See also: https://github.com/KhronosGroup/SYCL-Docs/issues/214
+// According to section 4.10.1 "Any uncaught exception thrown during the
+// execution of a host task will be turned into an async error [...]".
 static sycl::event make_throwing_host_event(
     sycl::queue& queue, std::string name,
     const std::vector<sycl::event>& dependencies = {}) {
