@@ -23,7 +23,6 @@ To compile the CTS, the following dependencies are required:
 
 - Python 3.7 or higher
 - CMake 3.15 or higher
-- A conformant OpenCL implementation
 - A SYCL implementation
   - The CTS currently supports ComputeCpp, DPC++ and hipSYCL
   - See the [AddSYCLExecutable.cmake](cmake/AddSYCLExecutable.cmake) module on

@@ -24,6 +24,7 @@ endif()
 
 set(SYCL_IMPLEMENTATION_DETECTION_MACRO "SYCL_CTS_COMPILING_WITH_${CANONICAL_SYCL_IMPLEMENTATION}")
 target_compile_options(SYCL::SYCL INTERFACE "-D${SYCL_IMPLEMENTATION_DETECTION_MACRO}")
+target_link_libraries(SYCL::SYCL INTERFACE CTS::OpenCL_Proxy)
 
 if(NOT COMMAND add_sycl_executable_implementation)
     message(FATAL_ERROR
