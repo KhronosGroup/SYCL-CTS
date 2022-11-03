@@ -347,11 +347,14 @@ TEST_CASE(
 }
 
 // TODO SPEC: It is unclear what "any unconsumed error [...] will be passed to
-// the async handler associated with the context" means when two queues override
-// their (shared) context's async handler.
+// the async handler associated with the context" means when the context does
+// not have an async handler, but the queues do. This test assumes that the
+// asynch handler for the queues will be used as they are higher priority for
+// async errors.
+// See also: https://github.com/KhronosGroup/SYCL-Docs/issues/299
 TEST_CASE(
     "event::wait_and_throw reports asynchronous errors from related events on "
-    "other queues",
+    "corresponding queues",
     "[event][todo-spec][!mayfail]") {
   test_exception_handler teh1;
   test_exception_handler teh2;
@@ -365,13 +368,11 @@ TEST_CASE(
     sycl::event::wait_and_throw(std::vector{e2});
   }
 
-  CHECK(teh2.count() == 2);
-  CHECK(teh2.has("some-error"));
+  CHECK(teh2.count() == 1);
   CHECK(teh2.has("another-error"));
 
-  // This should be a no-op as the error already has been consumed
-  e1.wait_and_throw();
-  CHECK(teh1.count() == 0);
+  CHECK(teh1.count() == 1);
+  CHECK(teh1.has("some-error"));
 }
 
 TEST_CASE("event::wait_and_throw only reports unconsumed asynchronous errors",
