@@ -294,11 +294,11 @@ class test_exception_handler {
 static sycl::event make_throwing_host_event(
     sycl::queue& queue, std::string name,
     const std::vector<sycl::event>& dependencies = {}) {
-  return queue.submit([&name, &dependencies](sycl::handler& cgh) {
+  return queue.submit([name, &dependencies](sycl::handler& cgh) {
     for (auto& dep : dependencies) {
       cgh.depends_on(dep);
     }
-    cgh.host_task([&name](auto) { throw test_exception{std::move(name)}; });
+    cgh.host_task([name](auto) { throw test_exception{name}; });
   });
 }
 
