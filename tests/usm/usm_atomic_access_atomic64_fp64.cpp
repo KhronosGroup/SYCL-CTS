@@ -30,9 +30,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
     {
       auto queue{util::get_cts_object::queue()};
       if (!queue.get_device().has(sycl::aspect::fp64)) {
-        log.note(
+        WARN(
             "Device does not support double precision floating point "
-            "operations");
+            "operations. Skipping the test case.");
         return;
       }
       for_all_types<usm_atomic_access::run_all_tests>(
