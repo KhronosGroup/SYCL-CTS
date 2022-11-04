@@ -2,8 +2,8 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide verification to atomic access for USM allocations that underlying
-//  type size equal than 64 byte.
+//  Provide verification to atomic access for USM allocations with underlying
+//  type size equal to 64 byte.
 //
 *******************************************************************************/
 
