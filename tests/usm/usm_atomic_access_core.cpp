@@ -14,8 +14,7 @@
 namespace usm_atomic_access_core {
 using namespace sycl_cts;
 
-TEST_CASE("Tests for usm atomics with atomic64 support",
-          "[usm][atomic]") {
+TEST_CASE("Tests for usm atomics with atomic64 support", "[usm][atomic]") {
   auto queue{util::get_cts_object::queue()};
 
   for_all_types<usm_atomic_access::run_all_tests>(
