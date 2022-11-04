@@ -22,11 +22,11 @@ namespace usm_atomic_access {
 
 inline auto get_nondouble_scalar_types() {
   static const auto scalar_types =
-      named_type_pack<int, unsigned int, long,
-                      unsigned long, float, double, long long,
-                      unsigned long long>::generate("int", "unsigned int", "long",
-                                           "unsigned long", "float", "double",
-                                           "long long", "unsigned long long");
+      named_type_pack<int, unsigned int, long, unsigned long, float, long long,
+                      unsigned long long>::generate("int", "unsigned int",
+                                                    "long", "unsigned long",
+                                                    "float", "long long",
+                                                    "unsigned long long");
   return scalar_types;
 }
 
