@@ -20,7 +20,7 @@
 
 namespace usm_atomic_access {
 
-static auto get_scalar_types() {
+inline auto get_nondouble_scalar_types() {
   static const auto scalar_types =
       named_type_pack<int, unsigned int, long,
                       unsigned long, float, double, long long,
@@ -28,6 +28,11 @@ static auto get_scalar_types() {
                                            "unsigned long", "float", "double",
                                            "long long", "unsigned long long");
   return scalar_types;
+}
+
+inline auto get_fp64_type() {
+  static const auto types = named_type_pack<double>::generate("double");
+  return types;
 }
 
 /** @brief Return atomic aspect depending on the type of allocated memory

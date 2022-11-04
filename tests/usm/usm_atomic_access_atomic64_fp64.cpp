@@ -3,13 +3,13 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Provide verification to atomic access for USM allocations that underlying
-//  type size lower than 64 byte.
+//  type size equal than 64 byte.
 //
 *******************************************************************************/
 
 #include "usm_atomic_access.h"
 
-#define TEST_NAME usm_atomic_access_core
+#define TEST_NAME usm_atomic_access_atomic64_fp64
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
@@ -29,10 +29,15 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     {
       auto queue{util::get_cts_object::queue()};
-
+      if (!queue.get_device().has(sycl::aspect::fp64)) {
+        log.note(
+            "Device does not support double precision floating point "
+            "operations");
+        return;
+      }
       for_all_types<usm_atomic_access::run_all_tests>(
-          usm_atomic_access::get_nondouble_scalar_types(), queue, log,
-          usm_atomic_access::without_atomic64);
+          usm_atomic_access::get_fp64_type(), queue, log,
+          usm_atomic_access::with_atomic64);
     }
   }
 };

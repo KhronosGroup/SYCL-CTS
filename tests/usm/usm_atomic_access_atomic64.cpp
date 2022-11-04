@@ -31,7 +31,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       auto queue{util::get_cts_object::queue()};
 
       for_all_types<usm_atomic_access::run_all_tests>(
-          usm_atomic_access::get_scalar_types(), queue, log,
+          usm_atomic_access::get_nondouble_scalar_types(), queue, log,
           usm_atomic_access::with_atomic64);
     }
   }
