@@ -25,7 +25,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-#ifdef SYCL_BACKEND_OPENCL
+#if defined(SYCL_BACKEND_OPENCL) && SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
   cl_int call_opencl(cl_command_queue q, cl_mem mem, size_t size,
                      size_t pattern) {
     cl_event e{};
@@ -37,12 +37,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
     }
     return ret;
   }
-#endif  // SYCL_BACKEND_OPENCL
+#endif  // defined(SYCL_BACKEND_OPENCL) && SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
 
   /** execute this test
    */
   void run(util::logger& log) override {
-#ifdef SYCL_BACKEND_OPENCL
+#if defined(SYCL_BACKEND_OPENCL) && SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
     {
       sycl::queue q{util::get_cts_object::queue()};
       if (q.get_backend() != sycl::backend::opencl) {
@@ -119,8 +119,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
     }
 #else
-    log.note("The test is skipped because OpenCL back-end is not supported");
-#endif  // SYCL_BACKEND_OPENCL
+    log.note(
+        "The test is skipped because interop testing is disabled or OpenCL "
+        "back-end is not supported");
+#endif  // defined(SYCL_BACKEND_OPENCL) && SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
   }
 };
 

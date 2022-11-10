@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
-# The CTS currently requires OpenCL to be installed on the system,
-# regardless of the SYCL implementation and/or backend used.
+# We install OpenCL to enable compilation of interop tests (for SYCL
+# implementations that support it).
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \

@@ -45,7 +45,7 @@ The link:../cmake[`cmake`] folder contains helper functions and find modules for
 You may find it helpful to browse these files if you run into problems configuring the CTS for a given SYCL implementation.
 
 link:../oclmath[`oclmath`] contains reference implementations for many of the math functions provided by the SYCL API.
-To ensure the correct behavior of the latter, they are compared against these reference implementations, which were borrowed from the https://github.com/KhronosGroup/OpenCL-CTS[Khronos OpenCL CTS] (this is one of the reasons why the SYCL CTS currently requires OpenCL to compile).
+To ensure the correct behavior of the latter, they are compared against these reference implementations, which were borrowed from the https://github.com/KhronosGroup/OpenCL-CTS[Khronos OpenCL CTS].
 
 The link:../test_plans[`test_plans`] directory contains documents describing in detail how certain SYCL features are to be tested.
 See <<Test Plans>> for more information.
