@@ -39,19 +39,16 @@ using namespace accessor_utility;
 
 /**
  * @brief Determines the number of dimensions required for storing an image
- *        when given an accessor. Image array accessors require an image of
- *        (dims + 1) dimensions.
+ *        when given an accessor.
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
 template <int dims, sycl::target target>
 using image_dims = std::integral_constant<
-    int,
-    ((target == sycl::target::image_array) ? (dims + 1) : dims)>;
+    int, dims>;
 
 /**
  * @brief Alias to sycl::id using the proper number of dimensions.
- *        Required for image array accessors.
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
@@ -59,31 +56,12 @@ template <int dims, sycl::target target>
 using image_id_t = sycl::id<image_dims<dims, target>::value>;
 
 /**
- * @brief Alias to image_id_t targetting image array accessors
- * @tparam dims Number of accessor dimensions
- * @tparam target Access target of the accessor
- */
-template <int dims>
-using image_array_id_t =
-    image_id_t<dims, sycl::target::image_array>;
-
-/**
  * @brief Alias to sycl::range using the proper number of dimensions.
- *        Required for image array accessors.
  * @tparam dims Number of accessor dimensions
  * @tparam target Access target of the accessor
  */
 template <int dims, sycl::target target>
 using image_range_t = sycl::range<image_dims<dims, target>::value>;
-
-/**
- * @brief Alias to image_range_t targetting image array accessors
- * @tparam dims Number of accessor dimensions
- * @tparam target Access target of the accessor
- */
-template <int dims>
-using image_array_range_t =
-    image_range_t<dims, sycl::target::image_array>;
 
 /**
  * @brief Namespace that defines CoordT tags
@@ -136,64 +114,13 @@ struct get<sycl::cl_half4> {
 }
 
 /**
- * @brief Helper struct for retrieving the image access coordinates
- *        when testing an image array accessor
- * @tparam dims Number of accessor dimensions
- */
-template <int dims>
-struct image_array_coords {
-  /**
-   * @brief Retrieves the image access coordinates for an image array accessor
-   * @param idx Work-item ID
-   * @return Coordinates of dimension 1
-   */
-  template <typename ... rangeT>
-  static auto get(acc_coord_tag::use_int, image_array_id_t<dims> idx,
-                  rangeT ...)
-      -> typename image_access<dims>::int_type {
-    return image_access<dims>::get_int(
-        sycl_cts::util::get_cts_object::id<dims>::get(idx));
-  }
-  /**
-   * @brief Overload for cl_float type usage
-   */
-  template <typename ... rangeT>
-  static auto get(acc_coord_tag::use_float, image_array_id_t<dims> idx,
-                  rangeT...)
-      -> typename image_access<dims>::float_type {
-    return image_access<dims>::get_float(
-        sycl_cts::util::get_cts_object::id<dims>::get(idx));
-  }
-
-  /**
-   * @brief Overload for cl_float type usage with normalized coordinates
-   */
-  template <typename coordT,
-            typename pixelT = decltype(acc_coord_tag::get_pixel_tag(coordT{}))>
-  static auto get(coordT,
-                  image_array_id_t<dims> idx,
-                  image_array_range_t<dims> range)
-      -> typename image_access<dims>::float_type {
-    const auto resizedId =
-        sycl_cts::util::get_cts_object::id<dims>::get(idx);
-    const auto resizedRange =
-        sycl_cts::util::get_cts_object::range<dims>::get(range);
-
-    return image_access<dims>::get_normalized(pixelT{},
-                                              resizedId, resizedRange);
-  }
-};
-
-/**
  * @brief Constructs a range for testing
  * @tparam imageDims Number of image dimensions
  * @param count Number of elements to store in entire range
- * @param isImageArray True if creating a test range for an image array accessor
  * @return Range of same dimensions as the image
  */
 template <int imageDims>
-sycl::range<imageDims> make_test_range(size_t count,
-                                           bool isImageArray = false);
+sycl::range<imageDims> make_test_range(size_t count);
 
 /**
  * @brief Constructs a range for testing, specialization for 1D images
@@ -201,31 +128,29 @@ sycl::range<imageDims> make_test_range(size_t count,
  * @return 1D range
  */
 template <>
-sycl::range<1> make_test_range<1>(size_t count, bool /*isImageArray*/) {
+sycl::range<1> make_test_range<1>(size_t count) {
   return {count};
 }
 
 /**
  * @brief Constructs a range for testing, specialization for 2D images
  * @param count Number of elements to store in entire range
- * @param isImageArray True if creating a test range for an image array accessor
  * @return 2D range
  */
 template <>
-sycl::range<2> make_test_range<2>(size_t count, bool isImageArray) {
-  const auto dim1 = static_cast<size_t>(isImageArray ? 1 : 4);
+sycl::range<2> make_test_range<2>(size_t count) {
+  const size_t dim1 = 4;
   return {count / dim1, dim1};
 }
 
 /**
  * @brief Constructs a range for testing, specialization for 3D images
  * @param count Number of elements to store in entire range
- * @param isImageArray True if creating a test range for an image array accessor
  * @return 3D range
  */
 template <>
-sycl::range<3> make_test_range<3>(size_t count, bool isImageArray) {
-  const auto dim2 = static_cast<size_t>(isImageArray ? 1 : 2);
+sycl::range<3> make_test_range<3>(size_t count) {
+  const size_t dim2 = 2;
   const size_t dim1 = 4;
   const auto dim0 = count / (dim1 * dim2);
   return {dim0, dim1, dim2};
@@ -410,16 +335,6 @@ T read_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
   return acc.read(image_access<dims>::get_int(idx));
 }
 
-template <typename T, int dims, sycl::access_mode mode>
-T read_image_acc(const sycl::accessor<T, dims, mode,
-                                    sycl::target::image_array> &acc,
-                 image_array_id_t<dims> idx) {
-  // Verify __image_array_slice__ read
-  using coordT = acc_coord_tag::use_int;
-  const auto coords = image_array_coords<dims>::get(coordT{}, idx);
-  return acc[idx[dims]].read(coords);
-}
-
 template <typename T, int dims, sycl::target target,
           sycl::access_mode mode, typename coordT>
 T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
@@ -440,17 +355,6 @@ T read_image_acc_sampled(const sycl::accessor<T, dims, mode, target> &acc,
     return acc.read(coords, smpl);
   }
 }
-template <typename T, int dims, sycl::access_mode mode, typename coordT>
-T read_image_acc_sampled(const sycl::accessor<T, dims, mode,
-                                    sycl::target::image_array> &acc,
-                         sycl::sampler smpl,
-                         image_array_id_t<dims> idx,
-                         image_array_range_t<dims> range,
-                         const coordT& coordTag) {
-  // Verify __image_array_slice__ read
-  const auto coords = image_array_coords<dims>::get(coordTag, idx, range);
-  return acc[idx[dims]].read(coords, smpl);
-}
 
 template <typename T, int dims, sycl::target target,
           sycl::access_mode mode>
@@ -458,17 +362,6 @@ void write_image_acc(const sycl::accessor<T, dims, mode, target> &acc,
                      sycl::id<dims> idx, T value) {
   const auto coords = image_access<dims>::get_int(idx);
   acc.write(coords, value);
-}
-
-template <typename T, int dims, sycl::access_mode mode>
-void write_image_acc(
-    const sycl::accessor<T, dims, mode, sycl::target::image_array>
-        &acc,
-    image_array_id_t<dims> idx, T value) {
-  // Verify __image_array_slice__ write
-  using coordT = acc_coord_tag::use_int;
-  const auto coords = image_array_coords<dims>::get(coordT{}, idx);
-  acc[idx[dims]].write(coords, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1003,17 +896,12 @@ class image_accessor_api_sampled_r {
 
   /**
    *  @brief Computes the next id for getting an expected upper value for the
-   *  linear filtration. If the target is target::image_array, the last
-   *  component is not a coordinate, it is the index of an image in the array
-   *  to read from, so the last component should not be incremented.
+   *  linear filtration.
    */
   template <int dims>
   sycl::id<dims> next_id(sycl::id<dims> idx) const {
     static_assert(dims > 0);
     ++idx;
-    if constexpr (target == sycl::target::image_array) {
-      --idx[dims-1];
-    }
     return idx;
   }
 
@@ -1192,9 +1080,7 @@ template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 class check_image_accessor_api_methods {
  public:
-  static constexpr auto isImageArray =
-      (target == sycl::target::image_array);
-  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
+  using image_t = sycl::image<dims>;
 
   size_t count;
   size_t size;
@@ -1320,9 +1206,7 @@ class check_image_accessor_api_reads {
       is_sycl_floating_point<typename T::element_type>::value;
 
  public:
-  static constexpr auto isImageArray =
-      (target == sycl::target::image_array);
-  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
+  using image_t = sycl::image<dims>;
 
   size_t count;
   size_t size;
@@ -1515,9 +1399,7 @@ template <typename T, int dims, sycl::access_mode mode,
           sycl::target target>
 class check_image_accessor_api_writes {
  public:
-  static constexpr auto isImageArray =
-      (target == sycl::target::image_array);
-  using image_t = sycl::image<(isImageArray ? (dims + 1) : dims)>;
+  using image_t = sycl::image<dims>;
 
   size_t count;
   size_t size;
@@ -1682,7 +1564,7 @@ void check_image_accessor_api_mode(util::logger &log,
 }
 
 /**
- *  @brief Test image and image array accessors for all modes
+ *  @brief Test image accessors for all modes
  */
 template <typename T, int dims, sycl::target target,
           typename ... argsT>
@@ -1746,78 +1628,6 @@ void check_image_accessor_api_target_wrapper(argsT&& ... args) {
   check_image_accessor_api_target<T, dims, target>(
       tagretTag, std::forward<argsT>(args)...);
 }
-
-/**
- *  @brief Run tests for 1 and 2 dimensions
- */
-template <typename T, int dims, typename ... argsT>
-void check_image_accessor_api_dim(acc_dims_tag::generic, util::logger &log,
-                                  const std::string typeName,
-                                  size_t count, argsT&& ... args) {
-
-  const auto imageRange = make_test_range<dims>(count);
-
-  /** check image accessor api for image
-   */
-  check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::target::image>(
-      log, typeName, count, std::forward<argsT>(args)..., imageRange);
-
-  /** check image accessor api for host_image
-   */
-  check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::target::host_image>(
-      log, typeName, count, std::forward<argsT>(args)..., imageRange);
-
-  /** check image accessor api for image_array
-   */
-  {
-    static constexpr auto imageArrayTarget =
-        sycl::target::image_array;
-    static constexpr bool isImageArray = true;
-    const auto imageArrayRange =
-        make_test_range<image_dims<dims, imageArrayTarget>::value>(
-            count, isImageArray);
-
-    check_image_accessor_api_target_wrapper<T, dims, imageArrayTarget>(
-        log, typeName, count, std::forward<argsT>(args)..., imageArrayRange);
-  }
-}
-
-/**
- *  @brief Run tests for 3 dimensions
- */
-template <typename T, int dims, typename ... argsT>
-void check_image_accessor_api_dim(acc_dims_tag::num_dims<3>, util::logger &log,
-                                  const std::string typeName,
-                                  size_t count, argsT&& ... args) {
-
-  const auto imageRange = make_test_range<dims>(count);
-
-  /** check image accessor api for image
-   */
-  check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::target::image>(
-      log, typeName, count, std::forward<argsT>(args)..., imageRange);
-
-  /** check image accessor api for host_image
-   */
-  check_image_accessor_api_target_wrapper<T, dims,
-                                          sycl::target::host_image>(
-      log, typeName, count, std::forward<argsT>(args)..., imageRange);
-
-  /** image_array accessors only exist for 1D and 2D
-   */
-}
-
-/** tests image accessors with different dimensions
-*/
-template <typename T, int dims, typename ... argsT>
-void check_image_accessor_api_dim(util::logger &log, argsT&& ... args) {
-  check_image_accessor_api_dim<T, dims>(acc_dims_tag::get<dims>(),
-                                        log, std::forward<argsT>(args)...);
-}
-
 /** tests image accessors with different types
 */
 template <typename T, typename /*extensionTag*/>
@@ -1831,9 +1641,10 @@ class check_image_accessor_api_type {
     /**
      *  check image accessor api for all dimensions
      */
-    check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
-    check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
-    check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
+    // check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
+    // check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
+    // check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
+    return;
   }
 };
 
