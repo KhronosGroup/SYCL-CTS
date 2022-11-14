@@ -52,7 +52,8 @@ void check_accessor_members(sycl_cts::util::logger &log,
 
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
 
-  using t_type = typename std::conditional<mode == sycl::access_mode::read, const T, T>::type;
+  using t_type = typename std::conditional<mode == sycl::access_mode::read,
+                                           const T, T>::type;
 
   using value_type = typename acc_t::value_type;
 

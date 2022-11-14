@@ -44,8 +44,7 @@ using namespace accessor_utility;
  * @tparam target Access target of the accessor
  */
 template <int dims, sycl::target target>
-using image_dims = std::integral_constant<
-    int, dims>;
+using image_dims = std::integral_constant<int, dims>;
 
 /**
  * @brief Alias to sycl::id using the proper number of dimensions.
