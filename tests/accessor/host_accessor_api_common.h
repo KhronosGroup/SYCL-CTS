@@ -91,7 +91,7 @@ class run_api_tests {
     }
 
     SECTION(get_section_name<dims>(
-        type_name, access_mode_name, target_name,
+        type_name, access_mode_name,
         "Check api for ranged host_accessor with offset")) {
       constexpr size_t acc_range_size = 4;
       constexpr size_t buff_range_size = 8;
@@ -162,7 +162,7 @@ class run_host_accessor_api_for_type {
     // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_api_tests>(access_modes, dimensions,
+    for_all_combinations<run_api_tests, T>(access_modes, dimensions,
                                         actual_type_name);
 
     // For covering const types
