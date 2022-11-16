@@ -7,13 +7,16 @@ set(CMAKE_CXX_EXTENSIONS ON) # Required for hex floats in C++11 mode on gcc 6+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 find_package(Threads REQUIRED)
-find_package(OpenCL REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/vendor/Catch2/CMakeLists.txt")
-    message(FATAL_ERROR "The git submodule vendor/Catch2 is missing.\nTry running `git submodule update --init`.")
-endif()
-add_subdirectory(vendor/Catch2)
+macro(add_submodule_directory RELPATH)
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/${RELPATH}/CMakeLists.txt")
+        message(FATAL_ERROR "The git submodule ${RELPATH} is missing.\nTry running `git submodule update --init`.")
+    endif()
+    add_subdirectory("${RELPATH}")
+endmacro()
+
+add_submodule_directory(vendor/Catch2)
 
 # set host compiler flags
 if(WIN32)
@@ -62,6 +65,27 @@ add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
 
 add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
     "Enable CUDA interoperability tests", OFF)
+
+# ------------------
+# Define OpenCL proxy library which is linked against by other CTS targets.
+# The proxy library transitively links to either a fully fleged OpenCL
+# library or the bundled OpenCL headers submodule (see below).
+add_library(OpenCL_Proxy INTERFACE)
+target_compile_definitions(OpenCL_Proxy INTERFACE "CL_TARGET_OPENCL_VERSION=120")
+add_library(CTS::OpenCL_Proxy ALIAS OpenCL_Proxy)
+
+# We use the OpenCL headers from the bundled submodule unless OpenCL
+# interop testing is enabled, or we are compiling with ComputeCpp,
+# which has a dependency on OpenCL (see FindComputeCpp.cmake module).
+if(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS OR SYCL_IMPLEMENTATION STREQUAL "ComputeCpp")
+    find_package(OpenCL 1.2 REQUIRED)
+    target_link_libraries(OpenCL_Proxy INTERFACE OpenCL::OpenCL)
+else()
+    add_submodule_directory(vendor/OpenCL-Headers)
+    target_link_libraries(OpenCL_Proxy INTERFACE OpenCL::Headers)
+endif()
+# ------------------
+
 # ------------------
 # Enable CUDA language and add library, for CUDA interop tests
 
