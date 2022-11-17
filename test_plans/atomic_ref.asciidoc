@@ -1,0 +1,82 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for atomic_ref
+
+This is a test plan for the APIs described in SYCL 2020 section 4.15.3. Atomic references
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Type coverage
+
+* `int`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `long long`
+* `unsigned long long`
+
+Implementation dependend types:
+* `float`
+* `double`
+The member functions of the atomic_ref class may be emulated and may use a different floating-point environment to those defined by `info::device::single_fp_config` and `info::device::double_fp_config`.
+Therefore, the floating-point atomics may use different rounding modes and may have different exception behavior.
+
+== Tests
+
+=== SYCL2020 interface
+
+==== Members
+
+For the following values as DefaultOrder parameter:
+
+* `memory_order::relaxed`
+Check the following:
+`default_read_order` is `memory_order::relaxed`
+`default_write_order` is `memory_order::relaxed`
+
+
+* `memory_order::acq_rel`
+Check the following:
+`default_read_order` is `memory_order::acquire`
+`default_write_order` is `memory_order::release`
+
+* `memory_order::seq_cst`
+Check the following:
+`default_read_order` is `memory_order::seq_cst`
+`default_write_order` is `memory_order::seq_cst`
+
+
+==== Common constructors
+
+For the following values as DefaultOrder parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as DefaultScope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+For the following values as Space parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::local_space`
+* `access::address_space::private_space`
+* `access::address_space::generic_space`
+
+
+Call constructors:
+
+* `atomic_ref(T&)`
+* `atomic_ref(const atomic_ref&)`
