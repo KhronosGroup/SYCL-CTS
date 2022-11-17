@@ -1,0 +1,80 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for buffer (2020 update)
+
+This is a test plan for the changes in APIs described in SYCL 2020 section 4.7.2 compared to SYCL 1.2.1
+
+== Testing scope
+
+=== Device coverage
+
+Device coverage does not change. All of the tests described below are performed only on the default device that is selected on the CTS command line.
+
+=== Buffer types
+
+Type coverage changes! All of the tests described below are performed using each of the following `typename T`:
+
+In Regular mode:
+
+* `int`
+* `float`
+* A user-defined class with several scalar member variables and a user-defined default constructor.
+
+In full conformance mode:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+* `bool`
+* A user-defined struct with several scalar member variables, no constructor, destructor or member functions.
+* A user-defined class with several scalar member variables, a deleted default constructor, and a user-defined (non-default) constructor.
+
+In addition, if the device has `aspect::fp64`, the following type is tested:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`, the following type is tested:
+
+* `sycl::half`
+
+== Tests
+
+=== SYCL1.2.1 compatible interface
+
+CTS contains tests for `buffer` SYCL1.2.1 interface. Some functions have been marked as deprecated in SYCL2020. These tests should be marked as deprecated and be enrolled into the machinery disabling legacy tests. These functions are the following:
+
+* `size_t get_count()`
+* `size_t get_size()`
+* `template <access_mode Mode> accessor<T, Dimensions, Mode, target::host_buffer> get_access()`
+* `template <access_mode Mode> accessor<T, Dimensions, Mode, target::host_buffer> get_access(range<Dimensions> accessRange, id<Dimensions> accessOffset = {})`
+
+=== SYCL2020 interface
+
+==== Container constructors
+
+For `Dimensions == 1` check that:
+
+* It is possible to provide a non-empty, non-`const T` `std::vector` instance to the `template <typename Container> buffer(Container& container, const property_list& propList = {})` constructor.
+* After modifying its contents on device, updated contents are written back to the vector upon buffer destruction.
+
+For `AllocatorT == sycl_cts::logging_allocator`
+
+* It is possible to provide a non-empty, non-`const T` `std::vector` instance and a custom logging allocator to the `template <typename Container> buffer(Container& container, AllocatorT allocator, const property_list& propList = {})` constructor.
+* After modifying its contents on device, updated contents are written back to the vector upon buffer destruction.
+* The logging allocator's log isn't empty.
+
+==== Variadic get_access methods
+
+For the following values as `AccessTarget` parameter:
+
+* `target::device`
+* `target::constant_buffer`
+
