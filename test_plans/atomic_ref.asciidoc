@@ -78,5 +78,11 @@ For the following values as Space parameter:
 
 Call constructors:
 
-* `atomic_ref(T&)`
+* `atomic_ref(T&)` and check if
 * `atomic_ref(const atomic_ref&)`
+
+===== Member functions
+
+`void store(T operand,
+    memory_order order = default_write_order,
+    memory_scope scope = default_scope)`
