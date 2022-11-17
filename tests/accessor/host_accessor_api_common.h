@@ -121,7 +121,7 @@ class run_api_tests {
             acc_range.size() /*expected_size*/, acc_range /*expected_range*/,
             offset_id /*&expected_offset)*/);
 
-        test_accessor_ptr_host(acc, T(0));
+        test_accessor_ptr(acc, T(0));
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
         CHECK(value_operations::are_equal(acc_ref, linear_index));
         if constexpr (AccessMode != sycl::access_mode::read)
@@ -163,7 +163,7 @@ class run_host_accessor_api_for_type {
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_api_tests, T>(access_modes, dimensions,
-                                        actual_type_name);
+                                           actual_type_name);
 
     // For covering const types
     actual_type_name = std::string("const ") + actual_type_name;
