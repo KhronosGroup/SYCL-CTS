@@ -157,9 +157,9 @@ class run_host_accessor_api_for_type {
     const auto dimensions = get_dimensions();
 
     // To handle cases when class was called from functions
-    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
-    // This will wrap string with type T to string with container<T> if T is
-    // an array or other kind of container.
+    // like for_all_types_vectors_marray or
+    // for_all_device_copyable_std_containers. This will wrap string with type T
+    // to string with container<T> if T is an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
     for_all_combinations<run_api_tests, T>(access_modes, dimensions,
