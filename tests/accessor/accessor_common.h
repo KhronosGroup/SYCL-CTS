@@ -748,6 +748,21 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
 }
 
 /**
+ * @brief Function tests AccT::get_pointer() method
+
+ * @tparam AccT Type of testing accessor
+ * @tparam T Type of underlying data
+ */
+template <typename T, typename AccT>
+void test_accessor_ptr(AccT& accessor, T expected_data) {
+  INFO("check get_pointer() method");
+  auto acc_pointer = accessor.get_pointer();
+  STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
+                              std::add_pointer_t<typename AccT::value_type>>);
+  CHECK(value_operations::are_equal(*acc_pointer, expected_data));
+}
+
+/**
  * @brief Function checks common buffer and local accessor member functions
  */
 template <typename AccT, int dims>

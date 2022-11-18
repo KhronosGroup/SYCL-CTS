@@ -30,17 +30,6 @@ void test_host_accessor_methods(const AccT &accessor,
   }
 }
 
-template <typename T, typename AccT>
-void test_accessor_ptr(AccT &accessor, T expected_data) {
-  {
-    INFO("check get_pointer() method");
-    auto acc_pointer = accessor.get_pointer();
-    STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
-                                std::add_pointer_t<typename AccT::value_type>>);
-    CHECK(value_operations::are_equal(*acc_pointer, expected_data));
-  }
-}
-
 template <typename T, typename AccessT, typename DimensionT>
 class run_api_tests {
   static constexpr sycl::access_mode AccessMode = AccessT::value;
