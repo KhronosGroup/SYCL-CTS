@@ -42,7 +42,7 @@ template <accessor_tests_common::accessor_type AccType, typename DataT,
           typename GetAccFunctorT>
 void check_exception(GetAccFunctorT construct_acc) {
   auto queue = util::get_cts_object::queue();
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);

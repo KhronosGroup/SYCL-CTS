@@ -516,8 +516,11 @@ template <template <typename, typename...> class action, typename T,
 void for_device_copyable_std_containers(argsT &&...args) {
   constexpr std::size_t medium_array_size = 5;
   for_all_types<action, actionArgsT...>(
-      type_pack<std::array<T, medium_array_size>, std::optional<T>,
-                std::pair<T, T>, std::tuple<T, T>, std::variant<T>>{},
+      type_pack<
+          std::array<T, medium_array_size>, std::optional<T>, std::pair<T, T>,
+          std::tuple<T, T>,
+          std::variant<T, typename std::conditional<!std::is_same_v<T, int>,
+                                                    int, char>::type>>{},
       std::forward<argsT>(args)...);
 }
 
