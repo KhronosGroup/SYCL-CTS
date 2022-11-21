@@ -1,0 +1,44 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for header files and namespaces
+
+This is a test plan for the header files and namespaces as described in SYCL 2020 Section 4.3.
+
+Estimated development time is one day.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are performed for any SYCL backend.
+
+=== Device coverage
+
+All the tests described below are performed only on the default device that is selected on the CTS command line.
+
+== Tests
+
+The following combinations for namespaces and header files exist:
+
+|===
+|    |`::sycl` |`::CL::sycl`
+
+|`sycl/sycl.hpp`
+|1
+|2
+
+|`CL/sycl.hpp`
+|3
+|4
+|===
+
+Configurations 1 and 4 should compile, and 2 and 3 should not. Two versions are proposed:
+
+=== Version 1
+Create a simple test program. For instance, the example program of listing in Section 3.15 "Example SYCL application" of the SYCL 2020 specification. Check if the program compiles when configured for 1 and 4, and check if it does not compile when configured for 2 and 3.
+
+=== Version 2
+Check if the entire CTS successfully compiles when configured for 1 and 4, and check if it does not compile when configured for 2 and 3.
+
+This can be done by creating a configurable header file (e.g. `sycl_cts.hpp.in`) with defines `SYCL_HEADER` and `SYCL_NAMEPACE`, and `#include <SYCL_HEADER>`. For all existing tests, replace `#include <sycl/sycl.hpp>` with `#include "sycl_cts.hpp"` and `sycl::` with `SYCL_NAMESPACE::`. CMake's `try_compile` can be used to see if the tests compile. There should be a CTS option to disable this behavior and only compile and run the tests with `sycl/sycl.hpp` and `::sycl`.
