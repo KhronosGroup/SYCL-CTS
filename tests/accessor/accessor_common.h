@@ -843,7 +843,7 @@ void test_accessor_types_common() {
 }
 
 template <typename T, typename AccT, int dims>
-decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
+decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
