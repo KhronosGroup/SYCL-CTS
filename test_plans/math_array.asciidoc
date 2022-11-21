@@ -62,7 +62,7 @@ In full conformance mode:
 
 === Dimension coverage
 
-The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following dimensions for the `NumElements` template variable of `marray`: `1`, `2`, `4`, `8`, `16`, `32`, and `64`, unless stated otherwise.
+The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following dimensions for the `NumElements` template variable of `marray`: `1`, `2`, `4`, `5`, `8`, `16`, `32`, and `64`, unless stated otherwise.
 
 == Tests
 
@@ -95,7 +95,7 @@ Declare `marray<DataT, NumElements>` instance `ma_inc` with its elements initial
 - Obtain the iterator `it_ma` using `<const>iterator begin()`.
 - Make a copy `it_ma_tmp` using assignment.
 - Increment `it_ma` by one.
-- Check that the value pointed to by `it_ma` is equal to `DataT(2)`.
+- If `NumElements > 1`, check that the value pointed to by `it_ma` is equal to `DataT(2)`.
 - Decrement `it_ma` by one.
 - Check that `it_ma` is equal to `it_ma_tmp`.
 * For both `ma_inc` and `ma_const`, do:
@@ -115,7 +115,7 @@ Declare the following `marray<DataT, NumElements>` instances:
 * `ma_two` as the sequence `0`, `2`, `0`, `2`, `0`, etc.
 * `ma_alt` as the sequence `1`, `2`, `1`, `2`, `1`, etc.
 
-Below is a table specifying the input for each of the hidden friend functions. Two pairs of inputs are specified: the first pair specifies input with a right-hand side `marray` and a left-hand side with a scalar or another `marray`. The right-hand side `marray` is initialized to be the same constant value as the scalar in the table. The second pair specifies input with a left-hand side of a scalar or a `marray` and a right-hand side with another `marray`. The left-hand side `marray` is initialized to be the same constant value as the scalar in the table. The result column for commutative operator table entries for the second pair are not filled as they are equal to the repective column for the first pair. N.D. denotes "not defined".
+Below is a table specifying the input for each of the hidden friend functions. Two pairs of inputs are specified: the first pair specifies input with a left-hand side `marray` and a right-hand side with a scalar or another `marray`. The right-hand side `marray` is initialized to be the same constant value as the scalar in the table. The second pair specifies input with a left-hand side of a scalar or a `marray` and a right-hand side with another `marray`. The left-hand side `marray` is initialized to be the same constant value as the scalar in the table. The result column for commutative operator table entries for the second pair are not filled as they are equal to the respective column for the first pair. N.D. denotes "not defined".
 
 |===
 |`OP` |`marray& lhs` |`marray& rhs` or `DataT& rhs`| `marray& res`| `marray& lhs` or `DataT& lhs` |`marray& rhs` |`marray& res`
@@ -440,10 +440,11 @@ This section tests Section 4.14.3.2 of the SYCL 2020 specification.
 
 This test is executed for `<elems>` and pairings of `<type>, <storage-type>`. `<elems>` is `2`, `3`, `4`, `8`, and `16`. `<type>` and `<storage-type>` is `char` and `int8_t`, `uchar` and `uint8_t`, `short` and `int16_t`, `ushort` and `uint16_t`, `int` and `int32_t`, `uint` and `uint32_t`, `long` and `int64_t`, `ulong` and `uint64_t`, `float` and `float`, and `bool` and `bool`. In addition, if the device has `aspect::fp64`: `double` and `double`. Furthermore, if the device has `aspect::half`: `half` and `half`.
 
-* Check that `std::is_same_v<m<type><elems>, marray<<storage-type>, <elems>>>`.
+* Check that `+std::is_same_v<m<type><elems>, marray<<storage-type>, <elems>>>+`.
 
 === Memory layout and alignment tests
 This section tests Section 4.14.3.3 of the SYCL 2020 specification.
 
 * Check that `alignof(marray<DataT, NumElements>)` is equal to `alignof(std::array<DataT, NumElements>)`.
 * Check that `sizeof(marray<DataT, NumElements>)` is equal to `sizeof(std::array<DataT, NumElements>)`.
+* Declare `marray<DataT, NumElements>` instance `ma_inc` with its elements initialized as the sequence `1`, `2`, `3`, etc. Declare `std::array<DataT, NumElements>` instance `sa_inc` with its elements initialized as the sequence `1`, `2`, `3`, etc. Check that `std::memcmp(&ma_inc, &sa_inc, sizeof(ma_inc)) == 0`.
