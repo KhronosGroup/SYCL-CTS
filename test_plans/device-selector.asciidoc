@@ -1,0 +1,75 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for device selector
+
+This is a test plan for the device selector as described in SYCL 2020 Section 4.6.1.1.
+
+Estimated development time is three days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+=== Predefined selector instances
+
+The file `device_selector/device_selector_predefined.cpp` currently implements tests for the SYCL 1.2.1. predefined device selectors `default_selector`, `gpu_selector`, `accelerator_selector`, and `cpu_selector`. These are marked as deprecated and duplicated to use the SYCL 2020 predefined device selectors `default_selector_v`, `gpu_selector_v`, `accelerator_selector_v`, and `cpu_selector_v` instead.
+
+Additionally when, for CPU, GPU, and accelerator, no device is available, it is checked whether constructing a device will throw an exception with the error code `errc::runtime`.
+
+=== Aspect selector
+
+==== Aspect coverage
+
+All aspects listed in the enum class `aspect` will be tested, let's identify these aspects as `{asp1, ..., aspN}`.
+
+The CTS will cover these combinations:
+
+- All combinations where no aspect is passed in.
+- All combinations where a single aspect is used.
+- All combinations of two aspects, including duplicates (e.g. `aspect_selector(aspX, aspX)`), and reversed order (e.g. `aspect_selector(aspX, aspY)` and `aspect_selector(aspY, aspX)`).
+
+The CTS does not have to test all combinations of 3 or more aspects.
+
+The CTS will test all the different numbers of aspects at least once, up to `N`, where the aspects are not duplicated, i.e. `aspect_selector(asp1), aspect_selector(asp1, asp2), ..., aspect_selector(asp1, asp2, ..., aspN)`.
+
+Additional testing will include 100 combinations of randomly selected aspect combinations, allowing aspect duplicates, with a random arity. The random combinations are selected at test generation time, with each test generation producing the same combinations and each run testing the same random combinations.
+
+For each of the 100 random combinations described so far, add one additional combination which includes forbidden aspects `{noasp1, ..., noaspM}`. `M` is independent of `N`, can be smaller, same size, or larger. These forbidden aspects will be passed to the `denyList` argument. Use the same rules as above for generating aspects, following these extra restrictions:
+
+* `noaspY` is not a member of the set `{asp1, ..., aspN}` for each `noaspY` from the set of forbidden aspects.
+
+==== Without aspects
+
+* `auto selector1 = aspect_selector()`
+* `auto selector2 = aspect_selector({})`
+* `auto selector3 = aspect_selector({}, {})`
+* `auto selector4 = aspect_selector<>()`
+
+In the test, all constructed selectors `selectorX` are used to construct a SYCL device, `devX` for each selector respectively. All devices `devX` must compare equal to the device obtained by `default_selector` (let's call this device `defaultDevice`).
+
+==== With aspects
+
+As described above in "Aspect coverage", assume requested aspects `{asp1, ..., aspN}` and forbidden aspects `denyList = {noasp1, ..., noaspM}` for each test.
+
+These steps are performed before testing combinations:
+
+* Iterate over all devices to find out if there is one that contains all requested aspects but doesn't contain any forbidden ones, we call this `suitableDevice`.
+
+The following steps are performed for each combination. If no `suitableDevice` is found, verify that the steps that construct a device throw an `exception` with `errc::runtime`.
+
+1. Construct the selector object `selector` by calling the appropriate constructor, with forbidden aspects if the constructor allows it.
+2. Construct SYCL device `selectedDevice` using `selector`.
+3. Construct SYCL queue `selectedQueue` using `selector`.
+4. Check that `selectedDevice` and `selectedQueue.get_device()` contain all requested aspects.
+5. If the constructor allows for forbidden aspects to be passed, check that `selectedDevice` and `selectedQueue.get_device()` contain none of the forbidden aspects.
+6. Construct SYCL platform `selectedPlatform` using `selector`.
+7. Check whether `selectedPlatform` has any requested aspects (does not need to be the case). Check that `selectedPlatform` does not have any forbidden aspects. Note: if all devices in the platform have an aspect, the platform itself has the aspect. Hence, `selectedPlatform` should not have any forbidden aspects.
