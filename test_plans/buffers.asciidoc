@@ -71,10 +71,16 @@ For `AllocatorT == sycl_cts::logging_allocator`
 * After modifying its contents on device, updated contents are written back to the vector upon buffer destruction.
 * The logging allocator's log isn't empty.
 
-==== Variadic get_access methods
+=== Linearization
 
-For the following values as `AccessTarget` parameter:
+For `Dimensions == {2;3}` check that:
 
-* `target::device`
-* `target::constant_buffer`
+* An appropriately sized multi-dimensional buffer initialized with multi-dim indices when read back to host is linearized according to 3.11.1
+
+=== no_init property
+
+For `Dimensions == 1` check that:
+
+* When fully initializing a buffer on device, a subsequent kernel adding a requirement on the buffer by creating a `no_init` `write_only` accessor really calls the only trivial CTOR for every element, even without explictly filling the buffer.
+* When fully initializing a buffer on device, a subsequent kernel adding a requirement on the buffer by creating a `no_init` `write_only` ranged accessor really calls the only trivial CTOR for the covered range, even without explictly filling the buffer.
 
