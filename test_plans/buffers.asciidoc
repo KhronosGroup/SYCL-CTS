@@ -3,9 +3,15 @@
 
 = Test plan for buffer (2020 update)
 
-This is a test plan for the changes in APIs described in SYCL 2020 section 4.7.2 compared to SYCL 1.2.1
+This is a test plan for the changes in APIs described in SYCL 2020 compared to SYCL 1.2.1 relating to buffers. These tests don't cover all changes, but a subset.
 
 == Testing scope
+
+Tests intend to cover:
+
+* 4.7.2.1 Buffer interface
+* 4.7.6.4 Properties on buffers
+* 4.7.6.7 Container interface
 
 === Device coverage
 
