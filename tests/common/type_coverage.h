@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <type_traits>
 
 #include <sycl/sycl.hpp>
 
