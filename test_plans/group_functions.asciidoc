@@ -245,7 +245,7 @@ for each of the following use-cases:
 * using `OutPtr joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
 BinaryOperation binary_op);` with some `O binary_op(I, I)`
 * using `OutPtr joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
-T init, BinaryOperation binary_op);` with some fundamental type `T` and `T binary_op(T, I)`
+BinaryOperation binary_op, T init);` with some fundamental type `T` and `T binary_op(T, I)`
 
 check returned type and value for both `group` and `sub_group`.
 
@@ -255,7 +255,7 @@ For some fundamental types `T` and `V` for each of the following use-cases:
 
 * using `T exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op);`
 with some `T binary_op(T, T)`
-* using `T exclusive_scan_over_group(Group g, V x, BinaryOperation binary_op, T init);`
+* using `T exclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_op);`
 with some `T binary_op(T, V)`
 
 check returned type and value for both `group` and `sub_group`.
