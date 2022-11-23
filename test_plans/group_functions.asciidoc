@@ -68,7 +68,8 @@ If function accepts another types, the following list of types is added:
 Pointers are taken from the same list of types.
 
 `bool Predicate(T)` functions are functions checking the ranges of `T` itself or
-the first element of `vec, marray, struct` type `T`.
+the first element of `vec, marray, struct` type `T`. They are choosen in such a way that
+functions using them should return both `true` and `false` in different tests.
 
 `binary_op` used in scans and reductions are addition and maximum of `T` itself or
 the first element of `vec, marray, struct` type `T`.
@@ -79,9 +80,9 @@ Data for the functions are sequences of 1, 2, 3, etc. corresponding to increasin
 
 === Execution
 
-Functions will be executed by `sycl::parallel_for` with `nd_range<Dims>` corresponding to
-one group of maximal group size available on device with `Dims = 1,2,3` (by querying 
-`info::device::max_work_item_sizes<Dims>` and `info::device::max_work_group_size`).
+Functions will be executed by a group using `sycl::parallel_for` with `nd_range<Dims>`
+corresponding to one group of maximal group size available on device with `Dims = 1,2,3`
+(by querying `info::device::max_work_item_sizes<Dims>` and `info::device::max_work_group_size`).
 Sub-group variants will execute functions on the first subgroup of this large group only.
 
 === Traits
@@ -120,8 +121,11 @@ For each possible `memory_scope` wider than `Group::fence_scope` in the list
 * `sycl::memory_scope::device`
 * `sycl::memory_scope::system`
 
-check existence of `void group_barrier(Group g, memory_scope fence_scope)`
-for both `group` and `sub_group`.
+check that invocation of `void group_barrier(Group g, memory_scope fence_scope)`
+for both `group` and `sub_group` behaves as expected: when each of workitems writes 1
+into zero-initialized local memory array (for `sub_group` and `work_group` memory scope)
+or zero-initialized global memory array (for `device` and `system` memory scope)
+after barrier all array values red by workitems in reverse order are equal to 1.
 
 ==== joint_any_of
 
