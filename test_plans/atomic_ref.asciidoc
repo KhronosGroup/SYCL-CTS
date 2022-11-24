@@ -82,13 +82,13 @@ Call constructors:
 
 ==== Member functions
 
-```bool is_lock_free()```
+`bool is_lock_free()`
 
 Check if the function exists and returns `true` or `false`
 
-```void store(T operand,
+`void store(T operand,
     memory_order order = default_write_order,
-    memory_scope scope = default_scope)```
+    memory_scope scope = default_scope)`
 
 For the following values as order parameter:
 
