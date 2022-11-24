@@ -22,8 +22,10 @@ is selected on the CTS command line.
 * `unsigned long long`
 
 Implementation dependend types:
+
 * `float`
 * `double`
+
 The member functions of the atomic_ref class may be emulated and may use a different floating-point environment to those defined by `info::device::single_fp_config` and `info::device::double_fp_config`.
 Therefore, the floating-point atomics may use different rounding modes and may have different exception behavior.
 
@@ -77,8 +79,11 @@ For the following values as Space parameter:
 
 Call constructors:
 
-* `atomic_ref(T&)` and check if
-* `atomic_ref(const atomic_ref&)`
+* `atomic_ref(T&)`
+Check if the values of newly created object match with defult values and the stored value passed as `T&`?
+
+* `atomic_ref(const atomic_ref&) noexcept`
+Check if the values of the newly created object match that of `const atomic_ref&`?
 
 ==== Member functions
 
@@ -183,7 +188,7 @@ And For 64-bit data types on devices that have `aspect::atomic64`.
 
 For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not be checked since it is non-deterministic.
 
-For uneual values: check if it assigns the original value of the referenced object to `expected`.
+For unequal values: check if it assigns the original value of the referenced object to `expected`.
 
 Also check if it returns `true` when the comparison operation and replacement operation were successful.
 
