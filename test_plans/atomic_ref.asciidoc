@@ -228,3 +228,132 @@ Also check if it returns `true` when the comparison operation was successful.
 
 Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)`.
 
+==== Additional member functions available on an object of type `atomic_ref<T>` for integral `T`
+
+===== `T fetch_add(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+* `memory_order::release`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if it atomically adds operand to the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object. 
+Check if it returns the original value of the referenced object. 
+
+===== `T operator+=(T operand) const`
+
+Same as above: Equivalent to `fetch_add(operand) + operand`.
+
+===== `T operator++(int) const`
+
+Same as `fetch_add`: Equivalent to `fetch_add(1)`.
+
+===== `T operator++() const`
+
+Same as `fetch_add`: Equivalent to `fetch_add(1) + 1`.
+
+===== `T fetch_sub(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+* `memory_order::release`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if it atomically subtracts operand from the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
+Check if it returns the original value of the referenced object.
+
+===== `T operator-=(T operand) const`
+
+Same as above: Equivalent to `fetch_sub(operand) - operand`.
+
+===== `T operator--(int) const`
+
+Same as `fetch_sub`: Equivalent to `fetch_sub(1)`.
+
+===== `T operator--() const`
+
+Same as `fetch_add`: Equivalent to fetch_sub(1) - 1.
+
+===== `T fetch_and(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+* `memory_order::release`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if it atomically performs a bitwise AND between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it returns the original value of the referenced object.
+
+===== `T operator&=(T operand) const`
+	
+Same as above: Equivalent to `fetch_and(operand) & operand`.
+
+===== `T fetch_or(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+* `memory_order::release`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if it atomically performs a bitwise OR between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it returns the original value of the referenced object.
+
+===== `T operator|=(T operand) const`
+
+Same as above: Equivalent to `fetch_or(operand) | operand`.
