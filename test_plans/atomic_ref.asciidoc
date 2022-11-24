@@ -81,8 +81,150 @@ Call constructors:
 * `atomic_ref(T&)` and check if
 * `atomic_ref(const atomic_ref&)`
 
-===== Member functions
+==== Member functions
 
-`void store(T operand,
+
+===== `bool is_lock_free()`
+
+Check if the function exists and returns `true` or `false`
+
+===== `void store(T operand,
     memory_order order = default_write_order,
     memory_scope scope = default_scope)`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::release`
+* `memory_order::seq_cst`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if the function atomically stores `operand` to the object referenced by this atomic_ref.
+
+===== `T operator=(T desired) const noexcept`
+
+Same as `store(desired)`: Check if the function atomically stores `operand` to the object referenced by this atomic_ref.
+
+===== `T load(
+    memory_order order = default_read_order
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if the function atomically loads the value of `operand` referenced by this atomic_ref.
+
+===== `operator T() const`
+
+Equivalent to load(): Check if the function atomically loads the value of `operand` referenced by this atomic_ref.
+
+===== `T exchange(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as order parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+Check if atomically replaces the value of the object referenced by this atomic_ref with value operand and returns the original value of the referenced object. 
+
+===== `bool compare_exchange_weak(T &expected, T desired,
+    memory_order success,
+    memory_order failure,
+    memory_scope scope = default_scope) const`
+
+For the following values as success and failure parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not be checked since it is non-deterministic.
+
+For uneual values: check if it assigns the original value of the referenced object to `expected`.
+
+Also check if it returns `true` when the comparison operation and replacement operation were successful.
+
+===== `bool compare_exchange_weak(T &expected, T desired,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Same as above: Equivalent to `compare_exchange_weak(expected, desired, order, order, scope)`.
+
+===== `bool compare_exchange_strong(T &expected, T desired,
+    memory_order success,
+    memory_order failure,
+    memory_scope scope = default_scope) const`
+
+For the following values as success and failure parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as scope parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And For 64-bit data types on devices that have `aspect::atomic64`.
+
+For equal values: check if it replaces the value of the referenced object with the value of `desired`.
+
+For uneual values: check if it assigns the original value of the referenced object to `expected`.
+
+Also check if it returns `true` when the comparison operation was successful.
+
+===== `bool compare_exchange_strong(T &expected, T desired,
+    memory_order order =
+    default_read_modify_write_order) const`
+
+Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)`.
+
