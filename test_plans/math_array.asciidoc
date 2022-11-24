@@ -28,7 +28,6 @@ In regular mode:
 * `char`
 * `int`
 * `float`
-* `std::byte`
 * `std::int8_t`
 * `std::int32_t`
 * A user-defined struct that meets the NumericType requirements of the C++ standard.
@@ -41,7 +40,7 @@ In addition, if the device has `aspect::fp16`:
 
 * `half`
 
-In full conformance mode:
+In full conformance mode, the following types are additionally tested:
 
 * `signed char`
 * `unsigned char`
@@ -62,7 +61,7 @@ In full conformance mode:
 
 === Dimension coverage
 
-The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following dimensions for the `NumElements` template variable of `marray`: `1`, `2`, `4`, `5`, `8`, `16`, `32`, and `64`, unless stated otherwise.
+The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following dimensions for the `NumElements` template variable of `marray`: `1`, `2`, `3`, `4`, `5`, `8`, `16`, `32`, and `64`, unless stated otherwise.
 
 == Tests
 
@@ -73,8 +72,11 @@ This section tests Section 4.14.3.1 of the SYCL 2020 specification.
 ==== Constructors
 
 * Call constructor `marray()` to initialize an instance `ma`. Check that all the values of `ma` are equal to the default-constructed elements `DataT`.
-* Call constructor `explicit constexpr marray(const DataT& arg)` with `DataT(1)` to initialize a `constexpr` instance `ma`. Check using `operator[]` that all values of `ma` are equal to `DataT(1)`.
-* Call the constructor `template <typename... ArgTN> constexpr marray(const ArgTN&... args)` to initialize a `constexpr` instance `ma`, with:
+
+Repeat the below test twice: once to construct a `constexpr` instance and once to construct a non-`constexpr` instance.
+
+* Call constructor `explicit constexpr marray(const DataT& arg)` with `DataT(1)` to initialize an instance `ma`. Check using `operator[]` that all values of `ma` are equal to `DataT(1)`.
+* Call the constructor `template <typename... ArgTN> constexpr marray(const ArgTN&... args)` to initialize an instance `ma`, with:
 - `NumElements` instances `DataT` initialized with the sequence `1`, `2`, `3`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
 - If `NumElements > 1`: one instance of `DataT` initialized with `1` followed by one instance of `marray<DataT, N>` where `N` is `NumElements - 1`. `marray<DataT, N>` is initialized with the sequence `2`, `3`, `4`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
 - If `NumElements > 1`: instance of `marray<DataT, N>` where `N` is `NumElements - 1` followed by one instance of `DataT` initialized with `NumElements - 1`. `marray<DataT, N>` is initialized with the sequence `1`, `2`, `3`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
@@ -438,7 +440,7 @@ The tests where `OP` is `%`, `%=`, `&`, `|`, `^`, `&=`, `|=`, `^=`, `<<`, `>>`, 
 === Alias tests
 This section tests Section 4.14.3.2 of the SYCL 2020 specification.
 
-This test is executed for `<elems>` and pairings of `<type>, <storage-type>`. `<elems>` is `2`, `3`, `4`, `8`, and `16`. `<type>` and `<storage-type>` is `char` and `int8_t`, `uchar` and `uint8_t`, `short` and `int16_t`, `ushort` and `uint16_t`, `int` and `int32_t`, `uint` and `uint32_t`, `long` and `int64_t`, `ulong` and `uint64_t`, `float` and `float`, and `bool` and `bool`. In addition, if the device has `aspect::fp64`: `double` and `double`. Furthermore, if the device has `aspect::half`: `half` and `half`.
+This test is executed for `<elems>` and pairings of `<type>, <storage-type>`. `<elems>` is `2`, `3`, `4`, `8`, and `16`. The pairings `<type>` and `<storage-type>` are `char` and `int8_t`, `uchar` and `uint8_t`, `short` and `int16_t`, `ushort` and `uint16_t`, `int` and `int32_t`, `uint` and `uint32_t`, `long` and `int64_t`, `ulong` and `uint64_t`, both `float`, and both `bool`. In addition, if the device has `aspect::fp64`: both are `double`. Furthermore, if the device has `aspect::half`: both are `half`.
 
 * Check that `+std::is_same_v<m<type><elems>, marray<<storage-type>, <elems>>>+`.
 
