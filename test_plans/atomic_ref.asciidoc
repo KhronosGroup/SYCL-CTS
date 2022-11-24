@@ -86,9 +86,9 @@ Call constructors:
 
 Check if the function exists and returns `true` or `false`
 
-===== ```void store(T operand,
-    memory_order order = default_write_order,
-    memory_scope scope = default_scope)```
+===== `void store(T operand,
+=====    memory_order order = default_write_order,
+=====    memory_scope scope = default_scope)`
 
 For the following values as order parameter:
 
@@ -113,8 +113,8 @@ Check if the function atomically stores `operand` to the object referenced by th
 Same as `store(desired)`: Check if the function atomically stores `operand` to the object referenced by this atomic_ref.
 
 ===== `T load(
-    memory_order order = default_read_order
-    memory_scope scope = default_scope) const`
+=====    memory_order order = default_read_order
+=====    memory_scope scope = default_scope) const`
 
 For the following values as order parameter:
 
@@ -139,8 +139,8 @@ Check if the function atomically loads the value of `operand` referenced by this
 Equivalent to load(): Check if the function atomically loads the value of `operand` referenced by this atomic_ref.
 
 ===== `T exchange(T operand,
-    memory_order order = default_read_modify_write_order,
-    memory_scope scope = default_scope) const`
+=====    memory_order order = default_read_modify_write_order,
+=====    memory_scope scope = default_scope) const`
 
 For the following values as order parameter:
 
@@ -161,9 +161,9 @@ And For 64-bit data types on devices that have `aspect::atomic64`.
 Check if atomically replaces the value of the object referenced by this atomic_ref with value operand and returns the original value of the referenced object. 
 
 ===== `bool compare_exchange_weak(T &expected, T desired,
-    memory_order success,
-    memory_order failure,
-    memory_scope scope = default_scope) const`
+=====    memory_order success,
+=====    memory_order failure,
+=====    memory_scope scope = default_scope) const`
 
 For the following values as success and failure parameter:
 
@@ -188,15 +188,15 @@ For uneual values: check if it assigns the original value of the referenced obje
 Also check if it returns `true` when the comparison operation and replacement operation were successful.
 
 ===== `bool compare_exchange_weak(T &expected, T desired,
-    memory_order order = default_read_modify_write_order,
-    memory_scope scope = default_scope) const`
+=====    memory_order order = default_read_modify_write_order,
+=====    memory_scope scope = default_scope) const`
 
 Same as above: Equivalent to `compare_exchange_weak(expected, desired, order, order, scope)`.
 
 ===== `bool compare_exchange_strong(T &expected, T desired,
-    memory_order success,
-    memory_order failure,
-    memory_scope scope = default_scope) const`
+=====    memory_order success,
+=====    memory_order failure,
+=====    memory_scope scope = default_scope) const`
 
 For the following values as success and failure parameter:
 
@@ -220,9 +220,9 @@ For uneual values: check if it assigns the original value of the referenced obje
 
 Also check if it returns `true` when the comparison operation was successful.
 
-===== `bool compare_exchange_strong(T &expected, T desired,
-    memory_order order =
-    default_read_modify_write_order) const`
+===== `bool compare_exchange_strong(T &expected, T desired, /
+    memory_order order = /
+    default_read_modify_write_order) const` /
 
 Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)`.
 
