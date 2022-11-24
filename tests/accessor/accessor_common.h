@@ -201,7 +201,7 @@ inline auto get_all_dimensions() {
   static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
   return dimensions;
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Factory function for getting type_pack with target values
  */
@@ -211,7 +211,7 @@ inline auto get_targets() {
                  sycl::target::host_task>::generate_named();
   return targets;
 }
-
+#endif
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported
  * sizes
@@ -232,7 +232,7 @@ struct tag_factory {
   static_assert(AccType != AccType,
                 "There is no tag support for such accessor type");
 };
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
  * template parameters
@@ -268,7 +268,7 @@ struct tag_factory<accessor_type::generic_accessor> {
     }
   }
 };
-
+#endif
 /**
  * @brief Function helps to get TagT corresponding to AccessMode parameter
  */
@@ -316,7 +316,7 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
   res_acc[res_i++] = testing_acc.rbegin() == testing_acc.rend();
   res_acc[res_i++] = testing_acc.crbegin() == testing_acc.crend();
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Common function that constructs accessor with default constructor
  *and checks post-conditions
@@ -363,7 +363,7 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(conditions_check[i]);
   }
 }
-
+#endif
 namespace detail {
 /**
  * @brief Wraps callable to make possible chaining foo(boo(arg)) calls by fold
@@ -410,7 +410,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(acc_ref, changed_val);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check zero dimension constructor of accessor
  *
@@ -488,7 +488,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-
+#endif
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
  * parameter. Results of compare will be stored in res_acc
@@ -514,7 +514,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(testing_acc[id], changed_val);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check common constructor of accessor
  *
@@ -645,7 +645,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
-
+#endif
 /**
  * @brief Function mainly for testing no_init property. The function tries to
  * write to the accessor and only after that tries to read from the accessor.
@@ -667,7 +667,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
     res_acc[0] = value_operations::are_equal(testing_acc[id], expected_data);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check accessor constructor with no_init property
  *
@@ -717,7 +717,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
     CHECK(compare_res);
   }
 }
-
+#endif
 /**
  * @brief Function helps to verify that constructor of accessor with no_init
  * property and access_mode::read triggers an exception
