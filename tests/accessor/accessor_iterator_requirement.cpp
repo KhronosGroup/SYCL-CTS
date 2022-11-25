@@ -11,12 +11,6 @@
 #include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
-#include "accessor_common.h"
-#endif
-
 namespace accessor_iterator_requirement {
 
 /**
@@ -37,7 +31,7 @@ inline void print_errors(
   }
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "iterator",
  "[accessor]")({
@@ -48,18 +42,19 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;
-  named_requirement_verification::string_view errors[size_of_res_array];
+  std::array<named_requirement_verification::string_view, size_of_res_array>
+      errors;
 
   constexpr size_t size_of_dummy = 1;
   int dummy[size_of_dummy] = {1};
   {
     sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
-        errors, sycl::range(size_of_res_array));
+        errors.data(), sycl::range(size_of_res_array));
     sycl::buffer<int, 1> dummy_buf(dummy, sycl::range(size_of_dummy));
 
     q.submit([&](sycl::handler& cgh) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
-      auto dummy_acc = res_buf.get_access<sycl::access_mode::read_write>(cgh);
+      auto dummy_acc = dummy_buf.get_access<sycl::access_mode::read_write>(cgh);
       cgh.single_task([=] {
         auto dummy_acc_it = dummy_acc.begin();
         auto verification_result =
@@ -123,7 +118,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "iterator",
  "[accessor]")({
@@ -137,7 +132,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   {
     sycl::buffer<int, 1> dummy_buf(dummy, sycl::range(size_of_dummy));
 
-    sycl::host_accessor<sycl::access_mode::read_write> dummy_acc(dummy_buf);
+    sycl::host_accessor<int> dummy_acc(dummy_buf);
     auto dummy_acc_it = dummy_acc.begin();
     auto verification_result =
         legacy_random_access_iterator_requirement{}.is_satisfied_for(
