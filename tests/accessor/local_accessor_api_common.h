@@ -30,8 +30,9 @@ enum class check : size_t {
 
 template <typename T, typename AccT>
 void test_local_accessor_types() {
-  constexpr sycl::access_mode mode = (std::is_const_v<T>) ? sycl::access_mode::read
-                                                : sycl::access_mode::read_write;
+  constexpr sycl::access_mode mode = (std::is_const_v<T>)
+                                         ? sycl::access_mode::read
+                                         : sycl::access_mode::read_write;
   test_accessor_types_common<T, AccT, mode>();
   STATIC_CHECK(
       std::is_same_v<
@@ -124,7 +125,7 @@ class run_api_tests {
       {
         sycl::buffer<bool, 2> res_buf(
             res.data()->data(), sycl::range<2>(to_integral(check::nChecks),
-                                       global_range_buffer_size));
+                                               global_range_buffer_size));
         queue
             .submit([&](sycl::handler &cgh) {
               AccT acc(local_range, cgh);
@@ -175,8 +176,8 @@ class run_api_tests {
           "return type for get_pointer()",
           "result for get_pointer()"};
 
-      constexpr size_t N =
-          to_integral((std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
+      constexpr size_t N = to_integral(
+          (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
       for (size_t i = 0; i < N; i++) {
         INFO(info_strings[i]);
         CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
@@ -184,7 +185,8 @@ class run_api_tests {
       }
     }
 
-    SECTION(get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
+    SECTION(
+        get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
       constexpr size_t alloc_size = 2;
       auto local_range = util::get_cts_object::range<dims>::get(
           alloc_size, alloc_size, alloc_size);
@@ -192,7 +194,8 @@ class run_api_tests {
         AccT acc1{local_range, cgh};
         AccT acc2;
         acc2.swap(acc1);
-        CHECK(acc1.get_range() == util::get_cts_object::range<dims>::get(0, 0, 0));
+        CHECK(acc1.get_range() ==
+              util::get_cts_object::range<dims>::get(0, 0, 0));
         CHECK(acc2.get_range() == local_range);
       });
     }
