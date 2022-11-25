@@ -40,24 +40,38 @@ In addition, if the device has `aspect::fp16`:
 
 * `half`
 
-In full conformance mode, the following types are additionally tested:
+In full conformance mode:
 
+* `char`
 * `signed char`
 * `unsigned char`
 * `short`
 * `unsigned short`
+* `int`
 * `unsigned int`
 * `long`
 * `unsigned long`
 * `long long`
 * `unsigned long long`
+* `float`
 * `bool`
+* `std::int8_t`
 * `std::uint8_t`
 * `std::int16_t`
 * `std::uint16_t`
+* `std::int32_t`
 * `std::uint32_t`
 * `std::int64_t`
 * `std::uint64_t`
+* A user-defined struct that meets the NumericType requirements of the C++ standard.
+
+In addition, if the device has `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `half`
 
 === Dimension coverage
 
