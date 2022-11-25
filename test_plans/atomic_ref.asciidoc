@@ -97,7 +97,7 @@ Check if the values of the newly created object match that of `const atomic_ref&
 
 Check if the function exists and returns `true` or `false`
 
-Note: for atomic load/stores and other atomic functions they might be called in a `while` loop simillar to how it is done in [/tests/usm/usm_atomic_access.h](https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/usm/usm_atomic_access.h#L115).
+Note: for atomic load/stores and other atomic functions they might be called in a `while` loop simillar to how it is done in [/tests/usm/usm_atomic_access.h](https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/usm/usm_atomic_access.h#L141).
 
 `void store(T operand,
     memory_order order = default_write_order,
