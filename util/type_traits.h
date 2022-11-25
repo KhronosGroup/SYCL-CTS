@@ -254,8 +254,8 @@ struct addition : std::false_type {};
 
 template <typename LeftOperand, typename RightOperand>
 struct addition<LeftOperand, RightOperand,
-                std::void_t<decltype(std::declval<LeftOperand>() +
-                                     std::declval<RightOperand>())>>
+                std::void_t<decltype(std::declval<LeftOperand&>() +
+                                     std::declval<RightOperand&>())>>
     : std::true_type {};
 
 template <typename LeftOperand, typename RightOperand>
@@ -266,8 +266,8 @@ struct subtraction : std::false_type {};
 
 template <typename LeftOperand, typename RightOperand>
 struct subtraction<LeftOperand, RightOperand,
-                   std::void_t<decltype(std::declval<LeftOperand>() -
-                                        std::declval<RightOperand>())>>
+                   std::void_t<decltype(std::declval<LeftOperand&>() -
+                                        std::declval<RightOperand&>())>>
     : std::true_type {};
 
 template <typename LeftOperand, typename RightOperand>
