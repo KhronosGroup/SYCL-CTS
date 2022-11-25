@@ -187,7 +187,7 @@ are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
 }
 
 template <typename... Types, typename U>
-typename std::enable_if_t<!std::is_same_v<std::tuple<Types...>, U>, bool>
+std::enable_if_t<!std::is_same_v<std::tuple<Types...>, U>, bool>
 are_equal(const std::tuple<Types...>& left, const U& right) {
   using tuple_t = std::remove_reference_t<decltype(left)>;
   using indexes = std::make_index_sequence<std::tuple_size<tuple_t>::value>;

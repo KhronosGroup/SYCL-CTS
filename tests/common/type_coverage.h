@@ -519,8 +519,8 @@ void for_device_copyable_std_containers(argsT &&...args) {
       type_pack<
           std::array<T, medium_array_size>, std::optional<T>, std::pair<T, T>,
           std::tuple<T, T>,
-          std::variant<T, typename std::conditional<!std::is_same_v<T, int>,
-                                                    int, char>::type>>{},
+          std::variant<T, std::conditional_t<!std::is_same_v<T, int>,
+                                                    int, char>>>{},
       std::forward<argsT>(args)...);
 }
 
