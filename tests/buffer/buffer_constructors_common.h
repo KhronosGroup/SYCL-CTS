@@ -27,6 +27,33 @@
 namespace buffer_constructors_common {
 using namespace sycl_cts;
 
+inline std::stringstream alloc_log;
+
+template <typename T>
+class logging_alloc {
+ public:
+  typedef T value_type;
+  typedef T *pointer;
+  typedef size_t size_type;
+
+  T *allocate(size_t n) {
+    alloc_log << "Allocating " << n << " bytes of storage.\n";
+    T *mem = static_cast<T *>(malloc(sizeof(T) * n));
+    if (mem != nullptr)
+      return mem;
+    else {
+      alloc_log << "Failed!\n";
+      throw std::bad_alloc();
+    }
+  }
+
+  void deallocate(T *p, size_t n) {
+    alloc_log << "Deallocating " << n << " bytes of storage at " << p << "\n";
+    free(p);
+    return;
+  }
+};
+
 template <typename T, int size, int dims>
 class BufferInteropNoEvent;
 
@@ -106,6 +133,33 @@ class buffer_ctors {
           !check_buffer_constructor(buf1, r, data_verify)) {
         FAIL(log, "(const data pointer, range) constructor fail.");
       }
+    }
+
+    /* check (Container)*/
+    if (dims == 1) {
+      std::vector<T> cont(size);
+      sycl::buffer<T, dims> buf(cont, propList);
+      sycl::buffer<T, dims> buf1(cont);
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify)) {
+        FAIL(log, "(Container) constructor fail.");
+      }
+    }
+
+    /* check (Container, allocator)*/
+    if (dims == 1) {
+      std::vector<T> cont(size);
+      buffer_constructors_common::logging_alloc<T> logging_alloc;
+      sycl::buffer<T, dims> buf(cont, logging_alloc, propList);
+      sycl::buffer<T, dims> buf1(cont, logging_alloc);
+      constexpr bool data_verify = true;
+      if (!check_buffer_constructor(buf, r, data_verify) ||
+          !check_buffer_constructor(buf1, r, data_verify) ||
+          alloc_log.str().empty()) {
+        FAIL(log, "(Container, allocator) constructor fail.");
+      }
+      alloc_log.clear();
     }
 
     /* check (shared pointer, range) constructor*/
