@@ -179,8 +179,10 @@ class run_tests_properties {
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name,
                   const std::string& target_name) {
-    test_constructor_with_no_init<T, Dimension, AccessMode, Target>(
-        type_name, access_mode_name, target_name);
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      test_constructor_with_no_init<T, Dimension, AccessMode, Target>(
+          type_name, access_mode_name, target_name);
+    }
 
     test_property_member_functions<T, Dimension, AccessMode, Target>(
         type_name, access_mode_name, target_name);
@@ -208,8 +210,8 @@ class run_generic_properties_tests {
     // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_tests_properties, const T>(access_modes, targets,
-                                                        dimensions, actual_type_name);
+    for_all_combinations<run_tests_properties, T>(access_modes, targets,
+                                                  dimensions, actual_type_name);
   }
 };
 }  // namespace generic_accessor_properties
