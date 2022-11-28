@@ -62,10 +62,10 @@ int numElements(const float &) { return 1; }
 int numElements(const int &) { return 1; }
 
 /* extract an individual elements of a float type */
-float getElement(const float &f, int ix) { return f; }
+float getElement(const float &f, int) { return f; }
 
 /* extract an individual elements of an int type */
-int getElement(const int &f, int ix) { return f; }
+int getElement(const int &f, int) { return f; }
 
 /* create random floats with full integer range */
 void rand(MTdata &rng, float *buf, int num) {

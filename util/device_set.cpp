@@ -15,7 +15,7 @@
 
 namespace sycl_cts::util {
 
-device_set::device_set(const sycl::context& ctx, util::logger& log)
+device_set::device_set(const sycl::context& ctx, util::logger&)
     : m_context(ctx) {
   auto devices = ctx.get_devices();
 

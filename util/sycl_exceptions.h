@@ -86,6 +86,7 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
 #if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0
     // There should be no compilation failures, but every CHECK_THROWS_MATCHES
     // should fail with this matcher
+    (void)other;
     return false;
 #else
     return other.category() == m_category;
