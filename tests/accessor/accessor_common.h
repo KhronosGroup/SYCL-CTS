@@ -658,7 +658,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           typename AccT, typename ResultAccT>
 void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT expected_data(changed_val);
+  DataT expected_data = value_operations::init<DataT>(changed_val);
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   value_operations::assign(testing_acc[id], changed_val);
