@@ -32,7 +32,7 @@ public:
   void run(util::logger &log) override {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_all_types_and_vectors<buffer_api_common::check_buffer_api_for_type>(
-        get_cts_types::vector_types, log);
+        get_buffer_types::vector_types, log);
 #ifdef INT8_MAX
     for_type_and_vectors<buffer_api_common::check_buffer_api_for_type,
                          std::int8_t>(log, "std::int8_t");
