@@ -20,8 +20,8 @@ template <typename DataT, int Dimension, sycl::access_mode AccessMode,
 void test_constructor_with_no_init(const std::string& type_name,
                                    const std::string& access_mode_name,
                                    const std::string& target_name) {
-  const const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  const const auto offset = sycl::id<Dimension>();
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
   const sycl::property_list prop_list(sycl::no_init);
 
   auto section_name = get_section_name<Dimension>(
