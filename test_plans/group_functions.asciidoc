@@ -114,13 +114,14 @@ types `T` and both `group` and `sub_group` check returned type and value.
 
 ==== group_barrier
 
-For each possible `memory_scope` wider than `Group::fence_scope` in the list
+For each `memory_scope` wider than `Group::fence_scope` in the list
 
 * `sycl::memory_scope::sub_group`
 * `sycl::memory_scope::work_group`
 * `sycl::memory_scope::device`
 * `sycl::memory_scope::system`
 
+supported by the hardware (from query of `info::device::atomic_fence_scope_capabilities`)
 check that invocation of `void group_barrier(Group g, memory_scope fence_scope)`
 for both `group` and `sub_group` behaves as expected: when each of workitems writes 1
 into zero-initialized local memory array (for `sub_group` and `work_group` memory scope)
