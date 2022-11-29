@@ -179,16 +179,14 @@ class run_tests_properties {
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name,
                   const std::string& target_name) {
+    // In order not to run again with same parameters
     if constexpr (AccessMode != sycl::access_mode::read) {
       test_constructor_with_no_init<T, Dimension, AccessMode, Target>(
           type_name, access_mode_name, target_name);
-    }
 
-    test_property_member_functions<T, Dimension, AccessMode, Target>(
-        type_name, access_mode_name, target_name);
-
-    // In order not to run again with same parameters
-    if constexpr (AccessMode == sycl::access_mode::read) {
+      test_property_member_functions<T, Dimension, AccessMode, Target>(
+          type_name, access_mode_name, target_name);
+    } else {
       test_exception<T, Dimension, Target>(type_name, target_name);
     }
   }
