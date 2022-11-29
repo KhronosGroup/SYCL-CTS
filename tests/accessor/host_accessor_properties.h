@@ -149,8 +149,8 @@ class run_tests_properties {
       test_constructor_with_no_init<T, Dimension, AccessMode>(type_name,
                                                               access_mode_name);
 
-      test_property_member_functions<T, Dimension, AccessMode>(type_name,
-                                                               access_mode_name);
+      test_property_member_functions<T, Dimension, AccessMode>(
+          type_name, access_mode_name);
     } else {
       test_exception<T, Dimension>(type_name);
     }
