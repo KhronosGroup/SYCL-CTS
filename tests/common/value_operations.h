@@ -46,8 +46,8 @@ void assign_helper(T& left, const U& right) {
 }
 
 template <typename T>
-typename std::enable_if_t<std::is_same_v<T, bool> ||
-                                std::is_same_v<T, std::optional<bool>>, void>
+typename std::enable_if_t<
+    std::is_same_v<T, bool> || std::is_same_v<T, std::optional<bool>>, void>
 assign_helper(T& left, const int& right) {
   left = (right % 2 != 0);
 }
@@ -58,8 +58,8 @@ bool are_equal_helper(const T& left, const U& right) {
 }
 
 template <typename T>
-typename std::enable_if_t<std::is_same_v<T, bool> ||
-                                std::is_same_v<T, std::optional<bool>>, bool>
+typename std::enable_if_t<
+    std::is_same_v<T, bool> || std::is_same_v<T, std::optional<bool>>, bool>
 are_equal_helper(const T& left, const int& right) {
   return (left == (right % 2 != 0));
 }
