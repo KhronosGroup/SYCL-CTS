@@ -131,7 +131,7 @@ class run_api_tests {
         CHECK(value_operations::are_equal(data[linear_index], changed_val));
     }
     SECTION(get_section_name<dims>(type_name, access_mode_name,
-                                    "Check swap for host_accessor")) {
+                                   "Check swap for host_accessor")) {
       T data1 = value_operations::init<T>(expected_val);
       T data2 = value_operations::init<T>(changed_val);
       {
@@ -152,8 +152,7 @@ class run_api_tests {
       if constexpr (AccessMode != sycl::access_mode::read) {
         CHECK(value_operations::are_equal(data1, changed_val));
         CHECK(value_operations::are_equal(data2, expected_val));
-      }
-      else {
+      } else {
         CHECK(value_operations::are_equal(data1, expected_val));
         CHECK(value_operations::are_equal(data2, changed_val));
       }
