@@ -45,7 +45,7 @@ Most of the functions tested have three overloads: (1) without dependent events,
 
 === Kernel function
 
-The below functions are called twice: with the kernel function as a lambda function and with the kernel function as a named function object type. For each test, the kernel function is some simple kernel that writes a non-zero value to USM. This USM is zero-initialized and is checked with afterwards for correctness. The `parallel_for` tests for `range` are executed for a three-dimensional range of size `1`. The `parallel_for` tests for `nd_range` are executed for a three-dimensional global and local range of size `1`.
+The below functions are called twice: with the kernel function as a lambda function and with the kernel function as a named function object type. For each test, the kernel function is some simple kernel that writes a non-zero value to USM. This USM is zero-initialized and is checked with afterwards for correctness. The `parallel_for` tests for `range` are executed for a three-dimensional range of size `1`. The `parallel_for` tests for `nd_range` are executed for a three-dimensional global and local range of size `1`. The USM is of allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
 
 * `event single_task(const KernelType& kernelFunc)`
 * `event single_task(event depEvent, const KernelType& kernelFunc)`
