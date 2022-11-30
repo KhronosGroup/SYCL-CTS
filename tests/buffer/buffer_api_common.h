@@ -278,7 +278,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct element count
        with deprecated get_count */
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     auto count_depr = buf.get_count();
     check_return_type<size_t>(log, count_depr, "sycl::buffer::get_count()");
 
@@ -287,6 +287,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "sycl::buffer::get_count() does not return "
            "the correct number of elements");
     }
+#endif
 
     /* check the buffer returns the correct byte size */
     auto ret_size = buf.byte_size();
@@ -300,7 +301,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct byte size
      with deprecated get_size*/
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     auto ret_size_depr = buf.get_size();
     check_return_type<size_t>(log, ret_size_depr, "sycl::buffer::get_size()");
 
@@ -309,6 +310,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "sycl::buffer::get_size() does not return "
            "the correct size of the buffer");
     }
+#endif
 
     auto q = util::get_cts_object::queue();
 
@@ -338,6 +340,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
       auto acc = buf.template get_access<sycl::access_mode::read_write>();
       check_return_type<
@@ -345,6 +348,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
                              sycl::target::host_buffer>>(
           log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
     }
+#endif
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
@@ -360,6 +364,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
       auto acc = buf.template get_access<sycl::access_mode::read_write>(
           r, offset);
@@ -370,6 +375,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           "sycl::buffer::get_access<read_write, host_buffer>(range<>, "
           "id<>)");
     }
+#endif
 
     /* check get_allocator() */
     {
