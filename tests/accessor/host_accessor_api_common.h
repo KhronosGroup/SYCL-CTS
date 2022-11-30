@@ -130,20 +130,32 @@ class run_api_tests {
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data[linear_index], changed_val));
     }
-    if constexpr (AccessMode != sycl::access_mode::read) {
-      SECTION(get_section_name<dims>(type_name, access_mode_name,
-                                     "Check swap for host_accessor")) {
-        T data1(expected_val);
-        T data2(changed_val);
-        {
-          sycl::buffer<T, dims> data_buf1(&data1, r);
-          sycl::buffer<T, dims> data_buf2(&data2, r);
-          AccT acc1(data_buf1);
-          AccT acc2(data_buf2);
-          acc1.swap(acc2);
+    SECTION(get_section_name<dims>(type_name, access_mode_name,
+                                    "Check swap for host_accessor")) {
+      T data1 = value_operations::init<T>(expected_val);
+      T data2 = value_operations::init<T>(changed_val);
+      {
+        sycl::buffer<T, dims> data_buf1(&data1, r);
+        sycl::buffer<T, dims> data_buf2(&data2, r);
+        AccT acc1(data_buf1);
+        AccT acc2(data_buf2);
+        acc1.swap(acc2);
+        auto &acc_ref1 = acc1[sycl::id<dims>()];
+        auto &acc_ref2 = acc2[sycl::id<dims>()];
+        CHECK(value_operations::are_equal(acc_ref1, changed_val));
+        CHECK(value_operations::are_equal(acc_ref2, expected_val));
+        if constexpr (AccessMode != sycl::access_mode::read) {
+          value_operations::assign(acc_ref1, expected_val);
+          value_operations::assign(acc_ref2, changed_val);
         }
+      }
+      if constexpr (AccessMode != sycl::access_mode::read) {
         CHECK(value_operations::are_equal(data1, changed_val));
         CHECK(value_operations::are_equal(data2, expected_val));
+      }
+      else {
+        CHECK(value_operations::are_equal(data1, expected_val));
+        CHECK(value_operations::are_equal(data2, changed_val));
       }
     }
   }
