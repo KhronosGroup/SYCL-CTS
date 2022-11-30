@@ -19,6 +19,27 @@ All the tests described below are performed for any SYCL implementation.
 
 All the tests described below are performed only on the default device that is selected on the CTS command line.
 
+=== Type coverage
+
+All the tests described below are executed for the following types:
+
+* `char`
+* `short`
+* `int`
+* `long long`
+* `std::size_t`
+* `bool`
+* `float`
+* A user-defined trivially-copyable struct with multiple member variables.
+
+In addition, if the device has aspect `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `sycl::half`
+
 == Tests
 Most of the functions tested have three overloads: (1) without dependent events, (2) with a single dependent event, and (3) with multiple dependent events. When this is the case, overload (2) will use the returned event from (1) as its `depEvent` and overload (3) will use the returned events from (1) and (2) as its `depEvents`.
 
@@ -38,7 +59,7 @@ The below functions are called twice: with the kernel function as a lambda funct
 
 === Unified shared memory
 
-The below functions are called to copy some data from a USM buffer `src` to a USM buffer `dest`. `src` is initialized to be non-zero and `dest` is initialized to be zero. Buffer `dest` is checked afterwards for correctness. It is checked whether the return type of the functions is `event`.
+The below functions are called to copy some data from a USM buffer `src` to a USM buffer `dest`. `src` is initialized to be non-zero and `dest` is initialized to be zero. Buffer `dest` is checked afterwards for correctness. It is checked whether the return type of the functions is `event`. The USM buffers are allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
 
 * `event memcpy(void* dest, const void* src, size_t numBytes)`
 * `event memcpy(void* dest, const void* src, size_t numBytes, event depEvent)`
@@ -57,14 +78,14 @@ The below functions are called to set some USM zero-initialized buffer `ptr` to 
 * `event fill(void* ptr, const T& pattern, size_t count, const std::vector<event>& depEvents)`
 
 ==== Prefetch
-Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`.
+Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`. The USM buffers are allocation type `shared`. If the used device lacks this capability (aspect `aspect::usm_shared_allocations`), this test is skipped.
 
 * `event prefetch(void* ptr, size_t numBytes)`
 * `event prefetch(void* ptr, size_t numBytes, event depEvent)`
 * `event prefetch(void* ptr, size_t numBytes, const std::vector<event>& depEvents)`
 
 ==== Memory advise
-Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`. The value of `advice` is `0`.
+Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`. The value of `advice` is `0`. The USM buffers are allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
 
 * `event mem_advise(void* ptr, size_t numBytes, int advice)`
 * `event mem_advise(void* ptr, size_t numBytes, int advice, event depEvent)`
