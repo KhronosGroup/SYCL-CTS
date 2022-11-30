@@ -39,8 +39,7 @@ using host_accessor =
  *         accessor
  */
 template <accessor_tests_common::accessor_type AccType, typename DataT,
-          int Dimension,
-          typename GetAccFunctorT>
+          int Dimension, typename GetAccFunctorT>
 void check_exception(GetAccFunctorT construct_acc) {
   auto queue = util::get_cts_object::queue();
   DataT some_data(expected_val);
@@ -100,8 +99,8 @@ class test_exception_for_local_acc {
     SECTION(section_name) {
       auto construct_acc = [](sycl::queue& queue) {
         constexpr size_t range_size = 2;
-      auto range = util::get_cts_object::range<Dimension>::get(
-          range_size, range_size, range_size);
+        auto range = util::get_cts_object::range<Dimension>::get(
+            range_size, range_size, range_size);
         // Use a variable to avoid device code optimisation.
         auto is_empty =
             usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, bool>(
@@ -240,7 +239,9 @@ class test_exception_for_generic_acc {
         "buffer, tag and range. In case, the range exceeds the range of buffer "
         "in any dimension.");
     SECTION(section_name) {
-      constexpr auto tag = (Target == sycl::target::device) ? sycl::read_only : sycl::read_only_host_task;
+      constexpr auto tag = (Target == sycl::target::device)
+                               ? sycl::read_only
+                               : sycl::read_only_host_task;
       auto construct_acc = [&great_range](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
@@ -273,12 +274,13 @@ class test_exception_for_generic_acc {
         "tag, range and id. In case, when the sum of range and offset exceeds "
         "the range of buffer in any dimension.");
     SECTION(section_name) {
-      constexpr auto tag = (Target == sycl::target::device) ? sycl::read_only : sycl::read_only_host_task;
+      constexpr auto tag = (Target == sycl::target::device)
+                               ? sycl::read_only
+                               : sycl::read_only_host_task;
       auto construct_acc = [&default_range, id](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::accessor<DataT, Dimension>(data_buf, default_range, id,
-                                         tag);
+        sycl::accessor<DataT, Dimension>(data_buf, default_range, id, tag);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
@@ -305,12 +307,13 @@ class test_exception_for_generic_acc {
         "of "
         "buffer in any dimension.");
     SECTION(section_name) {
-      constexpr auto tag = (Target == sycl::target::device) ? sycl::read_only : sycl::read_only_host_task;
+      constexpr auto tag = (Target == sycl::target::device)
+                               ? sycl::read_only
+                               : sycl::read_only_host_task;
       auto construct_acc = [&great_range](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::accessor<DataT, Dimension>(data_buf, cgh, great_range,
-                                         tag);
+        sycl::accessor<DataT, Dimension>(data_buf, cgh, great_range, tag);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
