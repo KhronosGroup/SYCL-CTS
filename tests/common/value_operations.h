@@ -42,26 +42,20 @@ using ArrayT = T[N];
 
 template <typename T, typename U>
 void assign_helper(T& left, const U& right) {
-  left = right;
-}
-
-template <typename T>
-typename std::enable_if_t<
-    std::is_same_v<T, bool> || std::is_same_v<T, std::optional<bool>>, void>
-assign_helper(T& left, const int& right) {
-  left = (right % 2 != 0);
+  if constexpr (std::is_same_v<T, bool> ||
+                std::is_same_v<T, std::optional<bool>>)
+    left = (right % 2 != 0);
+  else
+    left = right;
 }
 
 template <typename T, typename U>
 bool are_equal_helper(const T& left, const U& right) {
-  return (left == right);
-}
-
-template <typename T>
-typename std::enable_if_t<
-    std::is_same_v<T, bool> || std::is_same_v<T, std::optional<bool>>, bool>
-are_equal_helper(const T& left, const int& right) {
-  return (left == (right % 2 != 0));
+  if constexpr (std::is_same_v<T, bool> ||
+                std::is_same_v<T, std::optional<bool>>)
+    return (left == (right % 2 != 0));
+  else
+    return (left == right);
 }
 
 /**
