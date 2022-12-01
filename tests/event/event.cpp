@@ -274,8 +274,10 @@ class test_exception_handler {
   void clear() { captured_exceptions.clear(); }
 
  private:
-  sycl::queue queue;
   std::unordered_set<std::string> captured_exceptions;
+  // Queue has to be destroyed first since that can trigger the exception
+  // handler.
+  sycl::queue queue;
 
   void capture(sycl::exception_list el) {
     for (auto& e : el) {
