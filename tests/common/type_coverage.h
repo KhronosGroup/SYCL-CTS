@@ -9,6 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 #define __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
