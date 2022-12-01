@@ -91,7 +91,7 @@ class run_api_tests {
     }
 
     SECTION(get_section_name<dims>(
-        type_name, access_mode_name, target_name,
+        type_name, access_mode_name,
         "Check api for ranged host_accessor with offset")) {
       constexpr size_t acc_range_size = 4;
       constexpr size_t buff_range_size = 8;
@@ -121,7 +121,7 @@ class run_api_tests {
             acc_range.size() /*expected_size*/, acc_range /*expected_range*/,
             offset_id /*&expected_offset)*/);
 
-        test_accessor_ptr_host(acc, T(0));
+        test_accessor_ptr(acc, T(0));
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
         CHECK(value_operations::are_equal(acc_ref, linear_index));
         if constexpr (AccessMode != sycl::access_mode::read)
@@ -157,13 +157,13 @@ class run_host_accessor_api_for_type {
     const auto dimensions = get_dimensions();
 
     // To handle cases when class was called from functions
-    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
-    // This will wrap string with type T to string with container<T> if T is
-    // an array or other kind of container.
+    // like for_all_types_vectors_marray or
+    // for_all_device_copyable_std_containers. This will wrap string with type T
+    // to string with container<T> if T is an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_api_tests>(access_modes, dimensions,
-                                        actual_type_name);
+    for_all_combinations<run_api_tests, T>(access_modes, dimensions,
+                                           actual_type_name);
 
     // For covering const types
     actual_type_name = std::string("const ") + actual_type_name;
