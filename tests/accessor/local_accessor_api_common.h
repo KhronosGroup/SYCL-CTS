@@ -25,13 +25,14 @@ enum class check : size_t {
   get_multi_ptr_yes_result,
   get_pointer_type,
   get_pointer_result,
-  swap_result,
   nChecks  // should be the latest one
 };
 
-template <typename T, typename AccT, sycl::access_mode mode,
-          sycl::target target>
+template <typename T, typename AccT>
 void test_local_accessor_types() {
+  constexpr sycl::access_mode mode = (std::is_const_v<T>)
+                                         ? sycl::access_mode::read
+                                         : sycl::access_mode::read_write;
   test_accessor_types_common<T, AccT, mode>();
   STATIC_CHECK(
       std::is_same_v<
@@ -87,7 +88,7 @@ class run_api_tests {
 
     SECTION(
         get_section_name<dims>(type_name, "Check local_accessor alias types")) {
-      test_local_accessor_types<T, AccT, AccessModeT, TargetT>();
+      test_local_accessor_types<T, AccT>();
     }
 
     SECTION(get_section_name<dims>(type_name,
@@ -103,8 +104,7 @@ class run_api_tests {
           .wait_and_throw();
     }
 
-    SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
-                                   "Check api for local_accessor")) {
+    SECTION(get_section_name<dims>(type_name, "Check api for local_accessor")) {
       constexpr size_t global_range_size = 4;
       constexpr size_t global_range_buffer_size = (dims == 3)   ? 4 * 4 * 4
                                                   : (dims == 2) ? 4 * 4
@@ -114,18 +114,18 @@ class run_api_tests {
           global_range_size, global_range_size, global_range_size);
       auto local_range = util::get_cts_object::range<dims>::get(
           local_range_size, local_range_size, local_range_size);
-      sycl::nd_range<dim> nd_range(global_range, local_range);
+      sycl::nd_range<dims> nd_range(global_range, local_range);
       std::array<std::array<bool, global_range_buffer_size>,
                  to_integral(check::nChecks)>
           res;
-      std::for_each(nums.begin(), nums.end(),
+      std::for_each(res.begin(), res.end(),
                     [](std::array<bool, global_range_buffer_size> &arr) {
                       arr.fill(false);
                     });
       {
-        sycl::buffer res_buf(res.data(),
-                             sycl::range<2>(to_integral(check::nChecks),
-                                            global_range_buffer_size));
+        sycl::buffer<bool, 2> res_buf(
+            res.data()->data(), sycl::range<2>(to_integral(check::nChecks),
+                                               global_range_buffer_size));
         queue
             .submit([&](sycl::handler &cgh) {
               AccT acc(local_range, cgh);
@@ -137,7 +137,7 @@ class run_api_tests {
                   local_range /*expected_range*/);
 
               sycl::accessor res_acc(res_buf, cgh);
-              cgh.parallel_for(nd_range, [=](sycl::nd_item<dim> item) {
+              cgh.parallel_for(nd_range, [=](sycl::nd_item<dims> item) {
                 auto &&ref_1 = acc[sycl::id<dims>()];
 
                 auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
@@ -157,22 +157,14 @@ class run_api_tests {
                   res_acc[sycl::id<2>(to_integral(check::subscript_size_t_result), item_id)] =
                       value_operations::are_equal(ref_2, changed_val);
 
-                  test_local_accessor_ptr(acc, expected_val, res_acc);
-
-                  acc.swap(acc_other);
-                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] =
-                        value_operations::are_equal(
-                          acc_other[sycl::id<dims>()], expected_val);
-                  auto id = util::get_cts_object::id<dims>::get(1, 1, 1);
-                  res_acc[sycl::id<2>(to_integral(check::swap_result), item_id)] &=
-                      value_operations::are_equal(acc_other[id], changed_val);
+                  test_local_accessor_ptr(acc, expected_val, res_acc, item_id);
                 }
               });
             })
             .wait_and_throw();
       }
 
-      std::string info_strings[integral(check::nChecks)]{
+      std::string info_strings[to_integral(check::nChecks)]{
           "return type for operator[](id<Dimensions> index)",
           "return type for operator[]](size_t index)",
           "result for operator[](id<Dimensions> index)",
@@ -182,16 +174,30 @@ class run_api_tests {
           "return type for get_multi_ptr<sycl::access::decorated::yes>()",
           "result for get_multi_ptr<sycl::access::decorated::yes>()",
           "return type for get_pointer()",
-          "result for get_pointer()",
-          "result for swap()"};
+          "result for get_pointer()"};
 
-      constexpr size_t N =
-          (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks;
+      constexpr size_t N = to_integral(
+          (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
       for (size_t i = 0; i < N; i++) {
         INFO(info_strings[i]);
         CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
                           [](bool v) { return v; }));
       }
+    }
+
+    SECTION(
+        get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
+      constexpr size_t alloc_size = 2;
+      auto local_range = util::get_cts_object::range<dims>::get(
+          alloc_size, alloc_size, alloc_size);
+      queue.submit([&](sycl::handler &cgh) {
+        AccT acc1{local_range, cgh};
+        AccT acc2;
+        acc2.swap(acc1);
+        CHECK(acc1.get_range() ==
+              util::get_cts_object::range<dims>::get(0, 0, 0));
+        CHECK(acc2.get_range() == local_range);
+      });
     }
   }
 };
