@@ -266,7 +266,7 @@ struct subtraction : std::false_type {};
 
 template <typename LeftOperand, typename RightOperand>
 struct subtraction<LeftOperand, RightOperand,
-                   std::void_t<decltype(std::declval<LeftOperand&>() -
+                   std::void_t<decltype(std::declval<LeftOperand>() -
                                         std::declval<RightOperand>())>>
     : std::true_type {};
 

@@ -31,7 +31,7 @@ inline void print_errors(
   }
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "iterator",
  "[accessor]")({
@@ -118,7 +118,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "iterator",
  "[accessor]")({
