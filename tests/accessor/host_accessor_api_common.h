@@ -57,7 +57,7 @@ class run_api_tests {
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check api for host_accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -100,7 +100,9 @@ class run_api_tests {
       auto offset_id =
           util::get_cts_object::id<dims>::get(offset, offset, offset);
       std::remove_const_t<T> data[buff_size];
-      std::iota(data, (data + buff_range.size()), 0);
+      for (size_t i = 0; i < buff_size; i++) {
+        data[i] = value_operations::init<T>(i);
+      }
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(data, buff_range);
@@ -110,7 +112,7 @@ class run_api_tests {
             acc_range.size() /*expected_size*/, acc_range /*expected_range*/,
             offset_id /*&expected_offset)*/);
 
-        test_accessor_ptr(acc, T(0));
+        test_accessor_ptr(acc, T());
         auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
         CHECK(value_operations::are_equal(acc_ref, linear_index));
         if constexpr (AccessMode != sycl::access_mode::read)
@@ -122,8 +124,8 @@ class run_api_tests {
     if constexpr (AccessMode != sycl::access_mode::read) {
       SECTION(get_section_name<dims>(type_name, access_mode_name,
                                      "Check swap for host_accessor")) {
-        T data1(expected_val);
-        T data2(changed_val);
+        T data1 = value_operations::init<T>(expected_val);
+        T data2 = value_operations::init<T>(changed_val);
         {
           sycl::buffer<T, dims> data_buf1(&data1, r);
           sycl::buffer<T, dims> data_buf2(&data2, r);
