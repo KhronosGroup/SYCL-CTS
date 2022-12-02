@@ -212,7 +212,7 @@ are_equal(const std::variant<Types...>& left, const U& right) {
 template <typename T>
 inline constexpr auto init(int val) {
   std::remove_const_t<T> data;
-  value_operations::assign(data, val);
+  assign(data, val);
   return data;
 }
 

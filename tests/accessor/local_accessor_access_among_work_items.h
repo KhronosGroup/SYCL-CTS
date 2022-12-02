@@ -22,7 +22,7 @@ using namespace accessor_tests_common;
  */
 template <typename T, typename DimensionTypeT>
 class run_test {
-  static constexpr int Dimension = DimensionT::value;
+  static constexpr int Dimension = DimensionTypeT::value;
 
  public:
   /**
@@ -38,10 +38,12 @@ class run_test {
         "Verify possibility to access the memory shared among work-items. "
         "[local_accessor]");
     SECTION(section_name) {
-      T values_arr[2] = {1, 2};
-      const sycl::range range(2);
-      constexpr T valid_value = 5;
-      constexpr T invalid_value = 6;
+      T values_arr[2] = {T(1), T(2)};
+      constexpr size_t range_size = 2;
+      auto range = util::get_cts_object::range<Dimension>::get(
+          range_size, range_size, range_size);
+      const T valid_value = value_operations::init<T>(5);
+      const T invalid_value = value_operations::init<T>(6);
 
       bool is_acc_val_equal_to_expected = false;
       {
@@ -53,8 +55,9 @@ class run_test {
                   .template get_access<sycl::access_mode::write>(cgh);
           sycl::local_accessor<T, Dimension> acc(range, cgh);
           cgh.parallel_for(
-              sycl::nd_range(range, range), [=](sycl::nd_item item) {
-                auto lid = item.get_local_id(0);
+              sycl::nd_range(range, range), [=](sycl::nd_item<Dimension> item) {
+                auto lid = item.get_local_id();
+                auto zid = sycl::id<Dimension>();
                 // Initialize local memory with invalid value
                 acc[lid] = invalid_value;
                 // Wait for work-items to finish initialization
@@ -62,15 +65,16 @@ class run_test {
 
                 // Work-items with index greater than 0 writes to valid data to
                 // the first element of the local data
-                if (lid != 0) {
-                  acc[0] = valid_value;
+                if (lid != zid) {
+                  acc[sycl::id<Dimension>()] = valid_value;
                 }
 
                 // Wait for data store to finish
                 sycl::group_barrier(item.get_group());
                 // 0th work-item reports the result
-                if (lid == 0) {
-                  val_is_equal_to_expected_acc[0] = acc[0] == valid_value;
+                if (lid == zid) {
+                  val_is_equal_to_expected_acc[0] =
+                      value_operations::are_equal(acc[zid], valid_value);
                 }
               });
         });
