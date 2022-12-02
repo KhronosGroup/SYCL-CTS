@@ -163,7 +163,7 @@ class run_api_tests {
     SECTION(
         get_section_name<dims>(type_name, access_mode_name, target_name,
                                "Check api for buffer placeholder accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -187,7 +187,7 @@ class run_api_tests {
 
     SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                    "Check api for buffer accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -271,7 +271,7 @@ class run_api_tests {
 
               if constexpr (Target == sycl::target::host_task) {
                 cgh.host_task([=] {
-                  test_accessor_ptr_host(acc, T(0));
+                  test_accessor_ptr_host(acc, T());
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
                   CHECK(value_operations::are_equal(acc_ref, linear_index));
@@ -281,7 +281,7 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
-                  test_accessor_ptr_device(acc, T(0), res_acc);
+                  test_accessor_ptr_device(acc, T(), res_acc);
                   auto &acc_ref =
                       get_subscript_overload<T, AccT, dims>(acc, index);
                   res_acc[0] &=

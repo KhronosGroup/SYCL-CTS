@@ -20,14 +20,19 @@
 
 namespace usm_atomic_access {
 
-static auto get_scalar_types() {
+inline auto get_nondouble_scalar_types() {
   static const auto scalar_types =
-      named_type_pack<int, unsigned int, long,
-                      unsigned long, float, double, long long,
-                      unsigned long long>::generate("int", "unsigned int", "long",
-                                           "unsigned long", "float", "double",
-                                           "long long", "unsigned long long");
+      named_type_pack<int, unsigned int, long, unsigned long, float, long long,
+                      unsigned long long>::generate("int", "unsigned int",
+                                                    "long", "unsigned long",
+                                                    "float", "long long",
+                                                    "unsigned long long");
   return scalar_types;
+}
+
+inline auto get_fp64_type() {
+  static const auto types = named_type_pack<double>::generate("double");
+  return types;
 }
 
 /** @brief Return atomic aspect depending on the type of allocated memory
@@ -59,18 +64,16 @@ struct kernel;
  *  @tparam AllocMemT USM allocation type
  *  @tparam CounterT Variable type from type coverage
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param typeName a string representing the currently tested type
  */
 template <sycl::usm::alloc AllocMemT, typename CounterT>
-void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
-                         const std::string &typeName) {
+void check_atomic_access(sycl::queue &queue, const std::string &typeName) {
   static_assert(AllocMemT != sycl::usm::alloc::device,
                 "This test can't be launched on USM device memory");
   if (!queue.get_device().has(get_atomic_memory<AllocMemT>())) {
-    log.note("Device does not support atomic access to the unified " +
-             std::string(usm_helper::get_allocation_description<AllocMemT>()) +
-             " memory allocation");
+    WARN("Device does not support atomic access to the unified " +
+         std::string(usm_helper::get_allocation_description<AllocMemT>()) +
+         " memory allocation");
     return;
   }
   auto orders =
@@ -78,7 +81,7 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
           .get_info<sycl::info::device::atomic_memory_order_capabilities>();
   if (std::find(orders.begin(), orders.end(), sycl::memory_order::seq_cst) ==
       orders.end()) {
-    log.note(
+    WARN(
         "Device does not support atomics with sequentially consistent memory "
         "order");
     return;
@@ -141,26 +144,25 @@ void check_atomic_access(sycl::queue &queue, sycl_cts::util::logger &log,
     } while (std::chrono::high_resolution_clock::now() < unblocking_time);
   }
   queue.wait();
-  if (!CHECK_VALUE_SCALAR(log, *counter_ptr,
-                          2 * (number_of_repetitions * increment_value))) {
-    log.note("Test for the USM " +
-             std::string(usm_helper::get_allocation_description<AllocMemT>()) +
-             " memory allocation failed for \"" + typeName +
-             "\" underlying type");
+  bool final_counter_check =
+      *counter_ptr == 2 * (number_of_repetitions * increment_value);
+  CHECK(final_counter_check);
+  if (!final_counter_check) {
+    WARN("Test for the USM " +
+         std::string(usm_helper::get_allocation_description<AllocMemT>()) +
+         " memory allocation failed for \"" + typeName + "\" underlying type");
   }
 }
 
 /** @brief Run test with two allocation types
  *  @tparam CounterT Variable type from type coverage
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename CounterT>
 void run_test_with_chosen_mem_type(sycl::queue &queue,
-                                   sycl_cts::util::logger &log,
                                    const std::string &typeName) {
-  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, log, typeName);
-  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, log, typeName);
+  check_atomic_access<sycl::usm::alloc::host, CounterT>(queue, typeName);
+  check_atomic_access<sycl::usm::alloc::shared, CounterT>(queue, typeName);
 }
 
 /** @brief Dummy functor that use in type coverage
@@ -169,14 +171,14 @@ void run_test_with_chosen_mem_type(sycl::queue &queue,
  */
 template <typename CounterT>
 struct run_all_tests {
-  void operator()(sycl::queue &queue, sycl_cts::util::logger &log, bool use_atomic_flag,
+  void operator()(sycl::queue &queue, bool use_atomic_flag,
                   const std::string &typeName) {
     if constexpr ((sizeof(CounterT) * CHAR_BIT) == 64) {
       if (!use_atomic_flag) {
         return;
       }
       if (!queue.get_device().has(sycl::aspect::atomic64)) {
-        log.note("Device does not perform 64-bit atomic operations");
+        WARN("Device does not perform 64-bit atomic operations");
         return;
       }
     } else {
@@ -184,7 +186,7 @@ struct run_all_tests {
         return;
       }
     }
-    run_test_with_chosen_mem_type<CounterT>(queue, log, typeName);
+    run_test_with_chosen_mem_type<CounterT>(queue, typeName);
   }
 };
 
