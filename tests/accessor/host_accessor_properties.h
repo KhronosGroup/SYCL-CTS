@@ -144,14 +144,14 @@ class run_tests_properties {
  public:
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name) {
-    test_constructor_with_no_init<T, Dimension, AccessMode>(type_name,
-                                                            access_mode_name);
-
-    test_property_member_functions<T, Dimension, AccessMode>(type_name,
-                                                             access_mode_name);
-
     // In order not to run again with same parameters
-    if constexpr (AccessMode == sycl::access_mode::read) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      test_constructor_with_no_init<T, Dimension, AccessMode>(type_name,
+                                                              access_mode_name);
+
+      test_property_member_functions<T, Dimension, AccessMode>(
+          type_name, access_mode_name);
+    } else {
       test_exception<T, Dimension>(type_name);
     }
   }
@@ -172,8 +172,8 @@ class run_host_properties_tests {
     // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_tests_properties, const T>(
-        access_modes, dimensions, actual_type_name);
+    for_all_combinations<run_tests_properties, T>(access_modes, dimensions,
+                                                  actual_type_name);
   }
 };
 }  // namespace host_accessor_properties

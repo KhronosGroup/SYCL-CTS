@@ -13,6 +13,7 @@
 #include <type_traits>
 
 namespace accessor_default_values_test {
+using namespace accessor_tests_common;
 
 namespace detail {
 

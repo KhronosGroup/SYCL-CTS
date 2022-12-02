@@ -399,7 +399,7 @@ class invoke_helper {
 template <typename DataT, sycl::access_mode AccessMode, typename AccT,
           typename ResultAccT>
 void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT other_data(expected_val);
+  DataT other_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccessMode != sycl::access_mode::write) {
     DataT acc_ref(testing_acc);
@@ -431,7 +431,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
                                 ModifyAccFunctorsT... modify_accessor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   bool compare_res = false;
 
@@ -504,7 +504,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           typename AccT, typename ResultAccT>
 void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT other_data(expected_val);
+  DataT other_data = value_operations::init<DataT>(expected_val);
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   if constexpr (AccessMode != sycl::access_mode::write) {
@@ -538,7 +538,7 @@ void check_common_constructor(const sycl::range<Dimension>& r,
                               ModifyAccFunctorsT... modify_accessor) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -616,7 +616,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
                                           GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   bool is_placeholder = false;
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
@@ -658,7 +658,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           typename AccT, typename ResultAccT>
 void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT expected_data(changed_val);
+  DataT expected_data = value_operations::init<DataT>(changed_val);
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   value_operations::assign(testing_acc[id], changed_val);
@@ -680,7 +680,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
                         const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -729,7 +729,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_no_init_prop_exception(GetAccFunctorT construct_acc,
                                   const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -745,6 +745,21 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
   }
+}
+
+/**
+ * @brief Function tests AccT::get_pointer() method
+
+ * @tparam AccT Type of testing accessor
+ * @tparam T Type of underlying data
+ */
+template <typename T, typename AccT>
+void test_accessor_ptr(AccT& accessor, T expected_data) {
+  INFO("check get_pointer() method");
+  auto acc_pointer = accessor.get_pointer();
+  STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
+                              std::add_pointer_t<typename AccT::value_type>>);
+  CHECK(value_operations::are_equal(*acc_pointer, expected_data));
 }
 
 /**
@@ -798,7 +813,7 @@ template <typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_has_property_member_func(GetAccFunctorT construct_acc,
                                     const sycl::range<Dimension> r) {
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
     auto accessor = construct_acc(data_buf);
@@ -816,7 +831,7 @@ template <typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_get_property_member_func(GetAccFunctorT construct_acc,
                                     const sycl::range<Dimension> r) {
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
     auto accessor = construct_acc(data_buf);
@@ -843,7 +858,7 @@ void test_accessor_types_common() {
 }
 
 template <typename T, typename AccT, int dims>
-decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
+decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
