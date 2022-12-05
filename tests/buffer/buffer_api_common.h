@@ -469,10 +469,10 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 template <typename T, int numDims>
 void test_type_reinterpret(util::logger &log) {
   static constexpr size_t inputElemsPerDim = 4;
-  auto numElems = inputElemsPerDim;
-  for (int i = 1; i < numDims; ++i) {
-    numElems *= inputElemsPerDim;
-  }
+  static constexpr size_t numElems = [](size_t elemsPerDim) {
+    for (int i = 1; i < numDims; ++i) elemsPerDim *= elemsPerDim;
+    return elemsPerDim;
+  }(inputElemsPerDim);
   alignas(alignof(T)) unsigned char reinterpretInputData[sizeof(T) * numElems];
   using ReinterpretT = flip_signedness_t<T>;
 
