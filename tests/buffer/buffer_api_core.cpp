@@ -30,6 +30,8 @@ public:
   /** execute the test
    */
   void run(util::logger &log) override {
+    buffer_api_common::check_buffer_linearization{}(log);
+
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
     for_all_types_and_vectors<buffer_api_common::check_buffer_api_for_type>(
         get_buffer_types::vector_types, log);

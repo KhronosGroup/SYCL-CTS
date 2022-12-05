@@ -516,5 +516,57 @@ public:
   }
 };
 
-} // namespace
-#endif // __SYCLCTS_TESTS_BUFFER_API_COMMON_H
+/**
+ * @brief Test buffer linearization
+ */
+class check_buffer_linearization {
+ public:
+  void operator()(util::logger &log) {
+    const int size = 8;
+    sycl::nd_range<2> range2d(sycl::range<2>{size, size},
+                              sycl::range<2>{size, size});
+    sycl::nd_range<3> range3d(sycl::range<3>{size, size, size},
+                              sycl::range<3>{size, size, size});
+
+    // log.note("testing: " + std::to_string(Dim));
+    // test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log,
+    // range2d); test_buffer_linearization<3,
+    // sycl::buffer_allocator<size_t>>(log, range3d);
+
+    test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
+    test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
+  }
+
+ private:
+  /**
+   * Buffer linearization test
+   */
+  template <int dims, typename alloc>
+  void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
+    log.note("testing: linearization in " + std::to_string(dims) +
+             " dimensions.");
+    auto q = util::get_cts_object::queue();
+
+    sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
+    q.submit([&](sycl::handler &cgh) {
+      auto acc = buf.get_access(cgh, sycl::write_only, sycl::no_init);
+      cgh.parallel_for<write_id<dims, alloc>>(r, [=](sycl::nd_item<dims> i) {
+        size_t idx =
+            i.get_global_id(2) + i.get_global_id(1) * i.get_global_range(2) +
+            i.get_global_id(0) * i.get_global_range(2) * i.get_global_range(1);
+        acc[i.get_global_id()] = idx;
+      });
+    });
+
+    std::vector<size_t> v(buf.size());
+    std::iota(v.begin(), v.end(), 0);
+
+    std::vector<size_t> w(buf.size());
+    q.copy(sycl::accessor{buf}, w.data()).wait_and_throw();
+
+    CHECK(std::equal(v.cbegin(), v.cend(), w.cbegin()));
+  }
+};
+
+}  // namespace buffer_api_common
+#endif  // __SYCLCTS_TESTS_BUFFER_API_COMMON_H
