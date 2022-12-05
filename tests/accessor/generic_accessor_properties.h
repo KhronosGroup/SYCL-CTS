@@ -138,6 +138,105 @@ void test_exception(const std::string& type_name,
 
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           sycl::target Target>
+void test_property_member_functions_without_no_init(
+    const std::string& type_name, const std::string& access_mode_name,
+    const std::string& target_name) {
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
+
+  {
+    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf,
+                              sycl::handler& cgh) {
+      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
+                                                                  cgh);
+    };
+
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer constructor without no_init property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer constructor without no_init property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+  }
+  {
+    auto get_acc_functor = [r](sycl::buffer<DataT, Dimension>& data_buf,
+                               sycl::handler& cgh) {
+      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
+                                                                  r);
+    };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer and range constructor without no_init "
+        "property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer and range constructor without no_init "
+        "property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+  }
+  {
+    auto get_acc_functor = [r, offset](sycl::buffer<DataT, Dimension>& data_buf,
+                                       sycl::handler& cgh) {
+      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
+                                                                  r, offset);
+    };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer,range and offset constructor without "
+        "no_init property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer,range and offset constructor without "
+        "no_init property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension,
+                                                AccessMode, Target>(
+          get_acc_functor, r);
+    }
+  }
+}
+
+template <typename DataT, int Dimension, sycl::access_mode AccessMode,
+          sycl::target Target>
 void test_property_member_functions(const std::string& type_name,
                                     const std::string& access_mode_name,
                                     const std::string& target_name) {
@@ -185,6 +284,9 @@ class run_tests_properties {
           type_name, access_mode_name, target_name);
 
       test_property_member_functions<T, Dimension, AccessMode, Target>(
+          type_name, access_mode_name, target_name);
+      test_property_member_functions_without_no_init<T, Dimension, AccessMode,
+                                                     Target>(
           type_name, access_mode_name, target_name);
     } else {
       test_exception<T, Dimension, Target>(type_name, target_name);

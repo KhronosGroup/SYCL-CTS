@@ -822,6 +822,36 @@ void check_has_property_member_func(GetAccFunctorT construct_acc,
 }
 
 /**
+ * @brief Function invokes \c has_property() member function without \c PropT
+ * property and verifies that false returns
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_has_property_member_without_no_init(
+    GetAccFunctorT get_accessor_functor, const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  bool compare_res = false;
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = get_accessor_functor(data_buf, cgh);
+          compare_res = acc.template has_property<sycl::property::no_init>();
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor(data_buf);
+    compare_res = acc.template has_property<sycl::property::no_init>();
+  }
+  CHECK(false == compare_res);
+}
+
+/**
  * @brief Function invokes \c get_property() member function with \c PropT
  * property and verifies that returned object has same type as \c PropT
  *
@@ -838,6 +868,41 @@ void check_get_property_member_func(GetAccFunctorT construct_acc,
     auto acc_prop = accessor.template get_property<PropT>();
 
     CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
+  }
+}
+
+/**
+ * @brief Function invokes \c get_property() member function without \c PropT
+ * property and verifies that false returns
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_get_property_member_without_no_init(
+    GetAccFunctorT get_accessor_functor, const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = get_accessor_functor(data_buf, cgh);
+          auto action = [&] {
+            acc.template get_property<sycl::property::no_init>();
+          };
+          CHECK_THROWS_MATCHES(
+              action(), sycl::exception,
+              sycl_cts::util::equals_exception(sycl::errc::invalid));
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor(data_buf);
+    auto action = [&] { acc.template get_property<sycl::property::no_init>(); };
+    CHECK_THROWS_MATCHES(action(), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
 
