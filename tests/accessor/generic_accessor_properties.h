@@ -145,6 +145,32 @@ void test_property_member_functions_without_no_init(
   const auto offset = sycl::id<Dimension>();
 
   {
+    auto get_acc_functor = [](
+                               sycl::buffer<DataT, Dimension>& data_buf,
+                               [[maybe_unused]]sycl::handler& cgh) {
+      return sycl::accessor<DataT, Dimension, AccessMode, Target, sycl::access::placeholder::true_t>(data_buf);
+    };
+
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer constructor without handler and no_init property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension, AccessMode, Target>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "Expecting exception for call accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer constructor without handler and no_init property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension, AccessMode, Target>(
+          get_acc_functor, r);
+    }
+  }
+  {
     auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf,
                               sycl::handler& cgh) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
