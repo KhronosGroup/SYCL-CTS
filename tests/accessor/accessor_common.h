@@ -838,9 +838,10 @@ void check_has_property_member_func(GetAccFunctorT construct_acc,
  *
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
-template <accessor_type AccType, typename DataT, int Dimension, typename GetAccFunctorT>
+template <accessor_type AccType, typename DataT, int Dimension,
+          typename GetAccFunctorT>
 void check_has_property_member_without_no_init(GetAccFunctorT construct_acc,
-                                    const sycl::range<Dimension> r) {
+                                               const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
   DataT some_data = value_operations::init<DataT>(expected_val);
@@ -860,10 +861,10 @@ void check_has_property_member_without_no_init(GetAccFunctorT construct_acc,
   CHECK(!compare_res);
 }
 
-/**                                    
+/**
  * @brief Function invokes \c get_property() member function with \c PropT
  * property and verifies that exception occures
- *  
+ *
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
 template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
@@ -898,7 +899,7 @@ void check_get_property_member_func(GetAccFunctorT construct_acc,
 template <accessor_type AccType, typename DataT, int Dimension,
           typename GetAccFunctorT>
 void check_get_property_member_without_no_init(GetAccFunctorT construct_acc,
-                                    const sycl::range<Dimension> r) {
+                                               const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
@@ -907,18 +908,19 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc,
     queue
         .submit([&](sycl::handler& cgh) {
           auto acc = construct_acc(data_buf, cgh);
-          auto action = [&] { acc.template get_property<sycl::property::no_init>(); };
+          auto action = [&] {
+            acc.template get_property<sycl::property::no_init>();
+          };
           CHECK_THROWS_MATCHES(
               action(), sycl::exception,
               sycl_cts::util::equals_exception(sycl::errc::invalid));
-              })
-              .wait_and_throw();
+        })
+        .wait_and_throw();
   } else {
     auto acc = construct_acc(data_buf);
     auto action = [&] { acc.template get_property<sycl::property::no_init>(); };
-    CHECK_THROWS_MATCHES(
-        action(), sycl::exception,
-        sycl_cts::util::equals_exception(sycl::errc::invalid));
+    CHECK_THROWS_MATCHES(action(), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
 
