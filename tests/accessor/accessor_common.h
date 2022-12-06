@@ -864,6 +864,105 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
+template <typename AccT, typename T = int>
+void test_begin_end_host(AccT& accessor, T exp_first = T(), T exp_last = T(),
+                         bool empty = true) {
+  {
+    INFO("check begin() method");
+    auto it = accessor.begin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_first));
+  }
+  {
+    INFO("check end() method");
+    auto it = accessor.end();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_last));
+  }
+  {
+    INFO("check cbegin() method");
+    auto it = accessor.cbegin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::const_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_first));
+  }
+  {
+    INFO("check cend() method");
+    auto it = accessor.cend();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::const_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_last));
+  }
+  {
+    INFO("check rbegin() method");
+    auto it = accessor.rbegin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_last));
+  }
+  {
+    INFO("check rend() method");
+    auto it = accessor.rend();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_first));
+  }
+  {
+    INFO("check crbegin() method");
+    auto it = accessor.crbegin();
+    STATIC_CHECK(
+        std::is_same_v<decltype(it), typename AccT::const_reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_last));
+  }
+  {
+    INFO("check crend() method");
+    auto it = accessor.crend();
+    STATIC_CHECK(
+        std::is_same_v<decltype(it), typename AccT::const_reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_first));
+  }
+}
+
+template <typename AccT, typename T = int>
+bool test_begin_end_device(AccT& accessor, T exp_first = T(), T exp_last = T(),
+                           bool empty = true) {
+  bool res = true;
+
+  auto it_begin = accessor.begin();
+  res &= std::is_same_v<decltype(it_begin), typename AccT::iterator>;
+  auto it_end = accessor.end();
+  res &= std::is_same_v<decltype(it_end), typename AccT::iterator>;
+
+  auto it_cbegin = accessor.cbegin();
+  res &= std::is_same_v<decltype(it_cbegin), typename AccT::const_iterator>;
+
+  auto it_cend = accessor.cend();
+  res &= std::is_same_v<decltype(it_cend), typename AccT::const_iterator>;
+
+  auto it_rbegin = accessor.rbegin();
+  res &= std::is_same_v<decltype(it_rbegin), typename AccT::reverse_iterator>;
+
+  auto it_rend = accessor.rend();
+  res &= std::is_same_v<decltype(it_rend), typename AccT::reverse_iterator>;
+
+  auto it_crbegin = accessor.crbegin();
+  res &= std::is_same_v<decltype(it_crbegin),
+                        typename AccT::const_reverse_iterator>;
+
+  auto it_crend = accessor.crend();
+  res &=
+      std::is_same_v<decltype(it_crend), typename AccT::const_reverse_iterator>;
+
+  if (!empty) {
+    res &= value_operations::are_equal(*it_begin, exp_first);
+    res &= value_operations::are_equal(*(--it_end), exp_first);
+    res &= value_operations::are_equal(*it_cbegin, exp_first);
+    res &= value_operations::are_equal(*(--it_cend), exp_first);
+    res &= value_operations::are_equal(*it_rbegin, exp_last);
+    res &= value_operations::are_equal(*(--it_rend), exp_first);
+    res &= value_operations::are_equal(*it_crbegin, exp_last);
+    res &= value_operations::are_equal(*(--it_crend), exp_first);
+  }
+
+  return res;
+}
+
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
