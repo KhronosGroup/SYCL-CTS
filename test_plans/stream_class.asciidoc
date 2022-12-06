@@ -1,0 +1,33 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for stream class interface
+
+This is a test plan for the interface of the stream class as described in Section 4.16.1 of the SYCL 2020 specification. The existing tests are updated from SYCL 1.2.1 to SYCL 2020. The estimated development time is half a day.
+
+== Testing scope
+No negative test are included. Specifically, the statement
+
+[source]
+----
+Regardless of this implementation defined behavior of output exceeding the limits, no undefined or erroneous behavior is permitted of an implementation when the limits are exceeded.
+----
+is not included in the test plan.
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+=== Constructor
+- The existing constructor test is extended to also check construction when an empty property list is passed. Note: no properties are defined for `sycl::stream`.
+
+=== Member function
+- Duplicate `get_size()` test, and rename function to `size()`. Check for `noexcept`.
+- Mark `get_size()` test as deprecated.
+- Duplicate `get_max_statement_size()` test, and rename function to `get_work_item_buffer_size()`.
+- Mark `get_max_statement_size()` test as deprecated.
