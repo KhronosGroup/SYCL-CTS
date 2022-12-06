@@ -1640,9 +1640,9 @@ class check_image_accessor_api_type {
     /**
      *  check image accessor api for all dimensions
      */
-    // check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
-    // check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
-    // check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
+    check_image_accessor_api_dim<T, 1>(log, typeName, count, size, queue);
+    check_image_accessor_api_dim<T, 2>(log, typeName, count, size, queue);
+    check_image_accessor_api_dim<T, 3>(log, typeName, count, size, queue);
     return;
   }
 };
