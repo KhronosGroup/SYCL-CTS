@@ -951,9 +951,9 @@ bool test_begin_end_device(AccT& accessor, T exp_first = T(), T exp_last = T(),
 
   if (!empty) {
     res &= value_operations::are_equal(*it_begin, exp_first);
-    res &= value_operations::are_equal(*(--it_end), exp_first);
+    res &= value_operations::are_equal(*(--it_end), exp_last);
     res &= value_operations::are_equal(*it_cbegin, exp_first);
-    res &= value_operations::are_equal(*(--it_cend), exp_first);
+    res &= value_operations::are_equal(*(--it_cend), exp_last);
     res &= value_operations::are_equal(*it_rbegin, exp_last);
     res &= value_operations::are_equal(*(--it_rend), exp_first);
     res &= value_operations::are_equal(*it_crbegin, exp_last);
