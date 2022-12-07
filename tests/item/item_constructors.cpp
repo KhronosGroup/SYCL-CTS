@@ -99,7 +99,7 @@ class TEST_NAME : public util::test_base {
   }
 
   template <int numDims>
-  void test_constructors(util::logger& log) {
+  void test_constructors(util::logger&) {
     {
       success_array_t success;
       std::fill(std::begin(success), std::end(success), true);
