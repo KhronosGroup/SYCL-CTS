@@ -1,0 +1,44 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sub-group class
+
+This is a test plan for the sub-group class as described in Section 4.9.1.8. of the SYCL 2020 specification.
+
+Estimated development time is three days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. The kernel is called with `parallel_for(nd_range<1>(range<1>(work_group_size), range<1>(work_group_size)), [](nd_item<1> item){})`, let `sub_group` be `item.get_sub_group()`:
+
+- `sub_group.get_group_id()` and `sub_group.get_group_linear_id()`
++
+Returns the id of the sub-group within the work-group.
+- `sub_group.get_local_id()` and `sub_group.get_local_linear_id()`
++
+Returns the id work-item's position in the sub-group.
+- `sub_group.get_local_range()` and `sub_group.get_group_linear_range()`
++
+Returns the size of the subgroup. Should be `sub_group_size` (see below).
+- `sub_group.get_group_range()` and `sub_group.get_local_linear_range()`
++
+Returns the number of sub-groups within the work-group. Should be `3` (see below).
+- `sub_group.get_max_local_range()`
++
+Returns the maximum number of items in the sub-group. Should be `sub_group_size` (see below).
+- `sub_group.leader()`
++
+Returns `true` only for the work-item within each sub-group with a local id of zero.
+
+The kernel is compiled multiple times, with the attribute `reqd_sub_group_size(dim)` for `dim` in range `1, ..., 64`. At runtime, `info::device::sub_group_sizes` is queried for the device, to obtain the supported sub-group sizes. The largest sub-group size that is smaller or equal to 64 is chosen to be `sub_group_size`. The kernel is executed with a `work_group_size` equal to `3 * sub_group_size - 1`.
+
+If no such sub-group size exists, the kernel is run without the attribute and a warning is issued. In verification, the value returned by `get_local_range` is used to calculate the expected values.
