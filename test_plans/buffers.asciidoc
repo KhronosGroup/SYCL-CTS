@@ -84,11 +84,3 @@ For `AllocatorT == sycl_cts::logging_allocator`
 For `Dimensions == {2;3}` check that:
 
 * An appropriately sized multi-dimensional buffer initialized with multi-dim indices when read back to host is linearized according to 3.11.1
-
-=== no_init property
-
-For `Dimensions == 1` check that:
-
-* When fully initializing a buffer on device, a subsequent kernel adding a requirement on the buffer by creating a `no_init` `write_only` accessor really calls the only trivial CTOR for every element, even without explictly filling the buffer.
-* When fully initializing a buffer on device, a subsequent kernel adding a requirement on the buffer by creating a `no_init` `write_only` ranged accessor really calls the only trivial CTOR for the covered range, even without explictly filling the buffer.
-
