@@ -58,7 +58,6 @@ class TEST_NAME : public util::test_base {
 
           cgh.single_task<class test_kernel>([=]() {
             check_all_vec_dims(os, sycl::half(0.2f));
-            check_all_vec_dims(os, sycl::cl_half(0.3f));
           });
         });
 

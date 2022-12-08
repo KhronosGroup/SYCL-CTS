@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides stream tests for double and sycl::cl_double
+//  Provides stream tests for double
 //
 *******************************************************************************/
 
@@ -30,7 +30,7 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-      // Check stream operator for sycl::cl_double and double
+      // Check stream operator for double
       auto testQueue = util::get_cts_object::queue();
 
       if (!testQueue.get_device().has(sycl::aspect::fp64)) {
@@ -45,7 +45,6 @@ class TEST_NAME : public util::test_base {
 
         cgh.single_task<class test_kernel>([=]() {
           check_all_vec_dims(os, double(5.5));
-          check_all_vec_dims(os, sycl::cl_double(5.5));
         });
       });
 

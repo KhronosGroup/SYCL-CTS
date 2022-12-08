@@ -154,21 +154,52 @@ class TEST_NAME : public util::test_base {
           sycl::stream os(2048, 80, cgh);
 
           /** check get_size()
-          */
+           */
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto size = os.get_size();
-            check_return_type<size_t>(log, size,
-                                      "sycl::context::get_size()");
+            check_return_type<size_t>(log, size, "sycl::stream::get_size()");
           }
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
-          /** check get_max_statement_size()
-          */
+          /** check size()
+           */
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+          {
+            auto size = os.size();
+            check_return_type<size_t>(log, size, "sycl::stream::size()");
+            CHECK(noexcept(os.size()));
+          }
+#else
+          WARN(
+              "DPCPP does not define sycl::stream:size(). "
+              "Skipping the test case.");
+#endif
+
+          /** get_max_statement_size get_size()
+           */
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto maxStatementSize = os.get_max_statement_size();
+            check_return_type<size_t>(log, maxStatementSize,
+                                      "sycl::stream::get_max_statement_size()");
+          }
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+
+          /** check get_work_item_buffer_size()
+           */
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+          {
+            auto maxStatementSize = os.get_work_item_buffer_size();
             check_return_type<size_t>(
                 log, maxStatementSize,
-                "sycl::context::get_max_statement_size()");
+                "sycl::stream::get_work_item_buffer_size()");
           }
+#else
+          WARN(
+              "DPCPP does not define sycl::stream:get_work_item_buffer_size(). "
+              "Skipping the test case.");
+#endif
 
           cgh.single_task<class test_kernel_0>([=]() {});
         });
@@ -214,23 +245,8 @@ class TEST_NAME : public util::test_base {
             auto multiPtr = sycl::private_ptr<int>(aPtr);
             check_type(os, multiPtr);
 
-            /** check stream operator for cl types
-            */
-            check_all_vec_dims(os, cl_char('c'));
-            check_all_vec_dims(os, static_cast<cl_uchar>('c'));
-            check_all_vec_dims(os, cl_int(5));
-            check_all_vec_dims(os, static_cast<cl_uint>(5));
-            check_all_vec_dims(os, cl_short(5));
-            check_all_vec_dims(os, static_cast<cl_ushort>(5));
-            check_all_vec_dims(os, cl_long(5));
-            check_all_vec_dims(os, static_cast<cl_ulong>(5));
-            check_all_vec_dims(os, cl_float(5.5f));
-            check_type(os, static_cast<cl_bool>(true));
-
             /** check stream operator for sycl types
             */
-            check_all_vec_dims(os, sycl::byte(72));
-
             check_type(os, sycl::id<1>(1));
             check_type(os, sycl::id<2>(1, 2));
             check_type(os, sycl::id<3>(1, 2, 3));

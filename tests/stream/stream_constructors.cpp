@@ -80,6 +80,27 @@ class TEST_NAME : public util::test_base {
         });
       }
 
+      /** check (size_t, size_t, sycl::handler&, sycl::property_list&)
+       * constructor
+       */
+      {
+        queue.submit([&](sycl::handler &handler) {
+          sycl::property_list property_list{};
+          sycl::stream os(bufferSize, maxStatementSize, handler, property_list);
+
+          if (os.get_size() != bufferSize) {
+            FAIL(log, "sycl::context::get_size() returned an incorrect value.");
+          }
+          if (os.get_max_statement_size() != maxStatementSize) {
+            FAIL(log,
+                 "sycl::context::get_max_statement_size() returned an  "
+                 "incorrect value.");
+          }
+
+          handler.single_task(stream_kernel{});
+        });
+      }
+
       /** check copy constructor
       */
       {
