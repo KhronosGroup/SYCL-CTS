@@ -864,6 +864,16 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
+template <int dims>
+void add_id_linear(sycl::id<dims>& id, size_t size) {
+  for (int i = dims - 1; i >= 0; i--) {
+    if (i < size) {
+      id[i]++;
+      break;
+    }
+  }
+}
+
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H
