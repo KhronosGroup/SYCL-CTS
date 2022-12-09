@@ -126,6 +126,42 @@ struct run_tests_for_overloads_that_obtain_kernel_name {
   }
 };
 
+template <typename KernelDescriptorT, sycl::bundle_state BundleState,
+          unsigned int KernelDescriptorCount>
+struct helper_device_image_has_kernel {
+  /**
+   * Sets \p has_kernel[index] if \p device_image.has_kernel(id)
+   * for the kernel \p id described by \p KernelDescriptorT. */
+  void operator()(const sycl::device_image<BundleState> &device_image,
+                  std::bitset<KernelDescriptorCount> &has_kernel,
+                  unsigned int index) {
+    using kernel = typename KernelDescriptorT::type;
+    auto kernel_id{sycl::get_kernel_id<kernel>()};
+
+    if (device_image.has_kernel(kernel_id)) {
+      has_kernel[index] = true;
+    }
+  }
+};
+
+template <typename KernelDescriptorT, sycl::bundle_state BundleState,
+          unsigned int KernelDescriptorCount>
+struct helper_device_image_has_kernel_dev {
+  /**
+   * Sets \p has_kernel_dev[index] if \p device_image.has_kernel_dev(id, device)
+   * for the kernel \p id described by \p KernelDescriptorT. */
+  void operator()(const sycl::device_image<BundleState> &device_image,
+                  std::bitset<KernelDescriptorCount> &has_kernel_dev,
+                  unsigned int index, const sycl::device &device) {
+    using kernel = typename KernelDescriptorT::type;
+    auto kernel_id{sycl::get_kernel_id<kernel>()};
+
+    if (device_image.has_kernel(kernel_id, device)) {
+      has_kernel_dev[index] = true;
+    }
+  }
+};
+
 /** @brief Observing kernel bundle with provided bundle state for each overloads
  *         that dont receive KernelName template parameter then call
  *         for "kernel_bundle::verify_that_kernel_in_bundle" with provided
@@ -145,27 +181,62 @@ inline void run_test_for_all_overload_types(
   const auto context{queue.get_context()};
   const auto device{queue.get_device()};
   const size_t number_devices{context.get_devices().size()};
+  constexpr unsigned int kernel_descriptor_count =
+      sizeof...(KernelDescriptorsT);
 
-  const auto selector = [](const sycl::device_image<BundleState> &) {
-    return true;
-  };
+  // represent has_kernel(kernel_id) and has_kernel(kernel_id, device)
+  std::bitset<kernel_descriptor_count> has_kernel;
+  std::bitset<kernel_descriptor_count> has_kernel_dev;
+
+  // the usage of this selector in get_kernel_bundle must set all elements of
+  // has_kernel and has_kernel_dev to true
+  const auto selector =
+      [&](const sycl::device_image<BundleState> &device_image) {
+        unsigned int index;
+
+        // for each kernel_id in KernelDescriptorsT, set its respective element
+        // in has_kernel, if device_image.has_kernel(kernel_id)
+        index = 0;
+        ((helper_device_image_has_kernel<KernelDescriptorsT, BundleState,
+                                         kernel_descriptor_count>{}(
+              device_image, has_kernel, index),
+          ++index),
+         ...);
+
+        // for each kernel_id in KernelDescriptorsT, set its respective element
+        // in has_kernel_dev, if device_image.has_kernel(kernel_id, device)
+        index = 0;
+        ((helper_device_image_has_kernel_dev<KernelDescriptorsT, BundleState,
+                                             kernel_descriptor_count>{}(
+              device_image, has_kernel_dev, index, device),
+          ++index),
+         ...);
+
+        return true;
+      };
 
   {
     log.note(
         "Run test for sycl::get_kernel_bundle<BundleState>(context, devices, "
         "selector) overload");
+    has_kernel.reset();
+    has_kernel_dev.reset();
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(
         context, context.get_devices(), selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
         kernel_descriptors, log, kernel_bundle, number_devices);
+    CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
     log.note(
         "Run test for sycl::get_kernel_bundle<BundleState>(context, "
         "selector) overload");
+    has_kernel.reset();
+    has_kernel_dev.reset();
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context, selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
         kernel_descriptors, log, kernel_bundle, number_devices);
+    CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
     log.note(
