@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide verification that accessor's iterator is conforming to named
+//  Provide verification that accessor's iterators is conforming to named
 //  requirement LegacyRandomAccessIterator
 //
 *******************************************************************************/
@@ -113,7 +113,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "citerator",
+ "const iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -129,7 +129,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "riterator",
+ "reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -145,7 +145,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
- "criterator",
+ "const reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -178,7 +178,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "citerator",
+ "const iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -195,7 +195,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "riterator",
+ "reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -212,7 +212,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::local_accessor "
- "criterator",
+ "const reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -246,7 +246,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "citerator",
+ "const iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -263,7 +263,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "riterator",
+ "reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
@@ -280,7 +280,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
- "criterator",
+ "const reverse iterator",
  "[accessor]")({
   using namespace sycl_cts;
   using namespace named_requirement_verification;
