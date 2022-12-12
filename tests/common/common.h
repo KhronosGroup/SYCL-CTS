@@ -752,4 +752,22 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
       }                                                                  \
     }                                                                    \
   }
+
+/// Linearizes a multi-dimensional index according to the specification.
+template <unsigned int dimension>
+size_t linearize(sycl::range<dimension> range, sycl::id<dimension> id);
+
+inline size_t linearize(sycl::range<1> range, sycl::id<1> id) {
+  static_cast<void>(range);
+  return id[0];
+}
+
+inline size_t linearize(sycl::range<2> range, sycl::id<2> id) {
+  return id[1] + id[0] * range[1];
+}
+
+inline size_t linearize(sycl::range<3> range, sycl::id<3> id) {
+  return id[2] + id[1] * range[2] + id[0] * range[1] * range[2];
+}
+
 #endif  // __SYCLCTS_TESTS_COMMON_COMMON_H
