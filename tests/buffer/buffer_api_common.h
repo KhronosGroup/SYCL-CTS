@@ -526,16 +526,22 @@ class check_buffer_linearization {
  public:
   void operator()(util::logger &log) {
     const int size = 8;
+    // clang-format off
+    sycl::nd_range<1> range1d(sycl::range<1>{size},
+                              sycl::range<1>{size});
     sycl::nd_range<2> range2d(sycl::range<2>{size, size},
                               sycl::range<2>{size, size});
     sycl::nd_range<3> range3d(sycl::range<3>{size, size, size},
                               sycl::range<3>{size, size, size});
+    // clang-format on
 
-    // log.note("testing: " + std::to_string(Dim));
-    // test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log,
-    // range2d); test_buffer_linearization<3,
-    // sycl::buffer_allocator<size_t>>(log, range3d);
+    log.note("testing: sycl::buffer_allocator<size_t>");
+    test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log, range1d);
+    test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log, range2d);
+    test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log, range3d);
 
+    log.note("testing: std::allocator<size_t>");
+    test_buffer_linearization<1, std::allocator<size_t>>(log, range1d);
     test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
     test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
   }
@@ -546,6 +552,8 @@ class check_buffer_linearization {
    */
   template <int dims, typename alloc>
   void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
+    static_assert(dims >= 1 && dims < 4,
+                  "Linearization test requires dims to be one of {1;2;3}.");
     log.note("testing: linearization in " + std::to_string(dims) +
              " dimensions.");
     auto q = util::get_cts_object::queue();
@@ -554,10 +562,23 @@ class check_buffer_linearization {
     q.submit([&](sycl::handler &cgh) {
       auto acc = buf.get_access(cgh, sycl::write_only, sycl::no_init);
       cgh.parallel_for<write_id<dims, alloc>>(r, [=](sycl::nd_item<dims> i) {
-        size_t idx =
-            i.get_global_id(2) + i.get_global_id(1) * i.get_global_range(2) +
-            i.get_global_id(0) * i.get_global_range(2) * i.get_global_range(1);
-        acc[i.get_global_id()] = idx;
+        // clang-format off
+        if constexpr (dims == 3) {
+          acc[i.get_global_id()] =
+              i.get_global_id(0) * i.get_global_range(1) * i.get_global_range(2) +
+              i.get_global_id(1) * i.get_global_range(2) +
+              i.get_global_id(2);
+        }
+        else if (dims == 2) {
+          acc[i.get_global_id()] =
+              i.get_global_id(0) * i.get_global_range(1) +
+              i.get_global_id(1);
+        }
+        else {
+          acc[i.get_global_id()] =
+              i.get_global_id(0);
+        }
+        // clang-format on
       });
     });
 
