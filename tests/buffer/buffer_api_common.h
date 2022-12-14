@@ -27,6 +27,9 @@
 namespace buffer_api_common {
 using namespace sycl_cts;
 
+template <int dims, typename alloc>
+struct write_id{};
+
 /** empty_kernel.
  * Empty kernel, required since command groups
  * are required to have a kernel.
