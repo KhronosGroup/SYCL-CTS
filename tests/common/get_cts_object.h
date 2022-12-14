@@ -51,7 +51,7 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL device
   */
-  template <class DeviceSelector>
+  template <class DeviceSelector = cts_selector>
   static sycl::device device(
       const DeviceSelector &selector = cts_selector()) {
     return sycl::device(selector);
