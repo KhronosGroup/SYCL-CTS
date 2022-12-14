@@ -27,6 +27,15 @@
 namespace buffer_constructors_common {
 using namespace sycl_cts;
 
+template <typename Acc>
+struct iota_kernel {
+  Acc acc1, acc2;
+  void operator()(sycl::id<1> id) const {
+    acc1[id] = static_cast<typename Acc::value_type>(id[0]);
+    acc2[id] = static_cast<typename Acc::value_type>(id[0]);
+  }
+};
+
 inline std::stringstream alloc_log;
 
 template <typename T>
@@ -136,30 +145,61 @@ class buffer_ctors {
     }
 
     /* check (Container)*/
-    if (dims == 1) {
-      std::vector<T> cont(size);
-      sycl::buffer<T, dims> buf(cont, propList);
-      sycl::buffer<T, dims> buf1(cont);
-      constexpr bool data_verify = true;
-      if (!check_buffer_constructor(buf, r, data_verify) ||
-          !check_buffer_constructor(buf1, r, data_verify)) {
-        FAIL(log, "(Container) constructor fail.");
+    if constexpr (dims == 1) {
+      std::vector<T> cont1(size), cont2(size);
+      {
+        sycl::buffer<T, dims> buf1(cont1, propList);
+        sycl::buffer<T, dims> buf2(cont2);
+        {
+          util::get_cts_object::queue()
+              .submit([&](sycl::handler &cgh) {
+                auto acc1 =
+                    buf1.template get_access<sycl::access_mode::write>(cgh);
+                auto acc2 =
+                    buf2.template get_access<sycl::access_mode::write>(cgh);
+                cgh.parallel_for(r, iota_kernel<decltype(acc1)>{acc1, acc2});
+              })
+              .wait_and_throw();
+        }
       }
+      std::vector<T> ref(cont1.size());
+      std::iota(ref.begin(), ref.end(), 0);
+      if (!std::equal(ref.cbegin(), ref.cend(), cont1.cbegin(),
+                      value_operations::are_equal<T, T>) ||
+          !std::equal(ref.cbegin(), ref.cend(), cont2.cbegin(),
+                      value_operations::are_equal<T, T>))
+        FAIL(log, "(Container) constructor fail.");
     }
 
     /* check (Container, allocator)*/
-    if (dims == 1) {
-      std::vector<T> cont(size);
-      buffer_constructors_common::logging_alloc<T> logging_alloc;
-      sycl::buffer<T, dims> buf(cont, logging_alloc, propList);
-      sycl::buffer<T, dims> buf1(cont, logging_alloc);
-      constexpr bool data_verify = true;
-      if (!check_buffer_constructor(buf, r, data_verify) ||
-          !check_buffer_constructor(buf1, r, data_verify) ||
-          alloc_log.str().empty()) {
-        FAIL(log, "(Container, allocator) constructor fail.");
+    if constexpr (dims == 1) {
+      std::vector<T> cont1(size), cont2(size);
+      {
+        buffer_constructors_common::logging_alloc<T> logging_alloc;
+        sycl::buffer<T, dims, decltype(logging_alloc)> buf1(
+            cont1, logging_alloc, propList);
+        sycl::buffer<T, dims, decltype(logging_alloc)> buf2(cont2,
+                                                            logging_alloc);
+        {
+          util::get_cts_object::queue()
+              .submit([&](sycl::handler &cgh) {
+                auto acc1 =
+                    buf1.template get_access<sycl::access_mode::write>(cgh);
+                auto acc2 =
+                    buf2.template get_access<sycl::access_mode::write>(cgh);
+                cgh.parallel_for(r, iota_kernel<decltype(acc1)>{acc1, acc2});
+              })
+              .wait_and_throw();
+        }
       }
-      alloc_log.clear();
+      std::vector<T> ref(cont1.size());
+      std::iota(ref.begin(), ref.end(), 0);
+      if (!std::equal(ref.cbegin(), ref.cend(), cont1.cbegin(),
+                      value_operations::are_equal<T, T>) ||
+          !std::equal(ref.cbegin(), ref.cend(), cont2.cbegin(),
+                      value_operations::are_equal<T, T>) ||
+          !alloc_log.str().empty())
+        FAIL(log, "(Container, allocator) constructor fail.");
     }
 
     /* check (shared pointer, range) constructor*/
