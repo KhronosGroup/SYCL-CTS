@@ -865,7 +865,7 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
 }
 
 template <int dims>
-void add_id_linear(sycl::id<dims>& id, size_t size) {
+void add_id_linear(sycl::id<dims>& id, int size) {
   for (int i = dims - 1; i >= 0; i--) {
     if (i < size) {
       id[i]++;
