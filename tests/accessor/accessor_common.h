@@ -798,7 +798,7 @@ void test_accessor_methods_common(const AccT& accessor,
 
 template <typename AccT, int dims>
 void test_accessor_get_range_method(const AccT& accessor,
-                                  const sycl::range<dims>& expected_range) {
+                                    const sycl::range<dims>& expected_range) {
   {
     INFO("check get_range() method");
     auto acc_range = accessor.get_range();
@@ -808,8 +808,8 @@ void test_accessor_get_range_method(const AccT& accessor,
 }
 
 template <typename AccT, int dims>
-void test_accessor_get_offset_method(const AccT &accessor,
-                           const sycl::id<dims> &expected_offset) {
+void test_accessor_get_offset_method(const AccT& accessor,
+                                     const sycl::id<dims>& expected_offset) {
   INFO("check get_offset() method");
   auto acc_offset = accessor.get_offset();
   STATIC_CHECK(std::is_same_v<decltype(acc_offset), sycl::id<dims>>);
@@ -817,9 +817,9 @@ void test_accessor_get_offset_method(const AccT &accessor,
 }
 
 template <typename AccT, int dims>
-void test_accessor_range_methods(const AccT &accessor,
-                           const sycl::range<dims> &expected_range,
-                           const sycl::id<dims> &expected_offset) {
+void test_accessor_range_methods(const AccT& accessor,
+                                 const sycl::range<dims>& expected_range,
+                                 const sycl::id<dims>& expected_offset) {
   test_accessor_get_range_method<AccT, dims>(accessor, expected_range);
   test_accessor_get_offset_method<AccT, dims>(accessor, expected_offset);
 }

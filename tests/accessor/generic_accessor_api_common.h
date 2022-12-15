@@ -19,7 +19,7 @@ void test_accessor_methods(const AccT &accessor,
                            const size_t expected_size,
                            const bool expected_isPlaceholder) {
   test_accessor_methods_common<AccT>(accessor, expected_byte_size,
-                                           expected_size);
+                                     expected_size);
 
   {
     INFO("check is_placeholder() method");
@@ -147,10 +147,11 @@ class run_api_tests {
                                   0 /*expected_size*/,
                                   false /*expected_isPlaceholder*/);
             if constexpr (0 < dims) {
-              test_accessor_range_methods(acc,
-                                    util::get_cts_object::range<dims>::get(
-                                        0, 0, 0) /*expected_range*/,
-                                    sycl::id<dims>() /*&expected_offset*/);
+              test_accessor_range_methods(
+                  acc,
+                  util::get_cts_object::range<dims>::get(0, 0,
+                                                         0) /*expected_range*/,
+                  sycl::id<dims>() /*&expected_offset*/);
             }
           })
           .wait_and_throw();
@@ -172,10 +173,11 @@ class run_api_tests {
                                     1 /*expected_size*/,
                                     true /*expected_isPlaceholder*/);
               if constexpr (0 < dims) {
-                test_accessor_range_methods(acc,
-                                      util::get_cts_object::range<dims>::get(
-                                          1, 1, 1) /*expected_range*/,
-                                      sycl::id<dims>() /*&expected_offset*/);
+                test_accessor_range_methods(
+                    acc,
+                    util::get_cts_object::range<dims>::get(
+                        1, 1, 1) /*expected_range*/,
+                    sycl::id<dims>() /*&expected_offset*/);
               }
 
               test_accessor_ptr(acc, data);
@@ -198,10 +200,11 @@ class run_api_tests {
                                     1 /*expected_size*/,
                                     false /*expected_isPlaceholder*/);
               if constexpr (0 < dims) {
-                test_accessor_range_methods(acc,
-                                      util::get_cts_object::range<dims>::get(
-                                          1, 1, 1) /*expected_range*/,
-                                      sycl::id<dims>() /*&expected_offset*/);
+                test_accessor_range_methods(
+                    acc,
+                    util::get_cts_object::range<dims>::get(
+                        1, 1, 1) /*expected_range*/,
+                    sycl::id<dims>() /*&expected_offset*/);
               }
 
               if constexpr (Target == sycl::target::host_task) {
@@ -221,17 +224,19 @@ class run_api_tests {
                       value_operations::assign(acc_ref1, changed_val);
                       CHECK(value_operations::are_equal(acc_ref2, changed_val));
                     }
-                  }
-                  else {
+                  } else {
                     T some_data = value_operations::init<T>(expected_val);
                     typename AccT::reference d = acc;
                     CHECK(value_operations::are_equal(some_data, d));
                     if constexpr (AccessMode != sycl::access_mode::read) {
-                      typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
+                      typename AccT::value_type v_data =
+                          value_operations::init<typename AccT::value_type>(
+                              changed_val);
                       acc = v_data;
                       CHECK(value_operations::are_equal(acc, v_data));
-                   
-                      acc = value_operations::init<typename AccT::value_type>(changed_val);
+
+                      acc = value_operations::init<typename AccT::value_type>(
+                          changed_val);
                       CHECK(value_operations::are_equal(acc, v_data));
                     }
                   }
@@ -262,11 +267,14 @@ class run_api_tests {
                     typename AccT::reference d = acc;
                     res_acc[0] &= value_operations::are_equal(some_data, d);
                     if constexpr (AccessMode != sycl::access_mode::read) {
-                      typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
+                      typename AccT::value_type v_data =
+                          value_operations::init<typename AccT::value_type>(
+                              changed_val);
                       acc = v_data;
                       res_acc[0] &= value_operations::are_equal(acc, v_data);
-                   
-                      acc = value_operations::init<typename AccT::value_type>(changed_val);
+
+                      acc = value_operations::init<typename AccT::value_type>(
+                          changed_val);
                       res_acc[0] &= value_operations::are_equal(acc, v_data);
                     }
                   }
@@ -313,8 +321,7 @@ class run_api_tests {
                   acc_range.size() /*expected_size*/,
                   false /*expected_isPlaceholder*/);
               if constexpr (0 < dims) {
-                test_accessor_range_methods(acc,
-                                            acc_range /*expected_range*/,
+                test_accessor_range_methods(acc, acc_range /*expected_range*/,
                                             offset_id /*&expected_offset*/);
               }
 

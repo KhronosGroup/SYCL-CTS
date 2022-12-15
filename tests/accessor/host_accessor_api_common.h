@@ -50,11 +50,12 @@ class run_api_tests {
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check api for empty host_accessor")) {
       AccT acc;
-      test_accessor_methods_common(
-          acc, 0 /* expected_byte_size*/, 0 /*expected_size*/);
+      test_accessor_methods_common(acc, 0 /* expected_byte_size*/,
+                                   0 /*expected_size*/);
       if constexpr (0 < dims) {
         test_accessor_range_methods(
-            acc, util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
+            acc,
+            util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
             sycl::id<dims>() /*&expected_offset)*/);
       }
     }
@@ -67,40 +68,44 @@ class run_api_tests {
         sycl::buffer<T, buf_dims> data_buf(&data, r);
         AccT acc{data_buf};
 
-        test_accessor_methods_common(
-            acc, sizeof(T) /* expected_byte_size*/, 1 /*expected_size*/);
+        test_accessor_methods_common(acc, sizeof(T) /* expected_byte_size*/,
+                                     1 /*expected_size*/);
         if constexpr (0 < dims) {
-          test_accessor_range_methods(
-              acc, util::get_cts_object::range<dims>::get(1, 1, 1) /*expected_range*/,
-              sycl::id<dims>() /*&expected_offset)*/);
+          test_accessor_range_methods(acc,
+                                      util::get_cts_object::range<dims>::get(
+                                          1, 1, 1) /*expected_range*/,
+                                      sycl::id<dims>() /*&expected_offset)*/);
         }
-	if constexpr (0 < dims) {
-        test_accessor_ptr(acc, expected_val);
-        auto &acc_ref1 = acc[sycl::id<dims>()];
-        auto &acc_ref2 = get_subscript_overload<T, AccT, dims>(acc, 0);
-        CHECK(value_operations::are_equal(acc_ref1, expected_val));
-        CHECK(value_operations::are_equal(acc_ref2, expected_val));
-        STATIC_CHECK(
-            std::is_same_v<decltype(acc_ref1), typename AccT::reference>);
-        STATIC_CHECK(
-            std::is_same_v<decltype(acc_ref2), typename AccT::reference>);
-        if constexpr (AccessMode != sycl::access_mode::read)
-          value_operations::assign(acc_ref1, changed_val);
-        CHECK(value_operations::are_equal(acc_ref2, changed_val));
-	else {
-          T some_data = value_operations::init<T>(expected_val);
-          typename AccT::reference d = acc;
-          CHECK(value_operations::are_equal(some_data, d));
-          if constexpr (AccessMode != sycl::access_mode::read) {
-            typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
-            acc = v_data;
-            CHECK(value_operations::are_equal(acc, v_data));
-         
-            acc = value_operations::init<typename AccT::value_type>(changed_val);
-            CHECK(value_operations::are_equal(acc, v_data));
+        if constexpr (0 < dims) {
+          test_accessor_ptr(acc, expected_val);
+          auto &acc_ref1 = acc[sycl::id<dims>()];
+          auto &acc_ref2 = get_subscript_overload<T, AccT, dims>(acc, 0);
+          CHECK(value_operations::are_equal(acc_ref1, expected_val));
+          CHECK(value_operations::are_equal(acc_ref2, expected_val));
+          STATIC_CHECK(
+              std::is_same_v<decltype(acc_ref1), typename AccT::reference>);
+          STATIC_CHECK(
+              std::is_same_v<decltype(acc_ref2), typename AccT::reference>);
+          if constexpr (AccessMode != sycl::access_mode::read)
+            value_operations::assign(acc_ref1, changed_val);
+          CHECK(value_operations::are_equal(acc_ref2, changed_val));
+          else {
+            T some_data = value_operations::init<T>(expected_val);
+            typename AccT::reference d = acc;
+            CHECK(value_operations::are_equal(some_data, d));
+            if constexpr (AccessMode != sycl::access_mode::read) {
+              typename AccT::value_type v_data =
+                  value_operations::init<typename AccT::value_type>(
+                      changed_val);
+              acc = v_data;
+              CHECK(value_operations::are_equal(acc, v_data));
+
+              acc = value_operations::init<typename AccT::value_type>(
+                  changed_val);
+              CHECK(value_operations::are_equal(acc, v_data));
+            }
           }
-	}
-      }
+        }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }
@@ -136,10 +141,9 @@ class run_api_tests {
           test_accessor_methods_common(
               acc, sizeof(T) * acc_range.size() /* expected_byte_size*/,
               acc_range.size() /*expected_size*/);
-          test_accessor_range_methods(
-              acc, acc_range /*expected_range*/,
-              offset_id /*&expected_offset)*/);
- 
+          test_accessor_range_methods(acc, acc_range /*expected_range*/,
+                                      offset_id /*&expected_offset)*/);
+
           test_accessor_ptr(acc, T());
           auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
           auto &acc_ref2 = acc[sycl::id<dims>()];

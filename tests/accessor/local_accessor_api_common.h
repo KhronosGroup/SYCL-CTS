@@ -98,16 +98,17 @@ class run_api_tests {
             AccT acc;
             test_accessor_methods_common(acc, 0 /* expected_byte_size*/,
                                          0 /*expected_size*/);
-	    if constexpr (0 < dims) {
-              test_accessor_get_range_method(acc,
-                                    util::get_cts_object::range<dims>::get(
-                                        0, 0, 0) /*expected_range*/);
-	    }
+            if constexpr (0 < dims) {
+              test_accessor_get_range_method(
+                  acc, util::get_cts_object::range<dims>::get(
+                           0, 0, 0) /*expected_range*/);
+            }
           })
           .wait_and_throw();
     }
     if constexpr (0 < dims) {
-      SECTION(get_section_name<dims>(type_name, "Check api for non zero-dimension local_accessor")) {
+      SECTION(get_section_name<dims>(
+          type_name, "Check api for non zero-dimension local_accessor")) {
         constexpr size_t global_range_size = 4;
         constexpr size_t global_range_buffer_size = (dims == 3)   ? 4 * 4 * 4
                                                     : (dims == 2) ? 4 * 4
@@ -133,17 +134,17 @@ class run_api_tests {
               .submit([&](sycl::handler &cgh) {
                 AccT acc(local_range, cgh);
                 AccT acc_other(local_range, cgh);
-     
+
                 test_accessor_methods_common(
                     acc, sizeof(T) * local_range.size() /* expected_byte_size*/,
                     local_range.size() /*expected_size*/);
-                test_accessor_get_range_method(acc, local_range /*expected_range*/);
+                test_accessor_get_range_method(acc,
+                                               local_range /*expected_range*/);
 
-     
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.parallel_for(nd_range, [=](sycl::nd_item<dims> item) {
                   auto &&ref_1 = acc[sycl::id<dims>()];
-     
+
                   auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
                   size_t item_id = item.get_global_linear_id();
                   res_acc[sycl::id<2>(to_integral(check::subscript_id_type),
@@ -155,19 +156,22 @@ class run_api_tests {
                   if constexpr (!std::is_const_v<T>) {
                     value_operations::assign(ref_1, expected_val);
                     value_operations::assign(ref_2, changed_val);
-     
-                    res_acc[sycl::id<2>(to_integral(check::subscript_id_result), item_id)] =
+
+                    res_acc[sycl::id<2>(to_integral(check::subscript_id_result),
+                                        item_id)] =
                         value_operations::are_equal(ref_1, expected_val);
-                    res_acc[sycl::id<2>(to_integral(check::subscript_size_t_result), item_id)] =
+                    res_acc[sycl::id<2>(
+                        to_integral(check::subscript_size_t_result), item_id)] =
                         value_operations::are_equal(ref_2, changed_val);
-     
-                    test_local_accessor_ptr(acc, expected_val, res_acc, item_id);
+
+                    test_local_accessor_ptr(acc, expected_val, res_acc,
+                                            item_id);
                   }
                 });
               })
               .wait_and_throw();
         }
-     
+
         std::string info_strings[to_integral(check::nChecks)]{
             "return type for operator[](id<Dimensions> index)",
             "return type for operator[]](size_t index)",
@@ -179,7 +183,7 @@ class run_api_tests {
             "result for get_multi_ptr<sycl::access::decorated::yes>()",
             "return type for get_pointer()",
             "result for get_pointer()"};
-     
+
         constexpr size_t N = to_integral(
             (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
         for (size_t i = 0; i < N; i++) {
@@ -188,8 +192,7 @@ class run_api_tests {
                             [](bool v) { return v; }));
         }
       }
-    }
-    else {
+    } else {
     }
 
     SECTION(
