@@ -26,7 +26,7 @@
 
 namespace queue_shortcuts_common {
 
-static auto get_types() {
+inline auto get_types() {
   static const auto types =
       named_type_pack<char, short, int, long long, std::size_t, bool, float,
                       user_def_types::no_cnstr>::generate("char", "short",
@@ -36,6 +36,15 @@ static auto get_types() {
                                                           "custom struct");
   static_assert(sycl::is_device_copyable_v<user_def_types::no_cnstr>);
   return types;
+}
+
+/** Performs std::iota with + 1 instead of ++ for compatibility with bool. */
+template <typename ForwardIt, typename T>
+constexpr void iota_comp(ForwardIt first, ForwardIt last, T value) {
+  while (first != last) {
+    *(first++) = value;
+    value = value + 1;
+  }
 }
 
 }  // namespace queue_shortcuts_common

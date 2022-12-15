@@ -59,13 +59,6 @@ struct no_cnstr {
     return !(lhs == rhs);
   }
 
-  no_cnstr &operator++() {
-    ++a;
-    ++b;
-    ++c;
-    return *this;
-  }
-
   friend no_cnstr operator+(const no_cnstr &lhs, int i) {
     return {lhs.a + static_cast<float>(i), lhs.b + i,
             static_cast<char>(lhs.c + i)};

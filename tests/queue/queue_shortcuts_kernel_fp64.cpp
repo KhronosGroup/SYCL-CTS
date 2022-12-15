@@ -20,7 +20,6 @@
 
 #include "../../util/extensions.h"
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "queue_shortcuts_kernel.h"
 
 namespace queue_shortcuts_kernel_fp64 {
@@ -28,18 +27,18 @@ namespace queue_shortcuts_kernel_fp64 {
 using namespace sycl_cts;
 using namespace queue_shortcuts_kernel;
 
-// hipSYCL not tested
-DISABLED_FOR_TEST_CASE(hipSYCL)
-("queue shortcuts kernel function fp64", "[queue]")({
+TEST_CASE("queue shortcuts kernel function fp64", "[queue]") {
   auto queue = util::get_cts_object::queue();
   using avaliability =
       util::extensions::availability<util::extensions::tag::fp64>;
   if (!avaliability::check(queue)) {
-    WARN("Device does not support double precision floating point operations");
+    WARN(
+        "Device does not support double precision floating point operations"
+        "Skipping the test case.");
     return;
   }
 
   check_queue_shortcuts_kernel_for_type<double>{}(queue, "double");
-})
+}
 
 }  // namespace queue_shortcuts_kernel_fp64

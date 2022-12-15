@@ -26,8 +26,11 @@
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
+#include "queue_shortcuts_common.h"
 
 namespace queue_shortcuts_usm {
+
+using namespace queue_shortcuts_common;
 
 template <typename T>
 struct runner_memcpy {
@@ -40,7 +43,7 @@ struct runner_memcpy {
     const T t_init{0};
     const T t_test{1};  // to initialize the sequence: t_test, ++t_test, etc.
     std::unique_ptr<T[]> h_src = std::make_unique<T[]>(element_count);
-    std::iota(h_src.get(), h_src.get() + element_count, t_test);
+    iota_comp(h_src.get(), h_src.get() + element_count, t_test);
     std::unique_ptr<T[]> h_dest = std::make_unique<T[]>(element_count);
     std::fill(h_dest.get(), h_dest.get() + element_count, t_init);
 
@@ -66,7 +69,7 @@ struct runner_memcpy {
 
     // check the result
     for (unsigned int i = 0; i < element_count; i++) {
-      CHECK(((t_test + i) == h_actual[i]));
+      CHECK(((t_test + static_cast<int>(i)) == h_actual[i]));
     }
 
     sycl::free(d_dest, queue);
@@ -92,11 +95,11 @@ struct runner_memcpy {
     });
     queue.wait();
 
-    // perform the memset from d_src to d_dest using shortcuts
+    // perform the memset on d_ptr using shortcuts
     sycl::event event = helper(d_ptr, test);
     event.wait();
 
-    // copy destination buffer back to host without shortcut functions
+    // copy the buffer back to host without shortcut functions
     std::unique_ptr<T[]> h_actual = std::make_unique<T[]>(element_count);
     queue.submit([&](sycl::handler& cgh) {
       cgh.memcpy(h_actual.get(), d_ptr, element_count * sizeof(T));
@@ -129,11 +132,11 @@ struct runner_memcpy {
     });
     queue.wait();
 
-    // perform the memset from d_src to d_dest using shortcuts
+    // perform the fill on d_ptr using shortcuts
     sycl::event event = helper(d_ptr, t_test);
     event.wait();
 
-    // copy destination buffer back to host without shortcut functions
+    // copy the buffer back to host without shortcut functions
     std::unique_ptr<T[]> h_actual = std::make_unique<T[]>(element_count);
     queue.submit([&](sycl::handler& cgh) {
       cgh.memcpy(h_actual.get(), d_ptr, element_count * sizeof(T));
@@ -242,6 +245,10 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
         q.prefetch(ptr, element_count * sizeof(T),
                    {prefetch_no_events, prefetch_single_event});
     prefetch_multiple_events.wait();
+#else
+    WARN(
+        "queue.prefetch() test does not compile for ComputeCPP"
+        "Skipping the test case.");
 #endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
     prefetch_no_events.wait();
     sycl::free(ptr, q);
@@ -264,6 +271,10 @@ void test_unified_shared_memory(sycl::queue q, unsigned int element_count) {
         q.mem_advise(ptr, element_count * sizeof(int), advice,
                      {advise_no_events, advise_single_event});
     advise_multiple_events.wait();
+#else
+    WARN(
+        "queue.mem_advise() test does not compile for ComputeCPP"
+        "Skipping the test case.");
 #endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
     advise_no_events.wait();
     sycl::free(ptr, q);

@@ -28,14 +28,16 @@ namespace queue_shortcuts_explicit_fp16 {
 using namespace sycl_cts;
 using namespace queue_shortcuts_explict;
 
-// hipSYCL, DPCPP not tested
-DISABLED_FOR_TEST_CASE(hipSYCL, DPCPP)
+// DPCPP does not define the explicit copy operations
+DISABLED_FOR_TEST_CASE(DPCPP)
 ("queue shortcuts explicit copy fp16", "[queue]")({
   auto queue = util::get_cts_object::queue();
   using avaliability =
       util::extensions::availability<util::extensions::tag::fp16>;
   if (!avaliability::check(queue)) {
-    WARN("Device does not support half precision floating point operations");
+    WARN(
+        "Device does not support half precision floating point operations"
+        "Skipping the test case.");
     return;
   }
 

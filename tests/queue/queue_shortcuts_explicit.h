@@ -25,8 +25,11 @@
 #include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 #include "../common/value_operations.h"
+#include "queue_shortcuts_common.h"
 
 namespace queue_shortcuts_explict {
+
+using namespace queue_shortcuts_common;
 
 template <typename T>
 class simple_kernel0;
@@ -43,7 +46,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
   // copy (host raw pointer, accessor)
   {
     std::unique_ptr<T[]> src = std::make_unique<T[]>(element_count);
-    std::iota(src.get(), src.get() + element_count, t_test);
+    iota_comp(src.get(), src.get() + element_count, t_test);
 
     sycl::buffer<T, 1> buffer(range);
     sycl::accessor accessor(buffer, range, sycl::write_only);
@@ -52,13 +55,13 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
 
     sycl::host_accessor host_accessor(buffer, sycl::read_only);
     std::vector<T> expected(element_count);
-    std::iota(expected.begin(), expected.end(), t_test);
+    iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
   // copy (host shared pointer, accessor)
   {
     std::shared_ptr<T> src(new T[element_count]);
-    std::iota(src.get(), src.get() + element_count, t_test);
+    iota_comp(src.get(), src.get() + element_count, t_test);
 
     sycl::buffer<T, 1> buffer(range);
     sycl::accessor accessor(buffer, range, sycl::write_only);
@@ -67,7 +70,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
 
     sycl::host_accessor host_accessor(buffer, sycl::read_only);
     std::vector<T> expected(element_count);
-    std::iota(expected.begin(), expected.end(), t_test);
+    iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
   // ComputeCpp requested kernel name could not be found
@@ -91,7 +94,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::buffer<T, 1> dest_buffer(dest.get(), range);
     sycl::host_accessor host_accessor(dest_buffer, sycl::read_only);
     std::vector<T> expected(element_count);
-    std::iota(expected.begin(), expected.end(), t_test);
+    iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
   // copy (accessor, host shared pointer)
@@ -113,7 +116,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::buffer<T, 1> dest_buffer(dest, range);
     sycl::host_accessor host_accessor(dest_buffer, sycl::read_only);
     std::vector<T> expected(element_count);
-    std::iota(expected.begin(), expected.end(), t_test);
+    iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
   // copy (accessor, accessor)
@@ -134,9 +137,13 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
 
     sycl::host_accessor host_accessor(buffer_dest, sycl::read_only);
     std::vector<T> expected(element_count);
-    std::iota(expected.begin(), expected.end(), t_test);
+    iota_comp(expected.begin(), expected.end(), t_test);
     CHECK(value_operations::are_equal(host_accessor, expected));
   }
+#else
+  WARN(
+      "queue.copy() test does not compile for ComputeCPP"
+      "Skipping the test case.");
 #endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
   // ComputeCpp gives an error next time the function is called
   // DPCPP no member named 'update_host' in 'sycl::queue'
@@ -150,6 +157,10 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::event e = q.update_host(accessor);
     e.wait();
   }
+#else
+  WARN(
+      "queue.update_host() test does not compile for ComputeCPP and DPCPP"
+      "Skipping the test case.");
 #endif
   // ComputeCpp function not defined
 #ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -163,6 +174,10 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
     sycl::host_accessor host_accessor(buffer, sycl::read_only);
     CHECK(value_operations::are_equal(host_accessor, t_test));
   }
+#else
+  WARN(
+      "queue.fill() test does not compile for ComputeCPP"
+      "Skipping the test case.");
 #endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 }
 
