@@ -44,18 +44,6 @@ void test_accessor_methods(const AccT &accessor,
 #endif
 }
 
-template <typename AccT, int dims>
-void test_accessor_range_methods(const AccT &accessor,
-                           const sycl::range<dims> &expected_range,
-                           const sycl::id<dims> &expected_offset) {
-  test_accessor_get_range_method<AccT, dims>(accessor, expected_range);
-
-  INFO("check get_offset() method");
-  auto acc_offset = accessor.get_offset();
-  STATIC_CHECK(std::is_same_v<decltype(acc_offset), sycl::id<dims>>);
-  CHECK(acc_offset == expected_offset);
-}
-
 template <typename T, typename AccT>
 void test_accessor_ptr_host(AccT &accessor, T expected_data) {
   {
@@ -201,7 +189,6 @@ class run_api_tests {
       T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
-        sycl::buffer<T, dims> data_buf(&data, r);
         sycl::buffer<T, buf_dims> data_buf(&data, r);
         queue
             .submit([&](sycl::handler &cgh) {
@@ -239,7 +226,7 @@ class run_api_tests {
                     T some_data = value_operations::init<T>(expected_val);
                     typename AccT::reference d = acc;
                     CHECK(value_operations::are_equal(some_data, d));
-                    if constexpr (!std::is_const_v<typename std::remove_reference_t<T> >) {
+                    if constexpr (AccessMode != sycl::access_mode::read) {
                       typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
                       acc = v_data;
                       CHECK(value_operations::are_equal(acc, v_data));
@@ -274,7 +261,7 @@ class run_api_tests {
                     T some_data = value_operations::init<T>(expected_val);
                     typename AccT::reference d = acc;
                     res_acc[0] &= value_operations::are_equal(some_data, d);
-                    if constexpr (!std::is_const_v<typename std::remove_reference_t<T> >) {
+                    if constexpr (AccessMode != sycl::access_mode::read) {
                       typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
                       acc = v_data;
                       res_acc[0] &= value_operations::are_equal(acc, v_data);

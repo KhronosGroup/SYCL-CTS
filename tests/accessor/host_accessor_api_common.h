@@ -39,7 +39,8 @@ class run_api_tests {
  public:
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name) {
-    auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
+    constexpr int buf_dims = (0 == dims) ? 1 : dims;
+    auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check host_accessor alias types")) {
@@ -49,10 +50,13 @@ class run_api_tests {
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check api for empty host_accessor")) {
       AccT acc;
-      test_host_accessor_methods(
-          acc, 0 /* expected_byte_size*/, 0 /*expected_size*/,
-          util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
-          sycl::id<dims>() /*&expected_offset)*/);
+      test_accessor_methods_common(
+          acc, 0 /* expected_byte_size*/, 0 /*expected_size*/);
+      if constexpr (0 < dims) {
+        test_accessor_range_methods(
+            acc, util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
+            sycl::id<dims>() /*&expected_offset)*/);
+      }
     }
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
@@ -60,13 +64,17 @@ class run_api_tests {
       T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
-        sycl::buffer<T, dims> data_buf(&data, r);
+        sycl::buffer<T, buf_dims> data_buf(&data, r);
         AccT acc{data_buf};
 
-        test_host_accessor_methods(
-            acc, sizeof(T) /* expected_byte_size*/, 1 /*expected_size*/,
-            util::get_cts_object::range<dims>::get(1, 1, 1) /*expected_range*/,
-            sycl::id<dims>() /*&expected_offset)*/);
+        test_accessor_methods_common(
+            acc, sizeof(T) /* expected_byte_size*/, 1 /*expected_size*/);
+        if constexpr (0 < dims) {
+          test_accessor_range_methods(
+              acc, util::get_cts_object::range<dims>::get(1, 1, 1) /*expected_range*/,
+              sycl::id<dims>() /*&expected_offset)*/);
+        }
+	if constexpr (0 < dims) {
         test_accessor_ptr(acc, expected_val);
         auto &acc_ref1 = acc[sycl::id<dims>()];
         auto &acc_ref2 = get_subscript_overload<T, AccT, dims>(acc, 0);
@@ -79,57 +87,73 @@ class run_api_tests {
         if constexpr (AccessMode != sycl::access_mode::read)
           value_operations::assign(acc_ref1, changed_val);
         CHECK(value_operations::are_equal(acc_ref2, changed_val));
+	else {
+          T some_data = value_operations::init<T>(expected_val);
+          typename AccT::reference d = acc;
+          CHECK(value_operations::are_equal(some_data, d));
+          if constexpr (AccessMode != sycl::access_mode::read) {
+            typename AccT::value_type v_data = value_operations::init<typename AccT::value_type>(changed_val);
+            acc = v_data;
+            CHECK(value_operations::are_equal(acc, v_data));
+         
+            acc = value_operations::init<typename AccT::value_type>(changed_val);
+            CHECK(value_operations::are_equal(acc, v_data));
+          }
+	}
       }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }
-
-    SECTION(get_section_name<dims>(
-        type_name, access_mode_name,
-        "Check api for ranged host_accessor with offset")) {
-      constexpr size_t acc_range_size = 4;
-      constexpr size_t buff_range_size = 8;
-      constexpr size_t buff_size = (dims == 3)   ? 8 * 8 * 8
-                                   : (dims == 2) ? 8 * 8
-                                                 : 8;
-      constexpr size_t offset = 4;
-      constexpr size_t index = 2;
-      int linear_index = 0;
-      for (size_t i = 0; i < dims; i++) {
-        linear_index += (offset + index) * pow(buff_range_size, dims - i - 1);
-      }
-      auto acc_range = util::get_cts_object::range<dims>::get(
-          acc_range_size, acc_range_size, acc_range_size);
-      auto buff_range = util::get_cts_object::range<dims>::get(
-          buff_range_size, buff_range_size, buff_range_size);
-      auto offset_id =
-          util::get_cts_object::id<dims>::get(offset, offset, offset);
-      std::remove_const_t<T> data[buff_size];
-      for (size_t i = 0; i < buff_size; i++) {
-        data[i] = value_operations::init<T>(i);
-      }
-      bool res = false;
-      {
-        sycl::buffer<T, dims> data_buf(data, buff_range);
-        AccT acc(data_buf, acc_range, offset_id);
-        test_host_accessor_methods(
-            acc, sizeof(T) * acc_range.size() /* expected_byte_size*/,
-            acc_range.size() /*expected_size*/, acc_range /*expected_range*/,
-            offset_id /*&expected_offset)*/);
-
-        test_accessor_ptr(acc, T());
-        auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
-        auto &acc_ref2 = acc[sycl::id<dims>()];
-        CHECK(value_operations::are_equal(acc_ref1, linear_index));
-        CHECK(value_operations::are_equal(acc_ref2, 0));
-        if constexpr (AccessMode != sycl::access_mode::read) {
-          value_operations::assign(acc_ref1, changed_val);
-          value_operations::assign(acc_ref2, expected_val);
+    if constexpr (0 < dims) {
+      SECTION(get_section_name<dims>(
+          type_name, access_mode_name,
+          "Check api for ranged host_accessor with offset")) {
+        constexpr size_t acc_range_size = 4;
+        constexpr size_t buff_range_size = 8;
+        constexpr size_t buff_size = (dims == 3)   ? 8 * 8 * 8
+                                     : (dims == 2) ? 8 * 8
+                                                   : 8;
+        constexpr size_t offset = 4;
+        constexpr size_t index = 2;
+        int linear_index = 0;
+        for (size_t i = 0; i < dims; i++) {
+          linear_index += (offset + index) * pow(buff_range_size, dims - i - 1);
         }
-      }
-      if constexpr (AccessMode != sycl::access_mode::read) {
-        CHECK(value_operations::are_equal(data[linear_index], changed_val));
-        CHECK(value_operations::are_equal(data[0], expected_val));
+        auto acc_range = util::get_cts_object::range<dims>::get(
+            acc_range_size, acc_range_size, acc_range_size);
+        auto buff_range = util::get_cts_object::range<dims>::get(
+            buff_range_size, buff_range_size, buff_range_size);
+        auto offset_id =
+            util::get_cts_object::id<dims>::get(offset, offset, offset);
+        std::remove_const_t<T> data[buff_size];
+        for (size_t i = 0; i < buff_size; i++) {
+          data[i] = value_operations::init<T>(i);
+        }
+        bool res = false;
+        {
+          sycl::buffer<T, dims> data_buf(data, buff_range);
+          AccT acc(data_buf, acc_range, offset_id);
+          test_accessor_methods_common(
+              acc, sizeof(T) * acc_range.size() /* expected_byte_size*/,
+              acc_range.size() /*expected_size*/);
+          test_accessor_range_methods(
+              acc, acc_range /*expected_range*/,
+              offset_id /*&expected_offset)*/);
+ 
+          test_accessor_ptr(acc, T());
+          auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
+          auto &acc_ref2 = acc[sycl::id<dims>()];
+          CHECK(value_operations::are_equal(acc_ref1, linear_index));
+          CHECK(value_operations::are_equal(acc_ref2, 0));
+          if constexpr (AccessMode != sycl::access_mode::read) {
+            value_operations::assign(acc_ref1, changed_val);
+            value_operations::assign(acc_ref2, expected_val);
+          }
+        }
+        if constexpr (AccessMode != sycl::access_mode::read) {
+          CHECK(value_operations::are_equal(data[linear_index], changed_val));
+          CHECK(value_operations::are_equal(data[0], expected_val));
+        }
       }
     }
     SECTION(get_section_name<dims>(type_name, access_mode_name,
