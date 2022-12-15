@@ -765,11 +765,10 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
-template <typename AccT, int dims>
+template <typename AccT>
 void test_accessor_methods_common(const AccT& accessor,
                                   const size_t expected_byte_size,
-                                  const size_t expected_size,
-                                  const sycl::range<dims>& expected_range) {
+                                  const size_t expected_size) {
   {
     INFO("check byte_size() method");
     auto acc_byte_size = accessor.byte_size();
@@ -795,6 +794,11 @@ void test_accessor_methods_common(const AccT& accessor,
     STATIC_CHECK(std::is_same_v<decltype(acc_empty), bool>);
     CHECK(acc_empty == (expected_size == 0));
   }
+}
+
+template <typename AccT, int dims>
+void test_accessor_get_range_method(const AccT& accessor,
+                                  const sycl::range<dims>& expected_range) {
   {
     INFO("check get_range() method");
     auto acc_range = accessor.get_range();
