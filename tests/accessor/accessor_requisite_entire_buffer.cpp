@@ -11,7 +11,10 @@
 #include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
 
+// FIXME: re-enable when sycl::accessor is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
+#endif
 
 namespace accessor_requisite_entire_buffer {
 
