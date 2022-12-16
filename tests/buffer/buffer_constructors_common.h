@@ -41,9 +41,9 @@ inline std::stringstream alloc_log;
 template <typename T>
 class logging_alloc {
  public:
-  typedef T value_type;
-  typedef T *pointer;
-  typedef size_t size_type;
+  using value_type = T;
+  using pointer = T *;
+  using size_type = size_t;
 
   T *allocate(size_t n) {
     alloc_log << "Allocating " << n << " bytes of storage.\n";
