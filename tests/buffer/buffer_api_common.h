@@ -525,7 +525,7 @@ public:
 class check_buffer_linearization {
  public:
   void operator()(util::logger &log) {
-    const int size = 8;
+    constexpr int size = 8;
     // clang-format off
     sycl::nd_range<1> range1d(sycl::range<1>{size},
                               sycl::range<1>{size});

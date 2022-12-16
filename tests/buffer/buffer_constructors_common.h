@@ -48,18 +48,16 @@ class logging_alloc {
   T *allocate(size_t n) {
     alloc_log << "Allocating " << n << " bytes of storage.\n";
     T *mem = static_cast<T *>(malloc(sizeof(T) * n));
-    if (mem != nullptr)
-      return mem;
-    else {
+    if (!mem) {
       alloc_log << "Failed!\n";
       throw std::bad_alloc();
     }
+    return mem;
   }
 
   void deallocate(T *p, size_t n) {
     alloc_log << "Deallocating " << n << " bytes of storage at " << p << "\n";
     free(p);
-    return;
   }
 };
 
