@@ -11,16 +11,12 @@
 #include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
-#endif
 
 namespace accessor_requisite_entire_buffer {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("requisite for the entire underlying buffer for sycl::accessor ",
- "[accessor]")({
+TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
+ "[accessor]") {
   auto q = sycl_cts::util::get_cts_object::queue();
 
   constexpr size_t buffer_size = 10;
@@ -65,6 +61,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
     q.wait_and_throw();
     CHECK(*check_data == accessor_tests_common::changed_val);
   }
-});
+}
 
 }  // namespace accessor_requisite_entire_buffer
