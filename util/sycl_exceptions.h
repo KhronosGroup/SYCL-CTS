@@ -82,11 +82,10 @@ class matcher_exception_category : public Catch::Matchers::MatcherGenericBase {
   matcher_exception_category(const std::error_category& category)
       : m_category(category) {}
 
-  bool match(const sycl::exception& other) const {
+  bool match([[maybe_unused]] const sycl::exception& other) const {
 #if SYCL_CTS_SUPPORT_HAS_EXCEPTION_CATEGORY == 0
     // There should be no compilation failures, but every CHECK_THROWS_MATCHES
     // should fail with this matcher
-    (void)other;
     return false;
 #else
     return other.category() == m_category;
