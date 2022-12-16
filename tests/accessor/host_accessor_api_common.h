@@ -68,6 +68,8 @@ class run_api_tests {
         sycl::buffer<T, buf_dims> data_buf(&data, r);
         AccT acc{data_buf};
 
+        test_accessor_ptr(acc, expected_val);
+
         test_accessor_methods_common(acc, sizeof(T) /* expected_byte_size*/,
                                      1 /*expected_size*/);
         if constexpr (0 < dims) {
@@ -75,9 +77,6 @@ class run_api_tests {
                                       util::get_cts_object::range<dims>::get(
                                           1, 1, 1) /*expected_range*/,
                                       sycl::id<dims>() /*&expected_offset)*/);
-        }
-        if constexpr (0 < dims) {
-          test_accessor_ptr(acc, expected_val);
           auto &acc_ref1 = acc[sycl::id<dims>()];
           auto &acc_ref2 = get_subscript_overload<T, AccT, dims>(acc, 0);
           CHECK(value_operations::are_equal(acc_ref1, expected_val));
@@ -89,23 +88,24 @@ class run_api_tests {
           if constexpr (AccessMode != sycl::access_mode::read)
             value_operations::assign(acc_ref1, changed_val);
           CHECK(value_operations::are_equal(acc_ref2, changed_val));
-          else {
-            T some_data = value_operations::init<T>(expected_val);
-            typename AccT::reference d = acc;
-            CHECK(value_operations::are_equal(some_data, d));
-            if constexpr (AccessMode != sycl::access_mode::read) {
-              typename AccT::value_type v_data =
-                  value_operations::init<typename AccT::value_type>(
-                      changed_val);
-              acc = v_data;
-              CHECK(value_operations::are_equal(acc, v_data));
+        } else {
+          T some_data = value_operations::init<T>(expected_val);
+          typename AccT::reference dref = acc;
+          CHECK(value_operations::are_equal(some_data, dref));
+          if constexpr (AccessMode != sycl::access_mode::read) {
+            typename AccT::value_type v_data =
+                value_operations::init<typename AccT::value_type>(changed_val);
+            // check method const AccT::operator=(const T& data) const
+            acc = v_data;
+            CHECK(value_operations::are_equal(dref, v_data));
 
-              acc = value_operations::init<typename AccT::value_type>(
-                  changed_val);
-              CHECK(value_operations::are_equal(acc, v_data));
-            }
+            // check method const AccT::operator=(T&& data) const
+            acc =
+                value_operations::init<typename AccT::value_type>(changed_val);
+            CHECK(value_operations::are_equal(dref, v_data));
           }
         }
+      }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }

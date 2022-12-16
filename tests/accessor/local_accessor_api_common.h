@@ -193,22 +193,62 @@ class run_api_tests {
         }
       }
     } else {
-    }
+      SECTION(get_section_name<dims>(
+          type_name, "Check api for zero-dimension local_accessor")) {
+        bool res;
+        {
+          sycl::buffer res_buf(&res, sycl::range(1));
+          queue
+              .submit([&](sycl::handler &cgh) {
+                AccT acc(cgh);
 
-    SECTION(
-        get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
-      constexpr size_t alloc_size = 2;
-      auto local_range = util::get_cts_object::range<dims>::get(
-          alloc_size, alloc_size, alloc_size);
-      queue.submit([&](sycl::handler &cgh) {
-        AccT acc1{local_range, cgh};
-        AccT acc2;
-        acc2.swap(acc1);
-        CHECK(acc1.get_range() ==
-              util::get_cts_object::range<dims>::get(0, 0, 0));
-        CHECK(acc2.get_range() == local_range);
-      });
-    }
+                test_accessor_methods_common(
+                    acc, sizeof(T) * r.size() /* expected_byte_size*/,
+                    r.size() /*expected_size*/);
+
+                sycl::accessor res_acc(res_buf, cgh);
+                cgh.parallel_for(
+                    sycl::nd_range(r, r), [=](sycl::nd_item<dims> item) {
+                      typename AccT::reference dref = acc;
+                      if constexpr (!std::is_const_v<T>) {
+                        typename AccT::value_type v_data =
+                            value_operations::init<typename AccT::value_type>(
+                                expected_val);
+                        acc = v_data;
+                        test_accessor_ptr_device(acc, expected_val, res_acc);
+
+                        // check method const AccT::operator=(const T& data)
+                        // const
+                        res_acc[0] &= value_operations::are_equal(dref, v_data);
+
+                        // check method const AccT::operator=(T&& data) const
+                        acc = value_operations::init<typename AccT::value_type>(
+                            changed_val);
+                        v_data =
+                            value_operations::init<typename AccT::value_type>(
+                                changed_val);
+                        res_acc[0] &= value_operations::are_equal(dref, v_data);
+                      }
+                    });
+              })
+              .wait_and_throw();
+        }
+        CHECK(res);
+      }
+  }
+  SECTION(
+      get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
+    constexpr size_t alloc_size = 2;
+    auto local_range = util::get_cts_object::range<dims>::get(
+        alloc_size, alloc_size, alloc_size);
+    queue.submit([&](sycl::handler &cgh) {
+      AccT acc1{local_range, cgh};
+      AccT acc2;
+      acc2.swap(acc1);
+      CHECK(acc1.get_range() ==
+            util::get_cts_object::range<dims>::get(0, 0, 0));
+      CHECK(acc2.get_range() == local_range);
+    });
   }
 };
 
