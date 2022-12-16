@@ -235,21 +235,21 @@ class run_api_tests {
         }
         CHECK(res);
       }
-  }
-  SECTION(
-      get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
-    constexpr size_t alloc_size = 2;
-    auto local_range = util::get_cts_object::range<dims>::get(
-        alloc_size, alloc_size, alloc_size);
-    queue.submit([&](sycl::handler &cgh) {
-      AccT acc1{local_range, cgh};
-      AccT acc2;
-      acc2.swap(acc1);
-      CHECK(acc1.get_range() ==
-            util::get_cts_object::range<dims>::get(0, 0, 0));
-      CHECK(acc2.get_range() == local_range);
-    });
-  }
+    }
+    SECTION(
+        get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
+      constexpr size_t alloc_size = 2;
+      auto local_range = util::get_cts_object::range<dims>::get(
+          alloc_size, alloc_size, alloc_size);
+      queue.submit([&](sycl::handler &cgh) {
+        AccT acc1{local_range, cgh};
+        AccT acc2;
+        acc2.swap(acc1);
+        CHECK(acc1.get_range() ==
+              util::get_cts_object::range<dims>::get(0, 0, 0));
+        CHECK(acc2.get_range() == local_range);
+      });
+    }
 };
 
 template <typename T>
