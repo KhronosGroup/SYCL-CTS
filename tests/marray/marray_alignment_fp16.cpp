@@ -39,7 +39,7 @@ TEST_CASE("alignment fp16", "[marray]") {
     return;
   }
 
-  check_marray_alignment_for_type<typename sycl::half>{}("sycl::half");
+  check_marray_alignment_for_type<sycl::half>{}("sycl::half");
 }
 
 }  // namespace marray_alignment_fp16

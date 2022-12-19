@@ -39,7 +39,7 @@ TEST_CASE("members fp16", "[marray]") {
     return;
   }
 
-  check_marray_members_for_type<typename sycl::half>{}("sycl::half");
+  check_marray_members_for_type<sycl::half>{}("sycl::half");
 };
 
 }  // namespace marray_members_fp16

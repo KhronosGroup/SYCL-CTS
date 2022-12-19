@@ -32,7 +32,6 @@ class run_marray_constructor_test {
   static constexpr std::size_t NumElements = NumElementsT::value;
 
   using marray_t = sycl::marray<DataT, NumElements>;
-  using helper = marray_common::helper<DataT, NumElements>;
 
  private:
   template <size_t num_elements = NumElements,
@@ -49,16 +48,20 @@ class run_marray_constructor_test {
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
           marray_common::ctor<DataT, num_elements - 1, 2>::value;
-      constexpr marray_t ma = marray_t(1, ma_const);
-      CHECK(value_operations::are_equal(helper::init_inc(), ma));
+      constexpr marray_t ma{1, ma_const};
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      CHECK(value_operations::are_equal(ma_inc, ma));
     }
 
     // one marray instance, one DataT instance
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
           marray_common::ctor<DataT, num_elements - 1, 1>::value;
-      constexpr marray_t ma = marray_t(ma_const, DataT(num_elements));
-      CHECK(value_operations::are_equal(helper::init_inc(), ma));
+      constexpr marray_t ma{ma_const, DataT(num_elements)};
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      CHECK(value_operations::are_equal(ma_inc, ma));
     }
 #else
     WARN(
@@ -68,27 +71,29 @@ class run_marray_constructor_test {
   }
 
  public:
-  void operator()(const std::string &) {
+  void operator()(const std::string&) {
     INFO("for number of elements \"" << NumElements << "\": ");
 
     // default constructor
     {
-      marray_t ma = marray_t();
-      CHECK(value_operations::are_equal(ma, DataT()));
+      marray_t ma;
+      CHECK(value_operations::are_equal(ma, DataT{}));
     }
 
     // scalar constructor
     {
-      constexpr DataT value = DataT(1);
-      constexpr marray_t ma(value);
-      CHECK(value_operations::are_equal(ma, DataT(1)));
+      constexpr DataT value{1};
+      constexpr marray_t ma{value};
+      CHECK(value_operations::are_equal(ma, value));
     }
 
     // variadic constructor
     {
       // NumElements DataT instances
       constexpr marray_t a = marray_common::ctor<DataT, NumElements, 1>::value;
-      CHECK(value_operations::are_equal(helper::init_inc(), a));
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      CHECK(value_operations::are_equal(ma_inc, a));
 
       // only compiled when NumElements != 1
       check_constexpr_single_element();
@@ -96,15 +101,18 @@ class run_marray_constructor_test {
 
     // copy constructor
     {
-      constexpr marray_t rhs(DataT(1));
-      constexpr marray_t ma(rhs);
-      CHECK(value_operations::are_equal(ma, DataT(1)));
+      constexpr DataT value{1};
+      constexpr marray_t rhs{value};
+      constexpr marray_t ma{rhs};
+      CHECK(value_operations::are_equal(ma, value));
     }
 
     // copy constructor rval reference
     {
-      constexpr marray_t ma(marray_common::ctor<DataT, NumElements, 1>::value);
-      CHECK(value_operations::are_equal(helper::init_inc(), ma));
+      constexpr marray_t ma{marray_common::ctor<DataT, NumElements, 1>::value};
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      CHECK(value_operations::are_equal(ma_inc, ma));
     }
   }
 };
@@ -112,7 +120,7 @@ class run_marray_constructor_test {
 template <typename DataT>
 class check_marray_constructor_for_type {
  public:
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     INFO("for type \"" << type_name << "\": ");
 
     const auto num_elements = marray_common::get_num_elements();

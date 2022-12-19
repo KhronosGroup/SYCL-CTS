@@ -33,7 +33,6 @@ class run_marray_members_test {
   static constexpr std::size_t NumElements = NumElementsT::value;
 
   using marray_t = sycl::marray<DataT, NumElements>;
-  using helper = marray_common::helper<DataT, NumElements>;
 
  private:
   template <size_t num_elements,
@@ -43,13 +42,14 @@ class run_marray_members_test {
   template <size_t num_elements,
             std::enable_if_t<num_elements == 1, bool> = true>
   void check_conversion() {
-    marray_t ma_inc = helper::init_inc();
-    DataT t(ma_inc);
-    CHECK((t == DataT(1)));
+    marray_t ma_inc;
+    std::iota(ma_inc.begin(), ma_inc.end(), 1);
+    DataT t{ma_inc};
+    CHECK((t == DataT{1}));
   }
 
  public:
-  void operator()(const std::string &) {
+  void operator()(const std::string&) {
     INFO("for number of elements \"" << NumElements << "\": ");
 
     // implicit conversion
@@ -60,44 +60,51 @@ class run_marray_members_test {
 
     // size()
     {
-      marray_t ma_inc = helper::init_inc();
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
       CHECK(noexcept(ma_inc.size()));
       CHECK((ma_inc.size() == NumElements));
     }
 
     // operator[]
     {
-      marray_t ma = helper::init_inc();
-      CHECK((ma[0] == DataT(1)));
-      ma[0] = DataT(0);
-      CHECK((ma[0] == DataT(0)));
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      CHECK((ma_inc[0] == DataT{1}));
+      ma_inc[0] = DataT{0};
+      CHECK((ma_inc[0] == DataT{0}));
     }
 
     // const operator[]
     {
-      const marray_t ma_const = helper::init_inc();
-      CHECK((ma_const[0] == DataT(1)));
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      const marray_t ma_const{ma_inc};
+      CHECK((ma_const[0] == DataT{1}));
     }
 
     // operator=(marray)
     {
-      const marray_t ma_const = helper::init_inc();
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      const marray_t ma_const{ma_inc};
 
-      marray_t ma_tmp(DataT(0));
+      marray_t ma_tmp{DataT{0}};
       ma_tmp = ma_const;
       CHECK(value_operations::are_equal(ma_tmp, ma_const));
     }
 
     // operator=(T)
     {
-      marray_t ma_tmp(DataT(0));
-      ma_tmp = DataT(1);
+      marray_t ma_tmp{DataT{0}};
+      ma_tmp = DataT{1};
       CHECK(value_operations::are_equal(ma_tmp, marray_t(DataT(1))));
     }
 
     // iterator
     {
-      marray_t ma_inc = helper::init_inc();
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
 
       auto it_ma = ma_inc.begin();
       auto it_ma_tmp = it_ma;
@@ -112,7 +119,9 @@ class run_marray_members_test {
 
     // const iterator
     {
-      const marray_t ma_const = helper::init_inc();
+      marray_t ma_inc;
+      std::iota(ma_inc.begin(), ma_inc.end(), 1);
+      const marray_t ma_const = ma_inc;
       auto it_ma = ma_const.begin();
       auto it_ma_tmp = it_ma;
       it_ma++;
@@ -129,7 +138,7 @@ class run_marray_members_test {
 template <typename DataT>
 class check_marray_members_for_type {
  public:
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     INFO("for type \"" << type_name << "\": ");
 
     const auto num_elements = marray_common::get_num_elements();

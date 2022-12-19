@@ -32,11 +32,10 @@ class run_marray_alignment_test {
   static constexpr std::size_t NumElements = NumElementsT::value;
 
   using marray_t = sycl::marray<DataT, NumElements>;
-  using helper = marray_common::helper<DataT, NumElements>;
   using sarray_t = std::array<DataT, NumElements>;
 
  public:
-  void operator()(const std::string &) {
+  void operator()(const std::string&) {
     INFO("for number of elements \"" << NumElements << "\": ");
 
     // alignof
@@ -46,7 +45,8 @@ class run_marray_alignment_test {
     REQUIRE((sizeof(marray_t) == sizeof(sarray_t)));
 
     // memcmp
-    marray_t ma = helper::init_inc();
+    marray_t ma;
+    std::iota(ma.begin(), ma.end(), 1);
     sarray_t sa;
     std::iota(sa.begin(), sa.end(), 1);
     CHECK((std::memcmp(&ma, &sa, sizeof(marray_t)) == 0));
@@ -56,7 +56,7 @@ class run_marray_alignment_test {
 template <typename DataT>
 class check_marray_alignment_for_type {
  public:
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     INFO("for type \"" << type_name << "\": ");
     const auto num_elements = marray_common::get_num_elements();
     for_all_combinations<run_marray_alignment_test, DataT>(num_elements,

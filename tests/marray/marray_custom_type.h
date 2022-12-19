@@ -6,8 +6,8 @@
 /// Custom type that meets the NumericType requirement.
 struct custom_int {
   custom_int() = default;
-  constexpr custom_int(int i) : x(i){};
-  operator int() { return (int)x; }
+  constexpr custom_int(int i) : x{i} {};
+  operator int() { return x; }
   custom_int(const custom_int& other) = default;
   custom_int(custom_int&& other) noexcept = default;
 

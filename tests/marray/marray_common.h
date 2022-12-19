@@ -41,7 +41,7 @@ inline auto get_types() {
       "Skipping the test case for custom types.");
 #endif
   return named_type_pack<
-      char, int, float, typename std::int8_t, typename std::int32_t
+      char, int, float, std::int8_t, std::int32_t
   // does not work with any custom type other than sycl::half
 #ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
       ,
@@ -50,9 +50,8 @@ inline auto get_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
       ,
       unsigned char, short, unsigned short, unsigned int, long, unsigned long,
-      long long, unsigned long long, bool, typename std::uint8_t,
-      typename std::int16_t, typename std::uint16_t, typename std::uint32_t,
-      typename std::int64_t, typename std::uint64_t
+      long long, unsigned long long, bool, std::uint8_t, std::int16_t,
+      std::uint16_t, std::uint32_t, std::int64_t, std::uint64_t
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
       >::generate("char", "int", "float", "std::int8_t", "std::int32_t"
 #ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -69,20 +68,6 @@ inline auto get_types() {
   );
 }
 
-template <typename DataT, std::size_t NumElements>
-struct helper {
-  using marray_t = sycl::marray<DataT, NumElements>;
-
-  /** @brief Initialize using the sequence 1, 2, 3, etc. */
-  static sycl::marray<DataT, NumElements> init_inc() {
-    sycl::marray<DataT, NumElements> ret;
-    for (std::size_t i = 0; i < NumElements; i++) {
-      ret[i] = DataT(i + 1);
-    }
-    return ret;
-  }
-};
-
 /** @brief Helper for constexpr constructor. */
 template <typename DataT, std::size_t NumElements, int InitialValue = 0>
 struct ctor {
@@ -95,7 +80,7 @@ struct ctor {
 
   template <int... Rest>
   struct ctor_impl<InitialValue, Rest...> {
-    static constexpr marray_t value = marray_t(InitialValue, Rest...);
+    static constexpr marray_t value{InitialValue, Rest...};
   };
 
   template <std::size_t num_elements>

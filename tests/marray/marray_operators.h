@@ -38,14 +38,14 @@ struct operators_helper {
   using varray_t = std::valarray<DataT>;
 
   template <typename init_func, typename array_type>
-  static void init(array_type &ma) {
+  static void init(array_type& ma) {
     for (std::size_t i = 0; i < NumElements; i++) {
       ma[i] = init_func::template init<DataT>(i);
     }
   }
 
   template <typename init_func>
-  static void init(DataT &d) {
+  static void init(DataT& d) {
     d = init_func::template init<DataT>();
   }
 };
@@ -54,31 +54,31 @@ struct operators_helper {
  * @brief Define several sequences to initialize array instances. */
 
 struct seq_inc {
-  template <typename T>
-  static T init(std::size_t i) {
-    return T(i + 1);
+  template <typename DataT>
+  static DataT init(std::size_t i) {
+    return DataT(i + 1);
   }
 };
 
 template <std::size_t NumElements>
 struct seq_dec {
-  template <typename T>
-  static T init(std::size_t i) {
-    return T(NumElements - i);
+  template <typename DataT>
+  static DataT init(std::size_t i) {
+    return DataT(NumElements - i);
   }
 };
 
 struct seq_one {
-  template <typename T>
-  static T init(std::size_t) {
-    return T(1);
+  template <typename DataT>
+  static DataT init(std::size_t) {
+    return {1};
   }
 };
 
 struct seq_two {
-  template <typename T>
-  static T init(std::size_t) {
-    return T(2);
+  template <typename DataT>
+  static DataT init(std::size_t) {
+    return DataT(2);
   }
 };
 
@@ -95,16 +95,16 @@ inline auto get_sequences() {
  * @brief Define several constants to initialize scalar instances. */
 
 struct sca_one {
-  template <typename T>
-  static T init() {
-    return T(1);
+  template <typename DataT>
+  static DataT init() {
+    return DataT(1);
   }
 };
 
 struct sca_two {
-  template <typename T>
-  static T init() {
-    return T(2);
+  template <typename DataT>
+  static DataT init() {
+    return DataT(2);
   }
 };
 
@@ -118,10 +118,10 @@ class run_unary_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name) {
+  void operator()(const std::string& function_name) {
     INFO("for input (sequence) \"" << function_name << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t val_expected(helper::NumElements);
     helper::template init<SequenceT>(val_expected);
@@ -139,7 +139,7 @@ template <typename DataT, typename NumElementsT, typename OpT,
           typename enable = void>
 class run_unary {
  public:
-  void operator()(const std::string &) {}
+  void operator()(const std::string&) {}
 };
 
 template <typename DataT, typename NumElementsT, typename OpT>
@@ -148,7 +148,7 @@ class run_unary<DataT, NumElementsT, OpT,
                                  (std::is_floating_point_v<DataT> &&
                                   !std::is_same_v<OpT, op_bnot>)>> {
  public:
-  void operator()(const std::string &operator_name) {
+  void operator()(const std::string& operator_name) {
     INFO("for operator \"" << operator_name << "\": ");
 
     const auto functions = get_sequences<NumElementsT::value>();
@@ -163,10 +163,10 @@ class run_unary_post_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name) {
+  void operator()(const std::string& function_name) {
     INFO("for input (sequence) \"" << function_name << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t val_expected(helper::NumElements);
     helper::template init<SequenceT>(val_expected);
@@ -186,7 +186,7 @@ class run_unary_post_sequence {
 template <typename DataT, typename NumElementsT, typename OpT>
 class run_unary_post {
  public:
-  void operator()(const std::string &operator_name) {
+  void operator()(const std::string& operator_name) {
     INFO("for operator \"" << operator_name << "\": ");
 
     const auto functions = get_sequences<NumElementsT::value>();
@@ -201,12 +201,12 @@ class run_binary_sequence_scalar {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name,
-                  const std::string &constant_name) {
+  void operator()(const std::string& function_name,
+                  const std::string& constant_name) {
     INFO("for lhs (sequence) \"" << function_name << "\": ");
     INFO("for rhs (scalar) \"" << constant_name << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t lhs_expected(helper::NumElements);
     helper::template init<SequenceT>(lhs_expected);
@@ -230,12 +230,12 @@ class run_binary_scalar_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &constant_name,
-                  const std::string &function_name) {
+  void operator()(const std::string& constant_name,
+                  const std::string& function_name) {
     INFO("for lhs (scalar) \"" << constant_name << "\": ");
     INFO("for rhs (sequence) \"" << function_name << "\": ");
 
-    OpT op{};
+    OpT op;
 
     DataT lhs_expected;
     helper::template init<ScalarT>(lhs_expected);
@@ -259,12 +259,12 @@ class run_binary_sequence_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name_1,
-                  const std::string &function_name_2) {
+  void operator()(const std::string& function_name_1,
+                  const std::string& function_name_2) {
     INFO("for lhs (sequence) \"" << function_name_1 << "\": ");
     INFO("for rhs (sequence) \"" << function_name_2 << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t lhs_expected(helper::NumElements);
     helper::template init<SequenceT1>(lhs_expected);
@@ -286,7 +286,7 @@ template <typename DataT, typename NumElementsT, typename OpT,
           typename enable = void>
 class run_binary {
  public:
-  void operator()(const std::string &) {}
+  void operator()(const std::string&) {}
 };
 
 template <typename DataT, typename NumElementsT, typename OpT>
@@ -299,7 +299,7 @@ class run_binary<
            std::is_same_v<OpT, op_bor> || std::is_same_v<OpT, op_bxor> ||
            std::is_same_v<OpT, op_sl> || std::is_same_v<OpT, op_sr>))>> {
  public:
-  void operator()(const std::string &operator_name) {
+  void operator()(const std::string& operator_name) {
     INFO("for operator \"" << operator_name << "\": ");
 
     const auto constants = get_scalars();
@@ -319,12 +319,12 @@ class run_binary_assignment_sequence_scalar {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name,
-                  const std::string &constant_name) {
+  void operator()(const std::string& function_name,
+                  const std::string& constant_name) {
     INFO("for lhs (sequence) \"" << function_name << "\": ");
     INFO("for rhs (scalar) \"" << constant_name << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t lhs_expected(helper::NumElements);
     helper::template init<SequenceT>(lhs_expected);
@@ -351,12 +351,12 @@ class run_binary_assignment_sequence_sequence {
   using helper = operators_helper<DataT, NumElementsT>;
 
  public:
-  void operator()(const std::string &function_name_1,
-                  const std::string &function_name_2) {
+  void operator()(const std::string& function_name_1,
+                  const std::string& function_name_2) {
     INFO("for lhs (sequence) \"" << function_name_1 << "\": ");
     INFO("for rhs (sequence) \"" << function_name_2 << "\": ");
 
-    OpT op{};
+    OpT op;
 
     typename helper::varray_t lhs_expected(helper::NumElements);
     helper::template init<SequenceT1>(lhs_expected);
@@ -381,7 +381,7 @@ template <typename DataT, typename NumElementsT, typename OpT,
           typename enable = void>
 class run_binary_assignment {
  public:
-  void operator()(const std::string &) {}
+  void operator()(const std::string&) {}
 };
 
 template <typename DataT, typename NumElementsT, typename OpT>
@@ -396,7 +396,7 @@ class run_binary_assignment<
                                  std::is_same_v<OpT, op_assign_sl> ||
                                  std::is_same_v<OpT, op_assign_sr>))>> {
  public:
-  void operator()(const std::string &operator_name) {
+  void operator()(const std::string& operator_name) {
     INFO("for operator \"" << operator_name << "\": ");
 
     const auto constants = get_scalars();
@@ -411,7 +411,7 @@ class run_binary_assignment<
 template <typename DataT>
 class check_marray_operators_for_type {
  public:
-  void operator()(const std::string &type_name) {
+  void operator()(const std::string& type_name) {
     INFO("for type \"" << type_name << "\": ");
 
     const auto num_elements = marray_common::get_num_elements();

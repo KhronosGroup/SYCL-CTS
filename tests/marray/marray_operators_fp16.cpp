@@ -42,7 +42,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
     return;
   }
 
-  check_marray_operators_for_type<typename sycl::half>{}("sycl::half");
+  check_marray_operators_for_type<sycl::half>{}("sycl::half");
 })
 
 }  // namespace marray_operators_fp16

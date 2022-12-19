@@ -115,21 +115,21 @@ OPERATOR_BINARY_RELATIONAL(lor, ||);
     sycl::marray<DataT, NumElements>& operator()(                       \
         sycl::marray<DataT, NumElements>& lhs,                          \
         const sycl::marray<DataT, NumElements>& rhs) {                  \
-      return (lhs op rhs);                                              \
+      return lhs op rhs;                                                \
     }                                                                   \
     template <typename T>                                               \
     std::valarray<T>& operator()(std::valarray<T>& lhs,                 \
                                  const std::valarray<T>& rhs) {         \
-      return (lhs op rhs);                                              \
+      return lhs op rhs;                                                \
     }                                                                   \
     template <typename DataT, std::size_t NumElements>                  \
     sycl::marray<DataT, NumElements>& operator()(                       \
         sycl::marray<DataT, NumElements>& lhs, const DataT& rhs) {      \
-      return (lhs op rhs);                                              \
+      return lhs op rhs;                                                \
     }                                                                   \
     template <typename T>                                               \
     std::valarray<T>& operator()(std::valarray<T>& lhs, const T& rhs) { \
-      return (lhs op rhs);                                              \
+      return lhs op rhs;                                                \
     }                                                                   \
   }
 
@@ -149,11 +149,11 @@ OPERATOR_BINARY_ASSIGN(sr, >>=);
     template <typename DataT, std::size_t NumElements> \
     sycl::marray<DataT, NumElements> operator()(       \
         const sycl::marray<DataT, NumElements>& v) {   \
-      return (op v);                                   \
+      return op v;                                     \
     }                                                  \
     template <typename T>                              \
     std::valarray<T> operator()(std::valarray<T>& v) { \
-      return (op v);                                   \
+      return op v;                                     \
     }                                                  \
   }
 
@@ -165,11 +165,11 @@ struct op_lnot {
   template <typename DataT, std::size_t NumElements>
   sycl::marray<bool, NumElements> operator()(
       const sycl::marray<DataT, NumElements>& v) {
-    return (!v);
+    return !v;
   }
   template <typename T>
   std::valarray<bool> operator()(const std::valarray<T>& v) {
-    return (!v);
+    return !v;
   }
 };
 
@@ -178,11 +178,11 @@ struct op_lnot {
     template <typename DataT, std::size_t NumElements> \
     sycl::marray<DataT, NumElements> operator()(       \
         sycl::marray<DataT, NumElements>& v) {         \
-      return (op v);                                   \
+      return op v;                                     \
     }                                                  \
     template <typename T>                              \
     std::valarray<T> operator()(std::valarray<T>& v) { \
-      return (v op_assign T(1));                       \
+      return v op_assign T{1};                         \
     }                                                  \
   }
 
@@ -194,12 +194,12 @@ OPERATOR_UNARY_PRE(pre_dec, --, -=);
     template <typename DataT, std::size_t NumElements> \
     sycl::marray<DataT, NumElements> operator()(       \
         sycl::marray<DataT, NumElements>& v) {         \
-      return (v op);                                   \
+      return v op;                                     \
     }                                                  \
     template <typename T>                              \
     std::valarray<T> operator()(std::valarray<T>& v) { \
       std::valarray<T> tmp = v;                        \
-      v op_assign T(1);                                \
+      v op_assign T{1};                                \
       return tmp;                                      \
     }                                                  \
   }
