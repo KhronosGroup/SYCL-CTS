@@ -77,6 +77,15 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
       value_operations::are_equal(*acc_pointer, expected_data);
 }
 
+template <typename AccT, int dims, int range_dims>
+AccT get_accessor(sycl::handler &cgh, const sycl::range<range_dims> &r) {
+  if constexpr (0 == dims) {
+    return AccT(cgh);
+  } else {
+    return AccT(r, cgh);
+  }
+}
+
 template <typename T, typename DimensionTypeT>
 class run_api_tests {
   static constexpr int dims = DimensionTypeT::value;
@@ -85,6 +94,7 @@ class run_api_tests {
  public:
   void operator()(const std::string &type_name) {
     auto queue = util::get_cts_object::queue();
+    constexpr int buf_dims = (0 == dims) ? 1 : dims;
 
     SECTION(
         get_section_name<dims>(type_name, "Check local_accessor alias types")) {
@@ -197,6 +207,7 @@ class run_api_tests {
           type_name, "Check api for zero-dimension local_accessor")) {
         bool res;
         {
+          auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
           sycl::buffer res_buf(&res, sycl::range(1));
           queue
               .submit([&](sycl::handler &cgh) {
@@ -208,17 +219,17 @@ class run_api_tests {
 
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.parallel_for(
-                    sycl::nd_range(r, r), [=](sycl::nd_item<dims> item) {
+                    sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
                       typename AccT::reference dref = acc;
                       if constexpr (!std::is_const_v<T>) {
                         typename AccT::value_type v_data =
                             value_operations::init<typename AccT::value_type>(
                                 expected_val);
+                        // check method const AccT::operator=(const T& data)
+                        // const
                         acc = v_data;
                         test_accessor_ptr_device(acc, expected_val, res_acc);
 
-                        // check method const AccT::operator=(const T& data)
-                        // const
                         res_acc[0] &= value_operations::are_equal(dref, v_data);
 
                         // check method const AccT::operator=(T&& data) const
@@ -239,24 +250,29 @@ class run_api_tests {
     SECTION(
         get_section_name<dims>(type_name, "Check swap() for local_accessor")) {
       constexpr size_t alloc_size = 2;
-      auto local_range = util::get_cts_object::range<dims>::get(
+      auto local_range = util::get_cts_object::range<buf_dims>::get(
           alloc_size, alloc_size, alloc_size);
       queue.submit([&](sycl::handler &cgh) {
-        AccT acc1{local_range, cgh};
+        AccT acc1 = get_accessor<AccT, dims>(cgh, local_range);
         AccT acc2;
         acc2.swap(acc1);
-        CHECK(acc1.get_range() ==
-              util::get_cts_object::range<dims>::get(0, 0, 0));
-        CHECK(acc2.get_range() == local_range);
+        if constexpr (0 != dims) {
+          CHECK(acc1.get_range() ==
+                util::get_cts_object::range<dims>::get(0, 0, 0));
+          CHECK(acc2.get_range() == local_range);
+        }
+        CHECK(acc1.empty());
+        CHECK(!acc2.empty());
       });
     }
+  }
 };
 
 template <typename T>
 class run_local_api_for_type {
  public:
   void operator()(const std::string &type_name) {
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.

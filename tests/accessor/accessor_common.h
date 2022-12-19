@@ -910,6 +910,16 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
+template <int dims, typename AccT>
+typename AccT::reference get_accessor_reference(const AccT& acc) {
+  if constexpr (0 == dims) {
+    typename AccT::reference aref = acc;
+    return aref;
+  } else {
+    return acc[sycl::id<dims>()];
+  }
+}
+
 }  // namespace accessor_tests_common
 
 #endif  // SYCL_CTS_ACCESSOR_COMMON_H

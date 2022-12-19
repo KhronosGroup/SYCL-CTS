@@ -250,9 +250,9 @@ class run_api_tests {
                               changed_val);
                       // check method const AccT::operator=(const T& data) const
                       acc = v_data;
-                      // check method const AccT::operator=(T&& data) const
                       res_acc[0] &= value_operations::are_equal(dref, v_data);
 
+                      // check method const AccT::operator=(T&& data) const
                       acc = value_operations::init<typename AccT::value_type>(
                           changed_val);
                       res_acc[0] &= value_operations::are_equal(dref, v_data);
@@ -267,7 +267,7 @@ class run_api_tests {
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }
-    if (0 < dims) {
+    if constexpr (0 < dims) {
       SECTION(
           get_section_name<dims>(type_name, access_mode_name, target_name,
                                  "Check api for ranged accessor with offset")) {
@@ -289,7 +289,9 @@ class run_api_tests {
         auto offset_id =
             util::get_cts_object::id<dims>::get(offset, offset, offset);
         std::remove_const_t<T> data[buff_size];
-        std::iota(data, (data + buff_range.size()), 0);
+        for (size_t i = 0; i < buff_size; i++) {
+          data[i] = value_operations::init<T>(i);
+        }
         bool res = false;
         {
           sycl::buffer<T, dims> data_buf(data, buff_range);
@@ -350,8 +352,8 @@ class run_api_tests {
       bool res = false;
       {
         sycl::buffer res_buf(&res, sycl::range(1));
-        sycl::buffer<T, dims> data_buf1(&data1, r);
-        sycl::buffer<T, dims> data_buf2(&data2, r);
+        sycl::buffer<T, buf_dims> data_buf1(&data1, r);
+        sycl::buffer<T, buf_dims> data_buf2(&data2, r);
         queue
             .submit([&](sycl::handler &cgh) {
               AccT acc1(data_buf1, cgh);
@@ -359,8 +361,10 @@ class run_api_tests {
               acc1.swap(acc2);
               if constexpr (Target == sycl::target::host_task) {
                 cgh.host_task([=] {
-                  auto &acc_ref1 = acc1[sycl::id<dims>()];
-                  auto &acc_ref2 = acc2[sycl::id<dims>()];
+                  typename AccT::reference acc_ref1 =
+                      get_accessor_reference<dims>(acc1);
+                  typename AccT::reference acc_ref2 =
+                      get_accessor_reference<dims>(acc2);
                   CHECK(value_operations::are_equal(acc_ref1, changed_val));
                   CHECK(value_operations::are_equal(acc_ref2, expected_val));
                   if constexpr (AccessMode != sycl::access_mode::read) {
@@ -371,15 +375,19 @@ class run_api_tests {
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
-                  auto &acc_ref1 = acc1[sycl::id<dims>()];
-                  auto &acc_ref2 = acc2[sycl::id<dims>()];
-                  res_acc[0] =
-                      value_operations::are_equal(acc_ref1, changed_val);
-                  res_acc[0] &=
-                      value_operations::are_equal(acc_ref2, expected_val);
-                  if constexpr (AccessMode != sycl::access_mode::read) {
-                    value_operations::assign(acc_ref1, expected_val);
-                    value_operations::assign(acc_ref2, changed_val);
+                  if constexpr (0 < dims) {
+                    typename AccT::reference acc_ref1 =
+                        get_accessor_reference<dims>(acc1);
+                    typename AccT::reference acc_ref2 =
+                        get_accessor_reference<dims>(acc2);
+                    res_acc[0] =
+                        value_operations::are_equal(acc_ref1, changed_val);
+                    res_acc[0] &=
+                        value_operations::are_equal(acc_ref2, expected_val);
+                    if constexpr (AccessMode != sycl::access_mode::read) {
+                      value_operations::assign(acc_ref1, expected_val);
+                      value_operations::assign(acc_ref2, changed_val);
+                    }
                   }
                 });
               }
@@ -403,7 +411,7 @@ class run_generic_api_for_type {
  public:
   void operator()(const std::string &type_name) {
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions

@@ -165,13 +165,13 @@ class run_api_tests {
       T data1 = value_operations::init<T>(expected_val);
       T data2 = value_operations::init<T>(changed_val);
       {
-        sycl::buffer<T, dims> data_buf1(&data1, r);
-        sycl::buffer<T, dims> data_buf2(&data2, r);
+        sycl::buffer<T, buf_dims> data_buf1(&data1, r);
+        sycl::buffer<T, buf_dims> data_buf2(&data2, r);
         AccT acc1(data_buf1);
         AccT acc2(data_buf2);
         acc1.swap(acc2);
-        auto &acc_ref1 = acc1[sycl::id<dims>()];
-        auto &acc_ref2 = acc2[sycl::id<dims>()];
+        typename AccT::reference acc_ref1 = get_accessor_reference<dims>(acc1);
+        typename AccT::reference acc_ref2 = get_accessor_reference<dims>(acc2);
         CHECK(value_operations::are_equal(acc_ref1, changed_val));
         CHECK(value_operations::are_equal(acc_ref2, expected_val));
         if constexpr (AccessMode != sycl::access_mode::read) {
@@ -195,7 +195,7 @@ class run_host_accessor_api_for_type {
  public:
   void operator()(const std::string &type_name) {
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or
