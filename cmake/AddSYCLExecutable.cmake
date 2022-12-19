@@ -5,7 +5,7 @@ if (NOT ${SYCL_IMPLEMENTATION} IN_LIST KNOWN_SYCL_IMPLEMENTATIONS)
         "-DSYCL_IMPLEMENTATION=[Intel_SYCL,DPCPP;ComputeCpp,hipSYCL]")
 endif()
 
-if(NOT DEFINED SYCL_CTS_OPENCL_PROXY_CONFIGURED)
+if(NOT TARGET OpenCL_Proxy)
     message(FATAL_ERROR
         "The SYCL CTS requires the OpenCL proxy to be configured prior to "
         "detection of SYCL compiler to avoid incompatible compilers from being "

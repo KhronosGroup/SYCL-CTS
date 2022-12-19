@@ -15,7 +15,3 @@ else()
     add_submodule_directory(vendor/OpenCL-Headers)
     target_link_libraries(OpenCL_Proxy INTERFACE OpenCL::Headers)
 endif()
-
-# Signal that the OpenCL proxy has been configured to allow for ordering checks
-# in subsequent configurations.
-set(SYCL_CTS_OPENCL_PROXY_CONFIGURED 1)
