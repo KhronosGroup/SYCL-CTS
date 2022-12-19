@@ -1,0 +1,52 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for context class and device class
+
+This is a test plan for the context class as described in Section 4.6.3. of the SYCL 2020 specification and for the device class as described in Section 4.6.4. of the SYCL 2020 specification. This test plan adds coverage for the missing functionality that is part of SYCL 2020.
+
+Estimated development time is one day.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+No negative test are included.
+
+=== Context
+
+==== Existing test
+The existing test in `context/context_info.cpp` checks the return value of `sycl::context.get_info` using `check_get_info_param` for various context information descriptors.
+
+==== Modification
+The test is modified to include the following context information descriptors that were added in SYCL 2020:
+
+- `info::context::atomic_memory_order_capabilities` Additionally, check that the returned list contains `sycl::memory_order::relaxed`.
+- `info::context::atomic_fence_order_capabilities` Additionally, check that the returned list contains `sycl::memory_order::relaxed`, `sycl::memory_order::acquire`, `sycl::memory_order::release`, and `sycl::memory_order::acq_rel`.
+- `info::context::atomic_memory_scope_capabilities` Additionally, check that the returned list contains `sycl::memory_scope::work_group`.
+- `info::context::atomic_fence_scope_capabilities` Additionally, check that the returned list contains `sycl::memory_scope::work_group`.
+
+=== Device
+
+==== Existing test
+The existing test in `device/device_info.cpp` checks the return value of `sycl::device.get_info` using `check_get_info_param` for various device information descriptors.
+
+==== Modification
+The test is modified to include the following device information descriptors that were added in SYCL 2020:
+
+- `info::device::max_num_sub_groups` Additionally, check that the value is not zero.
+- `info::device::sub_group_sizes`
+- `info::device::atomic_memory_order_capabilities` Additionally, check that the returned list contains `sycl::memory_order::relaxed`.
+- `info::device::atomic_fence_order_capabilities` Additionally, check that the returned list contains `sycl::memory_order::relaxed`, `sycl::memory_order::acquire`, `sycl::memory_order::release`, and `sycl::memory_order::acq_rel`.
+- `info::device::atomic_memory_scope_capabilities` Additionally, check that the returned list contains `sycl::memory_scope::work_group`.
+- `info::device::atomic_fence_scope_capabilities` Additionally, check that the returned list contains `sycl::memory_scope::work_group`.
+- `info::device::built_in_kernel_ids`
+- `info::device::backend_version`
+- `info::device::aspects`
