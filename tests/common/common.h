@@ -302,6 +302,14 @@ bool check_equal_values(const sycl::vec<T, numElements>& lhs,
   return result;
 }
 
+/**
+ * @brief Returns true if \p vec contains \p elem.
+ */
+template <typename T>
+bool check_contains(const std::vector<T>& vec, const T& elem) {
+  return std::find(vec.begin(), vec.end(), elem) != vec.end();
+}
+
 // ComputeCpp and hipSYCL do not yet support sycl::marray
 #if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
