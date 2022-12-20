@@ -85,7 +85,6 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
             legacy_random_access_iterator_requirement{}.is_satisfied_for(
                 dummy_acc_it);
         if (!verification_result.first) {
-          //          print_errors(verification_result.second);
           errors = verification_result.second;
         }
       }
