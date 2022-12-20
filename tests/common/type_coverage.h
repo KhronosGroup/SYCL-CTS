@@ -9,6 +9,7 @@
 #ifndef __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 #define __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
@@ -517,7 +518,9 @@ void for_device_copyable_std_containers(argsT &&...args) {
   constexpr std::size_t medium_array_size = 5;
   for_all_types<action, actionArgsT...>(
       type_pack<std::array<T, medium_array_size>, std::optional<T>,
-                std::pair<T, T>, std::tuple<T, T>, std::variant<T>>{},
+                std::pair<T, T>, std::tuple<T, T>,
+                std::variant<T, std::conditional_t<!std::is_same_v<T, int>, int,
+                                                   char>>>{},
       std::forward<argsT>(args)...);
 }
 

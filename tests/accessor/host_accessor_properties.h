@@ -110,29 +110,175 @@ void test_exception(const std::string& type_name) {
 }
 
 template <typename DataT, int Dimension, sycl::access_mode AccessMode>
+void test_property_member_functions_without_no_init(
+    const std::string& type_name, const std::string& access_mode_name) {
+  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+  const auto offset = sycl::id<Dimension>();
+
+  {
+    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf);
+    };
+
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer constructor without no_init property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer constructor without no_init property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+  }
+  {
+    auto get_acc_functor = [r](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r);
+    };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer and range constructor without no_init "
+        "property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer and range constructor without no_init "
+        "property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+  }
+  {
+    auto get_acc_functor = [r,
+                            offset](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
+                                                               offset);
+    };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting false == accessor.has_property<property::no_init>() "
+        "for acc constructed with buffer,range and offset constructor without "
+        "no_init property");
+
+    SECTION(section_name) {
+      check_has_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "Expecting exception for call "
+        "accessor.get_property<property::no_init>() "
+        "for acc constructed with buffer,range and offset constructor without "
+        "no_init property");
+
+    SECTION(section_name) {
+      check_get_property_member_without_no_init<AccType, DataT, Dimension>(
+          get_acc_functor, r);
+    }
+  }
+}
+
+template <typename DataT, int Dimension, sycl::access_mode AccessMode>
 void test_property_member_functions(const std::string& type_name,
                                     const std::string& access_mode_name) {
   const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   const auto offset = sycl::id<Dimension>();
   const sycl::property_list prop_list(sycl::no_init);
+  {
+    auto get_acc_functor =
+        [&prop_list](sycl::buffer<DataT, Dimension>& data_buf) {
+          return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
+                                                                   prop_list);
+        };
 
-  const auto construct_acc =
-      [&prop_list](sycl::buffer<DataT, Dimension> data_buf) {
-        return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
-                                                                 prop_list);
-      };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "has_property member function invocation with buffer");
 
-  auto section_name = get_section_name<Dimension>(
-      type_name, access_mode_name, "has_property member function invocation");
-  SECTION(section_name) {
-    check_has_property_member_func<DataT, Dimension, sycl::property::no_init>(
-        construct_acc, r);
+    SECTION(section_name) {
+      check_has_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "get_property member function invocation with buffer");
+
+    SECTION(section_name) {
+      check_get_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
   }
-  section_name = get_section_name<Dimension>(
-      type_name, access_mode_name, "get_property member function invocation");
-  SECTION(section_name) {
-    check_get_property_member_func<DataT, Dimension, sycl::property::no_init>(
-        construct_acc, r);
+  {
+    auto get_acc_functor = [&prop_list,
+                            r](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r,
+                                                               prop_list);
+    };
+    auto section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "has_property member function invocation with buffer and range");
+
+    SECTION(section_name) {
+      check_has_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name,
+        "get_property member function invocation with buffer and range");
+
+    SECTION(section_name) {
+      check_get_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
+  }
+  {
+    auto get_acc_functor = [&prop_list, r,
+                            offset](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(
+          data_buf, r, offset, prop_list);
+    };
+    auto section_name =
+        get_section_name<Dimension>(type_name, access_mode_name,
+                                    "has_property member function invocation "
+                                    "with buffer, range and offset");
+
+    SECTION(section_name) {
+      check_has_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name,
+                                    "get_property member function invocation "
+                                    "with buffer, range and offset");
+
+    SECTION(section_name) {
+      check_get_property_member_func<AccType, DataT, Dimension,
+                                     sycl::property::no_init>(get_acc_functor,
+                                                              r);
+    }
   }
 }
 
@@ -144,14 +290,16 @@ class run_tests_properties {
  public:
   void operator()(const std::string& type_name,
                   const std::string& access_mode_name) {
-    test_constructor_with_no_init<T, Dimension, AccessMode>(type_name,
-                                                            access_mode_name);
-
-    test_property_member_functions<T, Dimension, AccessMode>(type_name,
-                                                             access_mode_name);
-
     // In order not to run again with same parameters
-    if constexpr (AccessMode == sycl::access_mode::read) {
+    if constexpr (AccessMode != sycl::access_mode::read) {
+      test_constructor_with_no_init<T, Dimension, AccessMode>(type_name,
+                                                              access_mode_name);
+
+      test_property_member_functions<T, Dimension, AccessMode>(
+          type_name, access_mode_name);
+      test_property_member_functions_without_no_init<T, Dimension, AccessMode>(
+          type_name, access_mode_name);
+    } else {
       test_exception<T, Dimension>(type_name);
     }
   }
@@ -172,8 +320,8 @@ class run_host_properties_tests {
     // an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_tests_properties, const T>(
-        access_modes, dimensions, actual_type_name);
+    for_all_combinations<run_tests_properties, T>(access_modes, dimensions,
+                                                  actual_type_name);
   }
 };
 }  // namespace host_accessor_properties

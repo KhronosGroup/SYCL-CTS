@@ -163,7 +163,7 @@ class run_api_tests {
     SECTION(
         get_section_name<dims>(type_name, access_mode_name, target_name,
                                "Check api for buffer placeholder accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -187,7 +187,7 @@ class run_api_tests {
 
     SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
                                    "Check api for buffer accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -206,24 +206,40 @@ class run_api_tests {
               if constexpr (Target == sycl::target::host_task) {
                 cgh.host_task([=] {
                   test_accessor_ptr_host(acc, expected_val);
-                  auto &acc_ref = acc[sycl::id<dims>()];
-                  CHECK(value_operations::are_equal(acc_ref, expected_val));
-                  STATIC_CHECK(std::is_same_v<decltype(acc_ref),
+                  auto &acc_ref1 = acc[sycl::id<dims>()];
+                  auto &acc_ref2 =
+                      get_subscript_overload<T, AccT, dims>(acc, 0);
+                  CHECK(value_operations::are_equal(acc_ref1, expected_val));
+                  CHECK(value_operations::are_equal(acc_ref2, expected_val));
+                  STATIC_CHECK(std::is_same_v<decltype(acc_ref1),
                                               typename AccT::reference>);
-                  if constexpr (AccessMode != sycl::access_mode::read)
-                    value_operations::assign(acc_ref, changed_val);
+                  STATIC_CHECK(std::is_same_v<decltype(acc_ref2),
+                                              typename AccT::reference>);
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, changed_val);
+                    CHECK(value_operations::are_equal(acc_ref2, changed_val));
+                  }
                 });
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
-                  auto &acc_ref = acc[sycl::id<dims>()];
+                  auto &acc_ref1 = acc[sycl::id<dims>()];
+                  auto &acc_ref2 =
+                      get_subscript_overload<T, AccT, dims>(acc, 0);
                   res_acc[0] &=
-                      value_operations::are_equal(acc_ref, expected_val);
-                  res_acc[0] &= std::is_same_v<decltype(acc_ref),
+                      value_operations::are_equal(acc_ref1, expected_val);
+                  res_acc[0] &=
+                      value_operations::are_equal(acc_ref2, expected_val);
+                  res_acc[0] &= std::is_same_v<decltype(acc_ref1),
                                                typename AccT::reference>;
-                  if constexpr (AccessMode != sycl::access_mode::read)
-                    value_operations::assign(acc_ref, changed_val);
+                  res_acc[0] &= std::is_same_v<decltype(acc_ref2),
+                                               typename AccT::reference>;
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, changed_val);
+                    res_acc[0] &=
+                        alue_operations::are_equal(acc_ref2, changed_val);
+                  }
                 });
               }
             })
@@ -271,54 +287,92 @@ class run_api_tests {
 
               if constexpr (Target == sycl::target::host_task) {
                 cgh.host_task([=] {
-                  test_accessor_ptr_host(acc, T(0));
-                  auto &acc_ref =
+                  test_accessor_ptr_host(acc, T());
+                  auto &acc_ref1 =
                       get_subscript_overload<T, AccT, dims>(acc, index);
-                  CHECK(value_operations::are_equal(acc_ref, linear_index));
-                  if constexpr (AccessMode != sycl::access_mode::read)
-                    value_operations::assign(acc_ref, changed_val);
+                  auto &acc_ref2 = acc[sycl::id<dims>()];
+                  CHECK(value_operations::are_equal(acc_ref1, linear_index));
+                  CHECK(value_operations::are_equal(acc_ref2, 0));
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, changed_val);
+                    value_operations::assign(acc_ref2, expected_val);
+                  }
                 });
               } else {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([=]() {
-                  test_accessor_ptr_device(acc, T(0), res_acc);
-                  auto &acc_ref =
+                  test_accessor_ptr_device(acc, T(), res_acc);
+                  auto &acc_ref1 =
                       get_subscript_overload<T, AccT, dims>(acc, index);
+                  auto &acc_ref2 = acc[sycl::id<dims>()];
                   res_acc[0] &=
-                      value_operations::are_equal(acc_ref, linear_index);
-                  if constexpr (AccessMode != sycl::access_mode::read)
-                    value_operations::assign(acc_ref, changed_val);
+                      value_operations::are_equal(acc_ref1, linear_index);
+                  res_acc[0] &= value_operations::are_equal(acc_ref2, 0);
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, changed_val);
+                    value_operations::assign(acc_ref2, expected_val);
+                  }
                 });
               }
             })
             .wait_and_throw();
       }
       if constexpr (Target == sycl::target::device) CHECK(res);
-      if constexpr (AccessMode != sycl::access_mode::read)
+      if constexpr (AccessMode != sycl::access_mode::read) {
         CHECK(value_operations::are_equal(data[linear_index], changed_val));
+        CHECK(value_operations::are_equal(data[0], expected_val));
+      }
     }
-    if constexpr (AccessMode != sycl::access_mode::read) {
-      SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
-                                     "Check swap for accessor")) {
-        T data1(expected_val);
-        T data2(changed_val);
-        {
-          sycl::buffer<T, dims> data_buf1(&data1, r);
-          sycl::buffer<T, dims> data_buf2(&data2, r);
-          queue
-              .submit([&](sycl::handler &cgh) {
-                AccT acc1(data_buf1);
-                AccT acc2(data_buf2);
-                if constexpr (Target == sycl::target::host_task) {
-                  cgh.host_task([=] { acc1.swap(acc2); });
-                } else {
-                  cgh.single_task([=]() { acc1.swap(acc2); });
-                }
-              })
-              .wait_and_throw();
-        }
+    SECTION(get_section_name<dims>(type_name, access_mode_name, target_name,
+                                   "Check swap for accessor")) {
+      T data1 = value_operations::init<T>(expected_val);
+      T data2 = value_operations::init<T>(changed_val);
+      bool res = false;
+      {
+        sycl::buffer res_buf(&res, sycl::range(1));
+        sycl::buffer<T, dims> data_buf1(&data1, r);
+        sycl::buffer<T, dims> data_buf2(&data2, r);
+        queue
+            .submit([&](sycl::handler &cgh) {
+              AccT acc1(data_buf1, cgh);
+              AccT acc2(data_buf2, cgh);
+              acc1.swap(acc2);
+              if constexpr (Target == sycl::target::host_task) {
+                cgh.host_task([=] {
+                  auto &acc_ref1 = acc1[sycl::id<dims>()];
+                  auto &acc_ref2 = acc2[sycl::id<dims>()];
+                  CHECK(value_operations::are_equal(acc_ref1, changed_val));
+                  CHECK(value_operations::are_equal(acc_ref2, expected_val));
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, expected_val);
+                    value_operations::assign(acc_ref2, changed_val);
+                  }
+                });
+              } else {
+                sycl::accessor res_acc(res_buf, cgh);
+                cgh.single_task([=]() {
+                  auto &acc_ref1 = acc1[sycl::id<dims>()];
+                  auto &acc_ref2 = acc2[sycl::id<dims>()];
+                  res_acc[0] =
+                      value_operations::are_equal(acc_ref1, changed_val);
+                  res_acc[0] &=
+                      value_operations::are_equal(acc_ref2, expected_val);
+                  if constexpr (AccessMode != sycl::access_mode::read) {
+                    value_operations::assign(acc_ref1, expected_val);
+                    value_operations::assign(acc_ref2, changed_val);
+                  }
+                });
+              }
+            })
+            .wait_and_throw();
+      }
+      if constexpr (Target == sycl::target::device) CHECK(res);
+      if constexpr (AccessMode != sycl::access_mode::read) {
         CHECK(value_operations::are_equal(data1, changed_val));
         CHECK(value_operations::are_equal(data2, expected_val));
+      } else {
+        CHECK(value_operations::are_equal(data1, expected_val));
+        CHECK(value_operations::are_equal(data2, changed_val));
       }
     }
   }

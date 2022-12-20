@@ -187,24 +187,34 @@ are_equal(const LeftNonArrT& left, const RightNonArrT& right) {
 }
 
 template <typename... Types, typename U>
-bool are_equal(std::tuple<Types...>& left, const U& right) {
+std::enable_if_t<!std::is_same_v<std::tuple<Types...>, U>, bool> are_equal(
+    const std::tuple<Types...>& left, const U& right) {
   using tuple_t = std::remove_reference_t<decltype(left)>;
   using indexes = std::make_index_sequence<std::tuple_size<tuple_t>::value>;
   return detail::are_equal_by_index_sequence(left, right, indexes());
 }
 
 template <typename FirstT, typename SecondT = FirstT, typename U>
-bool are_equal(std::pair<FirstT, SecondT>& left, const U& right) {
+typename std::enable_if_t<!std::is_same_v<std::pair<FirstT, SecondT>, U>, bool>
+are_equal(const std::pair<FirstT, SecondT>& left, const U& right) {
   constexpr size_t pair_size = 2;
   using indexes = std::make_index_sequence<pair_size>;
   return detail::are_equal_by_index_sequence(left, right, indexes());
 }
 
 template <typename... Types, typename U>
-bool are_equal(std::variant<Types...>& left, const U& right) {
+typename std::enable_if_t<!std::is_same_v<std::variant<Types...>, U>, bool>
+are_equal(const std::variant<Types...>& left, const U& right) {
   return std::get<U>(left) == right;
 }
 //////////////////////////// Compare functions
+
+template <typename T>
+inline constexpr auto init(int val) {
+  std::remove_const_t<T> data;
+  assign(data, val);
+  return data;
+}
 
 }  // namespace value_operations
 #endif  //__SYCLCTS_TESTS_COMMON_VALUE_OPERATIONS_H

@@ -30,17 +30,6 @@ void test_host_accessor_methods(const AccT &accessor,
   }
 }
 
-template <typename T, typename AccT>
-void test_accessor_ptr(AccT &accessor, T expected_data) {
-  {
-    INFO("check get_pointer() method");
-    auto acc_pointer = accessor.get_pointer();
-    STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
-                                std::add_pointer_t<typename AccT::value_type>>);
-    CHECK(value_operations::are_equal(*acc_pointer, expected_data));
-  }
-}
-
 template <typename T, typename AccessT, typename DimensionT>
 class run_api_tests {
   static constexpr sycl::access_mode AccessMode = AccessT::value;
@@ -68,7 +57,7 @@ class run_api_tests {
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
                                    "Check api for host_accessor")) {
-      T data(expected_val);
+      T data = value_operations::init<T>(expected_val);
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(&data, r);
@@ -79,19 +68,24 @@ class run_api_tests {
             util::get_cts_object::range<dims>::get(1, 1, 1) /*expected_range*/,
             sycl::id<dims>() /*&expected_offset)*/);
         test_accessor_ptr(acc, expected_val);
-        auto &acc_ref = acc[sycl::id<dims>()];
-        CHECK(value_operations::are_equal(acc_ref, expected_val));
+        auto &acc_ref1 = acc[sycl::id<dims>()];
+        auto &acc_ref2 = get_subscript_overload<T, AccT, dims>(acc, 0);
+        CHECK(value_operations::are_equal(acc_ref1, expected_val));
+        CHECK(value_operations::are_equal(acc_ref2, expected_val));
         STATIC_CHECK(
-            std::is_same_v<decltype(acc_ref), typename AccT::reference>);
+            std::is_same_v<decltype(acc_ref1), typename AccT::reference>);
+        STATIC_CHECK(
+            std::is_same_v<decltype(acc_ref2), typename AccT::reference>);
         if constexpr (AccessMode != sycl::access_mode::read)
-          value_operations::assign(acc_ref, changed_val);
+          value_operations::assign(acc_ref1, changed_val);
+        CHECK(value_operations::are_equal(acc_ref2, changed_val));
       }
       if constexpr (AccessMode != sycl::access_mode::read)
         CHECK(value_operations::are_equal(data, changed_val));
     }
 
     SECTION(get_section_name<dims>(
-        type_name, access_mode_name, target_name,
+        type_name, access_mode_name,
         "Check api for ranged host_accessor with offset")) {
       constexpr size_t acc_range_size = 4;
       constexpr size_t buff_range_size = 8;
@@ -111,7 +105,9 @@ class run_api_tests {
       auto offset_id =
           util::get_cts_object::id<dims>::get(offset, offset, offset);
       std::remove_const_t<T> data[buff_size];
-      std::iota(data, (data + buff_range.size()), 0);
+      for (size_t i = 0; i < buff_size; i++) {
+        data[i] = value_operations::init<T>(i);
+      }
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(data, buff_range);
@@ -121,29 +117,46 @@ class run_api_tests {
             acc_range.size() /*expected_size*/, acc_range /*expected_range*/,
             offset_id /*&expected_offset)*/);
 
-        test_accessor_ptr_host(acc, T(0));
-        auto &acc_ref = get_subscript_overload<T, AccT, dims>(acc, index);
-        CHECK(value_operations::are_equal(acc_ref, linear_index));
-        if constexpr (AccessMode != sycl::access_mode::read)
-          value_operations::assign(acc_ref, changed_val);
-      }
-      if constexpr (AccessMode != sycl::access_mode::read)
-        CHECK(value_operations::are_equal(data[linear_index], changed_val));
-    }
-    if constexpr (AccessMode != sycl::access_mode::read) {
-      SECTION(get_section_name<dims>(type_name, access_mode_name,
-                                     "Check swap for host_accessor")) {
-        T data1(expected_val);
-        T data2(changed_val);
-        {
-          sycl::buffer<T, dims> data_buf1(&data1, r);
-          sycl::buffer<T, dims> data_buf2(&data2, r);
-          AccT acc1(data_buf1);
-          AccT acc2(data_buf2);
-          acc1.swap(acc2);
+        test_accessor_ptr(acc, T());
+        auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
+        auto &acc_ref2 = acc[sycl::id<dims>()];
+        CHECK(value_operations::are_equal(acc_ref1, linear_index));
+        CHECK(value_operations::are_equal(acc_ref2, 0));
+        if constexpr (AccessMode != sycl::access_mode::read) {
+          value_operations::assign(acc_ref1, changed_val);
+          value_operations::assign(acc_ref2, expected_val);
         }
+      }
+      if constexpr (AccessMode != sycl::access_mode::read) {
+        CHECK(value_operations::are_equal(data[linear_index], changed_val));
+        CHECK(value_operations::are_equal(data[0], expected_val));
+      }
+    }
+    SECTION(get_section_name<dims>(type_name, access_mode_name,
+                                   "Check swap for host_accessor")) {
+      T data1 = value_operations::init<T>(expected_val);
+      T data2 = value_operations::init<T>(changed_val);
+      {
+        sycl::buffer<T, dims> data_buf1(&data1, r);
+        sycl::buffer<T, dims> data_buf2(&data2, r);
+        AccT acc1(data_buf1);
+        AccT acc2(data_buf2);
+        acc1.swap(acc2);
+        auto &acc_ref1 = acc1[sycl::id<dims>()];
+        auto &acc_ref2 = acc2[sycl::id<dims>()];
+        CHECK(value_operations::are_equal(acc_ref1, changed_val));
+        CHECK(value_operations::are_equal(acc_ref2, expected_val));
+        if constexpr (AccessMode != sycl::access_mode::read) {
+          value_operations::assign(acc_ref1, expected_val);
+          value_operations::assign(acc_ref2, changed_val);
+        }
+      }
+      if constexpr (AccessMode != sycl::access_mode::read) {
         CHECK(value_operations::are_equal(data1, changed_val));
         CHECK(value_operations::are_equal(data2, expected_val));
+      } else {
+        CHECK(value_operations::are_equal(data1, expected_val));
+        CHECK(value_operations::are_equal(data2, changed_val));
       }
     }
   }
@@ -157,13 +170,13 @@ class run_host_accessor_api_for_type {
     const auto dimensions = get_dimensions();
 
     // To handle cases when class was called from functions
-    // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.
-    // This will wrap string with type T to string with container<T> if T is
-    // an array or other kind of container.
+    // like for_all_types_vectors_marray or
+    // for_all_device_copyable_std_containers. This will wrap string with type T
+    // to string with container<T> if T is an array or other kind of container.
     auto actual_type_name = type_name_string<T>::get(type_name);
 
-    for_all_combinations<run_api_tests>(access_modes, dimensions,
-                                        actual_type_name);
+    for_all_combinations<run_api_tests, T>(access_modes, dimensions,
+                                           actual_type_name);
 
     // For covering const types
     actual_type_name = std::string("const ") + actual_type_name;

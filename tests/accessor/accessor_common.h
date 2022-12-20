@@ -201,7 +201,7 @@ inline auto get_all_dimensions() {
   static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
   return dimensions;
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Factory function for getting type_pack with target values
  */
@@ -211,7 +211,7 @@ inline auto get_targets() {
                  sycl::target::host_task>::generate_named();
   return targets;
 }
-
+#endif
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported
  * sizes
@@ -232,7 +232,7 @@ struct tag_factory {
   static_assert(AccType != AccType,
                 "There is no tag support for such accessor type");
 };
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
  * template parameters
@@ -268,7 +268,7 @@ struct tag_factory<accessor_type::generic_accessor> {
     }
   }
 };
-
+#endif
 /**
  * @brief Function helps to get TagT corresponding to AccessMode parameter
  */
@@ -316,7 +316,7 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
   res_acc[res_i++] = testing_acc.rbegin() == testing_acc.rend();
   res_acc[res_i++] = testing_acc.crbegin() == testing_acc.crend();
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Common function that constructs accessor with default constructor
  *and checks post-conditions
@@ -363,7 +363,7 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(conditions_check[i]);
   }
 }
-
+#endif
 namespace detail {
 /**
  * @brief Wraps callable to make possible chaining foo(boo(arg)) calls by fold
@@ -399,7 +399,7 @@ class invoke_helper {
 template <typename DataT, sycl::access_mode AccessMode, typename AccT,
           typename ResultAccT>
 void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT other_data(expected_val);
+  DataT other_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccessMode != sycl::access_mode::write) {
     DataT acc_ref(testing_acc);
@@ -410,7 +410,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(acc_ref, changed_val);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check zero dimension constructor of accessor
  *
@@ -431,7 +431,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
                                 ModifyAccFunctorsT... modify_accessor) {
   auto queue = util::get_cts_object::queue();
   sycl::range<1> r(1);
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   bool compare_res = false;
 
@@ -488,7 +488,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-
+#endif
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
  * parameter. Results of compare will be stored in res_acc
@@ -504,7 +504,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           typename AccT, typename ResultAccT>
 void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT other_data(expected_val);
+  DataT other_data = value_operations::init<DataT>(expected_val);
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   if constexpr (AccessMode != sycl::access_mode::write) {
@@ -514,7 +514,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(testing_acc[id], changed_val);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check common constructor of accessor
  *
@@ -538,7 +538,7 @@ void check_common_constructor(const sycl::range<Dimension>& r,
                               ModifyAccFunctorsT... modify_accessor) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -616,7 +616,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
                                           GetAccFunctorT get_accessor_functor) {
   auto queue = util::get_cts_object::queue();
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   bool is_placeholder = false;
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
@@ -645,7 +645,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
-
+#endif
 /**
  * @brief Function mainly for testing no_init property. The function tries to
  * write to the accessor and only after that tries to read from the accessor.
@@ -658,7 +658,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
 template <typename DataT, int Dimension, sycl::access_mode AccessMode,
           typename AccT, typename ResultAccT>
 void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
-  DataT expected_data(changed_val);
+  DataT expected_data = value_operations::init<DataT>(changed_val);
   auto id = util::get_cts_object::id<Dimension>::get(0, 0, 0);
 
   value_operations::assign(testing_acc[id], changed_val);
@@ -667,7 +667,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
     res_acc[0] = value_operations::are_equal(testing_acc[id], expected_data);
   }
 }
-
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check accessor constructor with no_init property
  *
@@ -680,7 +680,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
                         const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
   bool compare_res = false;
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
 
   if constexpr (AccType != accessor_type::host_accessor) {
     sycl::buffer res_buf(&compare_res, sycl::range(1));
@@ -717,7 +717,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
     CHECK(compare_res);
   }
 }
-
+#endif
 /**
  * @brief Function helps to verify that constructor of accessor with no_init
  * property and access_mode::read triggers an exception
@@ -729,7 +729,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_no_init_prop_exception(GetAccFunctorT construct_acc,
                                   const sycl::range<Dimension> r) {
   auto queue = util::get_cts_object::queue();
-  DataT some_data(expected_val);
+  DataT some_data = value_operations::init<DataT>(expected_val);
   {
     sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
@@ -745,6 +745,21 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
   }
+}
+
+/**
+ * @brief Function tests AccT::get_pointer() method
+
+ * @tparam AccT Type of testing accessor
+ * @tparam T Type of underlying data
+ */
+template <typename T, typename AccT>
+void test_accessor_ptr(AccT& accessor, T expected_data) {
+  INFO("check get_pointer() method");
+  auto acc_pointer = accessor.get_pointer();
+  STATIC_CHECK(std::is_same_v<decltype(acc_pointer),
+                              std::add_pointer_t<typename AccT::value_type>>);
+  CHECK(value_operations::are_equal(*acc_pointer, expected_data));
 }
 
 /**
@@ -794,35 +809,118 @@ void test_accessor_methods_common(const AccT& accessor,
  *
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
-template <typename DataT, int Dimension, typename PropT,
+template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_has_property_member_func(GetAccFunctorT construct_acc,
                                     const sycl::range<Dimension> r) {
-  DataT some_data(expected_val);
-  {
-    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
-    auto accessor = construct_acc(data_buf);
-    CHECK(accessor.template has_property<PropT>());
+  auto queue = util::get_cts_object::queue();
+  bool compare_res = false;
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = construct_acc(data_buf, cgh);
+          compare_res = acc.template has_property<sycl::property::no_init>();
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = construct_acc(data_buf);
+    compare_res = acc.template has_property<sycl::property::no_init>();
   }
+  CHECK(compare_res);
+}
+
+/**
+ * @brief Function invokes \c has_property() member function without \c PropT
+ * property and verifies that false returns
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          typename GetAccFunctorT>
+void check_has_property_member_without_no_init(GetAccFunctorT construct_acc,
+                                               const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  bool compare_res = false;
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = construct_acc(data_buf, cgh);
+          compare_res = acc.template has_property<sycl::property::no_init>();
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = construct_acc(data_buf);
+    compare_res = acc.template has_property<sycl::property::no_init>();
+  }
+  CHECK(!compare_res);
 }
 
 /**
  * @brief Function invokes \c get_property() member function with \c PropT
- * property and verifies that returned object has same type as \c PropT
+ * property and verifies that exception occures
  *
  * @tparam GetAccFunctorT Type of functor that constructs testing accessor
  */
-template <typename DataT, int Dimension, typename PropT,
+template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
           typename GetAccFunctorT>
 void check_get_property_member_func(GetAccFunctorT construct_acc,
                                     const sycl::range<Dimension> r) {
-  DataT some_data(expected_val);
-  {
-    sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
-    auto accessor = construct_acc(data_buf);
-    auto acc_prop = accessor.template get_property<PropT>();
+  auto queue = util::get_cts_object::queue();
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
 
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = construct_acc(data_buf, cgh);
+          auto acc_prop = acc.template get_property<PropT>();
+          CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = construct_acc(data_buf);
+    auto acc_prop = acc.template get_property<PropT>();
     CHECK(std::is_same_v<PropT, decltype(acc_prop)>);
+  }
+}
+
+/**
+ * @brief Function invokes \c get_property() member function without \c PropT
+ * property and verifies that false returns
+ *
+ * @tparam GetAccFunctorT Type of functor that constructs testing accessor
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          typename GetAccFunctorT>
+void check_get_property_member_without_no_init(GetAccFunctorT construct_acc,
+                                               const sycl::range<Dimension> r) {
+  auto queue = util::get_cts_object::queue();
+  DataT some_data = value_operations::init<DataT>(expected_val);
+  sycl::buffer<DataT, Dimension> data_buf(&some_data, r);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    queue
+        .submit([&](sycl::handler& cgh) {
+          auto acc = construct_acc(data_buf, cgh);
+          auto action = [&] {
+            acc.template get_property<sycl::property::no_init>();
+          };
+          CHECK_THROWS_MATCHES(
+              action(), sycl::exception,
+              sycl_cts::util::equals_exception(sycl::errc::invalid));
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = construct_acc(data_buf);
+    auto action = [&] { acc.template get_property<sycl::property::no_init>(); };
+    CHECK_THROWS_MATCHES(action(), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
 
@@ -843,7 +941,7 @@ void test_accessor_types_common() {
 }
 
 template <typename T, typename AccT, int dims>
-decltype(auto) get_subscript_overload(AccT& accessor, size_t index) {
+decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 1) return accessor[index];
   if constexpr (dims == 2) return accessor[index][index];
   if constexpr (dims == 3) return accessor[index][index][index];
