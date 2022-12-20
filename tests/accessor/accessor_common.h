@@ -19,7 +19,6 @@
 #include "../common/type_coverage.h"
 #endif
 
-
 #include <catch2/matchers/catch_matchers.hpp>
 
 namespace accessor_tests_common {
@@ -220,7 +219,7 @@ inline auto get_targets() {
                  sycl::target::host_task>::generate_named();
   return targets;
 }
-#endif // !SYCL_CTS_COMPILING_WITH_DPCPP
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported
  * sizes
@@ -279,7 +278,7 @@ struct tag_factory<accessor_type::generic_accessor> {
     }
   }
 };
-#endif // !SYCL_CTS_COMPILING_WITH_DPCPP
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode parameter
  */
@@ -390,7 +389,7 @@ class invoke_helper {
   const InvocableT& m_action;
 
  public:
-  invoke_helper(const InvocableT& action) : m_action(action){}
+  invoke_helper(const InvocableT& action) : m_action(action) {}
 
   template <typename... ArgsT>
   decltype(auto) operator=(ArgsT&&... args) {
@@ -694,7 +693,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
   }
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 // FIXME: re-enable when target::host_task is implemented
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 /**
@@ -746,7 +745,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
     CHECK(compare_res);
   }
 }
-#endif // !SYCL_CTS_COMPILING_WITH_DPCPP
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to verify that constructor of accessor with no_init
  * property and access_mode::read triggers an exception

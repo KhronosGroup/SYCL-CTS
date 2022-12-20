@@ -14,9 +14,11 @@
 #include "accessor_common.h"
 
 namespace accessor_requisite_entire_buffer {
-
-TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
- "[accessor]") {
+// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
+// implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("requisite for the entire underlying buffer for sycl::accessor ",
+ "[accessor]")({
   auto q = sycl_cts::util::get_cts_object::queue();
 
   constexpr size_t buffer_size = 10;
@@ -61,6 +63,6 @@ TEST_CASE("requisite for the entire underlying buffer for sycl::accessor ",
     q.wait_and_throw();
     CHECK(*check_data == accessor_tests_common::changed_val);
   }
-}
+});
 
 }  // namespace accessor_requisite_entire_buffer
