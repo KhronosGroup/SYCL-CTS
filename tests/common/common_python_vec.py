@@ -74,17 +74,14 @@ class Data:
     }
 
     alias_dict = {
-        'char': 'sycl::char',
-        'signed char': 'sycl::schar',
-        'unsigned char': 'sycl::uchar',
-        'short': 'sycl::short',
-        'unsigned short': 'sycl::ushort',
-        'int': 'sycl::int',
-        'unsigned int': 'sycl::uint',
-        'long': 'sycl::long',
-        'unsigned long': 'sycl::ulong',
-        'long long': 'sycl::longlong',
-        'unsigned long long': 'sycl::ulonglong',
+        'std::int8_t': 'sycl::char',
+        'std::uint8_t': 'sycl::uchar',
+        'std::int16_t': 'sycl::short',
+        'std::uint16_t': 'sycl::ushort',
+        'std::int32_t': 'sycl::int',
+        'std::uint32_t': 'sycl::uint',
+        'std::int64_t': 'sycl::long',
+        'std::uint64_t': 'sycl::ulong',
         'float': 'sycl::float',
         'double': 'sycl::double',
         'sycl::half': 'sycl::half'

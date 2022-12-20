@@ -57,13 +57,10 @@ def make_tests(type_str, input_file, output_file):
 
 def get_types():
     types = list()
-    types.append('char')
-    for base_type in Data.standard_types:
+    for base_type in Data.fixed_width_types:
         for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
-                or base_type == 'sycl::half') and sign is False:
-                continue
-            types.append(Data.standard_type_dict[(sign, base_type)])
+            types.append(Data.fixed_width_type_dict[(sign, base_type)])
+    types += ["float", "double", "sycl::half"]
     return types
 
 def main():
