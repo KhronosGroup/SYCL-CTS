@@ -5,72 +5,99 @@
 
 This is a test plan for the APIs described in SYCL 2020 section 4.15.3. Atomic references
 
-Estimated development time is three days.
-
 == Testing scope
+
+The test plan covers non-atomic behavior, the latter will be covered in a separate test plan
 
 === Device coverage
 
-All of the tests described below are performed only on the default device that
-is selected on the CTS command line.
+All of the tests described below are performed
+
+* on the default device that is selected on the CTS command line
+* on the host side
 
 == Type coverage
+
+All of the tests described below are performed using each of the
+following types as the `ReferencedType`.
+
+In Regular mode:
+
+* `int`
+* `float`
+
+In full conformance mode:
 
 * `int`
 * `unsigned int`
 * `long`
 * `unsigned long`
+* `float`
+
+In addition, if the device has `aspect::atomic64`, the following types are tested:
+
 * `long long`
 * `unsigned long long`
+* `double`
 
-Implementation dependend types:
+Note: for the following types should use an `epsilon` parameter for comparison operators to take into account possible different rounding mode:
 
 * `float`
 * `double`
 
-The member functions of the atomic_ref class may be emulated and may use a different floating-point environment to those defined by `info::device::single_fp_config` and `info::device::double_fp_config`.
-Therefore, the floating-point atomics may use different rounding modes and may have different exception behavior.
-
 == Tests
+
+Note: all test run with different values of `DefaultOrder` and `DefaultScope` template parameters, for usupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
 
 ==== Members
 
-For the following values as DefaultOrder parameter:
+Create an atomic_ref object in host and device code with the following `DefaultOrder` parameter values:
 
 * `memory_order::relaxed`
+
 Check the following:
-`default_read_order` is `memory_order::relaxed` and
-`default_write_order` is `memory_order::relaxed`
+`default_read_order` member is `memory_order::relaxed` and
+`default_write_order` member is `memory_order::relaxed` and
+`default_read_modify_write_order` member is `memory_order::relaxed`
 
 
 * `memory_order::acq_rel`
+
 Check the following:
-`default_read_order` is `memory_order::acquire` and
-`default_write_order` is `memory_order::release`
+`default_read_order` member is `memory_order::acquire` and
+`default_write_order` member is `memory_order::release` and
+`default_read_modify_write_order` member is `memory_order::acq_rel`
 
 * `memory_order::seq_cst`
+
 Check the following:
-`default_read_order` is `memory_order::seq_cst` and
-`default_write_order` is `memory_order::seq_cst`
+`default_read_order` member is `memory_order::seq_cst` and
+`default_write_order` member is `memory_order::seq_cst` and
+`default_read_modify_write_order` member is `memory_order::seq_cst`
 
-
-Check whether the following members exist: Print their values.
+Check whether the following members exist:
 
 * `static constexpr size_t required_alignment`
 * `static constexpr bool is_always_lock_free`
+* `static constexpr memory_scope default_scope`
+
+Check that:
+
+* `required_alignment` is equal to or grater than alignof(T), where T is `ReferencedType`
+* `default_scope` is equal to `DefaultScope` template parameter using when object was created
 
 
 ==== Common constructors
 
-For the following values as DefaultOrder parameter:
+Create an atomic_ref object using `atomic_ref(T&)` and an other object using copy constructor in host and device code using the following values as `DefaultOrder` parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
 * `memory_order::seq_cst`
 
-For the following values as DefaultScope parameter:
+The following values as `DefaultScope` parameter:
 
 * `memory_scope::work_item`
 * `memory_scope::sub_group`
@@ -78,28 +105,35 @@ For the following values as DefaultScope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-For the following values as Space parameter:
+And the following values as `Space` parameter:
 
 * `access::address_space::global_space`
 * `access::address_space::local_space`
-* `access::address_space::private_space`
 * `access::address_space::generic_space`
 
-Call constructors:
+After calling constructors check for:
 
 * `atomic_ref(T&)`
-Check if the values of newly created object match with defult values and the stored value passed as `T&`?
+
+If the members of newly created object match with defult values and the stored value match with the value passed as `T&` using
+`T load(
+    memory_order order = default_read_order
+    memory_scope scope = default_scope) const`.
+Check returned value type of `load` function.
 
 * `atomic_ref(const atomic_ref&) noexcept`
-Check if the values of the newly created object match that of `const atomic_ref&`?
+
+If the members of the newly created object match that of `const atomic_ref&` and the referenced value is valid using
+`T load(
+    memory_order order = default_read_order
+    memory_scope scope = default_scope) const`.
+
 
 ==== Member functions
 
 `bool is_lock_free()`
 
 Check if the function exists and returns `true` or `false`
-
-Note: for atomic load/stores and other atomic functions they might be called in a `while` loop simillar to how it is done in [/tests/usm/usm_atomic_access.h](https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/usm/usm_atomic_access.h#L141).
 
 `void store(T operand,
     memory_order order = default_write_order,
@@ -119,17 +153,13 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
-Check if the function atomically stores `operand` to the object referenced by this atomic_ref.
+Check if the function stores `operand` to the object referenced by this atomic_ref.
 
 `T operator=(T desired) const noexcept`
 
-Same as `store(desired)`: Check if the function atomically stores `operand` to the object referenced by this atomic_ref.
+Same as `store(desired)`: Check if the function stores `operand` to the object referenced by this atomic_ref.
 
-`T load(
-    memory_order order = default_read_order
-    memory_scope scope = default_scope) const`
+`operator T() const`
 
 For the following values as order parameter:
 
@@ -145,13 +175,7 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
-Check if the function atomically loads the value of `operand` referenced by this atomic_ref.
-
-`operator T() const`
-
-Equivalent to load(): Check if the function atomically loads the value of `operand` referenced by this atomic_ref.
+Check if the function loads the value of `operand` referenced by this atomic_ref.
 
 `T exchange(T operand,
     memory_order order = default_read_modify_write_order,
@@ -171,9 +195,7 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
-Check if atomically replaces the value of the object referenced by this atomic_ref with value operand and returns the original value of the referenced object. 
+Check if replaces the value of the object referenced by this atomic_ref with value operand and returns the original value of the referenced object.
 
 `bool compare_exchange_weak(T &expected, T desired,
     memory_order success,
@@ -193,8 +215,6 @@ For the following values as scope parameter:
 * `memory_scope::work_group`
 * `memory_scope::device`
 * `memory_scope::system`
-
-And For 64-bit data types on devices that have `aspect::atomic64`.
 
 For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not be checked since it is non-deterministic.
 
@@ -227,11 +247,9 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
 For equal values: check if it replaces the value of the referenced object with the value of `desired`.
 
-For uneual values: check if it assigns the original value of the referenced object to `expected`.
+For unequal values: check if it assigns the original value of the referenced object to `expected`.
 
 Also check if it returns `true` when the comparison operation was successful.
 
@@ -258,13 +276,11 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
 `T fetch_add(T operand,
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically adds operand to the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object. 
+Check if it adds operand to the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object. 
 Check if it returns the original value of the referenced object. 
 
 `T operator+=(T operand) const`
@@ -283,7 +299,7 @@ Same as `fetch_add`: Equivalent to `fetch_add(1) + 1`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically subtracts operand from the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
+Check if it subtracts operand from the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator-=(T operand) const`
@@ -302,7 +318,7 @@ Same as `fetch_add`: Equivalent to fetch_sub(1) - 1.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically performs a bitwise AND between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it performs a bitwise AND between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator&=(T operand) const`
@@ -313,7 +329,7 @@ Same as above: Equivalent to `fetch_and(operand) & operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically performs a bitwise OR between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it performs a bitwise OR between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator|=(T operand) const`
@@ -324,7 +340,7 @@ Same as above: Equivalent to `fetch_or(operand) | operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically performs a bitwise XOR between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it performs a bitwise XOR between operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator^=(T operand) const`
@@ -335,14 +351,14 @@ Same as above: Equivalent to `fetch_xor(operand) ^ operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically computes the minimum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it computes the minimum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object. 
 
 `T fetch_max(T operand,
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically computes the maximum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it computes the maximum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object. 
 
 ==== Additional member functions available on an object of type `atomic_ref<T>` for floating-point `T`
@@ -362,13 +378,11 @@ For the following values as scope parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-And For 64-bit data types on devices that have `aspect::atomic64`.
-
 `T fetch_add(T operand,
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically adds operand to the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
+Check if it adds operand to the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator+=(T operand) const`
@@ -379,7 +393,7 @@ Same as above: Equivalent to `fetch_add(operand) + operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically subtracts operand from the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
+Check if it subtracts operand from the value of the object referenced by this atomic_ref and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
 
 `T operator-=(T operand) const`
@@ -390,12 +404,12 @@ Same as above: Equivalent to `fetch_sub(operand) - operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically computes the minimum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object. 
+Check if it computes the minimum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object. 
 Check if it returns the original value of the referenced object.
 
 `T fetch_max(T operand,
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it atomically computes the maximum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
+Check if it computes the maximum of operand and the value of the object referenced by this atomic_ref, and assigns the result to the value of the referenced object.
 Check if it returns the original value of the referenced object.
