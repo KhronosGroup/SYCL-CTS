@@ -56,16 +56,16 @@ Return the work-item's position within the work-group.
 Return a range with the maximum number of work-items in any work group.
 - `group.get_group_linear_id()`
 +
-Linear version of `get_group_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+Linearized version of `get_group_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
 - `group.get_local_linear_id()`
 +
-Linear version of `get_local_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+Linearized version of `get_local_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
 - `group.get_group_linear_range()`
 +
-Linear version of `get_group_range`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+Return the total number of work-groups in the `nd_range`.
 - `group.get_local_linear_range()`
 +
-Linear version of `get_local_range`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+Return the total number of work-items in the work-group.
 - `group.leader()`
 +
-Returns `true` only for the work-item within each work-group with a local id of zero.
+Return `true` only for the work-item within each work-group with a local id of zero.
