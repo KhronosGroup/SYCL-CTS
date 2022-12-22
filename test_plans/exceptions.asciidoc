@@ -94,6 +94,8 @@ Special cases:
 
 * Check that enum class template exists
 
+* Check that `errc_for` is same that `backend_traits<sycl::backend::opencl>::errc`
+
 If SYCL_BACKEND_OPENCL is defined check that
 
 * enum class with `b == sycl::backend::opencl` exists and is a scoped enum
@@ -236,6 +238,62 @@ For cases:
 
 check that when there are no exceptions expected then the async handler is not invoked.
 
+==== Simple invokation of default async handler
+
+* Save default terminate handler using get_terminate.
+* Set new terminate handler via `std::set_terminate` that just changes global variable
+* Submit host_task to a queue that throws an exception
+* Call `queue::wait_and_throw()`
+* Check that global variable changed accordingly to make sure that default async_handler has called std::terminate
+* Use `std::set_terminate` to return saved default terminate handler
+
+==== Priorities of async handlers
+
+Create 2 user defined async handlers, first changes global variable to 1, second changes global variable to 2.
+Both checks that exceptions that passed via exception_list parameter have error code `errc::accessor` or `errc::nd_range`.
+
+To check that queue's handler will be used first:
+
+* Create context with first user defined async_handler
+* Create queue with context, cts_selector and second user defined async_handler
+* Submit host_task to a queue that throws an `exception(errc::accessor)`
+* Submit host_task to a queue that throws an `exception(errc::nd_range)`
+* Call `queue::wait_and_throw()`
+* Check that global variable changed to 2 as async_handler for the queue were called
+
+To check that secondary queue's handler will be used if queue doesn't have one:
+
+* Create context with first user defined async_handler
+* Create queue with context and cts_selector without user defined async_handler
+* Submit host_task to a queue that throws an `exception(errc::accessor)`
+* Submit host_task to a queue that throws an `exception(errc::nd_range)`
+* Call `queue::wait_and_throw()`
+* Check that global variable changed to 1 as async_handler for the context were called
+
+==== Async handlers with a secondary queue
+
+* Create 2 user defined async handlers, first changes one global variable to 1, second changes another global variable to 2
+* Create third user defined async handlers, that changes both global variables to 3
+* All careated async handlers checks that exceptions that passed via exception_list parameter have error code `errc::accessor`
+
+To check that queues' handlers will be used:
+
+* Create context with third user defined async_handler
+* Create first queue with context, cts_selector and first user defined async_handler
+* Create second queue with context, cts_selector and second user defined async_handler
+* Submit host_task to a queue using second queue as a parameter that throws an `exception(errc::accessor)`
+* Call `queue::wait_and_throw()` for both queues
+* Check that first global variable changed to 1 as async_handler for first queue were called
+* Check that second global variable changed to 2 as async_handler for secondary queue were called
+
+To check that context's handler will be used if queues don't have one:
+
+* Create context with third user defined async_handler.
+* Create first queue with context and cts_selector without user defined async_handler
+* Create second queue with context and cts_selector without user defined async_handler
+* Submit host_task to a queue using second queue as a parameter that throws an `exception(errc::accessor)`
+* Call `queue::wait_and_throw()` for both queues
+* Check that global variables changed to 3 as async_handler for the context were called
 
 === Synchronous exceptions mechanism
 
