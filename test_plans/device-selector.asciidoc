@@ -1,0 +1,74 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for device selector
+
+This is a test plan for the device selector as described in SYCL 2020 Section 4.6.1.1.
+
+Estimated development time is three days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+=== Predefined selector instances
+
+The file `device_selector/device_selector_predefined.cpp` currently implements tests for the SYCL 1.2.1. predefined device selectors `default_selector`, `gpu_selector`, `accelerator_selector`, and `cpu_selector`. These are marked as deprecated and duplicated to use the SYCL 2020 predefined device selectors `default_selector_v`, `gpu_selector_v`, `accelerator_selector_v`, and `cpu_selector_v` instead.
+
+Additionally when, for CPU, GPU, and accelerator, no device is available, it is checked whether constructing a device will throw an exception with the error code `errc::runtime`.
+
+=== Aspect selector
+
+`aspect_selector` defines multiple constructors that take a set of aspects, and one constructor that additionally takes a set of denied aspects.
+
+==== Aspect coverage
+
+The following sets of aspects and denied aspects are tested:
+
+- No aspects, no denied aspects.
+- All possible sets of a single aspect, no denied aspects.
+- All combinations of two aspects, including duplicates (e.g. `aspect_selector(aspX, aspX)`), and reversed order (e.g. `aspect_selector(aspX, aspY)` and `aspect_selector(aspY, aspX)`). No denied aspects.
+- All the different numbers of aspects at least once, up to `N`, where the aspects are not duplicated, i.e. `aspect_selector(asp1), aspect_selector(asp1, asp2), ..., aspect_selector(asp1, asp2, ..., aspN)`. No denied aspects.
+- (Optional) Test 100 combinations of randomly selected aspect combinations, allowing aspect duplicates, with a random arity. The random combinations are selected at test generation time, with each test generation producing the same combinations and each run testing the same random combinations. Each combination has a list of randomly selected denied aspects, with a random arity. The aspects that appear in the list of denied aspects may not appear in the list of requested aspects.
+
+==== Constructor coverage
+
+The aspect selector defines three overloads:
+
+- `aspect_selector(const std::vector<aspect>& aspectList,
+const std::vector<aspect>& denyList = {})`
+- `template <typename... AspectList> aspect_selector(AspectList... aspectList)`
+- `template <aspect... AspectList> aspect_selector()`
+
+If the test specifies denied aspects, the constructor that accepts a `std::vector` is checked once using an `aspectList` and a `denyList`, and once with an `aspectList` and an empty `denyList`.
+
+==== Test
+
+This test is repeated for each of the required and forbidden aspects as stated in "Aspect coverage" and for each of the constructors as stated in "Constructor coverage".
+
+- Iterate over all devices to find out if there is one that contains all requested aspects and that does not contain any forbidden ones, we call this `suitableDevice`.
+- Construct aspect selector `selector` with the appropriate constructor and the list of requested and denied aspects.
+
+If no `suitableDevice` is found:
+
+- Verify that constructing a device with `selector` will throw an `exception` with `errc::runtime`.
+
+If a `suitableDevice` is found:
+
+- Construct SYCL device `selectedDevice` using `selector`.
+- Construct SYCL queue `selectedQueue` using `selector`.
+- Check that `selectedDevice` and `selectedQueue.get_device()` contain all requested aspects.
+- Construct SYCL platform `selectedPlatform` using `selector`.
+
+If forbidden aspects are specified and if the constructor allows for forbidden aspects to be passed:
+
+- Check that `selectedDevice` and `selectedQueue.get_device()` contain none of the forbidden aspects.
+- Check that `selectedPlatform` does not have any forbidden aspects. Note: if all devices in the platform have an aspect, the platform itself has the aspect. Hence, `selectedPlatform` should not have any forbidden aspects.
