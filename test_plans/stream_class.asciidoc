@@ -23,6 +23,22 @@ All the tests described below are not backend-specific and are performed for any
 All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
 
 == Tests
+=== Types
+The existing test for the stream class tests the stream operator using a multitude of types. The following types are not supported in SYCL 2020 and are removed from the test:
+
+- `cl_char`
+- `cl_uchar`
+- `cl_int`
+- `cl_uint`
+- `cl_short`
+- `cl_ushort`
+- `cl_long`
+- `cl_ulong`
+- `sycl::byte`
+- `cl_float`
+- `cl_double`
+- `cl_half`
+
 === Constructor
 - The existing constructor test is extended to also check construction when an empty property list is passed. Note: no properties are defined for `sycl::stream`.
 
