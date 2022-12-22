@@ -408,7 +408,7 @@ Check if it performs a bitwise XOR between `operand` and the value of the object
 
 Same as above: Equivalent to `fetch_xor(operand) ^ operand`.
 
-==== Additional member functions available on an object of type `atomic_ref<T>` for integral and pointer `T`
+===== Additional member functions available on an object of type `atomic_ref<T>` for integral and pointer `T`
 
 Test following functions if `T` is `Integral` or `ReferencedType*`, skip otherwise:
 
@@ -428,7 +428,7 @@ Same as `fetch_sub`: Equivalent to `fetch_sub(1)`.
 
 Same as `fetch_sub`: Equivalent to fetch_sub(1) - 1.
 
-==== Additional member functions available on an object of type `atomic_ref<T>` for integral and floating `T`
+===== Additional member functions available on an object of type `atomic_ref<T>` for integral and floating `T`
 
 For the following values as `order` parameter:
 
