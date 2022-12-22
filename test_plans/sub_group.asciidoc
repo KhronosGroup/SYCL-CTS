@@ -26,10 +26,10 @@ Returns the id of the sub-group within the work-group.
 - `sub_group.get_local_id()` and `sub_group.get_local_linear_id()`
 +
 Returns the id work-item's position in the sub-group.
-- `sub_group.get_local_range()` and `sub_group.get_group_linear_range()`
+- `sub_group.get_local_range()` and `sub_group.get_local_linear_range()`
 +
-Returns the size of the subgroup. Should be `sub_group_size` (see below).
-- `sub_group.get_group_range()` and `sub_group.get_local_linear_range()`
+Returns the size of the subgroup. Should be `sub_group_size` (see below) for all but the last sub-group, in which case it should be `sub_group_size - 1`.
+- `sub_group.get_group_range()` and `sub_group.get_group_linear_range()`
 +
 Returns the number of sub-groups within the work-group. Should be `3` (see below).
 - `sub_group.get_max_local_range()`
