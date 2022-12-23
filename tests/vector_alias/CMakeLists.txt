@@ -1,9 +1,23 @@
 set(TEST_CASES_LIST "")
 
-set(TYPE_LIST "")
-get_std_type(TYPE_LIST)
+set(VEC_TYPE_LIST "")
+list(APPEND VEC_TYPE_LIST
+  "std::int8_t"
+  "std::uint8_t"
+  "std::int16_t"
+  "std::uint16_t"
+  "std::int32_t"
+  "std::uint32_t"
+  "std::int64_t"
+  "std::uint64_t"
+  "float"
+  "double"
+  "sycl::half"
+)
 
-foreach(TY IN LISTS TYPE_LIST)
+half_double_filter(VEC_TYPE_LIST)
+
+foreach(TY IN LISTS VEC_TYPE_LIST)
   set(OUT_FILE "vector_alias_${TY}.cpp")
   STRING(REGEX REPLACE ":" "_" OUT_FILE ${OUT_FILE})
   STRING(REGEX REPLACE " " "_" OUT_FILE ${OUT_FILE})

@@ -1,0 +1,182 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for math array
+
+This is a test plan for the math array types described in SYCL 2020 Section 4.14.3.
+
+Estimated development time is four days.
+
+== Testing scope
+
+This plan does not include negative tests.
+
+=== Backend coverage
+
+All the tests described below are performed for any SYCL implementation.
+
+=== Device coverage
+
+All the tests described below are performed only on the default device that is selected on the CTS command line.
+
+=== Type coverage
+
+The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following types as the underlying type the `DataT` template variable of `marray`, unless stated otherwise.
+
+In regular mode:
+
+* `char`
+* `int`
+* `float`
+* `std::int8_t`
+* `std::int32_t`
+* A user-defined struct that meets the NumericType requirements of the C++ standard.
+
+In addition, if the device has `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `half`
+
+In full conformance mode:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short`
+* `unsigned short`
+* `int`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `long long`
+* `unsigned long long`
+* `float`
+* `bool`
+* `std::int8_t`
+* `std::uint8_t`
+* `std::int16_t`
+* `std::uint16_t`
+* `std::int32_t`
+* `std::uint32_t`
+* `std::int64_t`
+* `std::uint64_t`
+* A user-defined struct that meets the NumericType requirements of the C++ standard.
+
+In addition, if the device has `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `half`
+
+=== Dimension coverage
+
+The interface tests and memory layout and alignment tests (Sections 2.1 and 2.3 below) are performed using each of the following dimensions for the `NumElements` template variable of `marray`: `1`, `2`, `3`, `4`, `5`, `8`, `16`, `32`, and `64`, unless stated otherwise.
+
+== Tests
+
+=== Interface tests
+
+This section tests Section 4.14.3.1 of the SYCL 2020 specification.
+
+==== Constructors
+
+* Call constructor `marray()` to initialize an instance `ma`. Check that all the values of `ma` are equal to the default-constructed elements `DataT`.
+
+Repeat the below test twice: once to construct a `constexpr` instance and once to construct a non-`constexpr` instance.
+
+* Call constructor `explicit constexpr marray(const DataT& arg)` with `DataT(1)` to initialize an instance `ma`. Check using `operator[]` that all values of `ma` are equal to `DataT(1)`.
+* Call the constructor `template <typename... ArgTN> constexpr marray(const ArgTN&... args)` to initialize an instance `ma`, with:
+- `NumElements` instances `DataT` initialized with the sequence `1`, `2`, `3`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
+- If `NumElements > 1`: one instance of `DataT` initialized with `1` followed by one instance of `marray<DataT, N>` where `N` is `NumElements - 1`. `marray<DataT, N>` is initialized with the sequence `2`, `3`, `4`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
+- If `NumElements > 1`: instance of `marray<DataT, N>` where `N` is `NumElements - 1` followed by one instance of `DataT` initialized with `NumElements - 1`. `marray<DataT, N>` is initialized with the sequence `1`, `2`, `3`, etc. Check using `operator[]` that the values of `ma` follow the sequence `1`, `2`, `3`, etc.
+* Call the constructor `constexpr marray(const marray<DataT, NumElements>& rhs)` with `rhs` initialized with the sequence `1`, `2`, `3`, etc. Check using `operator[]` that the elements of `ma` are the sequence `1`, `2`, `3`, etc.
+* Call the constructor `constexpr marray(marray<DataT, NumElements>&& rhs)` with `rhs` initialized with the sequence `1`, `2`, `3`, etc. to initialize `constexpr marray<DataT, NumElements> inst`. Check using `operator[]` that the elements of `ma` are the sequence `1`, `2`, `3`, etc.
+
+==== Member functions
+
+Declare `marray<DataT, NumElements>` instance `ma_inc` with its elements initialized as the sequence `1`, `2`, `3`, etc. Declare `ma_const` as a copy of `ma_inc`, declare it as `const`.
+
+* If `NumElements == 1`: call `operator DataT() const` on `ma_inc`. Check that the result is equal to `DataT(1)`.
+* Call `static constexpr std::size_t size() noexcept` on `ma_inc`. Check that the result is equal to `NumElements`. Check the function itself for `noexcept`.
+* Call `DataT& operator[](std::size_t index)` on `ma_inc` with `index` of `0`. Check that the result is equal to `1`. Assign to `DataT& operator[](std::size_t index)` of `ma_inc` with `index` of `0` a value of `DataT(0)`. Call `DataT& operator[](std::size_t index)` on `ma_inc` with `index` of `0`. Check that the result is equal to `DataT(0)`.
+* Call `const DataT& operator[](std::size_t index) const` on `ma_const` with `index` of `0`. Check that the result is equal to `DataT(1)`.
+* Construct an `marray<DataT, NumElements>` instance `ma_tmp` with its elements initialized to `DataT(0)`. Call `marray& operator=(const marray& rhs)` on `ma_tmp` instance with `rhs` of `const`. Check that the elements of `ma_tmp` are equal to `ma_const`.
+* Construct an `marray<DataT, NumElements>` instance `ma_tmp` with its elements initialized to `DataT(0)`. Call `marray& operator=(const DataT& rhs)` on `ma_tmp` with `rhs` of `DataT(1)`. Check that the elements of `ma_tmp` are equal to `DataT(1)`.
+* For both `ma_inc` and `ma_const`, do:
+- Obtain the iterator `it_ma` using `<const>iterator begin()`.
+- Make a copy `it_ma_tmp` using assignment.
+- Increment `it_ma` by one.
+- If `NumElements > 1`, check that the value pointed to by `it_ma` is equal to `DataT(2)`.
+- Decrement `it_ma` by one.
+- Check that `it_ma` is equal to `it_ma_tmp`.
+* For both `ma_inc` and `ma_const`, do:
+- Obtain the iterator `it_ma` using `<const>iterator end()`.
+- Make a copy `it_ma_tmp` using assignment.
+- Decrement `it_ma` by one.
+- Check that the value pointed to by `it_ma` is equal to `DataT(NumElements)`.
+- Increment `it_ma` by one.
+- Check that `it_ma` is equal to `it_ma_tmp`.
+
+==== Hidden friend functions
+
+Declare the following `marray<DataT, NumElements>` instances:
+
+* `ma_inc` as the sequence `1`, `2`, `3`, `4`, `5`, etc.
+* `ma_dec` as the sequence `NumElements`, `NumElements - 1`, `NumElements - 2`, `NumElements - 3`, `NumElements - 4`, etc.
+* `ma_one` as the sequence `1`, `1`, `1`, `1`, `1`, etc.
+* `ma_two` as the sequence `2`, `2`, `2`, `2`, `2`, etc.
+
+Declare the following `DataT` instances:
+
+* `dt_one` as `DataT(1)`.
+* `dt_two` as `DataT(2)`.
+
+Call the below operators using all possible combinations of the defined input instances. The equivalent operations are executed using `std::valarray<DataT>`, and the results of both operations are checked to be equal using element-wise comparisons with `operator[]`.
+
+The tests where `OP` is `%`, `%=`, `&`, `|`, `^`, `&=`, `|=`, `^=`, `<<`, `>>`, `<\<=`, `>>=`, or `~` are not executed when `DataT` is a floating-point type, i.e. `float`, `double`, or `half`.
+
+* `marray operatorOP(const marray& lhs, const marray& rhs)`, `OP` is `+`, `-`, `*`, `/`, or `%`.
+* `marray operatorOP(const marray& lhs, const DataT& rhs)`, `OP` is `+`, `-`, `*`, `/`, or `%`.
+* `marray& operatorOP(marray& lhs, const marray& rhs)`, `OP` is `+=`, `-=`, `*=`, `/=`, or `%=`.
+* `marray& operatorOP(marray& lhs, const DataT& rhs)`, `OP` is `+=`, `-=`, `*=`, `/=`, or `%=`.
+* `marray& operatorOP(marray& v)`, `OP` is `++` or `--`.
+* `marray operatorOP(marray& v, int)`, `OP` is `++` or `--`.
+* `marray operatorOP(marray& v)`, `OP` is unary `+` or `-`.
+* `marray operatorOP(const marray& lhs, const marray& rhs)`, `OP` is `&`, `|`, or `^`.
+* `marray operatorOP(const marray& lhs, const DataT& rhs)`, `OP` is `&`, `|`, or `^`.
+* `marray& operatorOP(marray& lhs, const marray& rhs)`, `OP` is `&=`, `|=`, or `^=`.
+* `marray& operatorOP(marray& lhs, const DataT& rhs)`, `OP` is `&=`, `|=`, or `^=`.
+* `marray<bool, NumElements> operatorOP(const marray& lhs, const marray& rhs)`, `OP` is `&&` or `||`.
+* `marray<bool, NumElements> operatorOP(const marray& lhs, const DataT& rhs)`, `OP` is `&&` or `||`.
+* `marray operatorOP(const marray& lhs, const marray& rhs)`, `OP` is `<<` or `>>`.
+* `marray operatorOP(const marray& lhs, const DataT& rhs)`, `OP` is `<<` or `>>`.
+* `marray& operatorOP(marray& lhs, const marray& rhs)`, `OP` is `<\<=` or `>>=`.
+* `marray& operatorOP(marray& lhs, const DataT& rhs)`, `OP` is `<\<=` or `>>=`.
+* `marray<bool, NumElements> operatorOP(const marray& lhs, const marray& rhs)`, `OP` is `==`, `!=`, `<`, `>`, `\<=`, or `>=`.
+* `marray<bool, NumElements> operatorOP(const marray& lhs, const DataT& rhs)`, `OP` is `==`, `!=`, `<`, `>`, `\<=`, or `>=`.
+* `marray operatorOP(const DataT& lhs, const marray& rhs)`, `OP` is `+`, `-`, `*`, `/`, `%`.
+* `marray operatorOP(const DataT& lhs, const marray& rhs)`, `OP` is `&`, `|`, or `^`.
+* `marray<RET, NumElements> operatorOP(const DataT& lhs, const marray& rhs)`, `OP` is `&&` or `||`.
+* `marray operatorOP(const DataT& lhs, const marray& rhs)`, `OP` is `<<` or `>>`.
+* `marray<bool, NumElements> operatorOP(const DataT& lhs, const marray& rhs)`, `OP` is `==`, `!=`, `<`, `>`, `\<=`, or `>=`.
+* `marray& operator~(const marray& v)`
+* `marray<bool, NumElements> operator!(const marray& v)`
+
+=== Alias tests
+This section tests Section 4.14.3.2 of the SYCL 2020 specification.
+
+This test is executed for `<elems>` and pairings of `<type>, <storage-type>`. `<elems>` is `2`, `3`, `4`, `8`, and `16`. The pairings `<type>` and `<storage-type>` are `char` and `int8_t`, `uchar` and `uint8_t`, `short` and `int16_t`, `ushort` and `uint16_t`, `int` and `int32_t`, `uint` and `uint32_t`, `long` and `int64_t`, `ulong` and `uint64_t`, both `float`, and both `bool`. In addition, if the device has `aspect::fp64`: both are `double`. Furthermore, if the device has `aspect::half`: both are `half`.
+
+* Check that `+std::is_same_v<m<type><elems>, marray<<storage-type>, <elems>>>+`.
+
+=== Memory layout and alignment tests
+This section tests Section 4.14.3.3 of the SYCL 2020 specification.
+
+* Check that `alignof(marray<DataT, NumElements>)` is equal to `alignof(std::array<DataT, NumElements>)`.
+* Check that `sizeof(marray<DataT, NumElements>)` is equal to `sizeof(std::array<DataT, NumElements>)`.
+* Declare `marray<DataT, NumElements>` instance `ma_inc` with its elements initialized as the sequence `1`, `2`, `3`, etc. Declare `std::array<DataT, NumElements>` instance `sa_inc` with its elements initialized as the sequence `1`, `2`, `3`, etc. Check that `std::memcmp(&ma_inc, &sa_inc, sizeof(ma_inc)) == 0`.

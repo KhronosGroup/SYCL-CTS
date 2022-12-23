@@ -58,6 +58,11 @@ struct no_cnstr {
   friend bool operator!=(const no_cnstr &lhs, const no_cnstr &rhs) {
     return !(lhs == rhs);
   }
+
+  friend no_cnstr operator+(const no_cnstr &lhs, int i) {
+    return {lhs.a + static_cast<float>(i), lhs.b + i,
+            static_cast<char>(lhs.c + i)};
+  }
 };
 
 // A user-defined class with several scalar member variables, a user-defined

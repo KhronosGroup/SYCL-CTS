@@ -58,7 +58,8 @@
 // Clang 8 does not properly handle _Pragma inside macro expansions.
 // See https://compiler-explorer.com/z/4WebY11TM.
 // As a crude workaround we disable _Pragma altogether.
-// This is required as of ComputeCpp 2.8.0, which is based on Clang 8.
+// This is required as of ComputeCpp 2.11.0 non-experimental compiler,
+// which is based on Clang 8.
 #if defined(__clang__) && __clang_major__ <= 8
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wbuiltin-macro-redefined"
