@@ -27,6 +27,8 @@
 #include "../common/common.h"
 #include "accessor_api_utility.h"
 
+#include <type_traits>
+
 ////////////////////////////////////////////////////////////////////////////////
 // Tests
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,16 +52,19 @@ void check_accessor_members(sycl_cts::util::logger &log,
 
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
 
+  using t_type =
+      std::conditional_t<mode == sycl::access_mode::read, const T, T>;
+
   using value_type = typename acc_t::value_type;
-  static_assert(std::is_same<value_type, T>::value,
+
+  static_assert(std::is_same_v<value_type, t_type>,
                 "value_type is of wrong type");
 
   using reference = typename acc_t::reference;
-  static_assert(std::is_same<reference, T &>::value,
-                "reference is of wrong type");
+  static_assert(std::is_same_v<reference, T &>, "reference is of wrong type");
 
   using const_reference = typename acc_t::const_reference;
-  static_assert(std::is_same<const_reference, const T &>::value,
+  static_assert(std::is_same_v<const_reference, const T &>,
                 "const_reference is of wrong type");
 }
 
