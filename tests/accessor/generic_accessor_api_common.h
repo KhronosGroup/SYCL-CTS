@@ -273,9 +273,9 @@ class run_api_tests {
       auto offset_id =
           util::get_cts_object::id<dims>::get(offset, offset, offset);
       std::remove_const_t<T> data[buff_size];
-      for (size_t i = 0; i < buff_size; i++) {
-        data[i] = value_operations::init<T>(i);
-      }
+      std::generate(data, (data + buff_range.size()), [i = 0]() mutable {
+        return value_operations::init<T>(i++);
+      });
       bool res = false;
       {
         sycl::buffer<T, dims> data_buf(data, buff_range);

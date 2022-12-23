@@ -948,7 +948,7 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
 }
 
 template <typename AccT, typename T = int>
-void test_begin_end_host(AccT& accessor, T exp_first = T(), T exp_last = T(),
+void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
                          bool empty = true) {
   {
     INFO("check begin() method");
@@ -1003,12 +1003,10 @@ void test_begin_end_host(AccT& accessor, T exp_first = T(), T exp_last = T(),
 }
 
 template <typename AccT, typename T = int>
-bool test_begin_end_device(AccT& accessor, T exp_first = T(), T exp_last = T(),
+bool test_begin_end_device(AccT& accessor, T exp_first = {}, T exp_last = {},
                            bool empty = true) {
-  bool res = true;
-
   auto it_begin = accessor.begin();
-  res &= std::is_same_v<decltype(it_begin), typename AccT::iterator>;
+  bool res = std::is_same_v<decltype(it_begin), typename AccT::iterator>;
   auto it_end = accessor.end();
   res &= std::is_same_v<decltype(it_end), typename AccT::iterator>;
 
