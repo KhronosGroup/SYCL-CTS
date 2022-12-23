@@ -141,7 +141,7 @@ After calling constructors check for:
 
 * `atomic_ref(T&)`
 
-If the members of newly created object match with defult values and the stored value match with the value passed as `T&` using
+If the members of newly created object match with default values and the stored value match with the value passed as `T&` using
 `T load(
     memory_order order = default_read_order
     memory_scope scope = default_scope) const`.
