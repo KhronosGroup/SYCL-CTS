@@ -988,6 +988,7 @@ void add_id_linear(sycl::id<dims>& id, int size) {
       break;
     }
   }
+}
 
 template <typename AccT, typename T = int>
 void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
