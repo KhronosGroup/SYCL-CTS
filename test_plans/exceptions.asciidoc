@@ -236,15 +236,6 @@ For cases:
 
 check that when there are no exceptions expected then the async handler is not invoked.
 
-==== Simple invokation of default async handler
-
-* Save default terminate handler using get_terminate.
-* Set new terminate handler via `std::set_terminate` that just changes global variable
-* Submit host_task to a queue that throws an exception
-* Call `queue::wait_and_throw()`
-* Check that global variable changed accordingly to make sure that default async_handler has called std::terminate
-* Use `std::set_terminate` to return saved default terminate handler
-
 ==== Priorities of async handlers
 
 Create 2 user defined async handlers, first changes global variable to 1, second changes global variable to 2.
