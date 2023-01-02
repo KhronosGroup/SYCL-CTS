@@ -20,8 +20,8 @@ All tests construct a test device for which conformance is assessed. All the tes
 == Tests
 Two tests are defined, depending on whether the test has knowledge of the actual sub-group size. In some cases, this may not be enforceable and be decided by the compiler.
 
-=== Not enforcing the sub-group size
-This test is always executed. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. The kernel is called with `parallel_for(nd_range<1>(range<1>(work_group_size), range<1>(work_group_size)), [](nd_item<1> item){})`, let `sub_group` be `item.get_sub_group()`:
+=== With unknown sub-group size
+This test is always executed. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. This list is initialized such that it can be asserted that each element is written to. The kernel is called with `parallel_for(nd_range<3>(range<3>(2, 2, 2), range<3>(work_group_size, work_group_size, work_group_size)), [](nd_item<1> item){})`, where `work_group_size` is `1023` to likely contain multiple sub-groups and likely to contain an incomplete sub-group. `work_group_size` is decreased depending on `info::device::max_work_group_size` and `info::device::max_work_item_sizes`. Let `sub_group` be `item.get_sub_group()`:
 
 - `sub_group.get_group_id()`
 - `sub_group.get_group_linear_id()`
@@ -33,22 +33,23 @@ This test is always executed. A kernel is defined that calls all functions below
 - `sub_group.get_group_linear_range()`
 - `sub_group.get_max_local_range()`
 - `sub_group.leader()`
+- `item.get_group_linear_id()`
 
 The following tests are performed for each work-item:
 
 - `sub_group.get_group_id()[0]` is equal to `sub_group.get_group_linear_id()` and within `sub_group.get_group_range()[0]`.
 - `sub_group.get_local_id()[0]` is equal to `sub_group.get_local_linear_id()` and within `sub_group.get_local_range()[0]`.
-- `sub_group.get_local_range()[0]` is equal to `sub_group.get_local_linear_range()`.
+- `sub_group.get_local_range()[0]` is equal to `sub_group.get_local_linear_range()`, matches one of the values in `info::device::sub_group_sizes`, and is smaller or equal to `sub_group.get_max_local_range()[0]`.
 - `sub_group.get_group_range()[0]` is equal to `sub_group.get_group_linear_range()`.
-- Calculate the work-item's global index using `sub_group.get_group_id()`, `sub_group.get_local_range()`, and `sub_group.get_local_id()`. (Note: there is only one work-group.) Each work-item should have a unique global index, and the global index should be within the global `nd_range`.
+- Calculate the work-item's global index using `sub_group.get_group_id()`, `sub_group.get_local_range()`, `sub_group.get_local_id()`, and `item.get_group_linear_id()`. Each work-item should have a unique calculated global index that is equal to the expected global index of the work-item.
 - `sub_group.leader()` is true if and only if `sub_group.get_local_id()` is zero.
 
 Furthermore, the following tests are performed:
 
-- `sub_group.get_max_local_range()` is the same for every work-item, and the value matches one of the values returned by querying `sycl::info::device::sub_group_size`.
+- `sub_group.get_max_local_range()[0]` is the same for every work-item, and the value matches one of the values returned by querying `sycl::info::device::sub_group_size`.
 
-=== Enforcing the sub-group size
-This test may not be executed, see below. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. The kernel is called with `parallel_for(nd_range<1>(range<1>(work_group_size), range<1>(work_group_size)), [](nd_item<1> item){})`, let `sub_group` be `item.get_sub_group()`:
+=== With known sub-group size
+This test is only executed if the sub-group size can be enforced, see below. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. The kernel is called with `parallel_for(nd_range<1>(range<1>(work_group_size), range<1>(work_group_size)), [](nd_item<1> item){})`, let `sub_group` be `item.get_sub_group()`:
 
 - `sub_group.get_group_id()` and `sub_group.get_group_linear_id()`
 +
