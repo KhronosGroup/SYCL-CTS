@@ -21,7 +21,9 @@ All tests construct a test device for which conformance is assessed. All the tes
 Two tests are defined, depending on whether the test has knowledge of the actual sub-group size. In some cases, this may not be enforceable and be decided by the compiler.
 
 === With unknown sub-group size
-This test is always executed. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. This list is initialized such that it can be asserted that each element is written to. The kernel is called with `parallel_for(nd_range<3>(range<3>(2, 2, 2), range<3>(work_group_size, work_group_size, work_group_size)), [](nd_item<1> item){})`, where `work_group_size` is `1023` to likely contain multiple sub-groups and likely to contain an incomplete sub-group. `work_group_size` is decreased depending on `info::device::max_work_group_size` and `info::device::max_work_item_sizes`. Let `sub_group` be `item.get_sub_group()`:
+This test is always executed. A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. This list is initialized such that it can be asserted that each element is written to.
+
+The kernel is called with `parallel_for(nd_range<3>(global_range, local_range), [](nd_item<1> item){})`, where `local_range` is `1023` in every dimension to likely contain multiple sub-groups and likely to contain an incomplete sub-group. `local_range` is decreased depending on `info::device::max_work_group_size` and `info::device::max_work_item_sizes`. `global_range` is `range<3>(2, 2, 2) * local_range`. Let `sub_group` be `item.get_sub_group()`:
 
 - `sub_group.get_group_id()`
 - `sub_group.get_group_linear_id()`
