@@ -10,6 +10,10 @@
 
 #include "../common/common.h"
 
+namespace exceptions_async_handler {
+
+int priorities;
+
 using namespace sycl_cts;
 
 struct test_async_handler {
@@ -18,6 +22,34 @@ struct test_async_handler {
     invoked = true;
     for (auto &e : l) {
       std::rethrow_exception(e);
+    }
+  }
+};
+
+struct queue_async_handler {
+  void operator()(sycl::exception_list l) {
+    priorities = 2;
+    for (auto &e_ptr : l) {
+      try {
+        std::rethrow_exception(e_ptr);
+      } catch (const sycl::exception &e) {
+        CHECK((e.code() == sycl::errc::accessor ||
+               e.code() == sycl::errc::nd_range));
+      }
+    }
+  }
+};
+
+struct context_async_handler {
+  void operator()(sycl::exception_list l) {
+    priorities = 1;
+    for (auto &e_ptr : l) {
+      try {
+        std::rethrow_exception(e_ptr);
+      } catch (const sycl::exception &e) {
+        CHECK((e.code() == sycl::errc::accessor ||
+               e.code() == sycl::errc::nd_range));
+      }
     }
   }
 };
@@ -77,3 +109,44 @@ TEST_CASE(
     CHECK_FALSE(asyncHandler.invoked);
   }
 }
+TEST_CASE("Priorities of async handlers", "[exception]") {
+  priorities = 0;
+  queue_async_handler qHandler;
+  context_async_handler cHandler;
+  cts_selector selector;
+  auto device = util::get_cts_object::device(selector);
+  sycl::context context(device, cHandler);
+
+  SECTION("Сheck that queue's handler is used first") {
+    sycl::queue q(context, device, qHandler);
+
+    q.submit([&](sycl::handler &cgh) {
+      cgh.host_task([=] { throw sycl::exception(sycl::errc::accessor); });
+    });
+
+    q.submit([&](sycl::handler &cgh) {
+      cgh.host_task([=] { throw sycl::exception(sycl::errc::nd_range); });
+    });
+
+    q.wait_and_throw();
+
+    CHECK(priorities == 2);
+  }
+
+  SECTION("Check that context's handler is used if queue doesn't have one") {
+    sycl::queue q(context, device);
+
+    q.submit([&](sycl::handler &cgh) {
+      cgh.host_task([=] { throw sycl::exception(sycl::errc::accessor); });
+    });
+
+    q.submit([&](sycl::handler &cgh) {
+      cgh.host_task([=] { throw sycl::exception(sycl::errc::nd_range); });
+    });
+
+    q.wait_and_throw();
+
+    CHECK(priorities == 1);
+  }
+}
+}  //  namespace exceptions_async_handler
