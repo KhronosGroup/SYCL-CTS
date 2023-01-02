@@ -290,7 +290,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "sycl::buffer::get_count() does not return "
            "the correct number of elements");
     }
-#endif
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
     /* check the buffer returns the correct byte size */
     auto ret_size = buf.byte_size();
