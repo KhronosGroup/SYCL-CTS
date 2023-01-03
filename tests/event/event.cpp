@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <future>
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -32,6 +31,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+#include "event.h"
 
 using namespace sycl_cts;
 
@@ -63,66 +63,6 @@ TEST_CASE("event provides a default constructor", "[event]") {
   CHECK(event.get_backend() == default_queue.get_backend());
 }
 
-// TODO: Can we unify with common/common_by_reference.h and other approaches
-// (e.g. accessor tests) into a cohesive, Catch2-idiomatic solution?
-TEST_CASE("event provides commmon reference semantics", "[event]") {
-  SECTION("copy constructor") {
-    STATIC_CHECK(std::is_copy_constructible_v<sycl::event>);
-    const auto a = make_device_event();
-    const sycl::event b(a);
-    CHECK(b == a);
-  }
-
-  SECTION("copy assignment operator") {
-    STATIC_CHECK(std::is_copy_assignable_v<sycl::event>);
-    const auto a = make_device_event();
-    auto b = make_device_event();
-    b = a;
-    CHECK(b == a);
-  }
-
-  SECTION("destructor") { STATIC_CHECK(std::is_destructible_v<sycl::event>); }
-
-  SECTION("move constructor") {
-    STATIC_CHECK(std::is_move_constructible_v<sycl::event>);
-    auto a = make_device_event();
-    sycl::event b(std::move(a));
-    SUCCEED("event was move-constructed");
-  }
-
-  SECTION("move assignment operator") {
-    STATIC_CHECK(std::is_move_assignable_v<sycl::event>);
-    auto a = make_device_event();
-    sycl::event b;
-    b = std::move(a);
-    SUCCEED("event was move-assigned");
-  }
-
-  SECTION("equality operators") {
-    const auto a = make_device_event();
-    const sycl::event b(a);
-    auto c = make_device_event();
-    c = a;
-    const auto d = make_device_event();
-
-    CHECK(a == b);
-    CHECK(a == c);
-    CHECK_FALSE(a != b);
-    CHECK_FALSE(a != c);
-    CHECK_FALSE(c == d);
-    CHECK(c != d);
-  }
-
-  SECTION("std::hash") {
-    const auto a = make_device_event();
-    const auto b = make_device_event();
-    const sycl::event c = a;
-    std::hash<sycl::event> hasher;
-    CHECK(hasher(a) != hasher(b));
-    CHECK(hasher(a) == hasher(c));
-  }
-}
-
 TEST_CASE("event::get_backend returns the associated backend", "[event]") {
   CHECK(std::is_nothrow_invocable_v<decltype(&sycl::event::get_backend),
                                     const sycl::event>);
@@ -132,44 +72,6 @@ TEST_CASE("event::get_backend returns the associated backend", "[event]") {
   e.get_backend();
   SUCCEED();
 }
-
-/**
- * Encapsulates a host task that waits until resolved (= a boolean flag is set).
- */
-class resolvable_host_event {
- public:
-  /**
-   * @param dependencies An optional list of events to depend on.
-   */
-  resolvable_host_event(const std::vector<sycl::event>& dependencies = {}) {
-    event = util::get_cts_object::queue().submit(
-        [this, &dependencies](sycl::handler& cgh) {
-          for (auto& dep : dependencies) {
-            cgh.depends_on(dep);
-          }
-          cgh.host_task([this] { promise.get_future().wait(); });
-        });
-  }
-
-  sycl::event& get_sycl_event() { return event; }
-
-  void resolve() {
-    if (!is_resolved) {
-      is_resolved = true;
-      promise.set_value();
-    }
-  }
-
-  virtual ~resolvable_host_event() {
-    resolve();
-    event.wait();
-  }
-
- private:
-  bool is_resolved = false;
-  std::promise<void> promise;
-  sycl::event event;
-};
 
 TEST_CASE("event::get_wait_list returns a list of all direct dependencies",
           "[event]") {

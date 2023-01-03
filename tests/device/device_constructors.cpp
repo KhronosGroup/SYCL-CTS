@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -68,10 +68,6 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB(deviceA);
 
-        if (deviceA != deviceB) {
-          FAIL(log, "device was not copied correctly (equality)");
-        }
-
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -90,9 +86,6 @@ class TEST_NAME : public util::test_base {
         sycl::device deviceA(selector);
         sycl::device deviceB = deviceA;
 
-        if (deviceA != deviceB) {
-          FAIL(log, "device was not assigned correctly (equality)");
-        }
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -102,78 +95,6 @@ class TEST_NAME : public util::test_base {
           }
         }
 #endif
-      }
-
-      /** check move constructor
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(std::move(deviceA));
-
-        if (sycl::device(selector) != deviceB) {
-          FAIL(log, "device was not move constructed correctly (equality)");
-        }
-      }
-
-      /** check move assignment operator
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB = std::move(deviceA);
-
-        if (sycl::device(selector) != deviceB) {
-          FAIL(log, "device was not move assigned correctly (equality)");
-        }
-      }
-
-      /* check equality operator
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(deviceA);
-        sycl::device deviceC(selector);
-        deviceC = deviceA;
-
-        if (!(deviceA == deviceB)) {
-          FAIL(log,
-               "device equality does not work correctly (copy constructed)");
-        }
-        if (!(deviceA == deviceC)) {
-          FAIL(log, "device equality does not work correctly (copy assigned)");
-        }
-        if (deviceA != deviceB) {
-          FAIL(log,
-               "device non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (deviceA != deviceC) {
-          FAIL(log,
-               "device non-equality does not work correctly"
-               "(copy assigned)");
-        }
-      }
-
-      /* check hash
-       */
-      {
-        cts_selector selector;
-        sycl::device deviceA(selector);
-        sycl::device deviceB(deviceA);
-        sycl::device deviceC = deviceA;
-
-        std::hash<sycl::device> hasher;
-
-        if (hasher(deviceA) != hasher(deviceB)) {
-          FAIL(log,
-               "device hash_class does not work correctly (copy constructed)");
-        }
-        if (hasher(deviceA) != hasher(deviceC)) {
-          FAIL(log,
-               "device hash_class does not work correctly (copy assigned)");
-        }
       }
     }
   }

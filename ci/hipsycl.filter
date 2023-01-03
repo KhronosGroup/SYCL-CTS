@@ -13,6 +13,7 @@ handler
 hierarchical
 host_task
 image
+image_accessor
 item
 kernel
 kernel_args

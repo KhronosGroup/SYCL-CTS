@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_semantics.h"
+#include "../common/semantics_by_value.h"
 
 #define TEST_NAME range_constructors
 
@@ -81,8 +81,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 1");
         }
 
-        common_semantics::check_on_host(log, range_explicit,
-                                        std::string("range"));
+        common_by_value_semantics::check_on_host(log, range_explicit,
+                                                 std::string("range"));
       }
 
       // dim 2
@@ -124,8 +124,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 2");
         }
 
-        common_semantics::check_on_host(log, range_explicit,
-                                        std::string("range"));
+        common_by_value_semantics::check_on_host(log, range_explicit,
+                                                 std::string("range"));
       }
 
       // dim 3
@@ -174,8 +174,8 @@ class TEST_NAME : public util::test_base {
                "range with range was not move assigned correctly for dim = 3");
         }
 
-        common_semantics::check_on_host(log, range_explicit,
-                                        std::string("range"));
+        common_by_value_semantics::check_on_host(log, range_explicit,
+                                                 std::string("range"));
       }
     }
   }
