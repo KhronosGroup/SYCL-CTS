@@ -1,0 +1,92 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for common reference semantics
+
+This is a test plan for the common reference semantics as described in Section 4.5.2. of the SYCL 2020 specification. The estimated development time is two days.
+
+== Testing scope
+
+No negative test are included.
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+The common reference semantics are defined for the following runtime classes in the `sycl` namespace (Section 4.5.2.):
+`accessor`, `buffer`, `context`, `device`, `device_image`, `event`, `host_accessor`, `host_sampled_image_accessor`, `host_unsampled_image_accessor`, `kernel`, `kernel_id`, `kernel_bundle`, `local_accessor`, `platform`, `queue`, `sampled_image`, `sampled_image_accessor`, `stream`, `unsampled_image`, and `unsampled_image_accessor`.
+
+Of these, the following classes are legal kernel parameter types (Section 4.12.4.): `accessor` (when templated with `target::device` or the deprecated `target::global_buffer`, `target::constant_buffer`, or `target::local`), `local_accessor`, `unsampled_image_accessor` (when templated with `image_target::device`), `sampled_image_accessor` (when templated with `image_target::device`), `stream`.
+
+
+The below tests are performed on the host for the following types:
+
+- `accessor<int, 1, access_mode::read_write, target::host_task>`
+- `buffer<int>`
+- `context`
+- `device`
+- `device_image<bundle_state::executable>`
+- `event`
+- `host_accessor<int>`
+- `host_sampled_image_accessor<int, 1>`
+- `host_unsampled_image_accessor<int>`
+- `kernel`
+- `kernel_id`
+- `kernel_bundle<bundle_state::executable>`
+- `platform`
+- `queue`
+- `sampled_image`
+- `unsampled_image`
+
+The below tests are performed in a kernel for the following types:
+
+- `accessor<int, 1, access_mode::read_write, target::device>`
+- `local_accessor<int, 0>`
+- `unsampled_image_accessor<int, 1, access_mode::read>`
+- `sampled_image_accessor<int, 1>`
+- `stream`
+
+=== Type traits
+
+For each runtime class `T`, check on the host that the following statements evaluate to `true`.
+
+- `std::is_copy_constructible_v<T>`.
+- `std::is_copy_assignable_v<T>`
+- `std::is_destructible_v<T>`
+- `std::is_move_constructible_v<T>`
+- `std::is_move_assignable_v<T>`
+
+=== Equality comparable and standard hash
+
+For each runtime class `T`, perform the below tests.
+
+==== Equality via copy and symmetry
+
+This test is repeated for the copy constructor and for copy assignment.
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Check that `t0 == t1` and `t1 == t0`.
+4. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t1)`.
+
+==== Reflexivity
+
+1. Create an instance `t0` of `T`.
+2. Check that `t0 == t0`.
+3. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t0)`.
+
+==== Transitivity
+
+This test is repeated for the copy constructor and for copy assignment.
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Create a copy of `t1`, `t2`.
+4. Check that `t0 == t2` and `t2 == t0`.
+5. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t2)`.
