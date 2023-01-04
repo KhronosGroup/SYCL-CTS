@@ -27,9 +27,11 @@ struct test_async_handler {
 };
 
 struct queue_async_handler {
+  inline static int exceptions_handled;
   void operator()(sycl::exception_list l) {
     priorities = 2;
     for (auto &e_ptr : l) {
+      exceptions_handled++;
       try {
         std::rethrow_exception(e_ptr);
       } catch (const sycl::exception &e) {
@@ -41,9 +43,11 @@ struct queue_async_handler {
 };
 
 struct context_async_handler {
+  inline static int exceptions_handled;
   void operator()(sycl::exception_list l) {
     priorities = 1;
     for (auto &e_ptr : l) {
+      exceptions_handled++;
       try {
         std::rethrow_exception(e_ptr);
       } catch (const sycl::exception &e) {
@@ -111,6 +115,8 @@ TEST_CASE(
 }
 TEST_CASE("Priorities of async handlers", "[exception]") {
   priorities = 0;
+  queue_async_handler::exceptions_handled = 0;
+  context_async_handler::exceptions_handled = 0;
   queue_async_handler qHandler;
   context_async_handler cHandler;
   cts_selector selector;
@@ -131,6 +137,7 @@ TEST_CASE("Priorities of async handlers", "[exception]") {
     q.wait_and_throw();
 
     CHECK(priorities == 2);
+    CHECK(queue_async_handler::exceptions_handled == 2);
   }
 
   SECTION("Check that context's handler is used if queue doesn't have one") {
@@ -147,6 +154,7 @@ TEST_CASE("Priorities of async handlers", "[exception]") {
     q.wait_and_throw();
 
     CHECK(priorities == 1);
+    CHECK(context_async_handler::exceptions_handled == 2);
   }
 }
 }  //  namespace exceptions_async_handler
