@@ -249,6 +249,7 @@ To check that queue's handler will be used first:
 * Submit host_task to the queue that throws an `exception(errc::nd_range)`
 * Call `queue::wait_and_throw()`
 * Check that global variable changed to 2 as async_handler for the queue were called
+* Check that 2 async exceptions were handled
 
 To check that context's handler will be used if queue doesn't have one:
 
@@ -258,6 +259,7 @@ To check that context's handler will be used if queue doesn't have one:
 * Submit host_task to the queue that throws an `exception(errc::nd_range)`
 * Call `queue::wait_and_throw()`
 * Check that global variable changed to 1 as async_handler for the context were called
+* Check that 2 async exceptions were handled
 
 === Synchronous exceptions mechanism
 
