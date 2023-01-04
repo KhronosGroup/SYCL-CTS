@@ -40,10 +40,13 @@ The following tests are performed for each work-item:
 - `sub_group.get_local_id()[0]` is equal to `sub_group.get_local_linear_id()` and within `sub_group.get_local_range()[0]`.
 - `sub_group.get_local_range()[0]` is equal to `sub_group.get_local_linear_range()` and is smaller or equal to `sub_group.get_max_local_range()[0]`.
 - `sub_group.get_group_range()[0]` is equal to `sub_group.get_group_linear_range()`.
-- Calculate a global index for each work-item using `sub_group.get_group_id()`, `sub_group.get_local_id()`, and `item.get_group_linear_id()`. Each global index should be unique.
 - `sub_group.leader()` is true if and only if `sub_group.get_local_id()` is zero.
 
 Furthermore, the following tests are performed:
 
 - `sub_group.get_max_local_range()[0]` is the same for every work-item, and the value matches one of the values returned by querying `sycl::info::device::sub_group_size`.
 - Every value of the list of results is written to, indicating that each work-item has called the specified functions.
+- All work-items in the same work-group must report the same number of sub-groups within the work-group: all work-items with the same `item.get_group_linear_id()` must report the same value for `sub_group.get_group_range()[0]`.
+- In each work group there are exactly as many sub-groups as reported by the previous test. Every value of `0`, ..., `sub_group.get_group_range()[0] - 1` must occur at least once among the values reported for `sub_group.get_group_id()` by work-items with the same value for `item.get_group_linear_id()`.
+- All work-items in the same sub-group must report the same sub-group size. All work-items with the same `sub_group.get_group_id()[0]` and `item.get_group_linear_id()` must report the same value for `sub_group.get_local_range()[0]`.
+- In each sub-group there are exactly as many work-items as reported by the previous test. Every value of `0`, ..., `sub_group.get_local_range()[0] - 1` must occur exactly once among the values reported for `sub_group.get_local_id()` by work-items with the same value for `sub_group.get_group_id()[0]` and `item.get_group_linear_id()`.
