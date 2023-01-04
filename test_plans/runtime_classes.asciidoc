@@ -18,12 +18,12 @@ All the tests described below are not backend-specific and are performed for any
 All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
 
 == Tests
-No negative test are included.
+No negative tests are included.
 
 === Context
 
 ==== Existing test
-The existing test in `context/context_info.cpp` checks the return value of `sycl::context.get_info` using `check_get_info_param` for various context information descriptors.
+The existing test in `context/context_info.cpp` checks the return value of `sycl::context::get_info` using `check_get_info_param` for various context information descriptors.
 
 ==== Modification
 The test is modified to include the following context information descriptors that were added in SYCL 2020:
@@ -36,7 +36,7 @@ The test is modified to include the following context information descriptors th
 === Device
 
 ==== Existing test
-The existing test in `device/device_info.cpp` checks the return value of `sycl::device.get_info` using `check_get_info_param` for various device information descriptors.
+The existing test in `device/device_info.cpp` checks the return value of `sycl::device::get_info` using `check_get_info_param` for various device information descriptors.
 
 ==== Modification
 The test is modified to include the following device information descriptors that were added in SYCL 2020:
