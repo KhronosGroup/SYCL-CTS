@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide verification that accessor's iterators is conforming to named
+//  Provide verification that accessor's iterators are conforming to named
 //  requirement LegacyRandomAccessIterator
 //
 *******************************************************************************/
