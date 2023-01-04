@@ -46,6 +46,12 @@ Note: using T as `ReferencedType` or `ReferencedType*`.
 
 == Tests
 
+All non static tests run on following cases:
+
+* host code with referenced value is simple variable - should be skipped for `address_space::local_space`
+* single_task with referenced value is accessor element - should be skipped for `address_space::local_space`
+* parallel_for with nd_range parameter and referenced value local_accessor element - should be skipped for `address_space::global_space`
+
 Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for usupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
@@ -97,6 +103,7 @@ And the following values as `Space` template parameter:
 * `access::address_space::generic_space`
 
 Check the following:
+
 * `default_read_order` member is equal to `memory_order_traits<DefaultOrder>::read_order`,
 * `default_write_order` member is equal to `memory_order_traits<DefaultOrder>::write_order` and
 * `default_read_modify_write_order` member is equal to `DefaultOrder`
@@ -141,7 +148,7 @@ After calling constructors check for:
 
 * `atomic_ref(T&)`
 
-If the members of newly created object match with default values and the stored value match with the value passed as `T&` using
+If the stored value match with the value passed as `T&` using
 `T load(
     memory_order order = default_read_order
     memory_scope scope = default_scope) const`.
