@@ -62,19 +62,19 @@ For the following `ReadModifyWriteOrder` template parameter values:
 
 * `memory_order::relaxed`
 
-Check the following:
+** Check the following:
 `memory_order_traits<memory_order::relaxed>::read_order` is equal to `memory_order::relaxed`,
 `memory_order_traits<memory_order::relaxed>::write_order` is equal to `memory_order::relaxed`
 
 * `memory_order::acq_rel`
 
-Check the following:
+** Check the following:
 `memory_order_traits<memory_order::acq_rel>::read_order` is equal to `memory_order::acquire`,
 `memory_order_traits<memory_order::acq_rel>::write_order` is equal to `memory_order::release`
 
 * `memory_order::seq_cst`
 
-Check the following:
+** Check the following:
 `memory_order_traits<memory_order::seq_cst>::read_order` is equal to `memory_order::seq_cst`,
 `memory_order_traits<memory_order::seq_cst>::write_order` is equal to `memory_order::seq_cst`
 
@@ -148,7 +148,7 @@ After calling constructors check for:
 
 * `atomic_ref(T&)`
 
-If the stored value match with the value passed as `T&` using
+** If the stored value match with the value passed as `T&` using
 `T load(
     memory_order order = default_read_order
     memory_scope scope = default_scope) const`.
@@ -156,7 +156,7 @@ Check returned value type of `load` member function.
 
 * `atomic_ref(const atomic_ref&) noexcept`
 
-If the members of the newly created object match that of `const atomic_ref&` and the referenced value is valid using
+** If the members of the newly created object match that of `const atomic_ref&` and the referenced value is valid using
 `T load(
     memory_order order = default_read_order
     memory_scope scope = default_scope) const`.
@@ -183,11 +183,33 @@ And the following values as `Space` template parameter:
 * `access::address_space::local_space`
 * `access::address_space::generic_space`
 
+Note: for the member functions tests below that take `memory_order` and `memory_scope` as arguments, the following values of these parameters are used if the `FULL CONFORMANCE` mode is enabled:
+
+* For `memory_order`:
+
+** `memory_order::relaxed`
+** `memory_order::acquire`
+** `memory_order::release`
+** `memory_order::acq_rel`
+** `memory_order::seq_cst`
+
+* For `memory_scope`:
+
+** `memory_scope::work_item`
+** `memory_scope::sub_group`
+** `memory_scope::work_group`
+** `memory_scope::device`
+** `memory_scope::system`
+
+It should be noted that `memory_order::acquire` is used only for read operations, `memory_order::release` for write operations and `memory_order::acq_rel` for read-modify-write operations.
+
+If the `FULL CONFORMANCE` mode is disabled only default values for functions arguments is used which are determined by `atomic_ref` template parameters that which object was created with.
+
 ===== Common member functions
 
 `bool is_lock_free()`
 
-Check if the function exists and returns `true` or `false`
+Check if the function exists and returns `atomic_ref::is_always_lock_free`.
 Check returned value type.
 
 `void store(T operand,
