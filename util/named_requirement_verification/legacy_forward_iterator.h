@@ -73,6 +73,7 @@ class legacy_forward_iterator_requirement {
     }
 
     using it_traits = std::iterator_traits<It>;
+    using T = typename it_traits::value_type;
 
     // Allows us to use reference_t from iterator_traits
     if constexpr (has_reference_member) {
@@ -80,16 +81,19 @@ class legacy_forward_iterator_requirement {
           legacy_output_iterator_requirement{}.is_satisfied_for<It>().first;
 
       if (is_output_iterator_req_satisfied) {
-        if (std::is_const_v<typename it_traits::reference>) {
+        if (!std::is_same_v<T&, typename it_traits::reference> &&
+            !std::is_same_v<T&&, typename it_traits::reference>) {
           m_test_error_messages.add_error(
               "Provided iterator satisfy to LegacyOutputIterator requirement. "
-              "iterator_traits::reference must be non const.");
+              "iterator_traits::reference must be T& or T&&.");
         }
       } else {
-        if (!std::is_const_v<typename it_traits::reference>) {
+        if (!std::is_same_v<const T&, typename it_traits::reference> &&
+            !std::is_same_v<const T&&, typename it_traits::reference>) {
           m_test_error_messages.add_error(
               "Provided iterator not satisfy to LegacyOutputIterator "
-              "requirement. iterator_traits::reference must be const.");
+              "requirement. iterator_traits::reference must be const T& or "
+              "const T&&.");
         }
       }
     }
