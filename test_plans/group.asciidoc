@@ -1,0 +1,74 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for group class
+
+This is a test plan for the group class as described in Section 4.9.1.7. of the SYCL 2020 specification.
+
+Estimated development time is two and a half days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+=== Existing test
+The existing test in `group/group_api.cpp` defines some greater than zero group counts (2, 4, 8) with greater than zero group sizes (4, 3, 2), in three dimensions. A kernel is dispatched that calls the below functions, gathers the results for one work-item in each work-group and checks the return types.
+
+- `group.get_id().get(int)`
+- `group.get_id(int)`
+- `group.get_local_range().get(int)`
+- `group.get_local_range(int)`
+- `group.get_global_range().get(int)`
+- `group.get_global_range(int)`
+- `group.get_group_range().get(int)`
+- `group.get_group_range(int)`
+- `group.operator[]`
+
+After the terminates, the results and the return type check is verified.
+
+=== Modification
+
+The test is modified in the following way. The results are gathered for each work-item in every work-group, instead of for one work-item in every work-group. Furthermore, the expected results are initialized to some special value (not zero), to make sure the value is overwritten by the kernel. The following function tests are removed as they are not part of SYCL 2020:
+
+- `group.get_id().get(int)`
+- `group.get_id(int)`
+- `group.get_global_range().get(int)`
+- `group.get_global_range(int)`
+
+The following functions are added, and their return types and returned values are checked:
+
+- `group.get_group_id().get(int)` and `group.get_group_id(int)`:
++
+Return the work-group index (same as the deprecated `get_id`).
+- `group.get_local_id().get(int)` and `group.get_local_id(int)`
++
+Return the work-item's position within the work-group.
+- `group.get_max_local_range().get(int)`
++
+Return a range with the maximum number of work-items in any work group.
+- `group.get_group_linear_id()`
++
+Linearized version of `get_group_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+- `group.get_local_linear_id()`
++
+Linearized version of `get_local_id`, calculated following Section 3.11.1 of the SYCL 2020 specification.
+- `group.get_group_linear_range()`
++
+Return the total number of work-groups in the `nd_range`.
+- `group.get_local_linear_range()`
++
+Return the total number of work-items in the work-group.
+- `group.leader()`
++
+Return `true` only for the work-item within each work-group with a local id of zero.
+
+=== Existing mem_fence test
+As `group::mem_fence` is not part of SYCL 2020, any tests related to it are removed from the CTS.
