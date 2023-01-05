@@ -49,9 +49,11 @@ struct runner_memcpy {
 
     // set initial values of device-allocated usm buffer without using shortcuts
     T* d_src = sycl::malloc_device<T>(element_count, queue);
-    T* d_dest = sycl::malloc_device<T>(element_count, queue);
     queue.submit([&](sycl::handler& cgh) {
       cgh.memcpy(d_src, h_src.get(), element_count * sizeof(T));
+    });
+    T* d_dest = sycl::malloc_device<T>(element_count, queue);
+    queue.submit([&](sycl::handler& cgh) {
       cgh.memcpy(d_dest, h_dest.get(), element_count * sizeof(T));
     });
     queue.wait();
