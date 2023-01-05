@@ -21,6 +21,7 @@ math_builtin_api
 multi_ptr
 nd_item
 nd_range
+property
 queue
 range
 reduction
