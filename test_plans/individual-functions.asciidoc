@@ -240,7 +240,7 @@ are available in the sycl namespace._ Additionally some problems in existing tes
 sycl::vec<R, N> abs(sycl::vec<T, N> a)` should return `T`, not `R` following Table 178 definition.
 
 * Reference implementation of `template <typename T> T abs_diff(T a, T b)` should return `typename R = 
-typename std::make_unsigned<T>::type` instead following Table 178 definition. Implementation should be updated
+typename std::make_unsigned_t<T>` instead following Table 178 definition. Implementation should be updated
 to avoid overflow and UB.
 
 * New function test for `geninteger ctz(geninteger x)` should be introduced along with reference implementation.
