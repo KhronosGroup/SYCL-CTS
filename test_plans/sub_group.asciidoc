@@ -1,0 +1,52 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sub-group class
+
+This is a test plan for the sub-group class as described in Section 4.9.1.8. of the SYCL 2020 specification.
+
+Estimated development time is three days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+A kernel is defined that calls all functions below, checks their return type and records the returned value in a list of a size equal to the number of work-items times the number of functions. This list is initialized such that it can be asserted that each element is written to.
+
+The kernel is called with `parallel_for(nd_range<3>(global_range, local_range), [](nd_item<3> item){})`, where `local_range` is `1023` in every dimension to likely contain multiple sub-groups and likely to contain an incomplete sub-group. `local_range` is decreased depending on `info::device::max_work_group_size` and `info::device::max_work_item_sizes`. `global_range` is `range<3>(2, 2, 2) * local_range`. The work-items index the list of results with `item.get_global_linear_id()`. Let `sub_group` be `item.get_sub_group()`:
+
+- `sub_group.get_group_id()`
+- `sub_group.get_group_linear_id()`
+- `sub_group.get_local_id()`
+- `sub_group.get_local_linear_id()`
+- `sub_group.get_local_range()`
+- `sub_group.get_local_linear_range()`
+- `sub_group.get_group_range()`
+- `sub_group.get_group_linear_range()`
+- `sub_group.get_max_local_range()`
+- `sub_group.leader()`
+- `item.get_group_linear_id()`
+
+The following tests are performed for each work-item:
+
+- `sub_group.get_group_id()[0]` is equal to `sub_group.get_group_linear_id()` and within `sub_group.get_group_range()[0]`.
+- `sub_group.get_local_id()[0]` is equal to `sub_group.get_local_linear_id()` and within `sub_group.get_local_range()[0]`.
+- `sub_group.get_local_range()[0]` is equal to `sub_group.get_local_linear_range()` and is smaller or equal to `sub_group.get_max_local_range()[0]`.
+- `sub_group.get_group_range()[0]` is equal to `sub_group.get_group_linear_range()`.
+- `sub_group.leader()` is true if and only if `sub_group.get_local_id()` is zero.
+
+Furthermore, the following tests are performed:
+
+- `sub_group.get_max_local_range()[0]` is the same for every work-item, and the value matches one of the values returned by querying `sycl::info::device::sub_group_size`.
+- Every value of the list of results is written to, indicating that each work-item has called the specified functions.
+- All work-items in the same work-group must report the same number of sub-groups within the work-group: all work-items with the same `item.get_group_linear_id()` must report the same value for `sub_group.get_group_range()[0]`.
+- In each work group there are exactly as many sub-groups as reported by the previous test. Every value of `0`, ..., `sub_group.get_group_range()[0] - 1` must occur at least once among the values reported for `sub_group.get_group_id()` by work-items with the same value for `item.get_group_linear_id()`.
+- All work-items in the same sub-group must report the same sub-group size. All work-items with the same `sub_group.get_group_id()[0]` and `item.get_group_linear_id()` must report the same value for `sub_group.get_local_range()[0]`.
+- In each sub-group there are exactly as many work-items as reported by the previous test. Every value of `0`, ..., `sub_group.get_local_range()[0] - 1` must occur exactly once among the values reported for `sub_group.get_local_id()` by work-items with the same value for `sub_group.get_group_id()[0]` and `item.get_group_linear_id()`.
