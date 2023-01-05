@@ -236,7 +236,7 @@ of the function objects.
 `marray` tests will be added to every function from Table 178. _Integer functions which work on SYCL host and device,
 are available in the sycl namespace._ Additionally some problems in existing tests should be fixed and new tests added:
 
-* Reference implementation of `template <typename T, int N, typename R = typename std::make_unsigned<T>::type>
+* Reference implementation of `template <typename T, int N, typename R = typename std::make_unsigned_t<T>>
 sycl::vec<R, N> abs(sycl::vec<T, N> a)` should return `T`, not `R` following Table 178 definition.
 
 * Reference implementation of `template <typename T> T abs_diff(T a, T b)` should return `typename R = 
