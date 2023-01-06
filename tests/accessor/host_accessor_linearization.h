@@ -24,22 +24,7 @@ class run_linearization_tests {
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name) {
     SECTION(get_section_name<dims>(type_name, access_mode_name, "")) {
-      auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
-      constexpr size_t range_size = 8;
-      constexpr size_t buff_size = (dims == 3) ? 8 * 8 * 8 : 8 * 8;
-
-      auto range = util::get_cts_object::range<dims>::get(
-          range_size, range_size, range_size);
-
-      std::remove_const_t<T> data[buff_size];
-      std::iota(data, (data + range.size()), 0);
-      sycl::buffer<T, dims> data_buf(data, range);
-      AccT acc(data_buf);
-      sycl::id<dims> id{};
-      for (auto it = acc.begin(); it < acc.end(); it++) {
-        CHECK(value_operations::are_equal(*it, acc[id]));
-        add_id_linear(id, range_size);
-      }
+      check_linearization<accessor_type::host_accessor, T, dims, AccessMode>();
     }
   }
 };

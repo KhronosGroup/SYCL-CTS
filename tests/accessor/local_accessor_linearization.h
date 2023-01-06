@@ -25,7 +25,7 @@ class run_linearization_tests {
     auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
 
     SECTION(get_section_name<dims>(type_name, "")) {
-      constexpr size_t local_range_size = 4;
+      constexpr size_t local_range_size = 2;
       constexpr size_t range_size = 8;
 
       auto range = util::get_cts_object::range<dims>::get(
@@ -46,8 +46,8 @@ class run_linearization_tests {
                     value_operations::init<T>(item.get_global_linear_id());
                 sycl::group_barrier(item.get_group());
                 sycl::id<dims> id{};
-                for (auto it = acc.begin(); it < acc.end(); it++) {
-                  res_acc[0] &= value_operations::are_equal(*it, acc[id]);
+                for (auto &elem : acc) {
+                  res_acc[0] &= value_operations::are_equal(elem, acc[id]);
                   add_id_linear(id, local_range_size);
                 }
               });

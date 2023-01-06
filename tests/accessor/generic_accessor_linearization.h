@@ -30,44 +30,8 @@ class run_linearization_tests {
 
     SECTION(
         get_section_name<dims>(type_name, access_mode_name, target_name, "")) {
-      constexpr size_t range_size = 8;
-      constexpr size_t buff_size = (dims == 3) ? 8 * 8 * 8 : 8 * 8;
-
-      auto range = util::get_cts_object::range<dims>::get(
-          range_size, range_size, range_size);
-
-      std::remove_const_t<T> data[buff_size];
-      std::iota(data, (data + range.size()), 0);
-      bool res = true;
-      {
-        sycl::buffer<T, dims> data_buf(data, range);
-        sycl::buffer res_buf(&res, sycl::range(1));
-        queue
-            .submit([&](sycl::handler &cgh) {
-              AccT acc(data_buf, cgh);
-
-              if constexpr (Target == sycl::target::host_task) {
-                cgh.host_task([=] {
-                  sycl::id<dims> id{};
-                  for (auto it = acc.begin(); it < acc.end(); it++) {
-                    CHECK(value_operations::are_equal(*it, acc[id]));
-                    add_id_linear(id, range_size);
-                  }
-                });
-              } else {
-                sycl::accessor res_acc(res_buf, cgh);
-                cgh.single_task([=]() {
-                  sycl::id<dims> id{};
-                  for (auto it = acc.begin(); it < acc.end(); it++) {
-                    res_acc[0] &= value_operations::are_equal(*it, acc[id]);
-                    add_id_linear(id, range_size);
-                  }
-                });
-              }
-            })
-            .wait_and_throw();
-      }
-      if constexpr (Target == sycl::target::device) CHECK(res);
+      check_linearization<accessor_type::generic_accessor, T, dims, AccessMode,
+                          Target>();
     }
   }
 };
