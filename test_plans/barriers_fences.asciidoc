@@ -4,7 +4,6 @@
 = Test plan for barriers and fences
 
 This is a test plan for the APIs described in https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:barriers-fences[SYCL 2020 sections 4.15.1. Barriers and fences]
-and https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#_group_barrier[4.17.3.3 group_barrier]
 
 == Testing scope
 
@@ -19,56 +18,43 @@ is selected on the CTS command line.
 
 ==== Testing `sycl::atomic_fence` function
 
-The `atomic_fence(memory_order order, memory_scope scope)` function should be checked  in the two device code blocks with the following `scope` values:
+The `atomic_fence(memory_order order, memory_scope scope)` function should be checked with the following `scope` values:
 
-* `memory_scope::device` - to check coherence between device code blocks on single device
-* `memory_scope::system` - to check coherence between device code blocks on differnent devices
+* `sycl::memory_scope::sub_group` - to test synchronozation between work-items only in the same work-group
+* `sycl::memory_scope::work_group` - to test synchronozation between work-items in the same work-group and in different work-groups
+* `sycl::memory_scope::device` - to test synchronozation between work-items in the same work-group and in different work-groups
+* `sycl::memory_scope::system` - to test synchronozation between work-items in the same work-group and in different work-groups
 
-The first block could be named a write block, the second a read block.
+Test should check which `memory_scope` values are supported by the device using `info::device::atomic_fence_scope_capabilities`.
 
-The coherence check with the `atomic_fence` function should be performed in the following two variants:
+The coherence check between work-items with the `atomic_fence` function should be performed  with `sycl::handler::parallel_for`.
 
-* between two `sycl::handler::single_task` on the same device with `scope = memory_scope::device`
-* between two `sycl::handler::single_task` which should be executed on different devices with `scope = memory_scope::system`
+The check should be performed using an integer array in following memory types:
 
-The checks should be performed using the block of memory allocated in the `unified shared memory USM`:
+* `local memory` and `sycl::local_accessor` - to test synchronozation between work-items in the same work-group
+* `global memory` and `sycl::accessor` - to test synchronozation between work-items in different work-groups
 
-`int* data = sycl::malloc_host( 8 * sizeof(int), sycl_context);`
+Array should be half the size of the number of tested `work-items`.
 
-A flag variable of type `atomic_ref<bool, memory_order_relaxed, scope> sync_flag` and function `atomic_fence` should be used to cohere the device code blocks with each other.
+A flag variable of type `atomic_ref<bool, memory_order_relaxed, scope> sync_flag` and function `atomic_fence` should be used to cohere `work-items` with each other.
 
-In the write block, the elements of the `data` array must be initialized with `value = expected_val`. After initialization, `atomic_fence(memory_order order, memory_scope scope)` should be called with following values of `order` argument:
+To check all the `work-items` split into two types:
 
-* `sycl::memory_order::release` - and then the value of `memory_order::acquire` should be used in the read block 
-* `sycl::memory_order::acq_rel` - both the same values in both blocks
-* `sycl::memory_order::seq_cst` - both the same values in both blocks
+* writing `work-items` - writes the `expected_val` value to `data[i]`
+* reading `work-items` - checks that the value `data[i] == expected_val`
 
-Next, the value of `sync_flag` must be set to true in the record block.
+In the `write-item`, `data[i]` should be initialized with `expected_val` value. After initialization, `atomic_fence(memory_order order, memory_scope scope)` should be called with following values of `order` argument:
 
-In the read block, the sequence of operations is as follows:
+* `sycl::memory_order::release` - and then the value of `memory_order::acquire` should be used with reading `work-item`
+* `sycl::memory_order::acq_rel` - both the same values in both `work-items`
+* `sycl::memory_order::seq_cst` - both the same values in both `work-items`
+
+Test should check which `memory_order` values are supported by the device using `info::device::atomic_fence_order_capabilities`.
+
+Next, with writing `work-item`, the value of `sync_flag` should be set to `true`.
+
+In the reading `work-item`, the sequence of operations is as follows:
 
 * store `sync_flag` in a local variable until it reaches the value true
 * call `atomic_fence`
-* check that the `data` values are set to `expected_val`
-
-
-==== Testing `group_barrier` function
-
-The `group_barrier(Group g, memory_scope fence_scope = Group::fence_scope)` function should be checked in the device code block, with data parallelization over a nd_range of sub_groups `sycl::nd_range<1> nd_range( sycl::range{32}, sycl::range{32} )` using `cgh.parallel_for(nd_range, [=](sycl::nd_item<1> item)`.
-
-To check that the "group_barrier" function works correctly, the following memory types should be used:
-
-* data in global memory - with use of `int data[32]` and `sycl::accessor`
-* data in local memory - with use of `sycl::local_accessor`
-
-The `data` variable in memory of the specified type is used to verify that the `group_barrier` function works correctly. The `data` element values must be initialized to zero before use.  Each `work_item` should be assigned a value of 1 to its corresponding element in the array.
-The `work_item` corresponding to the array element index is calculated as follows:
-`auto indx = item.get_local_id() + item.get_sub_group().get_local_range().size()*item.get_group().get_group_id();`
-
-Once a value has been assigned to a `work_item` to synchronise the `work_items` in the `sub_group`, the `work_barrier` function should be called with the following allowed parameters:
-
-*  `sycl::group_barrier(item.get_sub_group())` - to check synchronisation of `work_items` in the `sub_group`
-*  `sycl::group_barrier(item.get_group())` - to check synchronisation of `work_items` in the `work_group`
-*  `sycl::group_barrier(item.get_sub_group(), sycl::memory_scope::work_group)` - to check that the synchronisation scope is extended from `sub_group` to `work_group`
-
-After `group_barrier` is called, check that all elements of the array whose values should have been set in the corresponding `memory_scope` are equal to the value 1.
+* check that the `data[i]` value is set to `expected_val`
