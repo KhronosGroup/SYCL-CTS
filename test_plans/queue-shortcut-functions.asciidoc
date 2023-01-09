@@ -1,0 +1,121 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for queue shortcut functions
+
+This is a test plan for the queue shortcut functions as described in SYCL 2020 Section 4.6.5.2.
+
+Estimated development time is four days.
+
+== Testing scope
+
+This plan does not include negative tests.
+
+=== Backend coverage
+
+All the tests described below are performed for any SYCL implementation.
+
+=== Device coverage
+
+All the tests described below are performed only on the default device that is selected on the CTS command line.
+
+=== Type coverage
+
+All the tests described below are executed for the following types:
+
+* `char`
+* `short`
+* `int`
+* `long long`
+* `std::size_t`
+* `bool`
+* `float`
+* A user-defined trivially-copyable struct with multiple member variables.
+
+In addition, if the device has aspect `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `sycl::half`
+
+== Tests
+Most of the functions tested have three overloads: (1) without dependent events, (2) with a single dependent event, and (3) with multiple dependent events. When this is the case, overload (2) will use the returned event from (1) as its `depEvent` and overload (3) will use the returned events from (1) and (2) as its `depEvents`.
+
+=== Kernel function
+
+The below functions are called twice: with the kernel function as a lambda function and with the kernel function as a named function object type. For each test, the kernel function is some simple kernel that writes a non-zero value to USM. This USM is zero-initialized and is checked with afterwards for correctness. The `parallel_for` tests for `range` are executed for a three-dimensional range of size `1`. The `parallel_for` tests for `nd_range` are executed for a three-dimensional global and local range of size `1`. The USM is of allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
+
+* `event single_task(const KernelType& kernelFunc)`
+* `event single_task(event depEvent, const KernelType& kernelFunc)`
+* `event single_task(const std::vector<event>& depEvents, const KernelType& kernelFunc)`
+* `event parallel_for(range<Dimensions> numWorkItems, Rest&&... rest)`
+* `event parallel_for(range<Dimensions> numWorkItems, event depEvent, Rest&&... rest)`
+* `event parallel_for(range<Dimensions> numWorkItems, const std::vector<event>& depEvents, Rest&&... rest)`
+* `event parallel_for(nd_range<Dimensions> executionRange, Rest&&... rest)`
+* `event parallel_for(nd_range<Dimensions> executionRange, event depEvent, Rest&&... rest)`
+* `event parallel_for(nd_range<Dimensions> executionRange, const std::vector<event>& depEvents, Rest&&... rest)`
+
+=== Unified shared memory
+
+The below functions are called to copy some data from a USM buffer `src` to a USM buffer `dest`. `src` is initialized to be non-zero and `dest` is initialized to be zero. Buffer `dest` is checked afterwards for correctness. It is checked whether the return type of the functions is `event`. The USM buffers are allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
+
+* `event memcpy(void* dest, const void* src, size_t numBytes)`
+* `event memcpy(void* dest, const void* src, size_t numBytes, event depEvent)`
+* `event memcpy(void* dest, const void* src, size_t numBytes, const std::vector<event>& depEvents)`
+* `event copy(const T* src, T* dest, size_t count)`
+* `event copy(const T* src, T* dest, size_t count, event depEvent)`
+* `event copy(const T* srct, T* dest, size_t count, const std::vector<event>& depEvents)`
+
+The below functions are called to set some USM zero-initialized buffer `ptr` to a non-zero value. The buffer `ptr` is checked afterwards for correctness. It is checked whether the return type of the functions is `event`. The `memset` tests use more than one byte of memory and the `fill` tests use more than one element.
+
+* `event memset(void* ptr, int value, size_t numBytes)`
+* `event memset(void* ptr, int value, size_t numBytes, event depEvent)`
+* `event memset(void* ptr, int value, size_t numBytes, const std::vector<event>& depEvents)`
+* `event fill(void* ptr, const T& pattern, size_t count)`
+* `event fill(void* ptr, const T& pattern, size_t count, event depEvent)`
+* `event fill(void* ptr, const T& pattern, size_t count, const std::vector<event>& depEvents)`
+
+==== Prefetch
+Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`. The USM buffers are allocation type `shared`. If the used device lacks this capability (aspect `aspect::usm_shared_allocations`), this test is skipped.
+
+* `event prefetch(void* ptr, size_t numBytes)`
+* `event prefetch(void* ptr, size_t numBytes, event depEvent)`
+* `event prefetch(void* ptr, size_t numBytes, const std::vector<event>& depEvents)`
+
+==== Memory advise
+Each of the below functions is called with some USM buffer. It is checked whether the return type of the functions is `event`. The value of `advice` is `0`. The USM buffers are allocation type `device`. If the used device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
+
+* `event mem_advise(void* ptr, size_t numBytes, int advice)`
+* `event mem_advise(void* ptr, size_t numBytes, int advice, event depEvent)`
+* `event mem_advise(void* ptr, size_t numBytes, int advice, const std::vector<event>& depEvents)`
+
+=== Explicit copy
+All accessors used are one-dimensional.
+
+==== Copy
+The copy function is called and it is checked whether the return type of the functions is `event`. For all source accessors, the access mode is `access_mode::read`. For all destination accessors, the access mode is `access_mode::read_write`. All accessors have target `target::device`. The destination buffer is checked afterwards for correctness using a copy to a third buffer.
+
+Pointer `src` points to a non-zero-initialized host buffer and pointer `dest` points to an equal-sized device buffer.
+
+* `event copy(std::shared_ptr<SrcT> src, accessor<DestT, DestDims, DestMode, DestTgt, IsPlaceholder> dest)`
+* `event copy(const SrcT* src, accessor<DestT, DestDims, DestMode, DestTgt, IsPlaceholder> dest)`
+
+Pointer `src` points to a non-zero-initialized device buffer and pointer `dest` points to an equal-sized host buffer.
+
+* `event copy(accessor<SrcT, SrcDims, SrcMode, SrcTgt, IsPlaceholder> src, std::shared_ptr<DestT> dest)`
+* `event copy(accessor<SrcT, SrcDims, SrcMode, SrcTgt, IsPlaceholder> src, DestT* dest)`
+
+Pointer `src` points to a non-zero-initialized device buffer and pointer `dest` points to an equal-sized device buffer.
+
+* `event copy(accessor<SrcT, SrcDims, SrcMode, SrcTgt, IsSrcPlaceholder> src, accessor<DestT, DestDims, DestMode, DestTgt, IsDestPlaceholder> dest)`
+
+==== Other functions
+The below function is called with some host memory object. It is checked whether the return type of the functions is `event`.
+
+* `event update_host(accessor<T, Dims, Mode, Tgt, IsPlaceholder> acc)`
+
+The below function is called to replicate some non-zero value `src` into some zero-initialized device memory object with more than one element. The device memory is checked afterwards for correctness using a copy to host memory. It is checked whether the return type of the functions is `event`.
+
+* `event fill(accessor<T, Dims, Mode, Tgt, IsPlaceholder> dest, const T& src)`

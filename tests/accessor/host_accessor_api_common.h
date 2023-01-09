@@ -58,6 +58,7 @@ class run_api_tests {
             util::get_cts_object::range<dims>::get(0, 0, 0) /*expected_range*/,
             sycl::id<dims>() /*&expected_offset)*/);
       }
+      test_begin_end_host(acc);
     }
 
     SECTION(get_section_name<dims>(type_name, access_mode_name,
@@ -72,6 +73,7 @@ class run_api_tests {
 
         test_accessor_methods_common(acc, sizeof(T) /* expected_byte_size*/,
                                      1 /*expected_size*/);
+        test_begin_end_host(acc, expected_val, expected_val, false);
         if constexpr (0 < dims) {
           test_accessor_range_methods(acc,
                                       util::get_cts_object::range<dims>::get(
@@ -145,6 +147,8 @@ class run_api_tests {
                                       offset_id /*&expected_offset)*/);
 
           test_accessor_ptr(acc, T());
+          test_begin_end_host(acc, value_operations::init<T>(0),
+                              value_operations::init<T>(buff_size - 1), false);
           auto &acc_ref1 = get_subscript_overload<T, AccT, dims>(acc, index);
           auto &acc_ref2 = acc[sycl::id<dims>()];
           CHECK(value_operations::are_equal(acc_ref1, linear_index));

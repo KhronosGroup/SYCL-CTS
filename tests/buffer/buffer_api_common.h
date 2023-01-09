@@ -27,6 +27,9 @@
 namespace buffer_api_common {
 using namespace sycl_cts;
 
+template <int dims, typename alloc>
+struct write_id {};
+
 /** empty_kernel.
  * Empty kernel, required since command groups
  * are required to have a kernel.
@@ -278,7 +281,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct element count
        with deprecated get_count */
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     auto count_depr = buf.get_count();
     check_return_type<size_t>(log, count_depr, "sycl::buffer::get_count()");
 
@@ -287,6 +290,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "sycl::buffer::get_count() does not return "
            "the correct number of elements");
     }
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
     /* check the buffer returns the correct byte size */
     auto ret_size = buf.byte_size();
@@ -300,7 +304,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct byte size
      with deprecated get_size*/
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     auto ret_size_depr = buf.get_size();
     check_return_type<size_t>(log, ret_size_depr, "sycl::buffer::get_size()");
 
@@ -309,6 +313,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
            "sycl::buffer::get_size() does not return "
            "the correct size of the buffer");
     }
+#endif
 
     auto q = util::get_cts_object::queue();
 
@@ -338,6 +343,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
       auto acc = buf.template get_access<sycl::access_mode::read_write>();
       check_return_type<
@@ -345,6 +351,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
                              sycl::target::host_buffer>>(
           log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
     }
+#endif
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
@@ -360,6 +367,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
       auto acc = buf.template get_access<sycl::access_mode::read_write>(
           r, offset);
@@ -370,6 +378,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           "sycl::buffer::get_access<read_write, host_buffer>(range<>, "
           "id<>)");
     }
+#endif
 
     /* check get_allocator() */
     {
@@ -510,5 +519,78 @@ public:
   }
 };
 
-} // namespace
-#endif // __SYCLCTS_TESTS_BUFFER_API_COMMON_H
+/**
+ * @brief Test buffer linearization
+ */
+class check_buffer_linearization {
+ public:
+  void operator()(util::logger &log) {
+    constexpr int size = 8;
+    // clang-format off
+    sycl::nd_range<1> range1d(sycl::range<1>{size},
+                              sycl::range<1>{size});
+    sycl::nd_range<2> range2d(sycl::range<2>{size, size},
+                              sycl::range<2>{size, size});
+    sycl::nd_range<3> range3d(sycl::range<3>{size, size, size},
+                              sycl::range<3>{size, size, size});
+    // clang-format on
+
+    log.note("testing: sycl::buffer_allocator<size_t>");
+    test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log, range1d);
+    test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log, range2d);
+    test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log, range3d);
+
+    log.note("testing: std::allocator<size_t>");
+    test_buffer_linearization<1, std::allocator<size_t>>(log, range1d);
+    test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
+    test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
+  }
+
+ private:
+  /**
+   * Buffer linearization test
+   */
+  template <int dims, typename alloc>
+  void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
+    static_assert(dims >= 1 && dims < 4,
+                  "Linearization test requires dims to be one of {1;2;3}.");
+    log.note("testing: linearization in " + std::to_string(dims) +
+             " dimensions.");
+    auto q = util::get_cts_object::queue();
+
+    sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
+    q.submit([&](sycl::handler &cgh) {
+      auto acc = buf.get_access(cgh, sycl::write_only, sycl::no_init);
+      cgh.parallel_for<write_id<dims, alloc>>(r, [=](sycl::nd_item<dims> i) {
+        // clang-format off
+        if constexpr (dims == 3) {
+          acc[i.get_global_id()] =
+              i.get_global_id(0) * i.get_global_range(1) * i.get_global_range(2) +
+              i.get_global_id(1) * i.get_global_range(2) +
+              i.get_global_id(2);
+        }
+        else if (dims == 2) {
+          acc[i.get_global_id()] =
+              i.get_global_id(0) * i.get_global_range(1) +
+              i.get_global_id(1);
+        }
+        else {
+          acc[i.get_global_id()] =
+              i.get_global_id(0);
+        }
+        // clang-format on
+      });
+    });
+
+    std::vector<size_t> v(buf.size());
+    std::iota(v.begin(), v.end(), 0);
+
+    std::vector<size_t> w(buf.size());
+    q.copy(sycl::accessor{buf}, w.data()).wait_and_throw();
+
+    CHECK(std::equal(v.cbegin(), v.cend(), w.cbegin()));
+  }
+};
+
+}  // namespace buffer_api_common
+#endif  // __SYCLCTS_TESTS_BUFFER_API_COMMON_H

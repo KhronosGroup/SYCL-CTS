@@ -186,6 +186,7 @@ class run_api_tests {
               if constexpr (Target == sycl::target::host_task) {
                 cgh.host_task([=] {
                   test_accessor_ptr_host(acc, expected_val);
+                  test_begin_end_host(acc, expected_val, expected_val, false);
                   if constexpr (0 < dims) {
                     auto &acc_ref1 = acc[sycl::id<dims>()];
                     auto &acc_ref2 =
@@ -223,6 +224,8 @@ class run_api_tests {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.single_task([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
+                  res_acc[0] &= test_begin_end_device(acc, expected_val,
+                                                      expected_val, false);
                   if constexpr (0 < dims) {
                     auto &acc_ref1 = acc[sycl::id<dims>()];
                     auto &acc_ref2 =
@@ -289,9 +292,9 @@ class run_api_tests {
         auto offset_id =
             util::get_cts_object::id<dims>::get(offset, offset, offset);
         std::remove_const_t<T> data[buff_size];
-        for (size_t i = 0; i < buff_size; i++) {
-          data[i] = value_operations::init<T>(i);
-        }
+        std::generate(data, (data + buff_range.size()), [i = 0]() mutable {
+          return value_operations::init<T>(i++);
+        });
         bool res = false;
         {
           sycl::buffer<T, dims> data_buf(data, buff_range);
@@ -309,6 +312,9 @@ class run_api_tests {
                 if constexpr (Target == sycl::target::host_task) {
                   cgh.host_task([=] {
                     test_accessor_ptr_host(acc, T());
+                    test_begin_end_host(
+                        acc, value_operations::init<T>(0),
+                        value_operations::init<T>(buff_size - 1), false);
                     auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
                     auto &acc_ref2 = acc[sycl::id<dims>()];
@@ -323,6 +329,9 @@ class run_api_tests {
                   sycl::accessor res_acc(res_buf, cgh);
                   cgh.single_task([=]() {
                     test_accessor_ptr_device(acc, T(), res_acc);
+                    res_acc[0] &= test_begin_end_device(
+                        acc, value_operations::init<T>(0),
+                        value_operations::init<T>(buff_size - 1), false);
                     auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
                     auto &acc_ref2 = acc[sycl::id<dims>()];

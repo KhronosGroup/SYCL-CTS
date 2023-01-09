@@ -12,8 +12,12 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/section_name_builder.h"
-#include "../common/type_coverage.h"
 #include "../common/value_operations.h"
+
+// FIXME: re-enable when marrray is implemented in hipsycl
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+#include "../common/type_coverage.h"
+#endif
 
 #include <catch2/matchers/catch_matchers.hpp>
 
@@ -119,6 +123,9 @@ inline std::string get_section_name(const std::string& type_name,
       .create();
 }
 
+// FIXME: re-enable when marrray is implemented in hipsycl and type_coverage is
+// enabled
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Factory function for getting type_pack with fp16 type
  */
@@ -201,6 +208,7 @@ inline auto get_all_dimensions() {
   static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
   return dimensions;
 }
+// FIXME: re-enable when target::host_task is implemented
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Factory function for getting type_pack with target values
@@ -211,7 +219,7 @@ inline auto get_targets() {
                  sycl::target::host_task>::generate_named();
   return targets;
 }
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported
  * sizes
@@ -226,12 +234,14 @@ inline auto add_vectors_to_type_pack(StrNameType type_name) {
                                   "vec<" + type_name + ", 8>",
                                   "vec<" + type_name + ", 16>");
 }
+#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 template <accessor_type AccType>
 struct tag_factory {
   static_assert(AccType != AccType,
                 "There is no tag support for such accessor type");
 };
+// FIXME: re-enable when target::host_task is implemented
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
@@ -268,7 +278,7 @@ struct tag_factory<accessor_type::generic_accessor> {
     }
   }
 };
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode parameter
  */
@@ -316,7 +326,11 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
   res_acc[res_i++] = testing_acc.rbegin() == testing_acc.rend();
   res_acc[res_i++] = testing_acc.crbegin() == testing_acc.crend();
 }
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
+// hipsycl and computcpp
+// FIXME: re-enable when target::host_task is implemented in dpcpp
+#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
+    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Common function that constructs accessor with default constructor
  *and checks post-conditions
@@ -363,7 +377,8 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
     CHECK(conditions_check[i]);
   }
 }
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 namespace detail {
 /**
  * @brief Wraps callable to make possible chaining foo(boo(arg)) calls by fold
@@ -374,7 +389,7 @@ class invoke_helper {
   const InvocableT& m_action;
 
  public:
-  invoke_helper(const InvocableT& action) : m_action(action){}
+  invoke_helper(const InvocableT& action) : m_action(action) {}
 
   template <typename... ArgsT>
   decltype(auto) operator=(ArgsT&&... args) {
@@ -410,7 +425,11 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(acc_ref, changed_val);
   }
 }
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
+// hipsycl and computecpp
+// FIXME: re-enable when target::host_task is implemented in dpcpp
+#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
+    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function helps to check zero dimension constructor of accessor
  *
@@ -488,7 +507,8 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
  * parameter. Results of compare will be stored in res_acc
@@ -514,7 +534,11 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(testing_acc[id], changed_val);
   }
 }
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
+// hipsycl and computecpp
+// FIXME: re-enable when target::host_task is implemented in dpcpp
+#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
+    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function helps to check common constructor of accessor
  *
@@ -645,7 +669,8 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function mainly for testing no_init property. The function tries to
  * write to the accessor and only after that tries to read from the accessor.
@@ -667,7 +692,10 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
     res_acc[0] = value_operations::are_equal(testing_acc[id], expected_data);
   }
 }
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+// FIXME: re-enable when handler.host_task and sycl::errc is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+// FIXME: re-enable when target::host_task is implemented
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to check accessor constructor with no_init property
  *
@@ -717,7 +745,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
     CHECK(compare_res);
   }
 }
-#endif
+#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to verify that constructor of accessor with no_init
  * property and access_mode::read triggers an exception
@@ -746,7 +774,8 @@ void check_no_init_prop_exception(GetAccFunctorT construct_acc,
     }
   }
 }
-
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function tests AccT::get_pointer() method
 
@@ -936,6 +965,9 @@ void check_get_property_member_func(GetAccFunctorT construct_acc,
   }
 }
 
+// FIXME: re-enable when handler.host_task and sycl::errc is implemented in
+// hipsycl and computecpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function invokes \c get_property() member function without \c PropT
  * property and verifies that false returns
@@ -969,7 +1001,8 @@ void check_get_property_member_without_no_init(GetAccFunctorT construct_acc,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
-
+#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function checks common buffer and local accessor member types
  */
@@ -1001,6 +1034,103 @@ typename AccT::reference get_accessor_reference(const AccT& acc) {
   } else {
     return acc[sycl::id<dims>()];
   }
+}
+
+template <typename AccT, typename T = int>
+void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
+                         bool empty = true) {
+  {
+    INFO("check begin() method");
+    auto it = accessor.begin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_first));
+  }
+  {
+    INFO("check end() method");
+    auto it = accessor.end();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_last));
+  }
+  {
+    INFO("check cbegin() method");
+    auto it = accessor.cbegin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::const_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_first));
+  }
+  {
+    INFO("check cend() method");
+    auto it = accessor.cend();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::const_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_last));
+  }
+  {
+    INFO("check rbegin() method");
+    auto it = accessor.rbegin();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_last));
+  }
+  {
+    INFO("check rend() method");
+    auto it = accessor.rend();
+    STATIC_CHECK(std::is_same_v<decltype(it), typename AccT::reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_first));
+  }
+  {
+    INFO("check crbegin() method");
+    auto it = accessor.crbegin();
+    STATIC_CHECK(
+        std::is_same_v<decltype(it), typename AccT::const_reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*it, exp_last));
+  }
+  {
+    INFO("check crend() method");
+    auto it = accessor.crend();
+    STATIC_CHECK(
+        std::is_same_v<decltype(it), typename AccT::const_reverse_iterator>);
+    if (!empty) CHECK(value_operations::are_equal(*(--it), exp_first));
+  }
+}
+
+template <typename AccT, typename T = int>
+bool test_begin_end_device(AccT& accessor, T exp_first = {}, T exp_last = {},
+                           bool empty = true) {
+  auto it_begin = accessor.begin();
+  bool res = std::is_same_v<decltype(it_begin), typename AccT::iterator>;
+  auto it_end = accessor.end();
+  res &= std::is_same_v<decltype(it_end), typename AccT::iterator>;
+
+  auto it_cbegin = accessor.cbegin();
+  res &= std::is_same_v<decltype(it_cbegin), typename AccT::const_iterator>;
+
+  auto it_cend = accessor.cend();
+  res &= std::is_same_v<decltype(it_cend), typename AccT::const_iterator>;
+
+  auto it_rbegin = accessor.rbegin();
+  res &= std::is_same_v<decltype(it_rbegin), typename AccT::reverse_iterator>;
+
+  auto it_rend = accessor.rend();
+  res &= std::is_same_v<decltype(it_rend), typename AccT::reverse_iterator>;
+
+  auto it_crbegin = accessor.crbegin();
+  res &= std::is_same_v<decltype(it_crbegin),
+                        typename AccT::const_reverse_iterator>;
+
+  auto it_crend = accessor.crend();
+  res &=
+      std::is_same_v<decltype(it_crend), typename AccT::const_reverse_iterator>;
+
+  if (!empty) {
+    res &= value_operations::are_equal(*it_begin, exp_first);
+    res &= value_operations::are_equal(*(--it_end), exp_last);
+    res &= value_operations::are_equal(*it_cbegin, exp_first);
+    res &= value_operations::are_equal(*(--it_cend), exp_last);
+    res &= value_operations::are_equal(*it_rbegin, exp_last);
+    res &= value_operations::are_equal(*(--it_rend), exp_first);
+    res &= value_operations::are_equal(*it_crbegin, exp_last);
+    res &= value_operations::are_equal(*(--it_crend), exp_first);
+  }
+
+  return res;
 }
 
 }  // namespace accessor_tests_common

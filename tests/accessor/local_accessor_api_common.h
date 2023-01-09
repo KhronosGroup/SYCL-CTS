@@ -16,6 +16,7 @@ using namespace accessor_tests_common;
 enum class check : size_t {
   subscript_id_type = 0U,
   subscript_size_t_type,
+  iterator_access,
   // only for non const
   subscript_id_result,
   subscript_size_t_result,
@@ -176,6 +177,10 @@ class run_api_tests {
 
                     test_local_accessor_ptr(acc, expected_val, res_acc,
                                             item_id);
+                    res_acc[sycl::id<2>(to_integral(check::iterator_access),
+                                        item_id)] &=
+                        test_begin_end_device(acc, expected_val, changed_val,
+                                              false);
                   }
                 });
               })

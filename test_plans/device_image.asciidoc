@@ -1,0 +1,54 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for device image
+
+This is a test plan for the device image class as described in Section 4.11.14. of the SYCL 2020 specification.
+
+Estimated development time is one and a half days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+=== Function `has_kernel`
+
+The function `device_image::has_kernel` (two overloads) can be tested through `get_kernel_bundle(const context& ctxt, const std::vector<device>& devs, Selector selector)` and `get_kernel_bundle(const context& ctxt, Selector selector)` as the selector provides a `device_image` parameter.
+
+The existing tests `kernel_bundle/get_kernel_bundle_with_kernel_attr.cpp` and `kernel_bundle/get_kernel_bundle_without_kernel_attr.cpp` test for several kernels and all of `get_kernel_bundle` 's overloads:
+
+> The test verifies that the kernel bundle which is obtained from each `get_kernel_bundle` overload contains only kernels compatible with the provided device.
+
+In this test, the function `run_test_for_all_overload_types` takes a number of `kernel_descriptors` and checks that  `get_kernel_bundle` 's overloads return a kernel bundle with all of the `kernel_descriptors`. The selector overloads are called with a selector that always returns true.
+
+==== Test modification
+This test is modified in the following way:
+
+Define boolean vectors `has_kernel` and `has_kernel_device` with a number of elements equal to the number of kernel IDs. The selector is replaced by a selector that does the following:
+
+- Iterate over all `user_defined_kernel_ids`.
+* For each `kernel_id`, if `device_image::has_kernel(kernel_id)` is `true`, set the respective element in `has_kernel` to `true`.
+- Iterate over all `user_defined_kernel_ids` and all `devices`.
+* For each `kernel_id`, if `device_image::has_kernel(kernel_id, device)` is `true`, set the respective element in `has_kernel_device` to `true`.
+- Return `true`.
+
+The parts of the test that check the `get_kernel_bundle` overloads that take a selector are now modified to the following:
+
+- Set all elements of `has_kernel` and `has_kernel_device` to `false`.
+- Call `get_kernel_bundle` (same as before).
+- Call `verify_that_kernel_in_bundle` with all `kernel_descriptors` (same as before).
+- Check that all elements of `has_kernel` and `has_kernel_device` are `true`.
+
+=== Other API
+
+- Check that `std::is_default_constructible_v<sycl::device_image>` is false, since the constructor is specified as `device_image() = delete;`.
+- Check that `bool has_kernel(const kernel_id& kernelId)` is `noexcept`.
+- Check that `bool has_kernel(const kernel_id& kernelId, const device& dev)` is `noexcept`.

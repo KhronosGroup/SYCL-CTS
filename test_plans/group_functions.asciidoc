@@ -1,0 +1,277 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for group functions and algorithms
+
+This is a test plan for the APIs described in SYCL 2020 sections 4.17.3 "Group functions" 
+and 4.17.4 "Group algorithms library".
+
+Implementation time is estimated to be 3 person-days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are performed for any SYCL implementation.
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Tests
+
+Every function should be checked for accordance to spec:
+
+* Function existence
+* Availability for some specified types
+* Type of result
+* Result correctness
+
+=== Types for functions
+
+Fundamental type list for tests:
+
+* `char`
+* `int`
+* `float`
+* `long long`
+
+For FULL conformance add:
+
+* `signed char`
+* `unsigned char`
+* `short`
+* `unsigned short`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `unsigned long long`
+* `bool`
+
+In addition, if the device has aspect::fp64:
+
+* `double`
+
+In addition, if the device has aspect::fp16:
+
+* `half`
+
+If function accepts another types, the following list of types is added:
+
+* `vec<2, int>`
+* `vec<16, unsigned long long>`
+* `marray<5, float>`
+* `marray<7, short>`
+* `struct { int a; bool b; }`
+
+Pointers are taken from the same list of types.
+
+`bool Predicate(T)` functions are functions checking the ranges of `T` itself or
+the first element of `vec, marray, struct` type `T`. They are choosen in such a way that
+functions using them should return both `true` and `false` in different tests.
+
+`binary_op` used in scans and reductions are addition and maximum of `T` itself or
+the first element of `vec, marray, struct` type `T`.
+
+=== Data for the functions
+
+Data for the functions are sequences of 1, 2, 3, etc. corresponding to increasing `linear_id`.
+
+=== Execution
+
+Functions will be executed by a group using `sycl::parallel_for` with `nd_range<Dims>`
+corresponding to one group of maximal group size available on device with `Dims = 1,2,3`
+(by querying `info::device::max_work_item_sizes<Dims>` and `info::device::max_work_group_size`).
+Sub-group variants will execute functions on the first subgroup of this large group only.
+
+=== Traits
+
+==== is_group
+
+For both `group` and `sub_group` template parameter T check that 
+`is_group<T>` is `std::true_type`. For some other template parameter T
+check that `is_group<T>` is `std::false_type`.
+
+==== is_group_v
+
+For both `group` and `sub_group` template parameter T check that 
+`is_group_v<T>` is `true`. For some other template parameter T
+check that `is_group_v<T>` is `false`.
+
+=== Functions
+
+==== group_broadcast
+
+For each of the following use-cases:
+
+* using `T group_broadcast(Group g, T x);`
+* using `T group_broadcast(Group g, T x, Group::linear_id_type local_linear_id);`
+* using `T group_broadcast(Group g, T x, Group::id_type local_id);`
+
+for some scalar, vector, marray, and user defined trivially copyable
+types `T` and both `group` and `sub_group` check returned type and value.
+
+==== group_barrier
+
+For each `memory_scope` wider than `Group::fence_scope` in the list
+
+* `sycl::memory_scope::sub_group`
+* `sycl::memory_scope::work_group`
+* `sycl::memory_scope::device`
+* `sycl::memory_scope::system`
+
+If supported by the hardware (from query of `info::device::atomic_fence_scope_capabilities`)
+check that invocation of `void group_barrier(Group g, memory_scope fence_scope)`
+for both `group` and `sub_group` behaves as expected: when each of workitems writes 1
+into zero-initialized local memory array (for `sub_group` and `work_group` memory scope)
+or zero-initialized global memory array (for `device` and `system` memory scope)
+after barrier all array values red by workitems in reverse order are equal to 1.
+
+==== joint_any_of
+
+With several different pointer types `Ptr` and `bool Predicate(*Ptr)` check returned type and value
+of `bool joint_any_of(Group g, Ptr first, Ptr last, Predicate pred);` for
+both `group` and `sub_group`.
+
+==== joint_all_of
+
+With several different pointer types `Ptr` and `bool Predicate(*Ptr)` check returned type and value
+of `bool joint_all_of(Group g, Ptr first, Ptr last, Predicate pred);` for
+both `group` and `sub_group`.
+
+==== joint_none_of
+
+With several different pointer types `Ptr` and `bool Predicate(*Ptr)` check returned type and value
+of `bool joint_none_of(Group g, Ptr first, Ptr last, Predicate pred);` for
+both `group` and `sub_group`.
+
+==== any_of_group
+
+For each of the following use-cases:
+
+* using `bool any_of_group(Group g, T x, Predicate pred);` with several
+different types `T` and `bool Predicate(T)`
+* using `bool any_of_group(Group g, bool pred);`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== all_of_group
+
+For each of the following use-cases:
+
+* using `bool all_of_group(Group g, T x, Predicate pred);` with several
+different types `T` and `bool Predicate(T)`
+* using `bool all_of_group(Group g, bool pred);`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== none_of_group
+
+For each of the following use-cases:
+
+* using `bool none_of_group(Group g, T x, Predicate pred);` with several
+different types `T` and `bool Predicate(T)`
+* using `bool none_of_group(Group g, bool pred);`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== shift_group_left
+
+For some scalar, vector, marray, and user defined trivially copyable
+types `T` and both `group` and `sub_group` with and without `delta`
+check returned type and value of
+`T shift_group_left(Group g, T x, Group::linear_id_type delta)`.
+
+==== shift_group_right
+
+For some scalar, vector, marray, and user defined trivially copyable
+types `T` and both `group` and `sub_group` with and without `delta`
+check returned type and value of
+`T shift_group_right(Group g, T x, Group::linear_id_type delta)`.
+
+==== permute_group_by_xor
+
+For some scalar, vector, marray, and user defined trivially copyable
+types `T` and both `group` and `sub_group` check returned type and value of
+`T permute_group_by_xor(Group g, T x, Group::linear_id_type mask);` with
+several masks.
+
+==== select_from_group
+
+For some scalar, vector, marray, and user defined trivially copyable
+types `T` and both `group` and `sub_group` check returned type and value of
+`T select_from_group(Group g, T x, Group::id_type remote_local_id);`.
+
+==== joint_reduce
+
+For some pointers to a fundamental type `Ptr` (using `V = std::iterator_traits<Ptr>::value_type`)
+for each of the following use-cases:
+
+* using `V joint_reduce(Group g, Ptr first, Ptr last, BinaryOperation binary_op);`
+with some `V binary_op(V, V)`
+* using `T joint_reduce(Group g, Ptr first, Ptr last, T init, BinaryOperation binary_op);`
+with some `T binary_op(T, V)`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== reduce_over_group
+
+For some fundamental types `T` and `V` for each of the following use-cases:
+
+* using `T reduce_over_group(Group g, T x, BinaryOperation binary_op);`
+with some `T binary_op(T, T)`
+* using `T reduce_over_group(Group g, V x, T init, BinaryOperation binary_op);`
+with some `T binary_op(T, V)`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== joint_exclusive_scan
+
+For some pointers to a fundamental type `InPtr` and `OutPtr`
+(using `I = std::iterator_traits<InPtr>::value_type` and
+`O = std::iterator_traits<OutPtr>::value_type`)
+for each of the following use-cases:
+
+* using `OutPtr joint_exclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+BinaryOperation binary_op);` with some `O binary_op(I, I)`
+* using `OutPtr joint_exclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+T init, BinaryOperation binary_op);` with some fundamental type `T` and `T binary_op(T, I)`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== joint_inclusive_scan
+
+For some pointers to a fundamental type `InPtr` and `OutPtr`
+(using `I = std::iterator_traits<InPtr>::value_type` and
+`O = std::iterator_traits<OutPtr>::value_type`)
+for each of the following use-cases:
+
+* using `OutPtr joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+BinaryOperation binary_op);` with some `O binary_op(I, I)`
+* using `OutPtr joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+BinaryOperation binary_op, T init);` with some fundamental type `T` and `T binary_op(T, I)`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== exclusive_scan_over_group
+
+For some fundamental types `T` and `V` for each of the following use-cases:
+
+* using `T exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op);`
+with some `T binary_op(T, T)`
+* using `T exclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_op);`
+with some `T binary_op(T, V)`
+
+check returned type and value for both `group` and `sub_group`.
+
+==== inclusive_scan_over_group
+
+For some fundamental types `T` and `V` for each of the following use-cases:
+
+* using `T inclusive_scan_over_group(Group g, T x, BinaryOperation binary_op);`
+with some `T binary_op(T, T)`
+* using `T inclusive_scan_over_group(Group g, V x, BinaryOperation binary_op, T init);`
+with some `T binary_op(T, V)`
+
+check returned type and value for both `group` and `sub_group`.
