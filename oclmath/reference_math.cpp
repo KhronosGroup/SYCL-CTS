@@ -71,15 +71,27 @@
 
 // Declare Classification macros for non-C99 platforms
 #ifndef isinf
-    #define isinf(x)    (	sizeof (x) == sizeof(float )	?	fabsf(x) == INFINITY  	\
-                        :	sizeof (x) == sizeof(double)	?	fabs(x) == INFINITY  	\
-                        :	fabsl(x) == INFINITY)
+#define isinf(x)                                    \
+  [](auto y) {                                      \
+    if constexpr (sizeof(y) == sizeof(float))       \
+      return fabsf(y) == INFINITY;                  \
+    else if constexpr (sizeof(y) == sizeof(double)) \
+      return fabs(y) == INFINITY;                   \
+    else                                            \
+      return fabsl(y) == INFINITY;                  \
+  }(x)
 #endif
 
 #ifndef isfinite
-    #define isfinite(x) (	sizeof (x) == sizeof(float )	?	fabsf(x) < INFINITY  	\
-                        :	sizeof (x) == sizeof(double)	?	fabs(x) < INFINITY  	\
-                        :	fabsl(x) < INFINITY)
+#define isfinite(x)                                 \
+  [](auto y) {                                      \
+    if constexpr (sizeof(y) == sizeof(float))       \
+      return fabsf(y) < INFINITY;                   \
+    else if constexpr (sizeof(y) == sizeof(double)) \
+      return fabs(y) < INFINITY;                    \
+    else                                            \
+      return fabsl(y) < INFINITY;                   \
+  }(x)
 #endif
 
 #ifndef isnan
@@ -91,9 +103,15 @@
 #endif
 
 #ifndef isnormal
-    #define isnormal(x) (	sizeof (x) == sizeof(float )	?	(fabsf(x) < INFINITY && fabsf(x) >= FLT_MIN) 	\
-                        :	sizeof (x) == sizeof(double)	?	(fabs(x) < INFINITY && fabs(x) >= DBL_MIN) 	\
-                        :	(fabsl(x) < INFINITY && fabsl(x) >= LDBL_MIN)   )
+#define isnormal(x)                                       \
+  [](auto y) {                                            \
+    if constexpr (sizeof(y) == sizeof(float))             \
+      return fabsf(y) < INFINITY && fabsf(y) >= FLT_MIN;  \
+    else if constexpr (sizeof(y) == sizeof(double))       \
+      return fabs(y) < INFINITY && fabs(y) >= DBL_MIN;    \
+    else                                                  \
+      return fabsl(y) < INFINITY && fabsl(y) >= LDBL_MIN; \
+  }(x)
 #endif
 
 #ifndef islessgreater
