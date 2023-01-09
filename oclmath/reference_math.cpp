@@ -2485,19 +2485,6 @@ static inline void mul128( cl_ulong a, cl_ulong b, cl_ulong *hi, cl_ulong *lo )
     *lo = (aloblo & 0xffffffffULL) | (alobhi << 32);
 }
 
-// Move the most significant non-zero bit to the MSB
-// Note: not general. Only works if the most significant non-zero bit is at MSB-1
-static inline void renormalize( cl_ulong *hi, cl_ulong *lo, int *exponent )
-{
-    if( 0 == (0x8000000000000000ULL & *hi ))
-    {
-        *hi <<= 1;
-        *hi |= *lo >> 63;
-        *lo <<= 1;
-        *exponent -= 1;
-    }
-}
-
 static double round_to_nearest_even_double( cl_ulong hi, cl_ulong lo, int exponent );
 static double round_to_nearest_even_double( cl_ulong hi, cl_ulong lo, int exponent )
 {
