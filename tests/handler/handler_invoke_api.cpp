@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -253,13 +253,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
                      });
 
       /* parallel_for with offset and id */
-
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       check_api_call(
           "parallel_for(range, id, lambda) with id", log, queue,
           [&](handler &cgh, accessor_t acc) {
             cgh.parallel_for<class parallel_for_range_offset_id_lambda>(
-                offsetRange, offset,
-                [=](sycl::id<1> id) { acc[id] = id[0]; });
+                offsetRange, offset, [=](sycl::id<1> id) { acc[id] = id[0]; });
           },
           offset[0], offsetRange[0]);
 
@@ -271,6 +270,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 parallel_for_range_id_functor<use_offset::yes>(acc));
           },
           offset[0], offsetRange[0]);
+#endif
 
       /* parallel_for with item */
 
@@ -291,7 +291,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           });
 
       /* parallel_for with offset and item */
-
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       check_api_call(
           "parallel_for(range, id, lambda) with item", log, queue,
           [&](handler &cgh, accessor_t acc) {
@@ -309,6 +309,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                 parallel_for_range_item_functor<use_offset::yes>(acc));
           },
           offset[0], offsetRange[0]);
+#endif
 
       /* parallel_for over nd_range without offset */
 
@@ -434,6 +435,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                          });
         }
 
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
         {
           using k_name = kernel_test_class2;
           check_api_call(
@@ -445,6 +447,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
               },
               offset[0], offsetRange[0]);
         }
+#endif
 
         {
           using k_name = kernel_test_class3;
@@ -457,6 +460,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                          });
         }
 
+#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
         {
           using k_name = kernel_test_class4;
           check_api_call(
@@ -468,6 +472,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
               },
               offset[0], offsetRange[0]);
         }
+#endif
 
         {
           using k_name = kernel_test_class5;
