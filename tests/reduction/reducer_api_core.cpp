@@ -21,6 +21,46 @@
 #include "../common/common.h"
 #include "reducer_api.h"
 
+#include <functional>
+#include <numeric>
+#include <type_traits>
+#include <vector>
+
+struct kernel_name;
+
+TEST_CASE("reducer class", "[reducer]") {
+  sycl::queue queue = sycl_cts::util::get_cts_object::queue();
+
+  // dummy output value
+  int red_output;
+  sycl::buffer<int> buf_output{&red_output, sycl::range<1>{1}};
+
+  constexpr size_t result_count = 4;
+  std::vector<int> results(result_count, 0);
+  {
+    sycl::buffer<int> buf_results(results.data(), sycl::range<1>{result_count});
+    queue.submit([&](sycl::handler& cgh) {
+      auto acc_results =
+          buf_results.template get_access<sycl::access_mode::write>(cgh);
+      auto reduction = sycl::reduction(buf_output, cgh, sycl::plus<>{});
+      cgh.parallel_for<kernel_name>(
+          sycl::range<1>{1}, reduction, [=](sycl::id<1> idx, auto& reducer) {
+            typedef decltype(reducer) reducer_t;
+            size_t i = 0;
+            acc_results[i++] = !std::is_copy_constructible_v<reducer_t>;
+            acc_results[i++] = !std::is_move_constructible_v<reducer_t>;
+            acc_results[i++] = !std::is_copy_assignable_v<reducer_t>;
+            acc_results[i++] = !std::is_move_assignable_v<reducer_t>;
+            assert(result_count == i);
+          });
+    });
+  }
+
+  // all results are expected to evaluate to true
+  CHECK(std::reduce(results.begin(), results.end(), true,
+                    std::logical_and<int>{}));
+}
+
 TEST_CASE("reducer api core", "[reducer]") {
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
