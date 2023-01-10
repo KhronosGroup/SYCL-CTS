@@ -986,7 +986,7 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
 // Incrementing index of last dimension if it not yet reached end of the range
 // otherwise reseting it and trying to increment index of previous dimension.
 template <int dims>
-void add_id_linear(sycl::id<dims>& id, int size) {
+void add_id_linear(sycl::id<dims>& id, size_t size) {
   for (int i = dims - 1; i >= 0; i--) {
     if (id[i] < size - 1) {
       id[i]++;
