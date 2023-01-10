@@ -21,7 +21,8 @@
 
 #include "../common/common.h"
 
-class test_placeholder;
+template <unsigned int test_case, unsigned int kernel>
+struct kernel_name;
 
 TEST_CASE("handler require()", "[handler]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -39,11 +40,65 @@ TEST_CASE("handler require()", "[handler]") {
     queue.submit([&](sycl::handler &cgh) {
       cgh.require(placeholder);
 
-      cgh.single_task<class test_placeholder>([=]() { placeholder[0] = 1; });
+      cgh.single_task<kernel_name<0, 0>>([=]() { placeholder[0] = 1; });
     });
   }
 
   CHECK(data[0] == 1);
 
   queue.wait_and_throw();
+}
+
+TEST_CASE("handler depends_on(event)", "[handler]") {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+
+  {
+    sycl::buffer<int, 1> buf_e1{sycl::range<1>{1}};
+    sycl::event e1 = queue.submit([&](sycl::handler &cgh) {
+      sycl::accessor acc{buf_e1, cgh, sycl::write_only};
+      cgh.single_task<kernel_name<1, 0>>([=]() { acc[0] = 1; });
+    });
+
+    sycl::buffer<int, 1> buf_e2{sycl::range<1>{1}};
+    sycl::event e2 = queue.submit([&](sycl::handler &cgh) {
+      cgh.depends_on(e1);
+      sycl::accessor acc{buf_e2, cgh, sycl::write_only};
+      cgh.single_task<kernel_name<1, 1>>([=]() { acc[0] = 1; });
+    });
+
+    e2.wait();
+    CHECK(sycl::info::event_command_status::complete ==
+          e1.get_info<sycl::info::event::command_execution_status>());
+  }
+}
+
+TEST_CASE("handler depends_on(vector<event>)", "[handler]") {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+
+  {
+    sycl::buffer<int, 1> buf_e1{sycl::range<1>{1}};
+    sycl::event e1 = queue.submit([&](sycl::handler &cgh) {
+      sycl::accessor acc{buf_e1, cgh, sycl::write_only};
+      cgh.single_task<kernel_name<2, 0>>([=]() { acc[0] = 1; });
+    });
+
+    sycl::buffer<int, 1> buf_e2{sycl::range<1>{1}};
+    sycl::event e2 = queue.submit([&](sycl::handler &cgh) {
+      sycl::accessor acc{buf_e2, cgh, sycl::write_only};
+      cgh.single_task<kernel_name<2, 1>>([=]() { acc[0] = 1; });
+    });
+
+    sycl::buffer<int, 1> buf_e3{sycl::range<1>{1}};
+    sycl::event e3 = queue.submit([&](sycl::handler &cgh) {
+      cgh.depends_on({e1, e2});
+      sycl::accessor acc{buf_e3, cgh, sycl::write_only};
+      cgh.single_task<kernel_name<2, 2>>([=]() { acc[0] = 1; });
+    });
+
+    e3.wait();
+    CHECK(sycl::info::event_command_status::complete ==
+          e1.get_info<sycl::info::event::command_execution_status>());
+    CHECK(sycl::info::event_command_status::complete ==
+          e2.get_info<sycl::info::event::command_execution_status>());
+  }
 }
