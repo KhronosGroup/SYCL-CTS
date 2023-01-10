@@ -42,8 +42,15 @@ if (g.leader()) {
   sync_flag = true;
 }
 else {
-  if (true == sync_flag) {
-    sycl::atomic_fence(ORDER2, SCOPE);
+  bool write_happened = false;
+  for (int i = 0; i < RETRY_COUNT; i++) {
+    if (sync_flag == true) {
+      write_happened = true;
+      break;
+    }
+  }
+  sycl::atomic_fence(ORDER2, SCOPE);
+  if (write_happened) {
     if (*data != EXPECTED)
       /* test fails */
   }
@@ -82,8 +89,15 @@ if (nditem.get_global_linear_id() == 0) {
   sync_flag = true;
 }
 else {
-  if (true == sync_flag) {
-    sycl::atomic_fence(ORDER2, SCOPE);
+  bool write_happened = false;
+  for (int i = 0; i < RETRY_COUNT; i++) {
+    if (sync_flag == true) {
+      write_happened = true;
+      break;
+    }
+  }
+  sycl::atomic_fence(ORDER2, SCOPE);
+  if (write_happened) {
     if (*data != EXPECTED)
       /* test fails */
   }
