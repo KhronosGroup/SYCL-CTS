@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2020-2022 The Khronos Group Inc.
+//  Copyright (c) 2020-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -752,6 +752,56 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
       }                                                                  \
     }                                                                    \
   }
+
+/** \brief Tests the result of using unary operator op with operand val,
+ *         while storing the results in res. */
+#define UNARY_INDEX_KERNEL_TEST(op, val, res)                   \
+  do {                                                          \
+    val = op res;                                               \
+    for (int k = 0; k < dims; k++) {                            \
+      if (res.get(k) != static_cast<size_t>((op val).get(k)) || \
+          res[k] != static_cast<size_t>((op val)[k])) {         \
+        error_ptr[m_iteration] = __LINE__;                      \
+        m_iteration++;                                          \
+      }                                                         \
+    }                                                           \
+  } while (0);
+
+/** \brief Tests the result of using prefix operator op with operand val,
+ *         while storing the results in res. */
+#define PREFIX_INDEX_KERNEL_TEST(op, val, res)          \
+  do {                                                  \
+    res = val;                                          \
+    op res;                                             \
+    for (int k = 0; k < dims; k++) {                    \
+      size_t tmp_get = val.get(k);                      \
+      op tmp_get;                                       \
+      size_t tmp_sub = val[k];                          \
+      op tmp_sub;                                       \
+      if (res.get(k) != tmp_get || res[k] != tmp_sub) { \
+        error_ptr[m_iteration] = __LINE__;              \
+        m_iteration++;                                  \
+      }                                                 \
+    }                                                   \
+  } while (0);
+
+/** \brief Tests the result of using postfix operator op with operand val,
+ *         while storing the results in res. */
+#define POSTFIX_INDEX_KERNEL_TEST(op, val, res)         \
+  do {                                                  \
+    res = val;                                          \
+    res op;                                             \
+    for (int k = 0; k < dims; k++) {                    \
+      size_t tmp_get = val.get(k);                      \
+      tmp_get op;                                       \
+      size_t tmp_sub = val[k];                          \
+      tmp_sub op;                                       \
+      if (res.get(k) != tmp_get || res[k] != tmp_sub) { \
+        error_ptr[m_iteration] = __LINE__;              \
+        m_iteration++;                                  \
+      }                                                 \
+    }                                                   \
+  } while (0);
 
 /// Linearizes a multi-dimensional index according to the specification.
 template <unsigned int dimension>
