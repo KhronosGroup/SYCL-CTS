@@ -57,6 +57,10 @@ Same tests as previous section except no zero, built-in and multiple kernels cas
 
 Check that `std::is_default_constructible_v<sycl::kernel_bundle>` is `false`.
 
+==== Test for `get_backend()`
+
+Call function `kernel::get_backend()` and check that return type is `sycl::backend`.
+
 ==== Tests for `get_devices()`
 
 * Use some of available devices to create fill std::vector<device>.
