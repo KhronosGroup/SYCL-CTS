@@ -997,6 +997,8 @@ void add_id_linear(sycl::id<dims>& id, int size) {
   }
 }
 
+// FIXME: re-enable when handler.host_task is implemented in hipsycl
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Common function that checks correct linearization for generic
  *        and host constructors
@@ -1032,20 +1034,20 @@ void check_linearization() {
           .submit([&](sycl::handler& cgh) {
             sycl::accessor<T, dims, AccessMode, Target> acc(data_buf, cgh);
 
-            if constexpr (Target == sycl::target::host_task) {
-              cgh.host_task([=] {
-                sycl::id<dims> id{};
-                for (auto& elem : acc) {
-                  CHECK(value_operations::are_equal(elem, acc[id]));
-                  add_id_linear(id, range_size);
-                }
-              });
-            } else {
+            if constexpr (Target == sycl::target::device) {
               sycl::accessor res_acc(res_buf, cgh);
               cgh.single_task([=]() {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   res_acc[0] &= value_operations::are_equal(elem, acc[id]);
+                  add_id_linear(id, range_size);
+                }
+              });
+            } else {
+              cgh.host_task([=] {
+                sycl::id<dims> id{};
+                for (auto& elem : acc) {
+                  CHECK(value_operations::are_equal(elem, acc[id]));
                   add_id_linear(id, range_size);
                 }
               });
@@ -1064,7 +1066,7 @@ void check_linearization() {
     }
   }
 }
-
+#endif
 template <typename AccT, typename T = int>
 void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
                          bool empty = true) {
