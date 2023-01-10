@@ -791,6 +791,9 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
   CHECK(value_operations::are_equal(*acc_pointer, expected_data));
 }
 
+// FIXME: re-enable when sycl::access::decorated enumeration is implemented in
+// hipsycl and computecpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 template <typename T, typename AccT, typename AccRes>
 void test_accessor_ptr_device(AccT& accessor, T expected_data,
                               AccRes& res_acc) {
@@ -815,7 +818,8 @@ void test_accessor_ptr_device(AccT& accessor, T expected_data,
                                std::add_pointer_t<typename AccT::value_type>>;
   res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
 }
-
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
