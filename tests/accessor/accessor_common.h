@@ -791,14 +791,42 @@ void test_accessor_ptr(AccT& accessor, T expected_data) {
   CHECK(value_operations::are_equal(*acc_pointer, expected_data));
 }
 
+// FIXME: re-enable when sycl::access::decorated enumeration is implemented in
+// hipsycl and computecpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+template <typename T, typename AccT, typename AccRes>
+void test_accessor_ptr_device(AccT& accessor, T expected_data,
+                              AccRes& res_acc) {
+  auto acc_multi_ptr_no =
+      accessor.template get_multi_ptr<sycl::access::decorated::no>();
+  res_acc[0] = std::is_same_v<
+      decltype(acc_multi_ptr_no),
+      typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+
+  auto acc_multi_ptr_yes =
+      accessor.template get_multi_ptr<sycl::access::decorated::yes>();
+  res_acc[0] &= std::is_same_v<
+      decltype(acc_multi_ptr_yes),
+      typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
+  res_acc[0] &=
+      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+
+  auto acc_pointer = accessor.get_pointer();
+  res_acc[0] &= std::is_same_v<decltype(acc_pointer),
+                               std::add_pointer_t<typename AccT::value_type>>;
+  res_acc[0] &= value_operations::are_equal(*acc_pointer, expected_data);
+}
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function checks common buffer and local accessor member functions
  */
-template <typename AccT, int dims>
+template <typename AccT>
 void test_accessor_methods_common(const AccT& accessor,
                                   const size_t expected_byte_size,
-                                  const size_t expected_size,
-                                  const sycl::range<dims>& expected_range) {
+                                  const size_t expected_size) {
   {
     INFO("check byte_size() method");
     auto acc_byte_size = accessor.byte_size();
@@ -824,12 +852,34 @@ void test_accessor_methods_common(const AccT& accessor,
     STATIC_CHECK(std::is_same_v<decltype(acc_empty), bool>);
     CHECK(acc_empty == (expected_size == 0));
   }
+}
+
+template <typename AccT, int dims>
+void test_accessor_get_range_method(const AccT& accessor,
+                                    const sycl::range<dims>& expected_range) {
   {
     INFO("check get_range() method");
     auto acc_range = accessor.get_range();
     STATIC_CHECK(std::is_same_v<decltype(acc_range), sycl::range<dims>>);
     CHECK(acc_range == expected_range);
   }
+}
+
+template <typename AccT, int dims>
+void test_accessor_get_offset_method(const AccT& accessor,
+                                     const sycl::id<dims>& expected_offset) {
+  INFO("check get_offset() method");
+  auto acc_offset = accessor.get_offset();
+  STATIC_CHECK(std::is_same_v<decltype(acc_offset), sycl::id<dims>>);
+  CHECK(acc_offset == expected_offset);
+}
+
+template <typename AccT, int dims>
+void test_accessor_range_methods(const AccT& accessor,
+                                 const sycl::range<dims>& expected_range,
+                                 const sycl::id<dims>& expected_offset) {
+  test_accessor_get_range_method<AccT, dims>(accessor, expected_range);
+  test_accessor_get_offset_method<AccT, dims>(accessor, expected_offset);
 }
 
 /**
@@ -1067,6 +1117,17 @@ void check_linearization() {
   }
 }
 #endif
+
+template <int dims, typename AccT>
+typename AccT::reference get_accessor_reference(const AccT& acc) {
+  if constexpr (0 == dims) {
+    typename AccT::reference aref = acc;
+    return aref;
+  } else {
+    return acc[sycl::id<dims>()];
+  }
+}
+
 template <typename AccT, typename T = int>
 void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
                          bool empty = true) {

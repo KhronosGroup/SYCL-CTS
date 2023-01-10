@@ -1,0 +1,654 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for individual functions (2020 update)
+
+This is a test plan for the changes in APIs described in SYCL 2020 compared to SYCL 1.2.1
+relating to mathematical, integer, common, geometric, and relational functions.
+
+Estimated development time is six days.
+
+== Testing scope
+
+Tests intend to extend partial to full coverage for:
+
+* 4.17.2. Function objects
+* 4.17.5. Math functions
+* 4.17.6. Integer functions
+* 4.17.7. Common functions
+* 4.17.8. Geometric functions
+* 4.17.9. Relational functions
+
+=== Device coverage
+
+Device coverage does not change. All of the tests described below are performed only on the default
+device that is selected on the CTS command line.
+
+=== Types coverage
+
+Most of the tests are extensions of the existing tests to new `marray` types. The system of types
+coverage is coded in Python code generators therefore these type generators will be extended to cover
+full Table 165. _Generic type name description, which serves as a description for all valid types
+of parameters to kernel functions_. 
+
+More specifically, new `marray` types will be introduced with 1, 2, 3, 4, and 5 elements and
+they will be added to the following generic type names (this will extend also more generic names):
+
+[[table.gentypes]]
+[width="100%",options="header",separator="@",cols="17%,83%"]
+|====
+@ Generic type name  @ Description
+a@
+[source]
+----
+floatn
+----
+   a@ [code]#float{n}#, [code]#mfloat{n}#, [code]#marray<{N},float>#
+
+a@
+[source]
+----
+doublen
+----
+   a@ [code]#double{n}#, [code]#mdouble{n}#, [code]#marray<{N},double>#
+
+a@
+[source]
+----
+halfn
+----
+   a@ [code]#half{n}#, [code]#mhalf{n}#, [code]#marray<{N},half>#
+
+a@
+[source]
+----
+mgenfloat
+----
+   a@ [code]#marray<float,{N}>#, [code]#marray<double,{N}>#,
+      [code]#marray<half,{N}>#
+
+a@
+[source]
+----
+gengeofloat
+----
+   a@ [code]#float#, [code]#float2#, [code]#float3#, [code]#float4#, [code]#mfloat2#,
+      [code]#mfloat3#, [code]#mfloat4#
+
+a@
+[source]
+----
+gengeodouble
+----
+   a@ [code]#double#, [code]#double2#, [code]#double3#, [code]#double4#, [code]#mdouble2#,
+      [code]#mdouble3#, [code]#mdouble4#
+
+a@
+[source]
+----
+charn
+----
+   a@ [code]#char{n}#, [code]#mchar{n}#, [code]#marray<{N},char>#
+
+a@
+[source]
+----
+scharn
+----
+   a@ [code]#schar{n}#, [code]#mschar{n}#, [code]#marray<{N},signed char>#
+
+a@
+[source]
+----
+ucharn
+----
+   a@ [code]#uchar{n}#, [code]#muchar{n}#, [code]#marray<{N},unsigned char>#
+
+a@
+[source]
+----
+shortn
+----
+   a@ [code]#short{n}#, [code]#mshort{n}#, [code]#marray<{N},short>#
+
+a@
+[source]
+----
+ushortn
+----
+   a@ [code]#ushort{n}#, [code]#mushort{n}#, [code]#marray<{N},unsigned short>#
+
+a@
+[source]
+----
+uintn
+----
+   a@ [code]#uint{n}#, [code]#muint{n}#, [code]#marray<{N},unsigned int>#
+
+a@
+[source]
+----
+intn
+----
+   a@ [code]#int{n}#, [code]#mint{n}#, [code]#marray<{N},int>#
+
+a@
+[source]
+----
+ulongn
+----
+   a@ [code]#ulong{n}#, [code]#mulong{n}#, [code]#marray<{N},unsigned long int>#
+
+a@
+[source]
+----
+longn
+----
+   a@ [code]#long{n}#, [code]#mlong{n}#, [code]#marray<{N},long int>#
+
+a@
+[source]
+----
+ulonglongn
+----
+   a@ [code]#ulonglong{n}#, [code]#mulonglong{n}#, [code]#marray<{N},unsigned long long
+      int>#
+
+a@
+[source]
+----
+longlongn
+----
+   a@ [code]#longlong{n}#, [code]#mlonglong{n}#, [code]#marray<{N},long long int>#
+
+a@
+[source]
+----
+migeninteger
+----
+   a@ [code]#marray<signed char,{N}>#,
+      [code]#marray<short,{N}>#,
+      [code]#marray<int,{N}>#,
+      [code]#marray<long,{N}>#,
+      [code]#marray<long long,{N}>#
+
+a@
+[source]
+----
+mugeninteger
+----
+   a@ [code]#marray<unsigned char,{N}>#,
+      [code]#marray<unsigned short,{N}>#,
+      [code]#marray<unsigned int,{N}>#,
+      [code]#marray<unsigned long int,{N}>#,
+      [code]#marray<unsigned long long int,{N}>#
+
+a@
+[source]
+----
+mgeninteger
+----
+   a@ [code]#marray<char,{N}>#, [code]#migeninteger#, [code]#mugeninteger#
+
+a@
+[source]
+----
+mgentype
+----
+   a@ [code]#mgenfloat#, [code]#mgeninteger#
+
+a@
+[source]
+----
+booln
+----
+   a@ [code]#marray<{N},bool>#
+
+a@
+[source]
+----
+genbool
+----
+   a@ [code]#bool#, [code]#booln#
+
+|====
+
+If the device has `aspect::fp64`, `double` type is tested, and 
+if the device has `aspect::fp16`, `sycl::half` type is tested.
+
+Reference templated implementations for `marray` functions will be added to `sycl-cts/util/math_reference.h`.
+
+== Tests
+
+=== 4.17.2. Function objects
+
+The function objects are already tested in CTS in `reduction` tests. The only aspect non-tested is
+their `<void>` specializations that are transparent function objects which deduce their parameter types and return type.
+Then the test will check that C++ conversion and promotion rules are satisfied for `<void>` specializations
+of the function objects.
+
+=== 4.17.5. Math functions
+
+`marray` tests will be added to every function from Table 175. _Math functions which work on SYCL host and device._
+
+=== 4.17.6. Integer functions
+
+`marray` tests will be added to every function from Table 178. _Integer functions which work on SYCL host and device,
+are available in the sycl namespace._ Additionally some problems in existing tests should be fixed and new tests added:
+
+* Reference implementation of `template <typename T, int N, typename R = typename std::make_unsigned_t<T>>
+sycl::vec<R, N> abs(sycl::vec<T, N> a)` should return `T`, not `R` following Table 178 definition.
+
+* Reference implementation of `template <typename T> T abs_diff(T a, T b)` should return `typename R = 
+typename std::make_unsigned_t<T>` instead following Table 178 definition. Implementation should be updated
+to avoid overflow and UB.
+
+* New function test for `geninteger ctz(geninteger x)` should be introduced along with reference implementation.
+
+* Reference implementations of `mad24` and `mul24` should be extended to cover full ranges for multipliers
+defined by specification.
+
+=== 4.17.7. Common functions
+
+`marray` tests will be added to every function from Table 179. _Common functions which work on SYCL host and device,
+are available in the sycl namespace._ Additionally some problems in existing tests should be fixed and new tests added:
+
+* Reference implementations of `genfloat degrees(genfloat radians)`, `genfloat radians(genfloat degrees)`,
+`genfloat smoothstep(genfloat edge0, genfloat edge1, genfloat x)`, and `genfloat sign(genfloat x)`
+with `sycl::half` should be added.
+
+* Reference implementations of `genfloat max(genfloat x, genfloat y)` and `genfloat min (genfloat x, genfloat y)`
+should be fixed to provide correct undefined return value behavior (if any input is infinite or NaN).
+
+* Reference implementation of `genfloat mix(genfloat x, genfloat y, genfloat a)` with `sycl::half` should be added.
+
+=== 4.17.8. Geometric functions
+
+`marray` tests will be added to the following functions from Table 180. _Geometric functions which work on SYCL host and device,
+are available in the sycl namespace_:
+
+[[table.geometric.functions]]
+[width="100%",options="header",separator="@",cols="47%,53%"]
+|====
+@ Geometric Function @ Description
+
+a@
+[source]
+----
+mfloat4 cross(mfloat4 p0, mfloat4 p1)
+mfloat3 cross(mfloat3 p0, mfloat3 p1)
+mdouble4 cross(mdouble4 p0, mdouble4 p1)
+mdouble3 cross(mdouble3 p0, mdouble3 p1)
+----
+   a@ Returns the cross product of first 3 components of p0 and p1. The 4th component of result returned will be 0.0.
+
+a@
+[source]
+----
+float dot(gengeofloat p0, gengeofloat p1)
+double dot(gengeodouble p0, gengeodouble p1)
+----
+   a@ Compute dot product.
+
+a@
+[source]
+----
+float distance(gengeofloat p0, gengeofloat p1)
+double distance(gengeodouble p0, gengeodouble p1)
+----
+   a@ Returns the distance between p0 and p1. This is
+      calculated as [code]#length(p0 - p1)#.
+
+a@
+[source]
+----
+float length(gengeofloat p)
+double length(gengeodouble p)
+----
+   a@ Return the length of vector p, i.e.,
+      latexmath:[\sqrt{ p.x^2 + p.y^2 + ...}]
+
+a@
+[source]
+----
+gengeofloat normalize(gengeofloat p)
+gengeodouble normalize(gengeodouble p)
+----
+   a@ Returns a vector in the same direction as p but with a
+      length of 1.
+
+a@
+[source]
+----
+float fast_distance(gengeofloat p0, gengeofloat p1)
+----
+   a@ Returns [code]#fast_length(p0 - p1)#.
+
+a@
+[source]
+----
+float fast_length(gengeofloat p)
+----
+   a@ Returns the length of vector p computed as:
+      [code]#pass:[sqrt((half)(pow(p.x,2) + pow(p.y,2) + ...))]#
+
+a@
+[source]
+----
+gengeofloat fast_normalize(gengeofloat p)
+----
+   a@ Returns a vector in the same direction as p but with a
+      length of 1. fast_normalize is computed as:
+
+[code]#pass:[p*rsqrt((half)(pow(p.x,2) + pow(p.y,2) + ... ))]#
+
+The result shall be within 8192 ulps error from the
+infinitely precise result of
+
+[source]
+----
+if (all(p == 0.0f))
+  result = p;
+else
+  result = p / sqrt(pow(p.x, 2) + pow(p.y, 2) + ...);
+----
+
+with the following exceptions:
+
+--
+  . If the sum of squares is greater than [code]#FLT_MAX# then the
+    value of the floating-point values in the result vector are undefined.
+  . If the sum of squares is less than [code]#FLT_MIN# then the
+    implementation may return back p.
+  . If the device is in "`denorms are flushed to zero`" mode, individual
+    operand elements with magnitude less than [code]#sqrt(FLT_MIN)# may
+    be flushed to zero before proceeding with the calculation.
+--
+
+|====
+
+Additionally some problems in existing tests should be fixed and new tests added:
+
+* Reference implementation of `template <typename T> T normalize(T p)` should be fixed
+for scalar types to provide -1 for negative values.
+
+* Reference implementations of `float fast_distance(gengeofloat p0, gengeofloat p1)`,
+`float fast_length(gengeofloat p)`, and `gengeofloat fast_normalize(gengeofloat p)`
+should be fixed to follow spec definitions.
+
+=== 4.17.9. Relational functions
+
+The following realtional functions for `sycl::half` inputs should be provided with tests
+like already present ones for `float` and `double`:
+
+[[table.relational.functions.vec]]
+[width="100%",options="header",separator="@",cols="55%,45%"]
+|====
+@ Relational Function @ Description
+a@
+[source]
+----
+vec<int16_t, { n }> isequal(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#x == y#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isnotequal(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#x != y#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isgreater(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#x > y#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isgreaterequal(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#x >= y#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isless(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#x < y#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> islessequal(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of [code]#+x <= y+#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> islessgreater(half { n } x, half { n } y)
+----
+   a@ Returns the component-wise compare of
+      [code]#(x < y) || (x > y)#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isfinite(half { n } x)
+----
+   a@ Test for finite value.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isinf(half { n } x)
+----
+   a@ Test for infinity value (positive or negative) .
+
+a@
+[source]
+----
+vec<int16_t, { n }> isnan(half { n } x)
+----
+   a@ Test for a NaN.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isnormal(half { n } x)
+----
+   a@ Test for a normal value.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isordered(half { n } x, half { n } y)
+----
+   a@ Test if arguments are ordered. [code]#isordered()# takes arguments
+      [code]#x# and [code]#y#, and returns the result
+      [code]#isequal(x, x) && isequal(y, y)#.
+
+a@
+[source]
+----
+vec<int16_t, { n }> isunordered(half { n } x, half { n } y)
+----
+   a@ Test if arguments are unordered. [code]#isunordered()# takes arguments
+      [code]#x# and [code]#y#, returning non-zero if [code]#x# or [code]#y# is
+      NaN, and zero otherwise.
+
+a@
+[source]
+----
+vec<int16_t, { n }> signbit(half { n } x)
+----
+   a@ Test for sign bit.  Returns the following for each component in
+      [code]#x#: -1 (i.e all bits set) if the sign bit in the component value
+      is set else returns 0.
+|====
+
+Reference implementations for the scalar input functions should be fixed to provide
+correct `bool` output, and `marray` tests should be added for the `marray` input functions
+of the following table:
+
+[[table.relational.functions.marray]]
+[width="100%",options="header",separator="@",cols="55%,45%"]
+|====
+@ Relational Function @ Description
+a@
+[source]
+----
+bool isequal(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isequal(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#x == y#.
+
+a@
+[source]
+----
+bool isnotequal(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isnotequal(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#x != y#.
+
+a@
+[source]
+----
+bool isgreater(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isgreater(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#x > y#.
+
+a@
+[source]
+----
+bool isgreaterequal(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isgreaterequal(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#x >= y#.
+
+a@
+[source]
+----
+bool isless(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isless(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#x < y#.
+
+a@
+[source]
+----
+bool islessequal(sgenfloat x, sgenfloat y)
+marray<bool, { N }> islessequal(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of [code]#+x <= y+#.
+
+a@
+[source]
+----
+bool islessgreater(sgenfloat x, sgenfloat y)
+marray<bool, { N }> islessgreater(mgenfloat x, mgenfloat y)
+----
+   a@ Returns the component-wise compare of
+      [code]#(x < y) || (x > y)#.
+
+a@
+[source]
+----
+bool isfinite(sgenfloat x)
+marray<bool, { N }> isfinite(mgenfloat x)
+----
+   a@ Test for finite value.
+
+a@
+[source]
+----
+bool isinf(sgenfloat x)
+marray<bool, { N }> isinf(mgenfloat x)
+----
+   a@ Test for infinity value (positive or negative) .
+
+a@
+[source]
+----
+bool isnan(sgenfloat x)
+marray<bool, { N }> isnan(mgenfloat x)
+----
+   a@ Test for a NaN.
+
+a@
+[source]
+----
+bool isnormal(sgenfloat x)
+marray<bool, { N }> isnormal(mgenfloat x)
+----
+   a@ Test for a normal value.
+
+a@
+[source]
+----
+bool isordered(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isordered(mgenfloat x, mgenfloat y)
+----
+   a@ Test if arguments are ordered. [code]#isordered()# takes arguments
+      [code]#x# and [code]#y#, and returns the result
+      [code]#isequal(x, x) && isequal(y, y)#.
+
+a@
+[source]
+----
+bool isunordered(sgenfloat x, sgenfloat y)
+marray<bool, { N }> isunordered(mgenfloat x, mgenfloat y)
+----
+   a@ Test if arguments are unordered. [code]#isunordered()#
+      takes arguments [code]#x# and [code]#y#, returning [code]#true# if
+      [code]#x# or [code]#y# is NaN, and [code]#false# otherwise.
+
+a@
+[source]
+----
+bool signbit(sgenfloat x)
+marray<bool, { N }> signbit(mgenfloat x)
+----
+   a@ Test for sign bit, returning [code]#true# if the sign bit
+      in [code]#x# is set, and [code]#false# otherwise.
+
+a@
+[source]
+----
+bool any(sigeninteger x)
+bool any(migeninteger x)
+----
+   a@ Returns [code]#true# if the most significant bit in any component of
+      [code]#x# is set; otherwise returns [code]#false#.
+
+a@
+[source]
+----
+bool all(sigeninteger x)
+bool all(migeninteger x)
+----
+   a@ Returns [code]#true# if the most significant bit in all components of
+      [code]#x# is set; otherwise returns [code]#false#.
+
+a@
+[source]
+----
+mgentype bitselect(mgentype a, mgentype b, mgentype c)
+----
+   a@ Each bit of the result is the corresponding bit of [code]#a#
+      if the corresponding bit of [code]#c# is 0. Otherwise it is
+      the corresponding bit of [code]#b#.
+
+a@
+[source]
+----
+mgentype select(mgentype a, mgentype b, marray<bool, { N }> c)
+----
+   a@ Returns the component-wise [code]#result = c ? b : a#.
+
+|====

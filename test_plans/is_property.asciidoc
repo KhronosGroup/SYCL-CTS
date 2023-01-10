@@ -1,0 +1,46 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for is_property and is_property_of
+
+This is a test plan for the properties as described in Section 4.5.4.1. of the SYCL 2020 specification. Specifically, it covers `is_property` and `is_property_of`. The estimated development time is one day.
+
+== Testing scope
+No negative tests are included.
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+|===
+|Property|Class|Reference
+|`property::queue::enable_profiling` and `property::queue::in_order`
+| `queue`
+|Table 31.
+|`property::buffer::use_host_ptr`, `property::buffer::use_mutex`, and `property::buffer::context_bound`
+|`buffer`
+|Table 41.
+|`property::image::use_host_ptr`, `property::image::use_mutex`, and `property::image::context_bound`
+|`sampled_image` and `unsampled_image`
+|Table 48.
+|`property::no_init`
+|`accessor`, `host_accessor`, `unsampled_image_accessor`, and `host_unsampled_image_accessor`
+|Table 52.
+|`property::reduction::initialize_to_identity`
+| None
+|Table 125.
+|===
+
+For each property `Property` in the above table:
+
+- Check that `is_base_of_v<std::true_type, sycl::is_property<Property>>` is true.
+- Check that `sycl::is_property_v<Property>` is true.
+- For each class `Class` that `Property` is associated with in the above table:
+* Check that `is_base_of_v<std::true_type, sycl::is_property_of<Property, Class>>` is true.
+- Check that `sycl::is_property_of_v<Property, Class>` is true.
