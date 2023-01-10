@@ -1,0 +1,102 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for atomic_fence
+
+This is a test plan for `sycl::atomic_fence` function described in https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:barriers-fences[SYCL 2020 sections 4.15.1. Barriers and fences]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Tests
+
+=== SYCL2020 interface
+
+==== Testing `sycl::atomic_fence` function
+
+The synchronization check between `work-items` with the `atomic_fence` function should be performed  with `sycl::handler::parallel_for`.
+
+The check should be performed with following memory types:
+
+* `local memory` and `sycl::local_accessor` - to test synchronization between work-items in the same work-group
+* `global memory` and `sycl::accessor` - to test synchronization between work-items in different work-groups
+
+=====  Testing `atomic_fence` across `work-items` in the same `work-group`
+
+This test allocates memory in a `local_accessor` that is shared by all `work-items` in each `work-group`.
+Each leader `work-item` in the `work-group` writes a value to this memory and every other `work-item` in
+the `work-group` reads the memory, making sure it has the expected value.
+
+[source,c++]
+----
+sycl::group g = /* ... */;
+sycl::atomic_ref<bool, sycl::memory_order::relaxed, sycl::memory_scope::work_group> sync_flag(/*value from local_accessor*/);
+int *data = &/*value from local_accessor*/;
+if (g.leader()) {
+  *data = EXPECTED;
+  sycl::atomic_fence(ORDER1, SCOPE);
+  sync_flag = true;
+}
+else {
+  while (sync_flag != true);
+  sycl::atomic_fence(ORDER2, SCOPE);
+  if (*data != EXPECTED)
+    /* test fails */
+}
+----
+
+The test is repeated for each of the following values of `SCOPE` which is supported by the device
+(according to `info::device::atomic_fence_scope_capabilities`):
+
+* `sycl::memory_scope::work_group`
+* `sycl::memory_scope::device`
+* `sycl::memory_scope::system`
+
+For each supported `SCOPE`, the test is repeated for each of the following combinations of `ORDER1`
+and `ORDER2` which are supported by the device (according to `info::device::atomic_fence_order_capabilities`):
+
+* `ORDER1` is `sycl::memory_order::release` and `ORDER2` is `sycl::memory_order::acquire`.
+* `ORDER1` and `ORDER2` are both `sycl::memory_order::acq_rel`
+* `ORDER1` and `ORDER2` are both `sycl::memory_order::seq_cst`
+
+===== Testing `atomic_fence` across `work-items` in different `work-groups`
+
+This test allocates memory in a buffer `accessor` that is shared by all `work-items` in the `kernel`.
+One `work-item` writes a value to this memory and all other `work-items` in the `kernel` read the memory,
+making sure it has the expected value. Because this test requires `sycl::memory_scope::device`,
+it is only run if the device supports that memory scope.
+
+[source,c++]
+----
+sycl::group g = /* ... */;
+sycl::atomic_ref<bool, sycl::memory_order::relaxed, sycl::memory_scope::device> sync_flag(/*value from accessor*/);
+int *data = &/*value from accessor*/;
+if (nditem.get_global_linear_id() == 0) {
+  *data = EXPECTED;
+  sycl::atomic_fence(ORDER1, SCOPE);
+  sync_flag = true;
+}
+else {
+  while (sync_flag != true);
+  sycl::atomic_fence(ORDER2, SCOPE);
+  if (*data != EXPECTED)
+    /* test fails */
+}
+----
+
+The test is repeated for each of the following values of `SCOPE` which is supported by the device
+(according to `info::device::atomic_fence_scope_capabilities`):
+
+* `sycl::memory_scope::device`
+* `sycl::memory_scope::system`
+
+For each supported `SCOPE`, the test is repeated for each of the following combinations of `ORDER1` and `ORDER2`
+which are supported by the device (according to `info::device::atomic_fence_order_capabilities`):
+
+* `ORDER1` is `sycl::memory_order::release` and `ORDER2` is `sycl::memory_order::acquire`.
+* `ORDER1` and `ORDER2` are both `sycl::memory_order::acq_rel`
+* `ORDER1` and `ORDER2` are both `sycl::memory_order::seq_cst`
