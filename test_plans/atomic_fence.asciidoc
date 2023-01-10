@@ -42,10 +42,11 @@ if (g.leader()) {
   sync_flag = true;
 }
 else {
-  while (sync_flag != true);
-  sycl::atomic_fence(ORDER2, SCOPE);
-  if (*data != EXPECTED)
-    /* test fails */
+  if (true == sync_flag) {
+    sycl::atomic_fence(ORDER2, SCOPE);
+    if (*data != EXPECTED)
+      /* test fails */
+  }
 }
 ----
 
@@ -81,10 +82,11 @@ if (nditem.get_global_linear_id() == 0) {
   sync_flag = true;
 }
 else {
-  while (sync_flag != true);
-  sycl::atomic_fence(ORDER2, SCOPE);
-  if (*data != EXPECTED)
-    /* test fails */
+  if (true == sync_flag) {
+    sycl::atomic_fence(ORDER2, SCOPE);
+    if (*data != EXPECTED)
+      /* test fails */
+  }
 }
 ----
 
