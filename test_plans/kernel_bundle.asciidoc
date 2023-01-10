@@ -1,0 +1,140 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for kernel_bundle (cover gaps)
+
+This is a test plan cover kernel_bundle functionality that is not covered by current tests.
+
+== Testing scope
+
+Tests intend to cover functions from 4.11. Kernel bundles that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/SYCL-2020/tests/kernel_bundle
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line if not stated otherwise.
+
+== Tests
+
+=== Finctions `is_compatible`
+
+==== Tests for `is_compatible(const std::vector<kernel_id> &kernelIds, const device &dev)`
+
+Check that result of function `is_compatible(const std::vector<kernel_id> &kernelIds, const device &dev)`:
+
+* `false` for zero kernels
+* `true` for built-in kernel id for the same device
+* `false` for built-in kernel id for the other device
+* for kernel with no kernel attributes:
+
+** `true` for kernel with no optional features and any device
+** `true` for fp16/fp64/atomic64 kernel and device with appropriate aspect
+** `false` for fp16/fp64/atomic64 kernel and device without appropriate aspect
+
+* for kernel with `reqd_work_group_size`
+
+** `false` for kernel with no optional features and any device with `max_work_group_size` less than `reqd_work_group_size`
+
+* for kernel with `reqd_sub_group_size` (that is less than `max_work_group_size`)
+
+** `false` for kernel with no optional features and any device with `sub_group_sizes` not containing `reqd_sub_group_size`
+
+* for kernel with no optional features used and with sycl::requires() kernel attribute
+
+** `true` for `has(fp16)`/`has(fp64)`/`has(atomic64)` and device with appropriate aspect
+** false for `has(fp16)`/`has(fp64)`/`has(atomic64)` and device without appropriate aspect
+
+* for multiple kernels result is equal to AND operation applied to the multiple calls - each one using single kernel id
+** Check with vector with kernel ids for same and other devices
+
+==== Tests for `template<typename KernelName> bool is_compatible(const device &dev)`
+
+Same tests as previous section except no zero, built-in and multiple kernels cases.
+
+=== `sycl::kernel_bundle` API
+
+==== Deleted default constructor
+
+Check that `std::is_default_constructible_v<sycl::kernel_bundle>` is `false`.
+
+==== Tests for `get_devices()`
+
+* Use some of available devices to create fill std::vector<device>.
+* Create kernel_bundle via `get_kernel_bundle(const context&, const std::vector<device>&)`.
+* Check that return type is std::vector<device>.
+* Check that return vector contains all devices from input vector and only them.
+
+==== `has_kernel(const kernel_id &kernelId, const device &dev)`
+
+Check that result of function is:
+
+* `true` if kernelId is within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `true`
+* `false` if kernelId is within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `false`
+* `false` if kernelId is not within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `true`
+* `false` if kernelId is not within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `false`
+
+
+==== `std::vector<kernel_id> get_kernel_ids()`
+
+Define 4 kernels.
+Get kernel_bundle with built-in kernels.
+Check that result of get_kernel_ids:
+
+* has type `std::vector<kernel_id>`
+* has size 4
+* has only different kernel ids
+
+==== `get_kernel()`
+
+Define kernel KernelName.
+Get `kernel_bundle` with built-in kernels.
+
+* Use `get_kernel<KernelName>()` to get kernel and that return type is `sycl::kernel`
+* Try to use `get_kernel<OtherKernelName>()` and check that `errc::invalid` is thrown
+
+=== Tests for working with specialization constants
+
+Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/specialization_constants/specialization_constants_via_kernel_bundle.h
+
+There are should be two spec constants defined - `SpecName` and `OtherSpecName`.
+
+==== Empty kernel bundle
+
+* Get an empty `kernel_bundle`.
+* Check that `contains_specialization_constants()` return `false`.
+* Check that `native_specialization_constant()` return `false`.
+* Check that `has_specialization_constant<SpecName>()` return `false`.
+
+==== Kernel bundle without `kernel_handler::get_specialization_constant()` call
+
+* Get an input `kernel_bundle` with kernel without `kernel_handler::get_specialization_constant()` call.
+* Check that `contains_specialization_constants()` return `false`.
+* Check that `native_specialization_constant()` return `false`.
+* Check that `has_specialization_constant<SpecName>()` return `false`.
+* Check that `get_specialization_constant<SpecName>()` return default value.
+* Call `compile()` to build the `kernel_bundle` into `object` state.
+* Check the same.
+* Call `link()` to build the `kernel_bundle` into `executable` state.
+* Check the same.
+
+==== Kernel bundle with `kernel_handler::get_specialization_constant()` call
+
+* Get an input `kernel_bundle` with kernel with `kernel_handler::get_specialization_constant<SpecName>()` call.
+* Set each spec constant to a different value via `kernel_bundle::set_specialization_constant()`.
+* Check that `contains_specialization_constants()` return `true`.
+* Check that called `native_specialization_constant()` without exception.
+* Check that `has_specialization_constant<SpecName>()` return `true`.
+* Check that `has_specialization_constant<OtherSpecName>()` return `false`.
+* Check that `get_specialization_constant<SpecName>()` return new value.
+* Call `compile()` to build the `kernel_bundle` into `object` state.
+* Check the same.
+* Call `link()` to build the `kernel_bundle` into `executable` state.
+* Check the same.
+
+
+
+
+
+
+
+
