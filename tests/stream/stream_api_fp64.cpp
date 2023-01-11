@@ -17,7 +17,7 @@ using namespace sycl_cts;
 class test_kernel;
 
 /** test sycl::stream interface
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -35,17 +35,16 @@ class TEST_NAME : public util::test_base {
 
       if (!testQueue.get_device().has(sycl::aspect::fp64)) {
         log.note(
-            "Device does not support double precision floating point operations");
+            "Device does not support double precision floating point "
+            "operations");
         return;
       }
 
       testQueue.submit([&](sycl::handler &cgh) {
-
         sycl::stream os(2048, 80, cgh);
 
-        cgh.single_task<class test_kernel>([=]() {
-          check_all_vec_dims(os, double(5.5));
-        });
+        cgh.single_task<class test_kernel>(
+            [=]() { check_all_vec_dims(os, double(5.5)); });
       });
 
       testQueue.wait_and_throw();

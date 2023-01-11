@@ -30,7 +30,7 @@ using namespace sycl_cts;
 class test_kernel;
 
 /** test sycl::stream interface
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -49,16 +49,16 @@ class TEST_NAME : public util::test_base {
 
         if (!testQueue.get_device().has(sycl::aspect::fp16)) {
           log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
+              "Device does not support half precision floating point "
+              "operations");
+          return;
+        }
 
         testQueue.submit([&](sycl::handler &cgh) {
           sycl::stream os(2048, 80, cgh);
 
-          cgh.single_task<class test_kernel>([=]() {
-            check_all_vec_dims(os, sycl::half(0.2f));
-          });
+          cgh.single_task<class test_kernel>(
+              [=]() { check_all_vec_dims(os, sycl::half(0.2f)); });
         });
 
         testQueue.wait_and_throw();
