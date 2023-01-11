@@ -51,8 +51,8 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL device
   */
-  static sycl::device device(
-      const sycl::device_selector &selector = cts_selector()) {
+  template <class DeviceSelector = cts_selector>
+  static sycl::device device(const DeviceSelector &selector = cts_selector()) {
     return sycl::device(selector);
   }
 
@@ -110,7 +110,7 @@ struct get_cts_object {
     template <class kernel_name>
     static sycl::kernel prebuilt(sycl::queue &queue) {
 // ComputeCpp and hipSYCL do not yet support sycl::get_kernel_bundle
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP  && !SYCL_CTS_COMPILING_WITH_HIPSYCL
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
       auto ctx = queue.get_context();
       auto kb_exe =
           sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(
@@ -156,7 +156,7 @@ struct get_cts_object::range<1> {
    *        dimension
    */
   template <int dims>
-  static sycl::range<1> get(const sycl::range<dims>& range) {
+  static sycl::range<1> get(const sycl::range<dims> &range) {
     return sycl::range<1>(range[0]);
   }
 
@@ -191,7 +191,7 @@ struct get_cts_object::range<2> {
    *        dimensions
    */
   template <int dims>
-  static sycl::range<2> get(const sycl::range<dims>& range) {
+  static sycl::range<2> get(const sycl::range<dims> &range) {
     return sycl::range<2>(range[0], range[1]);
   }
 
@@ -229,9 +229,7 @@ struct get_cts_object::range<3> {
   /**
    * @brief Common code support for bigger range usage
    */
-  static sycl::range<3> get(sycl::range<3> range) {
-    return range;
-  }
+  static sycl::range<3> get(sycl::range<3> range) { return range; }
 
   /**
    * @brief Constructs a range<3> by only using two components and the
@@ -259,14 +257,12 @@ struct get_cts_object::id<1> {
    * @param v0 Value of the first component of the id
    * @return id<1>
    */
-  static sycl::id<1> get(size_t v0, size_t, size_t) {
-    return sycl::id<1>(v0);
-  }
+  static sycl::id<1> get(size_t v0, size_t, size_t) { return sycl::id<1>(v0); }
   /**
    * @brief Constructs an id<1> by using any bigger id
    */
   template <int dims>
-  static sycl::id<1> get(const sycl::id<dims>& id) {
+  static sycl::id<1> get(const sycl::id<dims> &id) {
     return sycl::id<1>(id[0]);
   }
 };
@@ -288,7 +284,7 @@ struct get_cts_object::id<2> {
    * @brief Constructs an id<2> by using any bigger id
    */
   template <int dims>
-  static sycl::id<2> get(const sycl::id<dims>& id) {
+  static sycl::id<2> get(const sycl::id<dims> &id) {
     return sycl::id<2>(id[0], id[1]);
   }
 };
@@ -310,9 +306,7 @@ struct get_cts_object::id<3> {
   /**
    * @brief Common code support for bigger id usage
    */
-  static sycl::id<3> get(sycl::id<3> id) {
-    return id;
-  }
+  static sycl::id<3> get(sycl::id<3> id) { return id; }
 };
 
 }  // namespace util
