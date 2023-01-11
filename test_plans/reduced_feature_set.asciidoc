@@ -1,0 +1,45 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for reduced and full feature set
+
+This is a test plan for the full and reduced feature sets as described in Appendix B.1. and Appendix B.2. of the SYCL 2020 specification.
+
+Currently, the CTS does not take into account the full and reduced feature sets. This test plan proposes a way to modify the CTS in such a way that it may be specified whether conformance should be tested for the reduced or the full feature set. For the remainder of this plan, let "full feature" refer to a feature that is part of the full feature set, but not part of the reduced feature set.
+
+A CTS option is introduced, `SYCL_CTS_ENABLE_FEATURE_SET_FULL`, which specifies that full features should be tested in addition to the features of the reduced feature set. The tests for the full features should be guarded if `#ifdef SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
+
+In all existing tests, the full features are removed and replaced with a workaround. Since the CTS was not written with the feature sets in mind, a "best effort" is made to remove the full features in the CTS. New additions should not use full features unless guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
+
+An exception to this are the tests that explicitly test full features. For example, when launching a kernel to test `sycl::id` 's interface, the kernel should be launched with a kernel name instead of using the full feature to not specify a name. However, the test that verifies that the full feature that allows for kernels to be launched without a kernel name works correctly, should still exist and be guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
+
+Currently, three full features are defined. For each of these features, the required behavior as a result from removing full features is stated, in addition to the tests which are the exceptions (or the proposal for a simple test if none exist).
+
+== Un-named SYCL kernel functions
+=== Required behavior
+Every kernel launch has a kernel name, e.g. `parallel_for<kernel_name>`.
+
+=== Exceptions
+The existing tests for `sycl::handler` in `handler/handler_invoke_api.cpp` are modified such that they are also run without a kernel name, if `SYCL_CTS_ENABLE_FEATURE_SET_FULL` is defined.
+
+== Generic address space mode
+=== Required behavior
+Section 5.9.4. of the SYCL 2020 specification defines several rules for the deduction of the address space of pointer types and reference types. It is illegal when following these rules results in a pointer value being assigned to a pointer variable that addresses a different addressing space. Tests that depend on such behavior should be rewritten.
+
+=== Exceptions
+Existing tests rely on the generic address space being available. These tests are guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`:
+
+- `multi_ptr_convert_assignment_ops_(core|fp16|fp64).cpp`
+- `multi_ptr_explicit_conversions_(core|fp16|fp64).cpp`
+- `multi_ptr_implicit_conversions_(core|fp16|fp64).cpp`
+
+== ODR-usage of static declarations
+=== Required behavior
+No variables with static storage duration may be ODR-used inside a device function.
+
+=== Exceptions
+A simple test is constructed that ODR-uses a variable with static storage duration and produces some side effect. The test is guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
+
+- Declare `static const int value = <value>;`
+- Launch a kernel that takes the address of `value` (which ODR-uses the variable) and stores the result.
+- Check that the result does not evaluate to `nullptr`.
