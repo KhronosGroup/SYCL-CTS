@@ -39,8 +39,8 @@ class TEST_NAME : public util::test_base {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  std::string errorStr = std::string(
-      "The following device type does not have the correct ");
+  std::string errorStr =
+      std::string("The following device type does not have the correct ");
 
   /** execute the test
    */
@@ -73,8 +73,7 @@ class TEST_NAME : public util::test_base {
 
       // SYCL Floating Point Data Types
 #if SYCL_CTS_ENABLE_HALF_TESTS
-      check_type_min_size_sign_log<sycl::half>(log, 2, true,
-                                                   "sycl::half");
+      check_type_min_size_sign_log<sycl::half>(log, 2, true, "sycl::half");
 #endif
       check_type_min_size_sign_log<float>(log, 4, true, "float");
       check_type_min_size_sign_log<double>(log, 8, true, "double");
@@ -84,10 +83,10 @@ class TEST_NAME : public util::test_base {
       std::array<bool, 15> signResults;
       std::array<bool, 16> sizeResults;
       {
-        sycl::buffer<bool, 1> bufSignResult(
-            signResults.data(), sycl::range<1>(signResults.size()));
-        sycl::buffer<bool, 1> bufSizeResult(
-            sizeResults.data(), sycl::range<1>(sizeResults.size()));
+        sycl::buffer<bool, 1> bufSignResult(signResults.data(),
+                                            sycl::range<1>(signResults.size()));
+        sycl::buffer<bool, 1> bufSizeResult(sizeResults.data(),
+                                            sycl::range<1>(sizeResults.size()));
 
         myQueue.submit([&](sycl::handler &cgh) {
           auto accSignResult =
@@ -109,7 +108,7 @@ class TEST_NAME : public util::test_base {
             accSignResult[8] = check_type_sign<unsigned long long int>(false);
             accSignResult[9] = check_type_sign<long long int>(true);
             accSignResult[10] = check_type_sign<size_t>(false);
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS // sycl::byte is deprecated
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  // sycl::byte is deprecated
             accSignResult[11] = check_type_sign<sycl::byte>(false);
 #endif
 #if SYCL_CTS_ENABLE_HALF_TESTS
@@ -131,7 +130,7 @@ class TEST_NAME : public util::test_base {
             accSizeResult[9] = check_type_min_size<unsigned long long int>(8);
             accSizeResult[10] = check_type_min_size<long long int>(8);
             accSizeResult[11] = check_type_min_size<size_t>(host_size_t_size);
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS // sycl::byte is deprecated
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  // sycl::byte is deprecated
             accSizeResult[12] = check_type_min_size<sycl::byte>(1);
 #endif
 #if SYCL_CTS_ENABLE_HALF_TESTS
@@ -139,7 +138,6 @@ class TEST_NAME : public util::test_base {
 #endif
             accSizeResult[14] = check_type_min_size<float>(4);
             accSizeResult[15] = check_type_min_size<double>(8);
-
           });
         });
       }
@@ -178,7 +176,7 @@ class TEST_NAME : public util::test_base {
       if (!signResults[10]) {
         FAIL(log, errorStr + "sign: size_t");
       }
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS // sycl::byte is deprecated
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  // sycl::byte is deprecated
       if (!signResults[11]) {
         FAIL(log, errorStr + "sign: sycl::byte");
       }
@@ -232,7 +230,7 @@ class TEST_NAME : public util::test_base {
       if (!sizeResults[11]) {
         FAIL(log, errorStr + "size: size_t");
       }
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS // sycl::byte is deprecated
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  // sycl::byte is deprecated
       if (!sizeResults[12]) {
         FAIL(log, errorStr + "size: sycl::byte");
       }
