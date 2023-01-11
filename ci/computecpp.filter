@@ -20,7 +20,7 @@ nd_item
 opencl_interop
 platform
 reduction
-specialization_constants
+spec_constants
 stream
 sub_group_mask
 usm

@@ -26,7 +26,7 @@ range
 reduction
 sampler
 scalars
-specialization_constants
+spec_constants
 stream
 usm
 vector_alias

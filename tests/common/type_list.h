@@ -24,7 +24,7 @@ struct user_struct {
 
   user_struct(int val) : a(0), b(val), c(0) {}
 
-  element_type operator[](size_t index) const { return b; }
+  element_type operator[](size_t) const { return b; }
 
   friend bool operator==(const user_struct &lhs, const user_struct &rhs) {
     static constexpr auto eps = 1e-4f;

@@ -11,6 +11,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+#include "accessor_common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
