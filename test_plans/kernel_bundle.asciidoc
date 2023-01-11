@@ -22,30 +22,40 @@ is selected on the CTS command line if not stated otherwise.
 
 Check that result of function `is_compatible(const std::vector<kernel_id> &kernelIds, const device &dev)`:
 
-* `false` for zero kernels
-* `true` for built-in kernel id for the same device
-* `false` for built-in kernel id for the other device
-* for kernel with no kernel attributes:
+* `true` for zero kernels
+* `true` for built-in kernel id for the selected device
+* Construct a vector of the built-in kernel ids from every root device other than the selected device.
+Check that is_compatible returns false for this vector of kernel ids unless the vector is empty.
+* for kernels with no kernel attributes:
 
-** `true` for kernel with no optional features and any device
-** `true` for fp16/fp64/atomic64 kernel and device with appropriate aspect
-** `false` for fp16/fp64/atomic64 kernel and device without appropriate aspect
+** `true` for a kernel that uses `sycl::half` if and only if the selected device has `aspect::fp16`.
+** `true` for a kernel that uses `double` if and only if the selected device has `aspect::fp64`.
+** `true` for a kernel that uses 64-bit atomic operations if and only if the selected device has `aspect::atomic64`.
 
-* for kernel with `reqd_work_group_size`
+* Define kernels with the following values of the `[[sycl::reqd_work_group_size]]` attribute.
+Verify that `is_compatible` returns true if and only if the work group size is less than or equal to the value reported by `info::device::max_work_group_size` for the selected device.
 
-** `false` for kernel with no optional features and any device with `max_work_group_size` less than `reqd_work_group_size`
+** `[[sycl::reqd_work_group_size(8)]]`
+** `[[sycl::reqd_work_group_size(16)]]`
+** `[[sycl::reqd_work_group_size(4294967295)]]`
 
-* for kernel with `reqd_sub_group_size` (that is less than `max_work_group_size`)
+* Define kernels with the following values of the `[[sycl::reqd_sub_group_size]]` attribute.
+Verify that `is_compatible` returns true if and only if the sub group size is not one of the values reported by `info::device::sub_group_sizes` for the selected device.
 
-** `false` for kernel with no optional features and any device with `sub_group_sizes` not containing `reqd_sub_group_size`
+** `[[sycl::reqd_work_group_size(8)]]`
+** `[[sycl::reqd_work_group_size(16)]]`
+** `[[sycl::reqd_work_group_size(4099)]]`
 
-* for kernel with no optional features used and with sycl::requires() kernel attribute
+* for kernels with no optional features used and with `[[sycl::device_has()]]` kernel attribute
 
-** `true` for `has(fp16)`/`has(fp64)`/`has(atomic64)` and device with appropriate aspect
-** false for `has(fp16)`/`has(fp64)`/`has(atomic64)` and device without appropriate aspect
+** `true` for a kernel decorated with `[[sycl::device_has(aspect::fp16)]]` if and only if the selected device has that aspect.
+** `true` for a kernel decorated with `[[sycl::device_has(aspect::fp64)]]` if and only if the selected device has that aspect.
+** `true` for a kernel decorated with `[[sycl::device_has(aspect::atomic64)]]` if and only if the selected device has that aspect.
 
 * for multiple kernels result is equal to AND operation applied to the multiple calls - each one using single kernel id
-** Check with vector with kernel ids for same and other devices
+** Check with vector with built-in kernel ids and with the selected device - should return `true`
+** To previous vector add kernel id with large `[[sycl::reqd_work_group_size(4294967295)]]` attribute and with the selected device - should return `false` if value reported by `info::device::max_work_group_size` is less than 4294967295.
+
 
 ==== Tests for `template<typename KernelName> bool is_compatible(const device &dev)`
 
@@ -59,71 +69,56 @@ Check that `std::is_default_constructible_v<sycl::kernel_bundle>` is `false`.
 
 ==== Test for `get_backend()`
 
-Call function `kernel::get_backend()` and check that return type is `sycl::backend`.
+Call function `kernel_bundle::get_backend()` and check that return type is `sycl::backend`.
 
 ==== Tests for `get_devices()`
 
-* Use some of available devices to create fill std::vector<device>.
-* Create kernel_bundle via `get_kernel_bundle(const context&, const std::vector<device>&)`.
+* Create a 1-element `std::vector<device>` containing the selected device.
+* Create kernel_bundle via `get_kernel_bundle<bundle_state::executable>(const context&, const std::vector<device>&)`.
+* Call `get_devices()`.
 * Check that return type is std::vector<device>.
-* Check that return vector contains all devices from input vector and only them.
+* Check that return vector contains only selected device.
 
 ==== `has_kernel(const kernel_id &kernelId, const device &dev)`
 
-Check that result of function is:
-
-* `true` if kernelId is within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `true`
-* `false` if kernelId is within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `false`
-* `false` if kernelId is not within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `true`
-* `false` if kernelId is not within get_kernel_ids() and `is_compatible({kernelId}, const device&)` is `false`
-
+* Create a kernel bundle in executable state which contains all the application's kernels by calling `get_kernel_bundle<bundle_state::executable>(const context &)`.
+* Iterate over all of the kernel ids returned by `get_kernel_ids()`.
+* Verify that `has_kernel(kernelId, dev)` returns `true` if and only if `is_compatible({kernelId}, const device&)` for selected device is `true`.
 
 ==== `std::vector<kernel_id> get_kernel_ids()`
 
 Define 4 kernels.
-Get kernel_bundle with built-in kernels.
-Check that result of get_kernel_ids:
+Get kernel_bundle that contains all of the kernels defined in the application via `get_kernel_bundle<bundle_state::executable>(const context &)`
+Check that result of `get_kernel_ids`:
 
 * has type `std::vector<kernel_id>`
-* has size 4
+* has size at least 4
 * has only different kernel ids
 
 ==== `get_kernel()`
 
-Define kernel KernelName.
-Get `kernel_bundle` with built-in kernels.
-
-* Use `get_kernel<KernelName>()` to get kernel and that return type is `sycl::kernel`
-* Try to use `get_kernel<OtherKernelName>()` and check that `errc::invalid` is thrown
+* Define kernel KernelName.
+* Get a kernel bundle in executable state that contains this kernel via `get_kernel_bundle<KernelName, bundle_state::executable>(const context &)`.
+* Use `get_kernel<KernelName>()` to get kernel and check that return type is `sycl::kernel`.
 
 === Tests for working with specialization constants
 
 Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/specialization_constants/specialization_constants_via_kernel_bundle.h
 
-There are should be two spec constants defined - `SpecName` and `OtherSpecName`.
+There are should be defined spec constant `SpecName`.
 
 ==== Empty kernel bundle
 
-* Get an empty `kernel_bundle`.
+* Get an empty kernel bundle by calling get_kernel_bundle<bundle_state::executable>(const context &, const std::vector<device> &, Selector) where Selector is a function that always returns `false`.
 * Check that `contains_specialization_constants()` return `false`.
 * Check that `native_specialization_constant()` return `false`.
 * Check that `has_specialization_constant<SpecName>()` return `false`.
-
-==== Kernel bundle without `kernel_handler::get_specialization_constant()` call
-
-* Get an input `kernel_bundle` with kernel without `kernel_handler::get_specialization_constant()` call.
-* Check that `contains_specialization_constants()` return `false`.
-* Check that `native_specialization_constant()` return `false`.
-* Check that `has_specialization_constant<SpecName>()` return `false`.
-* Check that `get_specialization_constant<SpecName>()` return default value.
-* Call `compile()` to build the `kernel_bundle` into `object` state.
-* Check the same.
-* Call `link()` to build the `kernel_bundle` into `executable` state.
-* Check the same.
 
 ==== Kernel bundle with `kernel_handler::get_specialization_constant()` call
 
-* Get an input `kernel_bundle` with kernel with `kernel_handler::get_specialization_constant<SpecName>()` call.
+* Define a kernel named `KernelName` that calls `kernel_handler::get_specialization_constant<SpecName>()`.
+* Attempt to get a kernel bundle in input state that contains this kernel by calling `get_kernel_bundle<KernelName, bundle_state::input>(const context &, const std::vector<device>& )` with 1-element `std::vector<device>` containing the selected device.
+* Test if the kernel bundle contains that kernel by calling `kernel_bundle::has_kernel<KernelName()`. If this returns `false`, the test is skipped.
 * Set each spec constant to a different value via `kernel_bundle::set_specialization_constant()`.
 * Check that `contains_specialization_constants()` return `true`.
 * Check that called `native_specialization_constant()` without exception.
