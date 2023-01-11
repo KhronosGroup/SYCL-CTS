@@ -71,15 +71,27 @@
 
 // Declare Classification macros for non-C99 platforms
 #ifndef isinf
-    #define isinf(x)    (	sizeof (x) == sizeof(float )	?	fabsf(x) == INFINITY  	\
-                        :	sizeof (x) == sizeof(double)	?	fabs(x) == INFINITY  	\
-                        :	fabsl(x) == INFINITY)
+#define isinf(x)                                    \
+  [](auto y) {                                      \
+    if constexpr (sizeof(y) == sizeof(float))       \
+      return fabsf(y) == INFINITY;                  \
+    else if constexpr (sizeof(y) == sizeof(double)) \
+      return fabs(y) == INFINITY;                   \
+    else                                            \
+      return fabsl(y) == INFINITY;                  \
+  }(x)
 #endif
 
 #ifndef isfinite
-    #define isfinite(x) (	sizeof (x) == sizeof(float )	?	fabsf(x) < INFINITY  	\
-                        :	sizeof (x) == sizeof(double)	?	fabs(x) < INFINITY  	\
-                        :	fabsl(x) < INFINITY)
+#define isfinite(x)                                 \
+  [](auto y) {                                      \
+    if constexpr (sizeof(y) == sizeof(float))       \
+      return fabsf(y) < INFINITY;                   \
+    else if constexpr (sizeof(y) == sizeof(double)) \
+      return fabs(y) < INFINITY;                    \
+    else                                            \
+      return fabsl(y) < INFINITY;                   \
+  }(x)
 #endif
 
 #ifndef isnan
@@ -91,9 +103,15 @@
 #endif
 
 #ifndef isnormal
-    #define isnormal(x) (	sizeof (x) == sizeof(float )	?	(fabsf(x) < INFINITY && fabsf(x) >= FLT_MIN) 	\
-                        :	sizeof (x) == sizeof(double)	?	(fabs(x) < INFINITY && fabs(x) >= DBL_MIN) 	\
-                        :	(fabsl(x) < INFINITY && fabsl(x) >= LDBL_MIN)   )
+#define isnormal(x)                                       \
+  [](auto y) {                                            \
+    if constexpr (sizeof(y) == sizeof(float))             \
+      return fabsf(y) < INFINITY && fabsf(y) >= FLT_MIN;  \
+    else if constexpr (sizeof(y) == sizeof(double))       \
+      return fabs(y) < INFINITY && fabs(y) >= DBL_MIN;    \
+    else                                                  \
+      return fabsl(y) < INFINITY && fabsl(y) >= LDBL_MIN; \
+  }(x)
 #endif
 
 #ifndef islessgreater
@@ -2465,19 +2483,6 @@ static inline void mul128( cl_ulong a, cl_ulong b, cl_ulong *hi, cl_ulong *lo )
     alobhi += (aloblo >> 32) + (ahiblo & 0xffffffffULL);  // cannot overflow: (2^32-1)^2 + 2 * (2^32-1)   = (2^64 - 2^33 + 1) + (2^33 - 2) = 2^64 - 1
     *hi = ahibhi + (alobhi >> 32) + (ahiblo >> 32);       // cannot overflow: (2^32-1)^2 + 2 * (2^32-1)   = (2^64 - 2^33 + 1) + (2^33 - 2) = 2^64 - 1
     *lo = (aloblo & 0xffffffffULL) | (alobhi << 32);
-}
-
-// Move the most significant non-zero bit to the MSB
-// Note: not general. Only works if the most significant non-zero bit is at MSB-1
-static inline void renormalize( cl_ulong *hi, cl_ulong *lo, int *exponent )
-{
-    if( 0 == (0x8000000000000000ULL & *hi ))
-    {
-        *hi <<= 1;
-        *hi |= *lo >> 63;
-        *lo <<= 1;
-        *exponent -= 1;
-    }
 }
 
 static double round_to_nearest_even_double( cl_ulong hi, cl_ulong lo, int exponent );

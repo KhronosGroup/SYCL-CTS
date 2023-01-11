@@ -93,7 +93,7 @@ class logger {
   // This is a hack to enable both old and new style FAIL macros, i.e.
   // FAIL(log, "my message") // old style
   // FAIL("my value = " << 123) // new Catch2 style
-  friend std::ostream &operator<<(std::ostream &os, const logger &m) {
+  friend std::ostream &operator<<(std::ostream &os, const logger &) {
     return os;
   }
 
