@@ -1,0 +1,82 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl::queue constructors
+
+This is a test plan for the for new constructors of class `sycl::queue` described in SYCL 2020.
+
+== Testing scope
+
+Tests intend to cover not covered constructors from 4.6.5.1. Queue interface that are not covered in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/queue/queue_constructors.cpp
+
+=== Device coverage
+
+Device coverage does not change. All of the tests described below are performed only on the default device that is selected on the CTS command line.
+
+== Tests
+
+=== Check exceptions thrown
+
+Create `syclContext` that doesn't encapsulate selected device. If no other root device is available for context creation, test case is skipped.
+For following constructors use created `syclContext`, selected device or `cts_selector`, `cts_async_handler` and check that synchronous exception with the `errc::invalid` error code is thrown:
+
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector, const property_list& propList = {})`
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector,
+               const async_handler& asyncHandler, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice,
+               const async_handler& asyncHandler,
+               const property_list& propList = {})`
+
+Note: test with and without both properties `enable_profiling` and `in_order`.
+
+=== Check property `in_order`
+
+Use property `in_order` with following constructors also using selected device, corresponding context, `cts_selector`, `cts_async_handler` and check that resulting queue member functions `has_property<in_order>()` and `is_in_order()` return `true`:
+
+* `queue(const property_list& propList = {})`
+* `queue(const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const DeviceSelector& deviceSelector,
+               const property_list& propList = {})`
+* `queue(const DeviceSelector& deviceSelector,
+               const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const device& syclDevice, const property_list& propList = {})`
+* `queue(const device& syclDevice, const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector, const property_list& propList = {})`
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector,
+               const async_handler& asyncHandler, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice,
+               const async_handler& asyncHandler,
+               const property_list& propList = {})`
+
+If `device::has(sycl::aspect::usm_host_allocations)` is `false` this part of test is skipped.
+Submit two `single_task` to queue - first with long loop and second that changes a `usm` variable with host allocation.
+In the first task check that after loop the variable is unchanged to verify that `in_order` property adds the requirement that the SYCL queue provides in-order semantics.
+
+=== Check constructors with both properties
+
+Use `propList = {in_order, enable_profiling}` with following constructors also using selected device, corresponding context, `cts_selector`, `cts_async_handler` and check that resulting queue member finctions `has_property<enable_profiling>()`, `has_property<in_order>()` and `is_in_order()` return `true`:
+
+* `queue(const property_list& propList = {})`
+* `queue(const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const DeviceSelector& deviceSelector,
+               const property_list& propList = {})`
+* `queue(const DeviceSelector& deviceSelector,
+               const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const device& syclDevice, const property_list& propList = {})`
+* `queue(const device& syclDevice, const async_handler& asyncHandler,
+               const property_list& propList = {})`
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector, const property_list& propList = {})`
+* `queue(const context& syclContext, const DeviceSelector& deviceSelector,
+               const async_handler& asyncHandler, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice, const property_list& propList = {})`
+* `queue(const context& syclContext, const device& syclDevice,
+               const async_handler& asyncHandler,
+               const property_list& propList = {})`
+
