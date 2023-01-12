@@ -16,8 +16,14 @@ namespace atomic_fence {
 
 constexpr int expected_val = 42;
 
+enum class test_type {
+  single_group = 1,
+  between_group = 2,
+};
+
 bool check_atomic_fence_order_capability(sycl::queue& queue,
-                                         sycl::memory_order order) {
+                                         sycl::memory_order order,
+                                         const std::string& order_name) {
 // FIXME: re-enable when sycl::info::device::atomic_fence_order_capabilities is
 // implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
@@ -26,9 +32,8 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_order_capabilities>();
   if (std::find(orders.begin(), orders.end(), order) == orders.end()) {
-    WARN(
-        "Device does not support atomic_fence with memory_order = "
-        "order");
+    WARN(std::string("Device does not support atomic_fence with order = ") +
+         order_name);
     return false;
   }
 #endif
@@ -36,7 +41,8 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
 }
 
 bool check_atomic_fence_scope_capability(sycl::queue& queue,
-                                         sycl::memory_scope scope) {
+                                         sycl::memory_scope scope,
+                                         const std::string& scope_name) {
 // FIXME: re-enable when sycl::info::device::atomic_fence_scope_capabilities is
 // implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
@@ -45,9 +51,8 @@ bool check_atomic_fence_scope_capability(sycl::queue& queue,
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_scope_capabilities>();
   if (std::find(scopes.begin(), scopes.end(), scope) == orders.end()) {
-    WARN(
-        "Device does not support atomic_fence with memory_scope = "
-        "scope");
+    WARN(std::string("Device does not support atomic_fence with scope = ") +
+         scope_name);
     return false;
   }
 #endif
@@ -64,6 +69,17 @@ inline auto get_memory_orders() {
                  sycl::memory_order::acq_rel,
                  sycl::memory_order::seq_cst>::generate_named();
   return memory_orders;
+}
+
+/**
+ * @brief Factory function for getting type_pack with test_type values for
+ * atomic_fence
+ */
+inline auto get_test_types() {
+  static const auto test_types =
+      value_pack<test_type, test_type::single_group,
+                 test_type::between_group>::generate_named();
+  return test_types;
 }
 
 /**
@@ -89,63 +105,91 @@ inline auto get_memory_scopes_between_work_groups() {
   return memory_scopes;
 }
 
-template <typename OrderT, typename ScopeT>
-class run_atomic_ref_in_one_group {
+bool check_memory_order_scope_capabilities(sycl::queue& queue,
+                                           sycl::memory_order order,
+                                           sycl::memory_scope scope,
+                                           const std::string& order_name,
+                                           const std::string& scope_name) {
+  if (!check_atomic_fence_order_capability(queue, order, order_name)) {
+    return false;
+  }
+  if (sycl::memory_order::release == order) {
+    if (!check_atomic_fence_order_capability(queue, sycl::memory_order::acquire,
+                                             "memory_order::acquire")) {
+      return false;
+    }
+  }
+
+  if (!check_atomic_fence_scope_capability(queue, scope, scope_name)) {
+    return false;
+  }
+  return true;
+}
+
+template <typename OrderT, typename ScopeT, typename TestT>
+class run_atomic_fence {
   static constexpr sycl::memory_order MemoryOrder = OrderT::value;
   static constexpr sycl::memory_scope MemoryScope = ScopeT::value;
+  static constexpr test_type TestType = TestT::value;
 
  public:
   void operator()(const std::string& memory_order_name,
-                  const std::string& memory_scope_name) {
+                  const std::string& memory_scope_name,
+                  const std::string& test_type_name) {
     SECTION(sycl_cts::section_name(
                 std::string("Check atomic_fence inside single work-group with "
                             "memory_order = ") +
-                memory_order_name + " and scope = " + memory_scope_name)
+                memory_order_name + " and scope = " + memory_scope_name +
+                " and test_type = " + test_type_name)
                 .create()) {
       auto queue = sycl_cts::util::get_cts_object::queue();
-      sycl::memory_order order_write = MemoryOrder;
-      if (!check_atomic_fence_order_capability(queue, order_write)) {
+      if (!check_memory_order_scope_capabilities(queue, MemoryOrder,
+                                                 MemoryScope, memory_order_name,
+                                                 memory_scope_name)) {
         return;
       }
+      sycl::memory_order order_write = MemoryOrder;
       sycl::memory_order order_read = MemoryOrder;
       if (sycl::memory_order::release == order_read) {
         order_read = sycl::memory_order::acquire;
-        if (!check_atomic_fence_order_capability(queue, order_read)) {
-          return;
-        }
       }
 
-      if (!check_atomic_fence_scope_capability(queue, MemoryScope)) {
-        return;
-      }
-      constexpr int RETRY_COUNT = 256;
+      constexpr size_t RETRY_COUNT = 256;
       bool res = true;
-      int value = value_operations::init<int>(expected_val);
-      ;
+      int sync = 0;
+      int data = 0;
+      int value = expected_val;
       sycl::range<1> global_range(2);
+      if (test_type::between_group == TestType) {
+        global_range = sycl::range<1>(8);
+      }
       sycl::range<1> local_range(2);
       {
         sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
-        sycl::buffer<int> val_buffer(&value, sycl::range<1>(1));
+        sycl::buffer<int> sync_buffer(&sync, sycl::range<1>(1));
+        sycl::buffer<int> data_buffer(&data, sycl::range<1>(1));
         queue.submit([&](sycl::handler& cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          sycl::local_accessor<int> sync_flag_acc(sycl::range<1>(1), cgh);
-          sycl::local_accessor<int> data_acc(sycl::range<1>(1), cgh);
+          auto sync_flag_acc = get_accessor(cgh, sync_buffer);
+          auto data_acc = get_accessor(cgh, data_buffer);
           cgh.parallel_for(sycl::nd_range<1>(global_range, local_range),
-                           [=](sycl::nd_item<1> item) {
-                             auto g = item.get_group();
+                           [=](sycl::nd_item<1> nditem) {
+                             auto g = nditem.get_group();
                              sycl::atomic_ref<int, sycl::memory_order::relaxed,
                                               sycl::memory_scope::work_group>
                                  sync_flag(sync_flag_acc[0]);
                              int* data = &data_acc[0];
-                             if (g.leader()) {
+                             if ((test_type::single_group == TestType &&
+                                  g.leader()) ||
+                                 (test_type::between_group == TestType &&
+                                  0 == nditem.get_global_linear_id())) {
                                *data = value;
                                sycl::atomic_fence(order_write, MemoryScope);
                                sync_flag = 1;
                              } else {
                                bool write_happened = false;
-                               for (int i = 0; i < RETRY_COUNT; i++) {
+                               for (size_t i = 0; i < RETRY_COUNT; i++) {
                                  if (sync_flag == 1) {
                                    write_happened = true;
                                    break;
@@ -162,87 +206,13 @@ class run_atomic_ref_in_one_group {
       CHECK(res);
     }
   }
-};
 
-template <typename OrderT, typename ScopeT>
-class run_atomic_ref_between_groups {
-  static constexpr sycl::memory_order MemoryOrder = OrderT::value;
-  static constexpr sycl::memory_scope MemoryScope = ScopeT::value;
-
- public:
-  void operator()(const std::string& memory_order_name,
-                  const std::string& memory_scope_name) {
-    SECTION(
-        sycl_cts::section_name(
-            std::string(
-                "Check atomic_fence between work-groups with memory_order = ") +
-            memory_order_name + " and scope = " + memory_scope_name)
-            .create()) {
-      auto queue = sycl_cts::util::get_cts_object::queue();
-      sycl::memory_order order_write = MemoryOrder;
-      if (!check_atomic_fence_order_capability(queue, order_write)) {
-        return;
-      }
-      sycl::memory_order order_read = MemoryOrder;
-      if (sycl::memory_order::release == order_read) {
-        order_read = sycl::memory_order::acquire;
-        if (!check_atomic_fence_order_capability(queue, order_read)) {
-          return;
-        }
-      }
-
-      if (!check_atomic_fence_scope_capability(queue, MemoryScope)) {
-        return;
-      }
-      constexpr int RETRY_COUNT = 256;
-      bool res = true;
-      int sync = 0;
-      int data = 0;
-      int value = value_operations::init<int>(expected_val);
-      sycl::range<1> global_range(8);
-      sycl::range<1> local_range(2);
-      {
-        sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
-        sycl::buffer<int> val_buffer(&value, sycl::range<1>(1));
-        sycl::buffer<int> sync_buffer(&sync, sycl::range<1>(1));
-        sycl::buffer<int> data_buffer(&data, sycl::range<1>(1));
-        queue.submit([&](sycl::handler& cgh) {
-          auto res_acc =
-              res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto sync_flag_acc =
-              sync_buffer.template get_access<sycl::access_mode::read_write>(
-                  cgh);
-          auto data_acc =
-              sync_buffer.template get_access<sycl::access_mode::read_write>(
-                  cgh);
-          cgh.parallel_for(sycl::nd_range<1>(global_range, local_range),
-                           [=](sycl::nd_item<1> item) {
-                             auto g = item.get_group();
-                             sycl::atomic_ref<int, sycl::memory_order::relaxed,
-                                              sycl::memory_scope::work_group>
-                                 sync_flag(sync_flag_acc[0]);
-                             int* data = &data_acc[0];
-                             if (g.leader()) {
-                               *data = value;
-                               sycl::atomic_fence(order_write, MemoryScope);
-                               sync_flag = 1;
-                             } else {
-                               bool write_happened = false;
-                               for (int i = 0; i < RETRY_COUNT; i++) {
-                                 if (sync_flag == 1) {
-                                   write_happened = true;
-                                   break;
-                                 }
-                               }
-                               sycl::atomic_fence(order_read, MemoryScope);
-                               if (write_happened) {
-                                 if (*data != value) res_acc[0] = false;
-                               }
-                             }
-                           });
-        });
-      }
-      CHECK(res);
+ private:
+  auto get_accessor(sycl::handler& cgh, sycl::buffer<int>& buf) {
+    if constexpr (test_type::single_group == TestType) {
+      return sycl::local_accessor<int>(sycl::range<1>(1), cgh);
+    } else {
+      return buf.template get_access<sycl::access_mode::read_write>(cgh);
     }
   }
 };
@@ -257,17 +227,20 @@ class run_test {
     const auto memory_scopes_single_group = get_memory_scopes_single_group();
     const auto memory_scopes_between_groups =
         get_memory_scopes_between_work_groups();
+    for_all_combinations<run_atomic_fence>(
+        memory_orders, memory_scopes_single_group,
+        value_pack<test_type, test_type::single_group>::generate_named());
 
-    for_all_combinations<run_atomic_ref_in_one_group>(
-        memory_orders, memory_scopes_single_group);
-
-    for_all_combinations<run_atomic_ref_between_groups>(
-        memory_orders, memory_scopes_between_groups);
+    for_all_combinations<run_atomic_fence>(
+        memory_orders, memory_scopes_between_groups,
+        value_pack<test_type, test_type::between_group>::generate_named());
   }
 };
 
-TEST_CASE("sycl::atomic_fence function", "[atomic_fence]") {
-  atomic_fence::run_test{}();
-};
+// FIXME: re-enable when marrray is implemented in hipsycl
+//        and when support for unnamed kernels is implemented in computecpp
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("sycl::atomic_fence function",
+ "[atomic_fence]")({ atomic_fence::run_test{}(); });
 
 }  // namespace atomic_fence
