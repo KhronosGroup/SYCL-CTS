@@ -1,0 +1,56 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for parameter passing to kernels
+
+This is a test plan for rules for parameter passing to kernels defined in https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:kernel.parameter.passing[4.12.4. Rules for parameter passing to kernels].
+
+Other legal types of parameters covered in other groups of tests.
+
+`sampled_image_accessor` and `unsampled_image_accessor` are expected to be tested in future for passing to kernels in tests for these accessors.
+
+== Testing scope
+
+This plan does not include negative tests.
+
+=== Device coverage
+
+All the tests described below are performed only on the default device that is selected on the CTS command line.
+
+=== Type coverage
+
+Tests are performed for types:
+
+* `marray<T, 5>`
+* `vec<T, 4>`
+* `T[5]`
+* `class S with a non-static member variable of type T`
+* `class K non-virtual base class S`
+
+For following `T`:
+
+* `int`
+* `float`
+* `bool`
+* `std::array<U, 5>` if `U` is one of 3 types above
+* `std::optional<U>` if `U` is one of 3 types above
+* `std::pair<int, float>`
+* `std::tuple<int, float, bool>`
+* `std::variant<int, float, bool>`
+
+== Tests
+
+=== Kernel is a named function object
+
+* Define kernel as a named function object with member variable `a` of tested type `A` and constructor that takes `sycl::accessor<A, 1>` as a parameter.
+* In kernel `operator()` write value of member variable `a` to accessor.
+* In command group create buffer accessor to a variable `b` of type `A`.
+* Use `single_task` with `kernel<A>(accessor)` as a parameter.
+* Check that after command is executed variable `b` is equal to kernel member variable `a`.
+
+=== Kernel is a lambda function
+
+* Create 2 variables of tested type `a` and `b` with different values.
+* Define kernel as a lambda function with by-copy capture default.
+* In this lambda function copy value of `a` to `b` via buffer accessor.
+* Check that variables are equal after command with this lambda is executed and buffer destructor is called.
