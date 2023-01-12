@@ -57,8 +57,16 @@ static size_t get_idx(size_t id, method method) {
  * work-group may have such that it is a power of two and
  * smaller or equal to 1024. */
 static size_t get_work_group_size(const sycl::device& device) {
+#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
+      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
   const sycl::id<3> max_work_item_sizes =
       device.get_info<sycl::info::device::max_work_item_sizes<3>>();
+#else
+  const sycl::id<3> max_work_item_sizes{1, 1, 1};
+  WARN(
+      "Implementation does not define device.get_info<max_work_item_sizes>. "
+      "Using work-group of size (1, 1, 1).");
+#endif
   const size_t smallest_max_work_item_size =
       std::min(max_work_item_sizes[0],
                std::min(max_work_item_sizes[1], max_work_item_sizes[2]));
