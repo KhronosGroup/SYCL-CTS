@@ -25,22 +25,23 @@ Check that result of function `is_compatible(const std::vector<kernel_id> &kerne
 * `true` for zero kernels
 * `true` for built-in kernel id for the selected device
 * Construct a vector of the built-in kernel ids from every root device other than the selected device.
-Check that is_compatible returns false for this vector of kernel ids unless the vector is empty.
+Check that is_compatible returns `false` for this vector of kernel ids unless the vector is empty.
 * for kernels with no kernel attributes:
 
+** `true` for kernel with no optional features and the selected device
 ** `true` for a kernel that uses `sycl::half` if and only if the selected device has `aspect::fp16`.
 ** `true` for a kernel that uses `double` if and only if the selected device has `aspect::fp64`.
 ** `true` for a kernel that uses 64-bit atomic operations if and only if the selected device has `aspect::atomic64`.
 
-* Define kernels with the following values of the `[[sycl::reqd_work_group_size]]` attribute.
+* Define kernels with the following values of the `[[sycl::reqd_work_group_size()]]` attribute.
 Verify that `is_compatible` returns true if and only if the work group size is less than or equal to the value reported by `info::device::max_work_group_size` for the selected device.
 
 ** `[[sycl::reqd_work_group_size(8)]]`
 ** `[[sycl::reqd_work_group_size(16)]]`
 ** `[[sycl::reqd_work_group_size(4294967295)]]`
 
-* Define kernels with the following values of the `[[sycl::reqd_sub_group_size]]` attribute.
-Verify that `is_compatible` returns true if and only if the sub group size is not one of the values reported by `info::device::sub_group_sizes` for the selected device.
+* Define kernels with the following values of the `[[sycl::reqd_sub_group_size()]]` attribute.
+Verify that `is_compatible` returns true if and only if the sub group size is one of the values reported by `info::device::sub_group_sizes` for the selected device.
 
 ** `[[sycl::reqd_work_group_size(8)]]`
 ** `[[sycl::reqd_work_group_size(16)]]`
@@ -88,7 +89,7 @@ Call function `kernel_bundle::get_backend()` and check that return type is `sycl
 ==== `std::vector<kernel_id> get_kernel_ids()`
 
 Define 4 kernels.
-Get kernel_bundle that contains all of the kernels defined in the application via `get_kernel_bundle<bundle_state::executable>(const context &)`
+Get kernel_bundle via `get_kernel_bundle<bundle_state::executable>(const context &)`
 Check that result of `get_kernel_ids`:
 
 * has type `std::vector<kernel_id>`
@@ -105,7 +106,8 @@ Check that result of `get_kernel_ids`:
 
 Partially tested in https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/tests/specialization_constants/specialization_constants_via_kernel_bundle.h
 
-There are should be defined spec constant `SpecName`.
+There are two spec constant defined: `SpecName` and `OtherSpecName`.
+kernel_handler::get_specialization_constant<OtherSpecName>() shouldn't be used in any kernel in the application.
 
 ==== Empty kernel bundle
 
