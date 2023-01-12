@@ -31,6 +31,6 @@ TEST_CASE("CUDA interop kernel test") {
   run_all_tests<c2> tests_c2;
   tests_c2(queue, "class with default constructor");
 #else
-  INFO("The test is skipped because CUDA back-end is not supported");
+  SKIP("CUDA backend is not supported");
 #endif  // SYCL_BACKEND_CUDA
 }

@@ -131,7 +131,7 @@ class TEST_NAME : public util::test_base {
         } catch (const sycl::feature_not_supported &fnse) {
           if (!my_queue.get_device()
                    .get_info<sycl::info::device::image_support>()) {
-            log.note("device does not support images -- skipping check");
+            SKIP("device does not support images");
           } else {
             throw;
           }

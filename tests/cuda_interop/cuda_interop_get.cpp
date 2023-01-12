@@ -66,6 +66,6 @@ TEST_CASE("CUDA interop get test") {
     check_return_type<CUevent>(interopEvent, "get_native(event)");
   }
 #else
-  INFO("The test is skipped because CUDA back-end is not supported");
+  SKIP("CUDA backend is not supported");
 #endif  // SYCL_BACKEND_CUDA
 };

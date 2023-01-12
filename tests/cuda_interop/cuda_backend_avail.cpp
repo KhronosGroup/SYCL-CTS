@@ -27,6 +27,6 @@ TEST_CASE("CUDA backend availability test") {
   INFO("Checking sycl::backend::cuda is available");
   REQUIRE(q.get_backend() == sycl::backend::cuda);
 #else
-  INFO("The test is skipped because CUDA back-end is not supported");
+  SKIP("CUDA backend is not supported");
 #endif  // SYCL_BACKEND_CUDA
 }

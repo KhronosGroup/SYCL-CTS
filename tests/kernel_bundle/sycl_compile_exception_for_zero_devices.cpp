@@ -33,8 +33,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
     auto queue = util::get_cts_object::queue();
 
     if ( !sycl::has_kernel_bundle<sycl::bundle_state::input>(queue.get_context()) ) {
-      log.note("No kernel bundle with input state for test (skipped).");
-      return;
+      SKIP("No kernel bundle with input state for test.");
     }
 
     auto input_kb = sycl::get_kernel_bundle<sycl::bundle_state::input>(queue.get_context());

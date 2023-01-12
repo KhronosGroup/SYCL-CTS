@@ -90,7 +90,7 @@ class TEST_NAME : public util::test_base {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
     for_all_types_and_marrays<check_for_type>(types, log);
 #else
-    log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
   }
 };

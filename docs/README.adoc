@@ -345,6 +345,12 @@ where `<impls...>` is a comma-separated list of `hipSYCL`, `ComputeCpp` and/or `
 
 NOTE: #**TODO:** Custom matchers.#
 
+=== Testing Optional Features
+
+The CTS may include tests that cannot be executed in all circumstances.
+Examples of such tests include tests for optional features, tests that depend on certain device capabilities, tests that require multiple devices as well as tests for vendor extensions.
+In such scenarios, Catch2's `SKIP` macro should be used to explicitly report a test case as skipped.
+
 === Best Practices
 
 Here is a list of best practices for writing test cases.

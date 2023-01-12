@@ -30,9 +30,9 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
 #if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
-    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_PROPERTIES is not defined");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-    WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined");
 #else
     {
       using namespace sycl::ext::oneapi::experimental;
