@@ -82,7 +82,7 @@ Call function `kernel_bundle::get_backend()` and check that return type is `sycl
 
 ==== `has_kernel(const kernel_id &kernelId, const device &dev)`
 
-* Create a kernel bundle in executable state which contains all the application's kernels by calling `get_kernel_bundle<bundle_state::executable>(const context &)`.
+* Create a kernel bundle by calling `get_kernel_bundle<bundle_state::executable>(const context &)`.
 * Iterate over all of the kernel ids returned by `get_kernel_ids()`.
 * Verify that `has_kernel(kernelId, dev)` returns `true` if and only if `is_compatible({kernelId}, const device&)` for selected device is `true`.
 
