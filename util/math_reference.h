@@ -256,19 +256,18 @@ clamp(sycl::vec<T, N> a, sycl::vec<T, N> b, sycl::vec<T, N> c) {
       [](T x, T y, T z) { return clamp(x, y, z); }, a, b, c);
 }
 
-template <typename T, int N>
-sycl_cts::resultRef<sycl::vec<T, N>> clamp(sycl::vec<T, N> a, T b,
-                                               T c) {
-  sycl::vec<T, N> res;
+template <typename T1, typename T2, int N>
+sycl_cts::resultRef<sycl::vec<T1, N>> clamp(sycl::vec<T1, N> a, T2 b, T2 c) {
+  sycl::vec<T1, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    sycl_cts::resultRef<T> element = clamp(getElement(a, i), b, c);
+    sycl_cts::resultRef<T1> element = clamp<T1>(getElement(a, i), b, c);
     if (element.undefined.empty())
-      setElement<T, N>(res, i, element.res);
+      setElement<T1, N>(res, i, element.res);
     else
       undefined[i] = true;
   }
-  return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
+  return sycl_cts::resultRef<sycl::vec<T1, N>>(res, undefined);
 }
 
 /* degrees */
@@ -428,11 +427,11 @@ sycl::vec<T, N> max(sycl::vec<T, N> a, sycl::vec<T, N> b) {
       [](T x, T y) { return max(x, y); }, a, b);
 }
 
-template <typename T, int N>
-sycl::vec<T, N> max(sycl::vec<T, N> a, T b) {
-  sycl::vec<T, N> res;
+template <typename T1, typename T2, int N>
+sycl::vec<T1, N> max(sycl::vec<T1, N> a, T2 b) {
+  sycl::vec<T1, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, max(getElement(a, i), b));
+    setElement<T1, N>(res, i, max<T1>(getElement(a, i), b));
   }
   return res;
 }
@@ -446,11 +445,11 @@ sycl::vec<T, N> min(sycl::vec<T, N> a, sycl::vec<T, N> b) {
       [](T x, T y) { return min(x, y); }, a, b);
 }
 
-template <typename T, int N>
-sycl::vec<T, N> min(sycl::vec<T, N> a, T b) {
-  sycl::vec<T, N> res;
+template <typename T1, typename T2, int N>
+sycl::vec<T1, N> min(sycl::vec<T1, N> a, T2 b) {
+  sycl::vec<T1, N> res;
   for (int i = 0; i < N; i++) {
-    setElement<T, N>(res, i, min(getElement(a, i), b));
+    setElement<T1, N>(res, i, min<T1>(getElement(a, i), b));
   }
   return res;
 }
