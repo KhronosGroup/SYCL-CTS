@@ -11,6 +11,7 @@
 
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
@@ -254,7 +255,7 @@ struct is_type_pack_t<unnamed_type_pack<Types...>> : std::true_type {};
 
 template <typename T>
 using is_not_a_type_pack =
-    std::enable_if_t<!details::is_type_pack_t<T>::value, bool>;
+    std::enable_if_t<!details::is_type_pack_t<std::decay_t<T>>::value, bool>;
 
 }  // namespace sfinae
 
