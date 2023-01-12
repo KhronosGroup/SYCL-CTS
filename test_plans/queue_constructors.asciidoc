@@ -28,7 +28,7 @@ For following constructors use created `syclContext`, selected device or `cts_se
                const async_handler& asyncHandler,
                const property_list& propList = {})`
 
-Note: test with and without both properties `enable_profiling` and `in_order`.
+Note: test without properties.
 
 === Check property `in_order`
 
@@ -53,11 +53,14 @@ Use property `in_order` with following constructors also using selected device, 
                const async_handler& asyncHandler,
                const property_list& propList = {})`
 
-If `device::has(sycl::aspect::usm_host_allocations)` is `false` this part of test is skipped.
-Submit two `single_task` to queue - first with long loop and second that changes a `usm` variable with host allocation.
+If `device::has(sycl::aspect::usm_device_allocations)` is `false` this part of test is skipped.
+Submit two `single_task` to queue - first with long loop and second that changes a `usm` variable with device allocation.
 In the first task check that after loop the variable is unchanged to verify that `in_order` property adds the requirement that the SYCL queue provides in-order semantics.
 
 === Check constructors with both properties
+
+If `device::has(sycl::aspect::queue_profiling)` is `false` these tests is skipped.
+The same condition should also be added to existing tests for queue constructors with `enable_profiling` property.
 
 Use `propList = {in_order, enable_profiling}` with following constructors also using selected device, corresponding context, `cts_selector`, `cts_async_handler` and check that resulting queue member finctions `has_property<enable_profiling>()`, `has_property<in_order>()` and `is_in_order()` return `true`:
 
