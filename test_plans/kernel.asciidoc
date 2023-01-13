@@ -1,0 +1,46 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl::kernel (cover gaps)
+
+This is a test plan cover sycl::kernel functionality that is not covered by current tests.
+
+== Testing scope
+
+Tests intend to cover functions from 4.11.13. The kernel class that are not covered in https://github.com/KhronosGroup/SYCL-CTS/tree/SYCL-2020/tests/kernel
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Tests
+
+To get kernel object:
+
+* Define a simple kernel named `KernelName` that uses no optional features.
+* Obtain a kernel bundle in executable state that contains this kernel via
+`get_kernel_bundle<KernelName, bundle_state::executable(const context&, const device&)`.
+* Get a kernel object for the kernel by calling `kernel_bundle::get_kernel<KernelName>()`.
+
+=== Deleted default constructor
+
+Check that std::is_default_constructible_v<sycl::kernel> is `false`.
+
+=== Test for `get_backend()`
+
+Call function `kernel::get_backend()` and check that return type is `sycl::backend`.
+
+Note: `template <typename Param> typename Param::return_type get_backend_info()` is not tested since `Param` should be defined by backend.
+
+=== Test for `get_info(const device &dev)`
+
+Call `get_info<Param>(current_device)` and check that return type is `uint32_t` for following `Param`:
+
+* info::kernel_device_specific::max_num_sub_groups
+
+* info::kernel_device_specific::compile_num_sub_groups
+
+* info::kernel_device_specific::max_sub_group_size
+
+* info::kernel_device_specific::compile_sub_group_size
