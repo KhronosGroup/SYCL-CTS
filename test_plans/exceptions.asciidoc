@@ -236,6 +236,30 @@ For cases:
 
 check that when there are no exceptions expected then the async handler is not invoked.
 
+==== Priorities of async handlers
+
+Create 2 user defined async handlers, first changes global variable to 1, second changes global variable to 2.
+Both checks that exceptions that passed via exception_list parameter have error code `errc::accessor` or `errc::nd_range`.
+
+To check that queue's handler will be used first:
+
+* Create context with first user defined async_handler
+* Create queue with context, cts_selector and second user defined async_handler
+* Submit host_task to the queue that throws an `exception(errc::accessor)`
+* Submit host_task to the queue that throws an `exception(errc::nd_range)`
+* Call `queue::wait_and_throw()`
+* Check that global variable changed to 2 as async_handler for the queue were called
+* Check that 2 async exceptions were handled
+
+To check that context's handler will be used if queue doesn't have one:
+
+* Create context with first user defined async_handler
+* Create queue with context and cts_selector without user defined async_handler
+* Submit host_task to the queue that throws an `exception(errc::accessor)`
+* Submit host_task to the queue that throws an `exception(errc::nd_range)`
+* Call `queue::wait_and_throw()`
+* Check that global variable changed to 1 as async_handler for the context were called
+* Check that 2 async exceptions were handled
 
 === Synchronous exceptions mechanism
 
