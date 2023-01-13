@@ -22,6 +22,7 @@
 #define SYCL_CTS_TEST_MARRAY_MARRAY_CUSTOM_TYPE_H
 
 #include <cstdint>
+#include <type_traits>
 
 /// Custom type that meets the NumericType requirement.
 struct custom_int {
@@ -81,16 +82,16 @@ struct custom_int {
     return *this;
   }
 
-  custom_int operator+() const { return custom_int(+x); }
+  custom_int operator+() const { return +x; }
 
-  custom_int operator-() const { return custom_int(-x); }
+  custom_int operator-() const { return -x; }
 
-  custom_int operator~() const { return custom_int(~x); }
+  custom_int operator~() const { return ~x; }
 
   bool operator!() const { return !x; }
 
   custom_int& operator++() {
-    x++;
+    ++x;
     return *this;
   }
 
@@ -101,7 +102,7 @@ struct custom_int {
   }
 
   custom_int& operator--() {
-    x--;
+    --x;
     return *this;
   }
 
@@ -111,6 +112,72 @@ struct custom_int {
     return tmp;
   }
 
+  friend custom_int operator+(custom_int lhs, const custom_int& rhs) {
+    lhs += rhs;
+    return lhs;
+  }
+  friend custom_int operator-(custom_int lhs, const custom_int& rhs) {
+    lhs -= rhs;
+    return lhs;
+  }
+  friend custom_int operator*(custom_int lhs, const custom_int& rhs) {
+    lhs *= rhs;
+    return lhs;
+  }
+  friend custom_int operator/(custom_int lhs, const custom_int& rhs) {
+    lhs /= rhs;
+    return lhs;
+  }
+  friend custom_int operator%(custom_int lhs, const custom_int& rhs) {
+    lhs %= rhs;
+    return lhs;
+  }
+  friend custom_int operator&(custom_int lhs, const custom_int& rhs) {
+    lhs &= rhs;
+    return lhs;
+  }
+  friend custom_int operator|(custom_int lhs, const custom_int& rhs) {
+    lhs |= rhs;
+    return lhs;
+  }
+  friend custom_int operator^(custom_int lhs, const custom_int& rhs) {
+    lhs ^= rhs;
+    return lhs;
+  }
+  friend custom_int operator<<(custom_int lhs, const custom_int& rhs) {
+    lhs <<= rhs;
+    return lhs;
+  }
+  friend custom_int operator>>(custom_int lhs, const custom_int& rhs) {
+    lhs >>= rhs;
+    return lhs;
+  }
+  friend bool operator&&(custom_int lhs, const custom_int& rhs) {
+    return (!!lhs) && (!!rhs);
+  }
+  friend bool operator||(custom_int lhs, const custom_int& rhs) {
+    return (!!lhs) || (!!rhs);
+  }
+
+  friend bool operator==(const custom_int& lhs, const custom_int& rhs) {
+    return lhs.x == rhs.x;
+  }
+  friend bool operator!=(const custom_int& lhs, const custom_int& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator<(const custom_int& lhs, const custom_int& rhs) {
+    return lhs.x < rhs.x;
+  }
+  friend bool operator>(const custom_int& lhs, const custom_int& rhs) {
+    return lhs.x > rhs.x;
+  }
+  friend bool operator<=(const custom_int& lhs, const custom_int& rhs) {
+    return !(lhs > rhs);
+  }
+  friend bool operator>=(const custom_int& lhs, const custom_int& rhs) {
+    return !(lhs < rhs);
+  }
+
   int x;
 };
 
@@ -118,61 +185,5 @@ static_assert(std::is_default_constructible_v<custom_int>);
 static_assert(std::is_copy_constructible_v<custom_int>);
 static_assert(std::is_copy_assignable_v<custom_int>);
 static_assert(std::is_destructible_v<custom_int>);
-
-inline custom_int operator+(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x + rhs.x};
-}
-inline custom_int operator-(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x - rhs.x};
-}
-inline custom_int operator*(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x * rhs.x};
-}
-inline custom_int operator/(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x / rhs.x};
-}
-inline custom_int operator%(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x % rhs.x};
-}
-inline custom_int operator&(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x & rhs.x};
-}
-inline custom_int operator|(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x | rhs.x};
-}
-inline custom_int operator^(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x ^ rhs.x};
-}
-inline custom_int operator<<(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x << rhs.x};
-}
-inline custom_int operator>>(const custom_int& lhs, const custom_int& rhs) {
-  return {lhs.x >> rhs.x};
-}
-inline bool operator&&(const custom_int& lhs, const custom_int& rhs) {
-  return (!!lhs) && (!!rhs);
-}
-inline bool operator||(const custom_int& lhs, const custom_int& rhs) {
-  return (!!lhs) || (!!rhs);
-}
-
-inline bool operator==(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x == rhs.x;
-}
-inline bool operator!=(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x != rhs.x;
-}
-inline bool operator<(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x < rhs.x;
-}
-inline bool operator<=(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x <= rhs.x;
-}
-inline bool operator>(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x > rhs.x;
-}
-inline bool operator>=(const custom_int& lhs, const custom_int& rhs) {
-  return lhs.x >= rhs.x;
-}
 
 #endif  // SYCL_CTS_TEST_MARRAY_MARRAY_CUSTOM_TYPE_H
