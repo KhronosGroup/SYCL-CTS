@@ -54,31 +54,9 @@ All non static tests run on following cases:
 
 Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for usupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
 
+Note: legal address spaces are not yet defined for atomic_ref used on the host, it's possible that will be decided that atomic_ref isn't allowed in host code at all. It can be tracked in this issue https://gitlab.khronos.org/sycl/Specification/-/issues/637, test plan and tests should be updated if it will be needed according to decision disscussed in the issue.
+
 === SYCL2020 interface
-
-==== Memory order traits
-
-For the following `ReadModifyWriteOrder` template parameter values:
-
-* `memory_order::relaxed`
-
-** Check the following:
-`memory_order_traits<memory_order::relaxed>::read_order` is equal to `memory_order::relaxed`,
-`memory_order_traits<memory_order::relaxed>::write_order` is equal to `memory_order::relaxed`
-
-* `memory_order::acq_rel`
-
-** Check the following:
-`memory_order_traits<memory_order::acq_rel>::read_order` is equal to `memory_order::acquire`,
-`memory_order_traits<memory_order::acq_rel>::write_order` is equal to `memory_order::release`
-
-* `memory_order::seq_cst`
-
-** Check the following:
-`memory_order_traits<memory_order::seq_cst>::read_order` is equal to `memory_order::seq_cst`,
-`memory_order_traits<memory_order::seq_cst>::write_order` is equal to `memory_order::seq_cst`
-
-Check that `read_order` and `write_oder` members of `memory_order_traits<ReadModifyWriteOrder>` are const.
 
 ==== Members
 
@@ -104,9 +82,6 @@ And the following values as `Space` template parameter:
 
 Check the following:
 
-* `default_read_order` member is equal to `memory_order_traits<DefaultOrder>::read_order`,
-* `default_write_order` member is equal to `memory_order_traits<DefaultOrder>::write_order` and
-* `default_read_modify_write_order` member is equal to `DefaultOrder`
 * `default_read_order`, `default_write_order` and `default_read_modify_write_order` members are const
 * `required_alignment` memeber is const and is equal to or grater than `alignof(ReferencedType)`
 * `is_always_lock_free` member is const and is equal to `true` of `false`
@@ -121,6 +96,24 @@ as `atomic_ref::value_type`.
 
 If `T` is `ReferencedType*` check that `atomic_ref::difference_type` is same
 as `ptrdiff_t`.
+
+For different cases of `DefaultOrder` template parameter check the following:
+
+* `memory_order::relaxed`
+** `default_read_order` is `memory_order::relaxed`
+** `default_write_order` is `memory_order::relaxed`
+** `default_read_modify_write_order` is `memory_order::relaxed`
+
+
+* `memory_order::acq_rel`
+** `default_read_order` is `memory_order::acquire`
+** `default_write_order` is `memory_order::release`
+** `default_read_modify_write_order` is `memory_order::acq_rel`
+
+* `memory_order::seq_cst`
+** `default_read_order` is `memory_order::seq_cst`
+** `default_write_order` is `memory_order::seq_cst`
+** `default_read_modify_write_order` is `memory_order::seq_cst`
 
 ==== Common constructors
 
