@@ -20,7 +20,7 @@ To get kernel object:
 
 * Define a simple kernel named `KernelName` that uses no optional features.
 * Obtain a kernel bundle in executable state that contains this kernel via
-`get_kernel_bundle<KernelName, bundle_state::executabe(const context & const device &)`.
+`get_kernel_bundle<KernelName, bundle_state::executable(const context&, const device&)`.
 * Get a kernel object for the kernel by calling `kernel_bundle::get_kernel<KernelName>()`.
 
 === Deleted default constructor
