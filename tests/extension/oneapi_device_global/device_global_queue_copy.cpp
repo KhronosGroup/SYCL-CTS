@@ -88,10 +88,8 @@ void run_test_copy_to_device_global(util::logger& log,
                                 sizeof(T) / sizeof(element_type), 0, depEvents);
   event3.wait();
   // Reverse order is used to increase probability of data race.
-  // Array in gens[0] is already copied after event2,
-  // so it's not copied here to not to rewrite result for previous case.
-  for (size_t i = numEvents - 1; i + 1 > 0; --i) {
-    gens[i].copy_arrays(queue);
+  for (size_t i = numEvents; i > 0; --i) {
+    gens[i - 1].copy_arrays(queue);
   }
 
   bool events_result = true;

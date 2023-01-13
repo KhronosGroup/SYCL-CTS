@@ -118,8 +118,7 @@ class no_def_cnstr {
 };
 
 // A user-defined struct with several scalar member variables, arrow operator
-// overload, no constructor and
-// destructor or member functions.
+// overload, no constructor and destructor or member functions.
 struct arrow_operator_overloaded {
   float a;
   int b;
