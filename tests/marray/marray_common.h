@@ -26,6 +26,8 @@
 #include "../common/type_list.h"
 #include "marray_custom_type.h"
 
+#include <utility>
+
 namespace marray_common {
 
 /** @brief Execute the tests with the same values for NumElements. */
@@ -68,30 +70,23 @@ inline auto get_types() {
   );
 }
 
-/** @brief Helper for constexpr constructor. */
-template <typename DataT, std::size_t NumElements, int InitialValue = 0>
-struct ctor {
-  using marray_t = sycl::marray<DataT, NumElements>;
+template <typename DataT, std::size_t NumElements, int InitialValue,
+          std::size_t... Indices>
+constexpr sycl::marray<DataT, NumElements> expand_iota_marray(
+    std::index_sequence<Indices...>) {
+  return sycl::marray<DataT, sizeof...(Indices)>{
+      static_cast<DataT>(Indices + InitialValue)...};
+}
 
-  template <int N, int... Rest>
-  struct ctor_impl {
-    static constexpr auto& value = ctor_impl<N - 1, N, Rest...>::value;
-  };
-
-  template <int... Rest>
-  struct ctor_impl<InitialValue, Rest...> {
-    static constexpr marray_t value{InitialValue, Rest...};
-  };
-
-  template <std::size_t num_elements>
-  struct ctor_ {
-    static_assert(num_elements != 0);
-    static constexpr marray_t value =
-        ctor_impl<InitialValue + num_elements - 1>::value;
-  };
-
-  static constexpr marray_t value = ctor_<NumElements>::value;
-};
+/**
+ * Constructs an instance <tt>sycl::marray<DataT, NumElements></tt> with values
+ * <tt>InitialValue, InitialValue + 1, ..., InitialValue + NumElements - 1</tt>.
+ */
+template <typename DataT, std::size_t NumElements, int InitialValue>
+constexpr sycl::marray<DataT, NumElements> iota_marray() {
+  return expand_iota_marray<DataT, NumElements, InitialValue>(
+      std::make_index_sequence<NumElements>());
+}
 
 }  // namespace marray_common
 

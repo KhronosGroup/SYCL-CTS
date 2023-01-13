@@ -47,7 +47,7 @@ class run_marray_constructor_test {
     //  one DataT instance, one marray instance
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
-          marray_common::ctor<DataT, num_elements - 1, 2>::value;
+          marray_common::iota_marray<DataT, num_elements - 1, 2>();
       constexpr marray_t ma{1, ma_const};
       marray_t ma_inc;
       std::iota(ma_inc.begin(), ma_inc.end(), 1);
@@ -57,7 +57,7 @@ class run_marray_constructor_test {
     // one marray instance, one DataT instance
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
-          marray_common::ctor<DataT, num_elements - 1, 1>::value;
+          marray_common::iota_marray<DataT, num_elements - 1, 1>();
       constexpr marray_t ma{ma_const, DataT(num_elements)};
       marray_t ma_inc;
       std::iota(ma_inc.begin(), ma_inc.end(), 1);
@@ -90,7 +90,7 @@ class run_marray_constructor_test {
     // variadic constructor
     {
       // NumElements DataT instances
-      constexpr marray_t a = marray_common::ctor<DataT, NumElements, 1>::value;
+      constexpr auto a = marray_common::iota_marray<DataT, NumElements, 1>();
       marray_t ma_inc;
       std::iota(ma_inc.begin(), ma_inc.end(), 1);
       CHECK(value_operations::are_equal(ma_inc, a));
@@ -109,7 +109,8 @@ class run_marray_constructor_test {
 
     // copy constructor rval reference
     {
-      constexpr marray_t ma{marray_common::ctor<DataT, NumElements, 1>::value};
+      constexpr marray_t ma{
+          marray_common::iota_marray<DataT, NumElements, 1>()};
       marray_t ma_inc;
       std::iota(ma_inc.begin(), ma_inc.end(), 1);
       CHECK(value_operations::are_equal(ma_inc, ma));
