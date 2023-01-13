@@ -26,6 +26,8 @@ Tests are performed for types:
 * `T[5]`
 * `class S with a non-static member variable of type T`
 * `class K non-virtual base class S`
+* `range<N>` where N = 1, 2, 3
+* `id<N>` where N = 1, 2, 3
 
 For following `T`:
 
