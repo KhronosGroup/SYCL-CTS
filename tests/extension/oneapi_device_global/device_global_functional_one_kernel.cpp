@@ -43,7 +43,7 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from the device_global
    * instance not equal to default value
    */
-  static inline void expect_def_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_def_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, true,
         "Value read incorrectly from kernel on first invocation. Default "
@@ -56,7 +56,7 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to T{1}
    */
-  static inline void expect_new_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_new_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, false,
         "Value read incorrectly from kernel on second invocation. "
@@ -73,7 +73,7 @@ class read_and_write_in_kernel {
    * @param error_info String with additional info to display, when test fails
    * @param type_name Name of testing type for display if test fails
    */
-  static inline void run(sycl::queue &queue, const bool expect_def_value,
+  static inline void run(sycl::queue& queue, const bool expect_def_value,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
     // Default value of type T in case if we expect to read default value
@@ -147,7 +147,7 @@ void run_tests_with_properties(sycl_cts::util::logger& log,
                                const std::string& type_name) {
   // Using a property_tag for kernel name
 
-    // Run without any properies
+  // Run without any properies
   run_test<T, decltype(oneapi::experimental::properties{}), property_tag::none>(
       log, type_name);
 

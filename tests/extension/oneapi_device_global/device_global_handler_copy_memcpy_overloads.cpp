@@ -394,11 +394,10 @@ void run_test(util::logger& log, const std::string& type_name) {
     }
 
     if (!is_copy_correct) {
-      std::string fail_msg = get_case_description(
-          "device_global: sycl::handler .memcpy() member function overload",
-          "Wrong value after memcpy from the device_global instance",
-          type_name);
-      FAIL(log, fail_msg);
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .memcpy() member function overload",
+        "Wrong value after memcpy from the device_global instance", type_name);
+    FAIL(log, fail_msg);
     }
   }
 }  // namespace memcpy_from_dg

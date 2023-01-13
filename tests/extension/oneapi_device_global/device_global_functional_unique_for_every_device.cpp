@@ -139,8 +139,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       if (subdevices.size() > 1) {
         // Create sycl::queue instances for the subdevices and put it to the end
         // of queues vector
-        for (const auto& subdevice : subdevices)
-          queues.emplace_back(subdevice);
+        for (const auto& subdevice : subdevices) queues.emplace_back(subdevice);
       } else {
         // If device doesn't support partition then create sycl::queue
         // instance for the root device and put it to the end of queues vector

@@ -275,8 +275,8 @@ void run_test(util::logger& log, const std::string& type_name) {
   for (size_t i = integral(indx::same_type_const); i < integral(indx::size);
        ++i) {
     if (!result[i]) {
-      std::string fail_msg = get_case_description(
-          "Device global: get() method", error_strings[i], type_name);
+      std::string fail_msg = get_case_description("Device global: get() method",
+                                                  error_strings[i], type_name);
       FAIL(log, fail_msg);
     }
   }
@@ -339,8 +339,8 @@ template <typename T, typename prop_key, typename prop_value_t,
 void run_test(util::logger& log, const std::string& type_name) {
   // Check that instance has prop_key property
   if (dev_global<T, prop_value_t>.template has_property<prop_key>() != true) {
-    std::string fail_msg = get_case_description(
-        "Device global: has_property()", "Wrong value.", type_name);
+    std::string fail_msg = get_case_description("Device global: has_property()",
+                                                "Wrong value.", type_name);
     FAIL(log, fail_msg);
   }
   // Check that instance has no other_props

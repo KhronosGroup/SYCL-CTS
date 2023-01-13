@@ -47,7 +47,7 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to default value
    */
-  static inline void expect_def_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_def_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, true,
         "Value read incorrectly from kernel on first invocation. Default "
@@ -60,7 +60,7 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to T{1}
    */
-  static inline void expect_new_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_new_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, false,
         "Value read incorrectly from kernel on second invocation. "
@@ -75,7 +75,7 @@ class read_and_write_in_kernel {
    * @param is_def_val_expected The flag shows if default value expected
    * @param error_info String to display, when test fails
    */
-  static inline void run(sycl::queue &queue, const bool is_def_val_expected,
+  static inline void run(sycl::queue& queue, const bool is_def_val_expected,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
     // is_read_correct will be set to true if device_global value is equal to

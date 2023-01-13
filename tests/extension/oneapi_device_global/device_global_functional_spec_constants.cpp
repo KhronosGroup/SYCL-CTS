@@ -48,7 +48,7 @@ class read_and_write_in_kernel {
    * new value from specialization constants in instance. Test will fail if
    * value from device_global instance not equal to default value
    */
-  static inline void expect_def_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_def_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, true, "Expect to read default value", log, type_name);
   }
@@ -58,7 +58,7 @@ class read_and_write_in_kernel {
    * new value from specialization constants in instance. Test will be failed if
    * value from device_global instance not equal to T{1}
    */
-  static inline void expect_new_val(sycl::queue &queue, util::logger& log,
+  static inline void expect_new_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
     run(queue, false, "Expect to read modified value", log, type_name);
   }
@@ -70,14 +70,13 @@ class read_and_write_in_kernel {
    * @param is_def_val_expected The flag shows if default value expected
    * @param error_info String to display, when test fails
    */
-  static inline void run(sycl::queue &queue, const bool is_def_val_expected,
+  static inline void run(sycl::queue& queue, const bool is_def_val_expected,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
-
     constexpr int initial_sc_val = 1;
     constexpr int changed_sc_val = 2;
     const int sc_val = is_def_val_expected ? initial_sc_val : changed_sc_val;
-    
+
     // Default value of type T in case if we expect to read default value
     T def_val{};
     // Changed value of type T in case if we expect to read modified value

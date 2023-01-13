@@ -87,8 +87,7 @@ void run_test(util::logger& log, const std::string& type_name) {
           is_read_corr_buf.template get_access<sycl::access_mode::write>(cgh);
 
       cgh.single_task<kernel>([=] {
-        is_read_correct_acc[0] =
-            (value_operations::are_equal(*(ptr), new_val));
+        is_read_correct_acc[0] = (value_operations::are_equal(*(ptr), new_val));
       });
     });
     queue.wait_and_throw();
