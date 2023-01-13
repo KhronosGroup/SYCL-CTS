@@ -283,9 +283,8 @@ class check_for_multiple_aspects {
       os << accept_aspect_names[i] << "\n";
     }
     os << "for denied aspects:\n";
-    typedef Catch::StringMaker<sycl::aspect> sm;
     for (const sycl::aspect& aspect : deny_list) {
-      os << sm::convert(aspect) << "\n";
+      os << Catch::StringMaker<sycl::aspect>::convert(aspect) << "\n";
     }
     INFO(os.str());
 
@@ -301,8 +300,8 @@ struct helper_subset {
   struct create_array {
     static void check() {
       constexpr unsigned int idx = ArraySize - 1;
-      typedef
-          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type elem;
+      using elem =
+          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type;
       create_array<ArraySize - 1, elem, SelectedAspectsT...>::check();
     }
   };
@@ -358,9 +357,9 @@ struct helper_random {
                       RngRuntime& rng_runtime) {
       // generate a random index and select the associated element
       constexpr unsigned int idx = RngCompileTime::value % aspect_count;
-      typedef typename RngCompileTime::next rng_next;
-      typedef
-          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type elem;
+      using rng_next = typename RngCompileTime::next;
+      using elem =
+          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type;
       create_single_array<rng_next, RemainingElements - 1, elem,
                           SelectedAspectsT...>::check(aspect_list, rng_runtime);
     }
@@ -392,7 +391,7 @@ struct helper_random {
       // obtain random non-zero length, no longer than number of aspects
       constexpr unsigned int array_size =
           1 + (RngCompileTime::value % (aspect_count - 1));
-      typedef typename RngCompileTime::next rng_next;
+      using rng_next = typename RngCompileTime::next;
       // fill the array with random elements
       create_single_array<rng_next, array_size>::check(aspect_list,
                                                        rng_runtime);
@@ -400,7 +399,7 @@ struct helper_random {
       // to prevent generating duplicate indices for consecutive arrays,
       // skip the rng as many steps forward as the number of values that will be
       // required to generate random indices for the previous array
-      typedef typename discard<rng_next, array_size>::type rng_skip;
+      using rng_skip = typename discard<rng_next, array_size>::type;
       create_arrays<RemainingArrayCount - 1, rng_skip>::check(aspect_list,
                                                               rng_runtime);
     }
@@ -423,7 +422,7 @@ struct helper_random {
 
     // compile-time random number generator for generating aspects, required
     // since aspect selector has a constructor that accepts template arguments.
-    typedef minstd_rand<seed> rng_compile_time;
+    using rng_compile_time = minstd_rand<seed>;
 
     create_arrays<ArrayCount, rng_compile_time>::check(aspect_list,
                                                        rng_runtime);

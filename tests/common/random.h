@@ -25,21 +25,21 @@
  * Provides compile-time random number generation.
  *
  * Usage:
- * typedef minstd_rand<seed> rng;
+ * using rng = minstd_rand<seed>;
  * unsigned int rand0 = rng::value;
- * typedef typename rng::next rng_next;
+ * using rng_next = rng::next;
  * unsigned int rand1 = rng_next::value;
  */
 
 /** Equivalent to \p offset invocations of \p engine::next. */
 template <typename engine, unsigned int offset>
 struct discard {
-  typedef typename discard<typename engine::next, offset - 1>::type type;
+  using type = typename discard<typename engine::next, offset - 1>::type;
 };
 
 template <typename engine>
 struct discard<engine, 0> {
-  typedef engine type;
+  using type = engine;
 };
 
 /**
@@ -48,7 +48,7 @@ struct discard<engine, 0> {
 template <unsigned int a, unsigned int c, unsigned int m, unsigned int seed = 1>
 struct linear_congruential_engine {
   static constexpr unsigned int value = (a * seed + c) % m;
-  typedef linear_congruential_engine<a, c, m, value> next;
+  using next = linear_congruential_engine<a, c, m, value>;
 };
 
 /** Compile-time variant of \p std::minstd_rand. */
