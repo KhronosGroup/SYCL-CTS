@@ -175,37 +175,25 @@ inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
 
 namespace get_cts_types {
 inline auto get_vector_types() {
-  static const auto pack =
-      named_type_pack<bool, char, signed char, unsigned char, short,
-                      unsigned short, int, unsigned int, long, unsigned long,
-                      long long, unsigned long long, float, sycl::cl_float,
-                      sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
-                      sycl::cl_short, sycl::cl_ushort, sycl::cl_int,
-                      sycl::cl_uint, sycl::cl_long, sycl::cl_ulong>::generate(
-          "bool",
-          "char",
-          "signed char",
-          "unsigned char",
-          "short",
-          "unsigned short",
-          "int",
-          "unsigned int",
-          "long",
-          "unsigned long",
-          "long long",
-          "unsigned long long",
-          "float",
-          "sycl::cl_float",
-          "sycl::byte",
-          "sycl::cl_bool",
-          "sycl::cl_char",
-          "sycl::cl_uchar",
-          "sycl::cl_short",
-          "sycl::cl_ushort",
-          "sycl::cl_int",
-          "sycl::cl_uint",
-          "sycl::cl_long",
-          "sycl::cl_ulong");
+  static const auto pack = named_type_pack<
+      bool, char, signed char, unsigned char, short, unsigned short, int,
+      unsigned int, long, unsigned long, long long, unsigned long long, float,
+      sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
+      sycl::cl_short, sycl::cl_ushort, sycl::cl_int, sycl::cl_uint,
+      sycl::cl_long, sycl::cl_ulong>::generate("bool", "char", "signed char",
+                                               "unsigned char", "short",
+                                               "unsigned short", "int",
+                                               "unsigned int", "long",
+                                               "unsigned long", "long long",
+                                               "unsigned long long", "float",
+                                               "sycl::cl_float", "sycl::byte",
+                                               "sycl::cl_bool", "sycl::cl_char",
+                                               "sycl::cl_uchar",
+                                               "sycl::cl_short",
+                                               "sycl::cl_ushort",
+                                               "sycl::cl_int", "sycl::cl_uint",
+                                               "sycl::cl_long",
+                                               "sycl::cl_ulong");
   return pack;
 }
 }  // namespace get_cts_types
