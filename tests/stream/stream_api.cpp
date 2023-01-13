@@ -168,11 +168,11 @@ class TEST_NAME : public util::test_base {
           }
 #else
           WARN(
-              "DPCPP does not define sycl::stream:size(). "
+              "DPCPP does not define sycl::stream::size(). "
               "Skipping the test case.");
 #endif
 
-          /** get_max_statement_size get_size()
+          /** get_max_statement_size()
            */
 #ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
@@ -186,14 +186,15 @@ class TEST_NAME : public util::test_base {
            */
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
           {
-            auto maxStatementSize = os.get_work_item_buffer_size();
+            auto workItemBufferSize = os.get_work_item_buffer_size();
             check_return_type<size_t>(
-                log, maxStatementSize,
+                log, workItemBufferSize,
                 "sycl::stream::get_work_item_buffer_size()");
           }
 #else
           WARN(
-              "DPCPP does not define sycl::stream:get_work_item_buffer_size(). "
+              "DPCPP does not define "
+              "sycl::stream::get_work_item_buffer_size(). "
               "Skipping the test case.");
 #endif
 
