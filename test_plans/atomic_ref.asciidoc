@@ -11,10 +11,7 @@ The test plan covers non-atomic behavior, the latter will be covered in a separa
 
 === Device coverage
 
-All of the tests described below are performed
-
-* on the default device that is selected on the CTS command line
-* on the host side
+All of the tests described below are performed on the default device that is selected on the CTS command line
 
 == Type coverage
 
@@ -48,13 +45,10 @@ Note: using T as `ReferencedType` or `ReferencedType*`.
 
 All non static tests run on following cases:
 
-* host code with referenced value is simple variable - should be skipped for `address_space::local_space`
 * single_task with referenced value is accessor element - should be skipped for `address_space::local_space`
 * parallel_for with nd_range parameter and referenced value local_accessor element - should be skipped for `address_space::global_space`
 
-Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for usupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
-
-Note: legal address spaces are not yet defined for atomic_ref used on the host, it's possible that will be decided that atomic_ref isn't allowed in host code at all. It can be tracked in this issue https://gitlab.khronos.org/sycl/Specification/-/issues/637, test plan and tests should be updated if it will be needed according to decision disscussed in the issue.
+Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
 
@@ -117,7 +111,7 @@ For different cases of `DefaultOrder` template parameter check the following:
 
 ==== Common constructors
 
-Create an `atomic_ref` object using `atomic_ref(T&)` and an other object using copy constructor in host and device code using the following values as `DefaultOrder` template parameter:
+Create an `atomic_ref` object using `atomic_ref(T&)` and an other object using copy constructor in device code using the following values as `DefaultOrder` template parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
@@ -156,7 +150,7 @@ Check returned value type of `load` member function.
 
 ==== Member functions
 
-To test member functions create an `atomic_ref` object using `atomic_ref(T&)` in host and device code using the following values as `DefaultOrder` template parameter:
+To test member functions create an `atomic_ref` object using `atomic_ref(T&)` in device code using the following values as `DefaultOrder` template parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
