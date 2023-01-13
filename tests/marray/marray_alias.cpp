@@ -59,9 +59,9 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, DPCPP)
   auto queue = util::get_cts_object::queue();
 
 #ifdef SYCL_CTS_ENABLE_HALF_TESTS
-  using avaliability_fp16 =
+  using availability_fp16 =
       util::extensions::availability<util::extensions::tag::fp16>;
-  if (!avaliability_fp16::check(queue)) {
+  if (!availability_fp16::check(queue)) {
     WARN(
         "Device does not support half precision floating point operations."
         "Skipping the test case.");
@@ -71,9 +71,9 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, DPCPP)
 #endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
 #ifdef SYCL_CTS_ENABLE_DOUBLE_TESTS
-  using avaliability_fp64 =
+  using availability_fp64 =
       util::extensions::availability<util::extensions::tag::fp64>;
-  if (!avaliability_fp64::check(queue)) {
+  if (!availability_fp64::check(queue)) {
     WARN(
         "Device does not support double precision floating point operations."
         "Skipping the test case.");

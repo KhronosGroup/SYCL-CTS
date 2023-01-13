@@ -33,9 +33,9 @@ using namespace marray_operators;
 DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("operators fp16", "[marray]")({
   auto queue = util::get_cts_object::queue();
-  using avaliability =
+  using availability =
       util::extensions::availability<util::extensions::tag::fp16>;
-  if (!avaliability::check(queue)) {
+  if (!availability::check(queue)) {
     WARN(
         "Device does not support half precision floating point operations."
         "Skipping the test case.");

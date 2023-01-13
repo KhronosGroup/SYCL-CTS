@@ -30,9 +30,9 @@ using namespace marray_constructor;
 
 TEST_CASE("constructor fp64", "[marray]") {
   auto queue = util::get_cts_object::queue();
-  using avaliability =
+  using availability =
       util::extensions::availability<util::extensions::tag::fp64>;
-  if (!avaliability::check(queue)) {
+  if (!availability::check(queue)) {
     WARN(
         "Device does not support double precision floating point operations."
         "Skipping the test case.");
