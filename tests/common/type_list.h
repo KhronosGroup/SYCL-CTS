@@ -175,6 +175,7 @@ inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
 
 namespace get_cts_types {
 inline auto get_vector_types() {
+#if SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
   static const auto pack = named_type_pack<
       bool, char, signed char, unsigned char, short, unsigned short, int,
       unsigned int, long, unsigned long, long long, unsigned long long, float,
@@ -194,6 +195,17 @@ inline auto get_vector_types() {
                                                "sycl::cl_int", "sycl::cl_uint",
                                                "sycl::cl_long",
                                                "sycl::cl_ulong");
+#else
+  static const auto pack =
+      named_type_pack<bool, char, signed char, unsigned char, short,
+                      unsigned short, int, unsigned int, long, unsigned long,
+                      long long, unsigned long long,
+                      float>::generate("bool", "char", "signed char",
+                                       "unsigned char", "short",
+                                       "unsigned short", "int", "unsigned int",
+                                       "long", "unsigned long", "long long",
+                                       "unsigned long long", "float");
+#endif
   return pack;
 }
 }  // namespace get_cts_types
