@@ -1,0 +1,119 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for expressing parallelism through kernels
+
+This test plan adds missing coverage for Section 4.9. "Expressing parallelism through kernels" of the SYCL 2020 specification: the ranges and index specifiers described in Section 4.9.1., the command group `handler` class of Section 4.9.4., the `reducer` class of Section 4.9.2.3., as well as the specialization constants described in Section 4.9.5. The estimated development time is three days.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+=== Ranges and index specifiers
+
+==== `range`
+The existing test in `range_api.cpp` includes a check for the operators of the `range` class. This check executes various operators on ranges and checks the elements of the resulting ranges with the result of applying the operator element-wise. This test is modified by adding a test for
+
+- The unary operators `+` and `-`.
+- The prefix operators `++` and `--`.
+- The postfix operators `++` and `--`.
+
+==== `nd_range`
+The existing tests are modified in the following way:
+
+- Mark all tests for the constructor that takes an offset as deprecated.
+- Mark all tests for `nd_range::get_offset` as deprecated.
+
+==== `item`
+The existing tests are modified in the following way:
+
+- Mark tests for `item::get_offset` as deprecated.
+- The existing test for `item` when `Dimension == 1` is `item_1d.cpp`. This test launches a kernel with the parameter `sycl::item<1> item`. It is modified by adding a test for `operator size_t() const` (which only is available when `Dimension == 1`):
+* Call the above operator on `item` and check that the result is equal to `item.get_id(0)`.
+* Let `item_const` be a `const` copy of `item`. Call the above operator on `item_const` and check that the result is equal to `item.get_id(0)`.
+- Check that `std::is_default_constructible_v<sycl::item<D>>` is false for `D = 1, 2, 3`, since the constructor is specified as `item() = delete;`.
+
+==== `nd_item`
+The existing tests are modified in the following way:
+
+- Remove all tests relating to `nd_item::barrier` and `nd_item::mem_fence`.
+- Mark tests for `nd_item::get_offset` as deprecated.
+- Check that `std::is_default_constructible_v<sycl::nd_item<D>>` is false for `D = 1, 2, 3`, since the constructor is specified as `nd_item() = delete;`.
+
+==== `h_item`
+The existing tests are modified in the following way:
+
+- Check that `std::is_default_constructible_v<sycl::h_item<D>>` is false for `D = 1, 2, 3`, since the constructor is specified as `h_item() = delete;`.
+
+=== Reduction variables
+The below tests are added.
+
+==== `reducer` class
+Check that the following statements evaluate to `false`:
+
+- `std::is_copy_constructible_v<sycl::reducer>`
+- `std::is_move_constructible_v<sycl::reducer>`
+- `std::is_copy_assignable_v<sycl::reducer>`
+- `std::is_move_assignable_v<sycl::reducer>`
+
+Since `sycl::reducer` may have implementation-defined template parameters, use `decltype`.
+
+==== `reducer` member functions
+This test is repeated for the types of the existing reduction tests: `char`, `signed char`, `unsigned char`, `short int`, `unsigned short int`, `int`, `unsigned int`, `long int`, `unsigned long int`, `float`, `long long int`, `unsigned long long int`. In addition, if the device has `aspect::fp64`: `double`. In addition, if the device has `aspect::fp16`: `sycl::half`.
+
+===== Subscript operator
+This test is repeated for a shared memory pointer, a `sycl::buffer`, and a `sycl::span` over a shared memory pointer:
+
+- Instantiate a `sycl::reduction`, `reduction`, over the data with `sycl::plus`.
+- Launch a kernel `parallel_for(range<1>, reduction, [](id<1>, auto& reducer))`.
+- Check that `decltype(reducer)::value_type` is equal to the value type of the test.
+- Check that `decltype(reducer)::binary_operation` is equal to `sycl::plus`.
+- If using a shared memory pointer or a buffer:
+* Check that `decltype(reducer)::dimensions` is `0`.
+- Else (if using a span over a shared pointer):
+* Check that `decltype(reducer)::dimensions` is `1`.
+* Check that `decltype(reducer[0])::value_type` is equal to the value type of the test.
+* Check that `decltype(reducer[0])::binary_operation` is equal to `sycl::plus`.
+* Check that `decltype(reducer[0])::dimensions` is `0`.
+
+===== Identity operator
+In addition to the types defined above, this test is also executed for `bool`. Let this type be `T`. In combination, this test is repeated for the SYCL function objects with known identities (SYCL specification Table 123.): `plus`, `multiplies`, `bit_and`, `bit_or`, `bit_xor`, `logical_and`, `logical_or`, `minimum`, `maximum`.
+
+- Instantiate a `reduction`, `red`, over some buffer.
+- Launch a kernel `parallel_for(range<1>, red, [](id<1>, auto& reducer))`.
+- Check that the return type and value of `reducer.identity()` are as expected. The expected values are derived from the aforementioned Table 123. and the return type is expected to be `T`.
+
+=== Command group `handler`
+The existing tests are modified in the following way:
+
+- Mark tests for `template <typename KernelName, typename KernelType, int Dimensions> void parallel_for(range<Dimensions> numWorkItems, id<Dimensions> workItemOffset, const KernelType& kernelFunc);` as deprecated.
+- The below tests are added.
+
+==== `depends_on(event)`
+- Create event `e1` by submitting a dummy kernel to the queue.
+- Create event `e2` by submitting a dummy kernel to the queue. Inside the submit call, use `depends_on` to let `e2` depend on `e1`.
+- Wait for the completion of `e2`.
+- Check that `e1` has completed by querying the `command_execution_status` of `e1`.
+
+==== `depends_on(const std::vector<event>&)`
+- Create event `e1` by submitting a dummy kernel to the queue.
+- Create event `e2` by submitting a dummy kernel to the queue.
+- Create event `e3` by submitting a dummy kernel to the queue. Inside the submit call, use `depends_on` with a vector `{e1, e2}` to let `e3` depend on `e1` and `e2`.
+- Wait for the completion of `e3`.
+- Check that `e1` and `e2` have completed by querying the `command_execution_status` of `e1` and `e2`.
+
+=== Specialization constants
+A test is added, which checks that the following statements evaluate to `false`:
+
+- `std::is_copy_constructible_v<sycl::specialization_id>`
+- `std::is_move_constructible_v<sycl::specialization_id>`
+- `std::is_copy_assignable_v<sycl::specialization_id>`
+- `std::is_move_assignable_v<sycl::specialization_id>`
