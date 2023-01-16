@@ -1036,7 +1036,7 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
 // Incrementing index of last dimension if it not yet reached end of the range
 // otherwise reseting it and trying to increment index of previous dimension.
 template <int dims>
-void add_id_linear(sycl::id<dims>& id, size_t size) {
+sycl::id<dims> next_id_linearly(sycl::id<dims> id, size_t size) {
   for (int i = dims - 1; i >= 0; i--) {
     if (id[i] < size - 1) {
       id[i]++;
@@ -1045,6 +1045,7 @@ void add_id_linear(sycl::id<dims>& id, size_t size) {
       id[i] = 0;
     }
   }
+  return id;
 }
 
 // FIXME: re-enable when handler.host_task is implemented in hipsycl
@@ -1090,7 +1091,7 @@ void check_linearization() {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   res_acc[0] &= value_operations::are_equal(elem, acc[id]);
-                  add_id_linear(id, range_size);
+                  id = next_id_linearly(id, range_size);
                 }
               });
             } else {
@@ -1098,7 +1099,7 @@ void check_linearization() {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   CHECK(value_operations::are_equal(elem, acc[id]));
-                  add_id_linear(id, range_size);
+                  id = next_id_linearly(id, range_size);
                 }
               });
             }
@@ -1112,7 +1113,7 @@ void check_linearization() {
     sycl::id<dims> id{};
     for (auto& elem : acc) {
       CHECK(value_operations::are_equal(elem, acc[id]));
-      add_id_linear(id, range_size);
+      id = next_id_linearly(id, range_size);
     }
   }
 }
