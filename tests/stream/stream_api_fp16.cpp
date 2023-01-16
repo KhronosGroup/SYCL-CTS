@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ using namespace sycl_cts;
 class test_kernel;
 
 /** test sycl::stream interface
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
@@ -49,17 +49,16 @@ class TEST_NAME : public util::test_base {
 
         if (!testQueue.get_device().has(sycl::aspect::fp16)) {
           log.note(
-            "Device does not support half precision floating point operations");
-        return;
-      }
+              "Device does not support half precision floating point "
+              "operations");
+          return;
+        }
 
         testQueue.submit([&](sycl::handler &cgh) {
           sycl::stream os(2048, 80, cgh);
 
-          cgh.single_task<class test_kernel>([=]() {
-            check_all_vec_dims(os, sycl::half(0.2f));
-            check_all_vec_dims(os, sycl::cl_half(0.3f));
-          });
+          cgh.single_task<class test_kernel>(
+              [=]() { check_all_vec_dims(os, sycl::half(0.2f)); });
         });
 
         testQueue.wait_and_throw();
