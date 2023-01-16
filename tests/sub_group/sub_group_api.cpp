@@ -113,6 +113,15 @@ size_t to_size_t(sycl::range<1> returned_value) {
   return returned_value[0];
 }
 
+// ComputeCPP cannot implicitly convert sycl::id to size_t
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+/** sycl::id cannot be implicitly converted to size_t. */
+template <>
+size_t to_size_t(sycl::id<1> returned_value) {
+  return returned_value[0];
+}
+#endif
+
 /**
  * Registers the result of calling a member function.
  * The returned value \p returned_value is converted to \p size_t and stored
