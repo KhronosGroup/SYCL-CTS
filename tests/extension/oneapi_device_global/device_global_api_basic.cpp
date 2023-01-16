@@ -25,10 +25,10 @@ using namespace sycl_cts;
 using namespace sycl_cts::util;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::experimental;
 
 template <typename T, test_names name,
           sycl::access::decorated Decorated = sycl::access::decorated::no>
@@ -86,6 +86,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto result_acc =
           result_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
+      T value_ref_zero_init{};
+      std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
         auto cmptr =
             const_dev_global<const T>.template get_multi_ptr<Decorated>();
@@ -97,30 +99,28 @@ void run_test(util::logger& log, const std::string& type_name) {
         result_acc[integral(indx::same_type_non_const)] =
             std::is_same<decltype(mptr), multi_ptr_t>::value;
 
-        // Check that multi_ptr references to default value
-        const T def_value{};
         // if *mptr and *cmptr equal to default value, then
         // test will be marked as passed, otherwise the test is failed
         result_acc[integral(indx::correct_def_val_const)] =
-            (*(cmptr.get()) == def_value);
+            (*(cmptr.get()) == value_ref_zero_init);
         result_acc[integral(indx::correct_def_val_non_const)] =
-            (*(mptr.get()) == def_value);
+            (*(mptr.get()) == value_ref_zero_init);
         // Change value, that multi_ptr points to
-        value_operations::assign<T>(*mptr, 42);
+        value_operations::assign(*mptr, 42);
         // Get current value from device_global, that should change in previous
         // step
         const T& current_value = dev_global<T>.get();
         result_acc[integral(indx::correct_changed_val)] =
-            value_operations::are_equal<T>(*mptr, current_value);
+            value_operations::are_equal(*mptr, current_value);
       });
     });
   }
   for (size_t i = integral(indx::same_type_const); i < integral(indx::size);
        ++i) {
     if (!result[i]) {
-      FAIL(log,
-           (get_case_description<T, Decorated>("Device global: get_multi_ptr()",
-                                               error_strings[i], type_name)));
+      std::string fail_msg = get_case_description<Decorated>(
+          "Device global: get_multi_ptr()", error_strings[i], type_name);
+      FAIL(log, fail_msg);
     }
   }
 }
@@ -167,36 +167,38 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto result_acc =
           result_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
+      T value_ref_zero_init{};
+      std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
         // Call copy constructor of T to access reference to the device_global
         // value
         const T& const_instance(const_dev_global<T>);
         T& instance(dev_global<T>);
 
-        T default_value{};
         // Check that resulted reference is to default value
         result_acc[integral(indx::is_def_value_const)] =
-            (default_value == instance);
+            (value_ref_zero_init == instance);
         result_acc[integral(indx::is_def_value_non_const)] =
-            (default_value == const_instance);
+            (value_ref_zero_init == const_instance);
 
-        // Changing non-const value
-        value_operations::assign<T>(dev_global<T>, 42);
+        // Changing value
+        value_operations::assign(dev_global<T>, 42);
         // Get current value from the device_global, which should change in
         // previous step
         T& current_value = dev_global<T>.get();
         // Check, that the device_global object contains new value
         result_acc[integral(indx::correct_changed_val)] =
-            value_operations::are_equal<T>(dev_global<T>, current_value);
+            value_operations::are_equal(dev_global<T>, current_value);
       });
     });
   }
   for (size_t i = integral(indx::is_def_value_const); i < integral(indx::size);
        ++i) {
     if (!result[i]) {
-      FAIL(log,
-           (get_case_description<T>("Device global: implicit conversation to T",
-                                    error_strings[i], type_name)));
+      std::string fail_msg =
+          get_case_description("Device global: implicit conversation to T",
+                               error_strings[i], type_name);
+      FAIL(log, fail_msg);
     }
   }
 }
@@ -246,6 +248,8 @@ void run_test(util::logger& log, const std::string& type_name) {
       auto result_acc =
           result_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
+      T value_ref_zero_init{};
+      std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
         // Call get() to access reference
         const T& const_instance(const_dev_global<T>.get());
@@ -256,104 +260,123 @@ void run_test(util::logger& log, const std::string& type_name) {
         result_acc[integral(indx::same_type_non_const)] =
             std::is_same<decltype(instance), T&>::value;
         // Check that resulted reference is to default value
-        const T& def_value{};
         result_acc[integral(indx::correct_def_val_const)] =
-            (const_instance == def_value);
+            (const_instance == value_ref_zero_init);
         result_acc[integral(indx::correct_def_val_non_const)] =
-            (instance == def_value);
+            (instance == value_ref_zero_init);
         // Assign new value an check that device_global instance contains new
         // value
-        value_operations::assign<T>(instance, 42);
+        value_operations::assign(instance, 42);
         result_acc[integral(indx::correct_changed_val)] =
-            value_operations::are_equal<T>(dev_global<T>, instance);
+            value_operations::are_equal(dev_global<T>, instance);
       });
     });
   }
   for (size_t i = integral(indx::same_type_const); i < integral(indx::size);
        ++i) {
     if (!result[i]) {
-      FAIL(log, (get_case_description<T>("Device global: get() method",
-                                         error_strings[i], type_name)));
+      std::string fail_msg = get_case_description("Device global: get() method",
+                                                  error_strings[i], type_name);
+      FAIL(log, fail_msg);
     }
   }
 }
 }  // namespace get_method
 
 namespace has_property_method {
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::experimental;
 // Creating instance with property prop_value_t with default
 // constructor
 template <typename T, typename prop_value_t>
-const device_global<T, property_list<prop_value_t>> dev_global;
+device_global<T, decltype(properties{prop_value_t{}})> dev_global;
 
 /** @brief The function tests that the device_global has only props, that was
- * given to property_list
+ * given to properties
  *  @tparam T Type of underlying device_global value
- *  @tparam prop_value_t Property contained by property_list
- *  @tparam other_props Properties, which should not be in property_list
+ *  @tparam prop_value_t Property contained by properties
+ *  @tparam other_props Properties, which should not be in properties
  */
 template <typename T, typename prop_value_t, typename other_prop>
 void has_no_other_props(util::logger& log, const std::string& type_name) {
   if (dev_global<T, prop_value_t>.template has_property<other_prop>() !=
       false) {
-    FAIL(log, get_case_description<T>("Device global: has_property()",
-                                      "Unexpected property returned true",
-                                      type_name));
+    std::string fail_msg =
+        get_case_description("Device global: has_property()",
+                             "Unexpected property returned true", type_name);
+    FAIL(log, fail_msg);
   }
 }
 
+// Helper for checking has_no_other_props for all properties in a type_pack.
+template <typename T, typename prop_value_t, typename other_props>
+struct check_has_no_other_props_helper;
+template <typename T, typename prop_value_t>
+struct check_has_no_other_props_helper<T, prop_value_t, type_pack<>> {
+  static void check(util::logger&, const std::string&) {}
+};
+template <typename T, typename prop_value_t, typename other_prop,
+          typename... other_props>
+struct check_has_no_other_props_helper<T, prop_value_t,
+                                       type_pack<other_prop, other_props...>> {
+  static void check(util::logger& log, const std::string& type_name) {
+    has_no_other_props<T, prop_value_t, other_prop>(log, type_name);
+    check_has_no_other_props_helper<
+        T, prop_value_t, type_pack<other_props...>>::check(log, type_name);
+  }
+};
+
 /** @brief The function tests that device_global method has_property() return
- * true on properties, that was given to property_list and false if property was
+ * true on properties, that was given to properties and false if property was
  * not provided
  *  @tparam T Type of underlying value
- *  @tparam prop_name Name of property that included in device_global property
+ *  @tparam prop_key Name of property that included in device_global property
  * list
- *  @tparam prop_value_t Property contained by property_list
- *  @tparam other_props Props, which should not be in property_list
+ *  @tparam prop_value_t Property contained by properties
+ *  @tparam other_props Props, which should not be in properties
  */
-template <typename T, typename prop_name, typename prop_value_t,
-          typename... other_props>
+template <typename T, typename prop_key, typename prop_value_t,
+          typename other_props>
 void run_test(util::logger& log, const std::string& type_name) {
-  // Check that instance has prop_name property
-  if (dev_global<T, prop_value_t>.template has_property<prop_name>() != true) {
-    FAIL(log, get_case_description<T>("Device global: has_property()",
-                                      "Wrong value.", type_name));
+  // Check that instance has prop_key property
+  if (dev_global<T, prop_value_t>.template has_property<prop_key>() != true) {
+    std::string fail_msg = get_case_description("Device global: has_property()",
+                                                "Wrong value.", type_name);
+    FAIL(log, fail_msg);
   }
   // Check that instance has no other_props
-  (has_no_other_props<T, prop_value_t, other_props>(log, type_name), ...);
+  check_has_no_other_props_helper<T, prop_value_t, other_props>::check(
+      log, type_name);
 }
 }  // namespace has_property_method
 
 namespace get_property_method {
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::experimental;
 // Creating instance with property prop_value_t with default
 // constructor
 template <typename T, typename prop_value_t>
-const device_global<T, property_list<prop_value_t>> dev_global;
+device_global<T, decltype(properties{prop_value_t{}})> dev_global;
 
 /** @brief The function tests that device_global get_property method returns
  * correct properties
  *  @tparam T Type of underlying device_global value
- *  @tparam prop_name Name of property that included in device_global property
+ *  @tparam prop_key Name of property that included in device_global property
  * list
  *  @tparam prop_value_t Integral_constant of property
- *  @tparam expected_prop_type Type of expecting property
  *  @param expected property that expecting from get_property()
  */
-template <typename T, typename prop_name, typename prop_value_t,
-          typename expected_prop_type = prop_name>
-void run_test(util::logger& log, const std::string& type_name,
-              expected_prop_type expected) {
+template <typename T, typename prop_key, typename prop_value_t>
+void run_test(util::logger& log, const std::string& type_name) {
   bool property_check{};
   // Check that get_property<prop_value_t> returns expected property of
   // expected_prop_type
   property_check =
-      (dev_global<T, prop_value_t>.template get_property<prop_name>() ==
-       expected);
+      (dev_global<T, prop_value_t>.template get_property<prop_key>() ==
+       prop_value_t{});
 
   if (!property_check) {
-    FAIL(log, get_case_description<T>("Device global: get_property",
-                                      "Wrong property returned.", type_name));
+    std::string fail_msg = get_case_description(
+        "Device global: get_property", "Wrong property returned.", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace get_property_method
@@ -369,10 +392,10 @@ void run_test(util::logger& log, const std::string& type_name) {
   bool isSame = std::is_same<typename device_global<T>::element_type,
                              std::remove_extent_t<T>>::value;
   if (!isSame) {
-    FAIL(log,
-         get_case_description<T>(
-             "Device global: element_type",
-             "Wrong type. element_type != std::remove_extent_t<T>", type_name));
+    std::string fail_msg = get_case_description(
+        "Device global: element_type",
+        "Wrong type. element_type != std::remove_extent_t<T>", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace element_type
@@ -390,60 +413,58 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
   // Run test of has_property method with different properties in device_global
   // property list
   {
-    using prop_name = host_access;
-    using prop_value = host_access::value_t<host_access::access::read>;
+    using prop_key = host_access_key;
+    using prop_value = host_access_key::value_t<host_access_enum::read>;
     using other_props =
-        type_pack<device_image_scope, init_mode, implement_in_csr>;
+        type_pack<device_image_scope_key, init_mode_key, implement_in_csr_key>;
 
-    has_property_method::run_test<T, prop_name, prop_value, other_props>(
+    has_property_method::run_test<T, prop_key, prop_value, other_props>(
         log, type_name);
   }
   {
-    using prop_name = device_image_scope;
-    using prop_value = device_image_scope::value_t;
-    using other_props = type_pack<host_access, init_mode, implement_in_csr>;
-
-    has_property_method::run_test<T, prop_name, prop_value, other_props>(
-        log, type_name);
-  }
-  {
-    using prop_name = init_mode;
-    using prop_value = init_mode::value_t<init_mode::trigger::reprogram>;
+    using prop_key = device_image_scope_key;
+    using prop_value = device_image_scope_key::value_t;
     using other_props =
-        type_pack<host_access, device_image_scope, implement_in_csr>;
+        type_pack<host_access_key, init_mode_key, implement_in_csr_key>;
 
-    has_property_method::run_test<T, prop_name, prop_value, other_props>(
+    has_property_method::run_test<T, prop_key, prop_value, other_props>(
         log, type_name);
   }
   {
-    using prop_name = implement_in_csr;
-    using prop_value = implement_in_csr::value_t<true>;
-    using other_props = type_pack<host_access, device_image_scope, init_mode>;
+    using prop_key = init_mode_key;
+    using prop_value = init_mode_key::value_t<init_mode_enum::reprogram>;
+    using other_props = type_pack<host_access_key, device_image_scope_key,
+                                  implement_in_csr_key>;
 
-    has_property_method::run_test<T, prop_name, prop_value, other_props>(
+    has_property_method::run_test<T, prop_key, prop_value, other_props>(
+        log, type_name);
+  }
+  {
+    using prop_key = implement_in_csr_key;
+    using prop_value = implement_in_csr_key::value_t<true>;
+    using other_props =
+        type_pack<host_access_key, device_image_scope_key, init_mode_key>;
+
+    has_property_method::run_test<T, prop_key, prop_value, other_props>(
         log, type_name);
   }
 
   // Run test of get_property method with different properties in
   // device_global property list
   {
-    using prop_name = host_access;
-    using prop_value = host_access::value_t<host_access::access::read>;
-    get_property_method::run_test<T, prop_name, prop_value>(
-        log, type_name, host_access::access::read);
+    using prop_key = host_access_key;
+    using prop_value = host_access_key::value_t<host_access_enum::read>;
+    get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
   }
   {
-    using prop_name = init_mode::trigger;
-    using prop_value = init_mode::value_t<init_mode::trigger::reprogram>;
-    get_property_method::run_test<T, prop_name, prop_value>(
-        log, type_name, init_mode::trigger::reprogram);
+    using prop_key = init_mode_key;
+    using prop_value = init_mode_key::value_t<init_mode_enum::reprogram>;
+    get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
   }
   {
-    using prop_name = implement_in_csr;
-    using prop_value = implement_in_csr::value_t<true>;
-    using expected_prop_type = bool;
-    get_property_method::run_test<T, prop_name, prop_value, expected_prop_type>(
-        log, type_name, true);
+    using prop_key = implement_in_csr_key;
+    using prop_value = implement_in_csr_key::value_t<true>;
+    get_property_method::run_test<T, prop_key, prop_value>(log, type_name);
   }
 
   element_type::run_test<T>(log, type_name);
@@ -472,8 +493,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

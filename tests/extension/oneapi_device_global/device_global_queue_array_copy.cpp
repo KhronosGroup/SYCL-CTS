@@ -17,7 +17,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -28,7 +28,7 @@ template <typename T>
 struct queue_array_change_dg_kernel;
 
 template <typename T>
-oneapi::device_global<T> dev_global_out;
+oneapi::experimental::device_global<T> dev_global_out;
 
 /** @brief The function tests that queue copy overloads correctly copy
  *  a single element to device_global
@@ -38,9 +38,9 @@ template <typename T, size_t N>
 void run_test_copy_to_device_global_array(util::logger& log,
                                           const std::string& type_name) {
   T data[N];
-  value_operations<T[N]>::assign(data, 1);
-  const auto src_data = &data[0];
+  value_operations::assign(data, 1);
   size_t num_element = N / 2;
+  const auto src_data = &data[num_element];
 
   auto queue = util::get_cts_object::queue();
 
@@ -62,16 +62,16 @@ void run_test_copy_to_device_global_array(util::logger& log,
     queue.wait_and_throw();
   }
   if (!is_copied_correctly) {
-    FAIL(log,
-         get_case_description(
-             "Overload of sycl::queue::copy for device_global",
-             "Didn't copy correct element to device_global array", type_name));
+    std::string fail_msg = get_case_description(
+        "Overload of sycl::queue::copy for device_global",
+        "Didn't copy correct element to device_global array", type_name);
+    FAIL(log, fail_msg);
   }
 }
 
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global_in;
+oneapi::experimental::device_global<T> dev_global_in;
 
 /** @brief The function tests that queue copy overloads correctly copy
  * single element from device_global
@@ -81,16 +81,16 @@ template <typename T, size_t N>
 void run_test_copy_from_device_global_array(util::logger& log,
                                             const std::string& type_name) {
   T new_val[N];
-  value_operations<T[N]>::assign(new_val, 5);
+  value_operations::assign(new_val, 5);
   T data[N];
-  auto dst_data = &data[0];
   size_t num_element = N / 2;
+  auto dst_data = &data[num_element];
 
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<queue_array_change_dg_kernel<T>>(
-        [=] { value_operations<T[N]>::assign(dev_global_in<T[N]>, new_val); });
+        [=] { value_operations::assign(dev_global_in<T[N]>, new_val); });
   });
   queue.wait_and_throw();
 
@@ -98,10 +98,10 @@ void run_test_copy_from_device_global_array(util::logger& log,
   event.wait();
 
   if (data[num_element] != new_val[num_element]) {
-    FAIL(log, get_case_description(
-                  "Overload of sycl::queue::copy for device_global",
-                  "Didn't copy correct element from device_global array",
-                  type_name));
+    std::string fail_msg = get_case_description(
+        "Overload of sycl::queue::copy for device_global",
+        "Didn't copy correct element from device_global array", type_name);
+    FAIL(log, fail_msg);
   }
 }
 
@@ -129,8 +129,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

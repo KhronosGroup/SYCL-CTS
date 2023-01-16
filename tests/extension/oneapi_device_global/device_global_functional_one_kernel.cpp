@@ -19,14 +19,14 @@
 
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 using namespace device_global_common_functions;
 
 namespace one_kernel_multiple_times {
-template <typename T, typename prop_value_t>
-oneapi::device_global<T, oneapi::property_list<prop_value_t>> dev_global;
+template <typename T, typename properties_t>
+oneapi::experimental::device_global<T, properties_t> dev_global;
 
 template <typename T, property_tag tag>
 struct kernel_read_then_write;
@@ -35,7 +35,7 @@ struct kernel_read_then_write;
  * @brief The class provide static functions to execute read and write
  * operations in the kernel
  */
-template <typename T, typename prop_value_t, property_tag tag>
+template <typename T, typename properties_t, property_tag tag>
 class read_and_write_in_kernel {
  public:
   /**
@@ -43,9 +43,9 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from the device_global
    * instance not equal to default value
    */
-  static inline void expect_def_val(util::logger& log,
+  static inline void expect_def_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
-    run(true,
+    run(queue, true,
         "Value read incorrectly from kernel on first invocation. Default "
         "value expected",
         log, type_name);
@@ -56,9 +56,9 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to T{1}
    */
-  static inline void expect_new_val(util::logger& log,
+  static inline void expect_new_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
-    run(false,
+    run(queue, false,
         "Value read incorrectly from kernel on second invocation. "
         "Changed value expected",
         log, type_name);
@@ -73,7 +73,7 @@ class read_and_write_in_kernel {
    * @param error_info String with additional info to display, when test fails
    * @param type_name Name of testing type for display if test fails
    */
-  static inline void run(const bool expect_def_value,
+  static inline void run(sycl::queue& queue, const bool expect_def_value,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
     // Default value of type T in case if we expect to read default value
@@ -81,7 +81,7 @@ class read_and_write_in_kernel {
 
     // Changed value of type T in case if we expect to read modified value
     T new_val{};
-    value_operations::assign<T>(new_val, 42);
+    value_operations::assign(new_val, 42);
 
     // is_read_correct will be set to true if device_global value is equal to
     // the expected value inside kernel
@@ -90,7 +90,6 @@ class read_and_write_in_kernel {
       // Creating result buffer
       sycl::buffer<bool, 1> is_read_corr_buf(&is_read_correct,
                                              sycl::range<1>(1));
-      auto queue = util::get_cts_object::queue();
       queue.submit([&](sycl::handler& cgh) {
         using kernel = kernel_read_then_write<T, tag>;
         auto is_read_correct_acc =
@@ -100,21 +99,22 @@ class read_and_write_in_kernel {
         // then write new value
         cgh.single_task<kernel>([=] {
           if (expect_def_value) {
-            is_read_correct_acc[0] = value_operations::are_equal<T>(
-                dev_global<T, prop_value_t>, def_val);
+            is_read_correct_acc[0] = value_operations::are_equal(
+                dev_global<T, properties_t>, def_val);
           } else {
-            is_read_correct_acc[0] = value_operations::are_equal<T>(
-                dev_global<T, prop_value_t>, new_val);
+            is_read_correct_acc[0] = value_operations::are_equal(
+                dev_global<T, properties_t>, new_val);
           }
-          value_operations::assign<T>(dev_global<T, prop_value_t>, 42);
+          value_operations::assign(dev_global<T, properties_t>, 42);
         });
       });
       queue.wait_and_throw();
     }
     if (is_read_correct == false) {
-      FAIL(log, get_case_description(
-                    "device_global: Running one kernel multiple times",
-                    error_info, type_name));
+      std::string fail_msg = get_case_description(
+          "device_global: Running one kernel multiple times", error_info,
+          type_name);
+      FAIL(log, fail_msg);
     }
   }
 };
@@ -123,21 +123,23 @@ class read_and_write_in_kernel {
  * @brief The function tests that the device_global value is correctly read and
  * changed from a single kernel executed multiple times
  * @tparam T Type of underlying device_global value
- * @tparam prop_value_t Type of property_value that included in property_list
+ * @tparam prop_value_t Type of property_value that included in properties
  * @tparam tag For kernel naming
  */
 template <typename T, typename prop_value_t, property_tag tag>
 void run_test(util::logger& log, const std::string& type_name) {
   using VerifierT = read_and_write_in_kernel<T, prop_value_t, tag>;
+  auto queue = util::get_cts_object::queue();
+
   // At first run expecting default values
-  VerifierT::expect_def_val(log, type_name);
+  VerifierT::expect_def_val(queue, log, type_name);
 
   // At the second run expect changed value
-  VerifierT::expect_new_val(log, type_name);
+  VerifierT::expect_new_val(queue, log, type_name);
 }
 /**
  * @brief The function runs a test with properties that can include in
- * device_global property_list
+ * device_global properties
  * @tparam T Type of underlying value in device_global
  */
 template <typename T>
@@ -146,44 +148,61 @@ void run_tests_with_properties(sycl_cts::util::logger& log,
   // Using a property_tag for kernel name
 
   // Run without any properies
-  run_test<T, oneapi::property_value<>, property_tag::none>(log, type_name);
+  run_test<T, decltype(oneapi::experimental::properties{}), property_tag::none>(
+      log, type_name);
 
   {
-    using oneapi::device_image_scope;
+    using oneapi::experimental::device_image_scope;
     // Run with device_image_scope property
-    run_test<T, device_image_scope::value_t, property_tag::dev_image_scope>(
-        log, type_name);
+    run_test<T, decltype(oneapi::experimental::properties{device_image_scope}),
+             property_tag::dev_image_scope>(log, type_name);
   }
 
   {
-    using oneapi::host_access;
+    using oneapi::experimental::host_access;
+    using oneapi::experimental::host_access_enum;
     // Run with different host_access properies
-    run_test<T, host_access::value_t<host_access::access::read>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 host_access<host_access_enum::read>}),
              property_tag::host_access_r>(log, type_name);
-    run_test<T, host_access::value_t<host_access::access::write>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 host_access<host_access_enum::write>}),
              property_tag::host_access_w>(log, type_name);
-    run_test<T, host_access::value_t<host_access::access::read_write>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 host_access<host_access_enum::read_write>}),
              property_tag::host_access_r_w>(log, type_name);
-    run_test<T, host_access::value_t<host_access::access::none>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 host_access<host_access_enum::none>}),
              property_tag::host_access_none>(log, type_name);
   }
 
   {
-    using oneapi::init_mode;
+    using oneapi::experimental::init_mode;
+    using oneapi::experimental::init_mode_enum;
     // Run with different init_mode properies
-    run_test<T, init_mode::value_t<init_mode::trigger::reprogram>,
-             property_tag::init_mode_trig_reset>(log, type_name);
-    run_test<T, init_mode::value_t<init_mode::trigger::reset>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 init_mode<init_mode_enum::reprogram>}),
              property_tag::init_mode_trig_reprogram>(log, type_name);
+    run_test<T,
+             decltype(oneapi::experimental::properties{
+                 init_mode<init_mode_enum::reset>}),
+             property_tag::init_mode_trig_reset>(log, type_name);
   }
 
   {
-    using oneapi::implement_in_csr;
+    using oneapi::experimental::implement_in_csr;
     // Run with different implement_in_csr properies
-    run_test<T, implement_in_csr::value_t<true>,
+    run_test<T,
+             decltype(oneapi::experimental::properties{implement_in_csr<true>}),
              property_tag::impl_in_csr_true>(log, type_name);
-    run_test<T, implement_in_csr::value_t<false>,
-             property_tag::impl_in_csr_false>(log, type_name);
+    run_test<
+        T, decltype(oneapi::experimental::properties{implement_in_csr<false>}),
+        property_tag::impl_in_csr_false>(log, type_name);
   }
 }
 
@@ -215,11 +234,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
+    auto types = device_global_types::get_types();
     for_all_types<check_device_global_one_kernel_for_type>(types, log);
 #endif
   }

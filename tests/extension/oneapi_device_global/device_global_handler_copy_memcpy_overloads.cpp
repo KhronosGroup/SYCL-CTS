@@ -27,7 +27,7 @@ using namespace sycl_cts;
 using namespace sycl_cts::util;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -38,7 +38,7 @@ template <typename T>
 struct kernel2;
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .copy() member function overload correctly
  * copy data from the pointer to the device_global instance
@@ -60,7 +60,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_operations<T>::assign(src_value, init_value);
+  value_operations::assign(src_value, init_value);
 
   element_ptr src = pointer_helper(src_value);
 
@@ -80,9 +80,9 @@ void run_test(util::logger& log, const std::string& type_name) {
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
       cgh.single_task<kernel1<T>>([=] {
-        // dev_global have to be equal to *src after copy
+        // dev_global have to be equal to src_value after copy
         is_copy_correct_acc[0] =
-            value_operations::are_equal<T>(dev_global<T>, *src);
+            value_operations::are_equal(dev_global<T>, src_value);
       });
     });
     queue.wait_and_throw();
@@ -94,7 +94,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         // Changing value of the first element
         src[0] = changed_value;
         // Copy first element from the array
-        cgh.copy<T>(src, dev_global<T>, element_size, 0);
+        cgh.copy<T>(src, dev_global<T>, 1, 0);
       });
       queue.wait_and_throw();
 
@@ -103,9 +103,9 @@ void run_test(util::logger& log, const std::string& type_name) {
             is_copy_correct_buf.template get_access<sycl::access_mode::write>(
                 cgh);
         cgh.single_task<kernel2<T>>([=] {
-          // dev_global have to be equal to *src after copy
+          // dev_global have to be equal to src_value after copy
           is_copy_correct_acc[0] &=
-              value_operations::are_equal<T>(dev_global<T>, *src);
+              value_operations::are_equal(dev_global<T>, src_value);
         });
       });
       queue.wait_and_throw();
@@ -113,11 +113,10 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(
-        log,
-        get_case_description(
-            "device_global: sycl::handler .copy() member function overload",
-            "Wrong value after copy to the device_global instance", type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .copy() member function overload",
+        "Wrong value after copy to the device_global instance", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace copy_to_dg
@@ -131,7 +130,7 @@ template <typename T>
 struct kernel3;
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .copy() member function overload correctly
  * copy data to the pointer from the device_global instance
@@ -151,7 +150,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_operations<T>::assign(dest_value, changed_value);
+  value_operations::assign(dest_value, changed_value);
 
   element_ptr dest = pointer_helper(dest_value);
 
@@ -172,9 +171,9 @@ void run_test(util::logger& log, const std::string& type_name) {
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
       cgh.single_task<kernel1<T>>([=] {
-        // dev_global have to be equal to *dest after copy
+        // dev_global have to be equal to dest_value after copy
         is_copy_correct_acc[0] =
-            value_operations::are_equal<T>(dev_global<T>, *dest);
+            value_operations::are_equal(dev_global<T>, dest_value);
       });
     });
     queue.wait_and_throw();
@@ -190,7 +189,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 
       queue.submit([&](sycl::handler& cgh) {
         // Copy first element from the array
-        cgh.copy<T>(dev_global<T>, dest, element_size, 0);
+        cgh.copy<T>(dev_global<T>, dest, 1, 0);
       });
       queue.wait_and_throw();
 
@@ -201,7 +200,7 @@ void run_test(util::logger& log, const std::string& type_name) {
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
           is_copy_correct_acc[0] &=
-              value_operations::are_equal<T>(dev_global<T>, *dest);
+              value_operations::are_equal(dev_global<T>, dest_value);
         });
       });
       queue.wait_and_throw();
@@ -209,11 +208,10 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .copy() member function overload",
-             "Wrong value after copy from the device_global instance",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .copy() member function overload",
+        "Wrong value after copy from the device_global instance", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace copy_from_dg
@@ -225,7 +223,7 @@ template <typename T>
 struct kernel2;
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .memcpy() member function overload correctly
  * copy memory from the pointer to the device_global instance
@@ -248,7 +246,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T src_value;
-  value_operations<T>::assign(src_value, init_value);
+  value_operations::assign(src_value, init_value);
   void_ptr src = static_cast<void_ptr>(pointer_helper(src_value));
 
   bool is_copy_correct{false};
@@ -268,9 +266,9 @@ void run_test(util::logger& log, const std::string& type_name) {
           is_copy_correct_buf.template get_access<sycl::access_mode::write>(
               cgh);
       cgh.single_task<kernel1<T>>([=] {
-        // dev_global have to be equal to *src after copy
-        is_copy_correct_acc[0] = value_operations::are_equal<T>(
-            dev_global<T>, *(static_cast<element_ptr>(src)));
+        // dev_global have to be equal to src_value after copy
+        is_copy_correct_acc[0] =
+            value_operations::are_equal(dev_global<T>, src_value);
       });
     });
     queue.wait_and_throw();
@@ -293,8 +291,8 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel2<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] &= value_operations::are_equal<T>(
-              dev_global<T>, *(static_cast<element_ptr>(src)));
+          is_copy_correct_acc[0] &=
+              value_operations::are_equal(dev_global<T>, src_value);
         });
       });
       queue.wait_and_throw();
@@ -302,11 +300,10 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_copy_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .memcpy() member function overload",
-             "Wrong value after memcpy to the device_global instance",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .memcpy() member function overload",
+        "Wrong value after memcpy to the device_global instance", type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace memcpy_to_dg
@@ -320,7 +317,7 @@ template <typename T>
 struct kernel3;
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .memcpy() member function overload correctly
  * copy memory to the pointer from the device_global instance
@@ -328,7 +325,6 @@ oneapi::device_global<T> dev_global;
 template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
-  using element_ptr = element_type*;
   using void_ptr = void*;
 
   // Count size of one element
@@ -340,7 +336,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   changed_value = 2;
 
   T dest_value;
-  value_operations<T>::assign(dest_value, changed_value);
+  value_operations::assign(dest_value, changed_value);
 
   void_ptr dest = pointer_helper(dest_value);
 
@@ -362,8 +358,8 @@ void run_test(util::logger& log, const std::string& type_name) {
               cgh);
       cgh.single_task<kernel1<T>>([=] {
         // dev_global have to be equal to *dest after copy
-        is_copy_correct_acc[0] = value_operations::are_equal<T>(
-            dev_global<T>, *(static_cast<element_ptr>(dest)));
+        is_copy_correct_acc[0] =
+            value_operations::are_equal(dev_global<T>, dest_value);
       });
     });
     queue.wait_and_throw();
@@ -373,7 +369,7 @@ void run_test(util::logger& log, const std::string& type_name) {
     if constexpr (elements_count > 1) {
       queue.submit([&](sycl::handler& cgh) {
         // Changing value of the first element
-        cgh.singe_task<kernel2<T>>([=] { dev_global<T>[0] = changed_value; });
+        cgh.single_task<kernel2<T>>([=] { dev_global<T>[0] = changed_value; });
       });
       queue.wait_and_throw();
 
@@ -389,23 +385,21 @@ void run_test(util::logger& log, const std::string& type_name) {
                 cgh);
         cgh.single_task<kernel3<T>>([=] {
           // Compare again after copy
-          is_copy_correct_acc[0] = value_operations::are_equal<T>(
-              dev_global<T>, *(static_cast<element_type*>(dest)));
+          is_copy_correct_acc[0] =
+              value_operations::are_equal(dev_global<T>, dest_value);
         });
       });
       queue.wait_and_throw();
     }
-    }
-
-    if (!is_copy_correct) {
-      FAIL(
-          log,
-          get_case_description(
-              "device_global: sycl::handler .memcpy() member function overload",
-              "Wrong value after memcpy from the device_global instance",
-              type_name));
-    }
   }
+
+  if (!is_copy_correct) {
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .memcpy() member function overload",
+        "Wrong value after memcpy from the device_global instance", type_name);
+    FAIL(log, fail_msg);
+  }
+}
 }  // namespace memcpy_from_dg
 
 template <typename T>
@@ -436,8 +430,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

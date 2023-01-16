@@ -25,7 +25,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -33,15 +33,15 @@ namespace define_various_ways {
 
 namespace {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 }
 namespace dum_namespace {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 }
 struct dum_struct {
   template <typename T>
-  static inline oneapi::device_global<T> dev_global;
+  static inline oneapi::experimental::device_global<T> dev_global;
 };
 
 template <typename T>
@@ -56,7 +56,7 @@ template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
   T def_value{};
   T new_val{};
-  value_operations<T>::assign(new_val, 1);
+  value_operations::assign(new_val, 1);
 
   auto queue = util::get_cts_object::queue();
   bool is_defined_correctly = false;
@@ -76,35 +76,36 @@ void run_test(util::logger& log, const std::string& type_name) {
         auto& dg3 = dum_struct::dev_global<T>.get();
 
         // Check that contains default values
-        is_default_acc[0] = value_operations::are_equal<T>(dg1, def_value);
-        is_default_acc[0] &= value_operations::are_equal<T>(dg2, def_value);
-        is_default_acc[0] &= value_operations::are_equal<T>(dg3, def_value);
+        is_default_acc[0] = value_operations::are_equal(dg1, def_value);
+        is_default_acc[0] &= value_operations::are_equal(dg2, def_value);
+        is_default_acc[0] &= value_operations::are_equal(dg3, def_value);
 
-        value_operations<T>::assign(dg1, new_val);
-        value_operations<T>::assign(dg2, new_val);
-        value_operations<T>::assign(dg3, new_val);
+        value_operations::assign(dg1, new_val);
+        value_operations::assign(dg2, new_val);
+        value_operations::assign(dg3, new_val);
 
         is_def_corr_acc[0] =
-            value_operations::are_equal<T>(dev_global<T>, new_val);
+            value_operations::are_equal(dev_global<T>, new_val);
         is_def_corr_acc[0] &=
-            value_operations::are_equal<T>(dum_namespace::dev_global<T>, new_val);
+            value_operations::are_equal(dum_namespace::dev_global<T>, new_val);
         is_def_corr_acc[0] &=
-            value_operations::are_equal<T>(dum_struct::dev_global<T>, new_val);
+            value_operations::are_equal(dum_struct::dev_global<T>, new_val);
       });
     });
     queue.wait_and_throw();
   }
   if (!is_default_values) {
-    FAIL(log, get_case_description(
-                  "device_global: Define various ways",
-                  "Instances were created with non-default values", type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: Define various ways",
+        "Instances were created with non-default values", type_name);
+    FAIL(log, fail_msg);
   }
   if (!is_defined_correctly) {
-    FAIL(log,
-         get_case_description(
-             "device_global: Define various ways",
-             "Wrong value after change when defined device_global various ways",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: Define various ways",
+        "Wrong value after change when defined device_global various ways",
+        type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace define_various_ways
@@ -132,8 +133,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

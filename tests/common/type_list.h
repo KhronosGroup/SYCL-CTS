@@ -115,34 +115,34 @@ class no_def_cnstr {
   friend bool operator!=(const no_def_cnstr &lhs, const no_def_cnstr &rhs) {
     return !(lhs == rhs);
   }
-
-  // A user-defined struct with several scalar member variables, arrow operator
-  // overload, no constructor and
-  // destructor or member functions.
-  struct arrow_operator_overloaded {
-    float a;
-    int b;
-    char c;
-
-    void operator=(const int &v) {
-      this->a = v;
-      this->b = v;
-      this->c = v;
-    }
-
-    arrow_operator_overloaded *operator->() { return this; }
-    const arrow_operator_overloaded *operator->() const { return this; }
-
-    friend bool operator==(const arrow_operator_overloaded &lhs,
-                           const arrow_operator_overloaded &rhs) {
-      return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
-    }
-    friend bool operator!=(const arrow_operator_overloaded &lhs,
-                           const arrow_operator_overloaded &rhs) {
-      return !(lhs == rhs);
-    }
-  };
 };
+
+// A user-defined struct with several scalar member variables, arrow operator
+// overload, no constructor and destructor or member functions.
+struct arrow_operator_overloaded {
+  float a;
+  int b;
+  char c;
+
+  void operator=(const int &v) {
+    this->a = v;
+    this->b = v;
+    this->c = v;
+  }
+
+  arrow_operator_overloaded *operator->() { return this; }
+  const arrow_operator_overloaded *operator->() const { return this; }
+
+  friend bool operator==(const arrow_operator_overloaded &lhs,
+                         const arrow_operator_overloaded &rhs) {
+    return ((lhs.a == rhs.a) && (lhs.b == rhs.b) && (lhs.c == rhs.c));
+  }
+  friend bool operator!=(const arrow_operator_overloaded &lhs,
+                         const arrow_operator_overloaded &rhs) {
+    return !(lhs == rhs);
+  }
+};
+
 // Returns instance of type T
 template <typename T>
 inline constexpr auto get_init_value_helper(int x) {
@@ -175,37 +175,25 @@ inline constexpr auto get_init_value_helper<def_cnstr>(int x) {
 
 namespace get_cts_types {
 inline auto get_vector_types() {
-  static const auto pack =
-      named_type_pack<bool, char, signed char, unsigned char, short,
-                      unsigned short, int, unsigned int, long, unsigned long,
-                      long long, unsigned long long, float, sycl::cl_float,
-                      sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
-                      sycl::cl_short, sycl::cl_ushort, sycl::cl_int,
-                      sycl::cl_uint, sycl::cl_long, sycl::cl_ulong>::generate(
-          "bool",
-          "char",
-          "signed char",
-          "unsigned char",
-          "short",
-          "unsigned short",
-          "int",
-          "unsigned int",
-          "long",
-          "unsigned long",
-          "long long",
-          "unsigned long long",
-          "float",
-          "sycl::cl_float",
-          "sycl::byte",
-          "sycl::cl_bool",
-          "sycl::cl_char",
-          "sycl::cl_uchar",
-          "sycl::cl_short",
-          "sycl::cl_ushort",
-          "sycl::cl_int",
-          "sycl::cl_uint",
-          "sycl::cl_long",
-          "sycl::cl_ulong");
+  static const auto pack = named_type_pack<
+      bool, char, signed char, unsigned char, short, unsigned short, int,
+      unsigned int, long, unsigned long, long long, unsigned long long, float,
+      sycl::cl_float, sycl::byte, sycl::cl_bool, sycl::cl_char, sycl::cl_uchar,
+      sycl::cl_short, sycl::cl_ushort, sycl::cl_int, sycl::cl_uint,
+      sycl::cl_long, sycl::cl_ulong>::generate("bool", "char", "signed char",
+                                               "unsigned char", "short",
+                                               "unsigned short", "int",
+                                               "unsigned int", "long",
+                                               "unsigned long", "long long",
+                                               "unsigned long long", "float",
+                                               "sycl::cl_float", "sycl::byte",
+                                               "sycl::cl_bool", "sycl::cl_char",
+                                               "sycl::cl_uchar",
+                                               "sycl::cl_short",
+                                               "sycl::cl_ushort",
+                                               "sycl::cl_int", "sycl::cl_uint",
+                                               "sycl::cl_long",
+                                               "sycl::cl_ulong");
   return pack;
 }
 }  // namespace get_cts_types

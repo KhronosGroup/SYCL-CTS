@@ -19,7 +19,7 @@ using namespace sycl_cts;
 using namespace sycl_cts::util;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -31,13 +31,13 @@ namespace oneapi = sycl::ext::oneapi;
  * otherwise
  */
 inline bool is_errc_invalid(const sycl::exception& e) {
-  return e.code() != sycl::errc::invalid;
+  return e.code() == sycl::errc::invalid;
 }
 
 namespace handler_copy_exceptions {
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .copy() member function overload throws an
  * exception with error code equal to errc::invalid if attempt to write beyond
@@ -76,18 +76,18 @@ void run_test(util::logger& log, const std::string& type_name) {
   queue.wait_and_throw();
 
   if (!is_exception_thrown) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .copy() member function exception",
-             "Exception was not thrown after attempt to "
-             "write beyond the end of the destination variable",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .copy() member function exception",
+        "Exception was not thrown after attempt to "
+        "write beyond the end of the destination variable",
+        type_name);
+    FAIL(log, fail_msg);
   } else if (!is_exception_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .copy() member function exception",
-             "Wrong errc inside the exception. Expected sycl::errc::invalid",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .copy() member function exception",
+        "Wrong errc inside the exception. Expected sycl::errc::invalid",
+        type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace handler_copy_exceptions
@@ -95,7 +95,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 namespace handler_memcpy_exceptions {
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .memcpy() member function overload throws an
  * exception with error code equal to errc::invalid if attempt to write beyond
@@ -136,18 +136,18 @@ void run_test(util::logger& log, const std::string& type_name) {
   queue.wait_and_throw();
 
   if (!is_exception_thrown) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .memcpy() member function exception",
-             "Exception was not thrown after attempt to "
-             "write beyond the end of the destination variable",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .memcpy() member function exception",
+        "Exception was not thrown after attempt to "
+        "write beyond the end of the destination variable",
+        type_name);
+    FAIL(log, fail_msg);
   } else if (!is_exception_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::handler .memcpy() member function exception",
-             "Wrong errc inside the exception. Expected sycl::errc::invalid",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::handler .memcpy() member function exception",
+        "Wrong errc inside the exception. Expected sycl::errc::invalid",
+        type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace handler_memcpy_exceptions
@@ -155,7 +155,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 namespace queue_copy_exceptions {
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .copy() member function overload throws an
  * exception with error code equal to errc::invalid if attempt to write beyond
@@ -189,18 +189,18 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_exception_thrown) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::queue .copy() member function exception",
-             "Exception was not thrown after attempt to "
-             "write beyond the end of the destination variable",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::queue .copy() member function exception",
+        "Exception was not thrown after attempt to "
+        "write beyond the end of the destination variable",
+        type_name);
+    FAIL(log, fail_msg);
   } else if (!is_exception_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::queue .copy() member function exception",
-             "Wrong errc inside the exception. Expected sycl::errc::invalid",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::queue .copy() member function exception",
+        "Wrong errc inside the exception. Expected sycl::errc::invalid",
+        type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace queue_copy_exceptions
@@ -208,7 +208,7 @@ void run_test(util::logger& log, const std::string& type_name) {
 namespace queue_memcpy_exceptions {
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that .memcpy() member function overload throws an
  * exception with error code equal to errc::invalid if attempt to write beyond
@@ -243,18 +243,18 @@ void run_test(util::logger& log, const std::string& type_name) {
   }
 
   if (!is_exception_thrown) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::queue .memcpy() member function exception",
-             "Exception was not thrown after attempt to "
-             "write beyond the end of the destination variable",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::queue .memcpy() member function exception",
+        "Exception was not thrown after attempt to "
+        "write beyond the end of the destination variable",
+        type_name);
+    FAIL(log, fail_msg);
   } else if (!is_exception_correct) {
-    FAIL(log,
-         get_case_description(
-             "device_global: sycl::queue .memcpy() member function exception",
-             "Wrong errc inside the exception. Expected sycl::errc::invalid",
-             type_name));
+    std::string fail_msg = get_case_description(
+        "device_global: sycl::queue .memcpy() member function exception",
+        "Wrong errc inside the exception. Expected sycl::errc::invalid",
+        type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace queue_memcpy_exceptions
@@ -283,8 +283,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

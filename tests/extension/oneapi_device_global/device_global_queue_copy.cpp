@@ -18,7 +18,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -30,13 +30,13 @@ struct change_dg_kernel;
 
 // Creating instance with default constructor
 template <typename T>
-oneapi::device_global<T> dev_global1;
+oneapi::experimental::device_global<T> dev_global1;
 
 template <typename T>
-oneapi::device_global<T> dev_global2;
+oneapi::experimental::device_global<T> dev_global2;
 
 template <typename T>
-oneapi::device_global<T> dev_global3;
+oneapi::experimental::device_global<T> dev_global3;
 
 /** @brief The function tests that queue copy overloads correctly copy to
  * device_global
@@ -47,29 +47,22 @@ void run_test_copy_to_device_global(util::logger& log,
                                     const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T data{};
-  value_operations<T>::assign(data, 1);
+  value_operations::assign(data, 1);
   const auto src_data = pointer_helper(data);
+
+  auto queue = util::get_cts_object::queue();
 
   // to generate events with generator from usm_api.h
   // gens will generate events that will fill array arr_src
   // in single_task that will take a significant amount of time
   constexpr size_t numEvents = 5;
   constexpr size_t gen_buf_size = 1000;
-  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
-      gens{};
+  usm_api::event_generator<element_type, gen_buf_size> gen{};
   element_type init_value{1};
-
-  auto queue = util::get_cts_object::queue();
+  sycl::event depEvent = gen.init(queue, init_value);
 
   auto event1 = queue.copy(src_data, dev_global1<T>);
   event1.wait();
-
-  // List of events that tested usm operation should wait
-  std::vector<sycl::event> depEvents(numEvents);
-  // Run time-consuming tasks to generate events
-  for (size_t i = 0; i < depEvents.size(); ++i) {
-    depEvents[i] = gens[i].init(queue, init_value);
-  }
 
   // Call overloads with events and check if they wait for events to pass.
   // Use fast copy arrays for future check. If overloads do not
@@ -77,20 +70,26 @@ void run_test_copy_to_device_global(util::logger& log,
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
   // will fail with generator function check().
 
-  auto event2 =
-      queue.copy(src_data, dev_global2<T>,
-                      sizeof(T) / sizeof(element_type), 0, depEvents[0]);
+  auto event2 = queue.copy(src_data, dev_global2<T>,
+                           sizeof(T) / sizeof(element_type), 0, depEvent);
   event2.wait();
-  gens[0].copy_arrays(queue);
+  gen.copy_arrays(queue);
+
+  // List of events that tested usm operation should wait
+  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
+      gens{};
+  std::vector<sycl::event> depEvents(numEvents);
+  // Run time-consuming tasks to generate events
+  for (size_t i = 0; i < depEvents.size(); ++i) {
+    depEvents[i] = gens[i].init(queue, init_value);
+  }
 
   auto event3 = queue.copy(src_data, dev_global3<T>,
-                                sizeof(T) / sizeof(element_type), 0, depEvents);
+                           sizeof(T) / sizeof(element_type), 0, depEvents);
   event3.wait();
   // Reverse order is used to increase probability of data race.
-  // Array in gens[0] is already copied after event2,
-  // so it's not copied here to not to rewrite result for previous case.
-  for (size_t i = numEvents - 1; i > 1; --i) {
-    gens[i].copy_arrays(queue);
+  for (size_t i = numEvents; i > 0; --i) {
+    gens[i - 1].copy_arrays(queue);
   }
 
   bool events_result = true;
@@ -111,24 +110,24 @@ void run_test_copy_to_device_global(util::logger& log,
       auto is_cop_corr_acc =
           is_cop_corr_buf.template get_access<sycl::access_mode::write>(cgh);
       cgh.single_task<check_copy_to_dg_kernel<T>>([=] {
-        is_cop_corr_acc[0] = value_operations::are_equal<T>(dev_global1<T>, data);
-        is_cop_corr_acc[0] &=
-            value_operations::are_equal<T>(dev_global2<T>, data);
-        is_cop_corr_acc[0] &=
-            value_operations::are_equal<T>(dev_global3<T>, data);
+        is_cop_corr_acc[0] =
+            value_operations::are_equal(dev_global1<T>, data) &&
+            value_operations::are_equal(dev_global2<T>, data) &&
+            value_operations::are_equal(dev_global3<T>, data);
       });
     });
     queue.wait_and_throw();
   }
   if (!is_copied_correctly) {
-    FAIL(log, get_case_description(
-                  "Overloads of sycl::queue::copy for device_global",
-                  "Didn't copy correct data to device_global", type_name));
+    std::string fail_msg = get_case_description(
+        "Overloads of sycl::queue::copy for device_global",
+        "Didn't copy correct data to device_global", type_name);
+    FAIL(log, fail_msg);
   }
 }
 
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that queue copy overloads correctly copy from
  * device_global
@@ -139,18 +138,17 @@ void run_test_copy_from_device_global(util::logger& log,
                                       const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T new_val{};
-  value_operations<T>::assign(new_val, 5);
+  value_operations::assign(new_val, 5);
   T data1{}, data2{}, data3{};
   auto dst_data1 = pointer_helper(data1);
   auto dst_data2 = pointer_helper(data2);
   auto dst_data3 = pointer_helper(data3);
 
-  sycl::queue queue;
   auto queue = util::get_cts_object::queue();
 
   queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<change_dg_kernel<T>>(
-        [=] { value_operations<T>::assign(dev_global<T>, new_val); });
+        [=] { value_operations::assign(dev_global<T>, new_val); });
   });
   queue.wait_and_throw();
 
@@ -162,16 +160,9 @@ void run_test_copy_from_device_global(util::logger& log,
   // in single_task that will take a significant amount of time
   constexpr size_t numEvents = 5;
   constexpr size_t gen_buf_size = 1000;
-  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
-      gens{};
+  usm_api::event_generator<element_type, gen_buf_size> gen{};
   element_type init_value{1};
-
-  // List of events that tested usm operation should wait
-  std::vector<sycl::event> depEvents(numEvents);
-  // Run time-consuming tasks to generate events
-  for (size_t i = 0; i < depEvents.size(); ++i) {
-    depEvents[i] = gens[i].init(queue, init_value);
-  }
+  sycl::event depEvent = gen.init(queue, init_value);
 
   // Call overloads with events and check if they wait for events to pass.
   // Use fast copy arrays for future check. If overloads do not
@@ -179,20 +170,26 @@ void run_test_copy_from_device_global(util::logger& log,
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
   // will fail with generator function check().
 
-  auto event2 =
-      queue.copy(dev_global<T>, dst_data2,
-                      sizeof(T) / sizeof(element_type), 0, depEvents[0]);
+  auto event2 = queue.copy(dev_global<T>, dst_data2,
+                           sizeof(T) / sizeof(element_type), 0, depEvent);
   event2.wait();
-  gens[0].copy_arrays(queue);
+  gen.copy_arrays(queue);
+
+  // List of events that tested usm operation should wait
+  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
+      gens{};
+  std::vector<sycl::event> depEvents(numEvents);
+  // Run time-consuming tasks to generate events
+  for (size_t i = 0; i < depEvents.size(); ++i) {
+    depEvents[i] = gens[i].init(queue, init_value);
+  }
 
   auto event3 = queue.copy(dev_global<T>, dst_data3,
-                                sizeof(T) / sizeof(element_type), 0, depEvents);
+                           sizeof(T) / sizeof(element_type), 0, depEvents);
   event3.wait();
   // Reverse order is used to increase probability of data race.
-  // Array in gens[0] is already copied after event2,
-  // so it's not copied here to not to rewrite result for previous case.
-  for (size_t i = numEvents - 1; i > 1; --i) {
-    gens[i].copy_arrays(queue);
+  for (size_t i = numEvents; i > 0; --i) {
+    gens[i - 1].copy_arrays(queue);
   }
 
   bool events_result = true;
@@ -205,12 +202,13 @@ void run_test_copy_from_device_global(util::logger& log,
          "Copy overloads from device_global didn't wait for depEvents to "
          "complete");
 
-  if (!value_operations::are_equal<T>(data1, new_val) ||
-      !value_operations::are_equal<T>(data2, new_val) ||
-      !value_operations::are_equal<T>(data3, new_val)) {
-    FAIL(log, get_case_description(
-                  "Overloads of sycl::queue::copy for device_global",
-                  "Didn't copy correct data from device_global", type_name));
+  if (!value_operations::are_equal(data1, new_val) ||
+      !value_operations::are_equal(data2, new_val) ||
+      !value_operations::are_equal(data3, new_val)) {
+    std::string fail_msg = get_case_description(
+        "Overloads of sycl::queue::copy for device_global",
+        "Didn't copy correct data from device_global", type_name);
+    FAIL(log, fail_msg);
   }
 }
 
@@ -241,8 +239,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

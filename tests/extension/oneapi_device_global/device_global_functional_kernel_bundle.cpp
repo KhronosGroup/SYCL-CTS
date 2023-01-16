@@ -23,13 +23,13 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
 namespace kernel_bundle_interaction {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 template <typename T>
 struct kernel_read_then_write;
@@ -47,9 +47,9 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to default value
    */
-  static inline void expect_def_val(util::logger& log,
+  static inline void expect_def_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
-    run(true,
+    run(queue, true,
         "Value read incorrectly from kernel on first invocation. Default "
         "value expected",
         log, type_name);
@@ -60,9 +60,9 @@ class read_and_write_in_kernel {
    * new value in instance. Test will be failed if value from device_global
    * instance not equal to T{1}
    */
-  static inline void expect_new_val(util::logger& log,
+  static inline void expect_new_val(sycl::queue& queue, util::logger& log,
                                     const std::string& type_name) {
-    run(false,
+    run(queue, false,
         "Value read incorrectly from kernel on second invocation. "
         "Changed value expected",
         log, type_name);
@@ -75,7 +75,7 @@ class read_and_write_in_kernel {
    * @param is_def_val_expected The flag shows if default value expected
    * @param error_info String to display, when test fails
    */
-  static inline void run(const bool is_def_val_expected,
+  static inline void run(sycl::queue& queue, const bool is_def_val_expected,
                          const std::string& error_info, util::logger& log,
                          const std::string& type_name) {
     // is_read_correct will be set to true if device_global value is equal to
@@ -88,16 +88,15 @@ class read_and_write_in_kernel {
     T new_val{};
     // The function assign have default second parameter, so expect that all
     // values will change the same
-    value_operations::assign<T>(new_val, 42);
+    value_operations::assign(new_val, 42);
 
     {
       // Creating result buffer
       sycl::buffer<bool, 1> is_read_corr_buf(&is_read_correct,
                                              sycl::range<1>(1));
       // Setting kernel bundle
-      auto queue = util::get_cts_object::queue();
-      auto ctxt = queue.get_context();
       // Force online compilation
+      auto ctxt = queue.get_context();
       auto bundle =
           sycl::get_kernel_bundle<sycl::bundle_state::executable>(ctxt);
 
@@ -114,20 +113,21 @@ class read_and_write_in_kernel {
         cgh.single_task<kernel>([=] {
           if (is_def_val_expected) {
             is_read_correct_acc[0] =
-                value_operations::are_equal<T>(dev_global<T>, def_val);
+                value_operations::are_equal(dev_global<T>, def_val);
           } else {
             is_read_correct_acc[0] =
-                value_operations::are_equal<T>(dev_global<T>, new_val);
+                value_operations::are_equal(dev_global<T>, new_val);
           }
-          value_operations::assign<T>(dev_global<T>, 42);
+          value_operations::assign(dev_global<T>, new_val);
         });
       });
       queue.wait_and_throw();
     }
     if (is_read_correct == false) {
-      FAIL(log, get_case_description(
-                    "device_global: Interaction with kernel bundles",
-                    error_info, type_name));
+      std::string fail_msg =
+          get_case_description("device_global: Interaction with kernel bundles",
+                               error_info, type_name);
+      FAIL(log, fail_msg);
     }
   }
 };
@@ -140,11 +140,13 @@ class read_and_write_in_kernel {
 template <typename T>
 void run_test(util::logger& log, const std::string& type_name) {
   using VerifierT = read_and_write_in_kernel<T>;
+  auto queue = util::get_cts_object::queue();
+
   // At the first run expect default value
-  VerifierT::expect_def_val(log, type_name);
+  VerifierT::expect_def_val(queue, log, type_name);
 
   // At the second run expect changed value
-  VerifierT::expect_new_val(log, type_name);
+  VerifierT::expect_new_val(queue, log, type_name);
 }
 }  // namespace kernel_bundle_interaction
 
@@ -171,8 +173,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

@@ -20,7 +20,7 @@ namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
 
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -30,17 +30,17 @@ template <typename T>
 struct kernel;
 
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 namespace {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 /**
  * @brief Get the device_global instance from unnamed namespace
  */
 template <typename T>
-oneapi::device_global<T>& get_dg_from_namespace() {
+oneapi::experimental::device_global<T>& get_dg_from_namespace() {
   return dev_global<T>;
 }
 }  // namespace
@@ -50,7 +50,7 @@ void run_test(util::logger& log, const std::string& type_name) {
   bool is_changed_correctly{false};
   T def_val{};
   T new_val{};
-  value_operations::assign<T>(new_val, 42);
+  value_operations::assign(new_val, 42);
   auto queue = util::get_cts_object::queue();
   {
     sycl::buffer<bool, 1> is_changed_corr_buf(&is_changed_correctly,
@@ -65,25 +65,27 @@ void run_test(util::logger& log, const std::string& type_name) {
         auto& dg2 = variables_with_same_name::dev_global<T>;
 
         // Write different values to instances
-        value_operations<T>::assign(dg1, def_val);
-        value_operations<T>::assign(dg2, new_val);
-        is_changed_corr_acc[0] = value_operations::are_equal<T>(dg1, def_val);
-        is_changed_corr_acc[0] &= value_operations::are_equal<T>(dg2, new_val);
+        value_operations::assign(dg1, def_val);
+        value_operations::assign(dg2, new_val);
+        is_changed_corr_acc[0] = value_operations::are_equal(dg1, def_val);
+        is_changed_corr_acc[0] &= value_operations::are_equal(dg2, new_val);
 
         // Write again but in different order
-        value_operations<T>::assign(dg1, new_val);
-        value_operations<T>::assign(dg2, def_val);
-        is_changed_corr_acc[0] &= value_operations::are_equal<T>(dg1, new_val);
-        is_changed_corr_acc[0] &= value_operations::are_equal<T>(dg2, def_val);
+        value_operations::assign(dg1, new_val);
+        value_operations::assign(dg2, def_val);
+        is_changed_corr_acc[0] &= value_operations::are_equal(dg1, new_val);
+        is_changed_corr_acc[0] &= value_operations::are_equal(dg2, def_val);
       });
     });
     queue.wait_and_throw();
   }
   if (!is_changed_correctly) {
-    FAIL(log, get_case_description("device_global: Variables with same name",
-                                   "Wrong value after change when defined "
-                                   "device_global instances with same name",
-                                   type_name));
+    std::string fail_msg =
+        get_case_description("device_global: Variables with same name",
+                             "Wrong value after change when defined "
+                             "device_global instances with same name",
+                             type_name);
+    FAIL(log, fail_msg);
   }
 }
 }  // namespace variables_with_same_name
@@ -111,8 +113,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else

@@ -20,7 +20,7 @@
 namespace TEST_NAMESPACE {
 using namespace sycl_cts;
 using namespace device_global_common_functions;
-#if defined(SYCL_EXT_ONEAPI_PROPERTY_LIST) && \
+#if defined(SYCL_EXT_ONEAPI_PROPERTIES) && \
     defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
 namespace oneapi = sycl::ext::oneapi;
 
@@ -66,7 +66,7 @@ std::vector<sycl::device> try_to_get_sub_devices(const sycl::device& dev) {
 
 namespace unique_for_every_device {
 template <typename T>
-oneapi::device_global<T> dev_global;
+oneapi::experimental::device_global<T> dev_global;
 
 template <typename T>
 struct write_kernel;
@@ -83,7 +83,7 @@ void call_write_kernel(sycl::queue& q) {
   using kernel = write_kernel<T>;
   q.submit([&](sycl::handler& cgh) {
     cgh.single_task<kernel>(
-        [=] { value_operations::assign<T>(dev_global<T>, 42); });
+        [=] { value_operations::assign(dev_global<T>, 42); });
   });
 }
 
@@ -96,7 +96,7 @@ void call_write_kernel(sycl::queue& q) {
 template <typename T>
 void call_read_kernel(sycl::queue& q, util::logger& log,
                       const std::string& type_name) {
-  using kernel = write_kernel<T>;
+  using kernel = read_kernel<T>;
   bool is_default_val{false};
   {
     sycl::buffer is_default_val_buf(&is_default_val, sycl::range<1>(1));
@@ -106,16 +106,19 @@ void call_read_kernel(sycl::queue& q, util::logger& log,
       cgh.single_task<kernel>([=] {
         T def_value{};
         is_default_val_acc[0] =
-            value_operations::are_equal<T>(dev_global<T>, def_value);
+            value_operations::are_equal(dev_global<T>, def_value);
       });
     });
   }
   // Test fails if non-default value read from the device_global instance
-  if (!is_default_val)
-    FAIL(log, get_case_description("device_global: Unique for every device",
-                                   "Value changed on another device. "
-                                   "Expect change only on one device",
-                                   type_name));
+  if (!is_default_val) {
+    std::string fail_msg =
+        get_case_description("device_global: Unique for every device",
+                             "Value changed on another device. "
+                             "Expect change only on one device",
+                             type_name);
+    FAIL(log, fail_msg);
+  }
 }
 /**
  * @brief The function tests that the device_global instance is unique for every
@@ -136,7 +139,7 @@ void run_test(util::logger& log, const std::string& type_name) {
       if (subdevices.size() > 1) {
         // Create sycl::queue instances for the subdevices and put it to the end
         // of queues vector
-        queues.insert(queues.end(), subdevices.begin(), subdevices.end());
+        for (const auto& subdevice : subdevices) queues.emplace_back(subdevice);
       } else {
         // If device doesn't support partition then create sycl::queue
         // instance for the root device and put it to the end of queues vector
@@ -183,8 +186,8 @@ class TEST_NAME : public sycl_cts::util::test_base {
   /** execute the test
    */
   void run(util::logger& log) override {
-#if !defined(SYCL_EXT_ONEAPI_PROPERTY_LIST)
-    WARN("SYCL_EXT_ONEAPI_PROPERTY_LIST is not defined, test is skipped");
+#if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
+    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
     WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
 #else
