@@ -17,7 +17,7 @@ Currently, three full features are defined. For each of these features, the requ
 
 == Un-named SYCL kernel functions
 === Required behavior
-Every kernel launch has a kernel name, e.g. `parallel_for<kernel_name>`.
+Every kernel launch that does not accept `sycl::kernel` as argument, must have a kernel name, e.g. `parallel_for<kernel_name>`.
 
 === Exceptions
 The existing tests for `sycl::handler` in `handler/handler_invoke_api.cpp` are modified such that they are also run without a kernel name, if `SYCL_CTS_ENABLE_FEATURE_SET_FULL` is defined.
@@ -40,6 +40,7 @@ No variables with static storage duration may be ODR-used inside a device functi
 === Exceptions
 A simple test is constructed that ODR-uses a variable with static storage duration and produces some side effect. The test is guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
 
-- Declare `static const int value = <value>;`
+Repeat the following test both for `static const int value = <value>;` and `static constexpr int value = <value>;`.
+
 - Launch a kernel that takes the address of `value` (which ODR-uses the variable) and stores the result.
 - Check that the result does not evaluate to `nullptr`.
