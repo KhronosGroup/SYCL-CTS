@@ -24,8 +24,7 @@ The common reference semantics are defined for the following runtime classes in 
 
 Of these, the following classes are legal kernel parameter types (Section 4.12.4.): `accessor` (when templated with `target::device` or the deprecated `target::global_buffer`, `target::constant_buffer`, or `target::local`), `local_accessor`, `unsampled_image_accessor` (when templated with `image_target::device`), `sampled_image_accessor` (when templated with `image_target::device`), `stream`.
 
-
-The below tests are performed on the host for the following types:
+The following "host types" are identified:
 
 - `accessor<int, 1, access_mode::read_write, target::host_task>`
 - `buffer<int>`
@@ -44,7 +43,7 @@ The below tests are performed on the host for the following types:
 - `sampled_image`
 - `unsampled_image`
 
-The below tests are performed in a kernel for the following types:
+The following "kernel types" are identified:
 
 - `accessor<int, 1, access_mode::read_write, target::device>`
 - `local_accessor<int, 0>`
@@ -52,30 +51,31 @@ The below tests are performed in a kernel for the following types:
 - `sampled_image_accessor<int, 1>`
 - `stream`
 
-=== Type traits
+=== Host application tests
 
-For each runtime class `T`, check on the host that the following statements evaluate to `true`.
+These tests are run from a host application for all host types and kernel types.
 
-- `std::is_copy_constructible_v<T>`.
-- `std::is_copy_assignable_v<T>`
-- `std::is_destructible_v<T>`
-- `std::is_move_constructible_v<T>`
-- `std::is_move_assignable_v<T>`
+==== Equality via copy, symmetry
 
-=== Equality comparable and standard hash
-
-For each runtime class `T`, perform the below tests.
-
-==== Equality via copy and symmetry
-
-This test is repeated for the copy constructor and for copy assignment.
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
 
 1. Create an instance `t0` of `T`.
 2. Create a copy of `t0`, `t1`.
 3. Check that `t0 == t1` and `t1 == t0`.
 4. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t1)`.
 
+==== Non-equality via copy, symmetry
+
+This test is not executed for: `device_image`, `device` if only one device is available and `platform` if only one platform is available. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create an instance `t1` of `T`, which is distinct from `t0`.
+3. Check that `t0 != t1` and `t1 != t0`.
+4. Check that `std::hash<T>{}(t0) != std::hash<T>{}(t1)`.
+
 ==== Reflexivity
+
+For class `T`:
 
 1. Create an instance `t0` of `T`.
 2. Check that `t0 == t0`.
@@ -83,10 +83,24 @@ This test is repeated for the copy constructor and for copy assignment.
 
 ==== Transitivity
 
-This test is repeated for the copy constructor and for copy assignment.
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
 
 1. Create an instance `t0` of `T`.
 2. Create a copy of `t0`, `t1`.
 3. Create a copy of `t1`, `t2`.
 4. Check that `t0 == t2` and `t2 == t0`.
 5. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t2)`.
+
+=== Shared tests
+
+These tests are run both from a host application for all host types and kernel types, and from a kernel function for all kernel types.
+
+==== Type traits
+
+For class `T`, check that the following statements evaluate to `true`.
+
+- `std::is_copy_constructible_v<T>`.
+- `std::is_copy_assignable_v<T>`
+- `std::is_destructible_v<T>`
+- `std::is_move_constructible_v<T>`
+- `std::is_move_assignable_v<T>`
