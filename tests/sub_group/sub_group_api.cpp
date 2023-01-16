@@ -28,7 +28,7 @@
 #include <vector>
 
 /** Each of the functions called by the work-items in the below test. */
-enum struct method : int {
+enum struct member_function : int {
   group_id = 0,
   local_id,
   local_range,
@@ -43,12 +43,12 @@ enum struct method : int {
   method_count            // defines size, should be last
 };
 
-static constexpr auto method_cnt = to_integral(method::method_count);
+static constexpr auto method_cnt = to_integral(member_function::method_count);
 
 struct kernel_name;
 
 /** Return a linear index for a global work-item index and a method. */
-static size_t get_idx(size_t id, method method) {
+static size_t get_idx(size_t id, member_function method) {
   return id * method_cnt + to_integral(method);
 }
 
@@ -101,10 +101,57 @@ std::string format_range(const sycl::range<3>& range) {
   return ss.str();
 }
 
+/** Convert a returned value to a size_t for storage in array. */
+template <typename ReturnType>
+size_t to_size_t(ReturnType returned_value) {
+  return returned_value;
+}
+
+/** sycl::range cannot be implicitly converted to size_t. */
+template <>
+size_t to_size_t(sycl::range<1> returned_value) {
+  return returned_value[0];
+}
+
+/**
+ * Registers the result of calling a member function.
+ * The returned value \p returned_value is converted to \p size_t and stored
+ * in the buffer. */
+template <typename Accessor, typename ReturnType>
+void register_member_function_no_type_check(size_t linear_execution_range,
+                                            size_t linear_global_id,
+                                            member_function member,
+                                            Accessor accessor,
+                                            ReturnType returned_value) {
+  // prevent writing out of bounds of the result buffer
+  if (linear_global_id >= linear_execution_range) {
+    return;
+  }
+  // calculate the unique index of this work-item and member function
+  const size_t idx = get_idx(linear_global_id, member);
+  // returned value of the function is converted to size_t for uniform storage
+  accessor[idx] = to_size_t(returned_value);
+}
+
+/**
+ * Registers the result of calling a member function. The actual (inferred) type
+ * \p ReturnType is checked to be equal to the expected \p ExpectedType.
+ * The returned value \p returned_value is converted to \p size_t and stored
+ * in the buffer. */
+template <typename ExpectedType, typename Accessor, typename ReturnType>
+void register_member_function(size_t linear_execution_range,
+                              size_t linear_global_id, member_function member,
+                              Accessor accessor, ReturnType returned_value) {
+  static_assert(std::is_same_v<ExpectedType, ReturnType>);
+  register_member_function_no_type_check(linear_execution_range,
+                                         linear_global_id, member, accessor,
+                                         returned_value);
+}
+
 TEST_CASE("sub-group api", "[sub_group]") {
   sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
-  const sycl::range<3> local_range{2, 2, 2};
+  const sycl::range<3> local_range{2, 3, 5};
   const size_t work_group_count = local_range.size();
   size_t local_size_dim = get_work_group_size(device);
   // if possible, reduce size by one to attempt to create incomplete sub-groups
@@ -123,8 +170,8 @@ TEST_CASE("sub-group api", "[sub_group]") {
   // allocate space for results to be gathered,
   // initialize arrays to special value to ensure a write happens
   const size_t result_count = linear_execution_range * method_cnt;
-  constexpr size_t special_val = std::numeric_limits<size_t>::max();
-  std::vector<size_t> results(result_count, special_val);
+  constexpr size_t empty = std::numeric_limits<size_t>::max();
+  std::vector<size_t> results(result_count, empty);
   {
     sycl::buffer<size_t, 1> buffer_value(results.data(),
                                          sycl::range<1>(result_count));
@@ -138,112 +185,104 @@ TEST_CASE("sub-group api", "[sub_group]") {
             const size_t lgid = item.get_global_linear_id();
             const sycl::sub_group sub_group = item.get_sub_group();
 
-            {  // get_group_id()
-              const size_t idx = get_idx(lgid, method::group_id);
-              accessor_value[idx] = sub_group.get_group_id()[0];
-              ASSERT_RETURN_TYPE(sycl::id<1>, sub_group.get_group_id(),
-                                 "sycl::sub_group.get_group_id()");
-            }
-            {  // get_local_id()
-              const size_t idx = get_idx(lgid, method::local_id);
-              accessor_value[idx] = sub_group.get_local_id()[0];
-              ASSERT_RETURN_TYPE(sycl::id<1>, sub_group.get_local_id(),
-                                 "sycl::sub_group.get_local_id()");
-            }
-            {  // get_local_range()
-              const size_t idx = get_idx(lgid, method::local_range);
-              accessor_value[idx] = sub_group.get_local_range()[0];
-              ASSERT_RETURN_TYPE(sycl::range<1>, sub_group.get_local_range(),
-                                 "sycl::sub_group.get_local_range()");
-            }
-            {  // get_group_range()
-              const size_t idx = get_idx(lgid, method::group_range);
-              accessor_value[idx] = sub_group.get_group_range()[0];
-              ASSERT_RETURN_TYPE(sycl::range<1>, sub_group.get_group_range(),
-                                 "sycl::sub_group.get_group_range()");
-            }
-            {  // get_max_local_range()
-              const size_t idx = get_idx(lgid, method::max_local_range);
-              accessor_value[idx] = sub_group.get_max_local_range()[0];
-              ASSERT_RETURN_TYPE(sycl::range<1>,
-                                 sub_group.get_max_local_range(),
-                                 "sycl::sub_group.get_max_local_range()");
-            }
-            {  // get_group_linear_id()
-              const size_t idx = get_idx(lgid, method::group_linear_id);
-              accessor_value[idx] = sub_group.get_group_linear_id();
-              ASSERT_RETURN_TYPE(uint32_t, sub_group.get_group_linear_id(),
-                                 "sycl::sub_group.get_group_linear_id()");
-            }
-            {  // get_local_linear_id()
-              const size_t idx = get_idx(lgid, method::local_linear_id);
-              accessor_value[idx] = sub_group.get_local_linear_id();
-              ASSERT_RETURN_TYPE(uint32_t, sub_group.get_local_linear_id(),
-                                 "sycl::sub_group.get_local_linear_id()");
-            }
-            {  // get_group_linear_range()
-              const size_t idx = get_idx(lgid, method::group_linear_range);
-              accessor_value[idx] = sub_group.get_group_linear_range();
-              ASSERT_RETURN_TYPE(uint32_t, sub_group.get_group_linear_range(),
-                                 "sycl::sub_group.get_group_linear_range()");
-            }
-            {  // get_local_linear_range()
-              const size_t idx = get_idx(lgid, method::local_linear_range);
-              accessor_value[idx] = sub_group.get_local_linear_range();
-              ASSERT_RETURN_TYPE(uint32_t, sub_group.get_local_linear_range(),
-                                 "sycl::sub_group.get_local_linear_range()");
-            }
-            {  // leader()
-              const size_t idx = get_idx(lgid, method::leader);
-              accessor_value[idx] = sub_group.leader();
-              ASSERT_RETURN_TYPE(bool, sub_group.leader(),
-                                 "sycl::sub_group.leader()");
-            }
-            {  // group.get_group_linear_id()
-              const size_t idx = get_idx(lgid, method::group_group_linear_id);
-              accessor_value[idx] = item.get_group_linear_id();
-              // method belongs to sycl::group, no return type check needed
-            }
+            // get_group_id()
+            register_member_function<sycl::id<1>>(
+                linear_execution_range, lgid, member_function::group_id,
+                accessor_value, sub_group.get_group_id());
+            // get_local_id()
+            register_member_function<sycl::id<1>>(
+                linear_execution_range, lgid, member_function::local_id,
+                accessor_value, sub_group.get_local_id());
+            // get_local_range()
+            register_member_function<sycl::range<1>>(
+                linear_execution_range, lgid, member_function::local_range,
+                accessor_value, sub_group.get_local_range());
+            // get_group_range()
+            register_member_function<sycl::range<1>>(
+                linear_execution_range, lgid, member_function::group_range,
+                accessor_value, sub_group.get_group_range());
+            // get_max_local_range()
+            register_member_function<sycl::range<1>>(
+                linear_execution_range, lgid, member_function::max_local_range,
+                accessor_value, sub_group.get_max_local_range());
+            // get_group_linear_id()
+            register_member_function<uint32_t>(
+                linear_execution_range, lgid, member_function::group_linear_id,
+                accessor_value, sub_group.get_group_linear_id());
+            // get_local_linear_id()
+            register_member_function<uint32_t>(
+                linear_execution_range, lgid, member_function::local_linear_id,
+                accessor_value, sub_group.get_local_linear_id());
+            // get_group_linear_range()
+            register_member_function<uint32_t>(
+                linear_execution_range, lgid,
+                member_function::group_linear_range, accessor_value,
+                sub_group.get_group_linear_range());
+            // get_local_linear_range()
+            register_member_function<uint32_t>(
+                linear_execution_range, lgid,
+                member_function::local_linear_range, accessor_value,
+                sub_group.get_local_linear_range());
+            // leader()
+            register_member_function<bool>(linear_execution_range, lgid,
+                                           member_function::leader,
+                                           accessor_value, sub_group.leader());
+            // group.get_group_linear_id()
+            // method belongs to sycl::group, no return type check needed
+            register_member_function_no_type_check(
+                linear_execution_range, lgid,
+                member_function::group_group_linear_id, accessor_value,
+                item.get_group_linear_id());
           });
     });
   }
 
   // check that all elements were assigned a value
   REQUIRE(std::all_of(results.begin(), results.end(),
-                      [=](size_t val) { return val != special_val; }));
+                      [=](size_t val) { return val != empty; }));
 
   // max_local_range of first work-item, used to check if they are all the same
-  size_t first_max_local_range = results[get_idx(0, method::max_local_range)];
+  size_t first_max_local_range =
+      results[get_idx(0, member_function::max_local_range)];
   // check isolated results for each work-item
-  for (size_t i = 0; i < linear_execution_range; i++) {
-    INFO("index: " << i);
-    const auto get = [=](method method) -> size_t {
-      return results[get_idx(i, method)];
+  for (size_t lgid = 0; lgid < linear_execution_range; lgid++) {
+    INFO("linear global index: " << lgid);
+    auto get = [=](member_function method) -> size_t {
+      return results[get_idx(lgid, method)];
     };
 
-    // group_id, group_linear_id
-    size_t idx_group_id = get(method::group_id);
-    CHECK((idx_group_id == get(method::group_linear_id)));
-    CHECK((idx_group_id < get(method::group_linear_range)));
+    // group_id, group_linear_id:
+    // check that the one-dimensional id is equal to the linearized id
+    // check that they are within bounds of the number of sub-groups in the wg
+    size_t wi_group_id = get(member_function::group_id);
+    CHECK((wi_group_id == get(member_function::group_linear_id)));
+    CHECK((wi_group_id < get(member_function::group_linear_range)));
 
-    // local_id, local_linear_id
-    size_t idx_local_id = get(method::local_id);
-    CHECK((idx_local_id == get(method::local_linear_id)));
-    CHECK((idx_local_id < get(method::local_range)));
+    // local_id, local_linear_id:
+    // check that the one-dimensional id is equal to the linearized id
+    // check that they are within bounds of the size of the sub-group
+    size_t wi_local_id = get(member_function::local_id);
+    CHECK((wi_local_id == get(member_function::local_linear_id)));
+    CHECK((wi_local_id < get(member_function::local_range)));
 
-    // local_range
-    size_t idx_local_range = get(method::local_range);
-    CHECK((idx_local_range == get(method::local_linear_range)));
-    CHECK((idx_local_range <= get(method::max_local_range)));
+    // local_range, local_linear_range:
+    // check that the one-dimensional range is equal to the linearized range
+    // check that they are at most as large as the maximum range in the wg
+    size_t wi_local_range = get(member_function::local_range);
+    CHECK((wi_local_range == get(member_function::local_linear_range)));
+    CHECK((wi_local_range <= get(member_function::max_local_range)));
 
-    // group_range
-    CHECK((get(method::group_range) == get(method::group_linear_range)));
+    // group_range, group_linear_range:
+    // check that the one-dimensional range is equal to the linearized range
+    CHECK((get(member_function::group_range) ==
+           get(member_function::group_linear_range)));
 
     // leader: check that true iff local id is zero
-    CHECK((get(method::leader) == (get(method::local_id) == 0)));
+    CHECK((get(member_function::leader) ==
+           (get(member_function::local_id) == 0)));
 
     // max_local_range: check that every work-item returns the same value
-    CHECK((first_max_local_range == get(method::max_local_range)));
+    CHECK((first_max_local_range == get(member_function::max_local_range)));
   }
 
   // max_local_range: check that it is a valid sub-group size
@@ -253,23 +292,26 @@ TEST_CASE("sub-group api", "[sub_group]") {
       std::any_of(valid_sub_group_sizes.begin(), valid_sub_group_sizes.end(),
                   [=](size_t size) { return size == first_max_local_range; }));
 
-  // work-items are assigned to sub-groups in an implementation-defined way,
+  // Work-items are assigned to sub-groups in an implementation-defined way,
   // and sub_group.get_group_id() cannot be used to identity work-items in the
-  // execution range. the below checks verify properties without depending on
-  // implementation details. note therefore that "global index" as used below
-  // is calculated rather than expected based on the work-item id
+  // execution range. The checks below verify properties without depending on
+  // implementation details. Note therefore that "global index" as used below
+  // is calculated rather than expected based on the work-item id.
 
-  // check that all work-items in the same work-group have the same number
-  // of sub-groups. use REQUIRE as sub_group_counts is used by next checks
+  // Check that all work-items in the same work-group have the same number
+  // of sub-groups. Use REQUIRE as sub_group_counts is used by next checks.
   // ---------------------------------------------------------------------------
 
   // for each work-group, the number of sub-groups it contains
-  std::vector<size_t> sub_group_counts(work_group_count, special_val);
+  std::vector<size_t> sub_group_counts(work_group_count, empty);
   // populate and check sub_group_counts by iterating over the work-items
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id = results[get_idx(i, method::group_group_linear_id)];
-    const size_t sub_group_count = results[get_idx(i, method::group_range)];
-    if (sub_group_counts[wg_id] == special_val) {
+    const size_t wg_id =
+        results[get_idx(i, member_function::group_group_linear_id)];
+    const size_t sub_group_count =
+        results[get_idx(i, member_function::group_range)];
+    REQUIRE(wg_id < work_group_count);  // bounds check
+    if (sub_group_counts[wg_id] == empty) {
       sub_group_counts[wg_id] = sub_group_count;
     } else {
       // if a previous work-item from the same work-group already set the value,
@@ -280,9 +322,9 @@ TEST_CASE("sub-group api", "[sub_group]") {
   // check that all elements were assigned a value, meaning that
   // all unique work-groups are processed
   REQUIRE(std::all_of(sub_group_counts.begin(), sub_group_counts.end(),
-                      [=](size_t count) { return count != special_val; }));
+                      [=](size_t count) { return count != empty; }));
 
-  // check that each work-group has as many sub-groups as reported previously
+  // Check that each work-group has as many sub-groups as reported previously.
   // ---------------------------------------------------------------------------
 
   // for each work-group, the number of sub-groups before it
@@ -298,31 +340,38 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<bool> sub_group_index_seen(sub_group_count, false);
   // populate sub_group_index_seen
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id = results[get_idx(i, method::group_group_linear_id)];
-    const size_t local_sg_id = results[get_idx(i, method::group_id)];
+    const size_t wg_id =
+        results[get_idx(i, member_function::group_group_linear_id)];
+    REQUIRE(wg_id < work_group_count);  // bounds check
+    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
+    REQUIRE(global_sg_id < sub_group_count);  // bounds check
     sub_group_index_seen[global_sg_id] = true;
   }
   CHECK(std::all_of(sub_group_index_seen.begin(), sub_group_index_seen.end(),
                     [](bool index_is_seen) { return index_is_seen; }));
 
-  // check that all work-items in the same sub-group report the same sub-group
-  // size. use REQUIRE as sub_group_sizes is used by next checks
+  // Check that all work-items in the same sub-group report the same sub-group
+  // size. Use REQUIRE as sub_group_sizes is used by next checks.
   // ---------------------------------------------------------------------------
 
   // for each sub-group, the number of work-items it contains
-  std::vector<size_t> sub_group_sizes(sub_group_count, special_val);
+  std::vector<size_t> sub_group_sizes(sub_group_count, empty);
   // populate and check sub_group_sizes by iterating over the work-items
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id = results[get_idx(i, method::group_group_linear_id)];
-    const size_t local_sg_id = results[get_idx(i, method::group_id)];
+    const size_t wg_id =
+        results[get_idx(i, member_function::group_group_linear_id)];
+    REQUIRE(wg_id < work_group_count);  // bounds check
+    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
-    const size_t sub_group_size = results[get_idx(i, method::local_range)];
-    if (sub_group_sizes[global_sg_id] == special_val) {
+    REQUIRE(global_sg_id < sub_group_count);  // bounds check
+    const size_t sub_group_size =
+        results[get_idx(i, member_function::local_range)];
+    if (sub_group_sizes[global_sg_id] == empty) {
       sub_group_sizes[global_sg_id] = sub_group_size;
     } else {
       // if a previous work-item from the same sub-group already set the value,
@@ -333,9 +382,9 @@ TEST_CASE("sub-group api", "[sub_group]") {
   // check that all elements were assigned a value, meaning that
   // all unique sub-groups are processed
   REQUIRE(std::all_of(sub_group_sizes.begin(), sub_group_sizes.end(),
-                      [=](size_t size) { return size != special_val; }));
+                      [=](size_t size) { return size != empty; }));
 
-  // check that each sub-group has as many work-items are reported previously
+  // Check that each sub-group has as many work-items are reported previously.
   // ---------------------------------------------------------------------------
 
   // for each sub-group, the number of work-items before it
@@ -352,15 +401,19 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<bool> item_seen(item_count, false);
   // populate item_seen
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id = results[get_idx(i, method::group_group_linear_id)];
-    const size_t local_sg_id = results[get_idx(i, method::group_id)];
+    const size_t wg_id =
+        results[get_idx(i, member_function::group_group_linear_id)];
+    REQUIRE(wg_id < work_group_count);  // bounds check
+    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
-    const size_t item_id = results[get_idx(i, method::local_id)];
+    REQUIRE(global_sg_id < sub_group_count);  // bounds check
+    const size_t item_id = results[get_idx(i, member_function::local_id)];
     // #items before this sub-group + local item index in this sub-group
     //  = global item index
     const size_t global_item_id = sub_group_offsets[global_sg_id] + item_id;
+    REQUIRE(global_sg_id < item_count);  // bounds check
     item_seen[global_item_id] = true;
   }
   CHECK(std::all_of(item_seen.begin(), item_seen.end(),
