@@ -35,7 +35,7 @@ TEST_CASE("reducer api fp16", "[reducer][fp16]") {
     return;
   }
 
-  typedef sycl::half type;
+  using type = sycl::half;
   const std::string type_name("sycl::half");
   check_reducer_subscript<type>{}(queue, type_name);
   check_reducer_identity<type>{}(queue, type_name);

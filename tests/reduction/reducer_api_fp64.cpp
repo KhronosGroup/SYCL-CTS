@@ -35,7 +35,7 @@ TEST_CASE("reducer api fp64", "[reducer][fp64]") {
     return;
   }
 
-  typedef double type;
+  using type = double;
   const std::string type_name("double");
   check_reducer_subscript<type>{}(queue, type_name);
   check_reducer_identity<type>{}(queue, type_name);

@@ -40,12 +40,11 @@ size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  typedef sycl::accessor<int, dimensions, sycl::access_mode::read,
-                         sycl::target::device>
-      t_readAccess;
-  typedef sycl::accessor<int, dimensions, sycl::access_mode::write,
-                         sycl::target::device>
-      t_writeAccess;
+  using t_readAccess = sycl::accessor<int, dimensions, sycl::access_mode::read,
+                                      sycl::target::device>;
+  using t_writeAccess =
+      sycl::accessor<int, dimensions, sycl::access_mode::write,
+                     sycl::target::device>;
 
   t_readAccess m_globalID;
   t_readAccess m_localID;

@@ -31,10 +31,10 @@ using namespace sycl_cts;
 
 class kernel_item_1d {
  protected:
-  typedef sycl::accessor<int, 1, sycl::access_mode::read, sycl::target::device>
-      t_readAccess;
-  typedef sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>
-      t_writeAccess;
+  using t_readAccess =
+      sycl::accessor<int, 1, sycl::access_mode::read, sycl::target::device>;
+  using t_writeAccess =
+      sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
 
   t_readAccess in;
   t_writeAccess out;

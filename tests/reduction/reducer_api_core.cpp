@@ -45,7 +45,7 @@ TEST_CASE("reducer class", "[reducer]") {
       auto reduction = sycl::reduction(buf_output, cgh, sycl::plus<>{});
       cgh.parallel_for<kernel_name>(
           sycl::range<1>{1}, reduction, [=](sycl::id<1> idx, auto& reducer) {
-            typedef decltype(reducer) reducer_t;
+            using reducer_t = decltype(reducer);
             size_t i = 0;
             acc_results[i++] = !std::is_copy_constructible_v<reducer_t>;
             acc_results[i++] = !std::is_move_constructible_v<reducer_t>;

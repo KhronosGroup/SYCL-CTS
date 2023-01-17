@@ -62,7 +62,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                typedef decltype(reducer) red_t;
+                using red_t = decltype(reducer);
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -98,7 +98,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                typedef decltype(reducer) red_t;
+                using red_t = decltype(reducer);
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -137,7 +137,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                typedef decltype(reducer) red_t;
+                using red_t = decltype(reducer);
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -146,7 +146,7 @@ struct check_reducer_subscript {
               }
 
               {
-                typedef decltype(reducer[0]) red_t;
+                using red_t = decltype(reducer[0]);
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -166,7 +166,7 @@ struct check_reducer_subscript {
   void operator()(sycl::queue& queue, const std::string& type_name) {
     INFO("type: " << type_name);
 
-    typedef sycl::plus<AccumulatorT> OperatorT;
+    using OperatorT = sycl::plus<AccumulatorT>;
 
     bool has_aspect =
         queue.get_device().has(sycl::aspect::usm_shared_allocations);
