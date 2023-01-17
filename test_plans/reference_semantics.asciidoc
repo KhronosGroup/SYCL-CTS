@@ -93,7 +93,7 @@ This test is repeated for the copy constructor and for copy assignment. For clas
 
 === Shared tests
 
-These tests are run both from a host application for all host types and kernel types, and from a kernel function for all kernel types.
+These tests are run both from a host application for all host types and kernel types, and from a kernel function for all kernel types. Some of the below tests require mutation of an instance `T`. This is not always possible. When it is not possible, do not execute those tests.
 
 ==== Type traits
 
@@ -104,3 +104,45 @@ For class `T`, check that the following statements evaluate to `true`.
 - `std::is_destructible_v<T>`
 - `std::is_move_constructible_v<T>`
 - `std::is_move_assignable_v<T>`
+
+==== Copy
+
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the properties of `t0` by calling its member functions.
+3. Create a copy of `t0`, `t1`.
+4. Check that the member functions of `t1` return the same values as stored in Step 2.
+
+==== Const-correctness
+Check that a `const` copy of an instance is not affected by the mutations to the instance that is copied.
+
+1. Create an instance `t0` of `T`.
+2. Make a `const` copy of `t0`, `t1`.
+3. Store the properties of `t1` by calling its member functions.
+4. Mutate `t0`.
+5. Check that the member functions of `t1` return the same values as stored in Step 2.
+
+==== Mutation propagation
+Check that mutations are applied both to the instance and to the copy of the instance.
+
+1. Create an instance `t0` of `T`.
+2. Make a copy of `t0`, `t1`.
+3. Mutate `t1`.
+4. Store the properties of `t0` by calling its member functions.
+5. Check that the member functions of `t1` return the same values as stored in Step 4.
+6. Mutate `t0`.
+7. Store the properties of `t0` by calling its member functions.
+8. Check that the member functions of `t1` return the same values as stored in Step 7.
+
+==== Move
+
+This test is repeated for the move constructor and for move assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the properties of `t0` by calling its member functions.
+3. Move `t0` to `t1`.
+4. Check that the member functions of `t1` return the same values as stored in Step 2.
+
+=== Implementation notes
+The tests in this plan replace `common/common_by_reference.h` and its usages (in `kernel_id_common_reference_semantics.cpp`). The test will be implemented in a `common` header, and be executed from implementation files located in the types' respective directories. The tests in `accessor_legacy` and `event` will be rewritten to use this common header.
