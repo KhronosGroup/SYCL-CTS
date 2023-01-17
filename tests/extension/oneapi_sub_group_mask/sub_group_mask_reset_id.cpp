@@ -64,7 +64,7 @@ class TEST_NAME : public util::test_base {
 #ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK
     check_diff_sub_group_sizes<verification_func_for_even_predicate>(log);
 #else
-    log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
   }
 };

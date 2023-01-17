@@ -34,9 +34,7 @@ class TEST_NAME : public util::test_base {
     auto queue = util::get_cts_object::queue();
 
     if (!queue.get_device().has(sycl::aspect::fp16)) {
-      log.note(
-          "Device does not support half precision floating point operations");
-      return;
+      SKIP("Device does not support half precision floating point operations");
     }
 
     check_void_pointer_ctors<sycl::half>{}(queue, "sycl::half");
@@ -44,9 +42,7 @@ class TEST_NAME : public util::test_base {
 
     queue.wait_and_throw();
 #else
-    log.note(
-        "The test is skipped because tests for the deprecated features are "
-        "disabled.");
+    SKIP("Tests for deprecated features are disabled.");
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   }
 };

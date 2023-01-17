@@ -38,8 +38,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     const std::vector<sycl::device> devices{sycl::device::get_devices()};
     if (devices.size() <= 1) {
-      log.note("Test skipped due to only zero or one device was found");
-      return;
+      SKIP("Requires at least two devices");
     }
     sycl::context first_ctx(devices[0]);
     sycl::context second_ctx(devices[1]);

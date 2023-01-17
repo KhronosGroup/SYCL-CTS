@@ -179,7 +179,7 @@ class TEST_NAME :
       // TODO: add checks to sampled_image_accessor, unsampled_image_accessor
     }
 #else
-    log.note("The test is skipped because OpenCL back-end is not supported");
+    SKIP("OpenCL backend is not supported");
 #endif  // SYCL_BACKEND_OPENCL
   }
 };

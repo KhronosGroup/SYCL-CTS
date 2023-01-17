@@ -34,8 +34,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
   void run(util::logger &log) override {
     auto platforms = sycl::platform::get_platforms();
     if (platforms.size() <= 1) {
-      log.note("Test skipped due to one platform was found");
-      return;
+      SKIP("Requires at least two platforms");
     }
     sycl::context ctx(platforms[1].get_devices());
 

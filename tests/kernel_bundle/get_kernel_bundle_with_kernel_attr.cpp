@@ -50,10 +50,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
 
     if (!queue.get_device().has(sycl::aspect::online_linker) ||
         !queue.get_device().has(sycl::aspect::online_compiler)) {
-      log.note(
-          "Test skipped due to device does not support online_linker or/and "
+      SKIP(
+          "Device does not support online_linker or/and "
           "online_compiler aspect.");
-      return;
     }
 
     std::vector<sycl::kernel_id> user_defined_kernel_ids{};

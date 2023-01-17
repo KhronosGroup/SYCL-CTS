@@ -106,6 +106,6 @@ TEST_CASE("CUDA host task interop test") {
     }
   }
 #else
-  INFO("The test is skipped because CUDA back-end is not supported");
+  SKIP("CUDA backend is not supported");
 #endif  // SYCL_BACKEND_CUDA
 }

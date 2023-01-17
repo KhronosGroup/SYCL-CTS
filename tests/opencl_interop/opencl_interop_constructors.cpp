@@ -398,7 +398,7 @@ class TEST_NAME :
       }
     }
 #else
-    log.note("The test is skipped because OpenCL back-end is not supported");
+    SKIP("OpenCL backend is not supported");
 #endif  // SYCL_BACKEND_OPENCL
   }
 };

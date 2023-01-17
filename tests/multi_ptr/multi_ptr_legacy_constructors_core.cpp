@@ -58,9 +58,7 @@ class TEST_NAME : public util::test_base {
 
     queue.wait_and_throw();
 #else
-    log.note(
-        "The test is skipped because tests for the deprecated features are "
-        "disabled.");
+    SKIP("Tests for deprecated features are disabled.");
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   }
 };

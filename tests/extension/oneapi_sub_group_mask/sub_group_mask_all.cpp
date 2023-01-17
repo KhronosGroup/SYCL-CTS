@@ -65,7 +65,7 @@ class TEST_NAME : public util::test_base {
     log.note("Check all() for mask with true predicate");
     check_diff_sub_group_sizes<verification_func_for_true_predicate>(log);
 #else
-    log.note("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_SUB_GROUP_MASK is not defined");
 #endif  // SYCL_EXT_ONEAPI_SUB_GROUP_MASK
   }
 };

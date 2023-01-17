@@ -86,6 +86,6 @@ TEST_CASE("CUDA interop device function test") {
   test_device_function_buffer<int>(queue, "int");
   test_device_function_local<int>(queue, "int");
 #else
-  INFO("The test is skipped because CUDA back-end is not supported");
+  SKIP("CUDA backend is not supported");
 #endif  // SYCL_BACKEND_CUDA
 }

@@ -494,9 +494,9 @@ class TEST_NAME : public sycl_cts::util::test_base {
    */
   void run(util::logger& log) override {
 #if !defined(SYCL_EXT_ONEAPI_PROPERTIES)
-    WARN("SYCL_EXT_ONEAPI_PROPERTIES is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_PROPERTIES is not defined");
 #elif !defined(SYCL_EXT_ONEAPI_DEVICE_GLOBAL)
-    WARN("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined, test is skipped");
+    SKIP("SYCL_EXT_ONEAPI_DEVICE_GLOBAL is not defined");
 #else
     auto types = device_global_types::get_types();
     for_all_types<check_device_global_api_basic_for_type>(types, log);

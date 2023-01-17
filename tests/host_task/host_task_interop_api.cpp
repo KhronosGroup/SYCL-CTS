@@ -119,9 +119,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
       }
     }
 #else
-    log.note(
-        "The test is skipped because interop testing is disabled or OpenCL "
-        "back-end is not supported");
+    SKIP("Interop testing is disabled or OpenCL backend is not supported");
 #endif  // defined(SYCL_BACKEND_OPENCL) && SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
   }
 };
