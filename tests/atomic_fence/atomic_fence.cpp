@@ -12,7 +12,7 @@
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
 
-namespace atomic_fence {
+namespace atomic_fence_test {
 
 constexpr int expected_val = 42;
 
@@ -238,9 +238,9 @@ class run_test {
 };
 
 // FIXME: re-enable when support for unnamed kernels is implemented in
-// computecpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
+// ComputeCpp and atomic_fence is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("sycl::atomic_fence function",
- "[atomic_fence]")({ atomic_fence::run_test{}(); });
+ "[atomic_fence]")({ atomic_fence_test::run_test{}(); });
 
-}  // namespace atomic_fence
+}  // namespace atomic_fence_test
