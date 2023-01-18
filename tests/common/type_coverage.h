@@ -483,6 +483,8 @@ void for_type_vectors_marray(argsT &&...args) {
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types, vectors and marrays of types given by
  *        named_type_pack instance
@@ -510,6 +512,7 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
   // Ensure there is no silent miss for coverage
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Run action for std device_copyable containers with type T
@@ -579,6 +582,8 @@ void for_type_and_marrays(argsT &&...args) {
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types and marrays of types given by
  *        named_type_pack instance
@@ -603,4 +608,5 @@ void for_all_types_and_marrays(const named_type_pack<types...> &typeList,
     ++typeNameIndex),
    ...);
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
