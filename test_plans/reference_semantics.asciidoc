@@ -93,7 +93,9 @@ This test is repeated for the copy constructor and for copy assignment. For clas
 
 === Shared tests
 
-These tests are run both from a host application for all host types and kernel types, and from a kernel function for all kernel types. Some of the below tests require mutation of an instance `T`. This is not always possible. When it is not possible, do not execute those tests.
+The tests in this section tests are run from a host application for all host types and kernel types, and from a kernel function for all kernel types.
+
+The tests below assert equality without the equality operator, such that they may also be executed in a kernel function. The "state" denotes the results of calling member functions of an object.
 
 ==== Type traits
 
@@ -110,39 +112,80 @@ For class `T`, check that the following statements evaluate to `true`.
 This test is repeated for the copy constructor and for copy assignment. For class `T`:
 
 1. Create an instance `t0` of `T`.
-2. Store the properties of `t0` by calling its member functions.
+2. Store the state of `t0`.
 3. Create a copy of `t0`, `t1`.
-4. Check that the member functions of `t1` return the same values as stored in Step 2.
-
-==== Const-correctness
-Check that a `const` copy of an instance is not affected by the mutations to the instance that is copied.
-
-1. Create an instance `t0` of `T`.
-2. Make a `const` copy of `t0`, `t1`.
-3. Store the properties of `t1` by calling its member functions.
-4. Mutate `t0`.
-5. Check that the member functions of `t1` return the same values as stored in Step 2.
-
-==== Mutation propagation
-Check that mutations are applied both to the instance and to the copy of the instance.
-
-1. Create an instance `t0` of `T`.
-2. Make a copy of `t0`, `t1`.
-3. Mutate `t1`.
-4. Store the properties of `t0` by calling its member functions.
-5. Check that the member functions of `t1` return the same values as stored in Step 4.
-6. Mutate `t0`.
-7. Store the properties of `t0` by calling its member functions.
-8. Check that the member functions of `t1` return the same values as stored in Step 7.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
 
 ==== Move
 
 This test is repeated for the move constructor and for move assignment. For class `T`:
 
 1. Create an instance `t0` of `T`.
-2. Store the properties of `t0` by calling its member functions.
+2. Store the state of `t0`.
 3. Move `t0` to `t1`.
-4. Check that the member functions of `t1` return the same values as stored in Step 2.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
 
 === Implementation notes
 The tests in this plan replace `common/common_by_reference.h` and its usages (in `kernel_id_common_reference_semantics.cpp`). The test will be implemented in a `common` header, and be executed from implementation files located in the types' respective directories. The tests in `accessor_legacy` and `event` will be rewritten to use this common header.
+
+=== Propagation of mutations
+
+The tests below tests specify a "mutation" of an instance `T`. This means to change an instance such that the change can be detected in a copy of that instance. This is only possible for the following types:
+
+- `accessor<int, 1, access_mode::read_write, target::host_task>` by writing to the accessor (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `accessor<int, 1, access_mode::read_write, target::device>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `buffer<int>` by obtaining an accessor and writing to the accessor (in the host application):
+* mutation: create an accessor, write to the accessor.
+* detection: create an accessor, read from the accessor.
+- `event` by creating an event with multiple dependent events (in the host application):
+* mutation: resolve an event on the wait list.
+* detection: query the size of the wait list.
+- `host_accessor` (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `host_sampled_image_accessor<int, 1>` (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `host_unsampled_image_accessor<int>` (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `local_accessor<int, 0>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `sampled_image` (in the host application):
+* mutation: create an accessor, write to the accessor.
+* detection: create an accessor, read from the accessor.
+- `unsampled_image` (in the host application):
+* mutation: create an accessor, write to the accessor.
+* detection: create an accessor, read from the accessor.
+- `unsampled_image_accessor<int, 1, access_mode::read>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `sampled_image_accessor<int, 1>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+
+==== Mutation to copy
+
+1. Create an instance `t0` of `T`.
+2. Make a copy of `t0`, `t1`.
+3. Mutate `t1`.
+4. Check that `t0` has been changed accordingly.
+
+==== Mutation to original
+
+1. Create an instance `t0` of `T`.
+2. Make a copy of `t0`, `t1`.
+3. Mutate `t0`.
+4. Check that `t1` has been changed accordingly.
+
+==== Mutation to original with `const` copy
+
+1. Create an instance `t0` of `T`.
+2. Make a `const` copy of `t0`, `t1`.
+3. Mutate `t0`.
+4. Check that `t1` has been changed accordingly.
