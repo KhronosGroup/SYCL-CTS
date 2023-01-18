@@ -125,7 +125,7 @@ kernel_handler::get_specialization_constant<OtherSpecName>() shouldn't be used i
 
 * Get an empty kernel bundle by calling get_kernel_bundle<bundle_state::executable>(const context &, const std::vector<device> &, Selector) where Selector is a function that always returns `false`.
 * Check that `contains_specialization_constants()` return `false`.
-* Check that `native_specialization_constant()` return `true`.
+* Check that `native_specialization_constant()` return `false`.
 * Check that `has_specialization_constant<SpecName>()` return `false`.
 
 ==== Kernel bundle with `kernel_handler::get_specialization_constant()` call
