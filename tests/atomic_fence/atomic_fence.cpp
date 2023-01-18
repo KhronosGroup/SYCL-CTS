@@ -136,11 +136,11 @@ class run_atomic_fence {
   void operator()(const std::string& memory_order_name,
                   const std::string& memory_scope_name,
                   const std::string& test_type_name) {
-    SECTION(sycl_cts::section_name(
-                std::string("Check atomic_fence with "
-                            "memory_order = ") +
-                memory_order_name + " and scope = " + memory_scope_name +
-                " and test_type = " + test_type_name)
+    SECTION(sycl_cts::section_name(std::string("Check atomic_fence with "
+                                               "memory_order = ") +
+                                   memory_order_name +
+                                   " and scope = " + memory_scope_name +
+                                   " and test_type = " + test_type_name)
                 .create()) {
       auto queue = sycl_cts::util::get_cts_object::queue();
       if (!check_memory_order_scope_capabilities(queue, MemoryOrder,
@@ -237,7 +237,8 @@ class run_test {
   }
 };
 
-// FIXME: re-enable when support for unnamed kernels is implemented in computecpp
+// FIXME: re-enable when support for unnamed kernels is implemented in
+// computecpp
 DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("sycl::atomic_fence function",
  "[atomic_fence]")({ atomic_fence::run_test{}(); });
