@@ -42,40 +42,55 @@ TEST_CASE("kernel info test", "[kernel]") {
 
   queue.submit([&](sycl::handler &cgh) { cgh.single_task<k_name>([=]() {}); });
 
-  /** initialize return values
-   */
-  cl_uint clUintRet;
-  std::string stringRet;
-  size_t sizeTRet;
-  sycl::range<3> range3Ret{0, 0, 0};
-  cl_ulong clUlongRet;
-
-  // silent warnings
-  (void)clUintRet;
-  (void)sizeTRet;
-  (void)clUlongRet;
-
   /** check program info parameters
    */
-  clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
-  stringRet = kernel.get_info<sycl::info::kernel::attributes>();
+  auto clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
+  check_return_type<cl_uint>(
+      clUintRet, "sycl::kernel::get_info<sycl::info::kernel::num_args>()");
+
+  auto stringRet = kernel.get_info<sycl::info::kernel::attributes>();
+  check_return_type<std::string>(
+      stringRet, "sycl::kernel::get_info<sycl::info::kernel::attributes>()");
+
   auto dev = util::get_cts_object::device();
   if (dev.get_info<sycl::info::device::device_type>() ==
       sycl::info::device_type::custom) {
-    range3Ret =
+    auto range3Ret =
         kernel.get_info<sycl::info::kernel_device_specific::global_work_size>(
             dev);
+    check_return_type<sycl::range<3>>(
+        range3Ret,
+        "sycl::kernel::get_info<sycl::info::kernel_device_specific::global_"
+        "work_size>(dev)");
   }
-  range3Ret = kernel.get_info<
+
+  auto range3Ret = kernel.get_info<
       sycl::info::kernel_device_specific::compile_work_group_size>(dev);
-  sizeTRet = kernel.get_info<
+  check_return_type<sycl::range<3>>(
+      range3Ret,
+      "sycl::kernel::get_info<sycl::info::kernel_device_specific::compile_work_"
+      "group_size>(dev)");
+
+  auto sizeTRet = kernel.get_info<
       sycl::info::kernel_device_specific::preferred_work_group_size_multiple>(
       dev);
-  clUlongRet =
+  check_return_type<size_t>(
+      sizeTRet,
+      "sycl::kernel::get_info<sycl::info::kernel_device_specific::preferred_"
+      "work_group_size_multiple>(dev)");
+
+  auto clUlongRet =
       kernel.get_info<sycl::info::kernel_device_specific::private_mem_size>(
           dev);
-  sizeTRet =
+  check_return_type<cl_ulong>(clUlongRet,
+                              "sycl::kernel::get_info<sycl::info::kernel_"
+                              "device_specific::private_mem_size>(dev)");
+
+  auto anotherSizeTRet =
       kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(dev);
+  check_return_type<size_t>(anotherSizeTRet,
+                            "sycl::kernel::get_info<sycl::info::kernel_device_"
+                            "specific::work_group_size>(dev)");
 
 // FIXME: Reenable when struct information descriptors are implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
