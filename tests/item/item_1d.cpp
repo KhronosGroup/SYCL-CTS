@@ -79,10 +79,20 @@ class kernel_item_1d {
     all_correct &= in[int(glid)] == static_cast<int>(index);
 
     /* operator size_t() const */
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
     size_t val = item;
+#else
+    // value that is guaranteed to produce a failure
+    size_t val = ~static_cast<size_t>(0);
+#endif
     all_correct &= val == item.get_id(0);
     const sycl::item<1> item_const = item;
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
     val = item_const;
+#else
+    // value that is guaranteed to produce a failure
+    val = ~static_cast<size_t>(0);
+#endif
     all_correct &= val == item.get_id(0);
 
     out[int(glid)] = all_correct;
@@ -151,7 +161,12 @@ class TEST_NAME : public util::test_base {
 
   /** execute the test
    */
-  void run(util::logger &log) override { test_item_1d(log); }
+  void run(util::logger &log) override {
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+    log.note("ComputeCpp does not provide size_t operator.");
+#endif
+    test_item_1d(log);
+  }
 };
 
 // construction of this proxy will register the above test
