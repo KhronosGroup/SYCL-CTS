@@ -31,7 +31,7 @@ class legacy_output_iterator_requirement {
       legacy_iterator_requirement::count_of_possible_errors + 8;
 
  private:
-  error_messages_container<count_of_possible_errors> m_test_error_messages;
+  error_codes_container<count_of_possible_errors> m_test_error_codes;
 
  public:
   /**
@@ -39,16 +39,16 @@ class legacy_output_iterator_requirement {
    * verification
    *
    * @tparam It Type of iterator for verification
-   * @return std::pair<bool,array<string_view>> First represents
+   * @return std::pair<bool,array<int>> First represents
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  std::pair<bool, std::array<string_view, count_of_possible_errors>>
+  std::pair<bool, std::array<int, count_of_possible_errors>>
   is_satisfied_for() {
     auto legacy_iterator_res =
         legacy_iterator_requirement{}.is_satisfied_for<It>();
     if (!legacy_iterator_res.first) {
-      m_test_error_messages.add_errors(legacy_iterator_res.second);
+      m_test_error_codes.add_errors(legacy_iterator_res.second);
     }
 
     constexpr bool is_dereferenceable = is_dereferenceable_v<It>;
@@ -64,20 +64,15 @@ class legacy_output_iterator_requirement {
     if constexpr (has_value_type_member && is_dereferenceable) {
       if (!std::is_assignable_v<decltype(*std::declval<It>()),
                                 typename it_traits::value_type>)
-        m_test_error_messages.add_error(
-            "Iterator must return iterator_traits::value_type from "
-            "operator*().");
+        m_test_error_codes.add_error(legacy_output_iterator::error_code_0);
     }
 
     if constexpr (can_pre_increment) {
       if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
-        m_test_error_messages.add_error(
-            "Iterator must return It& from operator++().");
+        m_test_error_codes.add_error(legacy_output_iterator::error_code_1);
       }
       if (!std::is_convertible_v<decltype(++std::declval<It&>()), const It>) {
-        m_test_error_messages.add_error(
-            "Iterator must return convertible to const It from "
-            "operator++().");
+        m_test_error_codes.add_error(legacy_output_iterator::error_code_2);
       }
     }
 
@@ -85,25 +80,21 @@ class legacy_output_iterator_requirement {
                   has_value_type_member) {
       if (!std::is_assignable_v<decltype(*(std::declval<It&>()++)),
                                 typename it_traits::value_type>) {
-        m_test_error_messages.add_error(
-            "Iterator must be assignable with iterator_traits::value_type "
-            "after usage of operator++() and operator*().");
+        m_test_error_codes.add_error(legacy_output_iterator::error_code_3);
       }
     }
 
     if constexpr (is_dereferenceable && has_value_type_member) {
       if (!std::is_assignable_v<decltype(*std::declval<It>()),
                                 typename it_traits::value_type>) {
-        m_test_error_messages.add_error(
-            "Iterator must be assignable with iterator_traits::value_type "
-            "after usage of operator*().");
+        m_test_error_codes.add_error(legacy_output_iterator::error_code_4);
       }
     }
 
-    const bool is_satisfied = !m_test_error_messages.has_errors();
+    const bool is_satisfied = !m_test_error_codes.has_errors();
     // According to spec std::pair with device_copyable types(in this case:
-    // bool, string_view) can be used on device side.
-    return std::make_pair(is_satisfied, m_test_error_messages.get_array());
+    // bool, int) can be used on device side.
+    return std::make_pair(is_satisfied, m_test_error_codes.get_array());
   }
 };
 }  // namespace named_requirement_verification
