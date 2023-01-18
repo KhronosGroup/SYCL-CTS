@@ -12,11 +12,11 @@
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
 
+namespace atomic_fence_test {
+
 // FIXME: re-enable when support for unnamed kernels is implemented in
 // ComputeCpp and atomic_fence is implemented in hipSYCL
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-namespace atomic_fence_test {
 
 constexpr int expected_val = 42;
 
@@ -30,8 +30,7 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
                                          const std::string& order_name) {
 // FIXME: re-enable when sycl::info::device::atomic_fence_order_capabilities is
 // implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
   / auto orders =
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_order_capabilities>();
@@ -49,8 +48,7 @@ bool check_atomic_fence_scope_capability(sycl::queue& queue,
                                          const std::string& scope_name) {
 // FIXME: re-enable when sycl::info::device::atomic_fence_scope_capabilities is
 // implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
   auto scopes =
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_scope_capabilities>();
