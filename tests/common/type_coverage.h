@@ -42,6 +42,8 @@ struct type_name_string<sycl::vec<T, nElements>> {
   }
 };
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Specialization of type name retrieve for sycl::marray class
  * @param T Type of the data stored in marray
@@ -53,6 +55,7 @@ struct type_name_string<sycl::marray<T, nElements>> {
     return "sycl::marray<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Specialization of type name retrieve for std::array class
@@ -439,6 +442,8 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type, vectors and marrays of this type
  * @tparam action Functor template for action to run
@@ -476,6 +481,7 @@ void for_type_vectors_marray(argsT &&...args) {
         std::forward<argsT>(args)...);
   }
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Run action for each of types, vectors and marrays of types given by
@@ -552,6 +558,8 @@ void for_all_device_copyable_std_containers(const named_type_pack<types...> &typ
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type and marrays of this type
  * @tparam action Functor template for action to run
@@ -569,6 +577,7 @@ void for_type_and_marrays(argsT &&...args) {
                 typename sycl::template marray<T, 10>>{},
       std::forward<argsT>(args)...);
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Run action for each of types and marrays of types given by

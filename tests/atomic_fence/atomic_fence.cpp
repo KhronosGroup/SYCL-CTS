@@ -18,7 +18,7 @@ constexpr int expected_val = 42;
 
 enum class test_type {
   single_group = 1,
-  between_group = 2,
+  between_groups = 2,
 };
 
 bool check_atomic_fence_order_capability(sycl::queue& queue,
@@ -78,7 +78,7 @@ inline auto get_memory_orders() {
 inline auto get_test_types() {
   static const auto test_types =
       value_pack<test_type, test_type::single_group,
-                 test_type::between_group>::generate_named();
+                 test_type::between_groups>::generate_named();
   return test_types;
 }
 
@@ -137,7 +137,7 @@ class run_atomic_fence {
                   const std::string& memory_scope_name,
                   const std::string& test_type_name) {
     SECTION(sycl_cts::section_name(
-                std::string("Check atomic_fence inside single work-group with "
+                std::string("Check atomic_fence with "
                             "memory_order = ") +
                 memory_order_name + " and scope = " + memory_scope_name +
                 " and test_type = " + test_type_name)
@@ -160,7 +160,7 @@ class run_atomic_fence {
       int data = 0;
       int value = expected_val;
       sycl::range<1> global_range(2);
-      if (test_type::between_group == TestType) {
+      if (test_type::between_groups == TestType) {
         global_range = sycl::range<1>(8);
       }
       sycl::range<1> local_range(2);
@@ -182,7 +182,7 @@ class run_atomic_fence {
                     sync_flag(sync_flag_acc[0]);
                 int* data = &data_acc[0];
                 if ((test_type::single_group == TestType && g.leader()) ||
-                    (test_type::between_group == TestType &&
+                    (test_type::between_groups == TestType &&
                      0 == nditem.get_global_linear_id())) {
                   *data = value;
                   sycl::atomic_fence(order_write, MemoryScope);
@@ -233,13 +233,12 @@ class run_test {
 
     for_all_combinations<run_atomic_fence>(
         memory_orders, memory_scopes_between_groups,
-        value_pack<test_type, test_type::between_group>::generate_named());
+        value_pack<test_type, test_type::between_groups>::generate_named());
   }
 };
 
-// FIXME: re-enable when marrray is implemented in hipsycl
-//        and when support for unnamed kernels is implemented in computecpp
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+// FIXME: re-enable when support for unnamed kernels is implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("sycl::atomic_fence function",
  "[atomic_fence]")({ atomic_fence::run_test{}(); });
 
