@@ -192,14 +192,14 @@ struct custom_type {
  *
  */
 template <typename T>
-static constexpr uint64_t exact_max = std::numeric_limits<T>::max();
+inline constexpr uint64_t exact_max = std::numeric_limits<T>::max();
 
 template <>
-static constexpr uint64_t exact_max<sycl::half> = 1ull << 11;
+inline constexpr uint64_t exact_max<sycl::half> = 1ull << 11;
 template <>
-static constexpr uint64_t exact_max<float> = 1ull << 24;
+inline constexpr uint64_t exact_max<float> = 1ull << 24;
 template <>
-static constexpr uint64_t exact_max<double> = 1ull << 53;
+inline constexpr uint64_t exact_max<double> = 1ull << 53;
 
 }  // namespace util
 
