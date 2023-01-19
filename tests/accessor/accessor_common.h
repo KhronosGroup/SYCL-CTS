@@ -1030,6 +1030,95 @@ decltype(auto) get_subscript_overload(const AccT& accessor, size_t index) {
   if constexpr (dims == 3) return accessor[index][index][index];
 }
 
+// Helper function to increment id linearly according to its linear position
+// id2+(id1*r2)+(id0*r1*r2) for dims = 3 or id1+(id0*r1) for dims = 2
+//
+// Incrementing index of last dimension if it not yet reached end of the range
+// otherwise reseting it and trying to increment index of previous dimension.
+template <int dims>
+sycl::id<dims> next_id_linearly(sycl::id<dims> id, size_t size) {
+  for (int i = dims - 1; i >= 0; i--) {
+    if (id[i] < size - 1) {
+      id[i]++;
+      break;
+    } else {
+      id[i] = 0;
+    }
+  }
+  return id;
+}
+
+// FIXME: re-enable when handler.host_task is implemented in hipsycl
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+/**
+ * @brief Common function that checks correct linearization for generic
+ *        and host constructors
+ *
+ * @tparam AccType Type of the accessor
+ * @tparam T Type of underlying data
+ * @tparam Dimension Dimensions of the accessor
+ * @tparam AccessMode Access mode of the accessor
+ * @tparam Target Target of accessor
+ */
+template <accessor_type AccType, typename T, int dims,
+          sycl::access_mode AccessMode = sycl::access_mode::read_write,
+          sycl::target Target = sycl::target::device>
+void check_linearization() {
+  constexpr size_t range_size = 2;
+  constexpr size_t buff_size = (dims == 3) ? 2 * 2 * 2 : 2 * 2;
+
+  auto range = util::get_cts_object::range<dims>::get(range_size, range_size,
+                                                      range_size);
+
+  std::remove_const_t<T> data[buff_size];
+  std::iota(data, (data + range.size()), 0);
+  sycl::buffer<T, dims> data_buf(data, range);
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    auto queue = util::get_cts_object::queue();
+    auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
+    bool res = true;
+    {
+      sycl::buffer<T, dims> data_buf(data, range);
+      sycl::buffer res_buf(&res, sycl::range(1));
+      queue
+          .submit([&](sycl::handler& cgh) {
+            sycl::accessor<T, dims, AccessMode, Target> acc(data_buf, cgh);
+
+            if constexpr (Target == sycl::target::device) {
+              sycl::accessor res_acc(res_buf, cgh);
+              cgh.single_task([=]() {
+                sycl::id<dims> id{};
+                for (auto& elem : acc) {
+                  res_acc[0] &= value_operations::are_equal(elem, acc[id]);
+                  id = next_id_linearly(id, range_size);
+                }
+              });
+            } else {
+              cgh.host_task([=] {
+                sycl::id<dims> id{};
+                for (auto& elem : acc) {
+                  CHECK(value_operations::are_equal(elem, acc[id]));
+                  id = next_id_linearly(id, range_size);
+                }
+              });
+            }
+          })
+          .wait_and_throw();
+    }
+    if constexpr (Target == sycl::target::device) CHECK(res);
+
+  } else {
+    sycl::host_accessor<T, dims, AccessMode> acc(data_buf);
+    sycl::id<dims> id{};
+    for (auto& elem : acc) {
+      CHECK(value_operations::are_equal(elem, acc[id]));
+      id = next_id_linearly(id, range_size);
+    }
+  }
+}
+#endif
+
 template <int dims, typename AccT>
 typename AccT::reference get_accessor_reference(const AccT& acc) {
   if constexpr (0 == dims) {
