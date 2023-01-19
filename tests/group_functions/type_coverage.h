@@ -127,7 +127,7 @@ struct unnamed_type_pack {
 template <typename... Types>
 class named_type_pack {
   template <typename... nameListT>
-  named_type_pack(nameListT &&... nameList)
+  named_type_pack(nameListT &&...nameList)
       : names{std::forward<nameListT>(nameList)...} {}
   static_assert(sizeof...(Types) > 0, "Empty pack is not supported");
 
@@ -169,7 +169,7 @@ class named_type_pack {
   //      named_type_pack<var_decl, rval_in_expr>::generate();
   //
   template <typename... nameListT>
-  static auto generate(nameListT &&... nameList) {
+  static auto generate(nameListT &&...nameList) {
     if constexpr (sizeof...(nameListT) == 0) {
       // No names provided explicitly, try to generate them
       return named_type_pack<Types...>(generate_name<Types>()...);
@@ -221,7 +221,7 @@ struct value_pack {
   //         "variable declaration", "rvalue in an expression");
   //
   template <typename... argsT>
-  static inline auto generate_named(argsT &&... args) {
+  static inline auto generate_named(argsT &&...args) {
     return named_type_pack<std::integral_constant<T, values>...>::generate(
         std::forward<argsT>(args)...);
   }
@@ -297,7 +297,7 @@ inline void for_all_combinations_with() {
 template <template <typename...> class Action, typename Needed,
           typename... ActionArgsT, typename HeadT, typename... ArgsT,
           sfinae::is_not_a_type_pack<HeadT> = true>
-inline void for_all_combinations_with(HeadT &&head, ArgsT &&... args) {
+inline void for_all_combinations_with(HeadT &&head, ArgsT &&...args) {
   // The first non-pack argument passed into the for_all_combinations stops the
   // recursion
   if constexpr (present_in<Needed, ActionArgsT...>)
@@ -312,7 +312,7 @@ inline void for_all_combinations_with(HeadT &&head, ArgsT &&... args) {
 template <template <typename...> class Action, typename Needed,
           typename... ActionArgsT, typename... HeadTypes, typename... ArgsT>
 inline void for_all_combinations_with(const named_type_pack<HeadTypes...> &head,
-                                      ArgsT &&... args) {
+                                      ArgsT &&...args) {
   // Run the next level of recursion for each type from the head named_type_pack
   // instance. Each recursion level unfolds the first argument passed and adds a
   // type name as the last argument.
@@ -344,7 +344,7 @@ inline void for_all_combinations_with(const named_type_pack<HeadTypes...> &head,
 template <template <typename...> class Action, typename Needed,
           typename... ActionArgsT, typename... HeadTypes, typename... ArgsT>
 inline void for_all_combinations_with(
-    const unnamed_type_pack<HeadTypes...> &head, ArgsT &&... args) {
+    const unnamed_type_pack<HeadTypes...> &head, ArgsT &&...args) {
   // Using fold expression to iterate over all types within type pack
 
   size_t typeNameIndex = 0;
@@ -391,7 +391,7 @@ inline void for_all_combinations_with_two() {
 template <template <typename...> class Action, typename Needed1,
           typename Needed2, typename... ActionArgsT, typename HeadT,
           typename... ArgsT, sfinae::is_not_a_type_pack<HeadT> = true>
-inline void for_all_combinations_with_two(HeadT &&head, ArgsT &&... args) {
+inline void for_all_combinations_with_two(HeadT &&head, ArgsT &&...args) {
   // The first non-pack argument passed into the for_all_combinations stops the
   // recursion
   if constexpr (present_in<Needed1, ActionArgsT...> &&
@@ -408,7 +408,7 @@ template <template <typename...> class Action, typename Needed1,
           typename Needed2, typename... ActionArgsT, typename... HeadTypes,
           typename... ArgsT>
 inline void for_all_combinations_with_two(
-    const named_type_pack<HeadTypes...> &head, ArgsT &&... args) {
+    const named_type_pack<HeadTypes...> &head, ArgsT &&...args) {
   // Run the next level of recursion for each type from the head named_type_pack
   // instance. Each recursion level unfolds the first argument passed and adds a
   // type name as the last argument.
@@ -442,7 +442,7 @@ template <template <typename...> class Action, typename Needed1,
           typename Needed2, typename... ActionArgsT, typename... HeadTypes,
           typename... ArgsT>
 inline void for_all_combinations_with_two(
-    const unnamed_type_pack<HeadTypes...> &head, ArgsT &&... args) {
+    const unnamed_type_pack<HeadTypes...> &head, ArgsT &&...args) {
   // Using fold expression to iterate over all types within type pack
 
   size_t typeNameIndex = 0;
@@ -481,7 +481,7 @@ inline void for_all_combinations() {
 template <template <typename...> class Action, typename... ActionArgsT,
           typename HeadT, typename... ArgsT,
           sfinae::is_not_a_type_pack<HeadT> = true>
-inline void for_all_combinations(HeadT &&head, ArgsT &&... args) {
+inline void for_all_combinations(HeadT &&head, ArgsT &&...args) {
   // The first non-pack argument passed into the for_all_combinations stops the
   // recursion
   Action<ActionArgsT...>{}(std::forward<HeadT>(head),
@@ -495,7 +495,7 @@ inline void for_all_combinations(HeadT &&head, ArgsT &&... args) {
 template <template <typename...> class Action, typename... ActionArgsT,
           typename... HeadTypes, typename... ArgsT>
 inline void for_all_combinations(const named_type_pack<HeadTypes...> &head,
-                                 ArgsT &&... args) {
+                                 ArgsT &&...args) {
   // Run the next level of recursion for each type from the head named_type_pack
   // instance. Each recursion level unfolds the first argument passed and adds a
   // type name as the last argument.
@@ -527,7 +527,7 @@ inline void for_all_combinations(const named_type_pack<HeadTypes...> &head,
 template <template <typename...> class Action, typename... ActionArgsT,
           typename... HeadTypes, typename... ArgsT>
 inline void for_all_combinations(const unnamed_type_pack<HeadTypes...> &head,
-                                 ArgsT &&... args) {
+                                 ArgsT &&...args) {
   // Using fold expression to iterate over all types within type pack
 
   size_t typeNameIndex = 0;
@@ -552,7 +552,7 @@ inline void for_all_combinations(const unnamed_type_pack<HeadTypes...> &head,
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
-inline void for_all_types(const type_pack<types...> &, argsT &&... args) {
+inline void for_all_types(const type_pack<types...> &, argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
@@ -578,7 +578,7 @@ inline void for_all_types(const type_pack<types...> &, argsT &&... args) {
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
 inline void for_all_types(const named_type_pack<types...> &typeList,
-                          argsT &&... args) {
+                          argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
@@ -603,7 +603,7 @@ inline void for_all_types(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_type_and_vectors(argsT &&... args) {
+void for_type_and_vectors(argsT &&...args) {
   static const auto types = type_pack<
       T, typename sycl::template vec<T, 1>, typename sycl::template vec<T, 2>,
       typename sycl::template vec<T, 3>, typename sycl::template vec<T, 4>,
@@ -625,7 +625,7 @@ void for_type_and_vectors(argsT &&... args) {
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
 void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
-                               argsT &&... args) {
+                               argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
@@ -649,7 +649,7 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
  */
 template <template <typename, typename...> class action, typename T,
           typename... actionArgsT, typename... argsT>
-void for_device_copyable_std_containers(argsT &&... args) {
+void for_device_copyable_std_containers(argsT &&...args) {
   constexpr std::size_t medium_array_size = 5;
   for_all_types<action, actionArgsT...>(
       type_pack<std::array<T, medium_array_size>, std::optional<T>,
@@ -672,7 +672,7 @@ void for_device_copyable_std_containers(argsT &&... args) {
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
 void for_all_device_copyable_std_containers(
-    const named_type_pack<types...> &typeList, argsT &&... args) {
+    const named_type_pack<types...> &typeList, argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
