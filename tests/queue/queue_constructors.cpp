@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 namespace queue_constructors {
@@ -251,6 +252,51 @@ TEST_CASE("Check queue hashing", "[queue]") {
   std::hash<sycl::queue> hasher;
 
   CHECK(hasher(queueA) == hasher(queueB));
+}
+
+TEST_CASE("Check exceptions thrown for mismatched context and device",
+          "[queue]") {
+  cts_selector selector;
+  const sycl::device device(selector);
+  sycl::device otherDevice = device;
+  auto platforms = sycl::platform::get_platforms();
+  for (auto p : platforms) {
+    auto devices = p.get_devices();
+    for (auto d : devices) {
+      if (d != device) {
+        otherDevice = d;
+        break;
+      }
+    }
+    if (otherDevice != device) break;
+  }
+  if (otherDevice == device) SKIP("No other root device is available");
+
+  sycl::context otherContext(otherDevice);
+
+  SECTION("constructor (context, deviceSelector)") {
+    CHECK_THROWS_MATCHES(sycl::queue(otherContext, selector), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
+
+  SECTION("constructor (context, deviceSelector, asyncHandler)") {
+    cts_async_handler asyncHandler;
+    CHECK_THROWS_MATCHES(sycl::queue(otherContext, selector, asyncHandler),
+                         sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
+
+  SECTION("constructor (context, device)") {
+    CHECK_THROWS_MATCHES(sycl::queue(otherContext, device), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
+
+  SECTION("constructor (context, device, asyncHandler)") {
+    cts_async_handler asyncHandler;
+    CHECK_THROWS_MATCHES(sycl::queue(otherContext, device, asyncHandler),
+                         sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
 }
 
 } /* namespace queue_constructors */
