@@ -17,6 +17,7 @@ item
 kernel
 kernel_args
 kernel_bundle
+marray
 math_builtin_api
 marray
 multi_ptr
