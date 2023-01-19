@@ -44,9 +44,9 @@ TEST_CASE("kernel info test", "[kernel]") {
 
   /** check program info parameters
    */
-  auto clUintRet = kernel.get_info<sycl::info::kernel::num_args>();
-  check_return_type<cl_uint>(
-      clUintRet, "sycl::kernel::get_info<sycl::info::kernel::num_args>()");
+  auto uint32Ret = kernel.get_info<sycl::info::kernel::num_args>();
+  check_return_type<uint32_t>(
+      uint32Ret, "sycl::kernel::get_info<sycl::info::kernel::num_args>()");
 
   auto stringRet = kernel.get_info<sycl::info::kernel::attributes>();
   check_return_type<std::string>(
@@ -79,16 +79,16 @@ TEST_CASE("kernel info test", "[kernel]") {
       "sycl::kernel::get_info<sycl::info::kernel_device_specific::preferred_"
       "work_group_size_multiple>(dev)");
 
-  auto clUlongRet =
+  auto privateMemSizeRet =
       kernel.get_info<sycl::info::kernel_device_specific::private_mem_size>(
           dev);
-  check_return_type<cl_ulong>(clUlongRet,
-                              "sycl::kernel::get_info<sycl::info::kernel_"
-                              "device_specific::private_mem_size>(dev)");
+  check_return_type<size_t>(privateMemSizeRet,
+                            "sycl::kernel::get_info<sycl::info::kernel_"
+                            "device_specific::private_mem_size>(dev)");
 
-  auto anotherSizeTRet =
+  auto workGroupSizeRet =
       kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(dev);
-  check_return_type<size_t>(anotherSizeTRet,
+  check_return_type<size_t>(workGroupSizeRet,
                             "sycl::kernel::get_info<sycl::info::kernel_device_"
                             "specific::work_group_size>(dev)");
 
