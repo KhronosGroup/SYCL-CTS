@@ -243,14 +243,29 @@ template <typename... Types>
 struct is_type_pack_t<named_type_pack<Types...>> : std::true_type {};
 
 template <typename... Types>
+struct is_type_pack_t<named_type_pack<Types...>> : std::true_type {};
+
+template <typename... Types>
 struct is_type_pack_t<unnamed_type_pack<Types...>> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<named_type_pack<Types...>&> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<unnamed_type_pack<Types...>&> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<const named_type_pack<Types...>> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<const unnamed_type_pack<Types...>> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<const named_type_pack<Types...>&> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<const unnamed_type_pack<Types...>&> : std::true_type {};
 }  // namespace details
-
-template <typename T>
-using is_not_a_type_pack =
-    std::enable_if_t<!details::is_type_pack_t<T>::value, bool>;
-
-}  // namespace sfinae
 
 /**
  * @brief present_in is true if the first type is present
