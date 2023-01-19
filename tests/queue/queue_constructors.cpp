@@ -21,423 +21,217 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME queue_constructors
-
-namespace TEST_NAMESPACE {
+namespace queue_constructors {
 
 using namespace sycl_cts;
 
-/** check the constructors for sycl::queue
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
+TEST_CASE("Check queue default constructor and destructor", "[queue]") {
+  sycl::queue queue;
+}
+TEST_CASE("Check queue (property_list) constructor", "[queue]") {
+  sycl::queue queue(
+      sycl::property_list{sycl::property::queue::enable_profiling()});
 
-  /** execute this test
-   */
-  void run(util::logger &log) override {
-    {
-      /** check default constructor and destructor
-      */
-      { sycl::queue queue; }
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-      /** check (property_list) constructor
-      */
-      {
-        cts_async_handler asyncHandler;
-        sycl::queue queue(sycl::property_list{
-            sycl::property::queue::enable_profiling()});
+TEST_CASE("Check queue (async_handler) constructor", "[queue]") {
+  cts_async_handler asyncHandler;
+  sycl::queue queue(asyncHandler);
+}
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with property_list was not constructed correctly "
-               "(has_property)");
-        }
-      }
+TEST_CASE("Check queue (async_handler, property_list) constructor", "[queue]") {
+  cts_async_handler asyncHandler;
+  sycl::queue queue(asyncHandler, {sycl::property::queue::enable_profiling()});
 
-      /** check (async_handler) constructor
-      */
-      {
-        cts_async_handler asyncHandler;
-        sycl::queue queue(asyncHandler);
-      }
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-      /** check (async_handler, property_list) constructor
-      */
-      {
-        cts_async_handler asyncHandler;
-        sycl::queue queue(asyncHandler,
-                              {sycl::property::queue::enable_profiling()});
+TEST_CASE("Check queue (device_selector) constructor", "[queue]") {
+  cts_selector selector;
+  sycl::queue queue(selector);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with async_handler and property_list was not "
-               "constructed correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
+}
 
-      /** check (device_selector) constructor
-      */
-      {
-        cts_selector selector;
-        sycl::queue queue(selector);
+TEST_CASE("Check queue (device_selector, property_list) constructor",
+          "[queue]") {
+  cts_selector selector;
+  sycl::queue queue(selector, {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with device_selector was not constructed correctly "
-               "(device equality)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
 
-      /** check (device_selector, property_list) constructor
-      */
-      {
-        cts_selector selector;
-        sycl::queue queue(selector,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with device_selector and property list was not "
-               "constructed correctly (device equality)");
-        }
+TEST_CASE("Check queue (device_selector, async_handler) constructor",
+          "[queue]") {
+  cts_selector selector;
+  cts_async_handler asyncHandler;
+  sycl::queue queue(selector, asyncHandler);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with device_selector and property_list was not "
-               "constructed correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
+}
 
-      /** check (device_selector, async_handler) constructor
-      */
-      {
-        cts_selector selector;
-        cts_async_handler asyncHandler;
-        sycl::queue queue(selector, asyncHandler);
+TEST_CASE(
+    "Check queue (device_selector, async_handler, property_list) constructor",
+    "[queue]") {
+  cts_selector selector;
+  cts_async_handler asyncHandler;
+  sycl::queue queue(selector, asyncHandler,
+                    {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with device_selector and async_handler was not "
-               "constructed correctly (device equality)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
 
-      /** check (device_selector, async_handler, property_list) constructor
-      */
-      {
-        cts_selector selector;
-        cts_async_handler asyncHandler;
-        sycl::queue queue(selector, asyncHandler,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with device_selector, async_handler and "
-               "property_list was not constructed correctly (device equality)");
-        }
+TEST_CASE("Check queue (device) constructor", "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::queue queue(device);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with device_selector, async_handler and "
-               "property_list was not constructed correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == device);
+}
 
-      /** check (device) constructor
-      */
-      {
-        sycl::device device = util::get_cts_object::device();
-        sycl::queue queue(device);
+TEST_CASE("Check queue (device, property_list) constructor", "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::queue queue(device, {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != device) {
-          FAIL(log,
-               "queue with device was not constructed correctly "
-               "(device equality)");
-        }
-      }
+  CHECK(queue.get_device() == device);
 
-      /** check (device, property_list) constructor
-      */
-      {
-        sycl::device device = util::get_cts_object::device();
-        sycl::queue queue(device,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != device) {
-          FAIL(log,
-               "queue with device was not constructed correctly "
-               "(device equality)");
-        }
+TEST_CASE("Check queue (device, async_handler) constructor", "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  cts_async_handler asyncHandler;
+  sycl::queue queue(device, asyncHandler);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with device and property_list was not constructed "
-               "correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == device);
+}
 
-      /** check (device, async_handler) constructor
-      */
-      {
-        sycl::device device = util::get_cts_object::device();
-        cts_async_handler asyncHandler;
-        sycl::queue queue(device, asyncHandler);
+TEST_CASE("Check queue (device, async_handler, property_list) constructor",
+          "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  cts_async_handler asyncHandler;
+  sycl::queue queue(device, asyncHandler,
+                    {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != device) {
-          FAIL(log,
-               "queue with device and async_hander was not constructed "
-               "correctly (device equality)");
-        }
-      }
+  CHECK(queue.get_device() == device);
 
-      /** check (device, async_handler, property_list) constructor
-      */
-      {
-        sycl::device device = util::get_cts_object::device();
-        cts_async_handler asyncHandler;
-        sycl::queue queue(device, asyncHandler,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != device) {
-          FAIL(log,
-               "queue with device and async_hander was not constructed "
-               "correctly (device equality)");
-        }
+TEST_CASE("Check queue (context, device_selector) constructor", "[queue]") {
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+  sycl::queue queue(context, selector);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with device, async_handler and property_list was "
-               "not constructed correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
+}
 
-      /** check (context, device_selector) constructor
-      */
-      {
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
-        sycl::queue queue(context, selector);
+TEST_CASE("Check queue (context, device_selector, property_list) constructor",
+          "[queue]") {
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+  sycl::queue queue(context, selector,
+                    {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with context and device_selector was not "
-               "constructed correctly (device equality)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
 
-      /** check (context, device_selector, property_list) constructor
-      */
-      {
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
-        sycl::queue queue(context, selector,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with context and device_selector was not "
-               "constructed correctly (device equality)");
-        }
+TEST_CASE("Check queue (context, device_selector, async_handler) constructor",
+          "[queue]") {
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+  cts_async_handler asyncHandler;
+  sycl::queue queue(context, selector, asyncHandler);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with context, device_selector and property_list was "
-               "not constructed correctly (has_property)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
+}
 
-      /** check (context, device_selector, async_handler) constructor
-      */
-      {
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
-        cts_async_handler asyncHandler;
-        sycl::queue queue(context, selector, asyncHandler);
+TEST_CASE(
+    "Check queue (context, device_selector, async_handler, property_list)",
+    "[queue]") {
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+  cts_async_handler asyncHandler;
+  sycl::queue queue(context, selector, asyncHandler,
+                    {sycl::property::queue::enable_profiling()});
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with context, device_selector and async_handler was "
-               "not constructed correctly (device equality)");
-        }
-      }
+  CHECK(queue.get_device() == sycl::device(selector));
 
-      /** check (context, device_selector, async_handler, property_list)
-      constructor
-      */
-      {
-        cts_selector selector;
-        auto context = util::get_cts_object::context(selector);
-        cts_async_handler asyncHandler;
-        sycl::queue queue(context, selector, asyncHandler,
-                              {sycl::property::queue::enable_profiling()});
+  CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
+}
 
-        if (queue.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue with context, device_selector, async_handler and "
-               "property_list was not constructed correctly (device equality)");
-        }
+TEST_CASE("Check queue copy constructor", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  sycl::queue queueB(queueA);
 
-        if (!queue
-                 .has_property<sycl::property::queue::enable_profiling>()) {
-          FAIL(log,
-               "queue with context, device_selector, async_handler and "
-               "property_list was not constructed correctly (has_property)");
-        }
-      }
+  CHECK(queueA.get_device() == sycl::device(selector));
 
-      /** check copy constructor
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        sycl::queue queueB(queueA);
+  CHECK(queueA == queueB);
+}
 
-        if (queueA.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue source after copy construction failed (device equality)");
-        }
+TEST_CASE("Check queue assignment operator", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  sycl::queue queueB;
+  queueB = queueA;
 
-        if (queueA != queueB) {
-          FAIL(log,
-               "queue destination was not copy constructed correctly "
-               "(equality)");
-        }
+  CHECK(queueA.get_device() == sycl::device(selector));
 
-        if (!selector.is_host()) {
-          if (queueA != queueB) {
-            FAIL(log,
-                 "queue destination was not copy constructed correctly (get)");
-          }
-        }
-      }
+  CHECK(queueA == queueB);
+}
 
-      /** check assignment operator
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        sycl::queue queueB;
-        queueB = queueA;
+TEST_CASE("Check queue move constructor", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  auto queueACopy = queueA;
+  sycl::queue queueB(std::move(queueA));
 
-        if (queueA.get_device() != sycl::device(selector)) {
-          FAIL(log,
-               "queue source after copy assignment (=) failed (device "
-               "equality)");
-        }
+  CHECK(queueB == queueACopy);
+}
 
-        if (queueA != queueB) {
-          FAIL(log,
-               "queue destination was not copy assigned (=) correctly "
-               "(equality)");
-        }
+TEST_CASE("Check queue move assignment operator", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  auto queueACopy = queueA;
 
-        if (!selector.is_host()) {
-          if (queueA != queueB) {
-            FAIL(log,
-                 "queue destination was not copy assigned (=) correctly "
-                 "(get)");
-          }
-        }
-      }
+  sycl::queue queueB;
+  queueB = std::move(queueA);
 
-      /** check move constructor
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        auto queueACopy = queueA;
-        sycl::queue queueB(std::move(queueA));
+  CHECK(queueB == queueACopy);
+}
 
-        if (queueB != queueACopy) {
-          FAIL(log, "queue was not move constructed correctly (equality)");
-        }
-      }
+TEST_CASE("Check queue equality operator", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  sycl::queue queueB(queueA);
+  sycl::queue queueC(selector);
+  queueC = queueA;
+  sycl::queue queueD(selector);
 
-      /** check move assignment operator
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        auto queueACopy = queueA;
+  CHECK(queueA == queueB);
+  CHECK(queueA == queueC);
 
-        sycl::queue queueB;
-        queueB = std::move(queueA);
+  CHECK_FALSE(queueA != queueB);
+  CHECK_FALSE(queueA != queueC);
 
-        if (queueB != queueACopy) {
-          FAIL(log, "queue was not move assigned (=) correctly (equality)");
-        }
-      }
+  CHECK_FALSE(queueC == queueD);
+  CHECK(queueC != queueD);
+}
 
-      /* check equality operator
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        sycl::queue queueB(queueA);
-        sycl::queue queueC(selector);
-        queueC = queueA;
-        sycl::queue queueD(selector);
+TEST_CASE("Check queue hashing", "[queue]") {
+  cts_selector selector;
+  auto queueA = util::get_cts_object::queue(selector);
+  sycl::queue queueB(queueA);
+  std::hash<sycl::queue> hasher;
 
-        if (!(queueA == queueB)) {
-          FAIL(log,
-               "queue equality does not work correctly (copy constructed)");
-        }
-        if (!(queueA == queueC)) {
-          FAIL(log, "queue equality does not work correctly (copy assigned)");
-        }
-        if (queueA != queueB) {
-          FAIL(log,
-               "queue non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (queueA != queueC) {
-          FAIL(log,
-               "queue non-equality does not work correctly"
-               "(copy assigned)");
-        }
-        if (queueC == queueD) {
-          FAIL(log,
-               "queue equality does not work correctly"
-               "(comparing same)");
-        }
-        if (!(queueC != queueD)) {
-          FAIL(log,
-               "queue non-equality does not work correctly"
-               "(comparing same)");
-        }
-      }
+  CHECK(hasher(queueA) == hasher(queueB));
+}
 
-      /** check hashing
-      */
-      {
-        cts_selector selector;
-        auto queueA = util::get_cts_object::queue(selector);
-        sycl::queue queueB(queueA);
-        std::hash<sycl::queue> hasher;
-
-        if (hasher(queueA) != hasher(queueB)) {
-          FAIL(log,
-               "queue hasher does not work correctly (hashing of equal "
-               "failed)");
-        }
-      }
-    }
-  }
-};
-
-// register this test with the test_collection
-util::test_proxy<TEST_NAME> proxy;
-
-} /* namespace TEST_NAMESPACE */
+} /* namespace queue_constructors */
