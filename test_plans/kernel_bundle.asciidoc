@@ -16,7 +16,7 @@ is selected on the CTS command line if not stated otherwise.
 
 == Tests
 
-=== Finctions `is_compatible`
+=== Functions `is_compatible`
 
 ==== Tests for `is_compatible(const std::vector<kernel_id> &kernelIds, const device &dev)`
 
@@ -34,7 +34,7 @@ Check that is_compatible returns `false` for this vector of kernel ids unless th
 ** `true` for a kernel that uses 64-bit atomic operations if and only if the selected device has `aspect::atomic64`.
 
 * Define kernels with the following values of the `[[sycl::reqd_work_group_size()]]` attribute.
-Verify that `is_compatible` returns true if and only if the work group size is less than or equal to the value reported by `info::device::max_work_group_size` for the selected device.
+Verify that `is_compatible` returns true if and only if the work group size is less than or equal to the value reported by `info::device::max_work_item_sizes<1>` for the selected device.
 
 ** `[[sycl::reqd_work_group_size(8)]]`
 ** `[[sycl::reqd_work_group_size(16)]]`
@@ -55,7 +55,7 @@ Verify that `is_compatible` returns true if and only if the sub group size is on
 
 * for multiple kernels result is equal to AND operation applied to the multiple calls - each one using single kernel id
 ** Check with vector with built-in kernel ids and with the selected device - should return `true`
-** To previous vector add kernel id with large `[[sycl::reqd_work_group_size(4294967295)]]` attribute and with the selected device - should return `false` if value reported by `info::device::max_work_group_size` is less than 4294967295.
+** To previous vector add kernel id with large `[[sycl::reqd_work_group_size(4294967295)]]` attribute and with the selected device - should return `false` if value reported by `info::device::max_work_item_sizes<1>` is less than 4294967295.
 
 
 ==== Tests for `template<typename KernelName> bool is_compatible(const device &dev)`
@@ -85,6 +85,18 @@ Call function `kernel_bundle::get_backend()` and check that return type is `sycl
 * Create a kernel bundle by calling `get_kernel_bundle<bundle_state::executable>(const context &)`.
 * Iterate over all of the kernel ids returned by `get_kernel_ids()`.
 * Verify that `has_kernel(kernelId, dev)` returns `true` if and only if `is_compatible({kernelId}, const device&)` for selected device is `true`.
+
+==== `template <typename KernelName> bool has_kernel()`
+
+* Define kernel with KernelName.
+* Get a kernel bundle in executable state that contains this kernel via `get_kernel_bundle<KernelName, bundle_state::executable>(const context &)`.
+* Verify that `has_kernel<KernelName>()` returns `true`.
+
+==== `template <typename KernelName> bool has_kernel(const device &dev)`
+
+* Define kernel with KernelName.
+* Get a kernel bundle in executable state that contains this kernel via `get_kernel_bundle<KernelName, bundle_state::executable>(const context &)`.
+* Verify that `has_kernel<KernelName>(dev)` returns `true` if and only if `is_compatible<KernelName>(const device&)` for selected device is `true`.
 
 ==== `std::vector<kernel_id> get_kernel_ids()`
 
