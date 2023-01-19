@@ -1,0 +1,480 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for atomic_ref
+
+This is a test plan for the APIs described in SYCL 2020 section 4.15.3. Atomic references
+
+== Testing scope
+
+The test plan covers non-atomic behavior, the latter will be covered in a separate test plan
+
+=== Device coverage
+
+All of the tests described below are performed on the default device that is selected on the CTS command line
+
+== Type coverage
+
+All of the tests described below are performed using each of the
+following types as the `ReferencedType`.
+
+In Regular mode:
+
+* `int`
+* `float`
+
+In full conformance mode:
+
+* `int`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `float`
+
+In addition, if the device has `aspect::atomic64`, the following types are tested:
+
+* `long long`
+* `unsigned long long`
+* `double`
+
+Additionaly run same tests for `ReferencedType*`.
+
+Note: using T as `ReferencedType` or `ReferencedType*`.
+
+== Tests
+
+All non static tests run on following cases:
+
+* single_task with referenced value is accessor element - should be skipped for `address_space::local_space`
+* parallel_for with nd_range parameter and referenced value local_accessor element - should be skipped for `address_space::global_space`
+
+Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
+
+=== SYCL2020 interface
+
+==== Members
+
+For `atomic_ref` with the following `DefaultOrder` template parameter values:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+And the following values as `DefaultScope` template parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And the following values as `Space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+Check the following:
+
+* `default_read_order`, `default_write_order` and `default_read_modify_write_order` members are const
+* `required_alignment` memeber is const and is equal to or grater than `alignof(ReferencedType)`
+* `is_always_lock_free` member is const and is equal to `true` of `false`
+* `default_scope` member is const and is equal to `DefaultScope` template parameter was used when object was created
+
+If `T` is `ReferencedType` check that `value_type` is same as `ReferencedType`.
+
+If `T` is `ReferencedType*` check that `value_type` is same as `ReferencedType*`.
+
+If `T` is `Integral` or `Floating` check that `atomic_ref::difference_type` is same
+as `atomic_ref::value_type`.
+
+If `T` is `ReferencedType*` check that `atomic_ref::difference_type` is same
+as `ptrdiff_t`.
+
+For different cases of `DefaultOrder` template parameter check the following:
+
+* `memory_order::relaxed`
+** `default_read_order` is `memory_order::relaxed`
+** `default_write_order` is `memory_order::relaxed`
+** `default_read_modify_write_order` is `memory_order::relaxed`
+
+
+* `memory_order::acq_rel`
+** `default_read_order` is `memory_order::acquire`
+** `default_write_order` is `memory_order::release`
+** `default_read_modify_write_order` is `memory_order::acq_rel`
+
+* `memory_order::seq_cst`
+** `default_read_order` is `memory_order::seq_cst`
+** `default_write_order` is `memory_order::seq_cst`
+** `default_read_modify_write_order` is `memory_order::seq_cst`
+
+==== Common constructors
+
+Create an `atomic_ref` object using `atomic_ref(T&)` and an other object using copy constructor in device code using the following values as `DefaultOrder` template parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+The following values as `DefaultScope` template parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And the following values as `Space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+After calling constructors check for:
+
+* `atomic_ref(T&)`
+
+** If the stored value match with the value passed as `T&` using
+`T load(
+    memory_order order = default_read_order
+    memory_scope scope = default_scope) const`.
+Check returned value type of `load` member function.
+
+* `atomic_ref(const atomic_ref&) noexcept`
+
+** If the members of the newly created object match that of `const atomic_ref&` and the referenced value is valid using
+`T load(
+    memory_order order = default_read_order
+    memory_scope scope = default_scope) const`.
+
+==== Member functions
+
+To test member functions create an `atomic_ref` object using `atomic_ref(T&)` in device code using the following values as `DefaultOrder` template parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+And the following values as `DefaultScope` template parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+And the following values as `Space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+Note: for the member functions tests below that take `memory_order` and `memory_scope` as arguments, the following values of these parameters are used if the `FULL CONFORMANCE` mode is enabled:
+
+* For `memory_order`:
+
+** `memory_order::relaxed`
+** `memory_order::acquire`
+** `memory_order::release`
+** `memory_order::acq_rel`
+** `memory_order::seq_cst`
+
+* For `memory_scope`:
+
+** `memory_scope::work_item`
+** `memory_scope::sub_group`
+** `memory_scope::work_group`
+** `memory_scope::device`
+** `memory_scope::system`
+
+It should be noted that `memory_order::acquire` is used only for read operations, `memory_order::release` for write operations and `memory_order::acq_rel` for read-modify-write operations.
+
+If the `FULL CONFORMANCE` mode is disabled only default values for functions arguments is used which are determined by `atomic_ref` template parameters that which object was created with.
+
+===== Common member functions
+
+`bool is_lock_free()`
+
+Check if the function exists and returns `atomic_ref::is_always_lock_free`.
+Check returned value type.
+
+`void store(T operand,
+    memory_order order = default_write_order,
+    memory_scope scope = default_scope)`
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::release`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+Check if the function stores `operand` to the object referenced by this `atomic_ref`.
+
+`T operator=(T desired) const noexcept`
+
+Same as `store(desired)`: Check if the function stores `desired` to the object referenced by this `atomic_ref`.
+Check if returned value is `desired` and check returned value type.
+
+`operator T() const`
+
+Check if the function loads the value of the object referenced by this `atomic_ref`.
+
+`T exchange(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+Check if replaces the value of the object referenced by this `atomic_ref` with value `operand` and returns the original value of the referenced object. Check returned value type.
+
+`bool compare_exchange_weak(T &expected, T desired,
+    memory_order success,
+    memory_order failure,
+    memory_scope scope = default_scope) const`
+
+For the following values as `success` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `failure` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not be checked since it is non-deterministic.
+
+For unequal values: check if it assigns the original value of the referenced object to `expected`.
+
+Also check if it returns `true` when the comparison operation and replacement operation were successful.
+
+Check returned value type.
+
+`bool compare_exchange_weak(T &expected, T desired,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Same as above: Equivalent to `compare_exchange_weak(expected, desired, order, order, scope)` using following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+`bool compare_exchange_strong(T &expected, T desired,
+    memory_order success,
+    memory_order failure,
+    memory_scope scope = default_scope) const`
+
+For the following values as `success` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `failure` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acquire`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+For equal values: check if it replaces the value of the referenced object with the value of `desired`.
+
+For unequal values: check if it assigns the original value of the referenced object to `expected`.
+
+Also check if it returns `true` when the comparison operation was successful.
+
+Check returned value type.
+
+`bool compare_exchange_strong(T &expected, T desired,
+    memory_order order =
+    default_read_modify_write_order) const`
+
+Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)` using following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+===== Additional member functions for all specializations
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+Test following functions:
+
+`T fetch_add(difference_type operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it adds `operand` to the value of the object referenced by this `atomic_ref` and assigns the result to the value of the referenced object.
+If `T` is `Floating` check that new value of the referenced object is equal to `(previous value + operand) +- epsilon`.
+Check if it returns the original value of the referenced object. Check returned value type.
+
+`T operator+=(difference_type operand) const`
+
+Same as above: Equivalent to `fetch_add(operand) + operand`.
+
+`T fetch_sub(difference_type operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it subtracts `operand` from the value of the object referenced by this `atomic_ref` and assigns the result to the value of the referenced object.
+If `T` is `Floating` check that new value of the referenced object is equal to `(previous value + operand) +- epsilon`.
+Check if it returns the original value of the referenced object. Check returned value type.
+
+`T operator-=(difference_type operand) const`
+
+Same as above: Equivalent to `fetch_sub(operand) - operand`.
+
+===== Additional member functions available on an object of type `atomic_ref<T>` for integral `T`
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+Test following functions if `T` is `Integral`, skip otherwise:
+
+`T fetch_and(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it performs a bitwise AND between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+
+`T operator&=(T operand) const`
+
+Same as above: Equivalent to `fetch_and(operand) & operand`.
+
+`T fetch_or(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it performs a bitwise OR between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+
+`T operator|=(T operand) const`
+
+Same as above: Equivalent to `fetch_or(operand) | operand`.
+
+`T fetch_xor(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it performs a bitwise XOR between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+
+`T operator^=(T operand) const`
+
+Same as above: Equivalent to `fetch_xor(operand) ^ operand`.
+
+===== Additional member functions available on an object of type `atomic_ref<T>` for integral and pointer `T`
+
+Test following functions if `T` is `Integral` or `ReferencedType*`, skip otherwise:
+
+`T operator++(int) const`
+
+Same as `fetch_add`: Equivalent to `fetch_add(1)`.
+
+`T operator++() const`
+
+Same as `fetch_add`: Equivalent to `fetch_add(1) + 1`.
+
+`T operator--(int) const`
+
+Same as `fetch_sub`: Equivalent to `fetch_sub(1)`.
+
+`T operator--() const`
+
+Same as `fetch_sub`: Equivalent to fetch_sub(1) - 1.
+
+===== Additional member functions available on an object of type `atomic_ref<T>` for integral and floating `T`
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::work_item`
+* `memory_scope::sub_group`
+* `memory_scope::work_group`
+* `memory_scope::device`
+* `memory_scope::system`
+
+Test following functions if `T` is `Integral` or `Floating`, skip otherwise:
+
+`T fetch_min(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it computes the minimum of `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object.
+If `T` is `Floating` check that new value of the referenced object is equal to `(minimum value + operand) +- epsilon`.
+Check if it returns the original value of the referenced object. Check returned value type.
+
+
+`T fetch_max(T operand,
+    memory_order order = default_read_modify_write_order,
+    memory_scope scope = default_scope) const`
+
+Check if it computes the maximum of `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object.
+If `T` is `Floating` check that new value of the referenced object is equal to `(maximum value + operand) +- epsilon`.
+Check if it returns the original value of the referenced object. Check returned value type.
