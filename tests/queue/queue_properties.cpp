@@ -27,13 +27,68 @@ namespace queue_properties {
 
 using namespace sycl_cts;
 
-TEST_CASE("check property::queue::enable_profiling", "[queue]") {
-  auto device = util::get_cts_object::device();
-  if (!device.has(sycl::aspect::queue_profiling))
-    SKIP("Device does not support queue_profiling");
+void check_in_order_prop(const sycl::queue &queue) {
+  CHECK(queue.is_in_order());
 
-  sycl::queue queue(
-      device, sycl::property_list{sycl::property::queue::enable_profiling()});
+  REQUIRE(queue.has_property<sycl::property::queue::in_order>());
+
+  auto prop = queue.get_property<sycl::property::queue::in_order>();
+  check_return_type<sycl::property::queue::in_order>(
+      prop,
+      "sycl::queue::has_property<sycl::property::queue::"
+      "in_order>()");
+}
+
+void check_in_order_functionality(sycl::queue &queue) {
+  bool *data_changed = sycl::malloc_device<bool>(1, queue);
+  constexpr size_t buffer_size = 10;
+  int loop_array[buffer_size];
+  bool result = false;
+  {
+    sycl::buffer<bool, 1> res_buf(&result, sycl::range<1>(1));
+    sycl::buffer<int, 1> loop_buf(loop_array, sycl::range(buffer_size));
+    // to garantee that data_changed initialized as false before two tested
+    // commands are submitted
+    queue
+        .submit([&](sycl::handler &cgh) {
+          cgh.single_task([=] { *data_changed = false; });
+        })
+        .wait_and_throw();
+
+    queue.submit([&](sycl::handler &cgh) {
+      auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
+      auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+
+      cgh.single_task([=] {
+        // to delay checking data_changed use a loop that will take some time
+        for (int i = 0; i < 1000000; i++) {
+          int s = sycl::sqrt(float(i));
+          loop_acc[s % buffer_size] = i;
+        }
+        res_acc[0] = (*data_changed == false);
+      });
+    });
+
+    queue.submit([&](sycl::handler &cgh) {
+      cgh.single_task([=] { *data_changed = true; });
+    });
+    queue.wait_and_throw();
+  }
+  CHECK(result);
+}
+
+void check_in_order(sycl::queue &queue) {
+  check_in_order_prop(queue);
+
+  if (queue.get_device().has(sycl::aspect::usm_device_allocations))
+    check_in_order_functionality(queue);
+  else
+    WARN(
+        "test for in_order functionality is skipped because device doesn't "
+        "support usm_device_allocations");
+}
+
+void check_enable_profiling_prop(sycl::queue &queue) {
   CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
 
   auto prop = queue.get_property<sycl::property::queue::enable_profiling>();
@@ -41,5 +96,161 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
       prop,
       "sycl::queue::has_property<sycl::property::queue::"
       "enable_profiling>()");
+}
+
+void check_props(sycl::queue &queue) {
+  check_enable_profiling_prop(queue);
+  check_in_order_prop(queue);
+}
+
+TEST_CASE("check property::queue::enable_profiling", "[queue]") {
+  auto device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
+
+  sycl::queue queue(
+      device, sycl::property_list{sycl::property::queue::enable_profiling()});
+  check_enable_profiling_prop(queue);
+}
+
+TEST_CASE("check property::queue::in_order", "[queue]") {
+  cts_async_handler asyncHandler;
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+  auto device = util::get_cts_object::device();
+
+  SECTION("with constructor (propList)") {
+    sycl::queue queue(sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (asyncHandler, propList)") {
+    sycl::queue queue(asyncHandler,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (deviceSelector, propList)") {
+    sycl::queue queue(selector,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
+    sycl::queue queue(selector, asyncHandler,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (syclDevice, propList)") {
+    sycl::queue queue(device,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (syclDevice, asyncHandler, propList)") {
+    sycl::queue queue(device, asyncHandler,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (syclContext, deviceSelector, propList)") {
+    sycl::queue queue(context, selector,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION(
+      "with constructor (syclContext, deviceSelector, asyncHandler, "
+      "propList)") {
+    sycl::queue queue(context, selector, asyncHandler,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (syclContext, syclDevice, propList)") {
+    sycl::queue queue(context, device,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+  SECTION(
+      "with constructor (syclContext, syclDevice, asyncHandler, propList)") {
+    sycl::queue queue(context, device, asyncHandler,
+                      sycl::property_list{sycl::property::queue::in_order()});
+    check_in_order(queue);
+  }
+}
+
+TEST_CASE("check both queue properties in_order and enable_profiling",
+          "[queue]") {
+  auto device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
+  cts_async_handler asyncHandler;
+  cts_selector selector;
+  auto context = util::get_cts_object::context(selector);
+
+  SECTION("with constructor (propList)") {
+    sycl::queue queue(
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (asyncHandler, propList)") {
+    sycl::queue queue(
+        asyncHandler,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (deviceSelector, propList)") {
+    sycl::queue queue(selector, sycl::property_list{
+                                    sycl::property::queue::in_order(),
+                                    sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
+    sycl::queue queue(
+        selector, asyncHandler,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (syclDevice, propList)") {
+    sycl::queue queue(
+        device, sycl::property_list{sycl::property::queue::in_order(),
+                                    sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (syclDevice, asyncHandler, propList)") {
+    sycl::queue queue(
+        device, asyncHandler,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION("with constructor (syclContext, deviceSelector, propList)") {
+    sycl::queue queue(
+        context, selector,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION(
+      "with constructor (syclContext, deviceSelector, asyncHandler, "
+      "propList)") {
+    sycl::queue queue(
+        context, selector, asyncHandler,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_in_order(queue);
+  }
+  SECTION("with constructor (syclContext, syclDevice, propList)") {
+    sycl::queue queue(
+        context, device,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
+  SECTION(
+      "with constructor (syclContext, syclDevice, asyncHandler, propList)") {
+    sycl::queue queue(
+        context, device, asyncHandler,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
+    check_props(queue);
+  }
 }
 }  // namespace queue_properties
