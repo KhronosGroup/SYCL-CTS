@@ -163,6 +163,26 @@ struct check_pointer {
   }
 };
 
+/** @brief Initializes all elements in a container with 0
+ */
+template <typename T, int N, int... Vals>
+struct zero_init_container : zero_init_container<T, N - 1, 0, Vals...> {};
+template <typename T, int... Vals>
+struct zero_init_container<T, 0, Vals...> {
+  using elem_type = typename T::value_type;
+  static inline constexpr T value = {elem_type{Vals}...};
+};
+
+/** @brief Initializes an std::array with either 0's or using the default
+ * constructor
+ */
+template <typename T, int N>
+struct init_array : zero_init_container<std::array<T, N>, N> {};
+template <int N>
+struct init_array<user_def_types::def_cnstr, N> {
+  static inline constexpr std::array<user_def_types::def_cnstr, N> value;
+};
+
 }  // namespace multi_ptr_common
 
 #endif  // SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_COMMON_H

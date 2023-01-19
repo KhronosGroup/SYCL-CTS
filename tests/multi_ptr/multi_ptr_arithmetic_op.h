@@ -53,7 +53,8 @@ class run_multi_ptr_arithmetic_op_test {
 
   static constexpr size_t m_array_size = 10;
   // Array that will be used in multi_ptr
-  T m_arr[m_array_size];
+  std::array<T, m_array_size> m_arr =
+      multi_ptr_common::init_array<T, m_array_size>::value;
   static constexpr size_t m_middle_elem_index = m_array_size / 2;
 
   template <typename TestActionT>
@@ -68,7 +69,7 @@ class run_multi_ptr_arithmetic_op_test {
       sycl::buffer<detail::test_results<T>> test_result_buffer(&test_results,
                                                                m_r);
 
-      sycl::buffer<T> arr_buffer(m_arr, sycl::range(m_array_size));
+      sycl::buffer<T> arr_buffer(m_arr.data(), sycl::range(m_array_size));
       queue.submit([&](sycl::handler &cgh) {
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
@@ -89,14 +90,15 @@ class run_multi_ptr_arithmetic_op_test {
         } else if constexpr (space ==
                              sycl::access::address_space::private_space) {
           cgh.single_task([=] {
-            T priv_arr[m_array_size];
+            std::array<T, m_array_size> priv_arr(
+                multi_ptr_common::init_array<T, m_array_size>::value);
             for (size_t i = 0; i < m_array_size; ++i)
               value_operations::assign(priv_arr[i], arr_acc[i]);
             sycl::multi_ptr<T, sycl::access::address_space::private_space,
                             decorated>
                 priv_arr_mptr = sycl::address_space_cast<
                     sycl::access::address_space::private_space, decorated>(
-                    priv_arr);
+                    priv_arr.data());
             test_action(priv_arr_mptr, test_result_acc);
           });
         } else {
