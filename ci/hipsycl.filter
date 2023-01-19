@@ -18,6 +18,7 @@ kernel
 kernel_args
 kernel_bundle
 math_builtin_api
+marray
 multi_ptr
 nd_item
 nd_range

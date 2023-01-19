@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,26 +19,27 @@
 *******************************************************************************/
 
 #include "../../util/extensions.h"
-#include "../common/common.h"
-#include "queue_shortcuts_usm.h"
+#include "../common/type_coverage.h"
+#include "marray_alignment.h"
+#include "marray_common.h"
 
-namespace queue_shortcuts_usm_fp64 {
+namespace marray_alignment_fp16 {
 
 using namespace sycl_cts;
-using namespace queue_shortcuts_usm;
+using namespace marray_alignment;
 
-TEST_CASE("queue shortcuts unified shared memory fp64", "[queue]") {
+TEST_CASE("alignment fp16", "[marray]") {
   auto queue = util::get_cts_object::queue();
   using availability =
-      util::extensions::availability<util::extensions::tag::fp64>;
+      util::extensions::availability<util::extensions::tag::fp16>;
   if (!availability::check(queue)) {
     WARN(
-        "Device does not support double precision floating point operations"
+        "Device does not support half precision floating point operations."
         "Skipping the test case.");
     return;
   }
 
-  check_queue_shortcuts_usm_for_type<double>{}(queue, "double");
+  check_marray_alignment_for_type<sycl::half>{}("sycl::half");
 }
 
-}  // namespace queue_shortcuts_usm_fp64
+}  // namespace marray_alignment_fp16

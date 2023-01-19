@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,26 +19,27 @@
 *******************************************************************************/
 
 #include "../../util/extensions.h"
-#include "../common/common.h"
-#include "queue_shortcuts_usm.h"
+#include "../common/type_coverage.h"
+#include "marray_common.h"
+#include "marray_members.h"
 
-namespace queue_shortcuts_usm_fp64 {
+namespace marray_members_fp64 {
 
 using namespace sycl_cts;
-using namespace queue_shortcuts_usm;
+using namespace marray_members;
 
-TEST_CASE("queue shortcuts unified shared memory fp64", "[queue]") {
+TEST_CASE("members fp64", "[marray]") {
   auto queue = util::get_cts_object::queue();
   using availability =
       util::extensions::availability<util::extensions::tag::fp64>;
   if (!availability::check(queue)) {
     WARN(
-        "Device does not support double precision floating point operations"
+        "Device does not support double precision floating point operations."
         "Skipping the test case.");
     return;
   }
 
-  check_queue_shortcuts_usm_for_type<double>{}(queue, "double");
-}
+  check_marray_members_for_type<double>{}("double");
+};
 
-}  // namespace queue_shortcuts_usm_fp64
+}  // namespace marray_members_fp64
