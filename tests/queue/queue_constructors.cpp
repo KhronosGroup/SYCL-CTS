@@ -29,6 +29,10 @@ TEST_CASE("Check queue default constructor and destructor", "[queue]") {
   sycl::queue queue;
 }
 TEST_CASE("Check queue (property_list) constructor", "[queue]") {
+  auto device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
+
   sycl::queue queue(
       sycl::property_list{sycl::property::queue::enable_profiling()});
 
@@ -41,6 +45,9 @@ TEST_CASE("Check queue (async_handler) constructor", "[queue]") {
 }
 
 TEST_CASE("Check queue (async_handler, property_list) constructor", "[queue]") {
+  auto device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   cts_async_handler asyncHandler;
   sycl::queue queue(asyncHandler, {sycl::property::queue::enable_profiling()});
 
@@ -57,6 +64,8 @@ TEST_CASE("Check queue (device_selector) constructor", "[queue]") {
 TEST_CASE("Check queue (device_selector, property_list) constructor",
           "[queue]") {
   cts_selector selector;
+  if (!sycl::device(selector).has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   sycl::queue queue(selector, {sycl::property::queue::enable_profiling()});
 
   CHECK(queue.get_device() == sycl::device(selector));
@@ -77,6 +86,8 @@ TEST_CASE(
     "Check queue (device_selector, async_handler, property_list) constructor",
     "[queue]") {
   cts_selector selector;
+  if (!sycl::device(selector).has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   cts_async_handler asyncHandler;
   sycl::queue queue(selector, asyncHandler,
                     {sycl::property::queue::enable_profiling()});
@@ -95,6 +106,8 @@ TEST_CASE("Check queue (device) constructor", "[queue]") {
 
 TEST_CASE("Check queue (device, property_list) constructor", "[queue]") {
   sycl::device device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   sycl::queue queue(device, {sycl::property::queue::enable_profiling()});
 
   CHECK(queue.get_device() == device);
@@ -113,6 +126,8 @@ TEST_CASE("Check queue (device, async_handler) constructor", "[queue]") {
 TEST_CASE("Check queue (device, async_handler, property_list) constructor",
           "[queue]") {
   sycl::device device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   cts_async_handler asyncHandler;
   sycl::queue queue(device, asyncHandler,
                     {sycl::property::queue::enable_profiling()});
@@ -133,6 +148,8 @@ TEST_CASE("Check queue (context, device_selector) constructor", "[queue]") {
 TEST_CASE("Check queue (context, device_selector, property_list) constructor",
           "[queue]") {
   cts_selector selector;
+  if (!sycl::device(selector).has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   auto context = util::get_cts_object::context(selector);
   sycl::queue queue(context, selector,
                     {sycl::property::queue::enable_profiling()});
@@ -156,6 +173,8 @@ TEST_CASE(
     "Check queue (context, device_selector, async_handler, property_list)",
     "[queue]") {
   cts_selector selector;
+  if (!sycl::device(selector).has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
   auto context = util::get_cts_object::context(selector);
   cts_async_handler asyncHandler;
   sycl::queue queue(context, selector, asyncHandler,

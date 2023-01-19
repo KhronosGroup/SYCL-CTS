@@ -28,9 +28,12 @@ namespace queue_properties {
 using namespace sycl_cts;
 
 TEST_CASE("check property::queue::enable_profiling", "[queue]") {
+  auto device = util::get_cts_object::device();
+  if (!device.has(sycl::aspect::queue_profiling))
+    SKIP("Device does not support queue_profiling");
+
   sycl::queue queue(
-      util::get_cts_object::device(),
-      sycl::property_list{sycl::property::queue::enable_profiling()});
+      device, sycl::property_list{sycl::property::queue::enable_profiling()});
   CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
 
   auto prop = queue.get_property<sycl::property::queue::enable_profiling>();
