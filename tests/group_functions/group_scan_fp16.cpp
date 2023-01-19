@@ -20,9 +20,6 @@
 
 #include "group_scan.h"
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
-static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
 // long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -40,6 +37,9 @@ using ScanTypes = Types;
 
 using HalfType = unnamed_type_pack<sycl::half>;
 using HalfExtendedTypes = concatenation<ScanTypes, sycl::half>::type;
+
+static auto queue = sycl_cts::util::get_cts_object::queue();
+static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
 TEST_CASE("Group and sub-group joint scan functions",
           "[group_func][type_list][fp16][dim]") {

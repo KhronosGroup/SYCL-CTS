@@ -20,24 +20,54 @@
 
 #include "group_broadcast.h"
 
+static auto queue = sycl_cts::util::get_cts_object::queue();
+
 TEMPLATE_TEST_CASE_SIG("Group broadcast", "[group_func][fp16][dim]",
                        ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  // check dimension to only print warning once
+  if constexpr (D == 1) {
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
+#endif
+  }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     broadcast_group<D, sycl::half>(queue);
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
+#endif
 }
 
 TEMPLATE_TEST_CASE_SIG("Sub-group broadcast and select",
                        "[group_func][fp16][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  // check dimension to only print warning once
+  if constexpr (D == 1) {
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
+#endif
+  }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     broadcast_sub_group<D, sycl::half>(queue);
   } else {
     WARN("Device does not support half precision floating point operations.");
   }
+#endif
 }

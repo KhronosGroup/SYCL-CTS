@@ -52,24 +52,30 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
         "std::iterator_traits<Ptr>::value_type joint_reduce(sub_group g, "
         "Ptr first, Ptr last, BinaryOperation binary_op) over sub-groups. "
         "Skipping the test case.");
+#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    WARN(
+        "DPCPP does not implement joint_reduce without init. Skipping the test "
+        "case.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
         "long long int. Skipping the test cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
   // FIXME: DPCPP compile error:
-  //  error: call to function 'joint_reduce' that is neither visible in the
-  //  template definition nor found by argument-dependent lookup
-  //  note: 'joint_reduce' should be declared prior to the call site or in
-  //  namespace 'sycl::ext::oneapi'
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  // check types to only print warning once
-  if constexpr (std::is_same_v<TestType, char>)
-    WARN(
-        "DPCPP does not implement joint_reduce without init. Skipping the test "
-        "case.");
+  //        error: call to function 'joint_reduce' that is neither visible in the
+  //        template definition nor found by argument-dependent lookup
+  //        note: 'joint_reduce' should be declared prior to the call site or in
+  //        namespace 'sycl::ext::oneapi'
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
+    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   // check all work group dimensions
@@ -93,6 +99,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
+#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    WARN(
+        "DPCPP cannot handle cases of different types. "
+        "Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
@@ -100,13 +110,18 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -118,6 +133,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
     init_joint_reduce_group<2, T, U>(queue);
     init_joint_reduce_group<3, T, U>(queue);
   }
+#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
@@ -128,13 +144,23 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
         "long long int. Skipping the test cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // check all work group dimensions
   reduce_over_group<1, TestType>(queue);
   reduce_over_group<2, TestType>(queue);
   reduce_over_group<3, TestType>(queue);
+#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
@@ -155,9 +181,18 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -169,4 +204,5 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
     init_reduce_over_group<2, T, U>(queue);
     init_reduce_over_group<3, T, U>(queue);
   }
+#endif
 }

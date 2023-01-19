@@ -41,10 +41,10 @@ using BroadcastTypes = std::tuple<float, char, int, bool, util::custom_type>;
 using BroadcastTypes = CustomTypes;
 #endif
 
+static auto queue = sycl_cts::util::get_cts_object::queue();
+
 TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
                         BroadcastTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
-
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
@@ -56,19 +56,27 @@ TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
         "ComputeCpp does not implement group_broadcast for vec, marray, "
         "unsigned long long int, and long long int types. Skipping those test "
         "cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // check all work group dimensions
   broadcast_group<1, TestType>(queue);
   broadcast_group<2, TestType>(queue);
   broadcast_group<3, TestType>(queue);
+#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
                         "[group_func][type_list][dim]", BroadcastTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
-
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
@@ -80,11 +88,21 @@ TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
         "ComputeCpp does not implement group_broadcast for vec, marray, "
         "unsigned long long int, and long long int types. Skipping those test "
         "cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // check all work group dimensions
   broadcast_sub_group<1, TestType>(queue);
   broadcast_sub_group<2, TestType>(queue);
   broadcast_sub_group<3, TestType>(queue);
+#endif
 }

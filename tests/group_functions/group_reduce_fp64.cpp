@@ -40,11 +40,11 @@ using DoubleExtendedTypes = concatenation<ReduceTypes, double>::type;
 using prod2 =
     product<std::tuple, DoubleExtendedTypes, DoubleExtendedTypes>::type;
 
+static auto queue = sycl_cts::util::get_cts_object::queue();
+
 // hipSYCL has no implementation over sub-groups
 TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
                        "[group_func][fp64][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
-
   // check dimensions to only print warning once
   if constexpr (D == 1) {
     // FIXME: hipSYCL omission
@@ -58,15 +58,24 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
     WARN(
         "DPCPP does not implement joint_reduce without init. Skipping the test "
         "case.");
+#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+
   // FIXME: DPCPP compile error:
-  //  error: call to function 'joint_reduce' that is neither visible in the
-  //  template definition nor found by argument-dependent lookup
-  //  note: 'joint_reduce' should be declared prior to the call site or in
-  //  namespace 'sycl::ext::oneapi'
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
+  //        error: call to function 'joint_reduce' that is neither visible in the
+  //        template definition nor found by argument-dependent lookup
+  //        note: 'joint_reduce' should be declared prior to the call site or in
+  //        namespace 'sycl::ext::oneapi'
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
+    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp64)) {
@@ -79,8 +88,6 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
                         "[group_func][type_list][fp64][dim]", prod2) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
-
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
@@ -92,6 +99,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
+#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    WARN(
+        "DPCPP cannot handle cases of different types. "
+        "Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
@@ -99,13 +110,19 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // check all work group dimensions
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -125,23 +142,36 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
           "operations.");
     }
   }
+#endif
 }
 
 TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions",
                        "[group_func][fp64][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  // check dimension to only print warning once
+  if constexpr (D == 1) {
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
+#endif
+  }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     reduce_over_group<D, double>(queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
+#endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
                         "[group_func][type_list][fp64][dim]", prod2) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
-
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
@@ -158,9 +188,18 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
+    WARN(
+        "ComputeCpp fails to compile with segfault in the compiler. "
+        "Skipping the test.");
 #endif
   }
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
@@ -178,4 +217,5 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
+#endif
 }

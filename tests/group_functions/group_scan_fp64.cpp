@@ -20,9 +20,6 @@
 
 #include "group_scan.h"
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
-static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
 // long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -40,6 +37,9 @@ using ScanTypes = Types;
 
 using DoubleType = unnamed_type_pack<double>;
 using DoubleExtendedTypes = concatenation<ScanTypes, double>::type;
+
+static auto queue = sycl_cts::util::get_cts_object::queue();
+static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
 TEST_CASE("Group and sub-group joint scan functions",
           "[group_func][type_list][fp64][dim]") {
@@ -119,11 +119,24 @@ TEST_CASE("Group and sub-group joint scan functions with init",
 }
 
 TEST_CASE("Group and sub-group scan functions", "[group_func][fp64][dim]") {
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  WARN(
+      "ComputeCpp fails to compile with segfault in the compiler. "
+      "Skipping the test.");
+#endif
+
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     for_all_combinations<invoke_scan_over_group>(Dims, DoubleType{}, queue);
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
+#endif
 }
 
 TEST_CASE("Group and sub-group scan functions with init",
@@ -143,8 +156,17 @@ TEST_CASE("Group and sub-group scan functions with init",
   WARN(
       "ComputeCpp cannot handle cases of different types for T and V. Skipping "
       "such test cases.");
+  WARN(
+      "ComputeCpp fails to compile with segfault in the compiler. "
+      "Skipping the test.");
 #endif
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
@@ -158,4 +180,5 @@ TEST_CASE("Group and sub-group scan functions with init",
   } else {
     WARN("Device does not support double precision floating point operations.");
   }
+#endif
 }

@@ -108,9 +108,19 @@ TEST_CASE("Group and sub-group scan functions",
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
       "long long int. Skipping the test cases.");
+  WARN(
+      "ComputeCpp fails to compile with segfault in the compiler. "
+      "Skipping the test.");
 #endif
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
   for_all_combinations<invoke_scan_over_group>(Dims, ScanTypes{}, queue);
+#endif
 }
 
 TEST_CASE("Group and sub-group scan functions with init",
@@ -130,10 +140,18 @@ TEST_CASE("Group and sub-group scan functions with init",
   WARN(
       "ComputeCpp cannot handle cases of different types for T and V. Skipping "
       "such test cases.");
+  WARN(
+      "ComputeCpp fails to compile with segfault in the compiler. "
+      "Skipping the test.");
 #endif
 
+  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
+  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
+  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
+#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   for_all_combinations<invoke_init_scan_over_group_same_type>(Dims, ScanTypes{},
                                                               queue);
