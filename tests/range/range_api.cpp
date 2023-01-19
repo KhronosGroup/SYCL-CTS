@@ -119,7 +119,9 @@ void test_range_kernels(
 
   // friend range operatorOP(const range& rhs)
   UNARY_INDEX_KERNEL_TEST(+, range, tmp);
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   UNARY_INDEX_KERNEL_TEST(-, range, tmp);
+#endif
 
   // friend range& operatorOP(range& rhs)
   PREFIX_INDEX_KERNEL_TEST(++, range, tmp);
@@ -224,6 +226,10 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
+      log.note(
+          "ComputeCpp does not implement unary minus operation. "
+          "Skipping this test case.");
+
       // use across all the dimensions
       auto my_queue = util::get_cts_object::queue();
       // templated approach
