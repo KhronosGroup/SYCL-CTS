@@ -25,7 +25,7 @@ class legacy_iterator_requirement {
   static constexpr size_t count_of_possible_errors = 12;
 
  private:
-  error_messages_container<count_of_possible_errors> m_test_error_messages;
+  error_codes_container<count_of_possible_errors> m_test_error_codes;
 
  public:
   /**
@@ -33,72 +33,66 @@ class legacy_iterator_requirement {
    * verification
    *
    * @tparam It Type of iterator for verification
-   * @return std::pair<bool,array<string_view>> First represents
+   * @return std::pair<bool,array<int>> First represents
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  std::pair<bool, std::array<string_view, count_of_possible_errors>>
+  std::pair<bool, std::array<int, count_of_possible_errors>>
   is_satisfied_for() {
     if (!std::is_copy_constructible_v<It>) {
-      m_test_error_messages.add_error("Iterator must be copy constructable.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_0);
     }
 
     if (!std::is_copy_assignable_v<It>) {
-      m_test_error_messages.add_error("Iterator must be copy assignable.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_1);
     }
 
     if (!std::is_destructible_v<It>) {
-      m_test_error_messages.add_error("Iterator must be destructible.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_2);
     }
 
     if (!std::is_swappable_v<It>) {
-      m_test_error_messages.add_error("Iterator must be swappable.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_3);
     }
 
     if (!type_traits::has_field::value_type_v<It>) {
-      m_test_error_messages.add_error(
-          "Iterator must have value_type member typedef.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_4);
     }
 
     if (!type_traits::has_field::difference_type_v<It>) {
-      m_test_error_messages.add_error(
-          "Iterator must have difference_type member typedef.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_5);
     }
 
     if (!type_traits::has_field::reference_v<It>) {
-      m_test_error_messages.add_error(
-          "Iterator must have reference member typedef.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_6);
     }
 
     if (!type_traits::has_field::pointer_v<It>) {
-      m_test_error_messages.add_error(
-          "Iterator must have pointer member typedef.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_7);
     }
 
     if (!type_traits::has_field::iterator_category_v<It>) {
-      m_test_error_messages.add_error(
-          "Iterator must have iterator_category member typedef.");
+      m_test_error_codes.add_error(legacy_iterator::error_code_8);
     }
 
     if (!type_traits::has_arithmetic::pre_increment_v<It>) {
-      m_test_error_messages.add_error("Iterator must have operator++().");
+      m_test_error_codes.add_error(legacy_iterator::error_code_9);
     }
 
     if constexpr (type_traits::has_arithmetic::pre_increment_v<It>) {
       if (!std::is_same_v<decltype(++std::declval<It&>()), It&>) {
-        m_test_error_messages.add_error(
-            "Iterator must return It& after usage of operator++().");
+        m_test_error_codes.add_error(legacy_iterator::error_code_10);
       }
     }
 
     if (!is_dereferenceable_v<It>) {
-      m_test_error_messages.add_error("Iterator must have operator*().");
+      m_test_error_codes.add_error(legacy_iterator::error_code_11);
     }
 
-    const bool is_satisfied = !m_test_error_messages.has_errors();
+    const bool is_satisfied = !m_test_error_codes.has_errors();
     // According to spec std::pair with device_copyable types(in this case:
-    // bool, string_view) can be used on device side
-    return std::make_pair(is_satisfied, m_test_error_messages.get_array());
+    // bool, int) can be used on device side
+    return std::make_pair(is_satisfied, m_test_error_codes.get_array());
   }
 };
 }  // namespace named_requirement_verification

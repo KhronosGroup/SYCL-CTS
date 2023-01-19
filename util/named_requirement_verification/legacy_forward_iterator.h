@@ -33,7 +33,7 @@ class legacy_forward_iterator_requirement {
       legacy_output_iterator_requirement::count_of_possible_errors + 10;
 
  private:
-  error_messages_container<count_of_possible_errors> m_test_error_messages;
+  error_codes_container<count_of_possible_errors> m_test_error_codes;
 
  public:
   /**
@@ -41,17 +41,17 @@ class legacy_forward_iterator_requirement {
    * verification
    *
    * @tparam It Type of iterator for verification
-   * @return std::pair<bool,array<string_view>> First represents
+   * @return std::pair<bool,array<int>> First represents
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for(It valid_iterator) {
+  std::pair<bool, std::array<int, count_of_possible_errors>> is_satisfied_for(
+      It valid_iterator) {
     auto legacy_input_iterator_res =
         legacy_input_iterator_requirement{}.is_satisfied_for<It>(
             valid_iterator);
     if (!legacy_input_iterator_res.first) {
-      m_test_error_messages.add_errors(legacy_input_iterator_res.second);
+      m_test_error_codes.add_errors(legacy_input_iterator_res.second);
     }
 
     constexpr bool is_dereferenceable = is_dereferenceable_v<It>;
@@ -68,8 +68,7 @@ class legacy_forward_iterator_requirement {
     constexpr bool is_def_constructable = std::is_default_constructible_v<It>;
 
     if (!is_def_constructable) {
-      m_test_error_messages.add_error(
-          "Iterator must be default constructible.");
+      m_test_error_codes.add_error(legacy_forward_iterator::error_code_0);
     }
 
     using it_traits = std::iterator_traits<It>;
@@ -83,37 +82,29 @@ class legacy_forward_iterator_requirement {
       if (is_output_iterator_req_satisfied) {
         if (!std::is_same_v<T&, typename it_traits::reference> &&
             !std::is_same_v<T&&, typename it_traits::reference>) {
-          m_test_error_messages.add_error(
-              "Provided iterator satisfy to LegacyOutputIterator requirement. "
-              "iterator_traits::reference must be T& or T&&.");
+          m_test_error_codes.add_error(legacy_forward_iterator::error_code_1);
         }
       } else {
         if (!std::is_same_v<const T&, typename it_traits::reference> &&
             !std::is_same_v<const T&&, typename it_traits::reference>) {
-          m_test_error_messages.add_error(
-              "Provided iterator not satisfy to LegacyOutputIterator "
-              "requirement. iterator_traits::reference must be const T& or "
-              "const T&&.");
+          m_test_error_codes.add_error(legacy_forward_iterator::error_code_2);
         }
       }
     }
 
     if constexpr (can_post_increment) {
       if (!std::is_same_v<decltype(std::declval<It&>()++), It>) {
-        m_test_error_messages.add_error("operator++(int) must return It.");
+        m_test_error_codes.add_error(legacy_forward_iterator::error_code_3);
       }
     } else {
-      m_test_error_messages.add_error(
-          "Iterator doesn't have implemented operator++(int)");
+      m_test_error_codes.add_error(legacy_forward_iterator::error_code_4);
     }
 
     if constexpr (can_post_increment && is_dereferenceable &&
                   has_reference_member) {
       if (!std::is_convertible_v<decltype(*(std::declval<It&>()++)),
                                  typename it_traits::reference>) {
-        m_test_error_messages.add_error(
-            "Expression *i++ must be convertible to "
-            "iterator_traits::reference.");
+        m_test_error_codes.add_error(legacy_forward_iterator::error_code_5);
       }
     }
 
@@ -124,20 +115,15 @@ class legacy_forward_iterator_requirement {
         It a = valid_iterator;
         It b = valid_iterator;
         if (*a != *b) {
-          m_test_error_messages.add_error(
-              "If a and b compare equal (a == b) then *a and *b "
-              "are references bound to the same object.");
+          m_test_error_codes.add_error(legacy_forward_iterator::error_code_6);
         }
 
         if (a != b) {
-          m_test_error_messages.add_error(
-              "If *a and *b refer to the same object, then a == b equals "
-              "true.");
+          m_test_error_codes.add_error(legacy_forward_iterator::error_code_7);
         }
 
         if (++a != ++b) {
-          m_test_error_messages.add_error(
-              "If a == b equals true then ++a == ++b also equals true.");
+          m_test_error_codes.add_error(legacy_forward_iterator::error_code_8);
         }
       }
 
@@ -153,18 +139,16 @@ class legacy_forward_iterator_requirement {
           It zero_pos_it = valid_iterator;
           ++zero_pos_it;
           if (zero_pos_value != *valid_iterator) {
-            m_test_error_messages.add_error(
-                "Incrementing copy of iterator instance must not affect "
-                "on the value read from original object.");
+            m_test_error_codes.add_error(legacy_forward_iterator::error_code_9);
           }
         }
       }
     }
 
-    const bool is_satisfied = !m_test_error_messages.has_errors();
+    const bool is_satisfied = !m_test_error_codes.has_errors();
     // According to spec std::pair with device_copyable types(in this case:
-    // bool, string_view) can be used on device side
-    return std::make_pair(is_satisfied, m_test_error_messages.get_array());
+    // bool, int) can be used on device side
+    return std::make_pair(is_satisfied, m_test_error_codes.get_array());
   }
 };
 }  // namespace named_requirement_verification
