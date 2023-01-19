@@ -1,0 +1,182 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for common reference semantics
+
+This is a test plan for the common reference semantics as described in Section 4.5.2. of the SYCL 2020 specification. The estimated development time is two days.
+
+== Testing scope
+
+No negative test are included.
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+The common reference semantics are defined for the following runtime classes in the `sycl` namespace (Section 4.5.2.):
+`accessor`, `buffer`, `context`, `device`, `device_image`, `event`, `host_accessor`, `host_sampled_image_accessor`, `host_unsampled_image_accessor`, `kernel`, `kernel_id`, `kernel_bundle`, `local_accessor`, `platform`, `queue`, `sampled_image`, `sampled_image_accessor`, `stream`, `unsampled_image`, and `unsampled_image_accessor`.
+
+Of these, the following classes are legal kernel parameter types (Section 4.12.4.): `accessor` (when templated with `target::device` or the deprecated `target::global_buffer`, `target::constant_buffer`, or `target::local`), `local_accessor`, `unsampled_image_accessor` (when templated with `image_target::device`), `sampled_image_accessor` (when templated with `image_target::device`), `stream`.
+
+The following "host types" are identified:
+
+- `accessor<int, 1, access_mode::read_write, target::host_task>`
+- `buffer<int>`
+- `context`
+- `device`
+- `device_image<bundle_state::executable>`
+- `event`
+- `host_accessor<int>`
+- `host_sampled_image_accessor<int, 1>`
+- `host_unsampled_image_accessor<int>`
+- `kernel`
+- `kernel_id`
+- `kernel_bundle<bundle_state::executable>`
+- `platform`
+- `queue`
+- `sampled_image`
+- `unsampled_image`
+
+The following "kernel types" are identified:
+
+- `accessor<int, 1, access_mode::read_write, target::device>`
+- `local_accessor<int, 0>`
+- `unsampled_image_accessor<int, 1, access_mode::read>`
+- `sampled_image_accessor<int, 1>`
+- `stream`
+
+=== Host application tests
+
+These tests are run from a host application for all host types and kernel types.
+
+==== Equality via copy, symmetry
+
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Check that `t0 == t1` and `t1 == t0`.
+4. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t1)`.
+
+==== Non-equality via copy, symmetry
+
+This test is not executed for: `device_image`, `device` if only one device is available and `platform` if only one platform is available. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create an instance `t1` of `T`, which is distinct from `t0`.
+3. Check that `t0 != t1` and `t1 != t0`.
+4. Check that `std::hash<T>{}(t0) != std::hash<T>{}(t1)`.
+
+==== Reflexivity
+
+For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Check that `t0 == t0`.
+3. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t0)`.
+
+==== Transitivity
+
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Create a copy of `t0`, `t1`.
+3. Create a copy of `t1`, `t2`.
+4. Check that `t0 == t2` and `t2 == t0`.
+5. Check that `std::hash<T>{}(t0) == std::hash<T>{}(t2)`.
+
+=== Shared tests
+
+The tests in this section tests are run from a host application for all host types and kernel types, and from a kernel function for all kernel types.
+
+The tests below assert equality without the equality operator, such that they may also be executed in a kernel function. The "state" denotes the results of calling member functions of an object.
+
+==== Type traits
+
+For class `T`, check that the following statements evaluate to `true`.
+
+- `std::is_copy_constructible_v<T>`.
+- `std::is_copy_assignable_v<T>`
+- `std::is_destructible_v<T>`
+- `std::is_move_constructible_v<T>`
+- `std::is_move_assignable_v<T>`
+
+==== Copy
+
+This test is repeated for the copy constructor and for copy assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the state of `t0`.
+3. Create a copy of `t0`, `t1`.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
+
+==== Move
+
+This test is repeated for the move constructor and for move assignment. For class `T`:
+
+1. Create an instance `t0` of `T`.
+2. Store the state of `t0`.
+3. Move `t0` to `t1`.
+4. Check that the state of `t1` is the same as the state stored in Step 2.
+
+=== Implementation notes
+The tests in this plan replace `common/common_by_reference.h` and its usages (in `kernel_id_common_reference_semantics.cpp`). The test will be implemented in a `common` header, and be executed from implementation files located in the types' respective directories. The tests in `accessor_legacy` and `event` will be rewritten to use this common header.
+
+=== Propagation of mutations
+
+The tests below tests specify a "mutation" of an instance `T`. This means to change an instance such that the change can be detected in a copy of that instance. This is only possible for the following types:
+
+- `accessor<int, 1, access_mode::read_write, target::host_task>` by writing to the accessor (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `accessor<int, 1, access_mode::read_write, target::device>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `buffer<int>` by obtaining an accessor and writing to the accessor (in the host application):
+* mutation: create an accessor, write to the accessor.
+* detection: create an accessor, read from the accessor.
+- `event` (in the host application): an event `e0` can be created by scheduling a command group with a host task that waits for a future value to become available. Event `e0` can be resolved by making this value available. Event `e1` is created by scheduling a command group that depends on an event `e0`.
+* mutation: resolve the event `e0` which is in the wait list of `e1`.
+* detection: query the size of the wait list of `e1`.
+- `host_accessor` (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `host_unsampled_image_accessor<int>` (in the host application):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `local_accessor<int, 0>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+- `unsampled_image` (in the host application):
+* mutation: create an accessor, write to the accessor.
+* detection: create an accessor, read from the accessor.
+- `unsampled_image_accessor<int, 1, access_mode::read>` (in a kernel function):
+* mutation: write to the accessor.
+* detection: read from the accessor.
+
+==== Mutation to copy
+
+1. Create an instance `t0` of `T`.
+2. Make a copy of `t0`, `t1`.
+3. Mutate `t1`.
+4. Check that `t0` has been changed accordingly.
+
+==== Mutation to original
+
+1. Create an instance `t0` of `T`.
+2. Make a copy of `t0`, `t1`.
+3. Mutate `t0`.
+4. Check that `t1` has been changed accordingly.
+
+==== Mutation to original with `const` copy
+
+1. Create an instance `t0` of `T`.
+2. Make a `const` copy of `t0`, `t1`.
+3. Mutate `t0`.
+4. Check that `t1` has been changed accordingly.
