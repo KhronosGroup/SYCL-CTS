@@ -232,4 +232,8 @@ TEST_CASE("Test hashing", "[kernel]") {
   ctsQueue.wait_and_throw();
 }
 
+TEST_CASE("Test default constructor is deleted", "[kernel]") {
+  STATIC_CHECK(!std::is_default_constructible_v<sycl::kernel>);
+}
+
 } /* namespace kernel_constructors__ */

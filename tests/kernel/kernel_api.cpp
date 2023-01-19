@@ -44,6 +44,10 @@ TEST_CASE("kernel api test", "[kernel]") {
   // Check get_context()
   auto cxt = kernel.get_context();
   check_return_type<sycl::context>(cxt, "sycl::kernel::get_context()");
+
+  // Check get_backend()
+  auto backend = kernel.get_backend();
+  check_return_type<sycl::backend>(backend, "sycl::kernel::get_backend()");
 };
 
 } /* namespace kernel_api__ */

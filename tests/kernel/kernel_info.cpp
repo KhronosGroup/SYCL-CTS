@@ -92,6 +92,36 @@ TEST_CASE("kernel info test", "[kernel]") {
                             "sycl::kernel::get_info<sycl::info::kernel_device_"
                             "specific::work_group_size>(dev)");
 
+  auto maxNumSubGroupsRet =
+      kernel.get_info<sycl::info::kernel_device_specific::max_num_sub_groups>(
+          dev);
+  check_return_type<uint32_t>(maxNumSubGroupsRet,
+                              "sycl::kernel::get_info<sycl::info::kernel_"
+                              "device_specific::max_num_sub_groups>(dev)");
+
+  auto compileNumSubGroupsRet =
+      kernel
+          .get_info<sycl::info::kernel_device_specific::compile_num_sub_groups>(
+              dev);
+  check_return_type<uint32_t>(compileNumSubGroupsRet,
+                              "sycl::kernel::get_info<sycl::info::kernel_"
+                              "device_specific::compile_num_sub_groups>(dev)");
+
+  auto maxSubGroupSizeRet =
+      kernel.get_info<sycl::info::kernel_device_specific::max_sub_group_size>(
+          dev);
+  check_return_type<uint32_t>(maxSubGroupSizeRet,
+                              "sycl::kernel::get_info<sycl::info::kernel_"
+                              "device_specific::max_sub_group_size>(dev)");
+
+  auto compileSubGroupSize =
+      kernel
+          .get_info<sycl::info::kernel_device_specific::compile_sub_group_size>(
+              dev);
+  check_return_type<uint32_t>(maxNumSubGroupsRet,
+                              "sycl::kernel::get_info<sycl::info::kernel_"
+                              "device_specific::compile_sub_group_size>(dev)");
+
 // FIXME: Reenable when struct information descriptors are implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   check_get_info_param<sycl::info::kernel::num_args, uint32_t>(kernel);
