@@ -41,6 +41,9 @@ TEST_CASE(
   const std::vector<sycl::kernel_id> builtinKernelIds =
       device.get_info<sycl::info::device::built_in_kernel_ids>();
 
+  if (builtinKernelIds.empty())
+    SKIP("No built-in kernels available for selected device.");
+
   CHECK(sycl::is_compatible(builtinKernelIds, device));
 }
 
@@ -63,8 +66,9 @@ TEST_CASE(
       }
     }
   }
-  if (!builtinKernelIds.empty())
-    CHECK(!sycl::is_compatible(builtinKernelIds, device));
+  if (builtinKernelIds.empty())
+    SKIP("No built-in kernels available for non-tested devices.");
+  CHECK(!sycl::is_compatible(builtinKernelIds, device));
 }
 
 template <typename KernelDescriptorT>
