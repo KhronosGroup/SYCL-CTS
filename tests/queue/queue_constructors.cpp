@@ -21,6 +21,7 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 
 namespace queue_constructors {
 
@@ -254,8 +255,9 @@ TEST_CASE("Check queue hashing", "[queue]") {
   CHECK(hasher(queueA) == hasher(queueB));
 }
 
-TEST_CASE("Check exceptions thrown for mismatched context and device",
-          "[queue]") {
+// FIXME: re-enable when sycl::errc is implemented in computcpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("Check exceptions thrown for mismatched context and device", "[queue]")({
   cts_selector selector;
   const sycl::device device(selector);
   sycl::device otherDevice = device;
@@ -297,6 +299,6 @@ TEST_CASE("Check exceptions thrown for mismatched context and device",
                          sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
-}
+});
 
 } /* namespace queue_constructors */

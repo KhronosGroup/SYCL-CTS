@@ -20,6 +20,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 
 #define TEST_NAME queue_properties
 
@@ -38,7 +39,9 @@ void check_in_order_prop(const sycl::queue &queue) {
       "sycl::queue::has_property<sycl::property::queue::"
       "in_order>()");
 }
-
+// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
+// implemented in computcpp
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
 void check_in_order_functionality(sycl::queue &queue) {
   bool *data_changed = sycl::malloc_device<bool>(1, queue);
   constexpr size_t buffer_size = 10;
@@ -76,7 +79,7 @@ void check_in_order_functionality(sycl::queue &queue) {
   }
   CHECK(result);
 }
-
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
 void check_in_order(sycl::queue &queue) {
   check_in_order_prop(queue);
 
@@ -113,7 +116,10 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
   check_enable_profiling_prop(queue);
 }
 
-TEST_CASE("check property::queue::in_order", "[queue]") {
+// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
+// implemented in computcpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("check property::queue::in_order", "[queue]")({
   cts_async_handler asyncHandler;
   cts_selector selector;
   auto context = util::get_cts_object::context(selector);
@@ -171,7 +177,7 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
-}
+});
 
 TEST_CASE("check both queue properties in_order and enable_profiling",
           "[queue]") {
