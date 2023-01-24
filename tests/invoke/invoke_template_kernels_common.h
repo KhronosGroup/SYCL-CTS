@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ class templated_functor {
   void operator()() const { m_out[0] = m_in[0]; }
 };
 
+
 template <typename T>
 bool test_kernel_functor(T in_value, sycl::queue &sycl_queue) {
   T input = in_value, output = 0;
@@ -55,7 +56,7 @@ bool test_kernel_functor(T in_value, sycl::queue &sycl_queue) {
       auto access_output =
           buffer_output.template get_access<sycl::access_mode::write>(cgh);
       templated_functor<T> kernel(access_input, access_output);
-      cgh.single_task(kernel);
+      cgh.single_task<templated_functor<T>>(kernel);
     });
   }
   return input == output;

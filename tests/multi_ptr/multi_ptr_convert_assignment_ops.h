@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for multi_ptr convert assignment operators
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides code for multi_ptr convert assignment operators
 
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_CONVERT_ASSIGN_OPS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_CONVERT_ASSIGN_OPS_H
@@ -15,6 +29,14 @@
 #include "multi_ptr_common.h"
 
 namespace multi_ptr_convert_assignment_ops {
+
+template <typename T, typename SrcAddrSpaceT, typename SrcIsDecorated,
+          typename DstIsDecorated>
+class kernel_convert_assignment_op_copy;
+
+template <typename T, typename SrcAddrSpaceT, typename SrcIsDecorated,
+          typename DstIsDecorated>
+class kernel_convert_assignment_op_move;
 
 constexpr int expected_val = 42;
 
@@ -53,6 +75,8 @@ class run_convert_assignment_operators_tests {
         sycl::buffer<bool> res_buf(&res, r);
         sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
+          using kname = kernel_convert_assignment_op_copy<
+              T, SrcAddrSpaceT, SrcIsDecorated, DstIsDecorated>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           auto acc_for_mptr =
@@ -62,7 +86,7 @@ class run_convert_assignment_operators_tests {
                         sycl::access::address_space::global_space) {
             auto val_acc =
                 val_buffer.template get_access<sycl::access_mode::read>(cgh);
-            cgh.single_task([=] {
+            cgh.single_task<kname>([=] {
               const src_multi_ptr_t mptr_in(acc_for_mptr);
               dst_multi_ptr_t mptr_out;
 
@@ -73,7 +97,7 @@ class run_convert_assignment_operators_tests {
             });
           } else {
             sycl::local_accessor<T> local_acc(r, cgh);
-            cgh.parallel_for(
+            cgh.parallel_for<kname>(
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
                   if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {
@@ -124,6 +148,8 @@ class run_convert_assignment_operators_tests {
         sycl::buffer<bool> res_buf(&res, r);
         sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
+          using kname = kernel_convert_assignment_op_move<
+              T, SrcAddrSpaceT, SrcIsDecorated, DstIsDecorated>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
 
@@ -131,7 +157,7 @@ class run_convert_assignment_operators_tests {
                         sycl::access::address_space::global_space) {
             auto val_acc =
                 val_buffer.template get_access<sycl::access_mode::read>(cgh);
-            cgh.single_task([=] {
+            cgh.single_task<kname>([=] {
               const src_multi_ptr_t mptr_in(val_acc);
               dst_multi_ptr_t mptr_out;
 
@@ -142,7 +168,7 @@ class run_convert_assignment_operators_tests {
             });
           } else {
             sycl::local_accessor<T> local_acc(r, cgh);
-            cgh.parallel_for(
+            cgh.parallel_for<kname>(
                 sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
                   if constexpr (src_space ==
                                 sycl::access::address_space::local_space) {

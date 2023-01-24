@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for multi_ptr local_accessor constructors
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides tests for multi_ptr local_accessor constructors
+
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_LOCAL_ACCESSOR_CONSTRUCTORS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_LOCAL_ACCESSOR_CONSTRUCTORS_H
 
@@ -13,6 +28,9 @@
 #include "multi_ptr_common.h"
 
 namespace multi_ptr_local_accessor_constructors {
+
+template <typename T, typename AddrSpaceT, typename DimensionT>
+class kernel_local_accessor_constructor;
 
 constexpr int expected_val = 42;
 
@@ -36,10 +54,11 @@ class run_local_accessor_cnstr_tests {
       {
         sycl::buffer<bool, 1> res_buf(&res, sycl::range<1>(1));
         queue.submit([&](sycl::handler &cgh) {
+          using kname = kernel_local_accessor_constructor<T, AddrSpaceT, DimensionT>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           sycl::local_accessor<T, dims> acc(r, cgh);
-          cgh.parallel_for(sycl::nd_range<dims>(r, r),
+          cgh.parallel_for<kname>(sycl::nd_range<dims>(r, r),
                            [=](sycl::nd_item<dims> item) {
                              auto &ref = acc[sycl::id<dims>()];
                              value_operations::assign(ref, expected_val);

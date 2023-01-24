@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -160,6 +160,7 @@ public:
   }
 };
 
+
 /** @brief Used to test the local accessor combinations for n > 0 dimensions
  */
 template <typename T, typename kernelName, size_t dims>
@@ -175,8 +176,7 @@ public:
      */
     {
       constexpr auto target = sycl::target::local;
-      using verifier =
-          check_all_accessor_constructors_local<T, dims, target>;
+      using verifier = check_all_accessor_constructors_local<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_local<T, dims, target>;
 
@@ -202,7 +202,7 @@ public:
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::local>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -221,8 +221,7 @@ class local_accessor_dims<T, kernelName, 0> {
     {
       constexpr auto target = sycl::target::local;
       constexpr size_t dims = 0;
-      using verifier =
-          check_all_accessor_constructors_local<T, dims, target>;
+      using verifier = check_all_accessor_constructors_local<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_local<T, dims, target>;
 
@@ -248,7 +247,7 @@ class local_accessor_dims<T, kernelName, 0> {
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::local>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }

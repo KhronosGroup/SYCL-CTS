@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -221,6 +221,11 @@ template <class T>
 using flip_signedness_t =
     typename flip_signedness_helper<T, std::is_integral<T>::value>::type;
 
+template <typename T, int size, int dims, typename alloc,
+          sycl::access_mode access_mode,
+          sycl::target target>
+class kernel_buffer_accessor_type;
+
 /**
  * Generic buffer API test function
  */
@@ -319,27 +324,28 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
-      auto acc =
-          buf.template get_access<sycl::access_mode::read_write>(cgh);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::device>>(
+      using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
+                                                sycl::access_mode::read_write,
+                                                sycl::target::device>;
+      auto acc = buf.template get_access<sycl::access_mode::read_write>(cgh);
+      check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                       sycl::target::device>>(
           log, acc, "sycl::buffer::get_access<read_write>(handler&)");
-      cgh.single_task(empty_kernel());
+      cgh.single_task<kname>(empty_kernel());
     });
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
-      auto acc =
-          buf.template get_access<sycl::access_mode::read,
-                                  sycl::target::constant_buffer>(
-              cgh);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read,
-                             sycl::target::constant_buffer>>(
+      using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
+                                                sycl::access_mode::read,
+                                                sycl::target::constant_buffer>;
+      auto acc = buf.template get_access<sycl::access_mode::read,
+                                         sycl::target::constant_buffer>(cgh);
+      check_return_type<sycl::accessor<T, dims, sycl::access_mode::read,
+                                       sycl::target::constant_buffer>>(
           log, acc,
           "sycl::buffer::get_access<read, constant_buffer>(handler&)");
-      cgh.single_task(empty_kernel());
+      cgh.single_task<kname>(empty_kernel());
     });
 
     /* check the buffer returns the correct type of accessor */
@@ -355,15 +361,17 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
-      auto acc = buf.template get_access<sycl::access_mode::read_write>(
-          cgh, r, offset);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::device>>(
+      using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
+                                                sycl::access_mode::read_write,
+                                                sycl::target::device>;
+      auto acc = buf.template get_access<sycl::access_mode::read_write>(cgh, r,
+                                                                        offset);
+      check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                       sycl::target::device>>(
           log, acc,
           "sycl::buffer::get_access<read_write, device>(handler&, "
           "range<>, id<>)");
-      cgh.single_task(empty_kernel());
+      cgh.single_task<kname>(empty_kernel());
     });
 
     /* check the buffer returns the correct type of accessor */

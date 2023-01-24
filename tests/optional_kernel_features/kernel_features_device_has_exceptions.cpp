@@ -2,10 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for the exception that are thrown by [[sycl::device_has]]
-//  attribute.
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides tests for the exception that are thrown by [[sycl::device_has]]
+//  attribute.
 
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
@@ -19,6 +33,9 @@ using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
 
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_feature;
+
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel that uses the tested feature but does not have any attribute "
  "[[sycl::device_has()]]",
@@ -27,6 +44,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname = kernel_use_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -47,8 +65,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
       USE_FEATURE(FeatureTypeT);
     };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -59,9 +78,12 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        NO_ATTRIBUTE, USE_FEATURE(FeatureTypeT));
+                        NO_ATTRIBUTE, kname, USE_FEATURE(FeatureTypeT));
   }
 });
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_feature_function_non_decorated;
 
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel that calls a function that uses the tested feature. Neither the "
@@ -71,6 +93,8 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname =
+      kernel_use_feature_function_non_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -93,8 +117,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
       use_feature_function_non_decorated<FeatureTypeT>();
     };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -105,12 +130,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        NO_ATTRIBUTE,
+                        NO_ATTRIBUTE, kname,
                         use_feature_function_non_decorated<FeatureTypeT>());
   }
 });
 
 #ifdef SYCL_EXTERNAL
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_feature_function_external_decorated;
+
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel does not have the attribute [[sycl::device_has()]] but it "
  "calls a SYCL_EXTERNAL function which uses the tested feature. The "
@@ -122,6 +151,8 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname = kernel_use_feature_function_external_decorated<FeatureTypeT,
+                                                               FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -144,8 +175,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
     };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -158,12 +190,15 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(
-        is_exception_expected, expected_errc, queue, NO_ATTRIBUTE,
+        is_exception_expected, expected_errc, queue, NO_ATTRIBUTE, kname,
         use_feature_function_external_decorated<FeatureTypeT,
                                                 FeatureAspectT>());
   }
 });
 #endif
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_dummy_function_non_decorated;
 
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel does not use the tested feature but is decorated with the "
@@ -173,6 +208,8 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname =
+      kernel_dummy_function_non_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -188,17 +225,18 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
     const auto lambda_no_arg = []() [[sycl::device_has(FeatureAspectT)]] {
       dummy_function_non_decorated();
     };
-    const auto lambda_item_arg =
-        [](sycl::item<1>) [[sycl::device_has(FeatureAspectT)]] {
-      dummy_function_non_decorated();
-    };
-    const auto lambda_group_arg =
-        [](sycl::group<1>) [[sycl::device_has(FeatureAspectT)]] {
-      dummy_function_non_decorated();
-    };
+    const auto lambda_item_arg = [](sycl::item<1>)
+                                     [[sycl::device_has(FeatureAspectT)]] {
+                                       dummy_function_non_decorated();
+                                     };
+    const auto lambda_group_arg = [](sycl::group<1>)
+                                      [[sycl::device_has(FeatureAspectT)]] {
+                                        dummy_function_non_decorated();
+                                      };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -209,10 +247,13 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        [[sycl::device_has(FeatureAspectT)]],
+                        [[sycl::device_has(FeatureAspectT)]], kname,
                         dummy_function_non_decorated());
   }
 });
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_dummy_function_decorated;
 
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel that calls a function which is decorated with the feature's "
@@ -223,6 +264,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname = kernel_dummy_function_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -245,8 +287,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
       dummy_function_decorated<FeatureAspectT>();
     };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -257,10 +300,13 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        NO_ATTRIBUTE,
+                        NO_ATTRIBUTE, kname,
                         dummy_function_decorated<FeatureAspectT>());
   }
 });
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_feature_function_decorated;
 
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel that calls a function which is decorated with the feature's "
@@ -271,6 +317,8 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname =
+      kernel_use_feature_function_decorated<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -293,8 +341,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
       use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
     };
 
-    run_separate_lambda(is_exception_expected, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
+                               lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -306,10 +355,13 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(
-        is_exception_expected, expected_errc, queue, NO_ATTRIBUTE,
+        is_exception_expected, expected_errc, queue, NO_ATTRIBUTE, kname,
         use_feature_function_decorated<FeatureTypeT, FeatureAspectT>());
   }
 });
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_another_feature;
 
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
 ("Kernel with tested feature but with attribute [[sycl::device_has()]] "
@@ -319,6 +371,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname = kernel_use_another_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -344,15 +397,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
     };
     const auto lambda_item_arg =
         [](sycl::item<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
-      USE_FEATURE(FeatureTypeT);
-    };
+          USE_FEATURE(FeatureTypeT);
+        };
     const auto lambda_group_arg =
         [](sycl::group<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
-      USE_FEATURE(FeatureTypeT);
-    };
+          USE_FEATURE(FeatureTypeT);
+        };
 
-    run_separate_lambda(other_feature_exception_expect, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(other_feature_exception_expect, expected_errc,
+                               queue, lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -364,12 +418,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
 
   {
     RUN_SUBMISSION_CALL(other_feature_exception_expect, expected_errc, queue,
-                        [[sycl::device_has(AnotherFeatureAspect)]],
+                        [[sycl::device_has(AnotherFeatureAspect)]], kname,
                         USE_FEATURE(FeatureTypeT));
   }
 });
 
 #ifdef SYCL_EXTERNAL
+
+template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
+class kernel_use_feature_function_external_decorated_with_attr;
+
 DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
 ("Kernel with attribute [[sycl::device_has()]] for not currently tested "
  "feature but with SYCL_EXTERNAL function with tested feature and "
@@ -380,6 +438,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
   FeatureAspectT),
  (sycl::half, sycl::aspect::fp16), (double, sycl::aspect::fp64),
  (AtomicRefT, sycl::aspect::atomic64))({
+  using kname =
+      kernel_use_feature_function_external_decorated_with_attr<FeatureTypeT,
+                                                               FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
   // Check if the device supports testing feature
@@ -403,17 +464,18 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
     const auto lambda_no_arg = []() [[sycl::device_has(AnotherFeatureAspect)]] {
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
     };
-    const auto lambda_item_arg =
-        [](sycl::item<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
+    const auto lambda_item_arg = [](sycl::item<1>) [[sycl::device_has(
+                                     AnotherFeatureAspect)]] {
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
     };
-    const auto lambda_group_arg =
-        [](sycl::group<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
+    const auto lambda_group_arg = [](sycl::group<1>) [[sycl::device_has(
+                                      AnotherFeatureAspect)]] {
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
     };
 
-    run_separate_lambda(other_feature_exception_expect, expected_errc, queue,
-                        lambda_no_arg, lambda_item_arg, lambda_group_arg);
+    run_separate_lambda<kname>(other_feature_exception_expect, expected_errc,
+                               queue, lambda_no_arg, lambda_item_arg,
+                               lambda_group_arg);
   }
 
   {
@@ -426,7 +488,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
   {
     RUN_SUBMISSION_CALL(
         other_feature_exception_expect, expected_errc, queue,
-        [[sycl::device_has(AnotherFeatureAspect)]],
+        [[sycl::device_has(AnotherFeatureAspect)]], kname,
         use_feature_function_external_decorated<FeatureTypeT,
                                                 FeatureAspectT>());
   }

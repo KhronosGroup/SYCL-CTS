@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -414,6 +414,7 @@ private:
   offset_t offset;
 };
 
+
 /** @brief Used to test the buffer accessor combinations for device and
  *         constant_buffer
  */
@@ -442,7 +443,8 @@ public:
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
-          check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
+          check_accessor_common_by_reference_buffer<T, dims, target,
+                                                    placeholder>;
 
       queue.submit([&](sycl::handler &h) {
         /** check device constructors for different modes
@@ -481,7 +483,7 @@ public:
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::device>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -493,7 +495,8 @@ public:
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
-          check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
+          check_accessor_common_by_reference_buffer<T, dims, target,
+                                                    placeholder>;
 
       queue.submit([&](sycl::handler &h) {
         /** check constant_buffer constructors for different modes
@@ -512,7 +515,7 @@ public:
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::constant_buffer>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
 
       });
       queue.wait_and_throw();
@@ -648,7 +651,7 @@ public:
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::device>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -660,7 +663,8 @@ public:
       using verifier =
           check_all_accessor_constructors_buffer<T, dims, target, placeholder>;
       using semantics_verifier =
-          check_accessor_common_by_reference_buffer<T, dims, target, placeholder>;
+          check_accessor_common_by_reference_buffer<T, dims, target,
+                                                    placeholder>;
 
       /** check constant_buffer constructors for different modes
        */
@@ -680,7 +684,7 @@ public:
          */
         using dummy =
             dummy_functor<kernelName, sycl::target::constant_buffer>;
-        h.single_task(dummy{});
+        h.single_task<dummy>(dummy{});
 
       });
       queue.wait_and_throw();

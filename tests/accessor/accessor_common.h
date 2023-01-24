@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Common functions for the accessor tests.
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Common functions for the accessor tests.
 
 #ifndef SYCL_CTS_ACCESSOR_COMMON_H
 #define SYCL_CTS_ACCESSOR_COMMON_H
@@ -331,6 +345,11 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
 // FIXME: re-enable when target::host_task is implemented in dpcpp
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode, sycl::target Target>
+class kernel_def_constructor;
+
 /**
  * @brief Common function that constructs accessor with default constructor
  *and checks post-conditions
@@ -362,9 +381,12 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
             cgh.host_task(
                 [=] { check_def_constructor_post_conditions(acc, res_acc); });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(r, [acc, res_acc](sycl::group<1>) {
-              check_def_constructor_post_conditions(acc, res_acc);
-            });
+            using kname = kernel_def_constructor<AccType, DataT, Dimension,
+                                                 AccessMode, Target>;
+            cgh.parallel_for_work_group<kname>(
+                r, [acc, res_acc](sycl::group<1>) {
+                  check_def_constructor_post_conditions(acc, res_acc);
+                });
           }
         })
         .wait_and_throw();
@@ -430,6 +452,11 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 // FIXME: re-enable when target::host_task is implemented in dpcpp
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
+          sycl::target Target>
+class kernel_zero_dim_constructor;
+
 /**
  * @brief Function helps to check zero dimension constructor of accessor
  *
@@ -474,7 +501,9 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
+            using kname =
+                kernel_zero_dim_constructor<AccType, DataT, AccessMode, Target>;
+            cgh.parallel_for_work_group<kname>(r, [=](sycl::group<1>) {
               auto&& acc_instance =
                   (detail::invoke_helper{modify_accessor} = ... = acc);
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
@@ -539,6 +568,11 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
 // FIXME: re-enable when target::host_task is implemented in dpcpp
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode, sycl::target Target>
+class kernel_common_constructor;
+
 /**
  * @brief Function helps to check common constructor of accessor
  *
@@ -587,12 +621,15 @@ void check_common_constructor(const sycl::range<Dimension>& r,
                                                            res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
-              auto&& acc_instance =
-                  (detail::invoke_helper{modify_accessor} = ... = acc);
-              read_write_acc<DataT, Dimension, AccessMode>(acc_instance,
-                                                           res_acc);
-            });
+            using kname = kernel_common_constructor<AccType, DataT, Dimension,
+                                                    AccessMode, Target>;
+            cgh.parallel_for_work_group<kname>(
+                sycl::range(1), [=](sycl::group<1>) {
+                  auto&& acc_instance =
+                      (detail::invoke_helper{modify_accessor} = ... = acc);
+                  read_write_acc<DataT, Dimension, AccessMode>(acc_instance,
+                                                               res_acc);
+                });
           } else {
             static_assert(Target != Target, "Unexpected accessor type");
           }
@@ -621,6 +658,10 @@ void check_common_constructor(const sycl::range<Dimension>& r,
     }
   }
 }
+
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode, sycl::target Target>
+class kernel_placeholder_accessor_exception;
 
 /**
  * @brief Function helps to check if passing of a placeholder accessor triggers
@@ -653,7 +694,9 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
             if constexpr (Target == sycl::target::host_task) {
               cgh.host_task([=] {});
             } else if constexpr (Target == sycl::target::device) {
-              cgh.parallel_for_work_group(sycl::range(1),
+              using kname = kernel_placeholder_accessor_exception<
+                  AccType, DataT, Dimension, AccessMode, Target>;
+              cgh.parallel_for_work_group<kname>(sycl::range(1),
                                           [=](sycl::group<1>) {});
             }
           })
@@ -696,6 +739,11 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 // FIXME: re-enable when target::host_task is implemented
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode, sycl::target Target>
+class kernel_no_init_prop;
+
 /**
  * @brief Function helps to check accessor constructor with no_init property
  *
@@ -725,9 +773,12 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
           } else if (Target == sycl::target::device) {
-            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
-              write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-            });
+            using kname = kernel_no_init_prop<AccType, DataT, Dimension,
+                                              AccessMode, Target>;
+            cgh.parallel_for_work_group<kname>(
+                sycl::range(1), [=](sycl::group<1>) {
+                  write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
+                });
           }
         })
         .wait_and_throw();
@@ -1050,6 +1101,11 @@ sycl::id<dims> next_id_linearly(sycl::id<dims> id, size_t size) {
 
 // FIXME: re-enable when handler.host_task is implemented in hipsycl
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+
+template <accessor_type AccType, typename T, int dims,
+          sycl::access_mode AccessMode, sycl::target Target>
+class kernel_linearization;
+
 /**
  * @brief Common function that checks correct linearization for generic
  *        and host constructors
@@ -1064,6 +1120,7 @@ template <accessor_type AccType, typename T, int dims,
           sycl::access_mode AccessMode = sycl::access_mode::read_write,
           sycl::target Target = sycl::target::device>
 void check_linearization() {
+  using kname = kernel_linearization<AccType, T, dims, AccessMode, Target>;
   constexpr size_t range_size = 2;
   constexpr size_t buff_size = (dims == 3) ? 2 * 2 * 2 : 2 * 2;
 
@@ -1087,7 +1144,7 @@ void check_linearization() {
 
             if constexpr (Target == sycl::target::device) {
               sycl::accessor res_acc(res_buf, cgh);
-              cgh.single_task([=]() {
+              cgh.single_task<kname>([=]() {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   res_acc[0] &= value_operations::are_equal(elem, acc[id]);

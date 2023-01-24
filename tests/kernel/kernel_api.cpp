@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ TEST_CASE("Test kernel API", "[kernel]") {
   auto kb =
       sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
   auto kernel = kb.get_kernel(sycl::get_kernel_id<k_name>());
-  ctsQueue.submit([&](sycl::handler &h) { h.single_task(k_name{}); });
+  ctsQueue.submit([&](sycl::handler &h) { h.single_task<k_name>(k_name{}); });
   ctsQueue.wait_and_throw();
 
   // Check get_context()

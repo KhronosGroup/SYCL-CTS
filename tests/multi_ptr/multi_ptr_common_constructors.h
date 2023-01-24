@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for multi_ptr common constructors
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides tests for multi_ptr common constructors
 
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_COMMON_CONSTRUCTORS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_COMMON_CONSTRUCTORS_H
@@ -37,6 +51,10 @@ std::string get_case_description(const std::string &info, size_t overload_index,
                       "> and type: " + type_name};
   return message;
 }
+
+template <typename T, sycl::access::address_space Space,
+          sycl::access::decorated Decorated>
+class kernel_common_constructors;
 
 /** @brief Provides verification of multi_ptr common constructors with template
  *         parameters given
@@ -138,6 +156,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
     sycl::buffer<bool, 1> same_value_buf(same_value, values_range);
 
     queue.submit([&](sycl::handler &cgh) {
+      using kname = kernel_common_constructors<T, Space, Decorated>;
       auto ref_acc = ref_buf.template get_access<sycl::access_mode::read>(cgh);
       auto same_type_acc =
           same_type_buf.template get_access<sycl::access_mode::write>(cgh);
@@ -146,14 +165,14 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
       if constexpr (Space == sycl::access::address_space::local_space) {
         sycl::local_accessor<T, 1> loc_acc(sycl::range<1>(1), cgh);
-        cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+        cgh.parallel_for<kname>(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
           value_operations::assign(loc_acc[0], ref_acc[0]);
           sycl::group_barrier(item.get_group());
           run_and_check(loc_acc, same_type_acc, same_value_acc);
         });
       } else if constexpr (Space ==
                            sycl::access::address_space::private_space) {
-        cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+        cgh.parallel_for<kname>(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
           T priv_val = ref_acc[0];
           sycl::multi_ptr<T, sycl::access::address_space::private_space,
                           Decorated>
@@ -163,7 +182,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
           run_and_check(priv_val_mptr, same_type_acc, same_value_acc);
         });
       } else {
-        cgh.single_task(
+        cgh.single_task<kname>(
             [=] { run_and_check(ref_acc, same_type_acc, same_value_acc); });
       }
     });

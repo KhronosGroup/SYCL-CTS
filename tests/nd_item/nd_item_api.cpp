@@ -210,7 +210,7 @@ void test_item(util::logger &log, sycl::queue &queue) {
             bufOut.template get_access<sycl::access_mode::write>(cgh),
             bufOutDeprecated.template get_access<sycl::access_mode::write>(
                 cgh));
-        cgh.parallel_for(dataRange, kernel_1d);
+        cgh.parallel_for<kernel_nd_item<1>>(dataRange, kernel_1d);
       });
     }
 
@@ -250,7 +250,7 @@ void test_item(util::logger &log, sycl::queue &queue) {
             bufOut.template get_access<sycl::access_mode::write>(cgh),
             bufOutDeprecated.template get_access<sycl::access_mode::write>(
                 cgh));
-        cgh.parallel_for(dataRange, kernel_2d);
+        cgh.parallel_for<kernel_nd_item<2>>(dataRange, kernel_2d);
       });
     }
 
@@ -290,7 +290,7 @@ void test_item(util::logger &log, sycl::queue &queue) {
             bufOut.template get_access<sycl::access_mode::write>(cgh),
             bufOutDeprecated.template get_access<sycl::access_mode::write>(
                 cgh));
-        cgh.parallel_for(dataRange, kernel_3d);
+        cgh.parallel_for<kernel_nd_item<3>>(dataRange, kernel_3d);
       });
     }
 

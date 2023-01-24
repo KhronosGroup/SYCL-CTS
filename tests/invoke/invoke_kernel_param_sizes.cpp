@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ class type_size_kernel {
   void operator()() const { m_out[0] = sizeof(T); }
 };
 
+
 template <typename T>
 bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
                            const std::string &name) {
@@ -52,7 +53,7 @@ bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
       auto access_output =
           buffer_output.template get_access<sycl::access_mode::write>(cgh);
       type_size_kernel<T> kernel(access_output);
-      cgh.single_task(kernel);
+      cgh.single_task<type_size_kernel<T>>(kernel);
     });
   }
 

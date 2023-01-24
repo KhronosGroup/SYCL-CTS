@@ -66,8 +66,8 @@ template <int dim> void check_dim(util::logger &log) {
       auto groupRange = globalRange / localRange;
 
       // Assign global linear item's id in kernel functor
-      cgh.parallel_for_work_group(groupRange, localRange,
-                                  kernel<dim>(buf, cgh));
+      cgh.parallel_for_work_group<kernel<dim>>(groupRange, localRange,
+                                               kernel<dim>(buf, cgh));
     });
   }
   for (size_t i = 0; i < totalGlobalRange; i++) {

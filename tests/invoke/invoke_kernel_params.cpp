@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ struct test_kernel {
   }
 };
 
+template<std::size_t TestCase>
 class test_kernel_name;
 
 /**
@@ -119,7 +120,7 @@ class TEST_NAME : public util::test_base {
             my_array.int_array[i] = i;
           }
 
-          cgh.single_task<class test_kernel_name>([=]() {
+          cgh.single_task<test_kernel_name<0>>([=]() {
             uint32_t pass = 1;
             pass &= (var_a == ref_a);
             pass &= (var_b.a == ref_b_a);
@@ -169,7 +170,7 @@ class TEST_NAME : public util::test_base {
           }
 
           // execute the kernel
-          cgh.single_task(my_kernel);
+          cgh.single_task<test_kernel_name<1>>(my_kernel);
         });
 
         my_queue.wait_and_throw();

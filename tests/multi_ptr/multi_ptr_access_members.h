@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for multi_ptr access members
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides code for multi_ptr access members
+
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_ACCESS_MEMBERS_OPS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_ACCESS_MEMBERS_OPS_H
 
@@ -47,6 +62,9 @@ struct test_result {
 };
 
 }  // namespace detail
+
+template <typename T, typename AddrSpaceT, typename IsDecoratedT>
+class kernel_access_members;
 
 /**
  * @brief Provides functions for verification multi_ptr access operators that
@@ -126,16 +144,18 @@ class run_access_members_tests {
               std::is_pointer_v<decltype(multi_ptr.get_decorated())>;
         };
 
+        using kname = kernel_access_members<T, AddrSpaceT, IsDecoratedT>;
         if constexpr (space == sycl::access::address_space::local_space) {
           sycl::local_accessor<T> acc_for_multi_ptr{sycl::range(1), cgh};
-          cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
-            value_operations::assign(acc_for_multi_ptr, value);
-            sycl::group_barrier(item.get_group());
-            test_device_code(acc_for_multi_ptr);
-          });
+          cgh.parallel_for<kname>(
+              sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+                value_operations::assign(acc_for_multi_ptr, value);
+                sycl::group_barrier(item.get_group());
+                test_device_code(acc_for_multi_ptr);
+              });
         } else if constexpr (space ==
                              sycl::access::address_space::private_space) {
-          cgh.single_task([=] {
+          cgh.single_task<kname>([=] {
             T priv_val = value;
             sycl::multi_ptr<T, sycl::access::address_space::private_space,
                             decorated>
@@ -147,7 +167,7 @@ class run_access_members_tests {
         } else {
           auto acc_for_multi_ptr =
               val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          cgh.single_task([=] { test_device_code(acc_for_multi_ptr); });
+          cgh.single_task<kname>([=] { test_device_code(acc_for_multi_ptr); });
         }
       });
     }

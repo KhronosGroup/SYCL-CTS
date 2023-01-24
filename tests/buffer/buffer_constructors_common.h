@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -103,6 +103,12 @@ bool check_buffer_constructor(sycl::buffer<T, dims, allocT> buf,
 }
 
 template <typename T, int size, int dims>
+class kernel_buffer_ctor;
+
+template <typename T, int size, int dims>
+class kernel_buffer_ctor_allocator;
+
+template <typename T, int size, int dims>
 class buffer_ctors {
  public:
   void operator()(sycl::range<dims> &r, sycl::id<dims> &i,
@@ -155,7 +161,8 @@ class buffer_ctors {
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =
                     buf2.template get_access<sycl::access_mode::write>(cgh);
-                cgh.parallel_for(r, iota_kernel<decltype(acc1)>{acc1, acc2});
+                cgh.parallel_for<kernel_buffer_ctor<T, size, dims>>(
+                    r, iota_kernel<decltype(acc1)>{acc1, acc2});
               })
               .wait_and_throw();
         }
@@ -185,7 +192,8 @@ class buffer_ctors {
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =
                     buf2.template get_access<sycl::access_mode::write>(cgh);
-                cgh.parallel_for(r, iota_kernel<decltype(acc1)>{acc1, acc2});
+                cgh.parallel_for<kernel_buffer_ctor_allocator<T, size, dims>>(
+                    r, iota_kernel<decltype(acc1)>{acc1, acc2});
               })
               .wait_and_throw();
         }
