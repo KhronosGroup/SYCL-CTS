@@ -36,9 +36,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub_group joint of bool functions",
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
@@ -61,9 +62,10 @@ TEMPLATE_LIST_TEST_CASE(
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
@@ -89,9 +91,10 @@ TEMPLATE_TEST_CASE_SIG("Group and sub_group of bool functions",
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else

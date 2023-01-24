@@ -71,9 +71,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
   //        template definition nor found by argument-dependent lookup
   //        note: 'joint_reduce' should be declared prior to the call site or in
   //        namespace 'sycl::ext::oneapi'
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -116,9 +117,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
@@ -150,9 +152,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
@@ -187,9 +190,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
 #endif
   }
 
-  // FIXME: clang-8: error: unable to execute command: Segmentation fault (core dumped)
-  //        clang-8: error: spirv-ll-tool command failed due to signal (use -v to see invocation)
-  //        Codeplay ComputeCpp - CE 2.11.0 Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  // FIXME: Codeplay ComputeCpp - CE 2.11.0
+  //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
+  //        clang-8: error: unable to execute command: Segmentation fault
+  //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
