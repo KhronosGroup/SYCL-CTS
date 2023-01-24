@@ -20,11 +20,19 @@ namespace atomic_fence_test {
 
 constexpr int expected_val = 42;
 
+// enum covers two types of check:
 enum class test_type {
-  single_group = 1,
-  between_groups = 2,
+  single_group = 1,    // between items in the single group
+  between_groups = 2,  // between items in multiple groups
 };
 
+/**
+ * @brief Function for checking device atomic_fence_order capability
+ * @param queue SYCL queue is used to access device parameters
+ * @param order memory_order value used to check
+ * @param order_name String for name of the order value
+ * @return true if device supports atomic_fence with memory_order order
+ */
 bool check_atomic_fence_order_capability(sycl::queue& queue,
                                          sycl::memory_order order,
                                          const std::string& order_name) {
@@ -43,6 +51,13 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
   return true;
 }
 
+/**
+ * @brief Function for checking device atomic_fence_scope capability
+ * @param queue SYCL queue is used to access device parameters
+ * @param scope memory_scope value used to check
+ * @param scope_name String for name of the scope value
+ * @return true if device supports atomic_fence with memory_scope scope
+ */
 bool check_atomic_fence_scope_capability(sycl::queue& queue,
                                          sycl::memory_scope scope,
                                          const std::string& scope_name) {
@@ -58,6 +73,38 @@ bool check_atomic_fence_scope_capability(sycl::queue& queue,
     return false;
   }
 #endif
+  return true;
+}
+
+/**
+ * @brief Function for checking device atomic_fence_scope and atomic_fence_order
+ * capabilities
+ * @param queue queue SYCL queue is used to access device parameters
+ * @param order memory_order value used to check
+ * @param scope memory_scope value used to check
+ * @order_name String for name of the order value
+ * @scope_name String for name of the scope value
+ * @return true if device supports atomic_fence with memory_scope scope and
+ * memory_order order
+ */
+bool check_memory_order_scope_capabilities(sycl::queue& queue,
+                                           sycl::memory_order order,
+                                           sycl::memory_scope scope,
+                                           const std::string& order_name,
+                                           const std::string& scope_name) {
+  if (!check_atomic_fence_order_capability(queue, order, order_name)) {
+    return false;
+  }
+  if (sycl::memory_order::release == order) {
+    if (!check_atomic_fence_order_capability(queue, sycl::memory_order::acquire,
+                                             "memory_order::acquire")) {
+      return false;
+    }
+  }
+
+  if (!check_atomic_fence_scope_capability(queue, scope, scope_name)) {
+    return false;
+  }
   return true;
 }
 
@@ -107,27 +154,12 @@ inline auto get_memory_scopes_between_work_groups() {
   return memory_scopes;
 }
 
-bool check_memory_order_scope_capabilities(sycl::queue& queue,
-                                           sycl::memory_order order,
-                                           sycl::memory_scope scope,
-                                           const std::string& order_name,
-                                           const std::string& scope_name) {
-  if (!check_atomic_fence_order_capability(queue, order, order_name)) {
-    return false;
-  }
-  if (sycl::memory_order::release == order) {
-    if (!check_atomic_fence_order_capability(queue, sycl::memory_order::acquire,
-                                             "memory_order::acquire")) {
-      return false;
-    }
-  }
-
-  if (!check_atomic_fence_scope_capability(queue, scope, scope_name)) {
-    return false;
-  }
-  return true;
-}
-
+/**
+ * @brief Common functor to check sycl::atomic_fence
+ * @tparam OrderT memory_order value
+ * @tparam ScopeT memory_scope value
+ * @tparam TestT test_type value
+ */
 template <typename OrderT, typename ScopeT, typename TestT>
 class run_atomic_fence {
   static constexpr sycl::memory_order MemoryOrder = OrderT::value;
@@ -156,16 +188,23 @@ class run_atomic_fence {
         order_read = sycl::memory_order::acquire;
       }
 
+      // Count of retries in the check cycle
       constexpr size_t RETRY_COUNT = 256;
+
       bool res = true;
       int sync = 0;
       int data = 0;
       int value = expected_val;
+
+      // These global_range and local_range values provide a check in one group
+      // when test_type = single_group, and between four groups when
+      // test_type = between_groups
       sycl::range<1> global_range(2);
       if (test_type::between_groups == TestType) {
         global_range = sycl::range<1>(8);
       }
       sycl::range<1> local_range(2);
+
       {
         sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
         sycl::buffer<int> sync_buffer(&sync, sycl::range<1>(1));
@@ -210,6 +249,10 @@ class run_atomic_fence {
   }
 
  private:
+  /**
+   * @brief Function to get accsessor of proper type depends on the TestType
+   * value
+   */
   auto get_accessor(sycl::handler& cgh, sycl::buffer<int>& buf) {
     if constexpr (test_type::single_group == TestType) {
       return sycl::local_accessor<int>(sycl::range<1>(1), cgh);
