@@ -67,10 +67,10 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
   }
 
   // FIXME: DPCPP compile error:
-  //        error: call to function 'joint_reduce' that is neither visible in the
-  //        template definition nor found by argument-dependent lookup
-  //        note: 'joint_reduce' should be declared prior to the call site or in
-  //        namespace 'sycl::ext::oneapi'
+  //        error: call to function 'joint_reduce' that is neither visible
+  //        in the template definition nor found by argument-dependent lookup
+  //        note: 'joint_reduce' should be declared prior to the call site
+  //        or in namespace 'sycl::ext::oneapi'
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault

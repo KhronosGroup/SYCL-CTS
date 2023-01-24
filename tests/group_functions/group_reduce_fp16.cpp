@@ -64,10 +64,10 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
 
   // FIXME: ComputeCpp has no half
   // FIXME: DPCPP compile error:
-  //  error: call to function 'joint_reduce' that is neither visible in the
-  //  template definition nor found by argument-dependent lookup
-  //  note: 'joint_reduce' should be declared prior to the call site or in
-  //  namespace 'sycl::ext::oneapi'
+  //        error: call to function 'joint_reduce' that is neither visible
+  //        in the template definition nor found by argument-dependent lookup
+  //        note: 'joint_reduce' should be declared prior to the call site
+  //        or in namespace 'sycl::ext::oneapi'
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
