@@ -65,7 +65,6 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
 #endif
   }
 
-
   // FIXME: DPCPP compile error:
   //        error: call to function 'joint_reduce' that is neither visible
   //        in the template definition nor found by argument-dependent lookup
