@@ -35,7 +35,7 @@ struct storage {
   template <typename T, sycl::access_mode AccessMode, sycl::target AccessTarget,
             sycl::access::placeholder IsPlaceHolder>
   explicit storage(const sycl::accessor<T, Dimensions, AccessMode, AccessTarget,
-                               IsPlaceHolder>& accessor)
+                                        IsPlaceHolder>& accessor)
       : is_placeholder(accessor.is_placeholder()),
         byte_size(accessor.byte_size()),
         size(accessor.size()),
