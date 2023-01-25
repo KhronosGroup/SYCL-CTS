@@ -19,7 +19,10 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "../common/semantics_reference.h"
+#endif
 
 template <int Dimensions>
 struct storage {
@@ -44,8 +47,8 @@ struct storage {
   }
 };
 
-TEST_CASE("local_accessor common reference semantics (host)",
-          "[local_accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("local_accessor common reference semantics (host)", "[local_accessor]")({
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
@@ -58,21 +61,22 @@ TEST_CASE("local_accessor common reference semantics (host)",
     common_reference_semantics::check_host<storage<0>>(
         local_accessor_0, local_accessor_1, "local_accessor<int, 0>");
   });
-}
+});
 
-TEST_CASE("local_accessor common reference semantics (kernel)",
-          "[local_accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("local_accessor common reference semantics (kernel)", "[local_accessor]")({
   using type = sycl::local_accessor<int, 0>;
   common_reference_semantics::check_kernel<storage<0>, type>(
       [&](sycl::handler& cgh) { return sycl::local_accessor<int, 0>{cgh}; },
       "local_accessor<int, 0>");
-}
+});
 
 template <int TestCase>
 struct kernel_name_local;
 
-TEST_CASE("local_accessor common reference semantics, mutation (kernel)",
-          "[local_accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("local_accessor common reference semantics, mutation (kernel)",
+ "[local_accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 
@@ -140,4 +144,4 @@ TEST_CASE("local_accessor common reference semantics, mutation (kernel)",
     }
     CHECK(new_val == result);
   }
-}
+});

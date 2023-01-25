@@ -20,7 +20,9 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "../common/semantics_reference.h"
+#endif
 
 template <int Dimensions>
 struct storage {
@@ -56,7 +58,7 @@ struct storage {
 };
 
 // DPCPP has no member 'host_task' in 'sycl::access::target'.
-DISABLED_FOR_TEST_CASE(DPCPP)
+DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
 ("generic accessor common reference semantics (host)", "[accessor]")({
   {  // target::host_task
     int val_0;
@@ -91,7 +93,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
 });
 
 // DPCPP has no member 'host_task' in 'sycl::access::target'.
-DISABLED_FOR_TEST_CASE(DPCPP)
+DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
 ("generic accessor common reference semantics, mutation (host)", "[accessor]")({
   constexpr int new_val = 2;
   int val = 1;
@@ -124,8 +126,8 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   }
 });
 
-TEST_CASE("generic accessor common reference semantics (kernel)",
-          "[accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("generic accessor common reference semantics (kernel)", "[accessor]")({
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =
       sycl::accessor<int, 1, sycl::access_mode::read_write,
@@ -137,13 +139,14 @@ TEST_CASE("generic accessor common reference semantics (kernel)",
                 cgh);
       },
       "accessor<int, 1, access_mode::read_write, target::device>");
-}
+});
 
 template <int TestCase>
 class kernel_name_generic;
 
-TEST_CASE("generic accessor common reference semantics, mutation (kernel)",
-          "[accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("generic accessor common reference semantics, mutation (kernel)",
+ "[accessor]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   int result = 0;
 
@@ -206,4 +209,4 @@ TEST_CASE("generic accessor common reference semantics, mutation (kernel)",
     }
     CHECK(new_val == result);
   }
-}
+});

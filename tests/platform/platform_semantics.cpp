@@ -19,7 +19,10 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "../common/semantics_reference.h"
+#endif
 
 #include <vector>
 
@@ -49,7 +52,8 @@ struct storage {
   }
 };
 
-TEST_CASE("platform common reference semantics", "[platform]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("platform common reference semantics", "[platform]")({
   sycl::platform platform = sycl_cts::util::get_cts_object::platform();
   const std::vector<sycl::platform> platforms = sycl::platform::get_platforms();
 
@@ -68,4 +72,4 @@ TEST_CASE("platform common reference semantics", "[platform]") {
   // else, test with a single platform
   INFO("using a single platform");
   common_reference_semantics::check_host<storage>(platform, "platform");
-}
+});

@@ -19,7 +19,10 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "../common/semantics_reference.h"
+#endif
 
 template <int Dimensions>
 struct storage {
@@ -53,7 +56,8 @@ struct storage {
   }
 };
 
-TEST_CASE("host_accessor common reference semantics", "[host_accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("host_accessor common reference semantics", "[host_accessor]")({
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
@@ -68,10 +72,10 @@ TEST_CASE("host_accessor common reference semantics", "[host_accessor]") {
   sycl::host_accessor<int> host_accessor_1{buffer_1};
   common_reference_semantics::check_host<storage<1>>(
       host_accessor_0, host_accessor_1, "host_accessor");
-}
+});
 
-TEST_CASE("host_accessor common reference semantics, mutation",
-          "[host_accessor]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("host_accessor common reference semantics, mutation", "[host_accessor]")({
   constexpr int val = 1;
   constexpr int new_val = 2;
   sycl::buffer<int> buffer{sycl::range<1>{1}};
@@ -97,4 +101,4 @@ TEST_CASE("host_accessor common reference semantics, mutation",
     t0[0] = new_val;
     CHECK(new_val == t1[0]);
   }
-};
+});
