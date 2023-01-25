@@ -2,7 +2,7 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -78,7 +78,9 @@ static auto get_aspect_pack() {
  * Check whether all specified constructors for \p aspect_selector are
  * available. */
 void check_no_aspects() {
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
+  CHECK(false);  // ensure workaround will be removed
+#else
   const auto selector_vector = sycl::aspect_selector({});
   const auto selector_vector_deny = sycl::aspect_selector({}, {});
   const auto selector_args = sycl::aspect_selector();
@@ -111,17 +113,17 @@ template <typename Selector>
 void test_selector_accept(const Selector& selector,
                           const std::vector<sycl::aspect>& accept_list) {
   sycl::device device{selector};
-  for (auto aspect : accept_list) {
+  for (const auto& aspect : accept_list) {
     CHECK(device.has(aspect));
   }
 
   sycl::queue queue{selector};
-  for (auto aspect : accept_list) {
+  for (const auto& aspect : accept_list) {
     CHECK(queue.get_device().has(aspect));
   }
 
   sycl::platform platform{selector};
-  for (auto aspect : accept_list) {
+  for (const auto& aspect : accept_list) {
     check_return_type<bool>(platform.has(aspect),
                             "sycl::platform::has(sycl::aspect)");
   }
@@ -134,19 +136,19 @@ template <typename Selector>
 void test_selector_deny(const Selector& selector,
                         const std::vector<sycl::aspect>& deny_list) {
   sycl::device device{selector};
-  for (auto aspect : deny_list) {
+  for (const auto& aspect : deny_list) {
     CHECK((!device.has(aspect)));
   }
 
   sycl::queue queue{selector};
-  for (auto aspect : deny_list) {
+  for (const auto& aspect : deny_list) {
     CHECK((!queue.get_device().has(aspect)));
   }
 
   sycl::platform platform{selector};
-  // if all devices in the platform have an aspect, the platform itself has the
-  // aspect. hence, selected platform should not have any denied aspect
-  for (auto aspect : deny_list) {
+  // If all devices in the platform have an aspect, the platform itself has the
+  // aspect. Hence, selected platform should not have any denied aspect.
+  for (const auto& aspect : deny_list) {
     CHECK((!platform.has(aspect)));
   }
 }
@@ -172,7 +174,7 @@ void check_selector_exception(const Selector& s) {
 }
 
 /**
- * Tests a whether a given selector conforms to a given list of required
+ * Tests whether a given selector conforms to a given list of required
  * aspects. */
 template <typename Selector>
 void test_selector(const Selector& selector,
@@ -185,7 +187,7 @@ void test_selector(const Selector& selector,
 }
 
 /**
- * Tests a whether a given selector conforms to a given list of required
+ * Tests whether a given selector conforms to a given list of required
  * aspects and a list of denied aspects. */
 template <typename Selector>
 void test_selector(const Selector& selector,
@@ -218,7 +220,9 @@ void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
 #endif  // SYCL_CTS_COMPILING_WITH_DPCPP
 };
 
-/** Functor that checks a selector with one aspect, no denied aspects */
+/**
+ * Functor that checks a selector with a single aspect and an empty list of
+ * denied aspects. */
 template <typename AspectT>
 class check_for_single_aspect {
   static constexpr sycl::aspect aspect = AspectT::value;
@@ -230,7 +234,9 @@ class check_for_single_aspect {
   }
 };
 
-/** Functor that checks a selector with two aspects, no denied aspects */
+/**
+ * Functor that checks a selector with two aspects and an empty list of
+ * denied aspects. */
 template <typename Aspect1T, typename Aspect2T>
 class check_for_two_aspects {
   static constexpr sycl::aspect aspect1 = Aspect1T::value;
@@ -252,16 +258,22 @@ std::vector<sycl::aspect> generate_denied_list(
     const std::vector<sycl::aspect>& aspect_list,
     const std::vector<sycl::aspect>& selected_aspect_list, Rng& rng) {
   std::vector<sycl::aspect> denied_list;
-  for (unsigned int i = 0; i < aspect_list.size(); i++) {
+  for (const auto& aspect : aspect_list) {
     bool is_selected =
         std::find(selected_aspect_list.begin(), selected_aspect_list.end(),
-                  aspect_list[i]) != selected_aspect_list.end();
+                  aspect) != selected_aspect_list.end();
+    // if the aspect is already part of the selected aspects, it cannot be
+    // part of the denied aspects
     if (is_selected) {
       continue;
     }
-    unsigned int p = rng() % aspect_list.size();
-    if (p == 0) {
-      denied_list.push_back(aspect_list[i]);
+    // else, select the aspect with a probability of
+    // 1 over (#aspects - #selected aspects), which has an expected value of 1
+    unsigned int rng_range = Rng::max() - Rng::min();
+    unsigned int non_selected_aspect_count =
+        aspect_list.size() - selected_aspect_list.size();
+    if (rng() - Rng::min() < rng_range / non_selected_aspect_count) {
+      denied_list.push_back(aspect);
     }
   }
   return denied_list;
@@ -275,15 +287,16 @@ class check_for_multiple_aspects {
   static constexpr std::size_t aspect_count = sizeof...(AspectsT);
 
  public:
-  void operator()(const std::vector<sycl::aspect>& deny_list,
-                  const std::string accept_aspect_names[aspect_count]) {
+  void operator()(
+      const std::vector<sycl::aspect>& deny_list,
+      const std::array<std::string, aspect_count>& accept_aspect_names) {
     std::ostringstream os;
-    os << "for aspects:\n";
-    for (std::size_t i = 0; i < aspect_count; i++) {
-      os << accept_aspect_names[i] << "\n";
+    os << "for aspects (" << aspect_count << "):\n";
+    for (const auto& aspect_name : accept_aspect_names) {
+      os << aspect_name << "\n";
     }
-    os << "for denied aspects:\n";
-    for (const sycl::aspect& aspect : deny_list) {
+    os << "for denied aspects (" << deny_list.size() << "):\n";
+    for (const auto& aspect : deny_list) {
       os << Catch::StringMaker<sycl::aspect>::convert(aspect) << "\n";
     }
     INFO(os.str());
@@ -439,7 +452,7 @@ void check_for_random(const named_type_pack<AspectsT...>&,
 DISABLED_FOR_TEST_CASE(DPCPP)
 ("aspect", "[device_selector]")({
 #if SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN("ComputeCPP cannot compare exception code");
+  WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
 #endif
 
   // check whether all constructors compile when no aspects are specified

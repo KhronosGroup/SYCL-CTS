@@ -49,13 +49,13 @@ TEST_CASE("predefined selectors", "[device_selector]") {
   const bool noneAvailable =
       !cpuAvailable && !gpuAvailable && !acceleratorAvailable;
 
-#if SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  WARN("ComputeCPP cannot compare exception code");
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
 #endif
 
   // Compatibility with old SYCL 1.2.1 device selectors.
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {  // default_selector
     if (noneAvailable) {
       sycl::default_selector defaultSelector;
