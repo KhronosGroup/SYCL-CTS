@@ -40,16 +40,17 @@ enum struct member_function : int {
   local_linear_range,
   leader,
   group_group_linear_id,  // part of group, not part of sub-group like above
-  method_count            // defines size, should be last
+  member_function_count   // defines size, should be last
 };
 
-static constexpr auto method_cnt = to_integral(member_function::method_count);
+static constexpr auto member_function_cnt =
+    to_integral(member_function::member_function_count);
 
 struct kernel_name;
 
-/** Return a linear index for a global work-item index and a method. */
-static size_t get_idx(size_t id, member_function method) {
-  return id * method_cnt + to_integral(method);
+/** Return a linear index for a global work-item index and a member function. */
+static size_t get_idx(size_t id, member_function member_func) {
+  return id * member_function_cnt + to_integral(member_func);
 }
 
 /**
@@ -113,15 +114,6 @@ size_t to_size_t(sycl::range<1> returned_value) {
   return returned_value[0];
 }
 
-// ComputeCPP cannot implicitly convert sycl::id to size_t
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-/** sycl::id cannot be implicitly converted to size_t. */
-template <>
-size_t to_size_t(sycl::id<1> returned_value) {
-  return returned_value[0];
-}
-#endif
-
 /**
  * Registers the result of calling a member function.
  * The returned value \p returned_value is converted to \p size_t and stored
@@ -138,8 +130,14 @@ void register_member_function_no_type_check(size_t linear_execution_range,
   }
   // calculate the unique index of this work-item and member function
   const size_t idx = get_idx(linear_global_id, member);
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  // ComputeCPP cannot implicitly convert sycl::id to size_t.
+  // Set the result to some bogus value so that the workaround is removed.
+  accessor[idx] = std::numeric_limits<size_t>::max() - 1;
+#else
   // returned value of the function is converted to size_t for uniform storage
   accessor[idx] = to_size_t(returned_value);
+#endif
 }
 
 /**
@@ -158,6 +156,12 @@ void register_member_function(size_t linear_execution_range,
 }
 
 TEST_CASE("sub-group api", "[sub_group]") {
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  WARN(
+      "ComputeCpp cannot implicitly convert sycl::id to size_t. "
+      "The test that requires this functionality is set to fail.");
+#endif
+
   sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   const sycl::range<3> local_range{2, 3, 5};
@@ -178,7 +182,7 @@ TEST_CASE("sub-group api", "[sub_group]") {
 
   // allocate space for results to be gathered,
   // initialize arrays to special value to ensure a write happens
-  const size_t result_count = linear_execution_range * method_cnt;
+  const size_t result_count = linear_execution_range * member_function_cnt;
   constexpr size_t empty = std::numeric_limits<size_t>::max();
   std::vector<size_t> results(result_count, empty);
   {
@@ -237,7 +241,7 @@ TEST_CASE("sub-group api", "[sub_group]") {
                                            member_function::leader,
                                            accessor_value, sub_group.leader());
             // group.get_group_linear_id()
-            // method belongs to sycl::group, no return type check needed
+            // member function belongs to sycl::group, no type check needed
             register_member_function_no_type_check(
                 linear_execution_range, lgid,
                 member_function::group_group_linear_id, accessor_value,
@@ -250,14 +254,18 @@ TEST_CASE("sub-group api", "[sub_group]") {
   REQUIRE(std::all_of(results.begin(), results.end(),
                       [=](size_t val) { return val != empty; }));
 
+  // helper function to index the results vector
+  auto get_res = [&](size_t id, member_function member_func) -> size_t {
+    return results[get_idx(id, member_func)];
+  };
+
   // max_local_range of first work-item, used to check if they are all the same
-  size_t first_max_local_range =
-      results[get_idx(0, member_function::max_local_range)];
+  size_t first_max_local_range = get_res(0, member_function::max_local_range);
   // check isolated results for each work-item
   for (size_t lgid = 0; lgid < linear_execution_range; lgid++) {
     INFO("linear global index: " << lgid);
-    auto get = [=](member_function method) -> size_t {
-      return results[get_idx(lgid, method)];
+    auto get = [&](member_function member_func) -> size_t {
+      return get_res(lgid, member_func);
     };
 
     // group_id, group_linear_id:
@@ -315,10 +323,8 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<size_t> sub_group_counts(work_group_count, empty);
   // populate and check sub_group_counts by iterating over the work-items
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id =
-        results[get_idx(i, member_function::group_group_linear_id)];
-    const size_t sub_group_count =
-        results[get_idx(i, member_function::group_range)];
+    const size_t wg_id = get_res(i, member_function::group_group_linear_id);
+    const size_t sub_group_count = get_res(i, member_function::group_range);
     REQUIRE(wg_id < work_group_count);  // bounds check
     if (sub_group_counts[wg_id] == empty) {
       sub_group_counts[wg_id] = sub_group_count;
@@ -349,10 +355,9 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<bool> sub_group_index_seen(sub_group_count, false);
   // populate sub_group_index_seen
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id =
-        results[get_idx(i, member_function::group_group_linear_id)];
+    const size_t wg_id = get_res(i, member_function::group_group_linear_id);
     REQUIRE(wg_id < work_group_count);  // bounds check
-    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
+    const size_t local_sg_id = get_res(i, member_function::group_id);
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
@@ -370,16 +375,14 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<size_t> sub_group_sizes(sub_group_count, empty);
   // populate and check sub_group_sizes by iterating over the work-items
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id =
-        results[get_idx(i, member_function::group_group_linear_id)];
+    const size_t wg_id = get_res(i, member_function::group_group_linear_id);
     REQUIRE(wg_id < work_group_count);  // bounds check
-    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
+    const size_t local_sg_id = get_res(i, member_function::group_id);
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
     REQUIRE(global_sg_id < sub_group_count);  // bounds check
-    const size_t sub_group_size =
-        results[get_idx(i, member_function::local_range)];
+    const size_t sub_group_size = get_res(i, member_function::local_range);
     if (sub_group_sizes[global_sg_id] == empty) {
       sub_group_sizes[global_sg_id] = sub_group_size;
     } else {
@@ -410,15 +413,14 @@ TEST_CASE("sub-group api", "[sub_group]") {
   std::vector<bool> item_seen(item_count, false);
   // populate item_seen
   for (size_t i = 0; i < linear_execution_range; i++) {
-    const size_t wg_id =
-        results[get_idx(i, member_function::group_group_linear_id)];
+    const size_t wg_id = get_res(i, member_function::group_group_linear_id);
     REQUIRE(wg_id < work_group_count);  // bounds check
-    const size_t local_sg_id = results[get_idx(i, member_function::group_id)];
+    const size_t local_sg_id = get_res(i, member_function::group_id);
     // #sub-groups before this work-group + sub-group index in this work-group
     //  = global sub-group index
     const size_t global_sg_id = work_group_offsets[wg_id] + local_sg_id;
     REQUIRE(global_sg_id < sub_group_count);  // bounds check
-    const size_t item_id = results[get_idx(i, member_function::local_id)];
+    const size_t item_id = get_res(i, member_function::local_id);
     // #items before this sub-group + local item index in this sub-group
     //  = global item index
     const size_t global_item_id = sub_group_offsets[global_sg_id] + item_id;
