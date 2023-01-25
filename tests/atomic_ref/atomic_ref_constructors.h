@@ -35,7 +35,8 @@ class run_constructor_tests {
   static constexpr sycl::memory_scope MemoryScope = MemoryScopeT::value;
   static constexpr sycl::access::address_space AddressSpace =
       AddressSpaceT::value;
-  using atomic_ref_type = sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>;
+  using atomic_ref_type =
+      sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>;
   using referenced_type = std::remove_pointer_t<T>;
 
  public:
@@ -48,7 +49,8 @@ class run_constructor_tests {
                                                  MemoryScope)) {
       return;
     }
-    referenced_type data = value_operations::init<referenced_type>(expected_val);
+    referenced_type data =
+        value_operations::init<referenced_type>(expected_val);
     T value;
     if constexpr (std::is_pointer_v<T>)
       value = &data;
