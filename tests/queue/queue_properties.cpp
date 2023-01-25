@@ -39,9 +39,7 @@ void check_in_order_prop(const sycl::queue &queue) {
       "sycl::queue::has_property<sycl::property::queue::"
       "in_order>()");
 }
-// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
-// implemented in computcpp
-#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 void check_in_order_functionality(sycl::queue &queue) {
   bool *data_changed = sycl::malloc_device<bool>(1, queue);
   constexpr size_t buffer_size = 10;
@@ -54,7 +52,7 @@ void check_in_order_functionality(sycl::queue &queue) {
     // commands are submitted
     queue
         .submit([&](sycl::handler &cgh) {
-          cgh.single_task([=] { *data_changed = false; });
+          cgh.single_task<class kernel1>([=] { *data_changed = false; });
         })
         .wait_and_throw();
 
@@ -62,7 +60,7 @@ void check_in_order_functionality(sycl::queue &queue) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
       auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
 
-      cgh.single_task([=] {
+      cgh.single_task<class kernel2>([=] {
         // to delay checking data_changed use a loop that will take some time
         for (int i = 0; i < 1000000; i++) {
           int s = sycl::sqrt(float(i));
@@ -73,22 +71,21 @@ void check_in_order_functionality(sycl::queue &queue) {
     });
 
     queue.submit([&](sycl::handler &cgh) {
-      cgh.single_task([=] { *data_changed = true; });
+      cgh.single_task<class kernel3>([=] { *data_changed = true; });
     });
     queue.wait_and_throw();
   }
   CHECK(result);
 }
-#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 void check_in_order(sycl::queue &queue) {
   check_in_order_prop(queue);
 
   if (queue.get_device().has(sycl::aspect::usm_device_allocations))
-    check_in_order_functionality(queue);
-  else
-    WARN(
+    SKIP(
         "test for in_order functionality is skipped because device doesn't "
         "support usm_device_allocations");
+  check_in_order_functionality(queue);
 }
 
 void check_enable_profiling_prop(sycl::queue &queue) {
@@ -116,10 +113,7 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
   check_enable_profiling_prop(queue);
 }
 
-// FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
-// implemented in computcpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("check property::queue::in_order", "[queue]")({
+TEST_CASE("check property::queue::in_order", "[queue]") {
   cts_async_handler asyncHandler;
   cts_selector selector;
   auto context = util::get_cts_object::context(selector);
@@ -177,7 +171,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
-});
+}
 
 TEST_CASE("check both queue properties in_order and enable_profiling",
           "[queue]") {
