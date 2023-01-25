@@ -21,6 +21,8 @@
 
 #include "../common/common.h"
 
+#include <algorithm>
+
 #define TEST_NAME nd_item_api
 
 namespace test_nd_item__ {
@@ -123,7 +125,7 @@ class kernel_nd_item {
       all_correct &= localRange.get(i) == ndLocal.get(i);
     }
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     /* test offset */
     sycl::id<dimensions> offset = myitem.get_offset();
     sycl::id<dimensions> ndOffset = NDRange.get_offset();
@@ -212,13 +214,13 @@ void test_item(util::logger &log, sycl::queue &queue) {
       });
     }
 
-    CHECK(std::reduce(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      true, std::logical_and<int>{}));
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::reduce(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(), true,
-                      std::logical_and<int>{}));
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 #endif
 
     STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<1>>);
@@ -252,13 +254,13 @@ void test_item(util::logger &log, sycl::queue &queue) {
       });
     }
 
-    CHECK(std::reduce(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      true, std::logical_and<int>{}));
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::reduce(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(), true,
-                      std::logical_and<int>{}));
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 #endif
 
     STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<2>>);
@@ -292,13 +294,13 @@ void test_item(util::logger &log, sycl::queue &queue) {
       });
     }
 
-    CHECK(std::reduce(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      true, std::logical_and<int>{}));
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::reduce(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(), true,
-                      std::logical_and<int>{}));
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 #endif
 
     STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<3>>);

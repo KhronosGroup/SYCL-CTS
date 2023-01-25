@@ -27,6 +27,7 @@
 #include "identity_helper.h"
 #include "reduction_common.h"
 
+#include <algorithm>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -75,8 +76,8 @@ struct check_reducer_subscript {
       });
     }
 
-    CHECK(std::reduce(results.begin(), results.end(), true,
-                      std::logical_and<int>{}));
+    CHECK(std::all_of(results.begin(), results.end(),
+                      [](int val) { return val; }));
   }
 
   template <typename OperatorT>
@@ -111,8 +112,8 @@ struct check_reducer_subscript {
       });
     }
 
-    CHECK(std::reduce(results.begin(), results.end(), true,
-                      std::logical_and<int>{}));
+    CHECK(std::all_of(results.begin(), results.end(),
+                      [](int val) { return val; }));
   }
 
   template <typename OperatorT>
@@ -159,8 +160,8 @@ struct check_reducer_subscript {
       });
     }
 
-    CHECK(std::reduce(results.begin(), results.end(), true,
-                      std::logical_and<int>{}));
+    CHECK(std::all_of(results.begin(), results.end(),
+                      [](int val) { return val; }));
   }
 
   void operator()(sycl::queue& queue, const std::string& type_name) {

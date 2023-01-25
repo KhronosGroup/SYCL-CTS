@@ -37,7 +37,7 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_VALUE(log, no_offset.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, no_offset.get_local_range()[i], sizes[i] / 4, i);
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK_TYPE(log, no_offset.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, no_offset.get_offset()[i], (size_t)0, i);
 #endif
@@ -51,7 +51,7 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_VALUE(log, deep_copy.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, deep_copy.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, deep_copy.get_local_range()[i], sizes[i] / 4, i);
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK_TYPE(log, deep_copy.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, deep_copy.get_offset()[i], (size_t)0, i);
 #endif
@@ -59,7 +59,7 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
     CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4),
                 i);
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::nd_range<dim> with_offset(gs, ls, offset);
     CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);

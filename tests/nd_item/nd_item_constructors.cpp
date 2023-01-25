@@ -80,7 +80,7 @@ class state_storage {
       m_groupRange[dim] = state.get_group_range(dim);
       m_localRange[dim] = state.get_local_range(dim);
       // ensure deprecated feature does not get compiled if not enabled
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       m_offset[dim] = state.get_offset().get(dim);
 #endif
     }
@@ -112,7 +112,7 @@ class state_storage {
     bool equal = true;
     for (size_t dim = 0; dim < numDims; ++dim) {
 // ensure deprecated feature does not get compiled if not enabled
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       equal &= m_offset[dim] == state.get_offset().get(dim);
 #endif
     }
@@ -198,7 +198,7 @@ void test_constructors(util::logger& log) {
   REQUIRE(success[to_integral(current_check::copy_assignment)]);
   CHECK(success[to_integral(current_check::move_constructor)]);
   CHECK(success[to_integral(current_check::move_assignment)]);
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   REQUIRE(success_deprecated[to_integral(current_check::copy_constructor)]);
   REQUIRE(success_deprecated[to_integral(current_check::copy_assignment)]);
   CHECK(success_deprecated[to_integral(current_check::move_constructor)]);
@@ -218,21 +218,21 @@ void test_constructors(util::logger& log) {
     {  // Check copy constructor
       sycl::nd_item<numDims> copied(itemReadOnly);
       CHECK(expected.check_equality(copied));
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       CHECK(expected.check_equality_deprecated(copied));
 #endif
     }
     {  // Check copy assignment
       auto copied = itemReadOnly;
       CHECK(expected.check_equality(copied));
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       CHECK(expected.check_equality_deprecated(copied));
 #endif
     }
     {  // Check move constructor; invalidates item
       sycl::nd_item<numDims> moved(item);
       CHECK(expected.check_equality(moved));
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       CHECK(expected.check_equality_deprecated(moved));
 #endif
     }
@@ -244,7 +244,7 @@ void test_constructors(util::logger& log) {
     // Check move assignment; invalidates item
     auto moved = std::move(item);
     CHECK(expected.check_equality(moved));
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK(expected.check_equality_deprecated(moved));
 #endif
   }

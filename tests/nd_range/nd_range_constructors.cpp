@@ -50,13 +50,13 @@ void test_nd_range_constructors(util::logger &log, sycl::range<dim> gs,
     for (int i = 0; i < dim; i++) {
       CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
       CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
 #endif
       CHECK_VALUE(log, defaultRange.get_group_range()[i], gs[i] / ls[i], i);
     }
   }
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {  // Copy assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = with_offset;
@@ -74,13 +74,13 @@ void test_nd_range_constructors(util::logger &log, sycl::range<dim> gs,
     for (int i = 0; i < dim; i++) {
       CHECK_VALUE(log, defaultRange.get_global_range()[i], gs[i], i);
       CHECK_VALUE(log, defaultRange.get_local_range()[i], ls[i], i);
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       CHECK_VALUE(log, defaultRange.get_offset()[i], (size_t)0, i);
 #endif
       CHECK_VALUE(log, defaultRange.get_group_range()[i], gs[i] / ls[i], i);
     }
   }
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {  // Move assignment, with offset
     auto defaultRange = get_default_nd_range<dim>();
     defaultRange = std::move(with_offset);

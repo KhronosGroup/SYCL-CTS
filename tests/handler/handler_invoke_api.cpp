@@ -253,7 +253,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                      });
 
       /* parallel_for with offset and id */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       check_api_call(
           "parallel_for(range, id, lambda) with id", log, queue,
           [&](handler &cgh, accessor_t acc) {
@@ -291,7 +291,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
           });
 
       /* parallel_for with offset and item */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
       check_api_call(
           "parallel_for(range, id, lambda) with item", log, queue,
           [&](handler &cgh, accessor_t acc) {
@@ -435,7 +435,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                          });
         }
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
         {
           using k_name = kernel_test_class2;
           check_api_call(
@@ -460,7 +460,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
                          });
         }
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
         {
           using k_name = kernel_test_class4;
           check_api_call(

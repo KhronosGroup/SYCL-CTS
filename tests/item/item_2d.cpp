@@ -21,8 +21,7 @@
 
 #include "../common/common.h"
 
-#include <functional>
-#include <numeric>
+#include <algorithm>
 
 #define TEST_NAME item_2d
 
@@ -31,20 +30,20 @@ using namespace sycl_cts;
 
 class kernel_item_2d {
  protected:
-  using t_readAccess =
+  using read_access_t =
       sycl::accessor<int, 2, sycl::access_mode::read, sycl::target::device>;
-  using t_writeAccess =
+  using write_access_t =
       sycl::accessor<int, 2, sycl::access_mode::write, sycl::target::device>;
 
-  t_readAccess in;
-  t_writeAccess out;
-  t_writeAccess out_deprecated;
+  read_access_t in;
+  write_access_t out;
+  write_access_t out_deprecated;
   sycl::range<2> r_exp;
   sycl::id<2> offset_exp;
 
  public:
-  kernel_item_2d(t_readAccess in_, t_writeAccess out_,
-                 t_writeAccess out_deprecated_, sycl::range<2> r)
+  kernel_item_2d(read_access_t in_, write_access_t out_,
+                 write_access_t out_deprecated_, sycl::range<2> r)
       : in(in_),
         out(out_),
         out_deprecated(out_deprecated_),
@@ -55,15 +54,15 @@ class kernel_item_2d {
     bool all_correct = true;
     sycl::id<2> gid = item.get_id();
 
-    size_t dim_a = item.get_id(0) + item.get_id(1);
-    size_t dim_b = item[0] + item[1];
-    all_correct &= (gid.get(0) + gid.get(1)) == dim_a &&
-                   (gid.get(0) + gid.get(1)) == dim_b;
+    for (std::size_t i = 0; i < 2; i++) {
+      all_correct &= gid.get(i) == item.get_id(i);
+      all_correct &= gid.get(i) == item[i];
+    }
 
     sycl::range<2> localRange = item.get_range();
     all_correct &= localRange == r_exp;
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::id<2> offset = item.get_offset();
     out_deprecated[item] = offset == offset_exp;
 #endif
@@ -101,9 +100,9 @@ void test_item_2d(util::logger &log) {
   const int nSize = nWidth * nHeight;
 
   /* allocate and clear host buffers */
-  std::vector<int> dataIn(nSize, 0);
-  std::vector<int> dataOut(nSize, 0);
-  std::vector<int> dataOutDeprecated(nSize, 0);
+  std::vector<int> dataIn(nSize);
+  std::vector<int> dataOut(nSize);
+  std::vector<int> dataOutDeprecated(nSize);
 
   buffer_fill(dataIn.data(), nWidth, nHeight);
 
@@ -131,13 +130,13 @@ void test_item_2d(util::logger &log) {
   }
 
   // check api call results
-  CHECK(std::reduce(dataOut.begin(), dataOut.end(), true,
-                    std::logical_and<int>{}));
+  CHECK(
+      std::all_of(dataOut.begin(), dataOut.end(), [](int val) { return val; }));
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   // check deprecated api call results
-  CHECK(std::reduce(dataOutDeprecated.begin(), dataOutDeprecated.end(), true,
-                    std::logical_and<int>{}));
+  CHECK(std::all_of(dataOutDeprecated.begin(), dataOutDeprecated.end(),
+                    [](int val) { return val; }));
 #endif
 
   STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::item<2>>);

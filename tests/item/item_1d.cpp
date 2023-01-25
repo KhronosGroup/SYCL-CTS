@@ -21,8 +21,7 @@
 
 #include "../common/common.h"
 
-#include <functional>
-#include <numeric>
+#include <algorithm>
 
 #define TEST_NAME item_1d
 
@@ -31,20 +30,20 @@ using namespace sycl_cts;
 
 class kernel_item_1d {
  protected:
-  using t_readAccess =
+  using read_access_t =
       sycl::accessor<int, 1, sycl::access_mode::read, sycl::target::device>;
-  using t_writeAccess =
+  using write_access_t =
       sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
 
-  t_readAccess in;
-  t_writeAccess out;
-  t_writeAccess out_deprecated;
+  read_access_t in;
+  write_access_t out;
+  write_access_t out_deprecated;
   sycl::range<1> r_exp;
   sycl::id<1> offset_exp;
 
  public:
-  kernel_item_1d(t_readAccess in_, t_writeAccess out_,
-                 t_writeAccess out_deprecated_, sycl::range<1> r)
+  kernel_item_1d(read_access_t in_, write_access_t out_,
+                 write_access_t out_deprecated_, sycl::range<1> r)
       : in(in_),
         out(out_),
         out_deprecated(out_deprecated_),
@@ -55,14 +54,13 @@ class kernel_item_1d {
     bool all_correct = true;
     sycl::id<1> gid = item.get_id();
 
-    size_t dim_a = item.get_id(0);
-    size_t dim_b = item[0];
-    all_correct &= (gid.get(0) == dim_a) && (gid.get(0) == dim_b);
+    all_correct &= gid.get(0) == item.get_id(0);
+    all_correct &= gid.get(0) == item[0];
 
     sycl::range<1> localRange = item.get_range();
     all_correct &= localRange == r_exp;
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::id<1> offset = item.get_offset();
     out_deprecated[item] = offset == offset_exp;
 #endif
@@ -107,9 +105,9 @@ void test_item_1d(util::logger &log) {
   const int nWidth = 64;
 
   /* allocate and clear host buffers */
-  std::vector<int> dataIn(nWidth, 0);
-  std::vector<int> dataOut(nWidth, 0);
-  std::vector<int> dataOutDeprecated(nWidth, 0);
+  std::vector<int> dataIn(nWidth);
+  std::vector<int> dataOut(nWidth);
+  std::vector<int> dataOutDeprecated(nWidth);
 
   buffer_fill(dataIn.data(), nWidth);
 
@@ -137,13 +135,13 @@ void test_item_1d(util::logger &log) {
   }
 
   // check api call results
-  CHECK(std::reduce(dataOut.begin(), dataOut.end(), true,
-                    std::logical_and<int>{}));
+  CHECK(
+      std::all_of(dataOut.begin(), dataOut.end(), [](int val) { return val; }));
 
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   // check deprecated api call results
-  CHECK(std::reduce(dataOutDeprecated.begin(), dataOutDeprecated.end(), true,
-                    std::logical_and<int>{}));
+  CHECK(std::all_of(dataOutDeprecated.begin(), dataOutDeprecated.end(),
+                    [](int val) { return val; }));
 #endif
 
   STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::item<1>>);

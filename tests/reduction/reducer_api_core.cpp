@@ -57,8 +57,8 @@ TEST_CASE("reducer class", "[reducer]") {
   }
 
   // all results are expected to evaluate to true
-  CHECK(std::reduce(results.begin(), results.end(), true,
-                    std::logical_and<int>{}));
+  CHECK(
+      std::all_of(results.begin(), results.end(), [](int val) { return val; }));
 }
 
 TEST_CASE("reducer api core", "[reducer]") {
