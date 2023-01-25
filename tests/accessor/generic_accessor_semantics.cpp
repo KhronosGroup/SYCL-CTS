@@ -126,7 +126,7 @@ DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
   }
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("generic accessor common reference semantics (kernel)", "[accessor]")({
   sycl::buffer<int> buffer{sycl::range<1>{1}};
   using type =

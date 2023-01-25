@@ -63,7 +63,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   });
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("local_accessor common reference semantics (kernel)", "[local_accessor]")({
   using type = sycl::local_accessor<int, 0>;
   common_reference_semantics::check_kernel<storage<0>, type>(
