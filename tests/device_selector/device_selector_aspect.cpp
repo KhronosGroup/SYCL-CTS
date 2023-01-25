@@ -218,7 +218,7 @@ void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
   test_selector(sycl::aspect_selector(Aspects...), accept_list);
   test_selector(sycl::aspect_selector<Aspects...>(), accept_list);
 #endif  // SYCL_CTS_COMPILING_WITH_DPCPP
-};
+}
 
 /**
  * Functor that checks a selector with a single aspect and an empty list of
@@ -305,57 +305,45 @@ class check_for_multiple_aspects {
   }
 };
 
-template <typename... AspectsT>
-struct helper_subset {
-  static constexpr unsigned int aspect_count = sizeof...(AspectsT);
+template <typename... SelectedAspectsT>
+constexpr void check_subset() {
+  // create a value pack using the selected aspects
+  const auto aspect_pack =
+      value_pack<sycl::aspect, SelectedAspectsT::value...>::generate_named();
+  check_for_multiple_aspects<SelectedAspectsT...>{}({}, aspect_pack.names);
+}
 
-  template <unsigned int ArraySize, typename... SelectedAspectsT>
-  struct create_array {
-    static void check() {
-      constexpr unsigned int idx = ArraySize - 1;
-      using elem =
-          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type;
-      create_array<ArraySize - 1, elem, SelectedAspectsT...>::check();
-    }
-  };
+template <typename... AspectsT, std::size_t... Indices>
+constexpr void create_subset(std::tuple<AspectsT...>,
+                             std::index_sequence<Indices...>) {
+  using aspect_tuple_t = std::tuple<AspectsT...>;
+  // expand indices sequence and use pattern to index into the aspect tuple
+  check_subset<typename std::tuple_element<Indices, aspect_tuple_t>::type...>();
+}
 
-  template <typename... SelectedAspectsT>
-  struct create_array<0, SelectedAspectsT...> {
-    // no elements remaining, instantiate the check with the running array
-    static void check() {
-      static const auto aspect_pack =
-          value_pack<sycl::aspect,
-                     SelectedAspectsT::value...>::generate_named();
-      check_for_multiple_aspects<SelectedAspectsT...>{}({}, aspect_pack.names);
-    }
-  };
+template <std::size_t SmallestSubset, typename... AspectsT,
+          std::size_t... Sizes>
+constexpr void create_subsets(std::tuple<AspectsT...>,
+                              std::index_sequence<Sizes...>) {
+  // create tuple of aspects to pass to function
+  auto aspect_tuple = std::tuple<AspectsT...>{};
+  // expand sizes pack and use pattern to create one index sequence
+  // for each desired subset size
+  (create_subset(aspect_tuple,
+                 std::make_index_sequence<SmallestSubset + Sizes>{}),
+   ...);
+}
 
-  template <unsigned int ArraySize, typename Enable = void>
-  struct create_arrays {
-    static void check() {
-      // create array of size ArraySize
-      create_array<ArraySize>::check();
-      // create all arrays of size ArraySize - 1 and smaller
-      create_arrays<ArraySize - 1>::check();
-    }
-  };
-
-  template <unsigned int ArraySize>
-  struct create_arrays<ArraySize, std::enable_if_t<ArraySize == 2>> {
-    static void check() {}
-  };
-
-  static void check() {
-    static_assert(
-        aspect_count > 2,
-        "all possible permutations of two aspects or less are already tested");
-    create_arrays<aspect_count>::check();
-  }
-};
-
-template <typename... AspectsT>
-void check_for_subset(const named_type_pack<AspectsT...>&) {
-  helper_subset<AspectsT...>::check();
+/** Checks subsets of size \p SmallestSubset, \p SmallestSubset + 1, etc. */
+template <std::size_t SmallestSubset, typename... AspectsT>
+constexpr void check_for_subset(const named_type_pack<AspectsT...>&) {
+  static_assert(sizeof...(AspectsT) >= SmallestSubset);
+  constexpr std::size_t subset_count = sizeof...(AspectsT) + 1 - SmallestSubset;
+  // create tuple of aspects to pass to function
+  auto aspect_tuple = std::tuple<AspectsT...>{};
+  // create an index sequence with one index for each subset size
+  auto subset_sizes = std::make_index_sequence<subset_count>{};
+  create_subsets<SmallestSubset>(aspect_tuple, subset_sizes);
 }
 
 template <unsigned int ArrayCount, typename... AspectsT>
@@ -468,7 +456,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   for_all_combinations<check_for_two_aspects>(aspect_pack, aspect_pack);
 
   // a subset of three aspects, four aspects, five aspects, etc.
-  check_for_subset(aspect_pack);
+  check_for_subset<3>(aspect_pack);
 
   // obtain a list of all defined aspects
   const std::vector<sycl::aspect> aspect_list = get_aspect_list();
