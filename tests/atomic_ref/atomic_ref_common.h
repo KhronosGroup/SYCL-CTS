@@ -32,8 +32,8 @@
 // host code at all. It can be tracked in this issue
 // https://gitlab.khronos.org/sycl/Specification/-/issues/637. When the decision
 // about atomic_ref usage have been done re-enable test running on host side
-// by setting this define to 1 or remove it and the corresponding code conserning
-// of testing sycl::atomic_ref on host side
+// by setting this define to 1 or remove it and the corresponding code
+// conserning of testing sycl::atomic_ref on host side
 #define SYCL_CTS_ATOMIC_REF_ON_HOST 0
 
 namespace atomic_ref::tests::common {
