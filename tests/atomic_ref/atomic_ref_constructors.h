@@ -2,7 +2,21 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests for SYCL atomic_ref constructors
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+//  Provides tests for sycl::atomic_ref constructors.
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_CONSTRUCTORS_H
@@ -11,8 +25,8 @@
 #include "atomic_ref_common.h"
 #include <type_traits>
 
-namespace atomic_ref_constructors {
-using namespace atomic_ref_tests_common;
+namespace atomic_ref::constructors {
+using namespace atomic_ref::tests::common;
 
 template <typename T, typename MemoryOrderT, typename MemoryScopeT,
           typename AddressSpaceT>
@@ -21,8 +35,8 @@ class run_constructor_tests {
   static constexpr sycl::memory_scope MemoryScope = MemoryScopeT::value;
   static constexpr sycl::access::address_space AddressSpace =
       AddressSpaceT::value;
-  using AtomicRT = sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>;
-  using ReferencedType = std::remove_pointer_t<T>;
+  using atomic_ref_type = sycl::atomic_ref<T, MemoryOrder, MemoryScope, AddressSpace>;
+  using referenced_type = std::remove_pointer_t<T>;
 
  public:
   void operator()(const std::string &type_name,
@@ -34,7 +48,7 @@ class run_constructor_tests {
                                                  MemoryScope)) {
       return;
     }
-    ReferencedType data = value_operations::init<ReferencedType>(expected_val);
+    referenced_type data = value_operations::init<referenced_type>(expected_val);
     T value;
     if constexpr (std::is_pointer_v<T>)
       value = &data;
@@ -51,12 +65,12 @@ class run_constructor_tests {
       SECTION(get_section_name(type_name, memory_order_name, memory_scope_name,
                                address_space_name,
                                "Check constructors on host")) {
-        AtomicRT a_r(value);
+        atomic_ref_type a_r(value);
         auto result = a_r.load();
         CHECK(result == value);
         STATIC_CHECK(std::is_same_v<decltype(result), T>);
 
-        AtomicRT a_r_copy(a_r);
+        atomic_ref_type a_r_copy(a_r);
         auto result_copy = a_r.load();
         CHECK(result_copy == value);
       }
@@ -79,12 +93,12 @@ class run_constructor_tests {
                 cgh.parallel_for(sycl::nd_range<1>(1, 1),
                                  [=](sycl::nd_item<1>) {
                                    loc_acc[0] = value;
-                                   AtomicRT a_r(loc_acc[0]);
+                                   atomic_ref_type a_r(loc_acc[0]);
 
                                    auto result = a_r.load();
                                    result_accessor[0] = (result == value);
 
-                                   AtomicRT a_r_copy(a_r);
+                                   atomic_ref_type a_r_copy(a_r);
                                    auto result_copy = a_r.load();
                                    result_accessor[1] = (result_copy == value);
                                  });
@@ -114,13 +128,13 @@ class run_constructor_tests {
                 auto result_accessor =
                     result_buf.template get_access<sycl::access_mode::write>(
                         cgh);
-                cgh.single_task([=]() {
-                  AtomicRT a_r(data_accessor[0]);
+                cgh.single_task([=] {
+                  atomic_ref_type a_r(data_accessor[0]);
 
                   auto result = a_r.load();
                   result_accessor[0] = (result == value);
 
-                  AtomicRT a_r_copy(a_r);
+                  atomic_ref_type a_r_copy(a_r);
                   auto result_copy = a_r.load();
                   result_accessor[1] = (result_copy == value);
                 });
@@ -160,5 +174,5 @@ struct run_test {
   }
 };
 
-}  // namespace atomic_ref_constructors
+}  // namespace atomic_ref::constructors
 #endif  // SYCL_CTS_ATOMIC_REF_CONSTRUCTORS_H
