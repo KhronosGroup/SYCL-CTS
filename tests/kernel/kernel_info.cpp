@@ -114,11 +114,11 @@ TEST_CASE("kernel info test", "[kernel]") {
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::max_sub_group_size>(dev)");
 
-  auto compileSubGroupSize =
+  auto compileSubGroupSizeRet =
       kernel
           .get_info<sycl::info::kernel_device_specific::compile_sub_group_size>(
               dev);
-  check_return_type<uint32_t>(maxNumSubGroupsRet,
+  check_return_type<uint32_t>(compileSubGroupSizeRet,
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::compile_sub_group_size>(dev)");
 
