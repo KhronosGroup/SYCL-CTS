@@ -78,6 +78,9 @@ class run_static_member_tests {
                  MemoryOrder);
     STATIC_CHECK(std::is_const_v<
                  decltype(atomic_ref_type::default_read_modify_write_order)>);
+
+    STATIC_CHECK(atomic_ref_type::default_scope == MemoryScope);
+    STATIC_CHECK(std::is_const_v<decltype(atomic_ref_type::default_scope)>);
   }
 };
 
