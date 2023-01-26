@@ -77,7 +77,9 @@ sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c) {
  *
  */
 
-template <typename T> T degrees_t(T a) { return a * (180.0L / M_PI); }
+template <typename T> T degrees_t(T a) { return a * (180.0 / M_PI); }
+
+sycl::half degrees(sycl::half a) { return degrees_t(a); }
 
 float degrees(float a) { return degrees_t(a); }
 
@@ -87,7 +89,9 @@ double degrees(double a) { return degrees_t(a); }
  *
  */
 
-template <typename T> T radians_t(T a) { return a * (M_PI / 180.0L); }
+template <typename T> T radians_t(T a) { return a * (M_PI / 180.0); }
+
+sycl::half radians(sycl::half a) { return radians_t(a); }
 
 float radians(float a) { return radians_t(a); }
 
@@ -102,6 +106,8 @@ template <typename T> T step_t(T a, T b) {
   return 1.0;
 }
 
+sycl::half step(sycl::half a, sycl::half b) { return step_t(a, b); }
+
 float step(float a, float b) { return step_t(a, b); }
 
 double step(double a, double b) { return step_t(a, b); }
@@ -112,14 +118,13 @@ double step(double a, double b) { return step_t(a, b); }
 template <typename T> sycl_cts::resultRef<T> smoothstep_t(T a, T b, T c) {
   if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
     return sycl_cts::resultRef<T>(T(), true);
-  if (c <= a)
-    return 0.0;
-  if (c >= b)
-    return 1.0;
   auto t = clamp<T>((c - a) / (b - a), 0, 1).res;
   return t * t * (3 - 2 * t);
 }
 
+sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b, sycl::half c) {
+  return smoothstep_t(a, b, c);
+}
 sycl_cts::resultRef<float> smoothstep(float a, float b, float c) {
   return smoothstep_t(a, b, c);
 }
@@ -142,6 +147,8 @@ template <typename T> T sign_t(T a) {
     return -0.0;
   return +0.0;
 }
+
+sycl::half sign(sycl::half a) { return sign_t(a); }
 
 float sign(float a) { return sign_t(a); }
 
@@ -244,6 +251,10 @@ template <typename T> sycl_cts::resultRef<T> mix_t(T x, T y, T a) {
   if (a >= 0.0 && a <= 1.0)
     return x + (y - x) * a;
   return sycl_cts::resultRef<T>(T(), true);
+}
+
+sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b, const sycl::half c) {
+  return mix_t(a, b, c);
 }
 
 sycl_cts::resultRef<float> mix(const float a, const float b, const float c) {
@@ -380,35 +391,41 @@ int64_t upsample(int32_t h, uint32_t l) {
 }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MAD24
- *
+ * valid from C++20
  */
-template <typename T> bool in_signed_range_24(T v) {
-  return v >= -223 && v <= 222;
+template <typename T>
+std::enable_if_t<std::is_signed_v<T>, bool> in_range_24(T v) {
+  return v >= -(1 << 23) && v < (1 << 23);
 }
 
+template <typename T>
+std::enable_if_t<std::is_unsigned_v<T>, bool> in_range_24(T v) {
+  return v < (1 << 24);
+}
+
+
 sycl_cts::resultRef<int32_t> mad24(int32_t x, int32_t y, int32_t z) {
-  if (!in_signed_range_24(x) || !in_signed_range_24(y) ||
-      !in_signed_range_24(z))
+  if (!in_range_24(x) || !in_range_24(y))
     return sycl_cts::resultRef<int32_t>(0, true);
   return int32_t(int64_t(x) * int64_t(y) + int64_t(z));
 }
 sycl_cts::resultRef<uint32_t> mad24(uint32_t x, uint32_t y, uint32_t z) {
-  if (x > 223 || y > 223 || z > 223)
+  if (!in_range_24(x) || !in_range_24(y))
     return sycl_cts::resultRef<uint32_t>(0, true);
   return uint32_t(uint64_t(x) * uint64_t(y) + uint64_t(z));
 }
 
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MUL24
- *
+ * valid from C++20
  */
 sycl_cts::resultRef<int32_t> mul24(int32_t x, int32_t y) {
-  if (!in_signed_range_24(x) || !in_signed_range_24(y))
+  if (!in_range_24(x) || !in_range_24(y))
     return sycl_cts::resultRef<int32_t>(0, true);
   return int32_t(int64_t(x) * int64_t(y));
 }
 sycl_cts::resultRef<uint32_t> mul24(uint32_t x, uint32_t y) {
-  if (x > 223 || y > 223)
+  if (!in_range_24(x) || !in_range_24(y))
     return sycl_cts::resultRef<uint32_t>(0, true);
   return uint32_t(uint64_t(x) * uint64_t(y));
 }
@@ -564,6 +581,28 @@ sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
 }
 sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
+}
+
+sycl::half fast_dot(float p0) {
+  return std::pow(p0, 2);
+}
+sycl::half fast_dot(sycl::float2 p0) {
+  return std::pow(p0.x(), 2) + std::pow(p0.y(), 2);
+}
+sycl::half fast_dot(sycl::float3 p0) {
+  return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2);
+}
+sycl::half fast_dot(sycl::float4 p0) {
+  return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) + std::pow(p0.w(), 2);
+}
+sycl::half fast_dot(sycl::mfloat2 p0) {
+  return std::pow(p0[0], 2) + std::pow(p0[1], 2);
+}
+sycl::half fast_dot(sycl::mfloat3 p0) {
+  return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2);
+}
+sycl::half fast_dot(sycl::mfloat4 p0) {
+  return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2) + std::pow(p0[3], 2);
 }
 
 } /* namespace reference */
