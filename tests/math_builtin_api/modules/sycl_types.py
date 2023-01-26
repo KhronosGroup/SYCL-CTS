@@ -80,210 +80,210 @@ def create_basic_types():
     t_char_0 = argtype("char", "scalar", "char", 1, [])
     type_dic["char"] = t_char_0
 
-    t_char_2 = argtype("sycl::char2", "vector", "char", 2, [])
+    t_char_2 = argtype("sycl::char2", "vector", "int8_t", 2, [])
     type_dic["sycl::char2"] = t_char_2
 
-    t_char_3 = argtype("sycl::char3", "vector", "char", 3, [])
+    t_char_3 = argtype("sycl::char3", "vector", "int8_t", 3, [])
     type_dic["sycl::char3"] = t_char_3
 
-    t_char_4 = argtype("sycl::char4", "vector", "char", 4, [])
+    t_char_4 = argtype("sycl::char4", "vector", "int8_t", 4, [])
     type_dic["sycl::char4"] = t_char_4
 
-    t_char_8 = argtype("sycl::char8", "vector", "char", 8, [])
+    t_char_8 = argtype("sycl::char8", "vector", "int8_t", 8, [])
     type_dic["sycl::char8"] = t_char_8
 
-    t_char_16 = argtype("sycl::char16", "vector", "char", 16, [])
+    t_char_16 = argtype("sycl::char16", "vector", "int8_t", 16, [])
     type_dic["sycl::char16"] = t_char_16
 
 
     t_schar_0 = argtype("signed char", "scalar", "char", 1, [])
     type_dic["signed char"] = t_schar_0
 
-    t_schar_2 = argtype("sycl::schar2", "vector", "char", 2, [])
-    type_dic["sycl::schar2"] = t_schar_2
+    #t_schar_2 = argtype("sycl::schar2", "vector", "char", 2, [])
+    #type_dic["sycl::schar2"] = t_schar_2
 
-    t_schar_3 = argtype("sycl::schar3", "vector", "char", 3, [])
-    type_dic["sycl::schar3"] = t_schar_3
+    #t_schar_3 = argtype("sycl::schar3", "vector", "char", 3, [])
+    #type_dic["sycl::schar3"] = t_schar_3
 
-    t_schar_4 = argtype("sycl::schar4", "vector", "char", 4, [])
-    type_dic["sycl::schar4"] = t_schar_4
+    #t_schar_4 = argtype("sycl::schar4", "vector", "char", 4, [])
+    #type_dic["sycl::schar4"] = t_schar_4
 
-    t_schar_8 = argtype("sycl::schar8", "vector", "char", 8, [])
-    type_dic["sycl::schar8"] = t_schar_8
+    #t_schar_8 = argtype("sycl::schar8", "vector", "char", 8, [])
+    #type_dic["sycl::schar8"] = t_schar_8
 
-    t_schar_16 = argtype("sycl::schar16", "vector", "char", 16, [])
-    type_dic["sycl::schar16"] = t_schar_16
+    #t_schar_16 = argtype("sycl::schar16", "vector", "char", 16, [])
+    #type_dic["sycl::schar16"] = t_schar_16
 
 
     t_uchar_0 = argtype("unsigned char", "scalar", "char", 1, [], True)
     type_dic["unsigned char"] = t_uchar_0
 
-    t_uchar_2 = argtype("sycl::uchar2", "vector", "char", 2, [], True)
+    t_uchar_2 = argtype("sycl::uchar2", "vector", "int8_t", 2, [], True)
     type_dic["sycl::uchar2"] = t_uchar_2
 
-    t_uchar_3 = argtype("sycl::uchar3", "vector", "char", 3, [], True)
+    t_uchar_3 = argtype("sycl::uchar3", "vector", "int8_t", 3, [], True)
     type_dic["sycl::uchar3"] = t_uchar_3
 
-    t_uchar_4 = argtype("sycl::uchar4", "vector", "char", 4, [], True)
+    t_uchar_4 = argtype("sycl::uchar4", "vector", "int8_t", 4, [], True)
     type_dic["sycl::uchar4"] = t_uchar_4
 
-    t_uchar_8 = argtype("sycl::uchar8", "vector", "char", 8, [], True)
+    t_uchar_8 = argtype("sycl::uchar8", "vector", "int8_t", 8, [], True)
     type_dic["sycl::uchar8"] = t_uchar_8
 
-    t_uchar_16 = argtype("sycl::uchar16", "vector", "char", 16, [], True)
+    t_uchar_16 = argtype("sycl::uchar16", "vector", "int8_t", 16, [], True)
     type_dic["sycl::uchar16"] = t_uchar_16
 
 
     t_short_0 = argtype("short", "scalar", "short", 1, [])
     type_dic["short"] = t_short_0
 
-    t_short_2 = argtype("sycl::short2", "vector", "short", 2, [])
+    t_short_2 = argtype("sycl::short2", "vector", "int16_t", 2, [])
     type_dic["sycl::short2"] = t_short_2
 
-    t_short_3 = argtype("sycl::short3", "vector", "short", 3, [])
+    t_short_3 = argtype("sycl::short3", "vector", "int16_t", 3, [])
     type_dic["sycl::short3"] = t_short_3
 
-    t_short_4 = argtype("sycl::short4", "vector", "short", 4, [])
+    t_short_4 = argtype("sycl::short4", "vector", "int16_t", 4, [])
     type_dic["sycl::short4"] = t_short_4
 
-    t_short_8 = argtype("sycl::short8", "vector", "short", 8, [])
+    t_short_8 = argtype("sycl::short8", "vector", "int16_t", 8, [])
     type_dic["sycl::short8"] = t_short_8
 
-    t_short_16 = argtype("sycl::short16", "vector", "short", 16, [])
+    t_short_16 = argtype("sycl::short16", "vector", "int16_t", 16, [])
     type_dic["sycl::short16"] = t_short_16
 
 
     t_ushort_0 = argtype("unsigned short", "scalar", "short", 1, [], True)
     type_dic["unsigned short"] = t_ushort_0
 
-    t_ushort_2 = argtype("sycl::ushort2", "vector", "short", 2, [], True)
+    t_ushort_2 = argtype("sycl::ushort2", "vector", "int16_t", 2, [], True)
     type_dic["sycl::ushort2"] = t_ushort_2
 
-    t_ushort_3 = argtype("sycl::ushort3", "vector", "short", 3, [], True)
+    t_ushort_3 = argtype("sycl::ushort3", "vector", "int16_t", 3, [], True)
     type_dic["sycl::ushort3"] = t_ushort_3
 
-    t_ushort_4 = argtype("sycl::ushort4", "vector", "short", 4, [], True)
+    t_ushort_4 = argtype("sycl::ushort4", "vector", "int16_t", 4, [], True)
     type_dic["sycl::ushort4"] = t_ushort_4
 
-    t_ushort_8 = argtype("sycl::ushort8", "vector", "short", 8, [], True)
+    t_ushort_8 = argtype("sycl::ushort8", "vector", "int16_t", 8, [], True)
     type_dic["sycl::ushort8"] = t_ushort_8
 
-    t_ushort_16 = argtype("sycl::ushort16", "vector", "short", 16, [], True)
+    t_ushort_16 = argtype("sycl::ushort16", "vector", "int16_t", 16, [], True)
     type_dic["sycl::ushort16"] = t_ushort_16
 
 
     t_int_0 = argtype("int", "scalar", "int", 1, [])
     type_dic["int"] = t_int_0
 
-    t_int_2 = argtype("sycl::int2", "vector", "int", 2, [])
+    t_int_2 = argtype("sycl::int2", "vector", "int32_t", 2, [])
     type_dic["sycl::int2"] = t_int_2
 
-    t_int_3 = argtype("sycl::int3", "vector", "int", 3, [])
+    t_int_3 = argtype("sycl::int3", "vector", "int32_t", 3, [])
     type_dic["sycl::int3"] = t_int_3
 
-    t_int_4 = argtype("sycl::int4", "vector", "int", 4, [])
+    t_int_4 = argtype("sycl::int4", "vector", "int32_t", 4, [])
     type_dic["sycl::int4"] = t_int_4
 
-    t_int_8 = argtype("sycl::int8", "vector", "int", 8, [])
+    t_int_8 = argtype("sycl::int8", "vector", "int32_t", 8, [])
     type_dic["sycl::int8"] = t_int_8
 
-    t_int_16 = argtype("sycl::int16", "vector", "int", 16, [])
+    t_int_16 = argtype("sycl::int16", "vector", "int32_t", 16, [])
     type_dic["sycl::int16"] = t_int_16
 
 
     t_uint_0 = argtype("unsigned int", "scalar", "int", 1, [], True)
     type_dic["unsigned int"] = t_uint_0
 
-    t_uint_2 = argtype("sycl::uint2", "vector", "int", 2, [], True)
+    t_uint_2 = argtype("sycl::uint2", "vector", "int32_t", 2, [], True)
     type_dic["sycl::uint2"] = t_uint_2
 
-    t_uint_3 = argtype("sycl::uint3", "vector", "int", 3, [], True)
+    t_uint_3 = argtype("sycl::uint3", "vector", "int32_t", 3, [], True)
     type_dic["sycl::uint3"] = t_uint_3
 
-    t_uint_4 = argtype("sycl::uint4", "vector", "int", 4, [], True)
+    t_uint_4 = argtype("sycl::uint4", "vector", "int32_t", 4, [], True)
     type_dic["sycl::uint4"] = t_uint_4
 
-    t_uint_8 = argtype("sycl::uint8", "vector", "int", 8, [], True)
+    t_uint_8 = argtype("sycl::uint8", "vector", "int32_t", 8, [], True)
     type_dic["sycl::uint8"] = t_uint_8
 
-    t_uint_16 = argtype("sycl::uint16", "vector", "int", 16, [], True)
+    t_uint_16 = argtype("sycl::uint16", "vector", "int32_t", 16, [], True)
     type_dic["sycl::uint16"] = t_uint_16
 
 
     t_long_0 = argtype("long int", "scalar", "long int", 1, [])
     type_dic["long int"] = t_long_0
 
-    t_long_2 = argtype("sycl::long2", "vector", "long int", 2, [])
+    t_long_2 = argtype("sycl::long2", "vector", "int64_t", 2, [])
     type_dic["sycl::long2"] = t_long_2
 
-    t_long_3 = argtype("sycl::long3", "vector", "long int", 3, [])
+    t_long_3 = argtype("sycl::long3", "vector", "int64_t", 3, [])
     type_dic["sycl::long3"] = t_long_3
 
-    t_long_4 = argtype("sycl::long4", "vector", "long int", 4, [])
+    t_long_4 = argtype("sycl::long4", "vector", "int64_t", 4, [])
     type_dic["sycl::long4"] = t_long_4
 
-    t_long_8 = argtype("sycl::long8", "vector", "long int", 8, [])
+    t_long_8 = argtype("sycl::long8", "vector", "int64_t", 8, [])
     type_dic["sycl::long8"] = t_long_8
 
-    t_long_16 = argtype("sycl::long16", "vector", "long int", 16, [])
+    t_long_16 = argtype("sycl::long16", "vector", "int64_t", 16, [])
     type_dic["sycl::long16"] = t_long_16
 
 
     t_ulong_0 = argtype("unsigned long int", "scalar", "long int", 1, [], True)
     type_dic["unsigned long int"] = t_ulong_0
 
-    t_ulong_2 = argtype("sycl::ulong2", "vector", "long int", 2, [], True)
+    t_ulong_2 = argtype("sycl::ulong2", "vector", "int64_t", 2, [], True)
     type_dic["sycl::ulong2"] = t_ulong_2
 
-    t_ulong_3 = argtype("sycl::ulong3", "vector", "long int", 3, [], True)
+    t_ulong_3 = argtype("sycl::ulong3", "vector", "int64_t", 3, [], True)
     type_dic["sycl::ulong3"] = t_ulong_3
 
-    t_ulong_4 = argtype("sycl::ulong4", "vector", "long int", 4, [], True)
+    t_ulong_4 = argtype("sycl::ulong4", "vector", "int64_t", 4, [], True)
     type_dic["sycl::ulong4"] = t_ulong_4
 
-    t_ulong_8 = argtype("sycl::ulong8", "vector", "long int", 8, [], True)
+    t_ulong_8 = argtype("sycl::ulong8", "vector", "int64_t", 8, [], True)
     type_dic["sycl::ulong8"] = t_ulong_8
 
-    t_ulong_16 = argtype("sycl::ulong16", "vector", "long int", 16, [], True)
+    t_ulong_16 = argtype("sycl::ulong16", "vector", "int64_t", 16, [], True)
     type_dic["sycl::ulong16"] = t_ulong_16
 
 
     t_longlong_0 = argtype("long long int", "scalar", "long long int", 1, [])
     type_dic["long long int"] = t_longlong_0
 
-    t_longlong_2 = argtype("sycl::longlong2", "vector", "long long int", 2, [])
-    type_dic["sycl::longlong2"] = t_longlong_2
+    # t_longlong_2 = argtype("sycl::longlong2", "vector", "long long int", 2, [])
+    # type_dic["sycl::longlong2"] = t_longlong_2
 
-    t_longlong_3 = argtype("sycl::longlong3", "vector", "long long int", 3, [])
-    type_dic["sycl::longlong3"] = t_longlong_3
+    # t_longlong_3 = argtype("sycl::longlong3", "vector", "long long int", 3, [])
+    # type_dic["sycl::longlong3"] = t_longlong_3
 
-    t_longlong_4 = argtype("sycl::longlong4", "vector", "long long int", 4, [])
-    type_dic["sycl::longlong4"] = t_longlong_4
+    # t_longlong_4 = argtype("sycl::longlong4", "vector", "long long int", 4, [])
+    # type_dic["sycl::longlong4"] = t_longlong_4
 
-    t_longlong_8 = argtype("sycl::longlong8", "vector", "long long int", 8, [])
-    type_dic["sycl::longlong8"] = t_longlong_8
+    # t_longlong_8 = argtype("sycl::longlong8", "vector", "long long int", 8, [])
+    # type_dic["sycl::longlong8"] = t_longlong_8
 
-    t_longlong_16 = argtype("sycl::longlong16", "vector", "long long int", 16, [])
-    type_dic["sycl::longlong16"] = t_longlong_16
+    # t_longlong_16 = argtype("sycl::longlong16", "vector", "long long int", 16, [])
+    # type_dic["sycl::longlong16"] = t_longlong_16
 
 
     t_ulonglong_0 = argtype("unsigned long long int", "scalar", "long long int", 1, [], True)
     type_dic["unsigned long long int"] = t_ulonglong_0
 
-    t_ulonglong_2 = argtype("sycl::ulonglong2", "vector", "long long int", 2, [], True)
-    type_dic["sycl::ulonglong2"] = t_ulonglong_2
+    # t_ulonglong_2 = argtype("sycl::ulonglong2", "vector", "long long int", 2, [], True)
+    # type_dic["sycl::ulonglong2"] = t_ulonglong_2
 
-    t_ulonglong_3 = argtype("sycl::ulonglong3", "vector", "long long int", 3, [], True)
-    type_dic["sycl::ulonglong3"] = t_ulonglong_3
+    # t_ulonglong_3 = argtype("sycl::ulonglong3", "vector", "long long int", 3, [], True)
+    # type_dic["sycl::ulonglong3"] = t_ulonglong_3
 
-    t_ulonglong_4 = argtype("sycl::ulonglong4", "vector", "long long int", 4, [], True)
-    type_dic["sycl::ulonglong4"] = t_ulonglong_4
+    # t_ulonglong_4 = argtype("sycl::ulonglong4", "vector", "long long int", 4, [], True)
+    # type_dic["sycl::ulonglong4"] = t_ulonglong_4
 
-    t_ulonglong_8 = argtype("sycl::ulonglong8", "vector", "long long int", 8, [], True)
-    type_dic["sycl::ulonglong8"] = t_ulonglong_8
+    # t_ulonglong_8 = argtype("sycl::ulonglong8", "vector", "long long int", 8, [], True)
+    # type_dic["sycl::ulonglong8"] = t_ulonglong_8
 
-    t_ulonglong_16 = argtype("sycl::ulonglong16", "vector", "long long int", 16, [], True)
-    type_dic["sycl::ulonglong16"] = t_ulonglong_16
+    # t_ulonglong_16 = argtype("sycl::ulonglong16", "vector", "long long int", 16, [], True)
+    # type_dic["sycl::ulonglong16"] = t_ulonglong_16
 
 
     # Fixed size basic types
@@ -479,13 +479,14 @@ def create_types():
     t_char_n = argtype("charn", "NULL", "NULL", 0, ["sycl::char2","sycl::char3","sycl::char4","sycl::char8","sycl::char16"])
     type_dic["charn"] = t_char_n
 
-    t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["sycl::schar2","sycl::schar3","sycl::schar4","sycl::schar8","sycl::schar16"])
-    type_dic["scharn"] = t_schar_n
+    # t_schar_n = argtype("scharn", "NULL", "NULL", 0, ["sycl::schar2","sycl::schar3","sycl::schar4","sycl::schar8","sycl::schar16"])
+    # type_dic["scharn"] = t_schar_n
 
     t_uchar_n = argtype("ucharn", "NULL", "NULL", 0, ["sycl::uchar2","sycl::uchar3","sycl::uchar4","sycl::uchar8","sycl::uchar16"])
     type_dic["ucharn"] = t_uchar_n
 
-    t_igen_char = argtype("igenchar", "NULL", "NULL", 0, ["signed char","scharn"])
+    # t_igen_char = argtype("igenchar", "NULL", "NULL", 0, ["signed char","scharn"])
+    t_igen_char = argtype("igenchar", "NULL", "NULL", 0, ["signed char"])
     type_dic["igenchar"] = t_igen_char
 
     t_ugen_char = argtype("ugenchar", "NULL", "NULL", 0, ["unsigned char","ucharn"])
@@ -530,16 +531,18 @@ def create_types():
     t_gen_long = argtype("genlong", "NULL", "NULL", 0, ["long int", "longn"])
     type_dic["genlong"] = t_gen_long
 
-    t_ulonglong_n = argtype("ulonglongn", "NULL", "NULL", 0, ["sycl::ulonglong2","sycl::ulonglong3","sycl::ulonglong4","sycl::ulonglong8","sycl::ulonglong16"])
-    type_dic["ulonglongn"] = t_ulonglong_n
+    # t_ulonglong_n = argtype("ulonglongn", "NULL", "NULL", 0, ["sycl::ulonglong2","sycl::ulonglong3","sycl::ulonglong4","sycl::ulonglong8","sycl::ulonglong16"])
+    # type_dic["ulonglongn"] = t_ulonglong_n
 
-    t_ugen_longlong = argtype("ugenlonglong", "NULL", "NULL", 0, ["unsigned long long int", "ulonglongn"])
+    # t_ugen_longlong = argtype("ugenlonglong", "NULL", "NULL", 0, ["unsigned long long int", "ulonglongn"])
+    t_ugen_longlong = argtype("ugenlonglong", "NULL", "NULL", 0, ["unsigned long long int"])
     type_dic["ugenlonglong"] = t_ugen_longlong
 
-    t_longlong_n = argtype("longlongn", "NULL", "NULL", 0, ["sycl::longlong2","sycl::longlong3","sycl::longlong4","sycl::longlong8","sycl::longlong16"])
-    type_dic["longlongn"] = t_longlong_n
+    # t_longlong_n = argtype("longlongn", "NULL", "NULL", 0, ["sycl::longlong2","sycl::longlong3","sycl::longlong4","sycl::longlong8","sycl::longlong16"])
+    # type_dic["longlongn"] = t_longlong_n
 
-    t_gen_longlong = argtype("genlonglong", "NULL", "NULL", 0, ["long long int", "longlongn"])
+    # t_gen_longlong = argtype("genlonglong", "NULL", "NULL", 0, ["long long int", "longlongn"])
+    t_gen_longlong = argtype("genlonglong", "NULL", "NULL", 0, ["long long int"])
     type_dic["genlonglong"] = t_gen_longlong
 
     t_igen_long_integer = argtype("igenlonginteger", "NULL", "NULL", 0, ["genlong", "genlonglong"])
