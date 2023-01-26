@@ -78,7 +78,7 @@ struct test_kernel {
   }
 };
 
-template<std::size_t TestCase>
+template <std::size_t TestCase>
 class test_kernel_name;
 
 /**

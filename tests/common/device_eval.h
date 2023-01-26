@@ -30,7 +30,7 @@
     sycl_cts::util::get_cts_object::queue()                         \
         .submit([=, &result_buf](sycl::handler& cgh) {              \
           sycl::accessor result{result_buf, cgh, sycl::write_only}; \
-          cgh.single_task<__VA_ARGS__>([=] { result[0] = expr; }); \
+          cgh.single_task<__VA_ARGS__>([=] { result[0] = expr; });  \
         })                                                          \
         .wait_and_throw();                                          \
     sycl::host_accessor acc{result_buf, sycl::read_only};           \

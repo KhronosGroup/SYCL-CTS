@@ -89,8 +89,8 @@ class run_multi_ptr_arithmetic_op_test {
 
       sycl::buffer<T> arr_buffer(m_arr.data(), sycl::range(m_array_size));
       queue.submit([&](sycl::handler &cgh) {
-        using kname = kernel_arithmetic_op<T, AddrSpaceT,
-                                                     IsDecoratedT, KernelName>;
+        using kname =
+            kernel_arithmetic_op<T, AddrSpaceT, IsDecoratedT, KernelName>;
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);

@@ -29,7 +29,6 @@
 
 namespace accessor_requisite_entire_buffer {
 
-
 // FIXME: re-enable when possibility of a SYCL kernel with an unnamed type is
 // implemented in computecpp
 DISABLED_FOR_TEST_CASE(ComputeCpp)

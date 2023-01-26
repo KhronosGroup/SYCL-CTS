@@ -75,8 +75,9 @@ class run_convert_assignment_operators_tests {
         sycl::buffer<bool> res_buf(&res, r);
         sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
-          using kname = kernel_convert_assignment_op_copy<
-              T, SrcAddrSpaceT, SrcIsDecorated, DstIsDecorated>;
+          using kname =
+              kernel_convert_assignment_op_copy<T, SrcAddrSpaceT,
+                                                SrcIsDecorated, DstIsDecorated>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           auto acc_for_mptr =
@@ -148,8 +149,9 @@ class run_convert_assignment_operators_tests {
         sycl::buffer<bool> res_buf(&res, r);
         sycl::buffer<T> val_buffer(&value, r);
         queue.submit([&](sycl::handler &cgh) {
-          using kname = kernel_convert_assignment_op_move<
-              T, SrcAddrSpaceT, SrcIsDecorated, DstIsDecorated>;
+          using kname =
+              kernel_convert_assignment_op_move<T, SrcAddrSpaceT,
+                                                SrcIsDecorated, DstIsDecorated>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
 

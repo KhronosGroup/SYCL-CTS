@@ -43,7 +43,6 @@ class templated_functor {
   void operator()() const { m_out[0] = m_in[0]; }
 };
 
-
 template <typename T>
 bool test_kernel_functor(T in_value, sycl::queue &sycl_queue) {
   T input = in_value, output = 0;

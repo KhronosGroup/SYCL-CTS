@@ -133,15 +133,16 @@ class run_implicit_convert_tests {
 
         using kname =
             kernel_implicit_conversions<T, AddrSpaceT, IsDecoratedT,
-                                    src_multi_ptr_t, dest_multi_ptr_t>;
+                                        src_multi_ptr_t, dest_multi_ptr_t>;
         if constexpr (address_space ==
                       sycl::access::address_space::local_space) {
           sycl::local_accessor<T> expected_val_acc{sycl::range(1), cgh};
-          cgh.parallel_for<kname>(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
-            value_operations::assign(expected_val_acc, value);
-            sycl::group_barrier(item.get_group());
-            test_device_code(expected_val_acc);
-          });
+          cgh.parallel_for<kname>(
+              sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+                value_operations::assign(expected_val_acc, value);
+                sycl::group_barrier(item.get_group());
+                test_device_code(expected_val_acc);
+              });
         } else if constexpr (address_space ==
                              sycl::access::address_space::private_space) {
           cgh.single_task<kname>([=] {

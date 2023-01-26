@@ -24,7 +24,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 #include "../common/common.h"
- #include "../common/device_eval.h"
+#include "../common/device_eval.h"
 #include "../common/disabled_for_test_case.h"
 
 using namespace sycl_cts;
@@ -226,7 +226,7 @@ TEMPLATE_TEST_CASE_SIG("id can be implicitly conversion-constructed from range",
   KCHECK(EVAL_T_D(id<D>, convert()) == idh<D>::get(5, 8, 3));
 }
 
-template<int D>
+template <int D>
 class kernel_id;
 
 TEMPLATE_TEST_CASE_SIG("id can be implicitly conversion-constructed from item",
@@ -270,13 +270,11 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
   using sycl::id;
 
   CHECK(assign_component(a, 0, 7) == idh<D>::get(7, 8, 3));
-  KCHECK(EVAL_T_D(id<D>, assign_component(a, 0, 7)) ==
-         idh<D>::get(7, 8, 3));
+  KCHECK(EVAL_T_D(id<D>, assign_component(a, 0, 7)) == idh<D>::get(7, 8, 3));
 
   if (D >= 2) {
     CHECK(assign_component(a, 1, 9) == idh<D>::get(5, 9, 3));
-    KCHECK(EVAL_T_D(id<D>, assign_component(a, 1, 9)) ==
-           idh<D>::get(5, 9, 3));
+    KCHECK(EVAL_T_D(id<D>, assign_component(a, 1, 9)) == idh<D>::get(5, 9, 3));
   }
 
   if (D == 3) {
@@ -433,26 +431,16 @@ TEMPLATE_TEST_CASE_SIG(
   CHECK(COMPOUND_OP(a, x ^= b) == idh<D>::get(1, 0, 1));
 
   using sycl::id;
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x += b)) ==
-         idh<D>::get(9, 16, 5));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x -= b)) ==
-         idh<D>::get(1, 0, 1));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x *= b)) ==
-         idh<D>::get(20, 64, 6));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x /= b)) ==
-         idh<D>::get(1, 1, 1));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x %= b)) ==
-         idh<D>::get(1, 0, 1));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x <<= b)) ==
-         idh<D>::get(80, 2048, 12));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x >>= b)) ==
-         idh<D>::get(0, 0, 0));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x &= b)) ==
-         idh<D>::get(4, 8, 2));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x |= b)) ==
-         idh<D>::get(5, 8, 3));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x ^= b)) ==
-         idh<D>::get(1, 0, 1));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x += b)) == idh<D>::get(9, 16, 5));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x -= b)) == idh<D>::get(1, 0, 1));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x *= b)) == idh<D>::get(20, 64, 6));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x /= b)) == idh<D>::get(1, 1, 1));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x %= b)) == idh<D>::get(1, 0, 1));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x <<= b)) == idh<D>::get(80, 2048, 12));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x >>= b)) == idh<D>::get(0, 0, 0));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x &= b)) == idh<D>::get(4, 8, 2));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x |= b)) == idh<D>::get(5, 8, 3));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x ^= b)) == idh<D>::get(1, 0, 1));
 }
 
 TEMPLATE_TEST_CASE_SIG(
@@ -473,26 +461,16 @@ TEMPLATE_TEST_CASE_SIG(
   CHECK(COMPOUND_OP(a, x ^= b) == idh<D>::get(6, 11, 0));
 
   using sycl::id;
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x += b)) ==
-         idh<D>::get(8, 11, 6));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x -= b)) ==
-         idh<D>::get(2, 5, 0));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x *= b)) ==
-         idh<D>::get(15, 24, 9));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x /= b)) ==
-         idh<D>::get(1, 2, 1));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x %= b)) ==
-         idh<D>::get(2, 2, 0));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x <<= b)) ==
-         idh<D>::get(40, 64, 24));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x >>= b)) ==
-         idh<D>::get(0, 1, 0));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x &= b)) ==
-         idh<D>::get(1, 0, 3));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x |= b)) ==
-         idh<D>::get(7, 11, 3));
-  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x ^= b)) ==
-         idh<D>::get(6, 11, 0));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x += b)) == idh<D>::get(8, 11, 6));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x -= b)) == idh<D>::get(2, 5, 0));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x *= b)) == idh<D>::get(15, 24, 9));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x /= b)) == idh<D>::get(1, 2, 1));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x %= b)) == idh<D>::get(2, 2, 0));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x <<= b)) == idh<D>::get(40, 64, 24));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x >>= b)) == idh<D>::get(0, 1, 0));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x &= b)) == idh<D>::get(1, 0, 3));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x |= b)) == idh<D>::get(7, 11, 3));
+  KCHECK(EVAL_T_D(id<D>, COMPOUND_OP(a, x ^= b)) == idh<D>::get(6, 11, 0));
 }
 
 #undef COMPOUND_OP

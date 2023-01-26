@@ -54,21 +54,23 @@ class run_local_accessor_cnstr_tests {
       {
         sycl::buffer<bool, 1> res_buf(&res, sycl::range<1>(1));
         queue.submit([&](sycl::handler &cgh) {
-          using kname = kernel_local_accessor_constructor<T, AddrSpaceT, DimensionT>;
+          using kname =
+              kernel_local_accessor_constructor<T, AddrSpaceT, DimensionT>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           sycl::local_accessor<T, dims> acc(r, cgh);
           cgh.parallel_for<kname>(sycl::nd_range<dims>(r, r),
-                           [=](sycl::nd_item<dims> item) {
-                             auto &ref = acc[sycl::id<dims>()];
-                             value_operations::assign(ref, expected_val);
-                             // Creating multi_ptr object with local_accessor
-                             // constructor
-                             multi_ptr_t mptr(acc);
+                                  [=](sycl::nd_item<dims> item) {
+                                    auto &ref = acc[sycl::id<dims>()];
+                                    value_operations::assign(ref, expected_val);
+                                    // Creating multi_ptr object with
+                                    // local_accessor constructor
+                                    multi_ptr_t mptr(acc);
 
-                             // Check that mptr points at same value as accessor
-                             res_acc[0] = (*(mptr.get()) == ref);
-                           });
+                                    // Check that mptr points at same value as
+                                    // accessor
+                                    res_acc[0] = (*(mptr.get()) == ref);
+                                  });
         });
       }
       CHECK(res);

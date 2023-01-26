@@ -40,7 +40,6 @@ class type_size_kernel {
   void operator()() const { m_out[0] = sizeof(T); }
 };
 
-
 template <typename T>
 bool test_kernel_type_size(util::logger &log, sycl::queue &sycl_queue,
                            const std::string &name) {

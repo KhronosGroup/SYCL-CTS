@@ -697,7 +697,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
               using kname = kernel_placeholder_accessor_exception<
                   AccType, DataT, Dimension, AccessMode, Target>;
               cgh.parallel_for_work_group<kname>(sycl::range(1),
-                                          [=](sycl::group<1>) {});
+                                                 [=](sycl::group<1>) {});
             }
           })
           .wait_and_throw();

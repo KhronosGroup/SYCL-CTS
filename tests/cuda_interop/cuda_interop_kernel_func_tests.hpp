@@ -85,7 +85,7 @@ static auto get_types() {
   return types;
 }
 
-template<typename T>
+template <typename T>
 class kernel_accessor;
 
 /** check get_native() returns the correct type for an accessor
@@ -118,7 +118,7 @@ struct test_accessor {
   }
 };
 
-template<typename T>
+template <typename T>
 class kernel_constant_buffer_accessor;
 
 /** check get_native() returns the correct type for a constant-buffer accessor
@@ -152,7 +152,7 @@ struct test_constant_buffer_accessor {
   }
 };
 
-template<typename T>
+template <typename T>
 class kernel_local_target_accessor;
 
 /** check get_native() returns the correct type for an accessor with

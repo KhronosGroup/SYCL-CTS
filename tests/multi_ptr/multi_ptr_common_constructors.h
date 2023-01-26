@@ -165,14 +165,16 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
       if constexpr (Space == sycl::access::address_space::local_space) {
         sycl::local_accessor<T, 1> loc_acc(sycl::range<1>(1), cgh);
-        cgh.parallel_for<kname>(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
-          value_operations::assign(loc_acc[0], ref_acc[0]);
-          sycl::group_barrier(item.get_group());
-          run_and_check(loc_acc, same_type_acc, same_value_acc);
-        });
+        cgh.parallel_for<kname>(
+            sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+              value_operations::assign(loc_acc[0], ref_acc[0]);
+              sycl::group_barrier(item.get_group());
+              run_and_check(loc_acc, same_type_acc, same_value_acc);
+            });
       } else if constexpr (Space ==
                            sycl::access::address_space::private_space) {
-        cgh.parallel_for<kname>(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+        cgh.parallel_for<kname>(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1>
+                                                                 item) {
           T priv_val = ref_acc[0];
           sycl::multi_ptr<T, sycl::access::address_space::private_space,
                           Decorated>

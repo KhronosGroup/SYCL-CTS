@@ -414,7 +414,6 @@ private:
   offset_t offset;
 };
 
-
 /** @brief Used to test the buffer accessor combinations for device and
  *         constant_buffer
  */

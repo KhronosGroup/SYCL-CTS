@@ -150,7 +150,8 @@ class run_multi_ptr_comparison_op_test {
   static constexpr size_t m_values_arr_size =
       sizeof(m_values_arr) / sizeof(*m_values_arr);
 
-  template <typename KernelName, typename TestActionT, typename ExpectedTestResultT>
+  template <typename KernelName, typename TestActionT,
+            typename ExpectedTestResultT>
   void run_test(sycl::queue &queue, TestActionT test_action,
                 const ExpectedTestResultT &expected_results) {
     // Variable that contains all variables that will be used to verify test

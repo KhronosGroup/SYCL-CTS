@@ -160,7 +160,6 @@ public:
   }
 };
 
-
 /** @brief Used to test the local accessor combinations for n > 0 dimensions
  */
 template <typename T, typename kernelName, size_t dims>

@@ -82,7 +82,6 @@ struct target_map<sycl::target::local> {
   }
 };
 
-
 /** Check atomic operations
  */
 template <typename T, sycl::target target,

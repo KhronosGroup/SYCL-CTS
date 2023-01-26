@@ -204,7 +204,8 @@ bool define_kernel(sycl::queue &queue,
       queue.submit([&](sycl::handler &cgh) {
         auto acc =
             res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.parallel_for<kernel_functor>(sycl::range<1>(1), kernel_functor{acc});
+        cgh.parallel_for<kernel_functor>(sycl::range<1>(1),
+                                         kernel_functor{acc});
       });
     }
     return result == kernel_functor::expected_val;

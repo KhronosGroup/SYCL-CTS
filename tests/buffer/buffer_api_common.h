@@ -222,8 +222,7 @@ using flip_signedness_t =
     typename flip_signedness_helper<T, std::is_integral<T>::value>::type;
 
 template <typename T, int size, int dims, typename alloc,
-          sycl::access_mode access_mode,
-          sycl::target target>
+          sycl::access_mode access_mode, sycl::target target>
 class kernel_buffer_accessor_type;
 
 /**
@@ -323,7 +322,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     auto q = util::get_cts_object::queue();
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
+    q.submit([&](sycl::handler &cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read_write,
                                                 sycl::target::device>;
@@ -335,7 +334,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
+    q.submit([&](sycl::handler &cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read,
                                                 sycl::target::constant_buffer>;
@@ -360,7 +359,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 #endif
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler& cgh) {
+    q.submit([&](sycl::handler &cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read_write,
                                                 sycl::target::device>;

@@ -71,7 +71,8 @@ class run_explicit_convert_tests {
       sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
       sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
       queue.submit([&](sycl::handler &cgh) {
-        using kname = kernel_explicit_conversions<T, AddrSpaceT, IsDecorated, T1>;
+        using kname =
+            kernel_explicit_conversions<T, AddrSpaceT, IsDecorated, T1>;
         auto res_acc =
             res_buf.template get_access<sycl::access_mode::write>(cgh);
         if constexpr (target_space ==
