@@ -19,7 +19,7 @@
 namespace reduction_with_several_reductions_in_kernel_h {
 
 constexpr size_t number_elements{2};
-template <int TestCase>
+template <typename RangeT, int TestCase>
 class kernel;
 
 /** @brief Provide verification test output value and logging message if result
@@ -30,9 +30,9 @@ class kernel;
  *  @param number_test_case Test case numbed e.g.: 1, 2, 3, etc.
  */
 void check_output_value(int got, int expected, int line, int number_test_case) {
-  INFO("In test for reducion with different functors in test case number: " <<
-        number_test_case << ". Got: " << got <<
-        " but expected " << expected << line);
+  INFO("In test for reducion with different functors in test case number: "
+       << number_test_case << ". Got: " << got << " but expected " << expected
+       << line);
   CHECK(got != expected);
 }
 
@@ -201,18 +201,18 @@ auto get_lambda_for_5_reductions(AccessorT accessor) {
 template <typename RangeT, typename AccessorT>
 auto get_lambda_for_6_reductions(AccessorT accessor) {
   if constexpr (std::is_same_v<RangeT, decltype(reduction_common::range)>) {
-    return
-        [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2, auto& reducer_span_1,
-            auto& reducer_span_2, auto& reducer_5, auto& reducer_6) {
-          reducer_1.combine(accessor[idx]);
-          reducer_2.combine(accessor[idx]);
-          for (size_t i = 0; i < number_elements; i++) {
-            reducer_span_1[i].combine(accessor[idx]);
-            reducer_span_2[i].combine(accessor[idx]);
-          }
-          reducer_5.combine(accessor[idx]);
-          reducer_6.combine(accessor[idx]);
-        };
+    return [=](sycl::id<1> idx, auto& reducer_1, auto& reducer_2,
+               auto& reducer_span_1, auto& reducer_span_2, auto& reducer_5,
+               auto& reducer_6) {
+      reducer_1.combine(accessor[idx]);
+      reducer_2.combine(accessor[idx]);
+      for (size_t i = 0; i < number_elements; i++) {
+        reducer_span_1[i].combine(accessor[idx]);
+        reducer_span_2[i].combine(accessor[idx]);
+      }
+      reducer_5.combine(accessor[idx]);
+      reducer_6.combine(accessor[idx]);
+    };
   } else {
     return [=](sycl::nd_item<1> nd_item, auto& reducer_1, auto& reducer_2,
                auto& reducer_span_1, auto& reducer_span_2, auto& reducer_5,
@@ -263,8 +263,8 @@ void run_test_for_two_reductions(RangeT range, sycl::queue& queue) {
     auto buf_accessor =
         initial_buf.template get_access<sycl::access_mode::read>(cgh);
     auto lambda{get_lambda_for_2_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<test_case>>(range, reduction_with_buffer,
-                                        reduction_with_ptr_to_variable, lambda);
+    cgh.parallel_for<kernel<RangeT, test_case>>(
+        range, reduction_with_buffer, reduction_with_ptr_to_variable, lambda);
   });
   check_output_value(*ptr_for_variable.get(),
                      expected_value_for_ptr_to_variable, __LINE__, test_case);
@@ -318,9 +318,9 @@ void run_test_for_three_reductions(RangeT range, sycl::queue& queue) {
     auto buf_accessor =
         initial_buf.template get_access<sycl::access_mode::read>(cgh);
     auto lambda{get_lambda_for_3_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<test_case>>(range, reduction_with_buffer,
-                                        reduction_with_span,
-                                        reduction_with_ptr_to_variable, lambda);
+    cgh.parallel_for<kernel<RangeT, test_case>>(
+        range, reduction_with_buffer, reduction_with_span,
+        reduction_with_ptr_to_variable, lambda);
   });
   check_output_value(output_buffer.get_host_access()[0],
                      expected_value_for_buffer, __LINE__, test_case);
@@ -387,7 +387,7 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue) {
     auto buf_accessor =
         initial_buf.template get_access<sycl::access_mode::read>(cgh);
     auto lambda{get_lambda_for_4_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<test_case>>(
+    cgh.parallel_for<kernel<RangeT, test_case>>(
         range, reduction_with_buffer, reduction_with_span,
         reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,
         lambda);
@@ -474,7 +474,7 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue) {
     auto buf_accessor =
         initial_buf.template get_access<sycl::access_mode::read>(cgh);
     auto lambda{get_lambda_for_5_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<test_case>>(
+    cgh.parallel_for<kernel<RangeT, test_case>>(
         range, reduction_with_buffer, reduction_with_span_1,
         reduction_with_span_2, reduction_with_ptr_to_variable_1,
         reduction_with_ptr_to_variable_2, lambda);
@@ -573,7 +573,7 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
     auto buf_accessor =
         initial_buf.template get_access<sycl::access_mode::read>(cgh);
     auto lambda{get_lambda_for_6_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<test_case>>(
+    cgh.parallel_for<kernel<RangeT, test_case>>(
         range, reduction_with_buffer_1, reduction_with_buffer_2,
         reduction_with_span_1, reduction_with_span_2,
         reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,

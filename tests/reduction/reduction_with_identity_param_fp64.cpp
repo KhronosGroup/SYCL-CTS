@@ -19,4 +19,4 @@ TEST_CASE("reduction_with_identity_param_fp64", "[reduction]") {
   }
   reduction_with_identity::run_test_for_type<double>()(queue, "double");
 }
-} // reduction_with_identity_param_fp64
+}  // namespace reduction_with_identity_param_fp64

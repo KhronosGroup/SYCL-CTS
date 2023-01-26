@@ -7,8 +7,8 @@
 //
 *******************************************************************************/
 
-#include "reduction_without_identity_param_common.h"
 #include "../common/disabled_for_test_case.h"
+#include "reduction_without_identity_param_common.h"
 
 namespace reduction_without_identity_param_core {
 using namespace sycl_cts;
@@ -26,11 +26,11 @@ using namespace reduction_common;
 template <typename UsePropertyFlagT, typename RangeT>
 void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT>(
+                                    UsePropertyFlagT::value>(
       sycl::logical_and<bool>(), range, queue, "bool");
 
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT>(
+                                    UsePropertyFlagT::value>(
       sycl::logical_or<bool>(), range, queue, "bool");
 }
 
@@ -45,14 +45,15 @@ void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
  */
 template <typename UsePropertyFlagT, typename RangeT>
 void run_all_core_tests(RangeT& range, sycl::queue& queue) {
-  for_all_types<run_tests_for_all_functors, UsePropertyFlagT>(
-      scalar_types, range, queue);
+  for_all_types<run_tests_for_all_functors, UsePropertyFlagT>(scalar_types,
+                                                              range, queue);
 
   run_test_for_all_reductions_types<
       custom_type, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
       sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
-  run_test_for_all_reductions_types<
-      custom_type, reduction_get_lambda::without_combine, UsePropertyFlagT::value>(
+  run_test_for_all_reductions_types<custom_type,
+                                    reduction_get_lambda::without_combine,
+                                    UsePropertyFlagT::value>(
       sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
   run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT::value>(
@@ -73,12 +74,14 @@ void run_tests_for_identity_type(sycl::queue& queue) {
   run_all_core_tests<UsePropertyFlagT>(nd_range, queue);
 }
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("reduction_without_identity_param_core", "[reduction]") ({
-    auto queue = util::get_cts_object::queue();
+// FIXME: re-enable when compilation failure for reduction with custom type is
+// fixed.
+DISABLED_FOR_TEST_CASE(DPCPP)
+("reduction_without_identity_param_core", "[reduction]")({
+  auto queue = util::get_cts_object::queue();
 
-    run_tests_for_identity_type<run_test_without_property>(queue);
-    run_tests_for_identity_type<run_test_with_property>(queue);
+  run_tests_for_identity_type<run_test_without_property>(queue);
+  run_tests_for_identity_type<run_test_with_property>(queue);
 });
 
-} // reduction_without_identity_param_core
+}  // namespace reduction_without_identity_param_core

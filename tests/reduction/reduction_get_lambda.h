@@ -43,7 +43,8 @@ auto apply_chosen_functor(FirstValueT &first_val, SecondValueT &second_val) {
 
 template <typename VariableT, typename FunctorT, typename FirstValueT,
           typename SecondValueT>
-auto apply_chosen_functor_span(FirstValueT &first_val, SecondValueT &second_val, size_t number_elements) {
+auto apply_chosen_functor_span(FirstValueT &first_val, SecondValueT &second_val,
+                               size_t number_elements) {
   for (size_t i = 0; i < number_elements; i++) {
     if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
       first_val[i] *= second_val;
@@ -162,8 +163,8 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
     };
   } else {
     return [=](sycl::id<1> idx, auto &reducer) {
-        apply_chosen_functor_span<VariableT, FunctorT>(
-          reducer, accessor[idx], number_elements);
+      apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
+                                                     number_elements);
     };
   }
 }
@@ -192,7 +193,7 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
     };
   } else {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-        apply_chosen_functor_span<VariableT, FunctorT>(
+      apply_chosen_functor_span<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()], number_elements);
     };
   }

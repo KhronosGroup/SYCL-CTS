@@ -20,7 +20,7 @@ using namespace reduction_common;
 static constexpr size_t number_elements = 5;
 static constexpr int identity = 5;
 static constexpr int initial = 6;
-template <typename T, int TestCase>
+template <typename VariableT, typename RangeT, int TestCase>
 class kernel;
 
 template <typename VariableT, typename RangeT>
@@ -50,7 +50,8 @@ void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue) {
                                          reduction_get_lambda::with_combine,
                                          op_without_identity<VariableT>>(
             inputValues);
-    cgh.parallel_for<kernel<VariableT, 1>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 1>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   CHECK(*variable_for_reduction == expected_value);
@@ -78,7 +79,8 @@ void run_test_for_buffer(RangeT &range_param, sycl::queue &queue) {
                                          reduction_get_lambda::with_combine,
                                          op_without_identity<VariableT>>(
             inputValues);
-    cgh.parallel_for<kernel<VariableT, 2>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 2>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   CHECK(reduction_buffer.get_host_access()[0] == expected_value);
@@ -119,7 +121,8 @@ void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
     auto lambda = reduction_get_lambda::get_lambda_for_span<
         VariableT, RangeT, reduction_get_lambda::with_combine,
         op_without_identity<VariableT>>(inputValues, number_elements);
-    cgh.parallel_for<kernel<VariableT, 3>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 3>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   for (int i = 0; i < number_elements; i++) {
@@ -128,7 +131,8 @@ void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_value_ptr_property_list(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_value_ptr_property_list(RangeT &range_param,
+                                          sycl::queue &queue) {
   check_usm_shared_aspect(queue);
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
@@ -156,14 +160,16 @@ void run_test_for_value_ptr_property_list(RangeT &range_param, sycl::queue &queu
                                          reduction_get_lambda::with_combine,
                                          op_without_identity<VariableT>>(
             inputValues);
-    cgh.parallel_for<kernel<VariableT, 4>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 4>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   CHECK(*variable_for_reduction == expected_value);
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_buffer_property_list(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_buffer_property_list(RangeT &range_param,
+                                       sycl::queue &queue) {
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -185,7 +191,8 @@ void run_test_for_buffer_property_list(RangeT &range_param, sycl::queue &queue) 
                                          reduction_get_lambda::with_combine,
                                          op_without_identity<VariableT>>(
             inputValues);
-    cgh.parallel_for<kernel<VariableT, 5>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 5>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   CHECK(reduction_buffer.get_host_access()[0] == expected_value);
@@ -219,7 +226,8 @@ void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue) {
     auto lambda = reduction_get_lambda::get_lambda_for_span<
         VariableT, RangeT, reduction_get_lambda::with_combine,
         op_without_identity<VariableT>>(inputValues, number_elements);
-    cgh.parallel_for<kernel<VariableT, 6>>(range_param, reduction, lambda);
+    cgh.parallel_for<kernel<VariableT, RangeT, 6>>(range_param, reduction,
+                                                   lambda);
   });
   queue.wait_and_throw();
   for (int i = 0; i < number_elements; i++) {

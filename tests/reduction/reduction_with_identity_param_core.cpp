@@ -18,4 +18,4 @@ TEST_CASE("reduction_with_identity_param_core", "[reduction]") {
   for_all_types<reduction_with_identity::run_test_for_type>(
       reduction_common::scalar_types, queue);
 }
-} // reduction_with_identity_param_core
+}  // namespace reduction_with_identity_param_core

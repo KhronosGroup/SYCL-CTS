@@ -179,12 +179,14 @@ auto get_buffer() {
  *  @retval Bool value that corresponds to the presence of this aspect in the
  *          current device
  */
-static void check_usm_shared_aspect(sycl::queue& queue) {
+static inline void check_usm_shared_aspect(sycl::queue& queue) {
   bool has_aspect =
       queue.get_device().has(sycl::aspect::usm_shared_allocations);
-  
+
   if (!has_aspect) {
-    SKIP("Device does not support accessing to unified shared memory allocation");
+    SKIP(
+        "Device does not support accessing to unified shared memory "
+        "allocation");
   }
 }
 
