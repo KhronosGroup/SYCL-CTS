@@ -45,10 +45,16 @@ Note: using T as `ReferencedType` or `ReferencedType*`.
 
 All non static tests run on following cases:
 
-* single_task with referenced value is accessor element - should be skipped for `address_space::local_space`
-* parallel_for with nd_range parameter and referenced value local_accessor element - should be skipped for `address_space::global_space`
+* `single_task` with referenced value is accessor element - should be skipped for `address_space::local_space`
+* `parallel_for` with nd_range parameter and referenced value local_accessor element - should be skipped for 
+`address_space::global_space`
 
-Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported values tests are skiped. To check if the special values of `DefaultOrder` parameters are supported should use `info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices. To check if the special values for `DefaultScope` parameter are supported should use `info::device::atomic_memory_scope_capabilities`.
+Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported
+values tests are skiped.
+To check if the special values of `DefaultOrder` parameters are supported should use
+`info::device::atomic_memory_order_capabilities`, `memory_order::relaxed` should be supported on all devices.
+To check if the special values for `DefaultScope` parameter are supported should use
+`info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
 
@@ -78,7 +84,7 @@ Check the following:
 
 * `default_read_order`, `default_write_order` and `default_read_modify_write_order` members are const
 * `required_alignment` memeber is const and is equal to or grater than `alignof(ReferencedType)`
-* `is_always_lock_free` member is const and is equal to `true` of `false`
+* `is_always_lock_free` member is const bool
 * `default_scope` member is const and is equal to `DefaultScope` template parameter was used when object was created
 
 If `T` is `ReferencedType` check that `value_type` is same as `ReferencedType`.
@@ -111,7 +117,8 @@ For different cases of `DefaultOrder` template parameter check the following:
 
 ==== Common constructors
 
-Create an `atomic_ref` object using `atomic_ref(T&)` and an other object using copy constructor in device code using the following values as `DefaultOrder` template parameter:
+Create an `atomic_ref` object using `atomic_ref(T&)` and another object using copy constructor in device code using
+the following values as `DefaultOrder` template parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
@@ -150,7 +157,8 @@ Check returned value type of `load` member function.
 
 ==== Member functions
 
-To test member functions create an `atomic_ref` object using `atomic_ref(T&)` in device code using the following values as `DefaultOrder` template parameter:
+To test member functions create an `atomic_ref` object using `atomic_ref(T&)` in device code using the following values
+as `DefaultOrder` template parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
@@ -170,7 +178,8 @@ And the following values as `Space` template parameter:
 * `access::address_space::local_space`
 * `access::address_space::generic_space`
 
-Note: for the member functions tests below that take `memory_order` and `memory_scope` as arguments, the following values of these parameters are used if the `FULL CONFORMANCE` mode is enabled:
+Note: for the member functions tests below that take `memory_order` and `memory_scope` as arguments, the following
+values of these parameters are used only if the `FULL CONFORMANCE` mode is enabled:
 
 * For `memory_order`:
 
@@ -188,15 +197,17 @@ Note: for the member functions tests below that take `memory_order` and `memory_
 ** `memory_scope::device`
 ** `memory_scope::system`
 
-It should be noted that `memory_order::acquire` is used only for read operations, `memory_order::release` for write operations and `memory_order::acq_rel` for read-modify-write operations.
+It should be noted that `memory_order::acquire` is used only for read operations, `memory_order::release` for write
+operations and `memory_order::acq_rel` for read-modify-write operations.
 
-If the `FULL CONFORMANCE` mode is disabled only default values for functions arguments is used which are determined by `atomic_ref` template parameters that which object was created with.
+If the `FULL CONFORMANCE` mode is disabled only default values for functions arguments is used which are determined
+by `atomic_ref` template parameters that which object was created with.
 
 ===== Common member functions
 
 `bool is_lock_free()`
 
-Check if the function exists and returns `atomic_ref::is_always_lock_free`.
+Check if the function exists and returns true if `atomic_ref::is_always_lock_free` is equal to true.
 Check returned value type.
 
 `void store(T operand,
@@ -246,7 +257,8 @@ For the following values as `scope` parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-Check if replaces the value of the object referenced by this `atomic_ref` with value `operand` and returns the original value of the referenced object. Check returned value type.
+Check if replaces the value of the object referenced by this `atomic_ref` with value `operand` and returns the original
+value of the referenced object. Check returned value type.
 
 `bool compare_exchange_weak(T &expected, T desired,
     memory_order success,
@@ -273,7 +285,8 @@ For the following values as `scope` parameter:
 * `memory_scope::device`
 * `memory_scope::system`
 
-For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not be checked since it is non-deterministic.
+For equal values: it attempts to replaces the value of the referenced object with the value of `desired`. This may not
+be checked since it is non-deterministic.
 
 For unequal values: check if it assigns the original value of the referenced object to `expected`.
 
@@ -285,7 +298,8 @@ Check returned value type.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Same as above: Equivalent to `compare_exchange_weak(expected, desired, order, order, scope)` using following values as `order` parameter:
+Same as above: Equivalent to `compare_exchange_weak(expected, desired, order, order, scope)` using following values
+as `order` parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
@@ -328,7 +342,8 @@ Check returned value type.
     memory_order order =
     default_read_modify_write_order) const`
 
-Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)` using following values as `order` parameter:
+Same as above: Equivalent to `compare_exchange_strong(expected, desired, order, order, scope)` using following values
+as `order` parameter:
 
 * `memory_order::relaxed`
 * `memory_order::acq_rel`
@@ -356,7 +371,8 @@ Test following functions:
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it adds `operand` to the value of the object referenced by this `atomic_ref` and assigns the result to the value of the referenced object.
+Check if it adds `operand` to the value of the object referenced by this `atomic_ref` and assigns the result to the
+value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(previous value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
 
@@ -368,7 +384,8 @@ Same as above: Equivalent to `fetch_add(operand) + operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it subtracts `operand` from the value of the object referenced by this `atomic_ref` and assigns the result to the value of the referenced object.
+Check if it subtracts `operand` from the value of the object referenced by this `atomic_ref` and assigns the result to
+the value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(previous value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
 
@@ -398,7 +415,10 @@ Test following functions if `T` is `Integral`, skip otherwise:
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it performs a bitwise AND between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+Check if it performs a bitwise AND between `operand` and the value of the object referenced by this `atomic_ref`, and
+assigns the result to the value of the referenced object. Check if it returns the original value of the
+referenced object.
+Check returned value type.
 
 `T operator&=(T operand) const`
 
@@ -408,7 +428,10 @@ Same as above: Equivalent to `fetch_and(operand) & operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it performs a bitwise OR between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+Check if it performs a bitwise OR between `operand` and the value of the object referenced by this `atomic_ref`, and
+assigns the result to the value of the referenced object. Check if it returns the original value of
+the referenced object.
+Check returned value type.
 
 `T operator|=(T operand) const`
 
@@ -418,7 +441,10 @@ Same as above: Equivalent to `fetch_or(operand) | operand`.
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it performs a bitwise XOR between `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object. Check if it returns the original value of the referenced object. Check returned value type.
+Check if it performs a bitwise XOR between `operand` and the value of the object referenced by this `atomic_ref`, and
+assigns the result to the value of the referenced object. Check if it returns the original value of
+the referenced object.
+Check returned value type.
 
 `T operator^=(T operand) const`
 
@@ -466,7 +492,8 @@ Test following functions if `T` is `Integral` or `Floating`, skip otherwise:
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it computes the minimum of `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object.
+Check if it computes the minimum of `operand` and the value of the object referenced by this `atomic_ref`,
+and assigns the result to the value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(minimum value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
 
@@ -475,6 +502,7 @@ Check if it returns the original value of the referenced object. Check returned 
     memory_order order = default_read_modify_write_order,
     memory_scope scope = default_scope) const`
 
-Check if it computes the maximum of `operand` and the value of the object referenced by this `atomic_ref`, and assigns the result to the value of the referenced object.
+Check if it computes the maximum of `operand` and the value of the object referenced by this `atomic_ref`,
+and assigns the result to the value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(maximum value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
