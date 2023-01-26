@@ -26,6 +26,10 @@
 
 namespace queue_properties {
 
+class kernel1;
+class kernel2;
+class kernel3;
+
 using namespace sycl_cts;
 
 void check_in_order_prop(const sycl::queue &queue) {
@@ -52,7 +56,7 @@ void check_in_order_functionality(sycl::queue &queue) {
     // commands are submitted
     queue
         .submit([&](sycl::handler &cgh) {
-          cgh.single_task<class kernel1>([=] { *data_changed = false; });
+          cgh.single_task<kernel1>([=] { *data_changed = false; });
         })
         .wait_and_throw();
 
@@ -60,7 +64,7 @@ void check_in_order_functionality(sycl::queue &queue) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
       auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
 
-      cgh.single_task<class kernel2>([=] {
+      cgh.single_task<kernel2>([=] {
         // to delay checking data_changed use a loop that will take some time
         for (int i = 0; i < 1000000; i++) {
           int s = sycl::sqrt(float(i));
@@ -71,7 +75,7 @@ void check_in_order_functionality(sycl::queue &queue) {
     });
 
     queue.submit([&](sycl::handler &cgh) {
-      cgh.single_task<class kernel3>([=] { *data_changed = true; });
+      cgh.single_task<kernel3>([=] { *data_changed = true; });
     });
     queue.wait_and_throw();
   }
