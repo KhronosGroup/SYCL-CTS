@@ -149,7 +149,7 @@ auto get_lambda_for_4_reductions(AccessorT accessor) {
                auto& reducer_3, auto& reducer_4) {
       reducer_1.combine(accessor[nd_item.get_global_id()]);
       for (size_t i = 0; i < number_elements; i++) {
-        reducer_span.[i].combine(accessor[nd_item.get_global_id()]);
+        reducer_span[i].combine(accessor[nd_item.get_global_id()]);
       }
       reducer_3.combine(accessor[nd_item.get_global_id()]);
       reducer_4.combine(accessor[nd_item.get_global_id()]);
@@ -220,8 +220,8 @@ auto get_lambda_for_6_reductions(AccessorT accessor) {
       reducer_1.combine(accessor[nd_item.get_global_id()]);
       reducer_2.combine(accessor[nd_item.get_global_id()]);
       for (size_t i = 0; i < number_elements; i++) {
-        reducer_3[i].combine(accessor[nd_item.get_global_id()]);
-        reducer_4[i].combine(accessor[nd_item.get_global_id()]);
+        reducer_span_1[i].combine(accessor[nd_item.get_global_id()]);
+        reducer_span_2[i].combine(accessor[nd_item.get_global_id()]);
       }
       reducer_5.combine(accessor[nd_item.get_global_id()]);
       reducer_6.combine(accessor[nd_item.get_global_id()]);
