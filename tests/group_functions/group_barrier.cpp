@@ -32,8 +32,12 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   // FIXME: hipSYCL and DPCPP have no implemented
   //  atomic_fence_scope_capabilities query
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
+    defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+  std::vector<sycl::memory_scope> supported_barriers =
+      queue.get_context()
+          .get_info<sycl::info::context::atomic_fence_scope_capabilities>();
+#else
   // mock for not available info
   std::vector<sycl::memory_scope> supported_barriers{
       sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
@@ -42,21 +46,19 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       "hipSYCL and DPCPP have no implementation of "
       "atomic_fence_scope_capabilities query, suppose all barrier types as "
       "valid.");
-#else
-  std::vector<sycl::memory_scope> supported_barriers =
-      queue.get_context()
-          .get_info<sycl::info::context::atomic_fence_scope_capabilities>();
 #endif
 
   using sms = std::tuple<sycl::memory_scope, bool, bool>;
+  // indices of the tuple components
   enum s { scope = 0, support = 1, test = 2 };
 
-  std::array<sms, 4> group_barriers{
+  constexpr int group_barrier_variants = 4;
+  std::array<sms, group_barrier_variants> group_barriers{
       sms{sycl::memory_scope::work_group, true, true},
       sms{sycl::memory_scope::work_group, true, true},
       sms{sycl::memory_scope::device, true, true},
       sms{sycl::memory_scope::system, true, true}};
-  std::array<std::string, 4> group_barriers_names{
+  std::array<std::string, group_barrier_variants> group_barriers_names{
       "default", "sycl::memory_scope::work_group", "sycl::memory_scope::device",
       "sycl::memory_scope::system"};
   for (auto& barrier : group_barriers) {
@@ -67,13 +69,14 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
     }
   }
 
-  std::array<sms, 5> sub_group_barriers{
+  constexpr int sub_group_barrier_variants = 5;
+  std::array<sms, sub_group_barrier_variants> sub_group_barriers{
       sms{sycl::memory_scope::sub_group, true, true},
       sms{sycl::memory_scope::sub_group, true, true},
       sms{sycl::memory_scope::work_group, true, true},
       sms{sycl::memory_scope::device, true, true},
       sms{sycl::memory_scope::system, true, true}};
-  std::array<std::string, 5> sub_group_barriers_names{
+  std::array<std::string, sub_group_barrier_variants> sub_group_barriers_names{
       "default", "sycl::memory_scope::sub_group",
       "sycl::memory_scope::work_group", "sycl::memory_scope::device",
       "sycl::memory_scope::system"};
@@ -131,7 +134,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(group_barriers_acc[0]) = false;
 
-      for (int i = 1; i < 4; ++i) {
+      // tests for other barriers
+      for (int i = 1; i < group_barrier_variants; ++i) {
         auto& barrier = group_barriers_acc[i];
 
         if (std::get<s::support>(barrier)) {
@@ -140,7 +144,6 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
           sycl::group_barrier(group);
 
-          // fallthrough is intentional
           switch (std::get<s::scope>(barrier)) {
             case sycl::memory_scope::work_group:
               local_acc[llid] = 1;
@@ -149,6 +152,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
 
+              [[fallthrough]];
             default:
               global_acc[llid] = 1;
               sycl::group_barrier(group, std::get<s::scope>(barrier));
@@ -181,7 +185,8 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       if (local_acc[max_id - llid] != 1)
         std::get<s::test>(sub_group_barriers_acc[0]) = false;
 
-      for (int i = 1; i < 5; ++i) {
+      // tests for other barriers
+      for (int i = 1; i < sub_group_barrier_variants; ++i) {
         auto& barrier = sub_group_barriers_acc[i];
 
         if ((sub_group.get_group_linear_id() == 0) &&
@@ -191,7 +196,6 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
           sycl::group_barrier(sub_group);
 
-          // fallthrough is intentional
           switch (std::get<s::scope>(barrier)) {
             case sycl::memory_scope::sub_group:
             case sycl::memory_scope::work_group:
@@ -201,6 +205,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
               if (local_acc[max_id - llid] != 1)
                 std::get<s::test>(barrier) = false;
 
+              [[fallthrough]];
             default:
               global_acc[llid] = 1;
               sycl::group_barrier(sub_group, std::get<s::scope>(barrier));
@@ -213,7 +218,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
     });
   });
 
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < group_barrier_variants; ++i) {
     bool result = std::get<s::test>(group_barriers[i]);
     std::string work_group = util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
@@ -222,7 +227,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
          << (result ? "right" : "wrong"));
     CHECK(result);
   }
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < sub_group_barrier_variants; ++i) {
     bool result = std::get<s::test>(sub_group_barriers[i]);
     std::string work_group = util::work_group_print(work_group_range);
     CAPTURE(D, work_group);

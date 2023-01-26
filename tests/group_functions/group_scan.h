@@ -78,7 +78,6 @@ void joint_scan_group(sycl::queue& queue) {
           T* v_begin = v_acc.get_pointer();
           T* v_end = v_begin + v_acc.size();
           U* r_begin = r_acc.get_pointer();
-          ;
           U* r_end;
 
           auto op_plus = sycl::plus<U>();
