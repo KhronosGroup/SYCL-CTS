@@ -168,6 +168,52 @@ TEST_CASE(
   CHECK(queue.has_property<sycl::property::queue::in_order>());
 }
 
+TEST_CASE("Check queue (context, device) constructor", "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::context context = util::get_cts_object::context();
+  sycl::queue queue(context, device);
+
+  CHECK(queue.get_device() == device);
+  CHECK(queue.get_context() == context);
+}
+
+TEST_CASE("Check queue (context, device, property_list) constructor",
+          "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::context context = util::get_cts_object::context();
+  sycl::queue queue(context, device, {sycl::property::queue::in_order()});
+
+  CHECK(queue.get_device() == device);
+  CHECK(queue.get_context() == context);
+
+  CHECK(queue.has_property<sycl::property::queue::in_order>());
+}
+
+TEST_CASE("Check queue (context, device, async_handler) constructor",
+          "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::context context = util::get_cts_object::context();
+  cts_async_handler asyncHandler;
+  sycl::queue queue(context, device, asyncHandler);
+
+  CHECK(queue.get_device() == device);
+  CHECK(queue.get_context() == context);
+}
+
+TEST_CASE("Check queue (context, device, async_handler, property_list)",
+          "[queue]") {
+  sycl::device device = util::get_cts_object::device();
+  sycl::context context = util::get_cts_object::context();
+  cts_async_handler asyncHandler;
+  sycl::queue queue(context, device, asyncHandler,
+                    {sycl::property::queue::in_order()});
+
+  CHECK(queue.get_device() == device);
+  CHECK(queue.get_context() == context);
+
+  CHECK(queue.has_property<sycl::property::queue::in_order>());
+}
+
 TEST_CASE("Check queue copy constructor", "[queue]") {
   cts_selector selector;
   auto queueA = util::get_cts_object::queue(selector);
