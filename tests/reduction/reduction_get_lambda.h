@@ -29,15 +29,33 @@ template <typename VariableT, typename FunctorT, typename FirstValueT,
           typename SecondValueT>
 auto apply_chosen_functor(FirstValueT &first_val, SecondValueT &second_val) {
   if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
-    return first_val *= second_val;
+    first_val *= second_val;
   } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
-    return first_val += second_val;
+    first_val += second_val;
   } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
-    return first_val |= second_val;
+    first_val |= second_val;
   } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
-    return first_val &= second_val;
+    first_val &= second_val;
   } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
-    return first_val ^= second_val;
+    first_val ^= second_val;
+  }
+}
+
+template <typename VariableT, typename FunctorT, typename FirstValueT,
+          typename SecondValueT>
+auto apply_chosen_functor_span(FirstValueT &first_val, SecondValueT &second_val, size_t number_elements) {
+  for (size_t i = 0; i < number_elements; i++) {
+    if constexpr (std::is_same_v<FunctorT, sycl::multiplies<VariableT>>) {
+      first_val[i] *= second_val;
+    } else if constexpr (std::is_same_v<FunctorT, sycl::plus<VariableT>>) {
+      first_val[i] += second_val;
+    } else if constexpr (std::is_same_v<FunctorT, sycl::bit_or<VariableT>>) {
+      first_val[i] |= second_val;
+    } else if constexpr (std::is_same_v<FunctorT, sycl::bit_and<VariableT>>) {
+      first_val[i] &= second_val;
+    } else if constexpr (std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>) {
+      first_val[i] ^= second_val;
+    }
   }
 }
 
@@ -144,10 +162,8 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
     };
   } else {
     return [=](sycl::id<1> idx, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] = apply_chosen_functor<VariableT, FunctorT>(reducer[i],
-                                                               accessor[idx]);
-      }
+        apply_chosen_functor_span<VariableT, FunctorT>(
+          reducer, accessor[idx], number_elements);
     };
   }
 }
@@ -176,10 +192,8 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
     };
   } else {
     return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      for (size_t i = 0; i < number_elements; i++) {
-        reducer[i] = apply_chosen_functor<VariableT, FunctorT>(
-            reducer[i], accessor[nd_item.get_global_id()]);
-      }
+        apply_chosen_functor_span<VariableT, FunctorT>(
+          reducer, accessor[nd_item.get_global_id()], number_elements);
     };
   }
 }
