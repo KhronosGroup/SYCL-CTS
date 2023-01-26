@@ -24,9 +24,8 @@ template <typename T, int TestCase>
 class kernel;
 
 template <typename VariableT, typename RangeT>
-void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue,
-                            sycl_cts::util::logger &log) {
-  if (!check_usm_shared_aspect(queue, log)) return;
+void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue) {
+  check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
@@ -54,12 +53,11 @@ void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue,
     cgh.parallel_for<kernel<VariableT, 1>>(range_param, reduction, lambda);
   });
   queue.wait_and_throw();
-  CHECK_VALUE_SCALAR(log, *variable_for_reduction, expected_value);
+  CHECK(*variable_for_reduction == expected_value);
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_buffer(RangeT &range_param, sycl::queue &queue,
-                         sycl_cts::util::logger &log) {
+void run_test_for_buffer(RangeT &range_param, sycl::queue &queue) {
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -83,14 +81,12 @@ void run_test_for_buffer(RangeT &range_param, sycl::queue &queue,
     cgh.parallel_for<kernel<VariableT, 2>>(range_param, reduction, lambda);
   });
   queue.wait_and_throw();
-  CHECK_VALUE_SCALAR(log, reduction_buffer.get_host_access()[0],
-                     expected_value);
+  CHECK(reduction_buffer.get_host_access()[0] == expected_value);
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_span(RangeT &range_param, sycl::queue &queue,
-                       sycl_cts::util::logger &log) {
-  if (!check_usm_shared_aspect(queue, log)) return;
+void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
+  check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
@@ -127,15 +123,13 @@ void run_test_for_span(RangeT &range_param, sycl::queue &queue,
   });
   queue.wait_and_throw();
   for (int i = 0; i < number_elements; i++) {
-    CHECK_VALUE_SCALAR(log, allocated_memory.get()[i], expected_values[i]);
+    CHECK(allocated_memory.get()[i] == expected_values[i]);
   }
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_value_ptr_property_list(RangeT &range_param,
-                                          sycl::queue &queue,
-                                          sycl_cts::util::logger &log) {
-  if (!check_usm_shared_aspect(queue, log)) return;
+void run_test_for_value_ptr_property_list(RangeT &range_param, sycl::queue &queue) {
+  check_usm_shared_aspect(queue);
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -165,12 +159,11 @@ void run_test_for_value_ptr_property_list(RangeT &range_param,
     cgh.parallel_for<kernel<VariableT, 4>>(range_param, reduction, lambda);
   });
   queue.wait_and_throw();
-  CHECK_VALUE_SCALAR(log, *variable_for_reduction, expected_value);
+  CHECK(*variable_for_reduction == expected_value);
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_buffer_property_list(RangeT &range_param, sycl::queue &queue,
-                                       sycl_cts::util::logger &log) {
+void run_test_for_buffer_property_list(RangeT &range_param, sycl::queue &queue) {
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -195,14 +188,12 @@ void run_test_for_buffer_property_list(RangeT &range_param, sycl::queue &queue,
     cgh.parallel_for<kernel<VariableT, 5>>(range_param, reduction, lambda);
   });
   queue.wait_and_throw();
-  CHECK_VALUE_SCALAR(log, reduction_buffer.get_host_access()[0],
-                     expected_value);
+  CHECK(reduction_buffer.get_host_access()[0] == expected_value);
 }
 
 template <typename VariableT, typename RangeT>
-void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue,
-                                     sycl_cts::util::logger &log) {
-  if (!check_usm_shared_aspect(queue, log)) return;
+void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue) {
+  check_usm_shared_aspect(queue);
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
 
@@ -232,27 +223,26 @@ void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue,
   });
   queue.wait_and_throw();
   for (int i = 0; i < number_elements; i++) {
-    CHECK_VALUE_SCALAR(log, allocated_memory.get()[i], expected_value);
+    CHECK(allocated_memory.get()[i] == expected_value);
   }
 }
 
 template <typename VariableT>
 struct run_test_for_type {
-  void operator()(sycl::queue &queue, sycl_cts::util::logger &log,
-                  const std::string &type_name) {
-    run_test_for_value_ptr<VariableT>(range, queue, log);
-    run_test_for_value_ptr<VariableT>(nd_range, queue, log);
-    run_test_for_buffer<VariableT>(range, queue, log);
-    run_test_for_buffer<VariableT>(nd_range, queue, log);
-    run_test_for_span<VariableT>(range, queue, log);
-    run_test_for_span<VariableT>(nd_range, queue, log);
+  void operator()(sycl::queue &queue, const std::string &type_name) {
+    run_test_for_value_ptr<VariableT>(range, queue);
+    run_test_for_value_ptr<VariableT>(nd_range, queue);
+    run_test_for_buffer<VariableT>(range, queue);
+    run_test_for_buffer<VariableT>(nd_range, queue);
+    run_test_for_span<VariableT>(range, queue);
+    run_test_for_span<VariableT>(nd_range, queue);
 
-    run_test_for_value_ptr_property_list<VariableT>(range, queue, log);
-    run_test_for_value_ptr_property_list<VariableT>(nd_range, queue, log);
-    run_test_for_buffer_property_list<VariableT>(range, queue, log);
-    run_test_for_buffer_property_list<VariableT>(nd_range, queue, log);
-    run_test_for_span_property_list<VariableT>(range, queue, log);
-    run_test_for_span_property_list<VariableT>(nd_range, queue, log);
+    run_test_for_value_ptr_property_list<VariableT>(range, queue);
+    run_test_for_value_ptr_property_list<VariableT>(nd_range, queue);
+    run_test_for_buffer_property_list<VariableT>(range, queue);
+    run_test_for_buffer_property_list<VariableT>(nd_range, queue);
+    run_test_for_span_property_list<VariableT>(range, queue);
+    run_test_for_span_property_list<VariableT>(nd_range, queue);
   }
 };
 

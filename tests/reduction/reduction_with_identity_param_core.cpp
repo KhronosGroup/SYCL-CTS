@@ -9,33 +9,13 @@
 
 #include "reduction_with_identity_param.h"
 
-#define TEST_NAME reduction_with_identity_param_core
-
-namespace TEST_NAMESPACE {
+namespace reduction_with_identity_param_core {
 using namespace sycl_cts;
 
-/** Test instance
- */
-class TEST_NAME : public sycl_cts::util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
+TEST_CASE("reduction_with_identity_param_core", "[reduction]") {
+  auto queue = util::get_cts_object::queue();
 
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    {
-      auto queue = util::get_cts_object::queue();
-
-      for_all_types<reduction_with_identity::run_test_for_type>(
-          reduction_common::scalar_types, queue, log);
-    }
-  }
-};
-
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-}  // namespace TEST_NAMESPACE
+  for_all_types<reduction_with_identity::run_test_for_type>(
+      reduction_common::scalar_types, queue);
+}
+} // reduction_with_identity_param_core

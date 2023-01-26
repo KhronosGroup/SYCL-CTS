@@ -28,17 +28,12 @@ class kernel;
  *  @param expected Expected value after test running
  *  @param line Line from which checking was called
  *  @param number_test_case Test case numbed e.g.: 1, 2, 3, etc.
- *  @param log sycl_cts::util::logger class object
  */
-void check_output_value(int got, int expected, int line, int number_test_case,
-                        sycl_cts::util::logger& log) {
-  if (got != expected) {
-    std::string fail_message{
-        "In test for reducion with different functors in test case number: " +
-        std::to_string(number_test_case) + ". Got: " + std::to_string(got) +
-        " but expected " + std::to_string(expected)};
-    log.fail(fail_message, line);
-  }
+void check_output_value(int got, int expected, int line, int number_test_case) {
+  INFO("In test for reducion with different functors in test case number: " <<
+        number_test_case << ". Got: " << got <<
+        " but expected " << expected << line);
+  CHECK(got != expected);
 }
 
 /** @brief Filling provided memory with value by default
@@ -238,12 +233,10 @@ auto get_lambda_for_6_reductions(AccessorT accessor) {
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_test_for_two_reductions(RangeT range, sycl::queue& queue,
-                                 sycl_cts::util::logger& log) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) return;
+void run_test_for_two_reductions(RangeT range, sycl::queue& queue) {
+  reduction_common::check_usm_shared_aspect(queue);
   constexpr int test_case = 1;
   using functor_1 = sycl::plus<int>;
   using functor_2 = sycl::maximum<int>;
@@ -274,22 +267,19 @@ void run_test_for_two_reductions(RangeT range, sycl::queue& queue,
                                         reduction_with_ptr_to_variable, lambda);
   });
   check_output_value(*ptr_for_variable.get(),
-                     expected_value_for_ptr_to_variable, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable, __LINE__, test_case);
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case, log);
+                     expected_value_for_buffer, __LINE__, test_case);
 }
 
 /** @brief Run test for three reducers in one sycl::handler.parallel_for
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_test_for_three_reductions(RangeT range, sycl::queue& queue,
-                                   sycl_cts::util::logger& log) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) return;
+void run_test_for_three_reductions(RangeT range, sycl::queue& queue) {
+  reduction_common::check_usm_shared_aspect(queue);
   constexpr int test_case = 2;
   using functor_1 = sycl::bit_and<int>;
   using functor_2 = reduction_common::op_without_identity<int>;
@@ -333,13 +323,12 @@ void run_test_for_three_reductions(RangeT range, sycl::queue& queue,
                                         reduction_with_ptr_to_variable, lambda);
   });
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case, log);
+                     expected_value_for_buffer, __LINE__, test_case);
   check_output_value(*ptr_for_variable.get(),
-                     expected_value_for_ptr_to_variable, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable, __LINE__, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span.get()[i], expected_value_for_span, __LINE__,
-                       test_case, log);
+                       test_case);
   }
 }
 
@@ -347,12 +336,10 @@ void run_test_for_three_reductions(RangeT range, sycl::queue& queue,
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_test_for_four_reductions(RangeT range, sycl::queue& queue,
-                                  sycl_cts::util::logger& log) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) return;
+void run_test_for_four_reductions(RangeT range, sycl::queue& queue) {
+  reduction_common::check_usm_shared_aspect(queue);
   constexpr int test_case = 3;
   using functor_1 = reduction_common::op_without_identity<int>;
   using functor_2 = sycl::multiplies<int>;
@@ -406,16 +393,14 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue,
         lambda);
   });
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case, log);
+                     expected_value_for_buffer, __LINE__, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span.get()[i], expected_value_for_span, __LINE__,
-                       test_case, log);
+                       test_case);
   }
 }
 
@@ -423,12 +408,10 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue,
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_test_for_five_reductions(RangeT range, sycl::queue& queue,
-                                  sycl_cts::util::logger& log) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) return;
+void run_test_for_five_reductions(RangeT range, sycl::queue& queue) {
+  reduction_common::check_usm_shared_aspect(queue);
   constexpr int test_case = 4;
   using functor_1 = sycl::multiplies<int>;
   using functor_2 = sycl::plus<int>;
@@ -497,18 +480,16 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue,
         reduction_with_ptr_to_variable_2, lambda);
   });
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case, log);
+                     expected_value_for_buffer, __LINE__, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span_1.get()[i], expected_value_for_span_1,
-                       __LINE__, test_case, log);
+                       __LINE__, test_case);
     check_output_value(mem_for_span_2.get()[i], expected_value_for_span_2,
-                       __LINE__, test_case, log);
+                       __LINE__, test_case);
   }
 }
 
@@ -516,12 +497,10 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue,
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_test_for_six_reductions(RangeT range, sycl::queue& queue,
-                                 sycl_cts::util::logger& log) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) return;
+void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
+  reduction_common::check_usm_shared_aspect(queue);
   constexpr int test_case = 5;
   using functor_1 = reduction_common::op_without_identity<int>;
   using functor_2 = sycl::plus<int>;
@@ -601,20 +580,18 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue,
         lambda);
   });
   check_output_value(output_buffer_1.get_host_access()[0],
-                     expected_value_for_buffer_1, __LINE__, test_case, log);
+                     expected_value_for_buffer_1, __LINE__, test_case);
   check_output_value(output_buffer_2.get_host_access()[0],
-                     expected_value_for_buffer_2, __LINE__, test_case, log);
+                     expected_value_for_buffer_2, __LINE__, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case,
-                     log);
+                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span_1.get()[i], expected_value_for_span_1,
-                       __LINE__, test_case, log);
+                       __LINE__, test_case);
     check_output_value(mem_for_span_2.get()[i], expected_value_for_span_2,
-                       __LINE__, test_case, log);
+                       __LINE__, test_case);
   }
 }
 
@@ -622,25 +599,22 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue,
  *  @tparam RangeT Type range
  *  @param range sycl::range or sycl::nd_range class object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename RangeT>
-void run_all_tests_for_chosen_range(RangeT range, sycl::queue& queue,
-                                    sycl_cts::util::logger& log) {
-  run_test_for_two_reductions(range, queue, log);
-  run_test_for_three_reductions(range, queue, log);
-  run_test_for_four_reductions(range, queue, log);
-  run_test_for_five_reductions(range, queue, log);
-  run_test_for_six_reductions(range, queue, log);
+void run_all_tests_for_chosen_range(RangeT range, sycl::queue& queue) {
+  run_test_for_two_reductions(range, queue);
+  run_test_for_three_reductions(range, queue);
+  run_test_for_four_reductions(range, queue);
+  run_test_for_five_reductions(range, queue);
+  run_test_for_six_reductions(range, queue);
 }
 
 /** @brief Run tests run all test with sycl::range and sycl::nd_range types
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
-void run_all_tests(sycl::queue& queue, sycl_cts::util::logger& log) {
-  run_all_tests_for_chosen_range(reduction_common::range, queue, log);
-  run_all_tests_for_chosen_range(reduction_common::nd_range, queue, log);
+void run_all_tests(sycl::queue& queue) {
+  run_all_tests_for_chosen_range(reduction_common::range, queue);
+  run_all_tests_for_chosen_range(reduction_common::nd_range, queue);
 }
 
 }  // namespace reduction_with_several_reductions_in_kernel_h

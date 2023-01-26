@@ -8,10 +8,9 @@
 *******************************************************************************/
 
 #include "reduction_without_identity_param_common.h"
+#include "../common/disabled_for_test_case.h"
 
-#define TEST_NAME reduction_without_identity_param_core
-
-namespace TEST_NAMESPACE {
+namespace reduction_without_identity_param_core {
 using namespace sycl_cts;
 using namespace reduction_without_identity;
 using namespace reduction_common;
@@ -23,18 +22,16 @@ using namespace reduction_common;
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename UsePropertyFlagT, typename RangeT>
-void run_test_for_bool_variable(RangeT& range, sycl::queue& queue,
-                                sycl_cts::util::logger& log) {
+void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT>(
-      sycl::logical_and<bool>(), range, queue, log, "bool");
+      sycl::logical_and<bool>(), range, queue, "bool");
 
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT>(
-      sycl::logical_or<bool>(), range, queue, log, "bool");
+      sycl::logical_or<bool>(), range, queue, "bool");
 }
 
 /** @brief Run test for reduction that receive sycl::buffer for construct
@@ -45,27 +42,23 @@ void run_test_for_bool_variable(RangeT& range, sycl::queue& queue,
  *  @tparam RangeT sycl::range or sycl::nd_range type
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename UsePropertyFlagT, typename RangeT>
-void run_all_core_tests(RangeT& range, sycl::queue& queue,
-                        sycl_cts::util::logger& log) {
+void run_all_core_tests(RangeT& range, sycl::queue& queue) {
   for_all_types<run_tests_for_all_functors, UsePropertyFlagT>(
-      scalar_types, range, queue, log);
+      scalar_types, range, queue);
 
   run_test_for_all_reductions_types<
       custom_type, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
-      sycl::plus<custom_type>(), range, queue, log,
-      "reduction_common::custom_type");
+      sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
   run_test_for_all_reductions_types<
       custom_type, reduction_get_lambda::without_combine, UsePropertyFlagT::value>(
-      sycl::plus<custom_type>(), range, queue, log,
-      "reduction_common::custom_type");
+      sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
   run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT::value>(
-      op_without_identity<int>(), range, queue, log, "int with custom functor");
+      op_without_identity<int>(), range, queue, "int with custom functor");
 
-  run_test_for_bool_variable<UsePropertyFlagT>(range, queue, log);
+  run_test_for_bool_variable<UsePropertyFlagT>(range, queue);
 }
 
 /** @brief Run tests for core types with chosen identity type
@@ -73,35 +66,19 @@ void run_all_core_tests(RangeT& range, sycl::queue& queue,
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  */
 template <typename UsePropertyFlagT>
-void run_tests_for_identity_type(sycl::queue& queue,
-                                 sycl_cts::util::logger& log) {
-  run_all_core_tests<UsePropertyFlagT>(range, queue, log);
-  run_all_core_tests<UsePropertyFlagT>(nd_range, queue, log);
+void run_tests_for_identity_type(sycl::queue& queue) {
+  run_all_core_tests<UsePropertyFlagT>(range, queue);
+  run_all_core_tests<UsePropertyFlagT>(nd_range, queue);
 }
 
-/** Test instance
- */
-class TEST_NAME : public sycl_cts::util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  /** execute the test
-   */
-  void run(util::logger& log) override {
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("reduction_without_identity_param_core", "[reduction]") ({
     auto queue = util::get_cts_object::queue();
 
-    run_tests_for_identity_type<run_test_without_property>(queue, log);
-    run_tests_for_identity_type<run_test_with_property>(queue, log);
-  }
-};
+    run_tests_for_identity_type<run_test_without_property>(queue);
+    run_tests_for_identity_type<run_test_with_property>(queue);
+});
 
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-}  // namespace TEST_NAMESPACE
+} // reduction_without_identity_param_core
