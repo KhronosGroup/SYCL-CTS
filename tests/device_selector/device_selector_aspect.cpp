@@ -20,7 +20,6 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#include "../common/random.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -29,35 +28,6 @@
 namespace device_selector_aspect {
 using namespace sycl_cts;
 
-/** List of all device aspects. */
-#define ASPECT_LIST                                                            \
-  sycl::aspect::cpu, sycl::aspect::gpu, sycl::aspect::accelerator,             \
-      sycl::aspect::custom, sycl::aspect::host_debuggable, sycl::aspect::fp16, \
-      sycl::aspect::fp64, sycl::aspect::atomic64, sycl::aspect::image,         \
-      sycl::aspect::online_compiler, sycl::aspect::online_linker,              \
-      sycl::aspect::queue_profiling, sycl::aspect::usm_device_allocations,     \
-      sycl::aspect::usm_host_allocations,                                      \
-      sycl::aspect::usm_atomic_host_allocations,                               \
-      sycl::aspect::usm_shared_allocations,                                    \
-      sycl::aspect::usm_atomic_shared_allocations,                             \
-      sycl::aspect::usm_system_allocations
-
-/** Return a list of all defined aspects. */
-static std::vector<sycl::aspect> get_aspect_list() {
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  WARN(
-      "DPCPP does not define sycl::aspect::emulated."
-      "Skipping test cases for this aspect.");
-#endif
-  static const std::vector<sycl::aspect> types = {ASPECT_LIST
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
-                                                  ,
-                                                  sycl::aspect::emulated
-#endif
-  };
-  return types;
-}
-
 /** Return a named value pack of all defined aspects. */
 static auto get_aspect_pack() {
 #ifdef SYCL_CTS_COMPILING_WITH_DPCPP
@@ -65,12 +35,24 @@ static auto get_aspect_pack() {
       "DPCPP does not define sycl::aspect::emulated."
       "Skipping test cases for this aspect.");
 #endif
-  static const auto types = value_pack<sycl::aspect, ASPECT_LIST
+  static const auto types =
+      value_pack<sycl::aspect, sycl::aspect::cpu, sycl::aspect::gpu,
+                 sycl::aspect::accelerator, sycl::aspect::custom,
+                 sycl::aspect::host_debuggable, sycl::aspect::fp16,
+                 sycl::aspect::fp64, sycl::aspect::atomic64,
+                 sycl::aspect::image, sycl::aspect::online_compiler,
+                 sycl::aspect::online_linker, sycl::aspect::queue_profiling,
+                 sycl::aspect::usm_device_allocations,
+                 sycl::aspect::usm_host_allocations,
+                 sycl::aspect::usm_atomic_host_allocations,
+                 sycl::aspect::usm_shared_allocations,
+                 sycl::aspect::usm_atomic_shared_allocations,
+                 sycl::aspect::usm_system_allocations
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
-                                       ,
-                                       sycl::aspect::emulated
+                 ,
+                 sycl::aspect::emulated
 #endif
-                                       >::generate_named();
+                 >::generate_named();
   return types;
 }
 
@@ -314,21 +296,18 @@ constexpr void check_subset() {
 }
 
 template <typename... AspectsT, std::size_t... Indices>
-constexpr void create_subset(std::tuple<AspectsT...>,
+constexpr void create_subset(std::tuple<AspectsT...> aspect_tuple,
                              std::index_sequence<Indices...>) {
-  using aspect_tuple_t = std::tuple<AspectsT...>;
-  // expand indices sequence and use pattern to index into the aspect tuple
-  check_subset<typename std::tuple_element<Indices, aspect_tuple_t>::type...>();
+  // expand sequence to index into the aspect tuple
+  check_subset<
+      typename std::tuple_element<Indices, decltype(aspect_tuple)>::type...>();
 }
 
 template <std::size_t SmallestSubset, typename... AspectsT,
           std::size_t... Sizes>
-constexpr void create_subsets(std::tuple<AspectsT...>,
+constexpr void create_subsets(std::tuple<AspectsT...> aspect_tuple,
                               std::index_sequence<Sizes...>) {
-  // create tuple of aspects to pass to function
-  auto aspect_tuple = std::tuple<AspectsT...>{};
-  // expand sizes pack and use pattern to create one index sequence
-  // for each desired subset size
+  // expand sizes pack to create one sequence for each desired subset size
   (create_subset(aspect_tuple,
                  std::make_index_sequence<SmallestSubset + Sizes>{}),
    ...);
@@ -339,101 +318,87 @@ template <std::size_t SmallestSubset, typename... AspectsT>
 constexpr void check_for_subset(const named_type_pack<AspectsT...>&) {
   static_assert(sizeof...(AspectsT) >= SmallestSubset);
   constexpr std::size_t subset_count = sizeof...(AspectsT) + 1 - SmallestSubset;
-  // create tuple of aspects to pass to function
+  // tuple of aspects to pass to function
   auto aspect_tuple = std::tuple<AspectsT...>{};
-  // create an index sequence with one index for each subset size
+  // one index for each subset size
   auto subset_sizes = std::make_index_sequence<subset_count>{};
   create_subsets<SmallestSubset>(aspect_tuple, subset_sizes);
 }
 
-template <unsigned int ArrayCount, typename... AspectsT>
-struct helper_random {
-  static constexpr unsigned int aspect_count = sizeof...(AspectsT);
+/**
+ * Get next state value for a linear congruential engine with the same
+ * parameters as std::minstd_rand. */
+constexpr unsigned int get_next_state(unsigned int state) {
+  return (48271 * state) % 2147483647;
+}
 
-  template <typename RngCompileTime, unsigned int RemainingElements,
-            typename... SelectedAspectsT>
-  struct create_single_array {
-    template <typename RngRuntime>
-    static void check(const std::vector<sycl::aspect>& aspect_list,
-                      RngRuntime& rng_runtime) {
-      // generate a random index and select the associated element
-      constexpr unsigned int idx = RngCompileTime::value % aspect_count;
-      using rng_next = typename RngCompileTime::next;
-      using elem =
-          typename std::tuple_element<idx, std::tuple<AspectsT...>>::type;
-      create_single_array<rng_next, RemainingElements - 1, elem,
-                          SelectedAspectsT...>::check(aspect_list, rng_runtime);
-    }
-  };
+/** \p Seed is unique for this random set. */
+template <unsigned int Seed, typename... SelectedAspectsT>
+void check_random_set(const std::vector<sycl::aspect>& aspect_list) {
+  // create a value pack and vector for the selected aspects
+  const auto selected_aspect_pack =
+      value_pack<sycl::aspect, SelectedAspectsT::value...>::generate_named();
+  std::vector<sycl::aspect> selected_aspect_list = {SelectedAspectsT::value...};
 
-  template <typename RngCompileTime, typename... SelectedAspectsT>
-  struct create_single_array<RngCompileTime, 0, SelectedAspectsT...> {
-    template <typename RngRuntime>
-    static void check(const std::vector<sycl::aspect>& aspect_list,
-                      RngRuntime& rng_runtime) {
-      // no elements remaining, instantiate the check with the running array
-      static const auto aspect_pack =
-          value_pack<sycl::aspect,
-                     SelectedAspectsT::value...>::generate_named();
-      static const std::vector<sycl::aspect> selected_aspect_list = {
-          SelectedAspectsT::value...};
-      const std::vector<sycl::aspect> deny_list =
-          generate_denied_list(aspect_list, selected_aspect_list, rng_runtime);
-      check_for_multiple_aspects<SelectedAspectsT...>{}(deny_list,
-                                                        aspect_pack.names);
-    }
-  };
+  // generate a vector of denied aspects using a runtime random number
+  // generator, choose *some* different seed
+  std::minstd_rand rng_runtime(Seed + 1);
+  const std::vector<sycl::aspect> deny_list =
+      generate_denied_list(aspect_list, selected_aspect_list, rng_runtime);
 
-  template <unsigned int RemainingArrayCount, typename RngCompileTime>
-  struct create_arrays {
-    template <typename RngRuntime>
-    static void check(const std::vector<sycl::aspect>& aspect_list,
-                      RngRuntime& rng_runtime) {
-      // obtain random non-zero length, no longer than number of aspects
-      constexpr unsigned int array_size =
-          1 + (RngCompileTime::value % (aspect_count - 1));
-      using rng_next = typename RngCompileTime::next;
-      // fill the array with random elements
-      create_single_array<rng_next, array_size>::check(aspect_list,
-                                                       rng_runtime);
+  check_for_multiple_aspects<SelectedAspectsT...>{}(deny_list,
+                                                    selected_aspect_pack.names);
+}
 
-      // to prevent generating duplicate indices for consecutive arrays,
-      // skip the rng as many steps forward as the number of values that will be
-      // required to generate random indices for the previous array
-      using rng_skip = typename discard<rng_next, array_size>::type;
-      create_arrays<RemainingArrayCount - 1, rng_skip>::check(aspect_list,
-                                                              rng_runtime);
-    }
-  };
+/** \p Seed is unique for this random set. */
+template <unsigned int Seed, typename... AspectsT, unsigned int... Seeds>
+void fill_random_set(std::tuple<AspectsT...> aspect_tuple,
+                     std::integer_sequence<unsigned int, Seeds...>) {
+  std::vector<sycl::aspect> aspect_list = {AspectsT::value...};
+  constexpr unsigned int aspect_count = sizeof...(AspectsT);
+  // The maximum number of seeds used before this set, plus one for offset.
+  // Due to the simple nature of the LCG, the + 1 is required as otherwise
+  // the same sequence is produced as % aspect_count is applied on the index.
+  constexpr unsigned int seed_offset = Seed * (aspect_count + 1);
+  // Expand seeds pack to:
+  // 1. Obtain a unique seed among all random sets.
+  // 2. Use the seed to generate a random index into the aspect pack.
+  // 3. Create a new aspect pack of selected aspects.
+  check_random_set<Seed, typename std::tuple_element<
+                             get_next_state(seed_offset + Seeds) % aspect_count,
+                             decltype(aspect_tuple)>::type...>(aspect_list);
+}
 
-  template <typename RngCompileTime>
-  struct create_arrays<0, RngCompileTime> {
-    // no arrays remaining
-    template <typename RngRuntime>
-    static void check(const std::vector<sycl::aspect>&, RngRuntime&) {}
-  };
+/** \p Seed is unique for this random set. */
+template <unsigned int Seed, typename... AspectsT>
+constexpr void create_random_set(std::tuple<AspectsT...> aspect_tuple) {
+  // obtain random non-zero length, no longer than number of aspects
+  constexpr unsigned int size =
+      1 + get_next_state(Seed) % (sizeof...(AspectsT) - 1);
+  // one index for each random aspect in this set
+  auto aspect_seeds = std::make_integer_sequence<unsigned int, size>{};
+  fill_random_set<Seed>(aspect_tuple, aspect_seeds);
+}
 
-  static void check(const std::vector<sycl::aspect>& aspect_list) {
-    // random number generator seed is fixed to produce deterministic results
-    constexpr unsigned int seed = 1;
+template <typename... AspectsT, unsigned int... Seeds>
+constexpr void create_random_sets(
+    std::tuple<AspectsT...> aspect_tuple,
+    std::integer_sequence<unsigned int, Seeds...>) {
+  // expand seeds pack to create a random set with each seed
+  (create_random_set<Seeds>(aspect_tuple), ...);
+}
 
-    // runtime random number generator for generating the list of
-    // denied aspects, which is passed in as a std::vector
-    std::minstd_rand rng_runtime(seed);
-
-    // compile-time random number generator for generating aspects, required
-    // since aspect selector has a constructor that accepts template arguments.
-    using rng_compile_time = minstd_rand<seed>;
-
-    create_arrays<ArrayCount, rng_compile_time>::check(aspect_list,
-                                                       rng_runtime);
-  }
-};
-
-template <unsigned int ArrayCount, typename... AspectsT>
-void check_for_random(const named_type_pack<AspectsT...>&,
-                      const std::vector<sycl::aspect>& aspect_list) {
-  helper_random<ArrayCount, AspectsT...>::check(aspect_list);
+/**
+ * Checks \p Count randomly-sized sets of random aspects with a randomly-sized
+ * list of random denied aspects. */
+template <unsigned int Count, typename... AspectsT>
+constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
+  // tuple of aspects to pass to function
+  auto aspect_tuple = std::tuple<AspectsT...>{};
+  // one index for each random set, which forms the seed for the random number
+  // generator used to generate the size and elements of the set
+  auto set_sizes = std::make_integer_sequence<unsigned int, Count>{};
+  create_random_sets(aspect_tuple, set_sizes);
 }
 
 // DPCPP does not implement sycl::aspect_selector
@@ -458,13 +423,10 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   // a subset of three aspects, four aspects, five aspects, etc.
   check_for_subset<3>(aspect_pack);
 
-  // obtain a list of all defined aspects
-  const std::vector<sycl::aspect> aspect_list = get_aspect_list();
-
   // randomly-sized list of random aspects (greater than two), in addition to a
   // randomly-generated list of forbidden aspects
   constexpr unsigned int random_aspects_count = 100;
-  check_for_random<random_aspects_count>(aspect_pack, aspect_list);
+  check_for_random_set<random_aspects_count>(aspect_pack);
 })
 
 }  // namespace device_selector_aspect
