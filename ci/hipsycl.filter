@@ -25,7 +25,6 @@ nd_range
 property
 queue
 range
-reduction
 sampler
 scalars
 spec_constants

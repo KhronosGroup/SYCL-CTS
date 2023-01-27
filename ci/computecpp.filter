@@ -19,7 +19,6 @@ multi_ptr
 nd_item
 opencl_interop
 platform
-reduction
 spec_constants
 stream
 sub_group_mask
