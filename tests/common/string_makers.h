@@ -79,6 +79,57 @@ struct StringMaker<sycl::target> {
     }
   }
 };
+
+template <>
+struct StringMaker<sycl::aspect> {
+  using type = sycl::aspect;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::cpu:
+        return "aspect::cpu";
+      case type::gpu:
+        return "aspect::gpu";
+      case type::accelerator:
+        return "aspect::accelerator";
+      case type::custom:
+        return "aspect::custom";
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+      case type::emulated:
+        return "aspect::emulated";
+#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
+      case type::host_debuggable:
+        return "aspect::host_debuggable";
+      case type::fp16:
+        return "aspect::fp16";
+      case type::fp64:
+        return "aspect::fp64";
+      case type::atomic64:
+        return "aspect::atomic64";
+      case type::image:
+        return "aspect::image";
+      case type::online_compiler:
+        return "aspect::online_compiler";
+      case type::online_linker:
+        return "aspect::online_linker";
+      case type::queue_profiling:
+        return "aspect::queue_profiling";
+      case type::usm_device_allocations:
+        return "aspect::usm_device_allocations";
+      case type::usm_host_allocations:
+        return "aspect::usm_host_allocations";
+      case type::usm_atomic_host_allocations:
+        return "aspect::usm_atomic_host_allocations";
+      case type::usm_shared_allocations:
+        return "aspect::usm_shared_allocations";
+      case type::usm_atomic_shared_allocations:
+        return "aspect::usm_atomic_shared_allocations";
+      case type::usm_system_allocations:
+        return "aspect::usm_system_allocations";
+      default:
+        return "unknown aspect";
+    }
+  }
+};
 }  // namespace Catch
 
 #endif  // __SYCLCTS_TESTS_COMMON_STRING_MAKERS_H
