@@ -649,13 +649,13 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 
 /**
  * Tests the result of using operator \p op with operands \p lhs and \p rhs,
- * which are not modified. Variable \p tmp is used as a temporary value. */
-#define INDEX_KERNEL_TEST(op, lhs, rhs, tmp)                               \
+ * which are not modified. Variable \p res is used as a temporary value. */
+#define INDEX_KERNEL_TEST(op, lhs, rhs, res)                               \
   {                                                                        \
-    tmp = (lhs op rhs);                                                    \
+    res = (lhs op rhs);                                                    \
     for (int k = 0; k < dims; k++) {                                       \
-      if ((tmp.get(k) != static_cast<size_t>(lhs.get(k) op rhs.get(k))) || \
-          (tmp[k] != static_cast<size_t>(lhs[k] op rhs[k]))) {             \
+      if ((res.get(k) != static_cast<size_t>(lhs.get(k) op rhs.get(k))) || \
+          (res[k] != static_cast<size_t>(lhs[k] op rhs[k]))) {             \
         error_ptr[m_iteration] = __LINE__;                                 \
         m_iteration++;                                                     \
       }                                                                    \
@@ -665,32 +665,32 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 /**
  * Tests the result of the equality/inequality operator \p op between
  * operands \p lhs and \p rhs, which are not modified. */
-#define INDEX_EQ_KERNEL_TEST(op, lhs, rhs)          \
-  {                                                 \
-    if ((lhs op lhs) != (rhs op rhs)) {             \
-      error_ptr[m_iteration] = __LINE__;            \
-      m_iteration++;                                \
-    }                                               \
-    bool result = lhs op rhs;                       \
-    for (int k = 0; k < dims; k++) {                \
-      if ((result != (lhs.get(k) op rhs.get(k))) || \
-          (result != (lhs[k] op rhs[k]))) {         \
-        error_ptr[m_iteration] = __LINE__;          \
-        m_iteration++;                              \
-      }                                             \
-    }                                               \
+#define INDEX_EQ_KERNEL_TEST(op, lhs, rhs)       \
+  {                                              \
+    if ((lhs op lhs) != (rhs op rhs)) {          \
+      error_ptr[m_iteration] = __LINE__;         \
+      m_iteration++;                             \
+    }                                            \
+    bool res = lhs op rhs;                       \
+    for (int k = 0; k < dims; k++) {             \
+      if ((res != (lhs.get(k) op rhs.get(k))) || \
+          (res != (lhs[k] op rhs[k]))) {         \
+        error_ptr[m_iteration] = __LINE__;       \
+        m_iteration++;                           \
+      }                                          \
+    }                                            \
   }
 
 /**
  * Tests the result of operator \p op between scalar operand \p lhs and
  * INDEX operand \p rhs, which are not modified.
- * Variable \p tmp is used as a temporary value. */
-#define INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, tmp)                 \
+ * Variable \p res is used as a temporary value. */
+#define INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, res)                 \
   {                                                                       \
-    tmp = INDEX op integer;                                               \
+    res = INDEX op integer;                                               \
     for (int k = 0; k < dims; k++) {                                      \
-      if (tmp.get(k) != (static_cast<size_t>(INDEX.get(k) op integer)) || \
-          (tmp[k] != static_cast<size_t>(INDEX[k] op integer))) {         \
+      if (res.get(k) != (static_cast<size_t>(INDEX.get(k) op integer)) || \
+          (res[k] != static_cast<size_t>(INDEX[k] op integer))) {         \
         error_ptr[m_iteration] = __LINE__;                                \
         m_iteration++;                                                    \
       }                                                                   \
@@ -700,13 +700,13 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 /**
  * Tests the result of operator \p op between scalar operand \p lhs and
  * INDEX operand \p rhs, which are not modified.
- * Variable \p tmp is used as a temporary value. */
-#define SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, tmp)                 \
+ * Variable \p res is used as a temporary value. */
+#define SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, res)                 \
   {                                                                       \
-    tmp = integer op INDEX;                                               \
+    res = integer op INDEX;                                               \
     for (int k = 0; k < dims; k++) {                                      \
-      if (tmp.get(k) != (static_cast<size_t>(integer op INDEX.get(k))) || \
-          (tmp[k] != static_cast<size_t>(integer op INDEX[k]))) {         \
+      if (res.get(k) != (static_cast<size_t>(integer op INDEX.get(k))) || \
+          (res[k] != static_cast<size_t>(integer op INDEX[k]))) {         \
         error_ptr[m_iteration] = __LINE__;                                \
         m_iteration++;                                                    \
       }                                                                   \
@@ -716,10 +716,10 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 /**
  * Tests the result of operator \p op between \p integer operand and an
  * \p INDEX operand in both possible configurations. \p INDEX and \p integer
- * are not modified. Variable \p tmp is used as a temporary value. */
-#define DUAL_SIZE_INDEX_KERNEL_TEST(op, INDEX, integer, tmp) \
-  INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, tmp);         \
-  SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, tmp)
+ * are not modified. Variable \p res is used as a temporary value. */
+#define DUAL_SIZE_INDEX_KERNEL_TEST(op, INDEX, integer, res) \
+  INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, res);         \
+  SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, res)
 
 /**
  * Tests the result of assignment operator \p op between assigning \p a
@@ -760,13 +760,13 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 
 /**
  * Tests the result of using unary operator \p op with operand \p val,
- * which is not modified. Variable \p tmp is used as a temporary value. */
-#define UNARY_INDEX_KERNEL_TEST(op, val, tmp)                   \
+ * which is not modified. Variable \p res is used as a temporary value. */
+#define UNARY_INDEX_KERNEL_TEST(op, val, res)                   \
   do {                                                          \
-    tmp = op val;                                               \
+    res = op val;                                               \
     for (int k = 0; k < dims; k++) {                            \
-      if (tmp.get(k) != static_cast<size_t>((op val).get(k)) || \
-          tmp[k] != static_cast<size_t>((op val)[k])) {         \
+      if (res.get(k) != static_cast<size_t>((op val).get(k)) || \
+          res[k] != static_cast<size_t>((op val)[k])) {         \
         error_ptr[m_iteration] = __LINE__;                      \
         m_iteration++;                                          \
       }                                                         \
@@ -775,17 +775,17 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 
 /**
  * Tests the result of using prefix operator \p op with operand \p val,
- * which is not modified. Variable \p tmp is used as a temporary value. */
-#define PREFIX_INDEX_KERNEL_TEST(op, val, tmp)          \
+ * which is not modified. Variable \p res is used as a temporary value. */
+#define PREFIX_INDEX_KERNEL_TEST(op, val, res)          \
   do {                                                  \
-    tmp = val;                                          \
-    op tmp;                                             \
+    res = val;                                          \
+    op res;                                             \
     for (int k = 0; k < dims; k++) {                    \
-      size_t tmp_get = val.get(k);                      \
-      op tmp_get;                                       \
-      size_t tmp_sub = val[k];                          \
-      op tmp_sub;                                       \
-      if (tmp.get(k) != tmp_get || tmp[k] != tmp_sub) { \
+      size_t res_get = val.get(k);                      \
+      op res_get;                                       \
+      size_t res_sub = val[k];                          \
+      op res_sub;                                       \
+      if (res.get(k) != res_get || res[k] != res_sub) { \
         error_ptr[m_iteration] = __LINE__;              \
         m_iteration++;                                  \
       }                                                 \
@@ -794,17 +794,17 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 
 /**
  * Tests the result of using postfix operator \p op with operand \p val,
- * which is not modified. Variable \p tmp is used as a temporary value. */
-#define POSTFIX_INDEX_KERNEL_TEST(op, val, tmp)         \
+ * which is not modified. Variable \p res is used as a temporary value. */
+#define POSTFIX_INDEX_KERNEL_TEST(op, val, res)         \
   do {                                                  \
-    tmp = val;                                          \
-    tmp op;                                             \
+    res = val;                                          \
+    res op;                                             \
     for (int k = 0; k < dims; k++) {                    \
-      size_t tmp_get = val.get(k);                      \
-      tmp_get op;                                       \
-      size_t tmp_sub = val[k];                          \
-      tmp_sub op;                                       \
-      if (tmp.get(k) != tmp_get || tmp[k] != tmp_sub) { \
+      size_t res_get = val.get(k);                      \
+      res_get op;                                       \
+      size_t res_sub = val[k];                          \
+      res_sub op;                                       \
+      if (res.get(k) != res_get || res[k] != res_sub) { \
         error_ptr[m_iteration] = __LINE__;              \
         m_iteration++;                                  \
       }                                                 \

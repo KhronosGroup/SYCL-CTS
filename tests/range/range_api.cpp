@@ -36,7 +36,7 @@ void test_range_kernels(
         error_ptr,
     int m_iteration) {
   // scratch value to test the operators
-  sycl::range<dims> tmp(range);
+  sycl::range<dims> result(range);
 
   // non-zero values to test the operators
   size_t integer = 16;
@@ -57,79 +57,79 @@ void test_range_kernels(
   INDEX_EQ_KERNEL_TEST(!=, range, range_two);
 
   // friend range operatorOP(const range& lhs, const range& rhs)
-  INDEX_KERNEL_TEST(+, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(-, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(*, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(/, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(%, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(<<, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(>>, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(&, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(|, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(^, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(&&, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(||, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(<, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(>, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(<=, range, range_two_const, tmp);
-  INDEX_KERNEL_TEST(>=, range, range_two_const, tmp);
+  INDEX_KERNEL_TEST(+, range, range_two_const, result);
+  INDEX_KERNEL_TEST(-, range, range_two_const, result);
+  INDEX_KERNEL_TEST(*, range, range_two_const, result);
+  INDEX_KERNEL_TEST(/, range, range_two_const, result);
+  INDEX_KERNEL_TEST(%, range, range_two_const, result);
+  INDEX_KERNEL_TEST(<<, range, range_two_const, result);
+  INDEX_KERNEL_TEST(>>, range, range_two_const, result);
+  INDEX_KERNEL_TEST(&, range, range_two_const, result);
+  INDEX_KERNEL_TEST(|, range, range_two_const, result);
+  INDEX_KERNEL_TEST(^, range, range_two_const, result);
+  INDEX_KERNEL_TEST(&&, range, range_two_const, result);
+  INDEX_KERNEL_TEST(||, range, range_two_const, result);
+  INDEX_KERNEL_TEST(<, range, range_two_const, result);
+  INDEX_KERNEL_TEST(>, range, range_two_const, result);
+  INDEX_KERNEL_TEST(<=, range, range_two_const, result);
+  INDEX_KERNEL_TEST(>=, range, range_two_const, result);
 
   // friend range operatorOP(const range& lhs, const size_t& rhs)
   // friend range operatorOP(const size_t& lhs, const range& rhs)
-  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer, tmp);
-  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer, tmp);
+  DUAL_SIZE_INDEX_KERNEL_TEST(+, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(-, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(*, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(/, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(%, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<<, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>>, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(|, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(^, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(&&, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(||, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(<=, range, integer, result);
+  DUAL_SIZE_INDEX_KERNEL_TEST(>=, range, integer, result);
 
   // friend range& operatorOP(range& lhs, const range& rhs)
-  INDEX_ASSIGNMENT_TESTS(+=, +, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(-=, -, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(*=, *, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(/=, /, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(%=, %, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(<<=, <<, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(>>=, >>, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(&=, &, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(|=, |, range, range_two, tmp);
-  INDEX_ASSIGNMENT_TESTS(^=, ^, range, range_two, tmp);
+  INDEX_ASSIGNMENT_TESTS(+=, +, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(-=, -, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(*=, *, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(/=, /, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(%=, %, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(<<=, <<, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(>>=, >>, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(&=, &, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(|=, |, range, range_two, result);
+  INDEX_ASSIGNMENT_TESTS(^=, ^, range, range_two, result);
 
   // friend range& operatorOP(range& lhs, const size_t& rhs)
-  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer, tmp);
-  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer, tmp);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(+=, +, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(-=, -, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(*=, *, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(/=, /, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(%=, %, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(<<=, <<, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(>>=, >>, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(&=, &, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(|=, |, range, integer, result);
+  INDEX_ASSIGNMENT_INTEGER_TESTS(^=, ^, range, integer, result);
 
   // friend range operatorOP(const range& rhs)
-  UNARY_INDEX_KERNEL_TEST(+, range, tmp);
+  UNARY_INDEX_KERNEL_TEST(+, range, result);
 #ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  UNARY_INDEX_KERNEL_TEST(-, range, tmp);
+  UNARY_INDEX_KERNEL_TEST(-, range, result);
 #endif
 
   // friend range& operatorOP(range& rhs)
-  PREFIX_INDEX_KERNEL_TEST(++, range, tmp);
-  PREFIX_INDEX_KERNEL_TEST(--, range, tmp);
+  PREFIX_INDEX_KERNEL_TEST(++, range, result);
+  PREFIX_INDEX_KERNEL_TEST(--, range, result);
 
   // friend range operatorOP(range& lhs, int)
-  POSTFIX_INDEX_KERNEL_TEST(++, range, tmp);
-  POSTFIX_INDEX_KERNEL_TEST(--, range, tmp);
+  POSTFIX_INDEX_KERNEL_TEST(++, range, result);
+  POSTFIX_INDEX_KERNEL_TEST(--, range, result);
 }
 
 template <int dims>
