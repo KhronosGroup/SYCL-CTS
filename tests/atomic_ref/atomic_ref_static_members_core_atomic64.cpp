@@ -19,13 +19,21 @@
 //  Provides sycl::atomic_ref static members test for atomic64 types
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
+
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "atomic_ref_static_members.h"
 
+#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 namespace atomic_ref::static_members::core::atomic64 {
 
-TEST_CASE("sycl::atomic_ref static members. atomic64 types", "[atomic_ref]") {
+// FIXME: re-enable when sycl::access::address_space::generic_space is
+// implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("sycl::atomic_ref static members. atomic64 types", "[atomic_ref]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::atomic64)) {
     WARN(
@@ -35,6 +43,6 @@ TEST_CASE("sycl::atomic_ref static members. atomic64 types", "[atomic_ref]") {
   }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
   for_all_types<atomic_ref::static_members::run_test>(type_pack);
-};
+});
 
 }  // namespace atomic_ref::static_members::core::atomic64

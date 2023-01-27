@@ -19,15 +19,23 @@
 //  Provides sycl::atomic_ref static members test for generic types
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
+
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "atomic_ref_static_members.h"
 
+#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 namespace atomic_ref::static_members::core {
 
-TEST_CASE("sycl::atomic_ref static members. core types", "[atomic_ref]") {
+// FIXME: re-enable when sycl::access::address_space::generic_space is
+// implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("sycl::atomic_ref static members. core types", "[atomic_ref]")({
   const auto types = atomic_ref::tests::common::get_conformance_type_pack();
   for_all_types<atomic_ref::static_members::run_test>(types);
-};
+});
 
 }  // namespace atomic_ref::static_members::core
