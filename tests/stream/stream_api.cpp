@@ -151,7 +151,7 @@ class TEST_NAME : public util::test_base {
 
           /** check get_size()
            */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto size = os.get_size();
             check_return_type<size_t>(log, size, "sycl::stream::get_size()");
@@ -174,7 +174,7 @@ class TEST_NAME : public util::test_base {
 
           /** get_max_statement_size()
            */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto maxStatementSize = os.get_max_statement_size();
             check_return_type<size_t>(log, maxStatementSize,

@@ -58,7 +58,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, DPCPP)
 
   auto queue = util::get_cts_object::queue();
 
-#ifdef SYCL_CTS_ENABLE_HALF_TESTS
+#if SYCL_CTS_ENABLE_HALF_TESTS
   using availability_fp16 =
       util::extensions::availability<util::extensions::tag::fp16>;
   if (!availability_fp16::check(queue)) {
@@ -70,7 +70,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, DPCPP)
   }
 #endif  // SYCL_CTS_ENABLE_HALF_TESTS
 
-#ifdef SYCL_CTS_ENABLE_DOUBLE_TESTS
+#if SYCL_CTS_ENABLE_DOUBLE_TESTS
   using availability_fp64 =
       util::extensions::availability<util::extensions::tag::fp64>;
   if (!availability_fp64::check(queue)) {
