@@ -32,8 +32,8 @@
 namespace common_reference_semantics {
 
 /**
- * Tests the copy/move constructible/assignable and destructible traits using
- * the standard library. */
+ Tests the copy/move constructible/assignable and destructible traits using
+ the standard library. */
 struct test_traits {
   static constexpr std::size_t result_count = 5;
 
@@ -113,9 +113,9 @@ struct test_move {
   static constexpr std::size_t result_count = 2;
 
   /**
-   * Performs the check, can be run on host side or kernel side.
-   * A non-const instance is required as it is moved in this test, which
-   * may invalidate the instance. */
+   Performs the check, can be run on host side or kernel side.
+   A non-const instance is required as it is moved in this test, which
+   may invalidate the instance. */
   template <typename Storage, typename T, typename VectorType>
   static void run(VectorType& vec, T& t) {
     std::size_t i = 0;
@@ -204,8 +204,8 @@ struct test_equality {
 };
 
 /**
- * Helper function for comparing to standard library hashes, to make a
- * compiler-specific exception. */
+ Helper function for comparing to standard library hashes, to make a
+ compiler-specific exception. */
 template <typename T>
 bool hash_equality_helper(const T& t0, const T& t1) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
@@ -283,9 +283,9 @@ struct test_inequality {
   static constexpr std::size_t result_count = 1;
 
   /**
-   * Performs the check, can be run on host side or kernel side.
-   * To test inequality, a second instance is required, which must be
-   * non-equal to the first instance. */
+   Performs the check, can be run on host side or kernel side.
+   To test inequality, a second instance is required, which must be
+   non-equal to the first instance. */
   template <typename T, typename VectorType>
   static void run(VectorType& vec, const T& t0, const T& t1) {
     std::size_t i = 0;
@@ -310,8 +310,8 @@ struct test_inequality {
 };
 
 /**
- * Helper function for comparing to standard library hashes, to make a
- * compiler-specific exception. */
+ Helper function for comparing to standard library hashes, to make a
+ compiler-specific exception. */
 template <typename T>
 bool hash_inequality_helper(const T& t0, const T& t1) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
@@ -334,9 +334,9 @@ struct test_inequality_hash {
   static constexpr std::size_t result_count = 1;
 
   /**
-   * Performs the check, can be run on host side or kernel side.
-   * To test inequality, a second instance is required, which must be
-   * non-equal to the first instance. */
+   Performs the check, can be run on host side or kernel side.
+   To test inequality, a second instance is required, which must be
+   non-equal to the first instance. */
   template <typename T, typename VectorType>
   static void run(VectorType& vec, const T& t0, const T& t1) {
     std::size_t i = 0;
@@ -361,8 +361,8 @@ struct test_inequality_hash {
 };
 
 /**
- * Tests the common reference semantics:
- * traits, equality, hash equality, copy. */
+ Tests the common reference semantics:
+ traits, equality, hash equality, copy. */
 template <typename storage, typename T>
 void check_host_impl(const T& t, const std::string& type_name) {
   INFO("checking reference semantics on the host application for type \""
@@ -418,8 +418,8 @@ void check_host_impl_inequality(const T& t0, const T& t1) {
 }
 
 /**
- * Tests the common reference semantics: move.
- * Instance is passed as non-const, invalidates the instance. */
+ Tests the common reference semantics: move.
+ Instance is passed as non-const, invalidates the instance. */
 template <typename storage, typename T>
 void check_host_impl_move(T& t) {
   std::size_t result_count = test_move::result_count;
@@ -436,8 +436,8 @@ void check_host_impl_move(T& t) {
 }
 
 /**
- * Tests all common reference semantics on the host application,
- * for a const instance. Invalidates the instance. */
+ Tests all common reference semantics on the host application,
+ for a const instance. Invalidates the instance. */
 template <typename storage, typename T>
 void check_host(const T& t, const std::string& type_name) {
   // usage in check_host_impl implies that t must be non-const
@@ -445,9 +445,9 @@ void check_host(const T& t, const std::string& type_name) {
 }
 
 /**
- * Tests all common reference semantics on the host application,
- * for a non-const instance. Invalidates the instance.
- * Is a super set of the const instance tests. */
+ Tests all common reference semantics on the host application,
+ for a non-const instance. Invalidates the instance.
+ Is a super set of the const instance tests. */
 template <typename storage, typename T>
 void check_host(T& t, const std::string& type_name) {
   check_host_impl<storage>(t, type_name);
@@ -455,10 +455,10 @@ void check_host(T& t, const std::string& type_name) {
 }
 
 /**
- * Tests all common reference semantics on the host application,
- * for a non-const instance and a const second and unequal instance.
- * Invalidates the first instance.
- * Is a super set of the non-const instance tests. */
+ Tests all common reference semantics on the host application,
+ for a non-const instance and a const second and unequal instance.
+ Invalidates the first instance.
+ Is a super set of the non-const instance tests. */
 template <typename storage, typename T>
 void check_host(T& t0, const T& t1, const std::string& type_name) {
   check_host_impl<storage>(t0, type_name);
@@ -470,9 +470,9 @@ template <typename T>
 struct kernel_name;
 
 /**
- * Tests all common reference semantics in a device function.
- * The function \p init_func takes a sycl::handler and returns an instance of
- * type \p T. */
+ Tests all common reference semantics in a device function.
+ The function \p init_func takes a sycl::handler and returns an instance of
+ type \p T. */
 template <typename storage, typename T, typename InitFunc>
 void check_kernel(InitFunc init_func, const std::string& type_name) {
   INFO("checking reference semantics in kernel function for type \""
