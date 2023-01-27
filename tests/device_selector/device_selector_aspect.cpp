@@ -57,8 +57,8 @@ static auto get_aspect_pack() {
 }
 
 /**
- * Check whether all specified constructors for \p aspect_selector are
- * available. */
+ Check whether all specified constructors for \p aspect_selector are
+ available. */
 void check_no_aspects() {
 #ifdef SYCL_CTS_COMPILING_WITH_DPCPP
   CHECK(false);  // ensure workaround will be removed
@@ -71,8 +71,8 @@ void check_no_aspects() {
 }
 
 /**
- * Given a list of aspects and a list of forbidden aspects, find out if a
- * conforming device exists. */
+ Given a list of aspects and a list of forbidden aspects, find out if a
+ conforming device exists. */
 bool device_exists(const std::vector<sycl::aspect>& aspect_list,
                    const std::vector<sycl::aspect>& deny_list) {
   const auto devices = sycl::device::get_devices();
@@ -89,8 +89,8 @@ bool device_exists(const std::vector<sycl::aspect>& aspect_list,
 }
 
 /**
- * Given a list of aspects, find out if the selector finds a conforming
- * device. */
+ Given a list of aspects, find out if the selector finds a conforming
+ device. */
 template <typename Selector>
 void test_selector_accept(const Selector& selector,
                           const std::vector<sycl::aspect>& accept_list) {
@@ -112,8 +112,8 @@ void test_selector_accept(const Selector& selector,
 }
 
 /**
- * Given a list of forbidden aspects, find out if the selector finds a
- * conforming device. */
+ Given a list of forbidden aspects, find out if the selector finds a
+ conforming device. */
 template <typename Selector>
 void test_selector_deny(const Selector& selector,
                         const std::vector<sycl::aspect>& deny_list) {
@@ -136,8 +136,8 @@ void test_selector_deny(const Selector& selector,
 }
 
 /**
- * Given a selector that selects a device not available in the system,
- * check if the error behavior is correct. */
+ Given a selector that selects a device not available in the system,
+ check if the error behavior is correct. */
 template <typename Selector>
 void check_selector_exception(const Selector& s) {
   INFO(
@@ -156,8 +156,8 @@ void check_selector_exception(const Selector& s) {
 }
 
 /**
- * Tests whether a given selector conforms to a given list of required
- * aspects. */
+ Tests whether a given selector conforms to a given list of required
+ aspects. */
 template <typename Selector>
 void test_selector(const Selector& selector,
                    const std::vector<sycl::aspect>& accept_list) {
@@ -169,8 +169,8 @@ void test_selector(const Selector& selector,
 }
 
 /**
- * Tests whether a given selector conforms to a given list of required
- * aspects and a list of denied aspects. */
+ Tests whether a given selector conforms to a given list of required
+ aspects and a list of denied aspects. */
 template <typename Selector>
 void test_selector(const Selector& selector,
                    const std::vector<sycl::aspect>& accept_list,
@@ -184,10 +184,10 @@ void test_selector(const Selector& selector,
 }
 
 /**
- * Checks aspect selector's constructors: using an accept list
- * (and no deny list), using an accept list and a deny list, using accepted
- * variadic function arguments, and using accepted variadic template
- * parameters. */
+ Checks aspect selector's constructors: using an accept list
+ (and no deny list), using an accept list and a deny list, using accepted
+ variadic function arguments, and using accepted variadic template
+ parameters. */
 template <sycl::aspect... Aspects>
 void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
   const std::vector<sycl::aspect> accept_list{Aspects...};
@@ -203,8 +203,8 @@ void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
 }
 
 /**
- * Functor that checks a selector with a single aspect and an empty list of
- * denied aspects. */
+ Functor that checks a selector with a single aspect and an empty list of
+ denied aspects. */
 template <typename AspectT>
 class check_for_single_aspect {
   static constexpr sycl::aspect aspect = AspectT::value;
@@ -217,8 +217,8 @@ class check_for_single_aspect {
 };
 
 /**
- * Functor that checks a selector with two aspects and an empty list of
- * denied aspects. */
+ Functor that checks a selector with two aspects and an empty list of
+ denied aspects. */
 template <typename Aspect1T, typename Aspect2T>
 class check_for_two_aspects {
   static constexpr sycl::aspect aspect1 = Aspect1T::value;
@@ -233,8 +233,8 @@ class check_for_two_aspects {
 };
 
 /**
- * Returns a randomly-sized list of random denied aspects that are not part of
- * the requested aspects \p selected_aspect_list. */
+ Returns a randomly-sized list of random denied aspects that are not part of
+ the requested aspects \p selected_aspect_list. */
 template <typename Rng>
 std::vector<sycl::aspect> generate_denied_list(
     const std::vector<sycl::aspect>& aspect_list,
@@ -262,8 +262,8 @@ std::vector<sycl::aspect> generate_denied_list(
 }
 
 /**
- * Functor that checks a selector with multiple aspects and optionally
- * a list of denied aspects. */
+ Functor that checks a selector with multiple aspects and optionally
+ a list of denied aspects. */
 template <typename... AspectsT>
 class check_for_multiple_aspects {
   static constexpr std::size_t aspect_count = sizeof...(AspectsT);
@@ -326,8 +326,8 @@ constexpr void check_for_subset(const named_type_pack<AspectsT...>&) {
 }
 
 /**
- * Get next state value for a linear congruential engine with the same
- * parameters as std::minstd_rand. */
+ Get next state value for a linear congruential engine with the same
+ parameters as std::minstd_rand. */
 constexpr unsigned int get_next_state(unsigned int state) {
   return (48271 * state) % 2147483647;
 }
@@ -389,8 +389,8 @@ constexpr void create_random_sets(
 }
 
 /**
- * Checks \p Count randomly-sized sets of random aspects with a randomly-sized
- * list of random denied aspects. */
+ Checks \p Count randomly-sized sets of random aspects with a randomly-sized
+ list of random denied aspects. */
 template <unsigned int Count, typename... AspectsT>
 constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
   // tuple of aspects to pass to function
