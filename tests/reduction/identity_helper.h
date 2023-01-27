@@ -25,8 +25,7 @@
 #include <type_traits>
 
 /**
- * Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator.
- */
+ Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator. */
 template <typename AccumulatorT, typename OperatorT>
 using is_legal_operator = std::bool_constant<
     (std::is_same_v<OperatorT, sycl::plus<AccumulatorT>> &&
@@ -54,8 +53,7 @@ using is_legal_operator = std::bool_constant<
      (std::is_floating_point_v<AccumulatorT> ||
       std::is_same_v<std::remove_cv_t<AccumulatorT>, sycl::half>))>;
 /**
- * Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator.
- */
+ Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator. */
 template <typename AccumulatorT, typename OperatorT>
 inline constexpr bool is_legal_operator_v{
     is_legal_operator<AccumulatorT, OperatorT>::value};

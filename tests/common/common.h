@@ -648,8 +648,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
 }  // namespace
 
 /**
- * Tests the result of using operator \p op with operands \p lhs and \p rhs,
- * which are not modified. Variable \p res is used as a temporary value. */
+ Tests the result of using operator \p op with operands \p lhs and \p rhs,
+ which are not modified. Variable \p res is used as a temporary value. */
 #define INDEX_KERNEL_TEST(op, lhs, rhs, res)                               \
   {                                                                        \
     res = (lhs op rhs);                                                    \
@@ -663,8 +663,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of the equality/inequality operator \p op between
- * operands \p lhs and \p rhs, which are not modified. */
+ Tests the result of the equality/inequality operator \p op between
+ operands \p lhs and \p rhs, which are not modified. */
 #define INDEX_EQ_KERNEL_TEST(op, lhs, rhs)       \
   {                                              \
     if ((lhs op lhs) != (rhs op rhs)) {          \
@@ -682,9 +682,9 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of operator \p op between scalar operand \p lhs and
- * INDEX operand \p rhs, which are not modified.
- * Variable \p res is used as a temporary value. */
+ Tests the result of operator \p op between scalar operand \p lhs and
+ INDEX operand \p rhs, which are not modified.
+ Variable \p res is used as a temporary value. */
 #define INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, res)                 \
   {                                                                       \
     res = INDEX op integer;                                               \
@@ -698,9 +698,9 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of operator \p op between scalar operand \p lhs and
- * INDEX operand \p rhs, which are not modified.
- * Variable \p res is used as a temporary value. */
+ Tests the result of operator \p op between scalar operand \p lhs and
+ INDEX operand \p rhs, which are not modified.
+ Variable \p res is used as a temporary value. */
 #define SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, res)                 \
   {                                                                       \
     res = integer op INDEX;                                               \
@@ -714,19 +714,18 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of operator \p op between \p integer operand and an
- * \p INDEX operand in both possible configurations. \p INDEX and \p integer
- * are not modified. Variable \p res is used as a temporary value. */
+ Tests the result of operator \p op between \p integer operand and an
+ \p INDEX operand in both possible configurations. \p INDEX and \p integer
+ are not modified. Variable \p res is used as a temporary value. */
 #define DUAL_SIZE_INDEX_KERNEL_TEST(op, INDEX, integer, res) \
   INDEX_SIZE_T_KERNEL_TEST(op, INDEX, integer, res);         \
   SIZE_T_INDEX_KERNEL_TEST(op, integer, INDEX, res)
 
 /**
- * Tests the result of assignment operator \p op between assigning \p a
- * to \p c then use the assignment operator \p assignment_op with lhs operand \p
- * c and rhs operand \p b. Then tests the result using operator \p op with
- * operands \p a and \p b.
- */
+ Tests the result of assignment operator \p op between assigning \p a
+ to \p c then use the assignment operator \p assignment_op with lhs operand \p
+ c and rhs operand \p b. Then tests the result using operator \p op with
+ operands \p a and \p b. */
 #define INDEX_ASSIGNMENT_TESTS(assignment_op, op, a, b, c)                    \
   {                                                                           \
     c = a;                                                                    \
@@ -740,11 +739,10 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of assignment operator \p op between assigning \p a
- * to \p c then use the assignment operator \p assignment_op with lhs operand \p
- * c and rhs operand \p integer. Then tests the result using operator \p op with
- * operands \p a and \p integer.
- */
+ Tests the result of assignment operator \p op between assigning \p a
+ to \p c then use the assignment operator \p assignment_op with lhs operand \p
+ c and rhs operand \p integer. Then tests the result using operator \p op with
+ operands \p a and \p integer. */
 #define INDEX_ASSIGNMENT_INTEGER_TESTS(assignment_op, op, a, integer, c) \
   {                                                                      \
     c = a;                                                               \
@@ -759,8 +757,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   }
 
 /**
- * Tests the result of using unary operator \p op with operand \p val,
- * which is not modified. Variable \p res is used as a temporary value. */
+ Tests the result of using unary operator \p op with operand \p val,
+ which is not modified. Variable \p res is used as a temporary value. */
 #define UNARY_INDEX_KERNEL_TEST(op, val, res)                   \
   do {                                                          \
     res = op val;                                               \
@@ -774,8 +772,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   } while (0);
 
 /**
- * Tests the result of using prefix operator \p op with operand \p val,
- * which is not modified. Variable \p res is used as a temporary value. */
+ Tests the result of using prefix operator \p op with operand \p val,
+ which is not modified. Variable \p res is used as a temporary value. */
 #define PREFIX_INDEX_KERNEL_TEST(op, val, res)          \
   do {                                                  \
     res = val;                                          \
@@ -793,8 +791,8 @@ inline bool kernel_supports_wg_size(sycl_cts::util::logger& log,
   } while (0);
 
 /**
- * Tests the result of using postfix operator \p op with operand \p val,
- * which is not modified. Variable \p res is used as a temporary value. */
+ Tests the result of using postfix operator \p op with operand \p val,
+ which is not modified. Variable \p res is used as a temporary value. */
 #define POSTFIX_INDEX_KERNEL_TEST(op, val, res)         \
   do {                                                  \
     res = val;                                          \

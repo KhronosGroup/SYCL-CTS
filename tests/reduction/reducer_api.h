@@ -192,8 +192,8 @@ struct check_reducer_identity_operator {
 };
 
 /**
- * Only do check if the \p OperatorT and \p AccumulatorT type combination is
- * well-defined, which is tested with <tt>is_legal_operator_v</tt>. */
+ Only do check if the \p OperatorT and \p AccumulatorT type combination is
+ well-defined, which is tested with <tt>is_legal_operator_v</tt>. */
 template <typename OperatorT, typename AccumulatorT>
 struct check_reducer_identity_operator<
     OperatorT, AccumulatorT,
