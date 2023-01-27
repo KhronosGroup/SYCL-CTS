@@ -156,6 +156,17 @@ inline auto get_memory_scopes_between_work_groups() {
 
 /**
  * @brief Common functor to check sycl::atomic_fence
+ * This check algorithm checks that using a synchronizing variable of
+ * atomic_ref type in combination with atomic_fence function provides no data
+ * racing and the specified order of instruction execution.
+ * Also, in the algorithm the atomic_fence function check will be performed
+ * only if the leader writes a value to the sync_flag variable before all other
+ * items complete the loop with the check of sync_flag value.
+ * It does not give a 100% guarantee that the check will be performed,
+ * but while there is no guarantee that the loop with the condition
+ * while (sync_flag != true); will always complete, a safe and less strict check
+ * algorithm has been chosen.
+ *
  * @tparam OrderT memory_order value
  * @tparam ScopeT memory_scope value
  * @tparam TestT test_type value
@@ -222,11 +233,15 @@ class run_atomic_fence {
                                  sycl::memory_scope::work_group>
                     sync_flag(sync_flag_acc[0]);
                 int* data = &data_acc[0];
-                if ((test_type::single_group == TestType && g.leader()) ||
-                    (test_type::between_groups == TestType &&
-                     0 == nditem.get_global_linear_id())) {
+                // Only one nditem should perform non-atomic write.
+                // All other nditems should perform non-atomic reads
+                if (is_specified_item_in_kernel(nditem)) {
+                  // Non-atomic write to data
                   *data = value;
+                  // Used atomic_fence to guarantee the order instructions
+                  // execution
                   sycl::atomic_fence(order_write, MemoryScope);
+                  // Used atomic sync flag to avoid data raicing
                   sync_flag = 1;
                 } else {
                   bool write_happened = false;
@@ -237,7 +252,9 @@ class run_atomic_fence {
                     }
                   }
                   sycl::atomic_fence(order_read, MemoryScope);
+                  // After the fence safe non-atomic reading
                   if (write_happened) {
+                    // Non-atomic read of data
                     if (*data != value) res_acc[0] = false;
                   }
                 }
@@ -249,6 +266,23 @@ class run_atomic_fence {
   }
 
  private:
+  /**
+   * @brief The function checks that nditem exactly is the one that writes
+   * value to a variable
+   *
+   * @return true if nditem writes value
+   */
+  static bool is_specified_item_in_kernel(const sycl::nd_item<1>& nditem) {
+    auto g = nditem.get_group();
+    if (g.leader() && test_type::single_group == TestType) {
+      return true;
+    } else if (0 == nditem.get_global_linear_id() &&
+               test_type::between_groups == TestType) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    * @brief Function to get accsessor of proper type depends on the TestType
    * value
