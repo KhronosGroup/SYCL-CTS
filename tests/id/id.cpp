@@ -45,8 +45,8 @@ class kernel_name;
 #define EVAL_T_D(T, expr) DEVICE_EVAL_T(T, expr, kernel_name<T, __LINE__, D>)
 
 /**
- * Expand a \p EVAL call outside of \p CHECK to prevent the kernel from
- * being defined multiple times. */
+ Expand a \p EVAL call outside of \p CHECK to prevent the kernel from
+ being defined multiple times. */
 #define KCHECK(...)            \
   {                            \
     bool result = __VA_ARGS__; \
@@ -54,8 +54,8 @@ class kernel_name;
   }
 
 /**
- * Expand a \p EVAL call outside of \p CHECK_FALSE to prevent the kernel from
- * being defined multiple times. */
+ Expand a \p EVAL call outside of \p CHECK_FALSE to prevent the kernel from
+ being defined multiple times. */
 #define KCHECK_FALSE(...)      \
   {                            \
     bool result = __VA_ARGS__; \

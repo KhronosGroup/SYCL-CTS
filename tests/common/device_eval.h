@@ -38,13 +38,12 @@
   })()
 
 /**
- * Evaluates a given expression on the SYCL device and returns the result.
- * A unique kernel name must be passed in via variadic arguments.
- *
- * Limitations:
- * - Operands must exist in surrounding scope ([=] capture).
- * - No lambda expressions (requires C++20). Use DEVICE_EVAL_T instead.
- */
+ Evaluates a given expression on the SYCL device and returns the result.
+ A unique kernel name must be passed in via variadic arguments.
+
+ Limitations:
+  - Operands must exist in surrounding scope ([=] capture).
+  - No lambda expressions (requires C++20). Use DEVICE_EVAL_T instead. */
 #define DEVICE_EVAL(expr, ...) DEVICE_EVAL_T(decltype(expr), expr, __VA_ARGS__)
 
 #endif  // __SYCLCTS_TESTS_COMMON_DEVICE_EVAL_H
