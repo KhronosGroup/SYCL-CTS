@@ -215,10 +215,10 @@ inline bool memory_order_and_scope_are_not_supported(sycl::queue& q,
 }
 
 /**
- * @brief Function to compare two floatinig point values
+ * @brief Function to compare two floating point values
  */
 template <typename T>
-bool compare_act_and_expd_with_epsilon(T actual, T expected, T eps) {
+bool compare_floats(T actual, T expected, T eps) {
   return ((expected - eps) <= actual) && (actual <= (expected - eps));
 }
 
