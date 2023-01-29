@@ -39,7 +39,7 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
 // FIXME: re-enable when sycl::info::device::atomic_fence_order_capabilities is
 // implemented
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
-  / auto orders =
+  auto orders =
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_order_capabilities>();
   if (std::find(orders.begin(), orders.end(), order) == orders.end()) {
@@ -162,7 +162,7 @@ inline auto get_memory_scopes_between_work_groups() {
  * Also, in the algorithm the atomic_fence function check will be performed
  * only if the leader writes a value to the sync_flag variable before all other
  * items complete the loop with the check of sync_flag value.
- * It does not give a 100% guarantee that the check will be performed,
+ * It does not give guarantee that the check will be performed,
  * but while there is no guarantee that the loop with the condition
  * while (sync_flag != true); will always complete, a safe and less strict check
  * algorithm has been chosen.
