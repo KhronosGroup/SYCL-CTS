@@ -225,40 +225,40 @@ class run_atomic_fence {
               res_buf.template get_access<sycl::access_mode::write>(cgh);
           auto sync_flag_acc = get_accessor(cgh, sync_buffer);
           auto data_acc = get_accessor(cgh, data_buffer);
-          cgh.parallel_for(
-              sycl::nd_range<1>(global_range, local_range),
-              [=](sycl::nd_item<1> nditem) {
-                auto g = nditem.get_group();
-                sycl::atomic_ref<int, sycl::memory_order::relaxed,
-                                 sycl::memory_scope::work_group>
-                    sync_flag(sync_flag_acc[0]);
-                int* data = &data_acc[0];
-                // Only one nditem should perform non-atomic write.
-                // All other nditems should perform non-atomic reads
-                if (is_specified_item_in_kernel(nditem)) {
-                  // Non-atomic write to data
-                  *data = value;
-                  // Used atomic_fence to guarantee the order instructions
-                  // execution
-                  sycl::atomic_fence(order_write, MemoryScope);
-                  // Used atomic sync flag to avoid data raicing
-                  sync_flag = 1;
-                } else {
-                  bool write_happened = false;
-                  for (size_t i = 0; i < RETRY_COUNT; i++) {
-                    if (sync_flag == 1) {
-                      write_happened = true;
-                      break;
-                    }
-                  }
-                  sycl::atomic_fence(order_read, MemoryScope);
-                  // After the fence safe non-atomic reading
-                  if (write_happened) {
-                    // Non-atomic read of data
-                    if (*data != value) res_acc[0] = false;
-                  }
-                }
-              });
+          cgh.parallel_for(sycl::nd_range<1>(global_range, local_range),
+                           [=](sycl::nd_item<1> nditem) {
+                             auto g = nditem.get_group();
+                             sycl::atomic_ref<int, sycl::memory_order::relaxed,
+                                              sycl::memory_scope::work_group>
+                                 sync_flag(sync_flag_acc[0]);
+                             int* data = &data_acc[0];
+                             // Only one nditem should perform non-atomic write.
+                             // All other nditems should perform non-atomic
+                             // reads
+                             if (is_specified_item_in_kernel(nditem)) {
+                               // Non-atomic write to data
+                               *data = value;
+                               // Used atomic_fence to guarantee the order
+                               // instructions execution
+                               sycl::atomic_fence(order_write, MemoryScope);
+                               // Used atomic sync flag to avoid data raicing
+                               sync_flag = 1;
+                             } else {
+                               bool write_happened = false;
+                               for (size_t i = 0; i < RETRY_COUNT; i++) {
+                                 if (sync_flag == 1) {
+                                   write_happened = true;
+                                   break;
+                                 }
+                               }
+                               sycl::atomic_fence(order_read, MemoryScope);
+                               // After the fence safe non-atomic reading
+                               if (write_happened) {
+                                 // Non-atomic read of data
+                                 if (*data != value) res_acc[0] = false;
+                               }
+                             }
+                           });
         });
       }
       CHECK(res);

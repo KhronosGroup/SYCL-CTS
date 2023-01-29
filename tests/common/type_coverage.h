@@ -20,7 +20,7 @@
 
 #include "catch2/catch_tostring.hpp"
 
-#include <cstddef> // for std::size_t
+#include <cstddef>  // for std::size_t
 
 /**
  * @brief Retrieve type name; by default just forward the given one
@@ -545,8 +545,8 @@ void for_device_copyable_std_containers(argsT &&...args) {
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
-void for_all_device_copyable_std_containers(const named_type_pack<types...> &typeList,
-                                     argsT &&...args) {
+void for_all_device_copyable_std_containers(
+    const named_type_pack<types...> &typeList, argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
