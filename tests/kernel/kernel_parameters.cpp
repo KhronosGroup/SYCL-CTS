@@ -22,8 +22,8 @@
 #include "../common/common.h"
 #include "../common/type_coverage.h"
 
-namespace kernels_tests {
-constexpr size_t ARRAY_SIZE = 5;
+namespace kernels_parameters {
+constexpr size_t array_size = 5;
 
 constexpr int expected_val = 1;
 constexpr int changed_val = 42;
@@ -94,20 +94,20 @@ inline auto get_derived_type_pack(const std::string& primary_type_name) {
   if constexpr (std::is_arithmetic_v<PrimaryType>) {
     static const auto types = named_type_pack<
         sycl::marray<PrimaryType, 5>, sycl::vec<PrimaryType, 4>,
-        PrimaryType[ARRAY_SIZE], Base<PrimaryType>,
+        PrimaryType[array_size], Base<PrimaryType>,
         Derived<PrimaryType>>::generate("sycl::marray<" + primary_type_name +
                                             ", 5>",
                                         "sycl::vec<" + primary_type_name +
                                             ", 4>",
-                                        primary_type_name + "[ARRAY_SIZE]",
+                                        primary_type_name + "[array_size]",
                                         "Base<" + primary_type_name + ">",
                                         "Derived<" + primary_type_name + ">");
     return types;
   } else {
     static const auto types =
-        named_type_pack<PrimaryType[ARRAY_SIZE], Base<PrimaryType>,
+        named_type_pack<PrimaryType[array_size], Base<PrimaryType>,
                         Derived<PrimaryType>>::generate(primary_type_name +
-                                                            "[ARRAY_SIZE]",
+                                                            "[array_size]",
                                                         "Base<" +
                                                             primary_type_name +
                                                             ">",
@@ -136,7 +136,7 @@ template <typename T>
 void init_data(T& data, int value) {
   if constexpr (std::is_array_v<T>) {
     std::remove_reference_t<decltype(data[0])> tmp;
-    for (size_t i = 0; i < ARRAY_SIZE; ++i) {
+    for (size_t i = 0; i < array_size; ++i) {
       data[i] = value_operations::init<decltype(tmp)>(value);
     }
   } else {
@@ -158,7 +158,7 @@ class named_kernel {
     if constexpr (!std::is_array_v<KerParDerivedType>)
       buf_acc[0] = ker_par;
     else {
-      for (size_t i = 0; i < ARRAY_SIZE; ++i) buf_acc[i] = ker_par[i];
+      for (size_t i = 0; i < array_size; ++i) buf_acc[i] = ker_par[i];
     }
   }
 };
@@ -180,7 +180,7 @@ class named_kernel_test {
   sycl::queue queue;
 
  public:
-  named_kernel_test() { auto queue = sycl_cts::util::get_cts_object::queue(); }
+  named_kernel_test() { queue = sycl_cts::util::get_cts_object::queue(); }
   void operator()(const std::string& type_name) {
     T expected;
     init_data(expected, expected_val);
@@ -192,7 +192,7 @@ class named_kernel_test {
         queue_submit_task(buf_expected);
       } else {
         sycl::buffer<std::remove_reference_t<decltype(expected[0])>, 1>
-            buf_expected(expected, sycl::range<1>(ARRAY_SIZE));
+            buf_expected(expected, sycl::range<1>(array_size));
         queue_submit_task(buf_expected);
       }
     }
@@ -242,7 +242,7 @@ class named_kernel_test<sycl::range<Dim>> {
   sycl::queue queue;
 
  public:
-  named_kernel_test() { auto queue = sycl_cts::util::get_cts_object::queue(); }
+  named_kernel_test() { queue = sycl_cts::util::get_cts_object::queue(); }
   void operator()(const std::string& type_name) {
     auto expected = sycl_cts::util::get_cts_object::range<Dim>::get(
         expected_val, expected_val, expected_val);
@@ -289,7 +289,7 @@ class named_kernel_test<sycl::id<Dim>> {
   sycl::queue queue;
 
  public:
-  named_kernel_test() { auto queue = sycl_cts::util::get_cts_object::queue(); }
+  named_kernel_test() { queue = sycl_cts::util::get_cts_object::queue(); }
   void operator()(const std::string& type_name) {
     auto expected = sycl_cts::util::get_cts_object::id<Dim>::get(
         expected_val, expected_val, expected_val);
@@ -316,7 +316,7 @@ class unnamed_kernel_test {
             if constexpr (!std::is_array_v<T>)
               acc_expected[0] = changed;
             else {
-              for (size_t i = 0; i < ARRAY_SIZE; ++i) {
+              for (size_t i = 0; i < array_size; ++i) {
                 acc_expected[i] = changed[i];
               }
             }
@@ -327,9 +327,7 @@ class unnamed_kernel_test {
   sycl::queue queue;
 
  public:
-  unnamed_kernel_test() {
-    auto queue = sycl_cts::util::get_cts_object::queue();
-  }
+  unnamed_kernel_test() { queue = sycl_cts::util::get_cts_object::queue(); }
   void operator()(const std::string& type_name) {
     T expected;
     init_data(expected, expected_val);
@@ -341,7 +339,7 @@ class unnamed_kernel_test {
         queue_submit_task(buf_expected, changed);
       } else {
         sycl::buffer<std::remove_reference_t<decltype(expected[0])>, 1>
-            buf_expected(expected, sycl::range<1>(ARRAY_SIZE));
+            buf_expected(expected, sycl::range<1>(array_size));
         queue_submit_task(buf_expected, changed);
       }
     }
@@ -438,4 +436,4 @@ TEST_CASE("sycl::id<N> passing to named kernels", "[kernels]") {
   for_all_types<named_kernel_test>(id_types);
 }
 
-}  // namespace kernels_tests
+}  // namespace kernels_parameters

@@ -55,7 +55,6 @@ void assign_value_or_even(T& left, const U& right) {
                      T, std::optional<bool>>)&&(!std::is_same_v<U, bool> &&
                                                 !std::is_same_v<
                                                     U, std::optional<bool>>))
-
     left = (right % 2 != 0);
   else
     left = right;
