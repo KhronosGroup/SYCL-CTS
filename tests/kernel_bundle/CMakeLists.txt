@@ -26,6 +26,7 @@ set(independent_cases_list
   get_kernel_bundle_zero_kernels.cpp
   get_kernel_bundle_with_kernel_attr.cpp
   get_kernel_bundle_without_kernel_attr.cpp
+  kernel_bundle_api.cpp
 )
 
 list(TRANSFORM independent_cases_list PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
