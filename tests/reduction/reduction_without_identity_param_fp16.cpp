@@ -11,7 +11,7 @@
 
 namespace reduction_without_identity_param_fp16 {
 using namespace sycl_cts;
-using namespace reduction_without_identity;
+using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
 
 TEST_CASE("reduction_without_identity_param_fp16", "[reduction]") {

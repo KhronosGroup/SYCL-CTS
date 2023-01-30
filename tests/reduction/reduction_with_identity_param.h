@@ -14,7 +14,7 @@
 #include "reduction_common.h"
 #include "reduction_get_lambda.h"
 
-namespace reduction_with_identity {
+namespace reduction_with_identity_param {
 using namespace reduction_common;
 
 static constexpr size_t number_elements = 5;
@@ -254,5 +254,5 @@ struct run_test_for_type {
   }
 };
 
-}  // namespace reduction_with_identity
+}  // namespace reduction_with_identity_param
 #endif  // __SYCL_CTS_TEST_REDUCTION_WITH_IDENTITY_PARAM_H

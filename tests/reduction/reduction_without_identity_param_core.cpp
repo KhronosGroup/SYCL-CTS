@@ -12,7 +12,7 @@
 
 namespace reduction_without_identity_param_core {
 using namespace sycl_cts;
-using namespace reduction_without_identity;
+using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
 
 /** @brief Run test for bool type variable

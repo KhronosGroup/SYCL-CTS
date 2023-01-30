@@ -17,6 +17,6 @@ TEST_CASE("reduction_with_identity_param_fp64", "[reduction]") {
   if (queue.get_device().has(sycl::aspect::fp64)) {
     SKIP("Device does not support double precision floating point operations");
   }
-  reduction_with_identity::run_test_for_type<double>()(queue, "double");
+  reduction_with_identity_param::run_test_for_type<double>()(queue, "double");
 }
 }  // namespace reduction_with_identity_param_fp64

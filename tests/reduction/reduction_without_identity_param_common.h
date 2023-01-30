@@ -16,7 +16,7 @@
 #include "reduction_get_lambda.h"
 #include <cstddef>
 
-namespace reduction_without_identity {
+namespace reduction_without_identity_param_common {
 
 static constexpr size_t number_elements{2};
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
@@ -276,13 +276,13 @@ void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
                 (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
-    WARN("Test skipped due to floating point variable cannot be used with " +
+    SKIP("Test skipped due to floating point variable cannot be used with " +
          std::string(typeid(FunctorT).name()) + " functor");
   } else {
     run_test_for_value_ptr<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, type_name);
-    //    run_test_for_buffer<VariableT, UseCombineFlagT, UsePropertyFlag>(
-    //        functor, range, queue, type_name);
+    run_test_for_buffer<VariableT, UseCombineFlagT, UsePropertyFlag>(
+        functor, range, queue, type_name);
     run_test_for_span<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, type_name);
   }
@@ -344,6 +344,6 @@ struct run_tests_for_all_functors {
         sycl::maximum<VariableT>(), range, queue, type_name);
   }
 };
-}  // namespace reduction_without_identity
+}  // namespace reduction_without_identity_param_common
 
 #endif  // __SYCL_CTS_TEST_REDUCTION_WITHOUT_IDENTITY_PARAM_COMMON_H

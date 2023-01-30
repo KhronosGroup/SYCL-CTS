@@ -13,7 +13,7 @@
 namespace reduction_without_identity_param_fp64 {
 
 using namespace sycl_cts;
-using namespace reduction_without_identity;
+using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
 
 // FIXME: re-enable when compilation failure for double, nd_range and reduction
