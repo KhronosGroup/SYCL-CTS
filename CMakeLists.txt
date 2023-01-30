@@ -63,7 +63,7 @@ add_cts_option(SYCL_CTS_ENABLE_OPENCL_INTEROP_TESTS
     "Enable OpenCL interoperability tests" ON)
 
 add_cts_option(SYCL_CTS_ENABLE_CUDA_INTEROP_TESTS
-    "Enable CUDA interoperability tests", OFF)
+    "Enable CUDA interoperability tests" OFF)
 
 include(AddOpenCLProxy)
 include(AddSYCLExecutable)
