@@ -14,13 +14,12 @@
 #endif
 
 namespace reduction_with_identity_param_core {
-using namespace sycl_cts;
 
 // FIXME: re-enable when span reduction is supported in ComputeCpp and
 // sycl::reduction is implemented in hipSYCL
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("reduction_with_identity_param_core", "[reduction]")({
-  auto queue = util::get_cts_object::queue();
+  auto queue = sycl_cts::util::get_cts_object::queue();
 
   for_all_types<reduction_with_identity_param::run_test_for_type>(
       reduction_common::scalar_types, queue);

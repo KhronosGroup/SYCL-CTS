@@ -11,12 +11,12 @@
 // FIXME: re-enable when sycl::reduction is implemented in hipSYCL
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_without_identity_param_common.h"
+
+using namespace reduction_without_identity_param_common;
+using namespace reduction_common;
 #endif
 
 namespace reduction_without_identity_param_core {
-using namespace sycl_cts;
-using namespace reduction_without_identity_param_common;
-using namespace reduction_common;
 
 /** @brief Run test for bool type variable
  *  @tparam UsePropertyFlagT UseCombineFlagT std::integral_constant type that
@@ -82,7 +82,7 @@ void run_tests_for_identity_type(sycl::queue& queue) {
 // implemented in hipSYCL
 DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
 ("reduction_without_identity_param_core", "[reduction]")({
-  auto queue = util::get_cts_object::queue();
+  auto queue = sycl_cts::util::get_cts_object::queue();
 
   run_tests_for_identity_type<run_test_without_property>(queue);
   run_tests_for_identity_type<run_test_with_property>(queue);
