@@ -9,16 +9,16 @@
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reduction_without_identity_param_common.h"
 #endif
 
 namespace reduction_without_identity_param_fp64 {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed and span reduction is supported in ComputeCpp and sycl::reduction is
-// implemented in hipSYCL
+// fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
 DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
 ("reduction_without_identity_param", "[reduction]")({
   using namespace reduction_without_identity_param_common;
