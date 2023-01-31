@@ -276,8 +276,6 @@ void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
                 (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
-    SKIP("Test skipped due to floating point variable cannot be used with " +
-         std::string(typeid(FunctorT).name()) + " functor");
   } else {
     run_test_for_value_ptr<VariableT, UseCombineFlagT, UsePropertyFlag>(
         functor, range, queue, type_name);
