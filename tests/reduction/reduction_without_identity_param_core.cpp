@@ -77,9 +77,12 @@ void run_tests_for_identity_type(sycl::queue& queue) {
   run_all_core_tests<UsePropertyFlagT>(range, queue);
   run_all_core_tests<UsePropertyFlagT>(nd_range, queue);
 }
+}  // namespace reduction_without_identity_param_core
 
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+namespace reduction_without_identity_param_core {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
 // fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
