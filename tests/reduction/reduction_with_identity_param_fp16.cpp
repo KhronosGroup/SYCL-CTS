@@ -6,6 +6,7 @@
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::reduction is implemented in hipSYCL
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
