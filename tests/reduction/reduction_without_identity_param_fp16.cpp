@@ -6,15 +6,22 @@
 //  without identity param.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
 
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_without_identity_param_common.h"
+#endif
 
 namespace reduction_without_identity_param_fp16 {
 using namespace sycl_cts;
 using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
 
-TEST_CASE("reduction_without_identity_param_fp16", "[reduction]") {
+// FIXME: re-enable when span reduction is supported in ComputeCpp and
+// sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("reduction_without_identity_param_fp16", "[reduction]")({
   auto queue = util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -25,5 +32,5 @@ TEST_CASE("reduction_without_identity_param_fp16", "[reduction]") {
       range, queue, "sycl::half");
   run_tests_for_all_functors<sycl::half, run_test_with_property>()(
       nd_range, queue, "sycl::half");
-}
+});
 }  // namespace reduction_without_identity_param_fp16

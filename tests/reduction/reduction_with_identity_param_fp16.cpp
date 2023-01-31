@@ -5,13 +5,20 @@
 //  Provides tests for reductions with identity parameter for sycl::half.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
 
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_with_identity_param.h"
+#endif
 
 namespace reduction_with_identity_param_fp16 {
 using namespace sycl_cts;
 
-TEST_CASE("reduction_with_identity_param_fp16", "[reduction]") {
+// FIXME: re-enable when span reduction is supported in ComputeCpp and
+// sycl::reduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("reduction_with_identity_param_fp16", "[reduction]")({
   auto queue = util::get_cts_object::queue();
 
   if (!queue.get_device().has(sycl::aspect::fp16)) {
@@ -20,5 +27,5 @@ TEST_CASE("reduction_with_identity_param_fp16", "[reduction]") {
 
   reduction_with_identity_param::run_test_for_type<sycl::half>()(queue,
                                                                  "sycl::half");
-}
+});
 }  // namespace reduction_with_identity_param_fp16

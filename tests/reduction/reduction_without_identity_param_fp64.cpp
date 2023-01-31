@@ -6,9 +6,12 @@
 //  identity param.
 //
 *******************************************************************************/
-
 #include "../common/disabled_for_test_case.h"
+
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_without_identity_param_common.h"
+#endif
 
 namespace reduction_without_identity_param_fp64 {
 
@@ -16,9 +19,10 @@ using namespace sycl_cts;
 using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
 
-// FIXME: re-enable when compilation failure for double, nd_range and reduction
-// is fixed.
-DISABLED_FOR_TEST_CASE(DPCPP)
+// FIXME: re-enable when compilation failure for reduction with custom type is
+// fixed and span reduction is supported in ComputeCpp and sycl::reduction is
+// implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
 ("reduction_without_identity_param", "[reduction]")({
   auto queue = util::get_cts_object::queue();
 

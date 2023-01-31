@@ -6,9 +6,12 @@
 //  types without identity param.
 //
 *******************************************************************************/
-
 #include "../common/disabled_for_test_case.h"
+
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "reduction_without_identity_param_common.h"
+#endif
 
 namespace reduction_without_identity_param_core {
 using namespace sycl_cts;
@@ -75,8 +78,9 @@ void run_tests_for_identity_type(sycl::queue& queue) {
 }
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
-// fixed.
-DISABLED_FOR_TEST_CASE(DPCPP)
+// fixed and span reduction is supported in ComputeCpp and sycl::reduction is
+// implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
 ("reduction_without_identity_param_core", "[reduction]")({
   auto queue = util::get_cts_object::queue();
 
