@@ -1,0 +1,66 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl::bit_cast
+
+This is a test plan for `sycl::bit_cast` operation defined in 
+https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:progmodel.
+futurecppversion[3.9.2. Alignment with future versions of C++].
+
+== Testing scope
+
+=== Device coverage
+
+Test described below are performed only on the default device that is selected on the CTS command line.
+
+=== Type coverage
+
+Define `To` and `From` as:
+
+* `To` - returned value of `sycl::bit_cast` opeartion
+* `From` - the source of bits for the return value
+
+Test is performed for following types for `To` and `From`:
+
+* `T`
+* `T[5]`
+* `class Base with a non-static member variable of type T`
+* `class Derived with non-virtual base class Base`
+
+For following `T` in regular mode:
+
+* `int`
+* `float`
+* `bool`
+* pointers to above types
+
+For following `T` in full conformance mode:
+
+* `bool`
+* `char`
+* `signed char`
+* `unsigned char`
+* `short`
+* `unsigned short`
+* `int`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `long long`
+* `unsigned long long`
+* `float`
+* `double`
+* pointers to above types
+
+Test is performed for all valid combinations of `To` and `From` types i.e. for types which size is equal.
+
+== Tests
+
+* Define kernel as a lambda function
+* In this lambda function create variable `From` of one type from type list above and variable `To`
+of different tested type
+* Initialize variable `From` by predefined `expected_val` value
+* Assign variable `To` value returned by `sycl::bit_cast<type_of_To>(From)`
+* Check that memory contents of variables `To` and `From` are equal using `memcmp` 
+* Assign variable `From` value returned by `sycl::bit_cast<type_of_From>(To)`
+* Check that value of variable `From` is equal to `expected_val`
