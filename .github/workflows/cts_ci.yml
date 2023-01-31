@@ -137,6 +137,8 @@ jobs:
           submodules: true
       - name: Configure CMake
         working-directory: ${{ env.container-workspace }}
+        # Explicit bash needed because of if [[]] syntax in patching command. Remove if not needed
+        shell: bash
         run: |
           if [[ "${{matrix.sycl-impl}}" == "computecpp" ]]; then git apply --unsafe-paths --directory="/" ci/${{ matrix.sycl-impl }}.patch; fi;
           bash /scripts/configure.sh \
