@@ -81,7 +81,6 @@ test_case_templates_check = {
 
 def generate_value(base_type, dim):
     val = ""
-    #print(base_type, dim)
     for i in range(dim):
         if base_type == "bool":
             val += "true,"
@@ -129,7 +128,6 @@ def generate_multi_ptr(var_name, var_type, memory):
     return decl
 
 def generate_variable(var_name, var_type, var_index):
-    #print(var_name, str(var_type))
     return var_type.name + " " + var_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
 
 def generate_arguments(sig, memory):
@@ -317,7 +315,7 @@ def expand_signature(runner, types, signature):
 
     used_typelists = {}
     for arg in arg_list:
-        if len(types[arg]) > 1:
+        if len(types[arg]) != 1:
             used_typelists[arg] = list(types[arg].keys())
 
     # We match types from used_typelists and individual types by lines in matched_typelists
@@ -366,13 +364,13 @@ def expand_signature(runner, types, signature):
                     index = list(used_typelists.keys()).index(arg)
                     matched_typelists[arg] = list([typelist[i][index] for i in range(common_size)])
         else:
-            print("No matching for " + signature.name + " " + str(arg_list))
+            print("No matching for " + signature.name + " " + str(signature.arg_types) + " => " + str(signature.ret_type))
 
     # Construct function signatures
     for i in range(common_size):
         new_sig = sycl_functions.funsig(signature.namespace, matched_typelists[signature.ret_type][i], 
-                                        signature.name, [matched_typelists[signature.arg_types[j]][i]
-                                                            for j in range(len(signature.arg_types))],
+                                        signature.name, [matched_typelists[signature.arg_types[j]][i] 
+                                                         for j in range(len(signature.arg_types))],
                                         signature.accuracy, signature.comment, signature.pntr_indx[:])
         exp_sig.append(new_sig)
 
@@ -402,10 +400,11 @@ def expand_type(types, current):
     # If this is a basic type, stop.
     if types[current].dim > 0:
         # Skip of marrays
-        if types[current].name.find("marray") == -1:
-            return {types[current] : types[current]}
-        else:
-            return {}
+        # if types[current].name.find("marray") == -1:
+        #     return {types[current] : types[current]}
+        # else:
+        #     return {}
+        return {types[current] : types[current]}
 
     base_types = {}
     for ct in types[current].child_types:

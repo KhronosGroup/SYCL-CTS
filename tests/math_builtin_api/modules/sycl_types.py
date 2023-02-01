@@ -22,6 +22,21 @@ def create_basic_types():
     t_bool_0 = argtype("bool", "scalar", "bool", 1, [])
     type_dic["bool"] = t_bool_0
 
+    t_mbool_2 = argtype("sycl::marray<bool, 2>", "marray", "bool", 2, [])
+    type_dic["sycl::marray<bool, 2>"] = t_mbool_2
+
+    t_mbool_3 = argtype("sycl::marray<bool, 3>", "marray", "bool", 3, [])
+    type_dic["sycl::marray<bool, 3>"] = t_mbool_3
+
+    t_mbool_4 = argtype("sycl::marray<bool, 4>", "marray", "bool", 4, [])
+    type_dic["sycl::marray<bool, 4>"] = t_mbool_4
+
+    t_mbool_5 = argtype("sycl::marray<bool, 5>", "marray", "bool", 5, [])
+    type_dic["sycl::marray<bool, 5>"] = t_mbool_5
+
+    t_mbool_17 = argtype("sycl::marray<bool, 17>", "marray", "bool", 17, [])
+    type_dic["sycl::marray<bool, 17>"] = t_mbool_17
+
 
     t_float_0 = argtype("float", "scalar", "float", 1, [])
     type_dic["float"] = t_float_0
@@ -775,180 +790,372 @@ def create_basic_types():
 
     # Aliases
 
-    t_float_2 = argtype("sycl::float2", "vector", "float", 2, [])
-    type_dic["sycl::float2"] = t_float_2
+    t_float2 = argtype("sycl::float2", "vector", "float", 2, [])
+    type_dic["sycl::float2"] = t_float2
 
-    t_float_3 = argtype("sycl::float3", "vector", "float", 3, [])
-    type_dic["sycl::float3"] = t_float_3
+    t_float3 = argtype("sycl::float3", "vector", "float", 3, [])
+    type_dic["sycl::float3"] = t_float3
 
-    t_float_4 = argtype("sycl::float4", "vector", "float", 4, [])
-    type_dic["sycl::float4"] = t_float_4
+    t_float4 = argtype("sycl::float4", "vector", "float", 4, [])
+    type_dic["sycl::float4"] = t_float4
 
-    t_float_8 = argtype("sycl::float8", "vector", "float", 8, [])
-    type_dic["sycl::float8"] = t_float_8
+    t_float8 = argtype("sycl::float8", "vector", "float", 8, [])
+    type_dic["sycl::float8"] = t_float8
 
-    t_float_16 = argtype("sycl::float16", "vector", "float", 16, [])
-    type_dic["sycl::float16"] = t_float_16
+    t_float16 = argtype("sycl::float16", "vector", "float", 16, [])
+    type_dic["sycl::float16"] = t_float16
 
 
-    t_double_2 = argtype("sycl::double2", "vector", "double", 2, [])
-    type_dic["sycl::double2"] = t_double_2
+    t_double2 = argtype("sycl::double2", "vector", "double", 2, [])
+    type_dic["sycl::double2"] = t_double2
 
-    t_double_3 = argtype("sycl::double3", "vector", "double", 3, [])
-    type_dic["sycl::double3"] = t_double_3
+    t_double3 = argtype("sycl::double3", "vector", "double", 3, [])
+    type_dic["sycl::double3"] = t_double3
 
-    t_double_4 = argtype("sycl::double4", "vector", "double", 4, [])
-    type_dic["sycl::double4"] = t_double_4
+    t_double4 = argtype("sycl::double4", "vector", "double", 4, [])
+    type_dic["sycl::double4"] = t_double4
 
-    t_double_8 = argtype("sycl::double8", "vector", "double", 8, [])
-    type_dic["sycl::double8"] = t_double_8
+    t_double8 = argtype("sycl::double8", "vector", "double", 8, [])
+    type_dic["sycl::double8"] = t_double8
 
-    t_double_16 = argtype("sycl::double16", "vector", "double", 16, [])
-    type_dic["sycl::double16"] = t_double_16
+    t_double16 = argtype("sycl::double16", "vector", "double", 16, [])
+    type_dic["sycl::double16"] = t_double16
 
 
-    t_half_2 = argtype("sycl::half2", "vector", "sycl::half", 2, [])
-    type_dic["sycl::half2"] = t_half_2
+    t_half2 = argtype("sycl::half2", "vector", "sycl::half", 2, [])
+    type_dic["sycl::half2"] = t_half2
 
-    t_half_3 = argtype("sycl::half3", "vector", "sycl::half", 3, [])
-    type_dic["sycl::half3"] = t_half_3
+    t_half3 = argtype("sycl::half3", "vector", "sycl::half", 3, [])
+    type_dic["sycl::half3"] = t_half3
 
-    t_half_4 = argtype("sycl::half4", "vector", "sycl::half", 4, [])
-    type_dic["sycl::half4"] = t_half_4
+    t_half4 = argtype("sycl::half4", "vector", "sycl::half", 4, [])
+    type_dic["sycl::half4"] = t_half4
 
-    t_half_8 = argtype("sycl::half8", "vector", "sycl::half", 8, [])
-    type_dic["sycl::half8"] = t_half_8
+    t_half8 = argtype("sycl::half8", "vector", "sycl::half", 8, [])
+    type_dic["sycl::half8"] = t_half8
 
-    t_half_16 = argtype("sycl::half16", "vector", "sycl::half", 16, [])
-    type_dic["sycl::half16"] = t_half_16
+    t_half16 = argtype("sycl::half16", "vector", "sycl::half", 16, [])
+    type_dic["sycl::half16"] = t_half16
 
 
-    t_char_2 = argtype("sycl::char2", "vector", "int8_t", 2, [])
-    type_dic["sycl::char2"] = t_char_2
+    t_char2 = argtype("sycl::char2", "vector", "int8_t", 2, [])
+    type_dic["sycl::char2"] = t_char2
 
-    t_char_3 = argtype("sycl::char3", "vector", "int8_t", 3, [])
-    type_dic["sycl::char3"] = t_char_3
+    t_char3 = argtype("sycl::char3", "vector", "int8_t", 3, [])
+    type_dic["sycl::char3"] = t_char3
 
-    t_char_4 = argtype("sycl::char4", "vector", "int8_t", 4, [])
-    type_dic["sycl::char4"] = t_char_4
+    t_char4 = argtype("sycl::char4", "vector", "int8_t", 4, [])
+    type_dic["sycl::char4"] = t_char4
 
-    t_char_8 = argtype("sycl::char8", "vector", "int8_t", 8, [])
-    type_dic["sycl::char8"] = t_char_8
+    t_char8 = argtype("sycl::char8", "vector", "int8_t", 8, [])
+    type_dic["sycl::char8"] = t_char8
 
-    t_char_16 = argtype("sycl::char16", "vector", "int8_t", 16, [])
-    type_dic["sycl::char16"] = t_char_16
+    t_char16 = argtype("sycl::char16", "vector", "int8_t", 16, [])
+    type_dic["sycl::char16"] = t_char16
 
 
-    t_uchar_2 = argtype("sycl::uchar2", "vector", "uint8_t", 2, [])
-    type_dic["sycl::uchar2"] = t_uchar_2
+    t_uchar2 = argtype("sycl::uchar2", "vector", "uint8_t", 2, [])
+    type_dic["sycl::uchar2"] = t_uchar2
 
-    t_uchar_3 = argtype("sycl::uchar3", "vector", "uint8_t", 3, [])
-    type_dic["sycl::uchar3"] = t_uchar_3
+    t_uchar3 = argtype("sycl::uchar3", "vector", "uint8_t", 3, [])
+    type_dic["sycl::uchar3"] = t_uchar3
 
-    t_uchar_4 = argtype("sycl::uchar4", "vector", "uint8_t", 4, [])
-    type_dic["sycl::uchar4"] = t_uchar_4
+    t_uchar4 = argtype("sycl::uchar4", "vector", "uint8_t", 4, [])
+    type_dic["sycl::uchar4"] = t_uchar4
 
-    t_uchar_8 = argtype("sycl::uchar8", "vector", "uint8_t", 8, [])
-    type_dic["sycl::uchar8"] = t_uchar_8
+    t_uchar8 = argtype("sycl::uchar8", "vector", "uint8_t", 8, [])
+    type_dic["sycl::uchar8"] = t_uchar8
 
-    t_uchar_16 = argtype("sycl::uchar16", "vector", "uint8_t", 16, [])
-    type_dic["sycl::uchar16"] = t_uchar_16
+    t_uchar16 = argtype("sycl::uchar16", "vector", "uint8_t", 16, [])
+    type_dic["sycl::uchar16"] = t_uchar16
 
 
-    t_short_2 = argtype("sycl::short2", "vector", "int16_t", 2, [])
-    type_dic["sycl::short2"] = t_short_2
+    t_short2 = argtype("sycl::short2", "vector", "int16_t", 2, [])
+    type_dic["sycl::short2"] = t_short2
 
-    t_short_3 = argtype("sycl::short3", "vector", "int16_t", 3, [])
-    type_dic["sycl::short3"] = t_short_3
+    t_short3 = argtype("sycl::short3", "vector", "int16_t", 3, [])
+    type_dic["sycl::short3"] = t_short3
 
-    t_short_4 = argtype("sycl::short4", "vector", "int16_t", 4, [])
-    type_dic["sycl::short4"] = t_short_4
+    t_short4 = argtype("sycl::short4", "vector", "int16_t", 4, [])
+    type_dic["sycl::short4"] = t_short4
 
-    t_short_8 = argtype("sycl::short8", "vector", "int16_t", 8, [])
-    type_dic["sycl::short8"] = t_short_8
+    t_short8 = argtype("sycl::short8", "vector", "int16_t", 8, [])
+    type_dic["sycl::short8"] = t_short8
 
-    t_short_16 = argtype("sycl::short16", "vector", "int16_t", 16, [])
-    type_dic["sycl::short16"] = t_short_16
+    t_short16 = argtype("sycl::short16", "vector", "int16_t", 16, [])
+    type_dic["sycl::short16"] = t_short16
 
 
-    t_ushort_2 = argtype("sycl::ushort2", "vector", "uint16_t", 2, [])
-    type_dic["sycl::ushort2"] = t_ushort_2
+    t_ushort2 = argtype("sycl::ushort2", "vector", "uint16_t", 2, [])
+    type_dic["sycl::ushort2"] = t_ushort2
 
-    t_ushort_3 = argtype("sycl::ushort3", "vector", "uint16_t", 3, [])
-    type_dic["sycl::ushort3"] = t_ushort_3
+    t_ushort3 = argtype("sycl::ushort3", "vector", "uint16_t", 3, [])
+    type_dic["sycl::ushort3"] = t_ushort3
 
-    t_ushort_4 = argtype("sycl::ushort4", "vector", "uint16_t", 4, [])
-    type_dic["sycl::ushort4"] = t_ushort_4
+    t_ushort4 = argtype("sycl::ushort4", "vector", "uint16_t", 4, [])
+    type_dic["sycl::ushort4"] = t_ushort4
 
-    t_ushort_8 = argtype("sycl::ushort8", "vector", "uint16_t", 8, [])
-    type_dic["sycl::ushort8"] = t_ushort_8
+    t_ushort8 = argtype("sycl::ushort8", "vector", "uint16_t", 8, [])
+    type_dic["sycl::ushort8"] = t_ushort8
 
-    t_ushort_16 = argtype("sycl::ushort16", "vector", "uint16_t", 16, [])
-    type_dic["sycl::ushort16"] = t_ushort_16
+    t_ushort16 = argtype("sycl::ushort16", "vector", "uint16_t", 16, [])
+    type_dic["sycl::ushort16"] = t_ushort16
 
 
-    t_int_2 = argtype("sycl::int2", "vector", "int32_t", 2, [])
-    type_dic["sycl::int2"] = t_int_2
+    t_int2 = argtype("sycl::int2", "vector", "int32_t", 2, [])
+    type_dic["sycl::int2"] = t_int2
 
-    t_int_3 = argtype("sycl::int3", "vector", "int32_t", 3, [])
-    type_dic["sycl::int3"] = t_int_3
+    t_int3 = argtype("sycl::int3", "vector", "int32_t", 3, [])
+    type_dic["sycl::int3"] = t_int3
 
-    t_int_4 = argtype("sycl::int4", "vector", "int32_t", 4, [])
-    type_dic["sycl::int4"] = t_int_4
+    t_int4 = argtype("sycl::int4", "vector", "int32_t", 4, [])
+    type_dic["sycl::int4"] = t_int4
 
-    t_int_8 = argtype("sycl::int8", "vector", "int32_t", 8, [])
-    type_dic["sycl::int8"] = t_int_8
+    t_int8 = argtype("sycl::int8", "vector", "int32_t", 8, [])
+    type_dic["sycl::int8"] = t_int8
 
-    t_int_16 = argtype("sycl::int16", "vector", "int32_t", 16, [])
-    type_dic["sycl::int16"] = t_int_16
+    t_int16 = argtype("sycl::int16", "vector", "int32_t", 16, [])
+    type_dic["sycl::int16"] = t_int16
 
 
-    t_uint_2 = argtype("sycl::uint2", "vector", "uint32_t", 2, [])
-    type_dic["sycl::uint2"] = t_uint_2
+    t_uint2 = argtype("sycl::uint2", "vector", "uint32_t", 2, [])
+    type_dic["sycl::uint2"] = t_uint2
 
-    t_uint_3 = argtype("sycl::uint3", "vector", "uint32_t", 3, [])
-    type_dic["sycl::uint3"] = t_uint_3
+    t_uint3 = argtype("sycl::uint3", "vector", "uint32_t", 3, [])
+    type_dic["sycl::uint3"] = t_uint3
 
-    t_uint_4 = argtype("sycl::uint4", "vector", "uint32_t", 4, [])
-    type_dic["sycl::uint4"] = t_uint_4
+    t_uint4 = argtype("sycl::uint4", "vector", "uint32_t", 4, [])
+    type_dic["sycl::uint4"] = t_uint4
 
-    t_uint_8 = argtype("sycl::uint8", "vector", "uint32_t", 8, [])
-    type_dic["sycl::uint8"] = t_uint_8
+    t_uint8 = argtype("sycl::uint8", "vector", "uint32_t", 8, [])
+    type_dic["sycl::uint8"] = t_uint8
 
-    t_uint_16 = argtype("sycl::uint16", "vector", "uint32_t", 16, [])
-    type_dic["sycl::uint16"] = t_uint_16
+    t_uint16 = argtype("sycl::uint16", "vector", "uint32_t", 16, [])
+    type_dic["sycl::uint16"] = t_uint16
 
 
-    t_long_2 = argtype("sycl::long2", "vector", "int64_t", 2, [])
-    type_dic["sycl::long2"] = t_long_2
+    t_long2 = argtype("sycl::long2", "vector", "int64_t", 2, [])
+    type_dic["sycl::long2"] = t_long2
 
-    t_long_3 = argtype("sycl::long3", "vector", "int64_t", 3, [])
-    type_dic["sycl::long3"] = t_long_3
+    t_long3 = argtype("sycl::long3", "vector", "int64_t", 3, [])
+    type_dic["sycl::long3"] = t_long3
 
-    t_long_4 = argtype("sycl::long4", "vector", "int64_t", 4, [])
-    type_dic["sycl::long4"] = t_long_4
+    t_long4 = argtype("sycl::long4", "vector", "int64_t", 4, [])
+    type_dic["sycl::long4"] = t_long4
 
-    t_long_8 = argtype("sycl::long8", "vector", "int64_t", 8, [])
-    type_dic["sycl::long8"] = t_long_8
+    t_long8 = argtype("sycl::long8", "vector", "int64_t", 8, [])
+    type_dic["sycl::long8"] = t_long8
 
-    t_long_16 = argtype("sycl::long16", "vector", "int64_t", 16, [])
-    type_dic["sycl::long16"] = t_long_16
+    t_long16 = argtype("sycl::long16", "vector", "int64_t", 16, [])
+    type_dic["sycl::long16"] = t_long16
 
 
-    t_ulong_2 = argtype("sycl::ulong2", "vector", "uint64_t", 2, [])
-    type_dic["sycl::ulong2"] = t_ulong_2
+    t_ulong2 = argtype("sycl::ulong2", "vector", "uint64_t", 2, [])
+    type_dic["sycl::ulong2"] = t_ulong2
 
-    t_ulong_3 = argtype("sycl::ulong3", "vector", "uint64_t", 3, [])
-    type_dic["sycl::ulong3"] = t_ulong_3
+    t_ulong3 = argtype("sycl::ulong3", "vector", "uint64_t", 3, [])
+    type_dic["sycl::ulong3"] = t_ulong3
 
-    t_ulong_4 = argtype("sycl::ulong4", "vector", "uint64_t", 4, [])
-    type_dic["sycl::ulong4"] = t_ulong_4
+    t_ulong4 = argtype("sycl::ulong4", "vector", "uint64_t", 4, [])
+    type_dic["sycl::ulong4"] = t_ulong4
 
-    t_ulong_8 = argtype("sycl::ulong8", "vector", "uint64_t", 8, [])
-    type_dic["sycl::ulong8"] = t_ulong_8
+    t_ulong8 = argtype("sycl::ulong8", "vector", "uint64_t", 8, [])
+    type_dic["sycl::ulong8"] = t_ulong8
 
-    t_ulong_16 = argtype("sycl::ulong16", "vector", "uint64_t", 16, [])
-    type_dic["sycl::ulong16"] = t_ulong_16
+    t_ulong16 = argtype("sycl::ulong16", "vector", "uint64_t", 16, [])
+    type_dic["sycl::ulong16"] = t_ulong16
+
+
+    t_mbool2 = argtype("sycl::mbool2", "marray", "bool", 2, [])
+    type_dic["sycl::mbool2"] = t_mbool2
+
+    t_mbool3 = argtype("sycl::mbool3", "marray", "bool", 3, [])
+    type_dic["sycl::mbool3"] = t_mbool3
+
+    t_mbool4 = argtype("sycl::mbool4", "marray", "bool", 4, [])
+    type_dic["sycl::mbool4"] = t_mbool4
+
+    t_mbool8 = argtype("sycl::mbool8", "marray", "bool", 8, [])
+    type_dic["sycl::mbool8"] = t_mbool8
+
+    t_mbool16 = argtype("sycl::mbool16", "marray", "bool", 16, [])
+    type_dic["sycl::mbool16"] = t_mbool16
+
+
+    t_mfloat2 = argtype("sycl::mfloat2", "marray", "float", 2, [])
+    type_dic["sycl::mfloat2"] = t_mfloat2
+
+    t_mfloat3 = argtype("sycl::mfloat3", "marray", "float", 3, [])
+    type_dic["sycl::mfloat3"] = t_mfloat3
+
+    t_mfloat4 = argtype("sycl::mfloat4", "marray", "float", 4, [])
+    type_dic["sycl::mfloat4"] = t_mfloat4
+
+    t_mfloat8 = argtype("sycl::mfloat8", "marray", "float", 8, [])
+    type_dic["sycl::mfloat8"] = t_mfloat8
+
+    t_mfloat16 = argtype("sycl::mfloat16", "marray", "float", 16, [])
+    type_dic["sycl::mfloat16"] = t_mfloat16
+
+
+    t_mdouble2 = argtype("sycl::mdouble2", "marray", "double", 2, [])
+    type_dic["sycl::mdouble2"] = t_mdouble2
+
+    t_mdouble3 = argtype("sycl::mdouble3", "marray", "double", 3, [])
+    type_dic["sycl::mdouble3"] = t_mdouble3
+
+    t_mdouble4 = argtype("sycl::mdouble4", "marray", "double", 4, [])
+    type_dic["sycl::mdouble4"] = t_mdouble4
+
+    t_mdouble8 = argtype("sycl::mdouble8", "marray", "double", 8, [])
+    type_dic["sycl::mdouble8"] = t_mdouble8
+
+    t_mdouble16 = argtype("sycl::mdouble16", "marray", "double", 16, [])
+    type_dic["sycl::mdouble16"] = t_mdouble16
+
+
+    t_mhalf2 = argtype("sycl::mhalf2", "marray", "sycl::half", 2, [])
+    type_dic["sycl::mhalf2"] = t_mhalf2
+
+    t_mhalf3 = argtype("sycl::mhalf3", "marray", "sycl::half", 3, [])
+    type_dic["sycl::mhalf3"] = t_mhalf3
+
+    t_mhalf4 = argtype("sycl::mhalf4", "marray", "sycl::half", 4, [])
+    type_dic["sycl::mhalf4"] = t_mhalf4
+
+    t_mhalf8 = argtype("sycl::mhalf8", "marray", "sycl::half", 8, [])
+    type_dic["sycl::mhalf8"] = t_mhalf8
+
+    t_mhalf16 = argtype("sycl::mhalf16", "marray", "sycl::half", 16, [])
+    type_dic["sycl::mhalf16"] = t_mhalf16
+
+
+    t_mchar2 = argtype("sycl::mchar2", "marray", "int8_t", 2, [])
+    type_dic["sycl::mchar2"] = t_mchar2
+
+    t_mchar3 = argtype("sycl::mchar3", "marray", "int8_t", 3, [])
+    type_dic["sycl::mchar3"] = t_mchar3
+
+    t_mchar4 = argtype("sycl::mchar4", "marray", "int8_t", 4, [])
+    type_dic["sycl::mchar4"] = t_mchar4
+
+    t_mchar8 = argtype("sycl::mchar8", "marray", "int8_t", 8, [])
+    type_dic["sycl::mchar8"] = t_mchar8
+
+    t_mchar16 = argtype("sycl::mchar16", "marray", "int8_t", 16, [])
+    type_dic["sycl::mchar16"] = t_mchar16
+
+
+    t_muchar2 = argtype("sycl::muchar2", "marray", "uint8_t", 2, [])
+    type_dic["sycl::muchar2"] = t_muchar2
+
+    t_muchar3 = argtype("sycl::muchar3", "marray", "uint8_t", 3, [])
+    type_dic["sycl::muchar3"] = t_muchar3
+
+    t_muchar4 = argtype("sycl::muchar4", "marray", "uint8_t", 4, [])
+    type_dic["sycl::muchar4"] = t_muchar4
+
+    t_muchar8 = argtype("sycl::muchar8", "marray", "uint8_t", 8, [])
+    type_dic["sycl::muchar8"] = t_muchar8
+
+    t_muchar16 = argtype("sycl::muchar16", "marray", "uint8_t", 16, [])
+    type_dic["sycl::muchar16"] = t_muchar16
+
+
+    t_mshort2 = argtype("sycl::mshort2", "marray", "int16_t", 2, [])
+    type_dic["sycl::mshort2"] = t_mshort2
+
+    t_mshort3 = argtype("sycl::mshort3", "marray", "int16_t", 3, [])
+    type_dic["sycl::mshort3"] = t_mshort3
+
+    t_mshort4 = argtype("sycl::mshort4", "marray", "int16_t", 4, [])
+    type_dic["sycl::mshort4"] = t_mshort4
+
+    t_mshort8 = argtype("sycl::mshort8", "marray", "int16_t", 8, [])
+    type_dic["sycl::mshort8"] = t_mshort8
+
+    t_mshort16 = argtype("sycl::mshort16", "marray", "int16_t", 16, [])
+    type_dic["sycl::mshort16"] = t_mshort16
+
+
+    t_mushort2 = argtype("sycl::mushort2", "marray", "uint16_t", 2, [])
+    type_dic["sycl::mushort2"] = t_mushort2
+
+    t_mushort3 = argtype("sycl::mushort3", "marray", "uint16_t", 3, [])
+    type_dic["sycl::mushort3"] = t_mushort3
+
+    t_mushort4 = argtype("sycl::mushort4", "marray", "uint16_t", 4, [])
+    type_dic["sycl::mushort4"] = t_mushort4
+
+    t_mushort8 = argtype("sycl::mushort8", "marray", "uint16_t", 8, [])
+    type_dic["sycl::mushort8"] = t_mushort8
+
+    t_mushort16 = argtype("sycl::mushort16", "marray", "uint16_t", 16, [])
+    type_dic["sycl::mushort16"] = t_mushort16
+
+
+    t_mint2 = argtype("sycl::mint2", "marray", "int32_t", 2, [])
+    type_dic["sycl::mint2"] = t_mint2
+
+    t_mint3 = argtype("sycl::mint3", "marray", "int32_t", 3, [])
+    type_dic["sycl::mint3"] = t_mint3
+
+    t_mint4 = argtype("sycl::mint4", "marray", "int32_t", 4, [])
+    type_dic["sycl::mint4"] = t_mint4
+
+    t_mint8 = argtype("sycl::mint8", "marray", "int32_t", 8, [])
+    type_dic["sycl::mint8"] = t_mint8
+
+    t_mint16 = argtype("sycl::mint16", "marray", "int32_t", 16, [])
+    type_dic["sycl::mint16"] = t_mint16
+
+
+    t_muint2 = argtype("sycl::muint2", "marray", "uint32_t", 2, [])
+    type_dic["sycl::muint2"] = t_muint2
+
+    t_muint3 = argtype("sycl::muint3", "marray", "uint32_t", 3, [])
+    type_dic["sycl::muint3"] = t_muint3
+
+    t_muint4 = argtype("sycl::muint4", "marray", "uint32_t", 4, [])
+    type_dic["sycl::muint4"] = t_muint4
+
+    t_muint8 = argtype("sycl::muint8", "marray", "uint32_t", 8, [])
+    type_dic["sycl::muint8"] = t_muint8
+
+    t_muint16 = argtype("sycl::muint16", "marray", "uint32_t", 16, [])
+    type_dic["sycl::muint16"] = t_muint16
+
+
+    t_mlong2 = argtype("sycl::mlong2", "marray", "int64_t", 2, [])
+    type_dic["sycl::mlong2"] = t_mlong2
+
+    t_mlong3 = argtype("sycl::mlong3", "marray", "int64_t", 3, [])
+    type_dic["sycl::mlong3"] = t_mlong3
+
+    t_mlong4 = argtype("sycl::mlong4", "marray", "int64_t", 4, [])
+    type_dic["sycl::mlong4"] = t_mlong4
+
+    t_mlong8 = argtype("sycl::mlong8", "marray", "int64_t", 8, [])
+    type_dic["sycl::mlong8"] = t_mlong8
+
+    t_mlong16 = argtype("sycl::mlong16", "marray", "int64_t", 16, [])
+    type_dic["sycl::mlong16"] = t_mlong16
+
+
+    t_mulong2 = argtype("sycl::mulong2", "marray", "uint64_t", 2, [])
+    type_dic["sycl::mulong2"] = t_mulong2
+
+    t_mulong3 = argtype("sycl::mulong3", "marray", "uint64_t", 3, [])
+    type_dic["sycl::mulong3"] = t_mulong3
+
+    t_mulong4 = argtype("sycl::mulong4", "marray", "uint64_t", 4, [])
+    type_dic["sycl::mulong4"] = t_mulong4
+
+    t_mulong8 = argtype("sycl::mulong8", "marray", "uint64_t", 8, [])
+    type_dic["sycl::mulong8"] = t_mulong8
+
+    t_mulong16 = argtype("sycl::mulong16", "marray", "uint64_t", 16, [])
+    type_dic["sycl::mulong16"] = t_mulong16
 
     return type_dic
 
@@ -956,6 +1163,11 @@ def create_basic_types():
     # Generic Types
 def create_types():
     type_dic = create_basic_types()
+
+
+    t_mbool_n = argtype("mbooln", "NULL", "NULL", 0, ["sycl::marray<bool, 2>","sycl::marray<bool, 3>","sycl::marray<bool, 4>","sycl::marray<bool, 5>","sycl::marray<bool, 17>"])
+    type_dic["mbooln"] = t_mbool_n
+
 
     t_vfloat_n = argtype("vfloatn", "NULL", "NULL", 0, ["sycl::float2","sycl::float3","sycl::float4","sycl::float8","sycl::float16"])
     type_dic["vfloatn"] = t_vfloat_n
