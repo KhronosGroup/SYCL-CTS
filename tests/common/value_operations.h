@@ -60,6 +60,12 @@ void assign_value_or_even(T& left, const U& right) {
     left = right;
 }
 
+template <typename T, typename U,
+          typename = std::enable_if_t<std::is_integral_v<U>>>
+void assign_value_or_even(T*& left, const U& right) {
+  left = reinterpret_cast<T*>(right);
+}
+
 /**
  * @brief Helper function checks if values are equal in general case
  * and checks if right operand is even number in case of bool types
