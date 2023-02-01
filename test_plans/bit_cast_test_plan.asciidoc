@@ -4,8 +4,7 @@
 = Test plan for sycl::bit_cast
 
 This is a test plan for `sycl::bit_cast` operation defined in 
-https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:progmodel.
-futurecppversion[3.9.2. Alignment with future versions of C++].
+https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:progmodel.futurecppversion[3.9.2. Alignment with future versions of C++].
 
 == Testing scope
 
