@@ -28,7 +28,7 @@ struct kernel_name_api {
 namespace kernel_api__ {
 using namespace sycl_cts;
 
-TEST_CASE("kernel api test", "[kernel]") {
+TEST_CASE("Test kernel API", "[kernel]") {
   auto ctsQueue = util::get_cts_object::queue();
   auto deviceList = ctsQueue.get_context().get_devices();
   auto ctx = ctsQueue.get_context();

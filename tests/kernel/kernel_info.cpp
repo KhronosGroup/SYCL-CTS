@@ -30,7 +30,7 @@ using namespace sycl_cts;
 
 class kernel0;
 
-TEST_CASE("kernel info test", "[kernel]") {
+TEST_CASE("Test kernel info", "[kernel]") {
   auto queue = util::get_cts_object::queue();
   auto deviceList = queue.get_context().get_devices();
   auto ctx = queue.get_context();
