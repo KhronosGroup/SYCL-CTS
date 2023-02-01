@@ -41,7 +41,7 @@ def contains_base_type(sig, base_type):
     data.append(sig.ret_type)
     #print("data: " + str(data))
     for dt in data:
-        if dt[1] == base_type:
+        if dt.base_type == base_type:
             return True
     return False
 

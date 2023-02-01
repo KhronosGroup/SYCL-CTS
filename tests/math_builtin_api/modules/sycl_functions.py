@@ -8,7 +8,14 @@ class funsig:
         self.accuracy = accuracy # The function maximum relative error defined as ulp.
         self.comment = comment # The comment for function maximum relative error.
         self.pntr_indx = pntr_indx # List containing the indexes of the arguments which are pointers.
-        self.mutations = mutations # List containing triples: [1st arg typelist, 2nd arg typelist, what can be mutated to match]
+        self.mutations = mutations # List containing triples: [first type category, second type category, mutation]
+        # The type categories refer to the return type category or to an argument type category of the function.
+        # The type categories are used to pick actual types. The mutation refers to what is allowed to differ between the actual two types.
+        # Types have var_type, base_type and dim, see sycl_types.py
+        # Mutation is one of "dim" (meaning that base_type must be the same but the dim and var_type may differ, e.g. float and vec<float, 2>),
+        # "base_type" (meaning that the base_type may differ, e.g. char and int, but dim and var_type should be the same),
+        # or "base_type_but_same_sizeof" (meaning that the base_type may differ but should keep the same byte size, and dim and var_type should be the same,
+        # e.g. int32_t and float are OK, but not int64_t and marray<float, 2>)
     def __eq__(self, other):
         if isinstance(other, funsig):
             return ((self.namespace == other.namespace) and
@@ -24,7 +31,7 @@ class funsig:
     def __ne__(self, other):
         return (not self.__eq__(other))
     def __hash__(self):
-        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, self.comment, str(self.pntr_indx)))
+        return hash((self.namespace, self.ret_type, self.name, str(self.arg_types), self.accuracy, self.comment, str(self.pntr_indx), str(self.mutations)))
 
 def create_integer_signatures():
     sig_list = []

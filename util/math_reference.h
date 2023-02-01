@@ -331,13 +331,13 @@ clamp(sycl::vec<T, N> a, T b, T c) {
   sycl::vec<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
-    sycl_cts::resultRef<T1> element = clamp<T1>(getElement(a, i), b, c);
+    sycl_cts::resultRef<T> element = clamp(getElement(a, i), b, c);
     if (element.undefined.empty())
-      setElement<T1, N>(res, i, element.res);
+      setElement<T, N>(res, i, element.res);
     else
       undefined[i] = true;
   }
-  return sycl_cts::resultRef<sycl::vec<T1, N>>(res, undefined);
+  return sycl_cts::resultRef<sycl::vec<T, N>>(res, undefined);
 }
 
 template <typename T, int N>

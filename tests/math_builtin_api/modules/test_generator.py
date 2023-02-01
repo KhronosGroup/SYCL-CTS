@@ -116,48 +116,27 @@ def generate_value(base_type, dim):
             val += str(random.randint(0, 18446744073709551615)) + "LLU" + ","
     return val[:-1]
 
-
-def get_base_type(var_type):
-    return var_type[1]
-
-def get_dim(var_type):
-    return var_type[2]
-
-def get_name(var_type):
-    return var_type[3]
-
-
 def generate_multi_ptr(var_name, var_type, memory):
     decl = ""
     if memory == "global":
-        decl = "sycl::multi_ptr<" + get_name(var_type) + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
+        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
     if memory == "local":
-        decl = "sycl::multi_ptr<" + get_name(var_type) + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
+        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
     if memory == "private":
         source_name = "multiPtrSourceData"
-        decl = get_name(var_type) + " " + source_name + "(" + generate_value(get_base_type(var_type), get_dim(var_type)) + ");\n"
-        decl += "sycl::multi_ptr<" + get_name(var_type) + ", sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
+        decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
     return decl
 
 def generate_variable(var_name, var_type, var_index):
     #print(var_name, str(var_type))
-    return get_name(var_type) + " " + var_name + "(" + generate_value(get_base_type(var_type), get_dim(var_type)) + ");\n"
-
-def extract_type(type_dict):
-    # At this point, it is guaranteed that type_dict is a dictionary with one entry.
-    for bt in list(type_dict.keys()):
-        return type_dict[bt]
+    return var_type.name + " " + var_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
 
 def generate_arguments(sig, memory):
     arg_src = ""
     arg_names = []
     arg_index = 0
     for arg in sig.arg_types:
-        # Get argument type.
-        arg_type = arg
-        #arg_type = extract_type(types[arg])
-        #print(str(arg_type))
-
         # Create argument name.
         arg_name = "inputData_" + str(arg_index)
         arg_names.append(arg_name)
@@ -170,9 +149,9 @@ def generate_arguments(sig, memory):
 
         current_arg = ""
         if is_pointer:
-            current_arg = generate_multi_ptr(arg_name, arg_type, memory)
+            current_arg = generate_multi_ptr(arg_name, arg, memory)
         else:
-            current_arg = generate_variable(arg_name, arg_type, arg_index)
+            current_arg = generate_variable(arg_name, arg, arg_index)
 
         arg_src += current_arg
         arg_index += 1
@@ -201,8 +180,8 @@ def generate_function_private_call(sig, arg_names, arg_src, types):
         namespace=sig.namespace,
         func_name=sig.name,
         arg_names=",".join(arg_names),
-        ret_type=get_name(sig.ret_type),
-        arg_type=get_name(sig.arg_types[-1]))
+        ret_type=sig.ret_type.name,
+        arg_type=sig.arg_types[-1].name)
     return fc
 
 reference_template = Template("""
@@ -213,7 +192,7 @@ def generate_reference(sig, arg_names, arg_src):
     fc = reference_template.substitute(
         arg_src=arg_src,
         func_name=sig.name,
-        ret_type=get_name(sig.ret_type),
+        ret_type=sig.ret_type.name,
         arg_names=",".join(arg_names))
     return fc
 
@@ -226,27 +205,25 @@ def generate_reference_ptr(types, sig, arg_names, arg_src):
     fc = reference_ptr_template.substitute(
         arg_src=re.sub(r'^sycl::multi_ptr.*\n?', '', arg_src, flags=re.MULTILINE),
         func_name=sig.name,
-        ret_type=get_name(sig.ret_type),
+        ret_type=sig.ret_type.name,
         arg_names=",".join(arg_names[:-1]),
-        arg_type=get_name(sig.arg_types[-1]))
+        arg_type=sig.arg_types[-1].name)
     return fc
 
 def generate_test_case(test_id, types, sig, memory, check):
-    #print("sig: " + str(sig.ret_type) + " " + sig.name + " " + str(sig.arg_types))
     testCaseSource = test_case_templates_check[memory] if check else test_case_templates[memory]
     testCaseId = str(test_id)
     (arg_names, arg_src) = generate_arguments(sig, memory)
     testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
-    #print(str(testCaseSource))
     testCaseSource = testCaseSource.replace("$PTR_REF", generate_reference_ptr(types, sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
     testCaseSource = testCaseSource.replace("$FUNCTION_PRIVATE_CALL", generate_function_private_call(sig, arg_names, arg_src, types))
-    testCaseSource = testCaseSource.replace("$RETURN_TYPE", get_name(sig.ret_type))
+    testCaseSource = testCaseSource.replace("$RETURN_TYPE", sig.ret_type.name)
     if sig.accuracy:##If the signature contains an accuracy value
         accuracy = sig.accuracy
         # if accuracy depends on vecSize
         if "vecSize" in accuracy:
-            vecSize = str(get_dim(sig.arg_types[0]))
+            vecSize = str(sig.arg_types[0].dim)
             accuracy = accuracy.replace("vecSize", vecSize)
         testCaseSource = testCaseSource.replace("$ACCURACY", ", " + accuracy)
     else:
@@ -265,9 +242,9 @@ def generate_test_case(test_id, types, sig, memory, check):
         testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
         accessorType = ""
         if memory == "local":
-            accessorType = "sycl::accessor<" + get_name(pointerType) + ", 1, sycl::access_mode::read_write, sycl::target::local>"
+            accessorType = "sycl::accessor<" + pointerType.name + ", 1, sycl::access_mode::read_write, sycl::target::local>"
         if memory == "global":
-            accessorType = "sycl::accessor<" + get_name(pointerType) + ", 1, sycl::access_mode::read_write, sycl::target::device>"
+            accessorType = "sycl::accessor<" + pointerType.name + ", 1, sycl::access_mode::read_write, sycl::target::device>"
         testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)
     testCaseSource = testCaseSource.replace("$FUNCTION_CALL", generate_function_call(sig, arg_names, arg_src))
     return testCaseSource
@@ -292,103 +269,94 @@ def generate_test_cases(test_id, types, sig_list, check):
                 test_id += 1
     return test_source
 
-
 # Lists of the types with equal sizes
-chars = itertools.product(["char", "signed char", "unsigned char"], ["char", "signed char", "unsigned char"])
-shorts = itertools.product(["short", "unsigned short"], ["short", "unsigned short"])
-ints = itertools.product(["int", "unsigned"], ["int", "unsigned"])
-longs = itertools.product(["long", "unsigned long"], ["long", "unsigned long"])
-longlongs = itertools.product(["long long", "unsigned long long"], ["long long", "unsigned long long"])
-bit8s = itertools.product(["int8_t", "uint8_t"], ["int8_t", "uint8_t"])
-bit16s = itertools.product(["int16_t", "uint16_t", "sycl::half"], ["int16_t", "uint16_t", "sycl::half"])
-bit32s = itertools.product(["int32_t", "uint32_t", "float"], ["int32_t", "uint32_t", "float"])
-bit64s = itertools.product(["int64_t", "uint64_t", "double"], ["int64_t", "uint64_t", "double"])
+chars = ["char", "signed char", "unsigned char"]
+shorts = ["short", "unsigned short"]
+ints = ["int", "unsigned"]
+longs = ["long", "unsigned long"]
+longlongs = ["long long", "unsigned long long"]
+bit8s = ["int8_t", "uint8_t"]
+bit16s = ["int16_t", "uint16_t", "sycl::half"]
+bit32s = ["int32_t", "uint32_t", "float"]
+bit64s = ["int64_t", "uint64_t", "double"]
 
 # Checks if type pair cannot be connected by a mutation 
 def bad_mutation(type1, type2, mutation):
     if mutation == "dim":
-        return not (get_base_type(type1) == get_base_type(type2))
+        return not (type1.base_type == type2.base_type)
     if mutation == "base_type":
-        return not ((type1[0] == type2[0]) and (get_dim(type1) == get_dim(type2)))
+        return not ((type1.var_type == type2.var_type) and (type1.dim == type2.dim))
     if mutation == "base_type_but_same_sizeof":
-        return not ((type1[0] == type2[0]) and (get_dim(type1) == get_dim(type2)) and 
-                    (([get_base_type(type1), get_base_type(type2)] in chars) or
-                     ([get_base_type(type1), get_base_type(type2)] in shorts) or
-                     ([get_base_type(type1), get_base_type(type2)] in ints) or
-                     ([get_base_type(type1), get_base_type(type2)] in longs) or
-                     ([get_base_type(type1), get_base_type(type2)] in longlongs) or
-                     ([get_base_type(type1), get_base_type(type2)] in bit8s) or
-                     ([get_base_type(type1), get_base_type(type2)] in bit16s) or
-                     ([get_base_type(type1), get_base_type(type2)] in bit32s) or
-                     ([get_base_type(type1), get_base_type(type2)] in bit64s)))
+        return not ((type1.var_type == type2.var_type) and (type1.dim == type2.dim) and
+                    ((type1.base_type in chars     and type2.base_type in chars)     or
+                     (type1.base_type in shorts    and type2.base_type in shorts)    or
+                     (type1.base_type in ints      and type2.base_type in ints)      or
+                     (type1.base_type in longs     and type2.base_type in longs)     or
+                     (type1.base_type in longlongs and type2.base_type in longlongs) or
+                     (type1.base_type in bit8s     and type2.base_type in bit8s)     or
+                     (type1.base_type in bit16s    and type2.base_type in bit16s)    or
+                     (type1.base_type in bit32s    and type2.base_type in bit32s)    or
+                     (type1.base_type in bit64s    and type2.base_type in bit64s)))
     print("Unknown mutation: " + mutation)
     return True
 
 
-# Produces all possible overloads of a function signature.
-
 def expand_signature(runner, types, signature):
+    """
+    Produces all possible overloads of a function signature.
+    We produce the dict of typelists matched_typelists where each line (with the same index in typelists)
+    contains possible set of individual types for function arguments and return type.
+    """
     print("signature: " + str(signature.ret_type) + " " + signature.name + " " + str(signature.arg_types))
 
     exp_sig = []
 
-    # we construct dict of all types/typelists in the function
-    # and then will match them by lines in matched_typelists
+    # We construct dict of all typelists in the function
+    arg_list = signature.arg_types.copy()
+    arg_list.append(signature.ret_type)
+
     used_typelists = {}
-    if len(types[signature.ret_type]) > 1:
-        used_typelists[signature.ret_type] = list(types[signature.ret_type].keys())
-    for arg in signature.arg_types:
+    for arg in arg_list:
         if len(types[arg]) > 1:
             used_typelists[arg] = list(types[arg].keys())
 
-    #print(str(types[signature.ret_type]))
-    #print("ut: " + str(used_typelists))
-
-    arg_list = signature.arg_types.copy()
-    arg_list.append(signature.ret_type)
+    # We match types from used_typelists and individual types by lines in matched_typelists
     matched_typelists = {}
     common_size = 0
 
-    # Return value and all arguments that are lists are of the same type.
     if len(used_typelists) <= 1:
+        # Return value and all arguments that are lists are of the same type
         common_size = 1
         for typelist in used_typelists.values():
             common_size = len(typelist)
 
         for arg in arg_list:
-            #print(str(list(types[arg])))
-            # All fixed args are changed to lists of the common size.
+            # All fixed args are changed to lists of the common size
             if len(types[arg]) == 1:
                 matched_typelists[arg] = [list(types[arg])[0] for i in range(common_size)]
             else:
                 matched_typelists[arg] = list(types[arg])
-        #print("mt: " + str(matched_typelists))
-    # Some typelists are different, use matching rules
     else:
+        # Some typelists are different, use matching rules
         typelist = []
 
         # Making Cartesian product of all the types
-        #print(str(list(used_typelists.values())))
-        #print(str(itertools.product(*list(used_typelists.values()))))
         for element in itertools.product(*list(used_typelists.values())):
             # and filter it out by matching rules
             match = True
             for mutation in signature.mutations:
-                #print(str(mutation))
                 base_index = list(used_typelists.keys()).index(mutation[0])
                 derived_index = list(used_typelists.keys()).index(mutation[1])
-                #print(str(element))
 
                 if bad_mutation(element[base_index], element[derived_index], mutation[2]):
+                    # argument or return types do not match with function limitations
                     match = False
                     break
 
             if match:
                 typelist.append(list(element))
-                #print(str(list(element)))
 
         common_size = len(typelist)
-        #print(common_size)
         if common_size > 0:
             for arg in arg_list:
                 # All fixed args are changed to lists of the common size.
@@ -397,16 +365,11 @@ def expand_signature(runner, types, signature):
                 else:
                     index = list(used_typelists.keys()).index(arg)
                     matched_typelists[arg] = list([typelist[i][index] for i in range(common_size)])
+        else:
+            print("No matching for " + signature.name + " " + str(arg_list))
 
-    #print(signature.name + " " + str(arg_list) + " " + str(common_size))
-    #print(str(matched_typelists))
-    #print(str(matched_typelists[signature.ret_type]))
-    #print(str(matched_typelists[signature.arg_types[0]]))
     # Construct function signatures
     for i in range(common_size):
-        #print("ret " + str(matched_typelists[signature.ret_type][i]))
-        #print(str(signature.arg_types))
-        #print(str([matched_typelists[signature.arg_types[j]][i] for j in range(len(signature.arg_types))]))
         new_sig = sycl_functions.funsig(signature.namespace, matched_typelists[signature.ret_type][i], 
                                         signature.name, [matched_typelists[signature.arg_types[j]][i]
                                                             for j in range(len(signature.arg_types))],
@@ -438,8 +401,11 @@ def expand_signatures(runner, types, signatures):
 def expand_type(types, current):
     # If this is a basic type, stop.
     if types[current].dim > 0:
-        # Name should be in the key too or we'll lose char or signed char - they both have the same var_type, base_type, dim, unsigned
-        return {(types[current].var_type, types[current].base_type, types[current].dim, types[current].name) : types[current]}
+        # Skip of marrays
+        if types[current].name.find("marray") == -1:
+            return {types[current] : types[current]}
+        else:
+            return {}
 
     base_types = {}
     for ct in types[current].child_types:
