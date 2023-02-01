@@ -391,7 +391,7 @@ int64_t upsample(int32_t h, uint32_t l) {
 }
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MAD24
- * valid from C++20
+ * technically undefined in C++17 but defined and valid from C++20
  */
 template <typename T>
 std::enable_if_t<std::is_signed_v<T>, bool> in_range_24(T v) {
@@ -417,7 +417,7 @@ sycl_cts::resultRef<uint32_t> mad24(uint32_t x, uint32_t y, uint32_t z) {
 
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MUL24
- * valid from C++20
+ * technically undefined in C++17 but defined and valid from C++20
  */
 sycl_cts::resultRef<int32_t> mul24(int32_t x, int32_t y) {
   if (!in_range_24(x) || !in_range_24(y))

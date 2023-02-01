@@ -1,6 +1,6 @@
 """Represents a function signature."""
 class funsig:
-    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[]):
+    def __init__(self, namespace, ret_type, name, arg_types=[], accuracy="", comment="", pntr_indx=[], mutations=[]):
         self.namespace = namespace # Namespace of function.
         self.ret_type = ret_type # Function return type.
         self.name = name # Function name.
@@ -8,6 +8,7 @@ class funsig:
         self.accuracy = accuracy # The function maximum relative error defined as ulp.
         self.comment = comment # The comment for function maximum relative error.
         self.pntr_indx = pntr_indx # List containing the indexes of the arguments which are pointers.
+        self.mutations = mutations # List containing triples: [1st arg typelist, 2nd arg typelist, what can be mutated to match]
     def __eq__(self, other):
         if isinstance(other, funsig):
             return ((self.namespace == other.namespace) and
@@ -16,7 +17,8 @@ class funsig:
                     (self.arg_types == other.arg_types) and
                     (self.accuracy == other.accuracy) and
                     (self.comment == other.comment) and
-                    (self.pntr_indx == other.pntr_indx))
+                    (self.pntr_indx == other.pntr_indx) and
+                    (self.mutations == other.mutations))
         else:
             return False
     def __ne__(self, other):
@@ -30,7 +32,7 @@ def create_integer_signatures():
     f_abs = funsig("sycl", "geninteger", "abs", ["geninteger"])
     sig_list.append(f_abs)
 
-    f_abs_diff = funsig("sycl", "ugeninteger", "abs_diff", ["geninteger", "geninteger"])
+    f_abs_diff = funsig("sycl", "ugeninteger", "abs_diff", ["geninteger", "geninteger"], "0", "", [], [["geninteger", "ugeninteger", "base_type_but_same_sizeof"]])
     sig_list.append(f_abs_diff)
 
     f_add_sat = funsig("sycl", "geninteger", "add_sat", ["geninteger", "geninteger"])
@@ -42,10 +44,10 @@ def create_integer_signatures():
     f_rhadd = funsig("sycl", "geninteger", "rhadd", ["geninteger", "geninteger"])
     sig_list.append(f_rhadd)
 
-    f_clamp = funsig("sycl", "geninteger", "clamp", ["geninteger", "sgeninteger", "sgeninteger"])
+    f_clamp = funsig("sycl", "geninteger", "clamp", ["geninteger", "geninteger", "geninteger"])
     sig_list.append(f_clamp)
 
-    f_clamp_2 = funsig("sycl", "geninteger", "clamp", ["geninteger", "geninteger", "geninteger"])
+    f_clamp_2 = funsig("sycl", "geninteger", "clamp", ["geninteger", "sgeninteger", "sgeninteger"], "0", "", [], [["geninteger", "sgeninteger", "dim"]])
     sig_list.append(f_clamp_2)
 
     f_clz = funsig("sycl", "geninteger", "clz", ["geninteger"])
@@ -63,13 +65,13 @@ def create_integer_signatures():
     f_max = funsig("sycl", "geninteger", "max", ["geninteger", "geninteger"])
     sig_list.append(f_max)
 
-    f_max_2 = funsig("sycl", "geninteger", "max", ["geninteger", "sgeninteger"])
+    f_max_2 = funsig("sycl", "geninteger", "max", ["geninteger", "sgeninteger"], "0", "", [], [["geninteger", "sgeninteger", "dim"]])
     sig_list.append(f_max_2)
 
     f_min = funsig("sycl", "geninteger", "min", ["geninteger", "geninteger"])
     sig_list.append(f_min)
 
-    f_min_2 = funsig("sycl", "geninteger", "min", ["geninteger", "sgeninteger"])
+    f_min_2 = funsig("sycl", "geninteger", "min", ["geninteger", "sgeninteger"], "0", "", [], [["geninteger", "sgeninteger", "dim"]])
     sig_list.append(f_min_2)
 
     f_mul_hi = funsig("sycl", "geninteger", "mul_hi", ["geninteger", "geninteger"])
@@ -81,22 +83,22 @@ def create_integer_signatures():
     f_sub_sat = funsig("sycl", "geninteger", "sub_sat", ["geninteger", "geninteger"])
     sig_list.append(f_sub_sat)
 
-    f_upsample = funsig("sycl", "ugeninteger16bit", "upsample", ["ugeninteger8bit", "ugeninteger8bit"])
+    f_upsample = funsig("sycl", "ugeninteger16bit", "upsample", ["ugeninteger8bit", "ugeninteger8bit"], "0", "", [], [["ugeninteger16bit", "ugeninteger8bit", "base_type"]])
     sig_list.append(f_upsample)
 
-    f_upsample_2 = funsig("sycl", "igeninteger16bit", "upsample", ["igeninteger8bit", "ugeninteger8bit"])
+    f_upsample_2 = funsig("sycl", "igeninteger16bit", "upsample", ["igeninteger8bit", "ugeninteger8bit"], "0", "", [], [["igeninteger16bit", "igeninteger8bit", "base_type"], ["igeninteger16bit", "ugeninteger8bit", "base_type"]])
     sig_list.append(f_upsample_2)
 
-    f_upsample_3 = funsig("sycl", "ugeninteger32bit", "upsample", ["ugeninteger16bit", "ugeninteger16bit"])
+    f_upsample_3 = funsig("sycl", "ugeninteger32bit", "upsample", ["ugeninteger16bit", "ugeninteger16bit"], "0", "", [], [["ugeninteger32bit", "ugeninteger16bit", "base_type"]])
     sig_list.append(f_upsample_3)
 
-    f_upsample_4 = funsig("sycl", "igeninteger32bit", "upsample", ["igeninteger16bit", "ugeninteger16bit"])
+    f_upsample_4 = funsig("sycl", "igeninteger32bit", "upsample", ["igeninteger16bit", "ugeninteger16bit"], "0", "", [], [["igeninteger32bit", "igeninteger16bit", "base_type"], ["igeninteger32bit", "ugeninteger16bit", "base_type"]])
     sig_list.append(f_upsample_4)
 
-    f_upsample_5 = funsig("sycl", "ugeninteger64bit", "upsample", ["ugeninteger32bit", "ugeninteger32bit"])
+    f_upsample_5 = funsig("sycl", "ugeninteger64bit", "upsample", ["ugeninteger32bit", "ugeninteger32bit"], "0", "", [], [["ugeninteger64bit", "ugeninteger32bit", "base_type"]])
     sig_list.append(f_upsample_5)
 
-    f_upsample_6 = funsig("sycl", "igeninteger64bit", "upsample", ["igeninteger32bit", "ugeninteger32bit"])
+    f_upsample_6 = funsig("sycl", "igeninteger64bit", "upsample", ["igeninteger32bit", "ugeninteger32bit"], "0", "", [], [["igeninteger64bit", "igeninteger32bit", "base_type"], ["igeninteger64bit", "ugeninteger32bit", "base_type"]])
     sig_list.append(f_upsample_6)
 
     f_popcount = funsig("sycl", "geninteger", "popcount", ["geninteger"])
@@ -122,6 +124,9 @@ def create_common_signatures():
     f_clamp_3 = funsig("sycl", "genfloatd", "clamp", ["genfloatd", "double", "double"])
     sig_list.append(f_clamp_3)
 
+    f_clamp_4 = funsig("sycl", "genfloath", "clamp", ["genfloath", "sycl::half", "sycl::half"])
+    sig_list.append(f_clamp_4)
+
     f_degrees = funsig("sycl", "genfloat", "degrees", ["genfloat"], "3")
     sig_list.append(f_degrees)
 
@@ -134,6 +139,9 @@ def create_common_signatures():
     f_max_3 = funsig("sycl", "genfloatd", "max", ["genfloatd", "double"])
     sig_list.append(f_max_3)
 
+    f_max_4 = funsig("sycl", "genfloath", "max", ["genfloath", "sycl::half"])
+    sig_list.append(f_max_4)
+
     f_min = funsig("sycl", "genfloat", "min", ["genfloat", "genfloat"])
     sig_list.append(f_min)
 
@@ -143,6 +151,9 @@ def create_common_signatures():
     f_min_3 = funsig("sycl", "genfloatd", "min", ["genfloatd", "double"])
     sig_list.append(f_min_3)
 
+    f_min_4 = funsig("sycl", "genfloath", "min", ["genfloath", "sycl::half"])
+    sig_list.append(f_min_4)
+
     f_mix = funsig("sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"], "1")
     sig_list.append(f_mix)
 
@@ -151,6 +162,9 @@ def create_common_signatures():
 
     f_mix_3 = funsig("sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"], "1")
     sig_list.append(f_mix_3)
+
+    f_mix_4 = funsig("sycl", "genfloath", "mix", ["genfloath", "genfloath", "sycl::half"], "1")
+    sig_list.append(f_mix_4)
 
     f_radians = funsig("sycl", "genfloat", "radians", ["genfloat"], "3")
     sig_list.append(f_radians)
@@ -164,14 +178,20 @@ def create_common_signatures():
     f_step_3 = funsig("sycl", "genfloatd", "step", ["double", "genfloatd"])
     sig_list.append(f_step_3)
 
+    f_step_4 = funsig("sycl", "genfloath", "step", ["sycl::half", "genfloath"])
+    sig_list.append(f_step_4)
+
     f_smoothstep = funsig("sycl", "genfloat", "smoothstep", ["genfloat", "genfloat", "genfloat"])
-    sig_list.append(f_step)
+    sig_list.append(f_smoothstep)
 
     f_smoothstep_2 = funsig("sycl", "genfloatf", "smoothstep", ["float", "float", "genfloatf"])
     sig_list.append(f_smoothstep_2)
 
     f_smoothstep_3 = funsig("sycl", "genfloatd", "smoothstep", ["double", "double", "genfloatd"])
     sig_list.append(f_smoothstep_3)
+
+    f_smoothstep_4 = funsig("sycl", "genfloath", "smoothstep", ["sycl::half", "sycl::half", "genfloath"])
+    sig_list.append(f_smoothstep_4)
 
     f_sign = funsig("sycl", "genfloat", "sign", ["genfloat"])
     sig_list.append(f_sign)
@@ -243,148 +263,199 @@ def create_geometric_signatures():
 def create_relational_signatures():
     sig_list = []
 
-    f_isequal = funsig("sycl", "igeninteger32bit", "isequal", ["genfloatf", "genfloatf"])
+    f_isequal = funsig("sycl", "vigeninteger32bit", "isequal", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isequal)
 
-    f_isequal_2 = funsig("sycl", "igeninteger64bit", "isequal", ["genfloatd", "genfloatd"])
+    f_isequal_2 = funsig("sycl", "vigeninteger64bit", "isequal", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isequal_2)
 
-    f_isequal_3 = funsig("sycl", "igeninteger16bit", "isequal", ["genfloath", "genfloath"])
+    f_isequal_3 = funsig("sycl", "vigeninteger16bit", "isequal", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isequal_3)
 
-    f_isnotequal = funsig("sycl", "igeninteger32bit", "isnotequal", ["genfloatf", "genfloatf"])
+    f_isequal_4 = funsig("sycl", "bool", "isequal", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isequal_4)
+
+    f_isnotequal = funsig("sycl", "vigeninteger32bit", "isnotequal", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isnotequal)
 
-    f_isnotequal_2 = funsig("sycl", "igeninteger64bit", "isnotequal", ["genfloatd", "genfloatd"])
+    f_isnotequal_2 = funsig("sycl", "vigeninteger64bit", "isnotequal", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isnotequal_2)
 
-    f_isnotequal_3 = funsig("sycl", "igeninteger16bit", "isnotequal", ["genfloath", "genfloath"])
+    f_isnotequal_3 = funsig("sycl", "vigeninteger16bit", "isnotequal", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isnotequal_3)
 
-    f_isgreater = funsig("sycl", "igeninteger32bit", "isgreater", ["genfloatf", "genfloatf"])
+    f_isnotequal_4 = funsig("sycl", "bool", "isnotequal", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isnotequal_4)
+
+    f_isgreater = funsig("sycl", "vigeninteger32bit", "isgreater", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isgreater)
 
-    f_isgreater_2 = funsig("sycl", "igeninteger64bit", "isgreater", ["genfloatd", "genfloatd"])
+    f_isgreater_2 = funsig("sycl", "vigeninteger64bit", "isgreater", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isgreater_2)
 
-    f_isgreater_3 = funsig("sycl", "igeninteger16bit", "isgreater", ["genfloath", "genfloath"])
+    f_isgreater_3 = funsig("sycl", "vigeninteger16bit", "isgreater", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isgreater_3)
 
-    f_isgreaterequal = funsig("sycl", "igeninteger32bit", "isgreaterequal", ["genfloatf", "genfloatf"])
+    f_isgreater_4 = funsig("sycl", "bool", "isgreater", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isgreater_4)
+
+    f_isgreaterequal = funsig("sycl", "vigeninteger32bit", "isgreaterequal", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isgreaterequal)
 
-    f_isgreaterequal_2 = funsig("sycl", "igeninteger64bit", "isgreaterequal", ["genfloatd", "genfloatd"])
+    f_isgreaterequal_2 = funsig("sycl", "vigeninteger64bit", "isgreaterequal", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isgreaterequal_2)
 
-    f_isgreaterequal_3 = funsig("sycl", "igeninteger16bit", "isgreaterequal", ["genfloath", "genfloath"])
+    f_isgreaterequal_3 = funsig("sycl", "vigeninteger16bit", "isgreaterequal", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isgreaterequal_3)
 
-    f_isless = funsig("sycl", "igeninteger32bit", "isless", ["genfloatf", "genfloatf"])
+    f_isgreaterequal_4 = funsig("sycl", "bool", "isgreaterequal", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isgreaterequal_4)
+
+    f_isless = funsig("sycl", "vigeninteger32bit", "isless", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isless)
 
-    f_isless_2 = funsig("sycl", "igeninteger64bit", "isless", ["genfloatd", "genfloatd"])
+    f_isless_2 = funsig("sycl", "vigeninteger64bit", "isless", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isless_2)
 
-    f_isless_3 = funsig("sycl", "igeninteger16bit", "isless", ["genfloath", "genfloath"])
+    f_isless_3 = funsig("sycl", "vigeninteger16bit", "isless", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isless_3)
 
-    f_islessequal = funsig("sycl", "igeninteger32bit", "islessequal", ["genfloatf", "genfloatf"])
+    f_isless_4 = funsig("sycl", "bool", "isless", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isless_4)
+
+    f_islessequal = funsig("sycl", "vigeninteger32bit", "islessequal", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_islessequal)
 
-    f_islessequal_2 = funsig("sycl", "igeninteger64bit", "islessequal", ["genfloatd", "genfloatd"])
+    f_islessequal_2 = funsig("sycl", "vigeninteger64bit", "islessequal", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_islessequal_2)
 
-    f_islessequal_3 = funsig("sycl", "igeninteger16bit", "islessequal", ["genfloath", "genfloath"])
+    f_islessequal_3 = funsig("sycl", "vigeninteger16bit", "islessequal", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_islessequal_3)
 
-    f_islessgreater = funsig("sycl", "igeninteger32bit", "islessgreater", ["genfloatf", "genfloatf"])
+    f_islessequal_4 = funsig("sycl", "bool", "islessequal", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_islessequal_4)
+
+    f_islessgreater = funsig("sycl", "vigeninteger32bit", "islessgreater", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_islessgreater)
 
-    f_islessgreater_2 = funsig("sycl", "igeninteger64bit", "islessgreater", ["genfloatd", "genfloatd"])
+    f_islessgreater_2 = funsig("sycl", "vigeninteger64bit", "islessgreater", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_islessgreater_2)
 
-    f_islessgreater_3 = funsig("sycl", "igeninteger16bit", "islessgreater", ["genfloath", "genfloath"])
+    f_islessgreater_3 = funsig("sycl", "vigeninteger16bit", "islessgreater", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_islessgreater_3)
 
-    f_isfinite = funsig("sycl", "igeninteger32bit", "isfinite", ["genfloatf"])
+    f_islessgreater_4 = funsig("sycl", "bool", "islessgreater", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_islessgreater_4)
+
+    f_isfinite = funsig("sycl", "vigeninteger32bit", "isfinite", ["floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isfinite)
 
-    f_isfinite_2 = funsig("sycl", "igeninteger64bit", "isfinite", ["genfloatd"])
+    f_isfinite_2 = funsig("sycl", "vigeninteger64bit", "isfinite", ["doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isfinite_2)
 
-    f_isinf = funsig("sycl", "igeninteger32bit", "isinf", ["genfloatf"])
+    f_isfinite_3 = funsig("sycl", "vigeninteger16bit", "isfinite", ["halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
+    sig_list.append(f_isfinite_3)
+
+    f_isfinite_4 = funsig("sycl", "bool", "isfinite", ["sgenfloat"])
+    sig_list.append(f_isfinite_4)
+
+    f_isinf = funsig("sycl", "vigeninteger32bit", "isinf", ["floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isinf)
 
-    f_isinf_2 = funsig("sycl", "igeninteger64bit", "isinf", ["genfloatd"])
+    f_isinf_2 = funsig("sycl", "vigeninteger64bit", "isinf", ["doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isinf_2)
 
-    f_isnan = funsig("sycl", "igeninteger32bit", "isnan", ["genfloatf"])
+    f_isinf_3 = funsig("sycl", "vigeninteger16bit", "isinf", ["halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
+    sig_list.append(f_isinf_3)
+
+    f_isinf_4 = funsig("sycl", "bool", "isinf", ["sgenfloat"])
+    sig_list.append(f_isinf_4)
+
+    f_isnan = funsig("sycl", "vigeninteger32bit", "isnan", ["floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isnan)
 
-    f_isnan_2 = funsig("sycl", "igeninteger64bit", "isnan", ["genfloatd"])
+    f_isnan_2 = funsig("sycl", "vigeninteger64bit", "isnan", ["doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isnan_2)
 
-    f_isnormal = funsig("sycl", "igeninteger32bit", "isnormal", ["genfloatf"])
+    f_isnan_3 = funsig("sycl", "vigeninteger16bit", "isnan", ["halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
+    sig_list.append(f_isnan_3)
+
+    f_isnan_4 = funsig("sycl", "bool", "isnan", ["sgenfloat"])
+    sig_list.append(f_isnan_4)
+
+    f_isnormal = funsig("sycl", "vigeninteger32bit", "isnormal", ["floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isnormal)
 
-    f_isnormal_2 = funsig("sycl", "igeninteger64bit", "isnormal", ["genfloatd"])
+    f_isnormal_2 = funsig("sycl", "vigeninteger64bit", "isnormal", ["doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isnormal_2)
 
-    f_isordered = funsig("sycl", "igeninteger32bit", "isordered", ["genfloatf", "genfloatf"])
+    f_isnormal_3 = funsig("sycl", "vigeninteger16bit", "isnormal", ["halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
+    sig_list.append(f_isnormal_3)
+
+    f_isnormal_4 = funsig("sycl", "bool", "isnormal", ["sgenfloat"])
+    sig_list.append(f_isnormal_4)
+
+    f_isordered = funsig("sycl", "vigeninteger32bit", "isordered", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isordered)
 
-    f_isordered_2 = funsig("sycl", "igeninteger64bit", "isordered", ["genfloatd", "genfloatd"])
+    f_isordered_2 = funsig("sycl", "vigeninteger64bit", "isordered", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isordered_2)
 
-    f_isordered_3 = funsig("sycl", "igeninteger16bit", "isordered", ["genfloath", "genfloath"])
+    f_isordered_3 = funsig("sycl", "vigeninteger16bit", "isordered", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isordered_3)
 
-    f_isunordered = funsig("sycl", "igeninteger32bit", "isunordered", ["genfloatf", "genfloatf"])
+    f_isordered_4 = funsig("sycl", "bool", "isordered", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isordered_4)
+
+    f_isunordered = funsig("sycl", "vigeninteger32bit", "isunordered", ["floatn", "floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_isunordered)
 
-    f_isunordered_2 = funsig("sycl", "igeninteger64bit", "isunordered", ["genfloatd", "genfloatd"])
+    f_isunordered_2 = funsig("sycl", "vigeninteger64bit", "isunordered", ["doublen", "doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_isunordered_2)
 
-    f_isunordered_3 = funsig("sycl", "igeninteger16bit", "isunordered", ["genfloath", "genfloath"])
+    f_isunordered_3 = funsig("sycl", "vigeninteger16bit", "isunordered", ["halfn", "halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_isunordered_3)
 
-    f_signbit = funsig("sycl", "igeninteger32bit", "signbit", ["genfloatf"])
+    f_isunordered_4 = funsig("sycl", "bool", "isunordered", ["sgenfloat", "sgenfloat"])
+    sig_list.append(f_isunordered_4)
+
+    f_signbit = funsig("sycl", "vigeninteger32bit", "signbit", ["floatn"], "0", "", [], [["floatn", "vigeninteger32bit", "base_type"]])
     sig_list.append(f_signbit)
 
-    f_signbit_2 = funsig("sycl", "igeninteger64bit", "signbit", ["genfloatd"])
+    f_signbit_2 = funsig("sycl", "vigeninteger64bit", "signbit", ["doublen"], "0", "", [], [["doublen", "vigeninteger64bit", "base_type"]])
     sig_list.append(f_signbit_2)
 
-    f_signbit_3 = funsig("sycl", "igeninteger16bit", "signbit", ["genfloath"])
+    f_signbit_3 = funsig("sycl", "vigeninteger16bit", "signbit", ["halfn"], "0", "", [], [["halfn", "vigeninteger16bit", "base_type"]])
     sig_list.append(f_signbit_3)
 
+    f_signbit_4 = funsig("sycl", "bool", "signbit", ["sgenfloat"])
+    sig_list.append(f_signbit_4)
 
 
-    f_any = funsig("sycl", "int", "any", ["igeninteger"])
+
+    f_any = funsig("sycl", "int", "any", ["vigeninteger"])
     sig_list.append(f_any)
 
-    f_all = funsig("sycl", "int", "all", ["igeninteger"])
+    f_any_2 = funsig("sycl", "bool", "any", ["sigeninteger"])
+    sig_list.append(f_any_2)
+
+    f_all = funsig("sycl", "int", "all", ["vigeninteger"])
     sig_list.append(f_all)
 
-    f_bitselect = funsig("sycl", "gentype", "bitselect", ["gentype", "gentype","gentype"])
+    f_all_2 = funsig("sycl", "bool", "all", ["sigeninteger"])
+    sig_list.append(f_all_2)
+
+    f_bitselect = funsig("sycl", "gentype", "bitselect", ["gentype", "gentype", "gentype"])
     sig_list.append(f_bitselect)
 
-    f_select = funsig("sycl", "geninteger", "select", ["geninteger", "geninteger","igeninteger"])
+    f_select = funsig("sycl", "vgentype", "select", ["vgentype", "vgentype", "vigeninteger"], "0", "", [], [["vgentype", "vigeninteger", "base_type_but_same_sizeof"]])
     sig_list.append(f_select)
 
-    f_select_2 = funsig("sycl", "geninteger", "select", ["geninteger", "geninteger","ugeninteger"])
+    f_select_2 = funsig("sycl", "vgentype", "select", ["vgentype", "vgentype", "vugeninteger"], "0", "", [], [["vgentype", "vugeninteger", "base_type_but_same_sizeof"]])
     sig_list.append(f_select_2)
 
-    f_select_3 = funsig("sycl", "genfloatf", "select", ["genfloatf", "genfloatf","genint"])
-    sig_list.append(f_select_3)
-
-    f_select_4 = funsig("sycl", "genfloatf", "select", ["genfloatf", "genfloatf","ugenint"])
-    sig_list.append(f_select_4)
-
-    f_select_5 = funsig("sycl", "genfloatd", "select", ["genfloatd", "genfloatd","igeninteger64bit"])
-    sig_list.append(f_select_5)
-
-    f_select_6 = funsig("sycl", "genfloatd", "select", ["genfloatd", "genfloatd","ugeninteger64bit"])
-    sig_list.append(f_select_6)
+#     f_select_3 = funsig("sycl", "sgentype", "select", ["sgentype", "sgentype", "bool"])
+#     sig_list.append(f_select_3)
 
     return sig_list
 
@@ -475,13 +546,13 @@ def create_float_signatures():
     f_fmax = funsig("sycl", "genfloat", "fmax", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmax)
 
-    f_fmax_2 = funsig("sycl", "genfloat", "fmax", ["genfloat", "sgenfloat"], "0")
+    f_fmax_2 = funsig("sycl", "genfloat", "fmax", ["genfloat", "sgenfloat"], "0", "", [], [["genfloat", "sgenfloat", "dim"]])
     sig_list.append(f_fmax_2)
 
     f_fmin = funsig("sycl", "genfloat", "fmin", ["genfloat", "genfloat"], "0")
     sig_list.append(f_fmin)
 
-    f_fmin_2 = funsig("sycl", "genfloat", "fmin", ["genfloat", "sgenfloat"], "0")
+    f_fmin_2 = funsig("sycl", "genfloat", "fmin", ["genfloat", "sgenfloat"], "0", "", [], [["genfloat", "sgenfloat", "dim"]])
     sig_list.append(f_fmin_2)
 
     f_fmod = funsig("sycl", "genfloat", "fmod", ["genfloat", "genfloat"], "0")
@@ -490,16 +561,16 @@ def create_float_signatures():
     f_fract = funsig("sycl", "genfloat", "fract", ["genfloat", "genfloat"], "0", "", [2])
     sig_list.append(f_fract)
 
-    f_frexp = funsig("sycl", "genfloat", "frexp", ["genfloat", "genint"], "0", "", [2])
+    f_frexp = funsig("sycl", "genfloat", "frexp", ["genfloat", "genint"], "0", "", [2], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_frexp)
 
     f_hypot = funsig("sycl", "genfloat", "hypot", ["genfloat", "genfloat"], "4")
     sig_list.append(f_hypot)
 
-    f_ilogb = funsig("sycl", "genint", "ilogb", ["genfloat"], "0")
+    f_ilogb = funsig("sycl", "genint", "ilogb", ["genfloat"], "0", "", [], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_ilogb)
 
-    f_ldexp = funsig("sycl", "genfloat", "ldexp", ["genfloat", "genint"], "0")
+    f_ldexp = funsig("sycl", "genfloat", "ldexp", ["genfloat", "genint"], "0", "", [], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_ldexp)
 
     f_ldexp_2 = funsig("sycl", "genfloat", "ldexp", ["genfloat", "int"], "0")
@@ -508,7 +579,7 @@ def create_float_signatures():
     f_lgamma = funsig("sycl", "genfloat", "lgamma", ["genfloat"], "-1")
     sig_list.append(f_lgamma)
 
-    f_lgamma_r = funsig("sycl", "genfloat", "lgamma_r", ["genfloat", "genint"], "-1", "", [2])
+    f_lgamma_r = funsig("sycl", "genfloat", "lgamma_r", ["genfloat", "genint"], "-1", "", [2], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_lgamma_r)
 
     f_log = funsig("sycl", "genfloat", "log", ["genfloat"], "3")
@@ -538,10 +609,10 @@ def create_float_signatures():
     f_modf = funsig("sycl", "genfloat", "modf", ["genfloat", "genfloat"], "0", "", [2])
     sig_list.append(f_modf)
 
-    f_nan = funsig("sycl", "genfloatf", "nan", ["ugenint"], "0")
+    f_nan = funsig("sycl", "genfloatf", "nan", ["ugenint"], "0", "", [], [["genfloatf", "ugenint", "base_type"]])
     sig_list.append(f_nan)
 
-    f_nan_2 = funsig("sycl", "genfloatd", "nan", ["ugenlonginteger"], "0")
+    f_nan_2 = funsig("sycl", "genfloatd", "nan", ["ugenlonginteger"], "0", "", [], [["genfloatd", "ugenlonginteger", "base_type"]])
     sig_list.append(f_nan_2)
 
     f_nextafter = funsig("sycl", "genfloat", "nextafter", ["genfloat", "genfloat"], "0")
@@ -550,7 +621,7 @@ def create_float_signatures():
     f_pow = funsig("sycl", "genfloat", "pow", ["genfloat", "genfloat"], "16")
     sig_list.append(f_pow)
 
-    f_pown = funsig("sycl", "genfloat", "pown", ["genfloat", "genint"], "16")
+    f_pown = funsig("sycl", "genfloat", "pown", ["genfloat", "genint"], "16", "", [], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_pown)
 
     f_powr = funsig("sycl", "genfloat", "powr", ["genfloat", "genfloat"], "16")
@@ -559,13 +630,13 @@ def create_float_signatures():
     f_remainder = funsig("sycl", "genfloat", "remainder", ["genfloat", "genfloat"], "0")
     sig_list.append(f_remainder)
 
-    f_remquo = funsig("sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"], "0", "", [3])
+    f_remquo = funsig("sycl", "genfloat", "remquo", ["genfloat", "genfloat", "genint"], "0", "", [3], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_remquo)
 
     f_rint = funsig("sycl", "genfloat", "rint", ["genfloat"], "0")
     sig_list.append(f_rint)
 
-    f_rootn = funsig("sycl", "genfloat", "rootn", ["genfloat", "genint"], "16")
+    f_rootn = funsig("sycl", "genfloat", "rootn", ["genfloat", "genint"], "16", "", [], [["genfloat", "genint", "base_type"]])
     sig_list.append(f_rootn)
 
     f_round = funsig("sycl", "genfloat", "round", ["genfloat"], "0")

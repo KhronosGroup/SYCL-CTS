@@ -22,6 +22,7 @@
 ################################################################################
 
 import os
+import sys
 import argparse
 from modules import sycl_types
 from modules import sycl_functions
@@ -29,18 +30,19 @@ from modules import test_generator
 
 class runner:
     def __init__(self):
-        self.base_types = ["float", "double", "char", "short", "int", "long int", "long long int", "int8_t", "int16_t", "int32_t", "int64_t", "sycl::half"]
+        self.base_types = ["float", "double", "sycl::half", 
+            "char", "signed char", "unsigned char", "short", "unsigned short", "int", "unsigned", "long", "unsigned long", "long long", "unsigned long long",
+            "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t"]
         self.var_types = ["scalar","vector"]
         self.dimensions = [1,2,3,4,8,16]
-        self.unsigned = [True, False]
 
-def contains_base_type(sig, types, base_type):
+def contains_base_type(sig, base_type):
     data = sig.arg_types[:]
     data.append(sig.ret_type)
+    #print("data: " + str(data))
     for dt in data:
-        for tp in list(types[dt].keys()):
-            if types[dt][tp].base_type == base_type:
-                return True
+        if dt[1] == base_type:
+            return True
     return False
 
 def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=None):
@@ -76,10 +78,10 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name, che
     half_signatures = []
     double_signatures = []
     for sig in expanded_signatures:
-        if contains_base_type(sig, types, "double"):
+        if contains_base_type(sig, "double"):
             double_signatures.append(sig)
             continue
-        if contains_base_type(sig, types, "sycl::half"):
+        if contains_base_type(sig, "sycl::half"):
             half_signatures.append(sig)
             continue
         base_signatures.append(sig)

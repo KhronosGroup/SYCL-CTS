@@ -170,7 +170,7 @@ bool any(T x) {
    return sycl_cts::math::if_msb_set(x);
 }
 template <typename T, int N>
-bool any(sycl::vec<T, N> a) {
+int any(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
     if (any(getElement(a, i)) == 1)
       return true;
@@ -191,7 +191,7 @@ bool all(T x) {
    return sycl_cts::math::if_msb_set(x);
 }
 template <typename T, int N>
-bool all(sycl::vec<T, N> a) {
+int all(sycl::vec<T, N> a) {
   for (int i = 0; i < N; i++) {
     if (all(getElement(a, i)) == 0)
       return false;
@@ -217,8 +217,8 @@ double bitselect(double a, double b, double c);
 
 MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(bitselect)
 
-template <typename T, typename U>
-T select(T a, T b, U c) { return c ? b : a; }
+template <typename T>
+T select(T a, T b, bool c) { return c ? b : a; }
 
 template <typename T, typename K, int N>
 sycl::vec<T, N> select(sycl::vec<T, N> a, sycl::vec<T, N> b,
@@ -373,15 +373,17 @@ template <typename T> T clz(T x) {
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(clz)
 
-/* count trailing zeros - valid from C++20 */
+/* count trailing zeros */
 template <typename T> T ctz(T x) {
-  T tz = sycl_cts::math::num_bits(x);
-  for (T i = 0; i < sycl_cts::math::num_bits(x); ++i)
-    if (x >> i)
-      --tz;
+  const int bit_size = sycl_cts::math::num_bits(x);
+
+  int tz = 0;
+  for (int i = 0; i < bit_size; i++)
+    if (x & (1ull << (bit_size - i - 1)))
+      tz = 0;
     else
-      break;
-  return tz;
+      tz++;
+  return static_cast<T>(tz);
 }
 MAKE_VEC_AND_MARRAY_VERSIONS(ctz)
 
