@@ -74,7 +74,7 @@ void get_init_value_common_logic(VariableT& init_value) {
                 (std::is_same_v<FunctorT, sycl::bit_and<VariableT>> ||
                  std::is_same_v<FunctorT, sycl::bit_or<VariableT>> ||
                  std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>)) {
-    init_value = 0x87654321;
+    init_value = VariableT(0x87654321);
   } else if constexpr (std::is_same_v<VariableT, bool> && UsePropertyFlagT) {
     init_value = !sycl::known_identity<FunctorT, VariableT>::value;
   } else if constexpr (std::is_same_v<VariableT, bool> && !UsePropertyFlagT) {
