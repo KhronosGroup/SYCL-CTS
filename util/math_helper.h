@@ -174,7 +174,6 @@ struct rel_funcs_return<double> {
   using type = int64_t;
 };
 
-
 template <template <class> class funT, typename T, typename... Args>
 bool rel_func_dispatcher(T a, Args... args) {
   return funT<T>()(a, args...);

@@ -149,7 +149,8 @@ void check_function(sycl_cts::util::logger &log, funT fun,
       auto resultPtr =
           buffer.template get_access<sycl::access_mode::write>(h);
       h.single_task<kernel<N>>(
-          [=]() { value_operations::assign(resultPtr[0], fun()); });    });
+          [=]() { value_operations::assign(resultPtr[0], fun()); });
+    });
   } catch (const sycl::exception &e) {
     log_exception(log, e);
     std::string errorMsg = "tests case: " + std::to_string(N) +
