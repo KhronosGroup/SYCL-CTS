@@ -20,8 +20,8 @@
 *******************************************************************************/
 
 #include "math_reference.h"
-#include "stl.h"
 #include "../oclmath/reference_math.h"
+#include "stl.h"
 
 #include <cfloat>
 
@@ -45,15 +45,17 @@ void type_punn(const A &from, B &to) {
 #define MAX(_a, _b) ((_a) > (_b) ? (_a) : (_b))
 #define MIN(_a, _b) ((_a) < (_b) ? (_a) : (_b))
 
-} /* namespace {} */
+}  // namespace
 
 namespace reference {
 
-template <typename T> T bitselect_t(T x, T y, T z) {
+template <typename T>
+T bitselect_t(T x, T y, T z) {
   return (z & y) | (~z & x);
 }
 
-template <typename I, typename T> T bitselect_f_t(T x, T y, T z) {
+template <typename I, typename T>
+T bitselect_f_t(T x, T y, T z) {
   I a, b, c;
   type_punn(x, a);
   type_punn(y, b);
@@ -77,7 +79,10 @@ sycl::half bitselect(sycl::half a, sycl::half b, sycl::half c) {
  *
  */
 
-template <typename T> T degrees_t(T a) { return a * (180.0 / M_PI); }
+template <typename T>
+T degrees_t(T a) {
+  return a * (180.0 / M_PI);
+}
 
 sycl::half degrees(sycl::half a) { return degrees_t(a); }
 
@@ -89,7 +94,10 @@ double degrees(double a) { return degrees_t(a); }
  *
  */
 
-template <typename T> T radians_t(T a) { return a * (M_PI / 180.0); }
+template <typename T>
+T radians_t(T a) {
+  return a * (M_PI / 180.0);
+}
 
 sycl::half radians(sycl::half a) { return radians_t(a); }
 
@@ -100,9 +108,9 @@ double radians(double a) { return radians_t(a); }
  *
  */
 
-template <typename T> T step_t(T a, T b) {
-  if (b < a)
-    return 0.0;
+template <typename T>
+T step_t(T a, T b) {
+  if (b < a) return 0.0;
   return 1.0;
 }
 
@@ -115,14 +123,16 @@ double step(double a, double b) { return step_t(a, b); }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- SMOOTHSTEP
  *
  */
-template <typename T> sycl_cts::resultRef<T> smoothstep_t(T a, T b, T c) {
+template <typename T>
+sycl_cts::resultRef<T> smoothstep_t(T a, T b, T c) {
   if (std::isnan(a) || std::isnan(b) || std::isnan(c) || a >= b)
     return sycl_cts::resultRef<T>(T(), true);
   auto t = clamp<T>((c - a) / (b - a), 0, 1).res;
   return t * t * (3 - 2 * t);
 }
 
-sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b, sycl::half c) {
+sycl_cts::resultRef<sycl::half> smoothstep(sycl::half a, sycl::half b,
+                                           sycl::half c) {
   return smoothstep_t(a, b, c);
 }
 sycl_cts::resultRef<float> smoothstep(float a, float b, float c) {
@@ -136,15 +146,12 @@ sycl_cts::resultRef<double> smoothstep(double a, double b, double c) {
  *
  */
 
-template <typename T> T sign_t(T a) {
-  if (std::isnan(a))
-    return 0.0;
-  if (a > 0)
-    return 1.0;
-  if (a < 0)
-    return -1.0;
-  if (signbit(a))
-    return -0.0;
+template <typename T>
+T sign_t(T a) {
+  if (std::isnan(a)) return 0.0;
+  if (a > 0) return 1.0;
+  if (a < 0) return -1.0;
+  if (signbit(a)) return -0.0;
   return +0.0;
 }
 
@@ -157,34 +164,34 @@ double sign(double a) { return sign_t(a); }
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MAD_SAT
  *
  */
-template <typename K, typename T> T mad_sat_unsigned(T x, T y, T z) {
+template <typename K, typename T>
+T mad_sat_unsigned(T x, T y, T z) {
   K a = static_cast<K>(x) * static_cast<K>(y) + static_cast<K>(z);
-  if (a > std::numeric_limits<T>::max())
-    return std::numeric_limits<T>::max();
+  if (a > std::numeric_limits<T>::max()) return std::numeric_limits<T>::max();
   return a;
 }
 
-template <typename T> T mad_sat_unsigned_long(T x, T y, T z) {
+template <typename T>
+T mad_sat_unsigned_long(T x, T y, T z) {
   long double a = static_cast<long double>(x) * static_cast<long double>(y) +
                   static_cast<long double>(z);
   if (a > static_cast<double>(std::numeric_limits<T>::max()) * 1.1l)
     return std::numeric_limits<T>::max();
   T mul = x * y;
-  if (mul < x || mul < y)
-    return std::numeric_limits<T>::max();
+  if (mul < x || mul < y) return std::numeric_limits<T>::max();
   return add_sat(mul, z);
 }
 
-template <typename K, typename T> T mad_sat_signed(T x, T y, T z) {
+template <typename K, typename T>
+T mad_sat_signed(T x, T y, T z) {
   K a = static_cast<K>(x) * static_cast<K>(y) + static_cast<K>(z);
-  if (a > std::numeric_limits<T>::max())
-    return std::numeric_limits<T>::max();
-  if (a < std::numeric_limits<T>::min())
-    return std::numeric_limits<T>::min();
+  if (a > std::numeric_limits<T>::max()) return std::numeric_limits<T>::max();
+  if (a < std::numeric_limits<T>::min()) return std::numeric_limits<T>::min();
   return a;
 }
 
-template <typename T> T mad_sat_signed_long(T x, T y, T z) {
+template <typename T>
+T mad_sat_signed_long(T x, T y, T z) {
   long double a = static_cast<long double>(x) * static_cast<long double>(y) +
                   static_cast<long double>(z);
   if (a > static_cast<long double>(std::numeric_limits<T>::max()) * 1.1l)
@@ -234,9 +241,7 @@ signed char mad_sat(signed char a, signed char b, signed char c) {
 short mad_sat(short a, short b, short c) {
   return mad_sat_signed<cl_long>(a, b, c);
 }
-int mad_sat(int a, int b, int c) {
-  return mad_sat_signed<cl_long>(a, b, c);
-}
+int mad_sat(int a, int b, int c) { return mad_sat_signed<cl_long>(a, b, c); }
 long mad_sat(long a, long b, long c) {
   return mad_sat_signed_long<long>(a, b, c);
 }
@@ -247,13 +252,14 @@ long long mad_sat(long long a, long long b, long long c) {
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MIX
  *
  */
-template <typename T> sycl_cts::resultRef<T> mix_t(T x, T y, T a) {
-  if (a >= 0.0 && a <= 1.0)
-    return x + (y - x) * a;
+template <typename T>
+sycl_cts::resultRef<T> mix_t(T x, T y, T a) {
+  if (a >= 0.0 && a <= 1.0) return x + (y - x) * a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 
-sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b, const sycl::half c) {
+sycl_cts::resultRef<sycl::half> mix(const sycl::half a, const sycl::half b,
+                                    const sycl::half c) {
   return mix_t(a, b, c);
 }
 
@@ -269,7 +275,8 @@ sycl_cts::resultRef<double> mix(const double a, const double b,
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MUL_HI
  *
  */
-template <typename T> T mul_hi_unsigned(T x, T y) {
+template <typename T>
+T mul_hi_unsigned(T x, T y) {
   // All shifts are half the size of T in bits
   size_t shft = sizeof(T) * 4;
 
@@ -303,7 +310,8 @@ template <typename T> T mul_hi_unsigned(T x, T y) {
   return hi;
 }
 
-template <typename T> T mul_hi_signed(T a, T b) {
+template <typename T>
+T mul_hi_signed(T a, T b) {
   // All shifts are half the size of T in bits
   size_t shft = sizeof(T) * 4;
   typedef typename std::make_unsigned<T>::type U;
@@ -403,7 +411,6 @@ std::enable_if_t<std::is_unsigned_v<T>, bool> in_range_24(T v) {
   return v < (1 << 24);
 }
 
-
 sycl_cts::resultRef<int32_t> mad24(int32_t x, int32_t y, int32_t z) {
   if (!in_range_24(x) || !in_range_24(y))
     return sycl_cts::resultRef<int32_t>(0, true);
@@ -414,7 +421,6 @@ sycl_cts::resultRef<uint32_t> mad24(uint32_t x, uint32_t y, uint32_t z) {
     return sycl_cts::resultRef<uint32_t>(0, true);
   return uint32_t(uint64_t(x) * uint64_t(y) + uint64_t(z));
 }
-
 
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- MUL24
  * technically undefined in C++17 but defined and valid from C++20
@@ -471,13 +477,11 @@ sycl::half fdim(sycl::half a, sycl::half b) {
     double resd = static_cast<double>(a) - static_cast<double>(b);
     sycl::half res = static_cast<sycl::half>(resd);
     double diff = resd - static_cast<double>(res);
-    sycl::half next =
-        nextafter(res, static_cast<sycl::half>(DBL_MAX * diff));
+    sycl::half next = nextafter(res, static_cast<sycl::half>(DBL_MAX * diff));
     if (static_cast<double>(next) - resd == diff) {
       int16_t rep;
       type_punn(next, rep);
-      if (rep % 2 == 0)
-        return next;
+      if (rep % 2 == 0) return next;
     }
     return res;
   }
@@ -512,14 +516,11 @@ sycl::half modf(sycl::half a, sycl::half *b) {
 // ComputeCpp and hipSYCL do not yet support sycl::bit_cast
 #if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::half nextafter(sycl::half x, sycl::half y) {
-  if (std::isnan(x))
-    return x;
+  if (std::isnan(x)) return x;
 
-  if (std::isnan(y))
-    return y;
+  if (std::isnan(y)) return y;
 
-  if (x == y)
-    return y;
+  if (x == y) return y;
 
   // Transform the signed binary numbers represented as a leading sign bit
   // and 15 bit unsigned value into a 2-complement 16 bit signed integer
@@ -527,10 +528,8 @@ sycl::half nextafter(sycl::half x, sycl::half y) {
   int16_t b = sycl::bit_cast<int16_t>(y);
 
   // 0x8000 for leading 1 check
-  if (a & 0x8000)
-    a = 0x8000 - a;
-  if (b & 0x8000)
-    b = 0x8000 - b;
+  if (a & 0x8000) a = 0x8000 - a;
+  if (b & 0x8000) b = 0x8000 - b;
 
   // Increment a towards the direction of b
   a += (a < b) ? 1 : -1;
@@ -551,8 +550,6 @@ sycl::half tanpi(sycl::half a) { return reference_tanpi(a); }
 float tanpi(float a) { return reference_tanpi(a); }
 double tanpi(double a) { return reference_tanpil(a); }
 
-
-
 // Geometric functions
 
 template <typename T, int N>
@@ -565,17 +562,12 @@ sycl::vec<T, N> cross_t(sycl::vec<T, N> a, sycl::vec<T, N> b) {
   temp_res[1] = av[2] * bv[0] - av[0] * bv[2];
   temp_res[2] = av[0] * bv[1] - av[1] * bv[0];
   temp_res[3] = 0.0;
-  for (int i = 0; i < N; i++)
-    setElement<T, N>(res, i, temp_res[i]);
+  for (int i = 0; i < N; i++) setElement<T, N>(res, i, temp_res[i]);
   return res;
 }
 
-sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) {
-  return cross_t(p0, p1);
-}
-sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) {
-  return cross_t(p0, p1);
-}
+sycl::float4 cross(sycl::float4 p0, sycl::float4 p1) { return cross_t(p0, p1); }
+sycl::float3 cross(sycl::float3 p0, sycl::float3 p1) { return cross_t(p0, p1); }
 sycl::double4 cross(sycl::double4 p0, sycl::double4 p1) {
   return cross_t(p0, p1);
 }
@@ -583,9 +575,7 @@ sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
 }
 
-sycl::half fast_dot(float p0) {
-  return std::pow(p0, 2);
-}
+sycl::half fast_dot(float p0) { return std::pow(p0, 2); }
 sycl::half fast_dot(sycl::float2 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2);
 }
@@ -593,7 +583,8 @@ sycl::half fast_dot(sycl::float3 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2);
 }
 sycl::half fast_dot(sycl::float4 p0) {
-  return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) + std::pow(p0.w(), 2);
+  return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) +
+         std::pow(p0.w(), 2);
 }
 sycl::half fast_dot(sycl::mfloat2 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2);
@@ -602,7 +593,8 @@ sycl::half fast_dot(sycl::mfloat3 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2);
 }
 sycl::half fast_dot(sycl::mfloat4 p0) {
-  return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2) + std::pow(p0[3], 2);
+  return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2) +
+         std::pow(p0[3], 2);
 }
 
 } /* namespace reference */
