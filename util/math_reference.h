@@ -852,9 +852,9 @@ template <typename T, int N>
 struct higher_accuracy<sycl::vec<T, N>> {
   using type = sycl::vec<typename higher_accuracy<T>::type, N>;
 };
-template <typename T, int N>
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+template <typename T, int N>
 struct higher_accuracy<sycl::marray<T, N>> {
   using type = sycl::marray<typename higher_accuracy<T>::type, N>;
 };
