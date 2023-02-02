@@ -33,7 +33,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
   // FIXME: hipSYCL and DPCPP have no implemented
   //  atomic_fence_scope_capabilities query
 #if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
   std::vector<sycl::memory_scope> supported_barriers =
       queue.get_context()
           .get_info<sycl::info::context::atomic_fence_scope_capabilities>();
@@ -54,10 +54,10 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   constexpr int group_barrier_variants = 4;
   std::array<sms, group_barrier_variants> group_barriers{
-      sms{sycl::memory_scope::work_group, true, true},
-      sms{sycl::memory_scope::work_group, true, true},
-      sms{sycl::memory_scope::device, true, true},
-      sms{sycl::memory_scope::system, true, true}};
+      {{sycl::memory_scope::work_group, true, true},
+       {sycl::memory_scope::work_group, true, true},
+       {sycl::memory_scope::device, true, true},
+       {sycl::memory_scope::system, true, true}}};
   std::array<std::string, group_barrier_variants> group_barriers_names{
       "default", "sycl::memory_scope::work_group", "sycl::memory_scope::device",
       "sycl::memory_scope::system"};
@@ -71,11 +71,11 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   constexpr int sub_group_barrier_variants = 5;
   std::array<sms, sub_group_barrier_variants> sub_group_barriers{
-      sms{sycl::memory_scope::sub_group, true, true},
-      sms{sycl::memory_scope::sub_group, true, true},
-      sms{sycl::memory_scope::work_group, true, true},
-      sms{sycl::memory_scope::device, true, true},
-      sms{sycl::memory_scope::system, true, true}};
+      {{sycl::memory_scope::sub_group, true, true},
+       {sycl::memory_scope::sub_group, true, true},
+       {sycl::memory_scope::work_group, true, true},
+       {sycl::memory_scope::device, true, true},
+       {sycl::memory_scope::system, true, true}}};
   std::array<std::string, sub_group_barrier_variants> sub_group_barriers_names{
       "default", "sycl::memory_scope::sub_group",
       "sycl::memory_scope::work_group", "sycl::memory_scope::device",
