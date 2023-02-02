@@ -162,14 +162,15 @@ class run_multi_ptr_comparison_op_test {
         } else if constexpr (space ==
                              sycl::access::address_space::private_space) {
           cgh.single_task([=] {
-            T priv_arr[m_values_arr_size];
+            std::array<T, m_values_arr_size> priv_arr(
+                multi_ptr_common::init_array<T, m_values_arr_size>::value);
             for (size_t i = 0; i < m_values_arr_size; ++i)
               value_operations::assign(priv_arr[i], array_acc[i]);
             sycl::multi_ptr<T, sycl::access::address_space::private_space,
                             decorated>
                 priv_arr_mptr = sycl::address_space_cast<
                     sycl::access::address_space::private_space, decorated>(
-                    priv_arr);
+                    priv_arr.data());
             test_action(priv_arr_mptr, test_result_acc);
           });
         } else {
