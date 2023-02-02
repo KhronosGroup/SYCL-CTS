@@ -19,7 +19,7 @@ namespace reduction_without_identity_param_fp64 {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
 // fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
-DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("reduction_without_identity_param", "[reduction]")({
   using namespace reduction_without_identity_param_common;
 

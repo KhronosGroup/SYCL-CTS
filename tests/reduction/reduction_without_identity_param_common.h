@@ -307,6 +307,9 @@ struct run_tests_for_all_functors {
     // for functors that can be called by .combine() or overloaded operator()
     // for functors that can be called by .combine() or overloaded operator()
     // test will be called twice using operator +, *, ^= e.t.c.  and .combine()
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
+        sycl::plus<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
         sycl::plus<VariableT>(), range, queue, type_name);
