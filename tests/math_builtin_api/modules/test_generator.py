@@ -299,7 +299,7 @@ def bad_mutation(type1, type2, mutation):
     return True
 
 
-def expand_signature(runner, types, signature):
+def expand_signature(types, signature):
     """
     Produces all possible overloads of a function signature.
     We produce the dict of typelists matched_typelists where each line (with the same index in typelists)
@@ -385,37 +385,36 @@ def get_unique_signatures(signatures):
 
     return uniq_sig
 
-def expand_signatures(runner, types, signatures):
+def expand_signatures(types, signatures):
     ex_sig_list = []
 
     for sig in signatures:
-        ex_sig_list.extend(expand_signature(runner, types, sig))
+        ex_sig_list.extend(expand_signature(types, sig))
 
     return get_unique_signatures(ex_sig_list)
 
 # Expands a generic type (e.g. floatn) to the collection of its basic types.
 # Uses recursion.
 
-def expand_type(types, current):
+def expand_type(run, types, current):
     # If this is a basic type, stop.
     if types[current].dim > 0:
-        # Skip of marrays
-        # if types[current].name.find("marray") == -1:
-        #     return {types[current] : types[current]}
-        # else:
-        #     return {}
-        return {types[current] : types[current]}
+        # To skip non-supported types by the lists in run
+        if (types[current].var_type in run.var_types) and (types[current].base_type in run.base_types) and (types[current].dim in run.dimensions):
+            return {types[current] : types[current]}
+        else:
+            return {}
 
     base_types = {}
     for ct in types[current].child_types:
-        base_types.update(expand_type(types, ct))
+        base_types.update(expand_type(run, types, ct))
 
     return base_types
 
-def expand_types(types):
+def expand_types(run, types):
     ex_types = {}
 
     for tp in types:
-        ex_types[tp] = expand_type(types, tp)
+        ex_types[tp] = expand_type(run, types, tp)
 
     return ex_types

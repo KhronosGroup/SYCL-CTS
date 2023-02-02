@@ -1169,7 +1169,7 @@ def create_types():
     type_dic["mbooln"] = t_mbool_n
 
 
-    t_vfloat_n = argtype("vfloatn", "NULL", "NULL", 0, ["sycl::float2","sycl::float3","sycl::float4","sycl::float8","sycl::float16"])
+    t_vfloat_n = argtype("vfloatn", "NULL", "NULL", 0, ["sycl::vec<float, 2>","sycl::vec<float, 3>","sycl::vec<float, 4>","sycl::vec<float, 8>","sycl::vec<float, 16>"])
     type_dic["vfloatn"] = t_vfloat_n
 
     t_mfloat_n = argtype("mfloatn", "NULL", "NULL", 0, ["sycl::marray<float, 2>","sycl::marray<float, 3>","sycl::marray<float, 4>","sycl::marray<float, 5>","sycl::marray<float, 17>"])
@@ -1183,7 +1183,7 @@ def create_types():
     type_dic["genfloatf"] = t_gen_float_f
 
 
-    t_vdouble_n = argtype("vdoublen", "NULL", "NULL", 0, ["sycl::double2","sycl::double3","sycl::double4","sycl::double8","sycl::double16"])
+    t_vdouble_n = argtype("vdoublen", "NULL", "NULL", 0, ["sycl::vec<double, 2>","sycl::vec<double, 3>","sycl::vec<double, 4>","sycl::vec<double, 8>","sycl::vec<double, 16>"])
     type_dic["vdoublen"] = t_vdouble_n
 
     t_mdouble_n = argtype("mdoublen", "NULL", "NULL", 0, ["sycl::marray<double, 2>","sycl::marray<double, 3>","sycl::marray<double, 4>","sycl::marray<double, 5>","sycl::marray<double, 17>"])
@@ -1197,7 +1197,7 @@ def create_types():
     type_dic["genfloatd"] = t_gen_float_d
 
 
-    t_vhalf_n = argtype("vhalfn", "NULL", "NULL", 0, ["sycl::half2","sycl::half3","sycl::half4","sycl::half8","sycl::half16"])
+    t_vhalf_n = argtype("vhalfn", "NULL", "NULL", 0, ["sycl::vec<sycl::half, 2>","sycl::vec<sycl::half, 3>","sycl::vec<sycl::half, 4>","sycl::vec<sycl::half, 8>","sycl::vec<sycl::half, 16>"])
     type_dic["vhalfn"] = t_vhalf_n
 
     t_mhalf_n = argtype("mhalfn", "NULL", "NULL", 0, ["sycl::marray<sycl::half, 2>","sycl::marray<sycl::half, 3>","sycl::marray<sycl::half, 4>","sycl::marray<sycl::half, 5>","sycl::marray<sycl::half, 17>"])
@@ -1218,10 +1218,10 @@ def create_types():
     type_dic["sgenfloat"] = t_sgen_float
 
 
-    t_gen_geofloat = argtype("gengeofloat", "NULL", "NULL", 0, ["float","sycl::float2","sycl::float3","sycl::float4","sycl::marray<float, 2>","sycl::marray<float, 3>","sycl::marray<float, 4>"])
+    t_gen_geofloat = argtype("gengeofloat", "NULL", "NULL", 0, ["float","sycl::vec<float, 2>","sycl::vec<float, 3>","sycl::vec<float, 4>","sycl::marray<float, 2>","sycl::marray<float, 3>","sycl::marray<float, 4>"])
     type_dic["gengeofloat"] = t_gen_geofloat
 
-    t_gen_geodouble = argtype("gengeodouble", "NULL", "NULL", 0, ["double","sycl::double2","sycl::double3","sycl::double4","sycl::marray<double, 2>","sycl::marray<double, 3>","sycl::marray<double, 4>"])
+    t_gen_geodouble = argtype("gengeodouble", "NULL", "NULL", 0, ["double","sycl::vec<double, 2>","sycl::vec<double, 3>","sycl::vec<double, 4>","sycl::marray<double, 2>","sycl::marray<double, 3>","sycl::marray<double, 4>"])
     type_dic["gengeodouble"] = t_gen_geodouble
 
 

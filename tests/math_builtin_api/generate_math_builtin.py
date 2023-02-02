@@ -5,7 +5,7 @@
 ##
 #
 #   Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-#   Copyright (c) 2022 The Khronos Group Inc.
+#   Copyright (c) 2022-2023 The Khronos Group Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -28,18 +28,22 @@ from modules import sycl_types
 from modules import sycl_functions
 from modules import test_generator
 
+# Used to include types that are supported by implementation
 class runner:
-    def __init__(self):
-        self.base_types = ["float", "double", "sycl::half", 
-            "char", "signed char", "unsigned char", "short", "unsigned short", "int", "unsigned", "long", "unsigned long", "long long", "unsigned long long",
+    def __init__(self, marray):
+        self.base_types = ["bool", "float", "double", "sycl::half", "char",
+            "signed char", "unsigned char", "short", "unsigned short", "int", "unsigned", "long", "unsigned long", "long long", "unsigned long long",
             "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t"]
         self.var_types = ["scalar","vector"]
+        if marray:
+            self.var_types.append("marray")
         self.dimensions = [1,2,3,4,8,16]
+        if marray:
+            self.dimensions.extend([5,17])
 
 def contains_base_type(sig, base_type):
     data = sig.arg_types[:]
     data.append(sig.ret_type)
-    #print("data: " + str(data))
     for dt in data:
         if dt.base_type == base_type:
             return True
@@ -70,8 +74,8 @@ def write_cases_to_file(generated_test_cases, inputFile, outputFile, extension=N
     with open(outputFile, 'w+') as output:
         output.write(newSource)
 
-def create_tests(test_id, run, types, signatures, kind, template, file_name, check = False):
-    expanded_signatures =  test_generator.expand_signatures(run, types, signatures)
+def create_tests(test_id, types, signatures, kind, template, file_name, check = False):
+    expanded_signatures =  test_generator.expand_signatures(types, signatures)
 
     # Extensions should be placed on separate files.
     base_signatures = []
@@ -101,7 +105,7 @@ def create_tests(test_id, run, types, signatures, kind, template, file_name, che
 
 def main():
     argparser = argparse.ArgumentParser(
-        description='Generates vector swizzles opencl test'
+        description='Generates SYCL 2020 mathematical functions test'
     )
     argparser.add_argument(
         'template',
@@ -118,6 +122,11 @@ def main():
         default='base',
         help='Generate the half or double overload to a given test category')
     argparser.add_argument(
+        '-marray',
+        choices=['true', 'false'],
+        default='false',
+        help='Generate tests with marray function arguments')
+    argparser.add_argument(
         '-o',
         dest="output",
         required=True,
@@ -125,41 +134,41 @@ def main():
         help='CTS test output')
     args = argparser.parse_args()
 
-    run = runner()
+    run = runner(args.marray == 'true')
 
     created_types = sycl_types.create_types()
 
-    expanded_types =  test_generator.expand_types(created_types)
+    expanded_types =  test_generator.expand_types(run, created_types)
 
     verifyResults = True
 
     if args.test == 'integer':
         integer_signatures = sycl_functions.create_integer_signatures()
-        create_tests(0, run, expanded_types, integer_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(0, expanded_types, integer_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'common':
         common_signatures = sycl_functions.create_common_signatures()
-        create_tests(1000000, run, expanded_types, common_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(1000000, expanded_types, common_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'geometric':
         geomteric_signatures = sycl_functions.create_geometric_signatures()
-        create_tests(2000000, run, expanded_types, geomteric_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(2000000, expanded_types, geomteric_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'relational':
         relational_signatures = sycl_functions.create_relational_signatures()
-        create_tests(3000000, run, expanded_types, relational_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(3000000, expanded_types, relational_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'float':
         float_signatures = sycl_functions.create_float_signatures()
-        create_tests(4000000, run, expanded_types, float_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(4000000, expanded_types, float_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'native':
         native_signatures = sycl_functions.create_native_signatures()
-        create_tests(5000000,run, expanded_types, native_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(5000000, expanded_types, native_signatures, args.variante, args.template, args.output, verifyResults)
 
     if args.test == 'half':
         half_signatures = sycl_functions.create_half_signatures()
-        create_tests(6000000, run, expanded_types, half_signatures, args.variante, args.template, args.output, verifyResults)
+        create_tests(6000000, expanded_types, half_signatures, args.variante, args.template, args.output, verifyResults)
 
 if __name__ == "__main__":
     main()
