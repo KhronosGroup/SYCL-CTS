@@ -29,9 +29,7 @@ TEST_CASE("reducer api fp16", "[reducer][fp16]") {
   using avaliability = sycl_cts::util::extensions::availability<
       sycl_cts::util::extensions::tag::fp16>;
   if (!avaliability::check(queue)) {
-    SKIP(
-        "Device does not support half precision floating point operations. "
-        "Skipping the test case.");
+    SKIP("Device does not support half precision floating point operations.");
   }
 
   using type = sycl::half;

@@ -29,9 +29,7 @@ TEST_CASE("reducer api fp64", "[reducer][fp64]") {
   using avaliability = sycl_cts::util::extensions::availability<
       sycl_cts::util::extensions::tag::fp64>;
   if (!avaliability::check(queue)) {
-    SKIP(
-        "Device does not support double precision floating point operations. "
-        "Skipping the test case.");
+    SKIP("Device does not support double precision floating point operations.");
   }
 
   using type = double;

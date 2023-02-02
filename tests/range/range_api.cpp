@@ -226,9 +226,11 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
-      log.note(
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      WARN(
           "ComputeCpp does not implement unary minus operation. "
-          "Skipping this test case.");
+          "Skipping the test for this operation.");
+#endif
 
       // use across all the dimensions
       auto my_queue = util::get_cts_object::queue();
