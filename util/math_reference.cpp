@@ -149,9 +149,9 @@ sycl_cts::resultRef<double> smoothstep(double a, double b, double c) {
 template <typename T>
 T sign_t(T a) {
   if (std::isnan(a)) return 0.0;
-  if (a > 0) return 1.0;
-  if (a < 0) return -1.0;
-  if (signbit(a)) return -0.0;
+  if (a > T(0)) return 1.0;
+  if (a < T(0)) return -1.0;
+  if (std::signbit(a)) return -0.0;
   return +0.0;
 }
 
@@ -254,7 +254,7 @@ long long mad_sat(long long a, long long b, long long c) {
  */
 template <typename T>
 sycl_cts::resultRef<T> mix_t(T x, T y, T a) {
-  if (a >= 0.0 && a <= 1.0) return x + (y - x) * a;
+  if (a >= T(0.0) && a <= T(1.0)) return x + (y - x) * a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 
