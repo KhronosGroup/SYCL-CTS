@@ -145,8 +145,8 @@ run_func_on_vector_result_ref(funT fun, Args... args) {
 }
 
 template <typename T, int N, typename funT, typename... Args>
-sycl_cts::resultRef<sycl::marray<T, N>>
-run_func_on_marray_result_ref(funT fun, Args... args) {
+sycl_cts::resultRef<sycl::marray<T, N>> run_func_on_marray_result_ref(
+    funT fun, Args... args) {
   sycl::marray<T, N> res;
   std::map<int, bool> undefined;
   for (int i = 0; i < N; i++) {
@@ -175,7 +175,7 @@ struct rel_funcs_return<double> {
 };
 
 
-template<template<class> class funT, typename T, typename... Args>
+template <template <class> class funT, typename T, typename... Args>
 bool rel_func_dispatcher(T a, Args... args) {
   return funT<T>()(a, args...);
 }
