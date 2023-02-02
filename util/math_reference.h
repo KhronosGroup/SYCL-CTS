@@ -81,7 +81,7 @@
         [](T x, T y) { return func(x, y); }, a, b);     \
   }
 
-#else // definitions without marray for hipSYCL
+#else  // definitions without marray for hipSYCL
 
 #define MAKE_VEC_AND_MARRAY_VERSIONS(func)              \
   template <typename T, int N>                          \
@@ -90,19 +90,19 @@
         [](T x) { return func(x); }, a);                \
   }
 
-#define MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(func)                        \
-  template <typename T, int N>                                          \
-  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b) {          \
-    return sycl_cts::math::run_func_on_vector<T, T, N>(                 \
-        [](T x, T y) { return func(x, y); }, a, b);                     \
+#define MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(func)               \
+  template <typename T, int N>                                 \
+  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b) { \
+    return sycl_cts::math::run_func_on_vector<T, T, N>(        \
+        [](T x, T y) { return func(x, y); }, a, b);            \
   }
 
-#define MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(func)                      \
-  template <typename T, int N>                                        \
-  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b,          \
-                       sycl::vec<T, N> c) {                           \
-    return sycl_cts::math::run_func_on_vector<T, T, N>(               \
-        [](T x, T y, T z) { return func(x, y, z); }, a, b, c);        \
+#define MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(func)               \
+  template <typename T, int N>                                 \
+  sycl::vec<T, N> func(sycl::vec<T, N> a, sycl::vec<T, N> b,   \
+                       sycl::vec<T, N> c) {                    \
+    return sycl_cts::math::run_func_on_vector<T, T, N>(        \
+        [](T x, T y, T z) { return func(x, y, z); }, a, b, c); \
   }
 
 #define MAKE_VEC_AND_MARRAY_VERSIONS_WITH_SCALAR(func)  \
@@ -853,9 +853,12 @@ struct higher_accuracy<sycl::vec<T, N>> {
   using type = sycl::vec<typename higher_accuracy<T>::type, N>;
 };
 template <typename T, int N>
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 struct higher_accuracy<sycl::marray<T, N>> {
   using type = sycl::marray<typename higher_accuracy<T>::type, N>;
 };
+#endif
 
 template <typename T>
 T acos(T a) {
@@ -1527,10 +1530,13 @@ sycl::float3 cross(sycl::float3 p0, sycl::float3 p1);
 sycl::double4 cross(sycl::double4 p0, sycl::double4 p1);
 sycl::double3 cross(sycl::double3 p0, sycl::double3 p1);
 
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::mfloat4 cross(sycl::mfloat4 p0, sycl::mfloat4 p1);
 sycl::mfloat3 cross(sycl::mfloat3 p0, sycl::mfloat3 p1);
 sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1);
 sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1);
+#endif
 
 template <typename T>
 T dot(T p0, T p1) {
@@ -1593,9 +1599,12 @@ sycl::half fast_dot(float p0);
 sycl::half fast_dot(sycl::float2 p0);
 sycl::half fast_dot(sycl::float3 p0);
 sycl::half fast_dot(sycl::float4 p0);
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::half fast_dot(sycl::mfloat2 p0);
 sycl::half fast_dot(sycl::mfloat3 p0);
 sycl::half fast_dot(sycl::mfloat4 p0);
+#endif
 
 template <typename T>
 float fast_length(T p0) {

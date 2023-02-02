@@ -586,6 +586,8 @@ sycl::half fast_dot(sycl::float4 p0) {
   return std::pow(p0.x(), 2) + std::pow(p0.y(), 2) + std::pow(p0.z(), 2) +
          std::pow(p0.w(), 2);
 }
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 sycl::half fast_dot(sycl::mfloat2 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2);
 }
@@ -596,5 +598,6 @@ sycl::half fast_dot(sycl::mfloat4 p0) {
   return std::pow(p0[0], 2) + std::pow(p0[1], 2) + std::pow(p0[2], 2) +
          std::pow(p0[3], 2);
 }
+#endif
 
 } /* namespace reference */
