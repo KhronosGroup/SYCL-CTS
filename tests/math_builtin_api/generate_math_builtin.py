@@ -134,7 +134,10 @@ def main():
         help='CTS test output')
     args = argparser.parse_args()
 
-    run = runner(args.marray == 'true')
+    use_marray = (args.marray == 'true')
+    run = runner(use_marray)
+    if not use_marray:
+        print("WARNING: marray types are not used int the tests!")
 
     created_types = sycl_types.create_types()
 
