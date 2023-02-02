@@ -165,7 +165,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       queue.submit([&](sycl::handler& cgh) {
         auto acc_result = buffer_result.get_access(cgh);
         sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<0>>([=]() {
+        cgh.single_task<kernel_name_generic<0>>([=] {
           t0[0] = val;
           sycl::accessor<int, 1> t1(t0);
           t1[0] = new_val;
@@ -182,7 +182,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       queue.submit([&](sycl::handler& cgh) {
         auto acc_result = buffer_result.get_access(cgh);
         sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<1>>([=]() {
+        cgh.single_task<kernel_name_generic<1>>([=] {
           t0[0] = val;
           sycl::accessor<int, 1> t1(t0);
           t0[0] = new_val;
@@ -199,7 +199,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       queue.submit([&](sycl::handler& cgh) {
         auto acc_result = buffer_result.get_access(cgh);
         sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<2>>([=]() {
+        cgh.single_task<kernel_name_generic<2>>([=] {
           t0[0] = val;
           const sycl::accessor<int, 1> t1(t0);
           t0[0] = new_val;

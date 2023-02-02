@@ -52,10 +52,10 @@ TEST_CASE("device common reference semantics", "[device]") {
 
   // obtain and test with a distinct device, if possible
   if (devices.size() > 1) {
-    for (std::size_t i = 0; i < devices.size(); i++) {
-      if (device != devices[i]) {
+    for (const auto& other_device : devices) {
+      if (device != other_device) {
         INFO("using two distinct devices");
-        common_reference_semantics::check_host<storage>(device, devices[i],
+        common_reference_semantics::check_host<storage>(device, other_device,
                                                         "device");
         return;  // test is finished, single device test is a subset of this
       }

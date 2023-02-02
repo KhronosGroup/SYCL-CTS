@@ -59,11 +59,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 
   // obtain and test with a distinct platform, if possible
   if (platforms.size() > 1) {
-    for (std::size_t i = 0; i < platforms.size(); i++) {
-      if (platform != platforms[i]) {
-        INFO("using two distinct devices");
-        common_reference_semantics::check_host<storage>(platform, platforms[i],
-                                                        "platform");
+    for (const auto& other_platform : platforms) {
+      if (platform != other_platform) {
+        INFO("using two distinct platforms");
+        common_reference_semantics::check_host<storage>(
+            platform, other_platform, "platform");
         return;  // test is finished, single platform test is a subset of this
       }
     }
