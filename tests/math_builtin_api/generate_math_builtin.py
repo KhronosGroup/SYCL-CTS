@@ -137,7 +137,7 @@ def main():
     use_marray = (args.marray == 'true')
     run = runner(use_marray)
     if not use_marray:
-        print("WARNING: marray types are not used int the tests!")
+        print("WARNING: marray types are not used in the tests!")
 
     created_types = sycl_types.create_types()
 
