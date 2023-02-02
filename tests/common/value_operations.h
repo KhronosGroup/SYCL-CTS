@@ -50,8 +50,11 @@ using ArrayT = T[N];
  */
 template <typename T, typename U>
 void assign_value_or_even(T& left, const U& right) {
-  if constexpr (std::is_same_v<T, bool> ||
-                std::is_same_v<T, std::optional<bool>>)
+  if constexpr ((std::is_same_v<T, bool> ||
+                 std::is_same_v<
+                     T, std::optional<bool>>)&&(!std::is_same_v<U, bool> &&
+                                                !std::is_same_v<
+                                                    U, std::optional<bool>>))
     left = (right % 2 != 0);
   else
     left = right;
@@ -68,8 +71,11 @@ void assign_value_or_even(T& left, const U& right) {
  */
 template <typename T, typename U>
 bool are_equal_value_or_even(const T& left, const U& right) {
-  if constexpr (std::is_same_v<T, bool> ||
-                std::is_same_v<T, std::optional<bool>>)
+  if constexpr ((std::is_same_v<T, bool> ||
+                 std::is_same_v<
+                     T, std::optional<bool>>)&&(!std::is_same_v<U, bool> &&
+                                                !std::is_same_v<
+                                                    U, std::optional<bool>>))
     return left == (right % 2 != 0);
   else
     return left == right;
