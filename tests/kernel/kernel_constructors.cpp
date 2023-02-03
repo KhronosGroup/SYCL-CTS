@@ -49,11 +49,11 @@ TEST_CASE("Test copy constructor", "[kernel]") {
   if (ctsQueue.get_backend() == sycl::backend::opencl) {
     auto iopKernelA = sycl::get_native<sycl::backend::opencl>(kernelA);
     auto iopKernelB = sycl::get_native<sycl::backend::opencl>(kernelB);
-    if (!ctsSelector.is_host() && (iopKernelA != iopKernelB)) {
-      FAIL(
-          "kernel was not constructed correctly. (contains different "
-          "OpenCL kernel object)");
-    }
+
+    INFO(
+        "kernel was not constructed correctly. (contains different "
+        "OpenCL kernel object)");
+    CHECK((ctsSelector.is_host() || (iopKernelA == iopKernelB)));
   }
 #endif
 
@@ -79,11 +79,11 @@ TEST_CASE("Test assignment operator", "[kernel]") {
   if (ctsQueue.get_backend() == sycl::backend::opencl) {
     auto iopKernelA = sycl::get_native<sycl::backend::opencl>(kernelA);
     auto iopKernelB = sycl::get_native<sycl::backend::opencl>(kernelB);
-    if (!ctsSelector.is_host() && (iopKernelA != iopKernelB)) {
-      FAIL(
-          "kernel was not constructed correctly. (contains different "
-          "OpenCL kernel object)");
-    }
+
+    INFO(
+        "kernel was not constructed correctly. (contains different "
+        "OpenCL kernel object)");
+    CHECK((ctsSelector.is_host() || (iopKernelA == iopKernelB)));
   }
 #endif
 
@@ -170,38 +170,45 @@ TEST_CASE("Test equality operator", "[kernel]") {
           sycl::get_native<sycl::backend::opencl>(kernelB.get_kernel_bundle());
       auto iopProgC =
           sycl::get_native<sycl::backend::opencl>(kernelC.get_kernel_bundle());
-
-      if (kernelA == kernelB && (iopKernelA != iopKernelB ||
-                                 iopCtxA != iopCtxB || iopProgA != iopProgB)) {
-        FAIL(
+      {
+        INFO(
             "kernel equality does not work correctly (copy "
             "constructed)");
+        CHECK((kernelA != kernelB ||
+               (iopKernelA == iopKernelB && iopCtxA == iopCtxB &&
+                iopProgA == iopProgB)));
       }
-      if (kernelA == kernelC && (iopKernelA != iopKernelC ||
-                                 iopCtxA != iopCtxC || iopProgA != iopProgC)) {
-        FAIL("kernel equality does not work correctly (copy assigned)");
+      {
+        INFO("kernel equality does not work correctly (copy assigned)");
+        CHECK((kernelA != kernelC ||
+               (iopKernelA == iopKernelC && iopCtxA == iopCtxC &&
+                iopProgA == iopProgC)));
       }
     }
 #endif
-    if (kernelA != kernelB) {
-      FAIL(
+    {
+      INFO(
           "kernel non-equality does not work correctly"
           "(copy constructed)");
+      CHECK(kernelA == kernelB);
     }
-    if (kernelA != kernelC) {
-      FAIL(
+    {
+      INFO(
           "kernel non-equality does not work correctly"
           "(copy assigned)");
+      CHECK(kernelA == kernelC);
     }
-    if (kernelC == kernelD) {
-      FAIL(
+    {
+      INFO(
           "kernel equality does not work correctly"
           "(comparing same)");
+      CHECK(kernelC != kernelD);
     }
-    if (!(kernelC != kernelD)) {
-      FAIL(
+    {
+      INFO(
           "kernel non-equality does not work correctly"
           "(comparing same)");
+      CHECK(kernelC != kernelD);
     }
   }
 
@@ -223,11 +230,10 @@ TEST_CASE("Test hashing", "[kernel]") {
 
   std::hash<sycl::kernel> hasher;
 
-  if (hasher(kernelA) != hasher(kernelB)) {
-    FAIL(
-        "kernel hashing does not work correctly (hashing of equal "
-        "failed)");
-  }
+  INFO(
+      "kernel hashing does not work correctly (hashing of equal "
+      "failed)");
+  CHECK(hasher(kernelA) == hasher(kernelB));
 
   ctsQueue.wait_and_throw();
 }
