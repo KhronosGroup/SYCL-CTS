@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -29,21 +29,21 @@ using namespace sycl_cts;
 static const size_t sizes[] = {16, 32, 64};
 
 template <int dim>
-void test_nd_range(util::logger &log, sycl::range<dim> gs,
-                   sycl::range<dim> ls, sycl::id<dim> offset) {
+void test_nd_range(util::logger &log, sycl::range<dim> gs, sycl::range<dim> ls,
+                   sycl::id<dim> offset) {
   for (int i = 0; i < dim; i++) {
     sycl::nd_range<dim> no_offset(gs, ls);
     CHECK_TYPE(log, no_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, no_offset.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, no_offset.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, no_offset.get_local_range()[i], sizes[i] / 4, i);
-
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK_TYPE(log, no_offset.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, no_offset.get_offset()[i], (size_t)0, i);
-
+#endif
     CHECK_TYPE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
+    CHECK_VALUE(log, no_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4),
+                i);
 
     sycl::nd_range<dim> deep_copy(no_offset);
 
@@ -51,15 +51,15 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs,
     CHECK_VALUE(log, deep_copy.get_global_range()[i], sizes[i], i);
     CHECK_TYPE(log, deep_copy.get_local_range()[i], sizes[i] / 4);
     CHECK_VALUE(log, deep_copy.get_local_range()[i], sizes[i] / 4, i);
-
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK_TYPE(log, deep_copy.get_offset()[i], (size_t)0);
     CHECK_VALUE(log, deep_copy.get_offset()[i], (size_t)0, i);
-
+#endif
     CHECK_TYPE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
+    CHECK_VALUE(log, deep_copy.get_group_range()[i], sizes[i] / (sizes[i] / 4),
+                i);
 
-    // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::nd_range<dim> with_offset(gs, ls, offset);
     CHECK_TYPE(log, with_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, with_offset.get_global_range()[i], sizes[i], i);
@@ -67,10 +67,11 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs,
     CHECK_VALUE(log, with_offset.get_local_range()[i], sizes[i] / 4, i);
     CHECK_TYPE(log, with_offset.get_offset()[i], sizes[i] / 8);
     CHECK_VALUE(log, with_offset.get_offset()[i], sizes[i] / 8, i);
-    CHECK_TYPE(log, with_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, with_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4), i);
+    CHECK_TYPE(log, with_offset.get_group_range()[i],
+               sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, with_offset.get_group_range()[i],
+                sizes[i] / (sizes[i] / 4), i);
 
-    // TODO: mark this check as testing deprecated functionality
     sycl::nd_range<dim> deep_copy_offset(with_offset);
     CHECK_TYPE(log, deep_copy_offset.get_global_range()[i], sizes[i]);
     CHECK_VALUE(log, deep_copy_offset.get_global_range()[i], sizes[i], i);
@@ -78,9 +79,11 @@ void test_nd_range(util::logger &log, sycl::range<dim> gs,
     CHECK_VALUE(log, deep_copy_offset.get_local_range()[i], sizes[i] / 4, i);
     CHECK_TYPE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8);
     CHECK_VALUE(log, deep_copy_offset.get_offset()[i], sizes[i] / 8, i);
-    CHECK_TYPE(log, deep_copy_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4));
-    CHECK_VALUE(log, deep_copy_offset.get_group_range()[i], sizes[i] / (sizes[i] / 4),
-                i);
+    CHECK_TYPE(log, deep_copy_offset.get_group_range()[i],
+               sizes[i] / (sizes[i] / 4));
+    CHECK_VALUE(log, deep_copy_offset.get_group_range()[i],
+                sizes[i] / (sizes[i] / 4), i);
+#endif
   }
 }
 
@@ -132,4 +135,4 @@ class TEST_NAME : public util::test_base {
 // construction of this proxy will register the above test
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace nd_range_api__ */
+}  // namespace TEST_NAMESPACE

@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,146 +21,120 @@
 
 #include "../common/common.h"
 
+#include <algorithm>
+
 #define TEST_NAME nd_item_api
 
 namespace test_nd_item__ {
 using namespace sycl_cts;
 
-size_t getIndex(sycl::id<1> Id, sycl::range<1> Range) {
-  return Id.get(0);
-}
+size_t getIndex(sycl::id<1> Id, sycl::range<1> Range) { return Id.get(0); }
 
 size_t getIndex(sycl::id<2> Id, sycl::range<2> Range) {
   return Id.get(1) + Id.get(0) * Range.get(1);
 }
 
 size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
-  return Id.get(2) + Id.get(1) * Range.get(0) + Id.get(0) * Range.get(0) * Range.get(1);
+  return Id.get(2) + Id.get(1) * Range.get(0) +
+         Id.get(0) * Range.get(0) * Range.get(1);
 }
 
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  typedef sycl::accessor<int, dimensions, sycl::access_mode::read,
-                             sycl::target::device>
-      t_readAccess;
-  typedef sycl::accessor<int, dimensions, sycl::access_mode::write,
-                             sycl::target::device>
-      t_writeAccess;
+  using t_readAccess = sycl::accessor<int, dimensions, sycl::access_mode::read,
+                                      sycl::target::device>;
+  using t_writeAccess =
+      sycl::accessor<int, dimensions, sycl::access_mode::write,
+                     sycl::target::device>;
 
   t_readAccess m_globalID;
   t_readAccess m_localID;
-  t_writeAccess m_o;
+  t_writeAccess m_out;
+  t_writeAccess m_out_deprecated;
 
  public:
-  kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_writeAccess out_)
-      : m_globalID(inG_), m_localID(inL_), m_o(out_) {}
+  kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_writeAccess out_,
+                 t_writeAccess out_deprecated_)
+      : m_globalID(inG_),
+        m_localID(inL_),
+        m_out(out_),
+        m_out_deprecated(out_deprecated_) {}
 
   void operator()(sycl::nd_item<dimensions> myitem) const {
-    bool failed = false;
+    bool all_correct = true;
 
-    /* test global ID*/
+    /* test global ID */
     sycl::id<dimensions> global_id = myitem.get_global_id();
-    size_t globals[dimensions];
-
     for (int i = 0; i < dimensions; ++i) {
-      globals[i] = myitem.get_global_id(i);
-      if (globals[i] != global_id.get(i)) {
-        failed = true;
-      }
+      all_correct &= myitem.get_global_id(i) == global_id.get(i);
     }
 
+    /* test local ID */
     sycl::id<dimensions> local_id = myitem.get_local_id();
-    size_t locals[dimensions];
-
     for (int i = 0; i < dimensions; ++i) {
-      locals[i] = myitem.get_local_id(i);
-      if (locals[i] != local_id.get(i)) {
-        failed = true;
-      }
+      all_correct &= myitem.get_local_id(i) == local_id.get(i);
     }
 
-    /* test group ID*/
+    /* test group ID */
     sycl::group<dimensions> group_id = myitem.get_group();
-    size_t groups[dimensions];
-
     for (int i = 0; i < dimensions; ++i) {
-      groups[i] = myitem.get_group(i);
-      if (groups[i] != group_id.get_id(i)) {
-        failed = true;
-      }
+      all_correct &= myitem.get_group(i) == group_id.get_id(i);
     }
 
-    /* test range*/
+    /* test range */
     sycl::range<dimensions> globalRange = myitem.get_global_range();
-    size_t global_ranges[dimensions];
+    for (int i = 0; i < dimensions; ++i) {
+      all_correct &= myitem.get_global_range(i) == globalRange.get(i);
+    }
 
     size_t globalIndex = getIndex(global_id, globalRange);
-    if (m_globalID[global_id] != globalIndex) {
-      failed = true;
-    }
-    for (int i = 0; i < dimensions; ++i) {
-      global_ranges[i] = myitem.get_global_range(i);
-      if (global_ranges[i] != globalRange.get(i)) {
-        failed = true;
-      }
-    }
+    all_correct &= m_globalID[global_id] == globalIndex;
 
     sycl::range<dimensions> localRange = myitem.get_local_range();
-    size_t local_ranges[dimensions];
+    for (int i = 0; i < dimensions; ++i) {
+      all_correct &= myitem.get_local_range(i) == localRange.get(i);
+    }
 
     size_t localIndex = getIndex(local_id, localRange);
-    if (m_localID[local_id] != localIndex) {
-      failed = true;
-    }
-    for (int i = 0; i < dimensions; ++i) {
-      local_ranges[i] = myitem.get_local_range(i);
-      if (local_ranges[i] != localRange.get(i)) {
-        failed = true;
-      }
-    }
+    all_correct &= m_localID[local_id] == localIndex;
 
     for (int i = 0; i < dimensions; ++i) {
-      if (group_id.get_id(i) != (global_id.get(i) / localRange.get(i)))
-        failed = true;
+      size_t ratio = global_id.get(i) / localRange.get(i);
+      all_correct &= group_id.get_id(i) == ratio;
     }
 
-    /* test number of groups*/
+    /* test number of groups */
     sycl::id<dimensions> num_groups = myitem.get_group_range();
-    size_t nGroups[dimensions];
-
     for (int i = 0; i < dimensions; ++i) {
-      nGroups[i] = myitem.get_group_range(i);
-      if (nGroups[i] != num_groups.get(i)) {
-        failed = true;
-      }
+      all_correct &= myitem.get_group_range(i) == num_groups.get(i);
     }
 
     for (int i = 0; i < dimensions; ++i) {
       size_t ratio = globalRange.get(i) / localRange.get(i);
-      if (ratio != num_groups.get(i)) {
-        failed = true;
-      }
+      all_correct &= ratio == num_groups.get(i);
     }
 
-    /* test NDrange and offset*/
-    // TODO: mark this check as testing deprecated functionality
-    sycl::id<dimensions> offset = myitem.get_offset();
+    /* test NDrange */
     sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
-
     sycl::range<dimensions> ndGlobal = NDRange.get_global_range();
     sycl::range<dimensions> ndLocal = NDRange.get_local_range();
-    sycl::id<dimensions> ndOffset = NDRange.get_offset();
 
     for (int i = 0; i < dimensions; ++i) {
-      bool are_same = true;
-      are_same &= globalRange.get(i) == ndGlobal.get(i);
-      are_same &= localRange.get(i) == ndLocal.get(i);
-      // TODO: mark this check as testing deprecated functionality
-      are_same &= offset.get(i) == ndOffset.get(i);
-
-      failed = !are_same ? true : failed;
+      all_correct &= globalRange.get(i) == ndGlobal.get(i);
+      all_correct &= localRange.get(i) == ndLocal.get(i);
     }
+
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    /* test offset */
+    sycl::id<dimensions> offset = myitem.get_offset();
+    sycl::id<dimensions> ndOffset = NDRange.get_offset();
+    bool deprecated_all_correct = true;
+    for (int i = 0; i < dimensions; ++i) {
+      deprecated_all_correct &= offset.get(i) == ndOffset.get(i);
+    }
+    m_out_deprecated[global_id] = deprecated_all_correct;
+#endif
 
     /* test linear_id */
     size_t glid = myitem.get_global_linear_id();
@@ -168,27 +142,14 @@ class kernel_nd_item {
     size_t grlid = myitem.get_group_linear_id();
     size_t groupIndex = getIndex(group_id.get_id(), myitem.get_group_range());
 
-    if (glid != globalIndex)
-      failed = true;
-    if (llid != localIndex)
-      failed = true;
-    if (grlid != groupIndex)
-      failed = true;
+    all_correct &= glid == globalIndex;
+    all_correct &= llid == localIndex;
+    all_correct &= grlid == groupIndex;
 
-    /* write back success or failure*/
-    m_o[global_id] = failed ? 0 : 1;
+    /* write back whether all checks were successful */
+    m_out[global_id] = all_correct;
   }
 };
-
-/* test that kernel returns expected data, i.e. all 1s*/
-int check_nd_item(int *buf, const int nWidth, const int nHeight,
-                  const int nDepth) {
-  int nErrors = 0;
-  for (int i = 0; i < nWidth * nHeight * nDepth; i++) {
-    nErrors += (buf[i] == 0);
-  }
-  return nErrors;
-}
 
 /* Fill buffers with global and local work item ids*/
 void populate(int *globalBuf, int *localBuf, const int *localSize,
@@ -218,120 +179,148 @@ void test_item(util::logger &log, sycl::queue &queue) {
   const int localSize[3] = {4, 4, 4};
   const int nSize = globalSize[0] * globalSize[1] * globalSize[2];
 
-  /* allocate host buffers */
-  std::unique_ptr<int> globalIDs(new int[nSize]);
-  std::unique_ptr<int> localIDs(new int[nSize]);
-  std::unique_ptr<int> dataOut(new int[nSize]);
-
-  /* set host buffers */
-  populate(globalIDs.get(), localIDs.get(), localSize, globalSize);
-  ::memset(dataOut.get(), 0, nSize * sizeof(int));
-
-  /* create ranges*/
-  sycl::range<1> globalRange(globalSize[0]);
-  sycl::range<1> localRange(localSize[0]);
-  sycl::nd_range<1> dataRange(globalRange, localRange);
+  /* allocate and set host buffers */
+  std::vector<int> globalIDs(nSize);
+  std::vector<int> localIDs(nSize);
+  populate(globalIDs.data(), localIDs.data(), localSize, globalSize);
+  std::vector<int> dataOut(nSize);
+  std::vector<int> dataOutDeprecated(nSize);
 
   /* test 1 Dimension*/
   {
+    std::fill(dataOut.begin(), dataOut.end(), 0);
+    std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
+
     /* create ranges*/
     sycl::range<1> globalRange(globalSize[0]);
     sycl::range<1> localRange(localSize[0]);
     sycl::nd_range<1> dataRange(globalRange, localRange);
 
-    sycl::buffer<int, 1> bufGlob(globalIDs.get(), globalRange);
-    sycl::buffer<int, 1> bufLoc(localIDs.get(), globalRange);
-    sycl::buffer<int, 1> bufOut(dataOut.get(), globalRange);
+    {
+      sycl::buffer<int, 1> bufGlob(globalIDs.data(), globalRange);
+      sycl::buffer<int, 1> bufLoc(localIDs.data(), globalRange);
+      sycl::buffer<int, 1> bufOut(dataOut.data(), globalRange);
+      sycl::buffer<int, 1> bufOutDeprecated(dataOutDeprecated.data(),
+                                            globalRange);
 
-    queue.submit([&](sycl::handler &cgh) {
-      auto accG =
-          bufGlob.template get_access<sycl::access_mode::read>(cgh);
-      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
-      auto accOut =
-          bufOut.template get_access<sycl::access_mode::write>(cgh);
+      queue.submit([&](sycl::handler &cgh) {
+        kernel_nd_item<1> kernel_1d(
+            bufGlob.template get_access<sycl::access_mode::read>(cgh),
+            bufLoc.template get_access<sycl::access_mode::read>(cgh),
+            bufOut.template get_access<sycl::access_mode::write>(cgh),
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+                cgh));
+        cgh.parallel_for(dataRange, kernel_1d);
+      });
+    }
 
-      kernel_nd_item<1> kernel_1d(accG, accL, accOut);
-      cgh.parallel_for(dataRange, kernel_1d);
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
 
-    });
-  }
-  /* check no errors are returned*/
-  if (check_nd_item(dataOut.get(), globalSize[0], 1, 1)) {
-    FAIL(log, "item API inconsistency");
-    return;
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
+#endif
+
+    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<1>>);
   }
 
   /* test 2 Dimensions */
-  ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
+    std::fill(dataOut.begin(), dataOut.end(), 0);
+    std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
+
     /* create ranges*/
     sycl::range<2> globalRange(globalSize[0], globalSize[1]);
     sycl::range<2> localRange(localSize[0], localSize[1]);
     sycl::nd_range<2> dataRange(globalRange, localRange);
 
-    sycl::buffer<int, 2> bufGlob(globalIDs.get(), globalRange);
-    sycl::buffer<int, 2> bufLoc(localIDs.get(), globalRange);
-    sycl::buffer<int, 2> bufOut(dataOut.get(), globalRange);
+    {
+      sycl::buffer<int, 2> bufGlob(globalIDs.data(), globalRange);
+      sycl::buffer<int, 2> bufLoc(localIDs.data(), globalRange);
+      sycl::buffer<int, 2> bufOut(dataOut.data(), globalRange);
+      sycl::buffer<int, 2> bufOutDeprecated(dataOutDeprecated.data(),
+                                            globalRange);
 
-    queue.submit([&](sycl::handler &cgh) {
-      auto accG =
-          bufGlob.template get_access<sycl::access_mode::read>(cgh);
-      auto accL = bufLoc.template get_access<sycl::access_mode::read>(cgh);
-      auto accOut =
-          bufOut.template get_access<sycl::access_mode::write>(cgh);
+      queue.submit([&](sycl::handler &cgh) {
+        kernel_nd_item<2> kernel_2d(
+            bufGlob.template get_access<sycl::access_mode::read>(cgh),
+            bufLoc.template get_access<sycl::access_mode::read>(cgh),
+            bufOut.template get_access<sycl::access_mode::write>(cgh),
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+                cgh));
+        cgh.parallel_for(dataRange, kernel_2d);
+      });
+    }
 
-      kernel_nd_item<2> kernel_2d(accG, accL, accOut);
-      cgh.parallel_for(dataRange, kernel_2d);
-    });
-  }
-  /* check no errors are returned */
-  if (check_nd_item(dataOut.get(), globalSize[0], globalSize[1], 1)) {
-    FAIL(log, "item API inconsistency");
-    return;
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
+
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
+#endif
+
+    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<2>>);
   }
 
   /* test 3 Dimensions */
-  ::memset(dataOut.get(), 0, nSize * sizeof(int));
   {
+    std::fill(dataOut.begin(), dataOut.end(), 0);
+    std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
+
     /* create ranges*/
     sycl::range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
     sycl::range<3> localRange(localSize[0], localSize[1], localSize[2]);
     sycl::nd_range<3> dataRange(globalRange, localRange);
 
-    sycl::buffer<int, 3> bufGlob(globalIDs.get(), globalRange);
-    sycl::buffer<int, 3> bufLoc(localIDs.get(), globalRange);
-    sycl::buffer<int, 3> bufOut(dataOut.get(), globalRange);
+    {
+      sycl::buffer<int, 3> bufGlob(globalIDs.data(), globalRange);
+      sycl::buffer<int, 3> bufLoc(localIDs.data(), globalRange);
+      sycl::buffer<int, 3> bufOut(dataOut.data(), globalRange);
+      sycl::buffer<int, 3> bufOutDeprecated(dataOutDeprecated.data(),
+                                            globalRange);
 
-    queue.submit([&](sycl::handler &cgh) {
-      auto accG = bufGlob.get_access<sycl::access_mode::read>(cgh);
-      auto accL = bufLoc.get_access<sycl::access_mode::read>(cgh);
-      auto accOut = bufOut.get_access<sycl::access_mode::write>(cgh);
+      queue.submit([&](sycl::handler &cgh) {
+        kernel_nd_item<3> kernel_3d(
+            bufGlob.template get_access<sycl::access_mode::read>(cgh),
+            bufLoc.template get_access<sycl::access_mode::read>(cgh),
+            bufOut.template get_access<sycl::access_mode::write>(cgh),
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+                cgh));
+        cgh.parallel_for(dataRange, kernel_3d);
+      });
+    }
 
-      kernel_nd_item<3> kernel_3d(accG, accL, accOut);
-      cgh.parallel_for(dataRange, kernel_3d);
-    });
-  }
-  /* check no errors are returned */
-  if (check_nd_item(dataOut.get(), globalSize[0], globalSize[1],
-                    globalSize[2])) {
-    FAIL(log, "item API inconsistency");
+    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
+                      [](int val) { return val; }));
+
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+    CHECK(std::all_of(dataOutDeprecated.begin(),
+                      dataOutDeprecated.begin() + globalRange.size(),
+                      [](int val) { return val; }));
+#endif
+
+    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<3>>);
   }
 }
 
 /** test sycl::nd_item
-*/
+ */
 class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
-  *  @param info, test_base::info structure as output
-  */
+   *  @param info, test_base::info structure as output
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
-  *  @param log, test transcript logging class
-  */
+   *  @param log, test transcript logging class
+   */
   void run(util::logger &log) override {
     {
       auto cmd_queue = util::get_cts_object::queue();
