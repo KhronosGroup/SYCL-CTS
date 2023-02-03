@@ -501,6 +501,40 @@ struct kernel_likely_supported_sub_group_size_descriptor {
   }
 };
 
+template <size_t SIZE>
+struct kernel_work_group_size : kernel_base {
+  [[sycl::reqd_work_group_size(SIZE)]] void operator()(sycl::item<1> id) const {
+    trigger_invocation_flag(id);
+  }
+};
+
+template <size_t SIZE>
+struct kernel_work_group_size_descriptor {
+  using type = kernel_work_group_size<SIZE>;
+  static auto get_restrictions() {
+    auto restrictions = util::kernel_restrictions();
+    restrictions.set_work_group_size(sycl::id<1>{SIZE});
+    return restrictions;
+  }
+};
+
+template <size_t SIZE>
+struct kernel_sub_group_size : kernel_base {
+  [[sycl::reqd_sub_group_size(SIZE)]] void operator()(sycl::item<1> id) const {
+    trigger_invocation_flag(id);
+  }
+};
+
+template <size_t SIZE>
+struct kernel_sub_group_size_descriptor {
+  using type = kernel_sub_group_size<SIZE>;
+  static auto get_restrictions() {
+    auto restrictions = util::kernel_restrictions();
+    restrictions.set_sub_group_size(SIZE);
+    return restrictions;
+  }
+};
+
 }  // namespace kernels
 
 #endif  // __SYCLCTS_TESTS_KERNELS_H

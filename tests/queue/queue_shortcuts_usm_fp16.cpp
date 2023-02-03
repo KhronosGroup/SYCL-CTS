@@ -29,9 +29,9 @@ using namespace queue_shortcuts_usm;
 
 TEST_CASE("queue shortcuts unified shared memory fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
-  using avaliability =
+  using availability =
       util::extensions::availability<util::extensions::tag::fp16>;
-  if (!avaliability::check(queue)) {
+  if (!availability::check(queue)) {
     WARN(
         "Device does not support half precision floating point operations"
         "Skipping the test case.");

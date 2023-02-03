@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide common functions for type coverage
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provide common functions for type coverage
 
 #ifndef __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 #define __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
@@ -158,7 +172,7 @@ class named_type_pack {
  public:
   // We need a specific names to differentiate types on logic level, with no
   // dependency on actual type implementation and typeid
-  const std::string names[sizeof...(Types)];
+  const std::array<std::string, sizeof...(Types)> names;
 
   // Factory function to properly generate the type pack
   //

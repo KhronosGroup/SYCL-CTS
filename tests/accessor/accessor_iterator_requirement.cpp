@@ -23,12 +23,12 @@ namespace accessor_iterator_requirement {
  * @param errors Array with error messages
  */
 template <size_t N>
-inline void print_errors(
-    const std::array<named_requirement_verification::string_view, N>& errors) {
+inline void print_errors(const std::array<int, N>& errors) {
+  named_requirement_verification::error_messages error_messages;
   const bool false_to_fail_test = false;
   for (size_t i = 0; i < N; ++i) {
-    if (!errors[i].empty()) {
-      FAIL_CHECK(errors[i]);
+    if (errors[i] != 0) {
+      FAIL_CHECK(error_messages.error_message(errors[i]));
     }
   }
 }
@@ -45,13 +45,12 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;
-  std::array<named_requirement_verification::string_view, size_of_res_array>
-      errors;
+  std::array<int, size_of_res_array> errors;
+  errors.fill(0);
   constexpr size_t size_of_dummy = 1;
   int dummy[size_of_dummy] = {1};
   {
-    sycl::buffer<named_requirement_verification::string_view, 1> res_buf(
-        errors.data(), sycl::range(size_of_res_array));
+    sycl::buffer<int, 1> res_buf(errors.data(), sycl::range(size_of_res_array));
     sycl::buffer<int, 1> dummy_buf(dummy, sycl::range(size_of_dummy));
 
     auto action = [](auto& dummy_acc, auto& res_acc, auto& ftuple) {
@@ -61,7 +60,7 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
               dummy_acc_it);
       if (!verification_result.first) {
         for (int i = 0; i < size_of_res_array; ++i) {
-          if (!verification_result.second[i].empty()) {
+          if (verification_result.second[i] != 0) {
             // Copy errors to the host side
             res_acc[i] = verification_result.second[i];
           }

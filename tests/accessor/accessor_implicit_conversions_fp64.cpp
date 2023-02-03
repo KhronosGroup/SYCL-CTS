@@ -35,7 +35,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_generic, double>("double");
 #else
   run_test_generic<double>{}("double");
@@ -52,7 +52,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_local, double>("double");
 #else
   run_test_local<double>{}("double");
@@ -69,7 +69,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
     return;
   }
 
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_test_host, double>("double");
 #else
   run_test_host<double>{}("double");

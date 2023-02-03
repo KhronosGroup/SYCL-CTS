@@ -32,9 +32,9 @@ using namespace queue_shortcuts_explict;
 DISABLED_FOR_TEST_CASE(DPCPP)
 ("queue shortcuts explicit copy fp64", "[queue]")({
   auto queue = util::get_cts_object::queue();
-  using avaliability =
+  using availability =
       util::extensions::availability<util::extensions::tag::fp64>;
-  if (!avaliability::check(queue)) {
+  if (!availability::check(queue)) {
     WARN(
         "Device does not support double precision floating point operations"
         "Skipping the test case.");

@@ -28,10 +28,10 @@ class legacy_bidirectional_iterator_requirement {
   // As we also verify other requirements, we have to keep in mind that result
   // of those verifications also increase size of container with messages.
   static constexpr int count_of_possible_errors =
-      legacy_forward_iterator_requirement::count_of_possible_errors + 8;
+      legacy_forward_iterator_requirement::count_of_possible_errors + 9;
 
  private:
-  error_messages_container<count_of_possible_errors> m_test_error_messages;
+  error_codes_container<count_of_possible_errors> m_test_error_codes;
 
  public:
   /**
@@ -39,18 +39,18 @@ class legacy_bidirectional_iterator_requirement {
    * verification
    *
    * @tparam It Type of iterator for verification
-   * @return std::pair<bool,array<string_view>> First represents
+   * @return std::pair<bool,array<int>> First represents
    * satisfaction of the requirement. Second contains error messages
    */
   template <typename It>
-  std::pair<bool, std::array<string_view, count_of_possible_errors>>
-  is_satisfied_for(It valid_iterator) {
+  std::pair<bool, std::array<int, count_of_possible_errors>> is_satisfied_for(
+      It valid_iterator) {
     auto legacy_forward_iterator_res =
         legacy_forward_iterator_requirement{}.is_satisfied_for<It>(
             valid_iterator);
 
     if (!legacy_forward_iterator_res.first) {
-      m_test_error_messages.add_errors(legacy_forward_iterator_res.second);
+      m_test_error_codes.add_errors(legacy_forward_iterator_res.second);
     }
 
     using it_traits = std::iterator_traits<It>;
@@ -71,14 +71,13 @@ class legacy_bidirectional_iterator_requirement {
 
     if constexpr (can_pre_increment && can_pre_decrement) {
       if (!std::is_same_v<decltype(--(++std::declval<It&>())), It&>) {
-        m_test_error_messages.add_error(
-            "Iterator expression --(++i) must return It& type.");
+        m_test_error_codes.add_error(
+            legacy_bidirectional_iterator::error_code_0);
       }
     }
 
     if (!can_post_decrement) {
-      m_test_error_messages.add_error(
-          "Iterator doesn't have implemented operator--(int)");
+      m_test_error_codes.add_error(legacy_bidirectional_iterator::error_code_1);
     }
 
     if constexpr (can_pre_decrement && can_pre_increment &&
@@ -89,8 +88,8 @@ class legacy_bidirectional_iterator_requirement {
         ++a;
         --a;
         if (a != saved_a) {
-          m_test_error_messages.add_error(
-              "Iterator expression --(++i) must be equal to i.");
+          m_test_error_codes.add_error(
+              legacy_bidirectional_iterator::error_code_2);
         }
       }
       {
@@ -100,31 +99,31 @@ class legacy_bidirectional_iterator_requirement {
         ++b;
         if (--a == --b) {
           if (a != b) {
-            m_test_error_messages.add_error(
-                "If --a == --b then a == b must be true.");
+            m_test_error_codes.add_error(
+                legacy_bidirectional_iterator::error_code_3);
           }
         } else {
-          m_test_error_messages.add_error(
-              "--a must be equal to --b, if they are copy of same object.");
+          m_test_error_codes.add_error(
+              legacy_bidirectional_iterator::error_code_4);
         }
       }
     }
 
     if constexpr (can_pre_decrement) {
       if (!std::is_same_v<decltype(--(std::declval<It&>())), It&>) {
-        m_test_error_messages.add_error(
-            "Iterator expression --i must return It& data type.");
+        m_test_error_codes.add_error(
+            legacy_bidirectional_iterator::error_code_5);
       }
     } else {
-      m_test_error_messages.add_error("Iterator must have operator--().");
+      m_test_error_codes.add_error(legacy_bidirectional_iterator::error_code_6);
     }
 
     if constexpr (can_post_increment && can_post_decrement &&
                   has_value_type_member) {
       if (!std::is_convertible_v<decltype((++std::declval<It&>())--),
                                  const It&>) {
-        m_test_error_messages.add_error(
-            "Iterator expression (i++)-- must be convertible to const It&.");
+        m_test_error_codes.add_error(
+            legacy_bidirectional_iterator::error_code_7);
       }
     }
 
@@ -132,15 +131,15 @@ class legacy_bidirectional_iterator_requirement {
                   has_reference_member) {
       if (!std::is_same_v<decltype(*(std::declval<It&>()--)),
                           typename it_traits::reference>) {
-        m_test_error_messages.add_error(
-            "Iterator expression *i-- must return reference data type.");
+        m_test_error_codes.add_error(
+            legacy_bidirectional_iterator::error_code_8);
       }
     }
 
-    const bool is_satisfied = !m_test_error_messages.has_errors();
+    const bool is_satisfied = !m_test_error_codes.has_errors();
     // According to spec std::pair with device_copyable types(in this case:
-    // bool, string_view) can be used on device side
-    return std::make_pair(is_satisfied, m_test_error_messages.get_array());
+    // bool, int) can be used on device side
+    return std::make_pair(is_satisfied, m_test_error_codes.get_array());
   }
 };
 }  // namespace named_requirement_verification

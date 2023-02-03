@@ -71,7 +71,7 @@ struct runner_memcpy {
 
     // check the result
     for (unsigned int i = 0; i < element_count; i++) {
-      CHECK(((t_test + static_cast<int>(i)) == h_actual[i]));
+      CHECK((static_cast<T>(t_test + static_cast<int>(i)) == h_actual[i]));
     }
 
     sycl::free(d_dest, queue);

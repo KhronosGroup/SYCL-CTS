@@ -21,53 +21,59 @@
 
 #include "../common/common.h"
 
-#define TEST_NAME context_info
+TEST_CASE("context info", "[context]") {
+  auto ctx = sycl_cts::util::get_cts_object::context();
 
-namespace contect_info__ {
-using namespace sycl_cts;
-
-/** tests the info for sycl::context
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-  */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  {  // check get_info for info::context::platform
+    check_get_info_param<sycl::info::context::platform, sycl::platform>(ctx);
   }
-
-  /** execute the test
-  */
-  void run(util::logger &log) override {
-    {
-      auto context = util::get_cts_object::context();
-
-      /** check get_info for info::context::platform
-       */
-      {
-        auto platform = context.get_info<sycl::info::context::platform>();
-        // FIXME: Reenable when struct information descriptors are implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-        check_get_info_param<sycl::info::context::platform, sycl::platform>(
-            log, context);
-#endif
-      }
-
-      /** check get_info for info::context::devices
-       */
-      {
-        auto devs = context.get_info<sycl::info::context::devices>();
-        // FIXME: Reenable when struct information descriptors are implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-        check_get_info_param<sycl::info::context::devices,
-                             std::vector<sycl::device>>(log, context);
-#endif
-      }
-    }
+  {  // check get_info for info::context::devices
+    check_get_info_param<sycl::info::context::devices,
+                         std::vector<sycl::device>>(ctx);
   }
-};
-
-// register this test with the test_collection
-util::test_proxy<TEST_NAME> proxy;
-
-} /* namespace context_info__ */
+  {  // check get_info for info::context::atomic_memory_order_capabilities
+    check_get_info_param<sycl::info::context::atomic_memory_order_capabilities,
+                         std::vector<sycl::memory_order>>(ctx);
+    std::vector<sycl::memory_order> capabilities =
+        ctx.get_info<sycl::info::context::atomic_memory_order_capabilities>();
+    CHECK(check_contains(capabilities, sycl::memory_order::relaxed));
+  }
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+  {  // check get_info for info::context::atomic_fence_order_capabilities
+    check_get_info_param<sycl::info::context::atomic_fence_order_capabilities,
+                         std::vector<sycl::memory_order>>(ctx);
+    std::vector<sycl::memory_order> capabilities =
+        ctx.get_info<sycl::info::context::atomic_fence_order_capabilities>();
+    CHECK(check_contains(capabilities, sycl::memory_order::relaxed));
+    CHECK(check_contains(capabilities, sycl::memory_order::acquire));
+    CHECK(check_contains(capabilities, sycl::memory_order::release));
+    CHECK(check_contains(capabilities, sycl::memory_order::acq_rel));
+  }
+#else
+  WARN(
+      "Implementation does not support "
+      "sycl::info::context::atomic_fence_order_capabilities "
+      "Skipping the test case.");
+#endif
+  {  // check get_info for info::context::atomic_memory_scope_capabilities
+    check_get_info_param<sycl::info::context::atomic_memory_scope_capabilities,
+                         std::vector<sycl::memory_scope>>(ctx);
+    std::vector<sycl::memory_scope> capabilities =
+        ctx.get_info<sycl::info::context::atomic_memory_scope_capabilities>();
+    CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
+  }
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+  {  // check get_info for info::context::atomic_fence_scope_capabilities
+    check_get_info_param<sycl::info::context::atomic_fence_scope_capabilities,
+                         std::vector<sycl::memory_scope>>(ctx);
+    std::vector<sycl::memory_scope> capabilities =
+        ctx.get_info<sycl::info::context::atomic_fence_scope_capabilities>();
+    CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
+  }
+#else
+  WARN(
+      "Implementation does not support "
+      "sycl::info::context::atomic_fence_scope_capabilities "
+      "Skipping the test case.");
+#endif
+}
