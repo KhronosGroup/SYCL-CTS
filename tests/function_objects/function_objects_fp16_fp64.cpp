@@ -52,7 +52,7 @@ TEST_CASE("function objects void specializations scalar fp16 fp64",
 #endif
 };
 
-// function objects void specializations vector fp16 fp64
-// not needed: vector type can only call operator with same operand type
+  // function objects void specializations vector fp16 fp64
+  // not needed: vector type can only call operator with same operand type
 
 #endif  // SYCL_CTS_ENABLE_HALF_TESTS && SYCL_CTS_ENABLE_DOUBLE_TESTS
