@@ -151,7 +151,7 @@ def generate_arguments(sig, memory):
         else:
             current_arg = generate_variable(arg_name, arg, arg_index)
 
-        arg_src += current_arg
+        arg_src += current_arg + "        "
         arg_index += 1
     return (arg_names, arg_src)
 
@@ -166,9 +166,9 @@ def generate_function_call(sig, arg_names, arg_src):
         arg_src=arg_src,
         namespace=sig.namespace,
         func_name=sig.name,
-        arg_names=",".join(arg_names),
+        arg_names=", ".join(arg_names),
         ret_type=sig.ret_type.name,
-        arg_types=",".join([a.name for a in sig.arg_types]))
+        arg_types=", ".join([a.name for a in sig.arg_types]))
     return fc
 
 function_private_call_template = Template("""
