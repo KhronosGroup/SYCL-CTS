@@ -23,7 +23,7 @@
 namespace kernel_bundle_spec_const {
 
 constexpr sycl::specialization_id<int> SpecName(5);
-constexpr sycl::specialization_id<int> OtherSpecName(5);
+constexpr sycl::specialization_id<int> OtherSpecName(10);
 
 TEST_CASE(
     "Check specialization constants functionality with empty kernel_bundle",
