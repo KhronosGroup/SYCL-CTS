@@ -59,7 +59,7 @@ lo_hi_odd_even_template = Template("""
 
 as_convert_call_template = Template("""
         auto inputVec = sycl::vec<${type}, ${size}>(${vals});
-        if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type1}>(inputVec)) {
+        if (!check_convert_as_all_dims<${type}, ${size}, ${dest_type}>(inputVec)) {
             resAcc[0] = false;
         }
 """)
@@ -98,7 +98,7 @@ def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):
     test_string = as_convert_call_template.substitute(
         type=type_str,
         size=size,
-        vals=', '.join(type_str, Data.vals_list_dict_float[size]),
+        vals=(', ' + type_str).join(Data.vals_list_dict_float[size]),
         dest_type=dest_type)
 
     string = wrap_with_kernel(
