@@ -21,7 +21,7 @@ constexpr bool without_property{false};
 
 constexpr size_t number_iterations{10};
 
-constexpr int identity_value{5};
+constexpr int identity_value{0};
 
 constexpr int init_value_without_property_case{99};
 
@@ -51,12 +51,9 @@ template <typename VariableT, typename FunctorT, typename BufferT>
 VariableT get_expected_value(FunctorT functor, BufferT& buffer,
                              VariableT value_for_initialization) {
   VariableT expected_value{value_for_initialization};
-  auto buf_accessor =
-      buffer.template get_access<sycl::access_mode::read>(range);
-  for (size_t i = 0; i < number_iterations; i++) {
-    expected_value = functor(buf_accessor[i], expected_value);
-  }
-  return expected_value;
+  sycl::host_accessor buf_accessor{buffer};
+  return std::accumulate(buf_accessor.begin(), buf_accessor.end(),
+                         value_for_initialization, functor);
 }
 
 /** @brief This function contained common cases from two get_init_value*
@@ -68,17 +65,12 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
  *          sycl::property::reduction::initialize_to_identity
  *  @retval Value for initializing
  */
-template <typename VariableT, typename FunctorT, bool UsePropertyFlagT>
-void get_init_value_common_logic(VariableT& init_value) {
-  if constexpr (UsePropertyFlagT &&
-                (std::is_same_v<FunctorT, sycl::bit_and<VariableT>> ||
-                 std::is_same_v<FunctorT, sycl::bit_or<VariableT>> ||
-                 std::is_same_v<FunctorT, sycl::bit_xor<VariableT>>)) {
-    init_value = VariableT(0x87654321);
-  } else if constexpr (std::is_same_v<VariableT, bool> && UsePropertyFlagT) {
-    init_value = !sycl::known_identity<FunctorT, VariableT>::value;
-  } else if constexpr (std::is_same_v<VariableT, bool> && !UsePropertyFlagT) {
-    init_value = sycl::known_identity<FunctorT, VariableT>::value;
+template <typename FunctorT, bool UsePropertyFlagT>
+void get_init_value_bool(bool& init_value) {
+  if constexpr (UsePropertyFlagT) {
+    init_value = !sycl::known_identity<FunctorT, bool>::value;
+  } else if constexpr (!UsePropertyFlagT) {
+    init_value = sycl::known_identity<FunctorT, bool>::value;
   }
 }
 
@@ -99,14 +91,13 @@ template <typename VariableT, typename FunctorT,
           bool UsePropertyFlagT = without_property>
 VariableT get_init_value_for_reduction() {
   VariableT init_value{};
-  if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
-                UsePropertyFlagT) {
+  if constexpr (std::is_same_v<VariableT, bool>)
+    get_init_value_bool<FunctorT, UsePropertyFlagT>(init_value);
+  else if constexpr (UsePropertyFlagT) {
     init_value = 50;
   } else {
     init_value = init_value_without_property_case;
   }
-  get_init_value_common_logic<VariableT, FunctorT, UsePropertyFlagT>(
-      init_value);
   return init_value;
 }
 
@@ -127,15 +118,17 @@ VariableT get_init_value_for_reduction() {
 template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_expected_value() {
   VariableT init_value{};
-  if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value &&
-                UsePropertyFlagT) {
+  if constexpr (std::is_same_v<VariableT, bool>)
+    get_init_value_bool<FunctorT, UsePropertyFlagT>(init_value);
+  else if constexpr (UsePropertyFlagT) {
     // case when using reduction with initialize_to_identity
-    init_value = sycl::known_identity<FunctorT, VariableT>::value;
+    if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value)
+      init_value = sycl::known_identity<FunctorT, VariableT>::value;
+    else
+      init_value = identity_value;
   } else {
     init_value = init_value_without_property_case;
   }
-  get_init_value_common_logic<VariableT, FunctorT, UsePropertyFlagT>(
-      init_value);
   return init_value;
 }
 
@@ -147,18 +140,13 @@ VariableT get_init_value_for_expected_value() {
  */
 template <typename VariableT, typename BufferT>
 void fill_buffer(BufferT& buffer) {
-  sycl::host_accessor buf_accessor(buffer);
+  sycl::host_accessor buf_accessor{buffer};
 
-  // TODO: replace the loop with std::fill and std::iota
   bool value_for_filling_bool_buf{true};
   if (std::is_same_v<VariableT, bool>) {
-    for (size_t i = 0; i < buffer.size(); i++) {
-      buf_accessor[i] = value_for_filling_bool_buf;
-    }
+    std::fill(buf_accessor.begin(), buf_accessor.end(), true);
   } else {
-    for (size_t i = 0; i < buffer.size(); i++) {
-      buf_accessor[i] = i + 1;
-    }
+    std::iota(buf_accessor.begin(), buf_accessor.end(), 0);
   }
 }
 

@@ -29,11 +29,10 @@ class kernel;
  *  @param line Line from which checking was called
  *  @param number_test_case Test case numbed e.g.: 1, 2, 3, etc.
  */
-void check_output_value(int got, int expected, int line, int number_test_case) {
+void check_output_value(int got, int expected, int number_test_case) {
   INFO("In test for reducion with different functors in test case number: "
-       << number_test_case << ". Got: " << got << " but expected " << expected
-       << line);
-  CHECK(got != expected);
+       << number_test_case << ". Got: " << got << " but expected " << expected);
+  CHECK(got == expected);
 }
 
 /** @brief Filling provided memory with value by default
@@ -255,21 +254,24 @@ void run_test_for_two_reductions(RangeT range, sycl::queue& queue) {
   auto ptr_for_variable{
       get_ptr_to_variable<functor_2, reduction_common::without_property>(
           queue)};
-  queue.submit([&](sycl::handler& cgh) {
-    auto reduction_with_ptr_to_variable{
-        sycl::reduction(ptr_for_variable.get(), functor_1())};
-    auto reduction_with_buffer{
-        sycl::reduction(output_buffer, cgh, functor_2())};
-    auto buf_accessor =
-        initial_buf.template get_access<sycl::access_mode::read>(cgh);
-    auto lambda{get_lambda_for_2_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<RangeT, test_case>>(
-        range, reduction_with_buffer, reduction_with_ptr_to_variable, lambda);
-  });
+  queue
+      .submit([&](sycl::handler& cgh) {
+        auto reduction_with_ptr_to_variable{
+            sycl::reduction(ptr_for_variable.get(), functor_1())};
+        auto reduction_with_buffer{
+            sycl::reduction(output_buffer, cgh, functor_2())};
+        auto buf_accessor =
+            initial_buf.template get_access<sycl::access_mode::read>(cgh);
+        auto lambda{get_lambda_for_2_reductions<RangeT>(buf_accessor)};
+        cgh.parallel_for<kernel<RangeT, test_case>>(
+            range, reduction_with_buffer, reduction_with_ptr_to_variable,
+            lambda);
+      })
+      .wait_and_throw();
   check_output_value(*ptr_for_variable.get(),
-                     expected_value_for_ptr_to_variable, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable, test_case);
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case);
+                     expected_value_for_buffer, test_case);
 }
 
 /** @brief Run test for three reducers in one sycl::handler.parallel_for
@@ -288,46 +290,52 @@ void run_test_for_three_reductions(RangeT range, sycl::queue& queue) {
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
   int expected_value_for_ptr_to_variable{reduction_common::get_expected_value(
       functor_1(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_1>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_1, reduction_common::with_property>())};
   int expected_value_for_buffer{reduction_common::get_expected_value(
       functor_2(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_2>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_2, reduction_common::with_property>())};
   int expected_value_for_span{reduction_common::get_expected_value(
       functor_3(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_3>())};
 
   int output_result{reduction_common::get_init_value_for_reduction<
-      int, functor_1, reduction_common::with_property>()};
+      int, functor_2, reduction_common::with_property>()};
   sycl::buffer<int> output_buffer{&output_result, 1};
   auto ptr_for_variable{
-      get_ptr_to_variable<functor_2, reduction_common::with_property>(queue)};
+      get_ptr_to_variable<functor_1, reduction_common::with_property>(queue)};
   auto mem_for_span{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, int>(
           queue, number_elements)};
-  fill_mem_for_span<reduction_common::with_property>(functor_3(), mem_for_span);
-  queue.submit([&](sycl::handler& cgh) {
-    auto reduction_with_ptr_to_variable{
-        sycl::reduction(ptr_for_variable.get(), functor_1(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_buffer{sycl::reduction(
-        output_buffer, cgh, reduction_common::identity_value, functor_2(),
-        {sycl::property::reduction::initialize_to_identity()})};
-    sycl::span<int, number_elements> span(mem_for_span.get(), number_elements);
-    auto reduction_with_span{
-        sycl::reduction(span, reduction_common::identity_value, functor_3())};
-    auto buf_accessor =
-        initial_buf.template get_access<sycl::access_mode::read>(cgh);
-    auto lambda{get_lambda_for_3_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<RangeT, test_case>>(
-        range, reduction_with_buffer, reduction_with_span,
-        reduction_with_ptr_to_variable, lambda);
-  });
+  fill_mem_for_span<reduction_common::without_property>(functor_3(),
+                                                        mem_for_span);
+  queue
+      .submit([&](sycl::handler& cgh) {
+        auto reduction_with_ptr_to_variable{sycl::reduction(
+            ptr_for_variable.get(), functor_1(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_buffer{sycl::reduction(
+            output_buffer, cgh, reduction_common::identity_value, functor_2(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        sycl::span<int, number_elements> span(mem_for_span.get(),
+                                              number_elements);
+        auto reduction_with_span{sycl::reduction(
+            span, reduction_common::identity_value, functor_3())};
+        auto buf_accessor =
+            initial_buf.template get_access<sycl::access_mode::read>(cgh);
+        auto lambda{get_lambda_for_3_reductions<RangeT>(buf_accessor)};
+        cgh.parallel_for<kernel<RangeT, test_case>>(
+            range, reduction_with_buffer, reduction_with_span,
+            reduction_with_ptr_to_variable, lambda);
+      })
+      .wait_and_throw();
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case);
+                     expected_value_for_buffer, test_case);
   check_output_value(*ptr_for_variable.get(),
-                     expected_value_for_ptr_to_variable, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable, test_case);
   for (size_t i = 0; i < number_elements; i++) {
-    check_output_value(mem_for_span.get()[i], expected_value_for_span, __LINE__,
+    check_output_value(mem_for_span.get()[i], expected_value_for_span,
                        test_case);
   }
 }
@@ -352,13 +360,16 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue) {
       reduction_common::get_init_value_for_expected_value<int, functor_1>())};
   int expected_value_for_span{reduction_common::get_expected_value(
       functor_2(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_2>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_2, reduction_common::with_property>())};
   int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value(
       functor_3(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_3>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_3, reduction_common::with_property>())};
   int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
       functor_4(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_4>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_4, reduction_common::with_property>())};
 
   int output_result{reduction_common::get_init_value_for_reduction<
       int, functor_1, reduction_common::without_property>()};
@@ -371,35 +382,39 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue) {
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, int>(
           queue, number_elements)};
   fill_mem_for_span<reduction_common::with_property>(functor_2(), mem_for_span);
-  queue.submit([&](sycl::handler& cgh) {
-    auto reduction_with_buffer{sycl::reduction(
-        output_buffer, cgh, reduction_common::identity_value, functor_1())};
-    sycl::span<int, number_elements> span(mem_for_span.get(), number_elements);
-    auto reduction_with_span{
-        sycl::reduction(span, functor_2(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_ptr_to_variable_1{sycl::reduction(
-        ptr_for_variable_1.get(), reduction_common::identity_value, functor_3(),
-        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_ptr_to_variable_2{
-        sycl::reduction(ptr_for_variable_2.get(), functor_4(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto buf_accessor =
-        initial_buf.template get_access<sycl::access_mode::read>(cgh);
-    auto lambda{get_lambda_for_4_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<RangeT, test_case>>(
-        range, reduction_with_buffer, reduction_with_span,
-        reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,
-        lambda);
-  });
+  queue
+      .submit([&](sycl::handler& cgh) {
+        auto reduction_with_buffer{sycl::reduction(
+            output_buffer, cgh, reduction_common::identity_value, functor_1())};
+        sycl::span<int, number_elements> span(mem_for_span.get(),
+                                              number_elements);
+        auto reduction_with_span{sycl::reduction(
+            span, functor_2(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_ptr_to_variable_1{sycl::reduction(
+            ptr_for_variable_1.get(), reduction_common::identity_value,
+            functor_3(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_ptr_to_variable_2{sycl::reduction(
+            ptr_for_variable_2.get(), functor_4(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto buf_accessor =
+            initial_buf.template get_access<sycl::access_mode::read>(cgh);
+        auto lambda{get_lambda_for_4_reductions<RangeT>(buf_accessor)};
+        cgh.parallel_for<kernel<RangeT, test_case>>(
+            range, reduction_with_buffer, reduction_with_span,
+            reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,
+            lambda);
+      })
+      .wait_and_throw();
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case);
+                     expected_value_for_buffer, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_1, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_2, test_case);
   for (size_t i = 0; i < number_elements; i++) {
-    check_output_value(mem_for_span.get()[i], expected_value_for_span, __LINE__,
+    check_output_value(mem_for_span.get()[i], expected_value_for_span,
                        test_case);
   }
 }
@@ -428,10 +443,12 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue) {
       reduction_common::get_init_value_for_expected_value<int, functor_2>())};
   int expected_value_for_span_2{reduction_common::get_expected_value(
       functor_3(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_3>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_3, reduction_common::with_property>())};
   int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value(
       functor_4(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_4>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_4, reduction_common::with_property>())};
   int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
       functor_5(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_5>())};
@@ -454,42 +471,45 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue) {
           queue, number_elements)};
   fill_mem_for_span<reduction_common::with_property>(functor_3(),
                                                      mem_for_span_2);
-  queue.submit([&](sycl::handler& cgh) {
-    auto reduction_with_buffer{
-        sycl::reduction(output_buffer, cgh, functor_1())};
-    sycl::span<int, number_elements> span_1(mem_for_span_1.get(),
-                                            number_elements);
-    auto reduction_with_span_1{
-        sycl::reduction(span_1, reduction_common::identity_value, functor_2())};
-    sycl::span<int, number_elements> span_2(mem_for_span_2.get(),
-                                            number_elements);
-    auto reduction_with_span_2{
-        sycl::reduction(span_2, reduction_common::identity_value, functor_3(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_ptr_to_variable_1{
-        sycl::reduction(ptr_for_variable_1.get(), functor_4(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_ptr_to_variable_2{
-        sycl::reduction(ptr_for_variable_2.get(), functor_5())};
-    auto buf_accessor =
-        initial_buf.template get_access<sycl::access_mode::read>(cgh);
-    auto lambda{get_lambda_for_5_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<RangeT, test_case>>(
-        range, reduction_with_buffer, reduction_with_span_1,
-        reduction_with_span_2, reduction_with_ptr_to_variable_1,
-        reduction_with_ptr_to_variable_2, lambda);
-  });
+  queue
+      .submit([&](sycl::handler& cgh) {
+        auto reduction_with_buffer{
+            sycl::reduction(output_buffer, cgh, functor_1())};
+        sycl::span<int, number_elements> span_1(mem_for_span_1.get(),
+                                                number_elements);
+        auto reduction_with_span_1{sycl::reduction(
+            span_1, reduction_common::identity_value, functor_2())};
+        sycl::span<int, number_elements> span_2(mem_for_span_2.get(),
+                                                number_elements);
+        auto reduction_with_span_2{sycl::reduction(
+            span_2, reduction_common::identity_value, functor_3(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_ptr_to_variable_1{sycl::reduction(
+            ptr_for_variable_1.get(), functor_4(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_ptr_to_variable_2{
+            sycl::reduction(ptr_for_variable_2.get(),
+                            reduction_common::identity_value, functor_5())};
+        auto buf_accessor =
+            initial_buf.template get_access<sycl::access_mode::read>(cgh);
+        auto lambda{get_lambda_for_5_reductions<RangeT>(buf_accessor)};
+        cgh.parallel_for<kernel<RangeT, test_case>>(
+            range, reduction_with_buffer, reduction_with_span_1,
+            reduction_with_span_2, reduction_with_ptr_to_variable_1,
+            reduction_with_ptr_to_variable_2, lambda);
+      })
+      .wait_and_throw();
   check_output_value(output_buffer.get_host_access()[0],
-                     expected_value_for_buffer, __LINE__, test_case);
+                     expected_value_for_buffer, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_1, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_2, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span_1.get()[i], expected_value_for_span_1,
-                       __LINE__, test_case);
+                       test_case);
     check_output_value(mem_for_span_2.get()[i], expected_value_for_span_2,
-                       __LINE__, test_case);
+                       test_case);
   }
 }
 
@@ -513,7 +533,8 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
   int expected_value_for_buffer_1{reduction_common::get_expected_value(
       functor_1(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_1>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_1, reduction_common::with_property>())};
   int expected_value_for_buffer_2{reduction_common::get_expected_value(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_2>())};
@@ -522,13 +543,15 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
       reduction_common::get_init_value_for_expected_value<int, functor_3>())};
   int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
       functor_4(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_4>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_4, reduction_common::with_property>())};
   int expected_value_for_span_1{reduction_common::get_expected_value(
       functor_5(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_5>())};
   int expected_value_for_span_2{reduction_common::get_expected_value(
       functor_6(), initial_buf,
-      reduction_common::get_init_value_for_expected_value<int, functor_6>())};
+      reduction_common::get_init_value_for_expected_value<
+          int, functor_6, reduction_common::with_property>())};
 
   int output_result_1{reduction_common::get_init_value_for_reduction<
       int, functor_1, reduction_common::with_property>()};
@@ -551,47 +574,51 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
           queue, number_elements)};
   fill_mem_for_span<reduction_common::with_property>(functor_6(),
                                                      mem_for_span_2);
-  queue.submit([&](sycl::handler& cgh) {
-    auto reduction_with_buffer_1{
-        sycl::reduction(output_buffer_1, cgh, functor_1(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_buffer_2{sycl::reduction(
-        output_buffer_2, cgh, reduction_common::identity_value, functor_2())};
-    sycl::span<int, number_elements> span_1(mem_for_span_1.get(),
-                                            number_elements);
-    auto reduction_with_span_1{sycl::reduction(span_1, functor_5())};
-    sycl::span<int, number_elements> span_2(mem_for_span_2.get(),
-                                            number_elements);
-    auto reduction_with_span_2{
-        sycl::reduction(span_2, reduction_common::identity_value, functor_6(),
-                        {sycl::property::reduction::initialize_to_identity()})};
-    auto reduction_with_ptr_to_variable_1{
-        sycl::reduction(ptr_for_variable_1.get(), functor_3())};
-    auto reduction_with_ptr_to_variable_2{sycl::reduction(
-        ptr_for_variable_2.get(), reduction_common::identity_value, functor_4(),
-        {sycl::property::reduction::initialize_to_identity()})};
-    auto buf_accessor =
-        initial_buf.template get_access<sycl::access_mode::read>(cgh);
-    auto lambda{get_lambda_for_6_reductions<RangeT>(buf_accessor)};
-    cgh.parallel_for<kernel<RangeT, test_case>>(
-        range, reduction_with_buffer_1, reduction_with_buffer_2,
-        reduction_with_span_1, reduction_with_span_2,
-        reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,
-        lambda);
-  });
+  queue
+      .submit([&](sycl::handler& cgh) {
+        auto reduction_with_buffer_1{sycl::reduction(
+            output_buffer_1, cgh, reduction_common::identity_value, functor_1(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_buffer_2{
+            sycl::reduction(output_buffer_2, cgh,
+                            reduction_common::identity_value, functor_2())};
+        sycl::span<int, number_elements> span_1(mem_for_span_1.get(),
+                                                number_elements);
+        auto reduction_with_span_1{sycl::reduction(span_1, functor_5())};
+        sycl::span<int, number_elements> span_2(mem_for_span_2.get(),
+                                                number_elements);
+        auto reduction_with_span_2{sycl::reduction(
+            span_2, reduction_common::identity_value, functor_6(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto reduction_with_ptr_to_variable_1{
+            sycl::reduction(ptr_for_variable_1.get(), functor_3())};
+        auto reduction_with_ptr_to_variable_2{sycl::reduction(
+            ptr_for_variable_2.get(), reduction_common::identity_value,
+            functor_4(),
+            {sycl::property::reduction::initialize_to_identity()})};
+        auto buf_accessor =
+            initial_buf.template get_access<sycl::access_mode::read>(cgh);
+        auto lambda{get_lambda_for_6_reductions<RangeT>(buf_accessor)};
+        cgh.parallel_for<kernel<RangeT, test_case>>(
+            range, reduction_with_buffer_1, reduction_with_buffer_2,
+            reduction_with_span_1, reduction_with_span_2,
+            reduction_with_ptr_to_variable_1, reduction_with_ptr_to_variable_2,
+            lambda);
+      })
+      .wait_and_throw();
   check_output_value(output_buffer_1.get_host_access()[0],
-                     expected_value_for_buffer_1, __LINE__, test_case);
+                     expected_value_for_buffer_1, test_case);
   check_output_value(output_buffer_2.get_host_access()[0],
-                     expected_value_for_buffer_2, __LINE__, test_case);
+                     expected_value_for_buffer_2, test_case);
   check_output_value(*ptr_for_variable_1.get(),
-                     expected_value_for_ptr_to_variable_1, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_1, test_case);
   check_output_value(*ptr_for_variable_2.get(),
-                     expected_value_for_ptr_to_variable_2, __LINE__, test_case);
+                     expected_value_for_ptr_to_variable_2, test_case);
   for (size_t i = 0; i < number_elements; i++) {
     check_output_value(mem_for_span_1.get()[i], expected_value_for_span_1,
-                       __LINE__, test_case);
+                       test_case);
     check_output_value(mem_for_span_2.get()[i], expected_value_for_span_2,
-                       __LINE__, test_case);
+                       test_case);
   }
 }
 

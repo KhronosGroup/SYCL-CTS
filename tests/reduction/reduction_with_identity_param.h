@@ -18,7 +18,7 @@ namespace reduction_with_identity_param {
 using namespace reduction_common;
 
 static constexpr size_t number_elements = 5;
-static constexpr int identity = 5;
+static constexpr int identity = 0;
 static constexpr int initial = 6;
 template <typename VariableT, typename RangeT, int TestCase>
 class kernel;
@@ -112,7 +112,6 @@ void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
   queue.submit([&](sycl::handler &cgh) {
     sycl::span<VariableT, number_elements> span(allocated_memory.get(),
                                                 number_elements);
-    // should be replaced with sycl::reduction
     auto reduction =
         sycl::reduction(span, identity_value, op_without_identity<VariableT>());
 
@@ -216,7 +215,6 @@ void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue) {
   queue.submit([&](sycl::handler &cgh) {
     sycl::span<VariableT, number_elements> span(allocated_memory.get(),
                                                 number_elements);
-    // should be replaced with sycl::reduction
     auto reduction =
         sycl::reduction(span, identity_value, op_without_identity<VariableT>(),
                         {sycl::property::reduction::initialize_to_identity()});

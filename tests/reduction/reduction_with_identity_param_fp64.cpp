@@ -22,7 +22,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("reduction_with_identity_param_fp64", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
-  if (queue.get_device().has(sycl::aspect::fp64)) {
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP("Device does not support double precision floating point operations");
   }
   reduction_with_identity_param::run_test_for_type<double>()(queue, "double");

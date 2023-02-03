@@ -140,15 +140,17 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
   *variable_for_reduction.get() =
       reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
                                                      UsePropertyFlag>();
-  queue.submit([&](sycl::handler &cgh) {
-    auto reduction{get_reduction_for_value_ptr<UsePropertyFlag>(
-        variable_for_reduction.get(), functor)};
-    auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
-                                                 UseCombineFlagT, FunctorT>(
-        initial_buf.template get_access<sycl::access_mode::read>(cgh))};
-    cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
-                            FunctorT, RangeT, 1>>(range, reduction, lambda);
-  });
+  queue
+      .submit([&](sycl::handler &cgh) {
+        auto reduction{get_reduction_for_value_ptr<UsePropertyFlag>(
+            variable_for_reduction.get(), functor)};
+        auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
+                                                     UseCombineFlagT, FunctorT>(
+            initial_buf.template get_access<sycl::access_mode::read>(cgh))};
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 1>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
 
   INFO(get_fail_message(type_name, *variable_for_reduction.get(),
                         expected_value));
@@ -177,22 +179,24 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT,
-                                                          FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT,
+                                                          UsePropertyFlag>())};
   VariableT output_result{
       reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
                                                      UsePropertyFlag>()};
   sycl::buffer<VariableT> output_buffer{&output_result, 1};
 
-  queue.submit([&](sycl::handler &cgh) {
-    auto reduction{
-        get_reduction_for_buffer<UsePropertyFlag>(output_buffer, cgh, functor)};
-    auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
-                                                 UseCombineFlagT, FunctorT>(
-        initial_buf.template get_access<sycl::access_mode::read>(cgh))};
-    cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
-                            FunctorT, RangeT, 2>>(range, reduction, lambda);
-  });
+  queue
+      .submit([&](sycl::handler &cgh) {
+        auto reduction{get_reduction_for_buffer<UsePropertyFlag>(output_buffer,
+                                                                 cgh, functor)};
+        auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
+                                                     UseCombineFlagT, FunctorT>(
+            initial_buf.template get_access<sycl::access_mode::read>(cgh))};
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 2>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
 
   INFO(get_fail_message(type_name, output_buffer.get_host_access()[0],
                         expected_value));
@@ -223,8 +227,8 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT,
-                                                          FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT,
+                                                          UsePropertyFlag>())};
   auto allocated_memory{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, VariableT>(
           queue, number_elements)};
@@ -235,18 +239,19 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
     allocated_memory.get()[i] = value_for_filling;
   }
 
-  queue.submit([&](sycl::handler &cgh) {
-    sycl::span<VariableT, number_elements> span(allocated_memory.get(),
-                                                number_elements);
-    auto reduction{get_reduction_for_span<UsePropertyFlag>(span, functor)};
-    auto lambda{
-        reduction_get_lambda::get_lambda_for_span<VariableT, RangeT,
-                                                  UseCombineFlagT, FunctorT>(
+  queue
+      .submit([&](sycl::handler &cgh) {
+        sycl::span<VariableT, number_elements> span(allocated_memory.get(),
+                                                    number_elements);
+        auto reduction{get_reduction_for_span<UsePropertyFlag>(span, functor)};
+        auto lambda{reduction_get_lambda::get_lambda_for_span<
+            VariableT, RangeT, UseCombineFlagT, FunctorT>(
             initial_buf.template get_access<sycl::access_mode::read>(cgh),
             number_elements)};
-    cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
-                            FunctorT, RangeT, 3>>(range, reduction, lambda);
-  });
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 3>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
   for (size_t i = 0; i < number_elements; i++) {
     INFO(
         get_fail_message(type_name, allocated_memory.get()[i], expected_value));
