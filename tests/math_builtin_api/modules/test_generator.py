@@ -157,6 +157,8 @@ def generate_arguments(sig, memory):
 
 function_call_template = Template("""
         ${arg_src}
+        static_assert(std::is_same_v<decltype(${namespace}::${func_name}(${arg_names})), ${ret_type}>,
+            "Error: Wrong return type of ${namespace}::${func_name}(${arg_types}), not ${ret_type}");
         return ${namespace}::${func_name}(${arg_names});
 """)
 def generate_function_call(sig, arg_names, arg_src):
@@ -164,7 +166,9 @@ def generate_function_call(sig, arg_names, arg_src):
         arg_src=arg_src,
         namespace=sig.namespace,
         func_name=sig.name,
-        arg_names=",".join(arg_names))
+        arg_names=",".join(arg_names),
+        ret_type=sig.ret_type.name,
+        arg_types=",".join([a.name for a in sig.arg_types]))
     return fc
 
 function_private_call_template = Template("""
