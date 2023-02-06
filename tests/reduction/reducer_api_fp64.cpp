@@ -17,14 +17,16 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-
 #include "../../util/extensions.h"
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 #include "reducer_api.h"
 
 #include <string>
-
-TEST_CASE("reducer api fp64", "[reducer][fp64]") {
+// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp and
+// DPCPP
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL, DPCPP)
+("reducer api fp64", "[reducer][fp64]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   using avaliability = sycl_cts::util::extensions::availability<
       sycl_cts::util::extensions::tag::fp64>;
@@ -36,4 +38,4 @@ TEST_CASE("reducer api fp64", "[reducer][fp64]") {
   const std::string type_name("double");
   check_reducer_subscript<type>{}(queue, type_name);
   check_reducer_identity<type>{}(queue, type_name);
-}
+});
