@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  This file provides functions for tests on accessor exceptions.
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  This file provides functions for tests on accessor exceptions.
+
 #ifndef SYCL_CTS_ACCESSOR_EXCEPTIONS_H
 #define SYCL_CTS_ACCESSOR_EXCEPTIONS_H
 
@@ -76,6 +91,9 @@ void check_exception(GetAccFunctorT construct_acc) {
   }
 }
 
+template <typename AccT, typename DataT, typename DimensionT>
+class kernel_exception_for_local_acc;
+
 /**
  * @brief Provides functor that lets verify that local_accessor really thrown
  *        exception.
@@ -87,6 +105,7 @@ void check_exception(GetAccFunctorT construct_acc) {
  */
 template <typename AccT, typename DataT, typename DimensionT>
 class test_exception_for_local_acc {
+  using kname = kernel_exception_for_local_acc<AccT, DataT, DimensionT>;
   static constexpr int Dimension = DimensionT::value;
   static constexpr auto AccType = AccT::value;
 
@@ -109,7 +128,7 @@ class test_exception_for_local_acc {
             .submit([&](sycl::handler& cgh) {
               auto is_empty_ptr = is_empty.get();
               sycl::local_accessor<DataT, Dimension> local_acc(range, cgh);
-              cgh.single_task([=](sycl::kernel_handler cgh) {
+              cgh.single_task<kname>([=](sycl::kernel_handler cgh) {
                 // Some interactions to avoid device code optimisation.
                 *is_empty_ptr = local_acc.empty();
               });

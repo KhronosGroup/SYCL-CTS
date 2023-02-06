@@ -79,15 +79,21 @@ def handle_args(argv):
                         '--ctest-args',
                         help='Additional args to hand to CTest.',
                         type=str)
+    parser.add_argument('--reduced-feature-set',
+                        help='Test the reduced feature set instead of the full feature set.',
+                        required=False,
+                        action='store_true')
     args = parser.parse_args(argv)
 
     full_conformance = 'OFF' if args.fast else 'ON'
     test_deprecated_features = 'OFF' if args.disable_deprecated_features else 'ON'
+    full_feature_set = 'OFF' if args.reduced_feature_set else 'ON'
 
     return (args.cmake_exe, args.build_system_name, args.build_system_call,
             full_conformance, test_deprecated_features, args.exclude_categories,
             args.implementation_name, args.additional_cmake_args, args.device,
-            args.additional_ctest_args, args.build_only)
+            args.additional_ctest_args, args.build_only,
+            full_feature_set)
 
 
 def split_additional_args(additional_args):
@@ -111,7 +117,7 @@ def split_additional_args(additional_args):
 
 def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
                         test_deprecated_features, exclude_categories,
-                        additional_cmake_args, device):
+                        additional_cmake_args, device, full_feature_set):
     """
     Generates a CMake call based on the input in a form accepted by
     subprocess.call().
@@ -123,7 +129,8 @@ def generate_cmake_call(cmake_exe, build_system_name, full_conformance,
         '-DSYCL_CTS_ENABLE_FULL_CONFORMANCE=' + full_conformance,
         '-DSYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS=' + test_deprecated_features,
         '-DSYCL_CTS_CTEST_DEVICE=' + device,
-    ]
+        '-DSYCL_CTS_ENABLE_FEATURE_SET_FULL=' + full_feature_set,
+        ]
     if exclude_categories is not None:
         call += ['-DSYCL_CTS_EXCLUDE_TEST_CATEGORIES=' + exclude_categories]
     call += split_additional_args(additional_cmake_args)
@@ -222,7 +229,8 @@ def get_xml_test_results():
 
 def update_xml_attribs(info_json, implementation_name, test_xml_root,
                        full_conformance, cmake_call, build_system_name,
-                       build_system_call, ctest_call):
+                       build_system_call, ctest_call, test_deprecated_features,
+                       full_feature_set):
     """
     Adds attributes to the root of the xml trees json required by the
     conformance report.
@@ -254,6 +262,8 @@ def update_xml_attribs(info_json, implementation_name, test_xml_root,
     test_xml_root.attrib["BuildSystemGenerator"] = build_system_name
     test_xml_root.attrib["BuildSystemCall"] = build_system_call
     test_xml_root.attrib["CTestCall"] = ' '.join(ctest_call)
+    test_xml_root.attrib["TestDeprecatedFeatures"] = test_deprecated_features
+    test_xml_root.attrib["FullFeatureSet"] = full_feature_set
 
     return test_xml_root
 
@@ -264,13 +274,13 @@ def main(argv=sys.argv[1:]):
     (cmake_exe, build_system_name, build_system_call, full_conformance,
      test_deprecated_features, exclude_categories, implementation_name,
      additional_cmake_args, device, additional_ctest_args,
-     build_only) = handle_args(argv)
+     build_only, full_feature_set) = handle_args(argv)
 
     # Generate a cmake call in a form accepted by subprocess.call()
     cmake_call = generate_cmake_call(cmake_exe, build_system_name,
                                      full_conformance, test_deprecated_features,
                                      exclude_categories, additional_cmake_args,
-                                     device)
+                                     device, full_feature_set)
 
     # Generate a CTest call in a form accepted by subprocess.call()
     ctest_call = generate_ctest_call(additional_ctest_args)
@@ -296,7 +306,9 @@ def main(argv=sys.argv[1:]):
     result_xml_root = update_xml_attribs(info_json, implementation_name,
                                          result_xml_root, full_conformance,
                                          cmake_call, build_system_name,
-                                         build_system_call, ctest_call)
+                                         build_system_call, ctest_call,
+                                         test_deprecated_features,
+                                         full_feature_set)
 
     # Get the xml report stylesheet and add it to the results.
     stylesheet_xml_file = os.path.join("..", "tools", "stylesheet.xml")

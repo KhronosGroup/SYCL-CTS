@@ -2,7 +2,19 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
 
@@ -73,6 +85,9 @@ static auto get_types() {
   return types;
 }
 
+template <typename T>
+class kernel_accessor;
+
 /** check get_native() returns the correct type for an accessor
  */
 template <typename T>
@@ -90,7 +105,7 @@ struct test_accessor {
         auto is_type_acc =
             is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-        cgh.single_task([=] {
+        cgh.single_task<kernel_accessor<T>>([=] {
           auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
           is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
         });
@@ -102,6 +117,9 @@ struct test_accessor {
     CHECK(is_type_correct[0]);
   }
 };
+
+template <typename T>
+class kernel_constant_buffer_accessor;
 
 /** check get_native() returns the correct type for a constant-buffer accessor
  */
@@ -121,7 +139,7 @@ struct test_constant_buffer_accessor {
         auto is_type_acc =
             is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-        cgh.single_task([=] {
+        cgh.single_task<kernel_constant_buffer_accessor<T>>([=] {
           auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
           is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
         });
@@ -133,6 +151,9 @@ struct test_constant_buffer_accessor {
     CHECK(is_type_correct[0]);
   }
 };
+
+template <typename T>
+class kernel_local_target_accessor;
 
 /** check get_native() returns the correct type for an accessor with
  * target::local
@@ -152,7 +173,7 @@ void test_local_target_accessor(sycl::queue &queue,
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.parallel_for_work_group(
+      cgh.parallel_for_work_group<kernel_local_target_accessor<T>>(
           sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
             auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
             is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
@@ -165,6 +186,9 @@ void test_local_target_accessor(sycl::queue &queue,
       typeName + "\" type");
   CHECK(is_type_correct[0]);
 }
+
+template <typename T>
+class kernel_local_accessor;
 
 /** check get_native() returns the correct type for a local_accessor
  */
@@ -180,7 +204,7 @@ void test_local_accessor(sycl::queue &queue, const std::string &typeName) {
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.parallel_for_work_group(
+      cgh.parallel_for_work_group<kernel_local_accessor<T>>(
           sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
             auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
             is_type_acc[0] = std::is_same_v<decltype(native_handle), T *>;
@@ -221,7 +245,7 @@ struct test_accessor<c2> {
         auto is_type_acc =
             is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-        cgh.single_task([=] {
+        cgh.single_task<kernel_accessor<c2>>([=] {
           auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
           is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
         });
@@ -252,7 +276,7 @@ struct test_constant_buffer_accessor<c2> {
         auto is_type_acc =
             is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-        cgh.single_task([=] {
+        cgh.single_task<kernel_constant_buffer_accessor<c2>>([=] {
           auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
           is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;
         });
@@ -282,7 +306,7 @@ void test_local_target_accessor<c2>(sycl::queue &queue,
       auto is_type_acc =
           is_type_buff.get_access<sycl::access::mode::write>(cgh);
 
-      cgh.parallel_for_work_group(
+      cgh.parallel_for_work_group<kernel_local_target_accessor<c2>>(
           sycl::range<1>(1), sycl::range<1>(1), [=](sycl::group<1>) {
             auto native_handle = sycl::get_native<sycl::backend::cuda>(acc);
             is_type_acc[0] = std::is_same_v<decltype(native_handle), c2 *>;

@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -59,15 +59,12 @@ class check_atomics {
     /** Check atomic constructors
      */
     testQueue.submit([&](sycl::handler &cgh) {
-      sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::device>
+      using functor =
+          check_atomic_constructors<T, sycl::target::device,
+                                    sycl::access::address_space::global_space>;
+      sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::device>
           acc(buf, cgh);
-
-      check_atomic_constructors<T, sycl::target::device,
-                                sycl::access::address_space::global_space>
-          f(acc);
-
-      cgh.single_task(f);
+      cgh.single_task<functor>(functor(acc));
     });
   }
 };
@@ -83,15 +80,12 @@ class check_atomics<T, sycl::target::local> {
     /** Check atomic constructors
      */
     testQueue.submit([&](sycl::handler &cgh) {
-      sycl::accessor<T, 1, sycl::access_mode::read_write,
-                         sycl::target::local>
+      using functor =
+          check_atomic_constructors<T, sycl::target::local,
+                                    sycl::access::address_space::local_space>;
+      sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::local>
           acc(sycl::range<1>(1), cgh);
-
-      check_atomic_constructors<T, sycl::target::local,
-                                sycl::access::address_space::local_space>
-          f(acc);
-
-      cgh.single_task(f);
+      cgh.single_task<functor>(functor(acc));
     });
   }
 };

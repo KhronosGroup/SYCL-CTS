@@ -130,7 +130,7 @@ void test_item_3d(util::logger &log) {
 
       kernel_item_3d kern =
           kernel_item_3d(accIn, accOut, accOutDeprecated, dataRange);
-      cgh.parallel_for(dataRange, kern);
+      cgh.parallel_for<kernel_item_3d>(dataRange, kern);
     });
 
     cmdQueue.wait_and_throw();

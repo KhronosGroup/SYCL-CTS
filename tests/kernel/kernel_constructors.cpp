@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ TEST_CASE("Test copy constructor", "[kernel]") {
 
   sycl::kernel kernelB(kernelA);
 
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
 
 #ifdef SYCL_BACKEND_OPENCL
   if (ctsQueue.get_backend() == sycl::backend::opencl) {
@@ -71,7 +72,8 @@ TEST_CASE("Test assignment operator", "[kernel]") {
       sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
   auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
 
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
 
   sycl::kernel kernelB = kernelA;
 
@@ -101,7 +103,8 @@ TEST_CASE("Test move constructor", "[kernel]") {
       sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
   auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
 
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
 
   sycl::kernel kernelB(std::move(kernelA));
 
@@ -118,7 +121,8 @@ TEST_CASE("Test move assignment operator", "[kernel]") {
   auto kb =
       sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
   auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
 
   sycl::kernel kernelB = std::move(kernelA);
 
@@ -135,14 +139,16 @@ TEST_CASE("Test equality operator", "[kernel]") {
   auto kbA =
       sycl::get_kernel_bundle<k_name4, sycl::bundle_state::executable>(ctx);
   auto kernelA = kbA.get_kernel(sycl::get_kernel_id<k_name4>());
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name4()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name4>(k_name4()); });
   sycl::kernel kernelB(kernelA);
 
   using k_name5 = test_kernel<5>;
   auto kbC =
       sycl::get_kernel_bundle<k_name5, sycl::bundle_state::executable>(ctx);
   auto kernelC = kbC.get_kernel(sycl::get_kernel_id<k_name5>());
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name5()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name5>(k_name5()); });
   kernelC = (kernelA);
 
   using k_name6 = test_kernel<6>;
@@ -150,7 +156,8 @@ TEST_CASE("Test equality operator", "[kernel]") {
       sycl::get_kernel_bundle<k_name6, sycl::bundle_state::executable>(ctx);
   auto kernelD = kbD.get_kernel(sycl::get_kernel_id<k_name6>());
 
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name6()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name6>(k_name6()); });
 
   if (!ctsSelector.is_host()) {
 #ifdef SYCL_BACKEND_OPENCL
@@ -224,7 +231,8 @@ TEST_CASE("Test hashing", "[kernel]") {
   auto kb =
       sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
   auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
-  ctsQueue.submit([&](sycl::handler &cgh) { cgh.single_task(k_name()); });
+  ctsQueue.submit(
+      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
 
   sycl::kernel kernelB = kernelA;
 
