@@ -37,8 +37,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   const auto types = named_type_pack<TYPES>::generate(TYPE_NAMES);
   const auto types_only_half = named_type_pack<sycl::half>::generate("half");
 
-  // prevent testing duplicate combinations
 #if 0
+  // prevent testing duplicate combinations
   for_all_combinations<check_scalar_return_type>(get_op_types(), types,
                                                  types_only_half);
   for_all_combinations<check_scalar_return_type>(get_op_types(),
@@ -47,7 +47,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   WARN(
       "Specification does not provide rules for the implicit conversion "
       "surrounding sycl::half. Since most types can be converted to sycl::half"
-      "and vice versa, the type of the conditional operator is ambiguous.");
+      "and vice versa, the type of the conditional operator is ambiguous."
+      "See https://github.com/KhronosGroup/SYCL-Docs/issues/350");
 #endif
   for_all_combinations<check_scalar_return_type>(
       get_op_types(), types_only_half, types_only_half);

@@ -101,7 +101,7 @@ struct is_integral_marray {
 };
 
 template <typename DataT, std::size_t NumElements>
-struct is_integral_marray<sycl::vec<DataT, NumElements>> {
+struct is_integral_marray<sycl::marray<DataT, NumElements>> {
   static constexpr bool value = std::is_integral_v<DataT>;
 };
 

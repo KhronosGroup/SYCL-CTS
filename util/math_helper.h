@@ -56,23 +56,30 @@ template <typename returnT> struct resultRef {
 
 namespace math {
 
-/* return number of elements in a type */
+/* Generic function for both scalar and vector types to
+ * return the number of elements in a type. */
 int numElements(const float &);
 
-/* return number of elements in a type */
+/* Generic function for both scalar and vector types to
+ * return the number of elements in a type. */
 int numElements(const int &);
 
+/* Generic function for both scalar and vector types to
+ * return the number of elements in a type. */
 template <typename T, int numElems>
 int numElements(const sycl::vec<T, numElems> &) {
   return numElems;
 }
 
-/* extract an individual elements */
+/* Generic function for both scalar and vector types to
+ * extract an individual element. */
 template <typename T>
 T getElement(const T &f, int) {
   return f;
 }
 
+/* Generic function for both scalar and vector types to
+ * extract an individual element. */
 template <typename T, int dim>
 T getElement(sycl::vec<T, dim> &f, int ix) {
   return getComponent<T, dim>()(f, ix);
@@ -80,6 +87,8 @@ T getElement(sycl::vec<T, dim> &f, int ix) {
 
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
+/* Generic function for both scalar and vector types to
+ * extract an individual element. */
 template <typename T, int dim>
 T getElement(sycl::marray<T, dim> &f, int ix) {
   return f[ix];

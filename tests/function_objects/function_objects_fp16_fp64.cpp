@@ -48,7 +48,8 @@ TEST_CASE("function objects void specializations scalar fp16 fp64",
   WARN(
       "Specification does not provide rules for the implicit conversion "
       "surrounding sycl::half. Since most types can be converted to sycl::half"
-      "and vice versa, the type of the conditional operator is ambiguous.");
+      "and vice versa, the type of the conditional operator is ambiguous."
+      "See https://github.com/KhronosGroup/SYCL-Docs/issues/350");
 #endif
 };
 
