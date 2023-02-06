@@ -125,7 +125,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "reverse iterator",
  "[accessor]")({
@@ -141,7 +141,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "const reverse iterator",
  "[accessor]")({
@@ -259,7 +259,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "reverse iterator",
  "[accessor]")({
@@ -276,7 +276,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "const reverse iterator",
  "[accessor]")({
