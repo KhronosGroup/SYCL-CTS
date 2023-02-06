@@ -20,7 +20,11 @@
 #include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reducer_api.h"
+#endif
 
 #include <string>
 // FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp and
