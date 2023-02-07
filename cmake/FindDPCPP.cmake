@@ -22,12 +22,12 @@ set(DPCPP_FLAGS "-fsycl;-sycl-std=2020;${DPCPP_FLAGS}")
 # Set target triple(s) if specified
 if(DEFINED DPCPP_TARGET_TRIPLES)
     set(DPCPP_FLAGS "${DPCPP_FLAGS};-fsycl-targets=${DPCPP_TARGET_TRIPLES};")
-    message("DPC++: compiling tests to ${DPCPP_TARGET_TRIPLES}")
+    message(STATUS "DPC++ compiling to triples: ${DPCPP_TARGET_TRIPLES}")
     if(${DPCPP_TARGET_TRIPLES} MATCHES ".*-nvidia-cuda-.*")
         add_definitions(-DSYCL_CTS_INTEL_PI_CUDA)
     endif()
 endif()
-message("DPC++ compiler flags: `${DPCPP_FLAGS}`")
+message(STATUS "DPC++ compiler flags: `${DPCPP_FLAGS}`")
 
 # Explicitly set fp-model to precise to produce reliable results for floating
 # point operations.
@@ -63,36 +63,17 @@ set(CMAKE_CXX_COMPILER ${DPCPP_CXX_EXECUTABLE})
 set(CMAKE_CXX_LINK_EXECUTABLE "${DPCPP_CXX_EXECUTABLE} <FLAGS> \
     <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
-add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
-set_target_properties(SYCL::SYCL PROPERTIES
-    INTERFACE_LINK_LIBRARIES DPCPP::Runtime)
+function(add_sycl_to_target)
+    set(options)
+    set(one_value_keywords TARGET)
+    set(multi_value_keywords SOURCES)
+    cmake_parse_arguments(ADD_SYCL
+      "${options}"
+      "${one_value_keywords}"
+      "${multi_value_keywords}"
+      ${ARGN}
+    )
 
-# add_sycl_executable_implementation function
-# Builds a SYCL program, compiling multiple SYCL test case source files into a
-# test executable, invoking a single-source/device compiler
-# Parameters are:
-#   - NAME             Name of the test executable
-#   - OBJECT_LIBRARY   Name of the object library of all the compiled test cases
-#   - TESTS            List of SYCL test case source files to be built into the
-# test executable
-function(add_sycl_executable_implementation)
-    cmake_parse_arguments(args "" "NAME;OBJECT_LIBRARY" "TESTS" ${ARGN})
-    set(exe_name            ${args_NAME})
-    set(object_lib_name     ${args_OBJECT_LIBRARY})
-    set(test_cases_list     ${args_TESTS})
+    target_link_libraries(${ADD_SYCL_TARGET} PUBLIC DPCPP::Runtime)
 
-    add_library(${object_lib_name} OBJECT ${test_cases_list})
-    add_executable(${exe_name} $<TARGET_OBJECTS:${object_lib_name}>)
-
-    set_target_properties(${object_lib_name} PROPERTIES
-        INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${exe_name},INCLUDE_DIRECTORIES>
-        COMPILE_DEFINITIONS $<TARGET_PROPERTY:${exe_name},COMPILE_DEFINITIONS>
-        COMPILE_OPTIONS     $<TARGET_PROPERTY:${exe_name},COMPILE_OPTIONS>
-        COMPILE_FEATURES    $<TARGET_PROPERTY:${exe_name},COMPILE_FEATURES>
-        POSITION_INDEPENDENT_CODE ON)
-
-    target_compile_options(${object_lib_name} PRIVATE
-        $<TARGET_PROPERTY:DPCPP::Runtime,INTERFACE_COMPILE_OPTIONS>)
-
-    target_link_libraries(${exe_name} PUBLIC DPCPP::Runtime)
 endfunction()
