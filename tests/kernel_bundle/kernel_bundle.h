@@ -93,6 +93,37 @@ sycl_cts::util::kernel_restrictions get_restrictions() {
  */
 enum class submit_kernel { yes, no };
 
+/** @brief Call sycl::queue::submit only if dev_is_compat flag is true
+ *  @tparam KernelDescriptorT Kernel descriptor
+ *  @tparam BundleState sycl::bundle_state enum's enumeration's field
+ *  @param queue sycl::queue class object
+ *  @param dev sycl::device class object
+ */
+template <typename KernelDescriptorT, sycl::bundle_state BundleState>
+bool define_kernel(sycl::queue &queue,
+                   submit_kernel also_submit = submit_kernel::no) {
+  auto restrictions{get_restrictions<KernelDescriptorT, BundleState>()};
+  const bool dev_is_compat = restrictions.is_compatible(queue.get_device());
+  // We use sycl::queue::submit only for compatible pair of kernel and device
+  // but even for a case when device is not compatible we are sure that we can
+  // call sycl::get_kernel_id
+  if (also_submit == submit_kernel::yes && dev_is_compat) {
+    using kernel_functor = typename KernelDescriptorT::type;
+    using res_type = typename kernel_functor::element_type;
+    res_type result = kernel_functor::init_val;
+    {
+      sycl::buffer<res_type, 1> res_buffer(&result, sycl::range<1>(1));
+      queue.submit([&](sycl::handler &cgh) {
+        auto acc =
+            res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
+        cgh.parallel_for<kernel_functor>(sycl::range<1>(1),
+                                         kernel_functor{acc});
+      });
+    }
+    return result == kernel_functor::expected_val;
+  }
+  return false;
+}
 
 /** @brief Call queue::submit for each user-defined kernel from provided named
  *         type pack and then verify that this kernel was invoked (if device
@@ -180,38 +211,6 @@ struct verify_that_kernel_in_bundle {
     }
   }
 };
-
-/** @brief Call sycl::queue::submit only if dev_is_compat flag is true
- *  @tparam KernelDescriptorT Kernel descriptor
- *  @tparam BundleState sycl::bundle_state enum's enumeration's field
- *  @param queue sycl::queue class object
- *  @param dev sycl::device class object
- */
-template <typename KernelDescriptorT, sycl::bundle_state BundleState>
-bool define_kernel(sycl::queue &queue,
-                   submit_kernel also_submit = submit_kernel::no) {
-  auto restrictions{get_restrictions<KernelDescriptorT, BundleState>()};
-  const bool dev_is_compat = restrictions.is_compatible(queue.get_device());
-  // We use sycl::queue::submit only for compatible pair of kernel and device
-  // but even for a case when device is not compatible we are sure that we can
-  // call sycl::get_kernel_id
-  if (also_submit == submit_kernel::yes && dev_is_compat) {
-    using kernel_functor = typename KernelDescriptorT::type;
-    using res_type = typename kernel_functor::element_type;
-    res_type result = kernel_functor::init_val;
-    {
-      sycl::buffer<res_type, 1> res_buffer(&result, sycl::range<1>(1));
-      queue.submit([&](sycl::handler &cgh) {
-        auto acc =
-            res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.parallel_for<kernel_functor>(sycl::range<1>(1),
-                                         kernel_functor{acc});
-      });
-    }
-    return result == kernel_functor::expected_val;
-  }
-  return false;
-}
 
 /** @brief Submit dummy kernel, without any requires with specific kernel name
  *  @tparam KernelName Name of the kernel that will be defined
