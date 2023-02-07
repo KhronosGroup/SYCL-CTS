@@ -128,7 +128,6 @@ jobs:
     container:
       # image: khronosgroup/sycl-cts-ci:${{ matrix.sycl-impl }}-${{ matrix.version }}
       # ComputeCpp images are hosted by Codeplay
-      # TODO: remove patching ComputeCpp configuration when image gets updated
       image: ${{ format('{0}/sycl-cts-ci:{1}-{2}', matrix.sycl-impl != 'computecpp' && 'khronosgroup' || 'scottstraughan', matrix.sycl-impl, matrix.version) }}
     steps:
       - name: Checkout
@@ -137,7 +136,6 @@ jobs:
           submodules: true
       - name: Configure CMake
         working-directory: ${{ env.container-workspace }}
-        # Explicit bash needed because of if [[]] syntax in patching command. Remove if not needed
         shell: bash
         run: |
           bash /scripts/configure.sh \
