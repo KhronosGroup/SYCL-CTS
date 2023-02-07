@@ -22,7 +22,11 @@
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
+
+// fixme: re-enable when sycl::marray is implemented in hipSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "function_objects.h"
+#endif
 
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("function objects void specializations scalar fp16",

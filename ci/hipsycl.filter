@@ -7,7 +7,6 @@ device_selector
 event
 exception_handling
 exceptions
-function_objects
 group
 h_item
 handler

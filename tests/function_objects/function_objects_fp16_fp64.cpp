@@ -23,7 +23,11 @@
 #include "../../util/extensions.h"
 #include "../common/common.h"
 #include "../common/type_coverage.h"
+
+// fixme: re-enable when sycl::marray is implemented in hipSYCL
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "function_objects.h"
+#endif
 
 TEST_CASE("function objects void specializations scalar fp16 fp64",
           "[function_objects][fp16][fp64]") {
