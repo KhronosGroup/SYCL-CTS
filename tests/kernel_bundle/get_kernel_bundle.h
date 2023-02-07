@@ -180,7 +180,6 @@ inline void run_test_for_all_overload_types(
     const std::vector<sycl::kernel_id> &user_defined_kernel_ids) {
   const auto context{queue.get_context()};
   const auto device{queue.get_device()};
-  const size_t number_devices{context.get_devices().size()};
   constexpr unsigned int kernel_descriptor_count =
       sizeof...(KernelDescriptorsT);
 
@@ -224,7 +223,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(
         context, context.get_devices(), selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
     CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
@@ -235,7 +234,7 @@ inline void run_test_for_all_overload_types(
     has_kernel_dev.reset();
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context, selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
     CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
@@ -245,7 +244,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(
         context, context.get_devices(), user_defined_kernel_ids)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -254,7 +253,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{
         sycl::get_kernel_bundle<BundleState>(context, context.get_devices())};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -263,7 +262,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{
         sycl::get_kernel_bundle<BundleState>(context, user_defined_kernel_ids)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -271,7 +270,7 @@ inline void run_test_for_all_overload_types(
         "overload");
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
 }
 

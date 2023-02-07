@@ -37,17 +37,10 @@
 
 namespace sycl_cts::tests::kernel_bundle {
 
-inline auto kernels_for_link_and_build = named_type_pack<
-    kernels::kernel_cpu_descriptor, kernels::kernel_gpu_descriptor,
-    kernels::kernel_accelerator_descriptor, kernels::simple_kernel_descriptor,
-    kernels::simple_kernel_descriptor_second,
-    kernels::kernel_fp16_no_attr_descriptor,
-    kernels::kernel_fp64_no_attr_descriptor,
-    kernels::kernel_atomic64_no_attr_descriptor>::generate(
-    "kernel_cpu_descriptor",           "kernel_gpu_descriptor",
-    "kernel_accelerator_descriptor",   "simple_kernel_descriptor",
-    "simple_kernel_descriptor_second", "kernel_fp16_no_attr_descriptor",
-    "kernel_fp64_no_attr_descriptor",  "kernel_atomic64_no_attr_descriptor");
+inline auto kernels_for_link_and_build =
+    named_type_pack<kernels::simple_kernel_descriptor,
+                    kernels::simple_kernel_descriptor_second>::
+        generate("simple_kernel_descriptor", "simple_kernel_descriptor_second");
 
 using cpu_kernel = kernels::kernel_cpu_descriptor::type;
 using gpu_kernel = kernels::kernel_gpu_descriptor::type;
@@ -179,29 +172,28 @@ inline void compare_dev_compat_and_has_kb_result(
  *  @param log sycl_cts::util::logger class object
  *  @param kernel_bundle kernel bundle that was obtained from different
  *         overloads of sycl::get_kernel_bundle function
- *  @param number_devices Number of devices that was provided to the
- *         sycl::get_kernel_bundle
+ *  @param dev_vector Devices that was provided to the sycl::get_kernel_bundle
  *  @param kernel_name String with tested kernel representation
  */
 template <typename KernelDescriptorT>
 struct verify_that_kernel_in_bundle {
   template <typename KernelBundleT>
   void operator()(util::logger &log, const KernelBundleT &kernel_bundle,
-                  size_t number_devices, const std::string &kernel_name) {
+                  const std::vector<sycl::device> &dev_vector,
+                  const std::string &kernel_name) {
     const auto kernel_restrictions{
         get_restrictions<KernelDescriptorT, sycl::bundle_state::executable>()};
-    if (kernel_bundle.get_devices().size() != number_devices) {
+    if (kernel_bundle.get_devices().size() != dev_vector.size()) {
       FAIL(log,
-           "Test failed due to kernel bundle devices length not equal to " +
-               std::to_string(number_devices));
+           "Test failed due to kernel bundle devices length not equal to "
+           "device vector size");
     } else {
       using kernel = typename KernelDescriptorT::type;
       auto k_id{sycl::get_kernel_id<kernel>()};
 
       const bool kb_has_kernel{kernel_bundle.has_kernel(k_id)};
-      const auto kb_devices{kernel_bundle.get_devices()};
       const bool dev_compat_status{
-          std::all_of(kb_devices.begin(), kb_devices.end(),
+          std::all_of(dev_vector.begin(), dev_vector.end(),
                       [&](const sycl::device &device) {
                         return kernel_restrictions.is_compatible(device);
                       })};

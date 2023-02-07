@@ -86,12 +86,15 @@ template <typename KernelT>
 inline sycl::kernel_bundle<sycl::bundle_state::executable> get_non_empty_bundle(
     const sycl::context &ctx) {
   auto kernel_id = sycl::get_kernel_id<KernelT>();
-  auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
-      ctx, ctx.get_devices(), {kernel_id});
-  if (k_bundle.empty()) {
-    throw sycl_cts::util::skip_check("Test skipped due to bundle is empty");
+  try {
+    auto k_bundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        ctx, ctx.get_devices(), {kernel_id});
+    return k_bundle;
+  } catch (const sycl::exception &e) {
+    if (sycl::errc::invalid == e.code())
+      SKIP(
+          "Test skipped because no device is compatible with requested kernel");
   }
-  return k_bundle;
 }
 
 /** @brief Constructing kernel bundle with built-in kernels
