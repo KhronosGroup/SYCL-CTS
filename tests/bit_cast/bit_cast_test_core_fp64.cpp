@@ -19,11 +19,19 @@
 //  Provides sycl::bit_cast test for fp64 type.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
+
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
 #include "bit_cast_test.h"
+
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 namespace bit_cast::tests::fp64 {
 
-TEST_CASE("Test sycl::bit_cast, fp64 type", "[bit_cast]") {
+// FIXME: re-enable when sycl::bit_cast() is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Test sycl::bit_cast, fp64 type", "[bit_cast]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     SKIP(
@@ -42,6 +50,6 @@ TEST_CASE("Test sycl::bit_cast, fp64 type", "[bit_cast]") {
                                                            primary_fp64_type);
   for_all_combinations<bit_cast::tests::run_bit_cast_test>(primary_fp64_type,
                                                            primary_fp64_type);
-}
+});
 
 }  // namespace bit_cast::tests::fp64

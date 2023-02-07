@@ -31,6 +31,9 @@ using namespace bit_cast::tests::helper_functions;
 constexpr int expected_val = 42;
 
 template <typename ToType, typename FromType>
+class kernel_name;
+
+template <typename ToType, typename FromType>
 class bit_cast_test {
   static constexpr bool is_invalid_test_case() {
     return std::is_array_v<ToType> || sizeof(ToType) != sizeof(FromType) ||
@@ -52,7 +55,7 @@ class bit_cast_test {
             .submit([&](sycl::handler& cgh) {
               auto result_acc =
                   buf_result.template get_access<sycl::access_mode::write>(cgh);
-              cgh.single_task([=] {
+              cgh.single_task<kernel_name<ToType, FromType>>([=] {
                 FromType expected;
                 value_operations::assign(expected, expected_val);
                 FromType from;
