@@ -45,6 +45,11 @@ void check_in_order_prop(const sycl::queue &queue) {
 }
 
 void check_in_order_functionality(sycl::queue &queue) {
+  if (queue.get_device().has(sycl::aspect::usm_device_allocations))
+    SKIP(
+        "test for in_order functionality is skipped because device doesn't "
+        "support usm_device_allocations");
+
   bool *data_changed = sycl::malloc_device<bool>(1, queue);
   constexpr size_t buffer_size = 10;
   int loop_array[buffer_size];
@@ -85,10 +90,6 @@ void check_in_order_functionality(sycl::queue &queue) {
 void check_in_order(sycl::queue &queue) {
   check_in_order_prop(queue);
 
-  if (queue.get_device().has(sycl::aspect::usm_device_allocations))
-    SKIP(
-        "test for in_order functionality is skipped because device doesn't "
-        "support usm_device_allocations");
   check_in_order_functionality(queue);
 }
 

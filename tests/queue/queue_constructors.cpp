@@ -32,7 +32,6 @@ TEST_CASE("Check queue default constructor and destructor", "[queue]") {
 }
 
 TEST_CASE("Check queue (property_list) constructor", "[queue]") {
-  auto device = util::get_cts_object::device();
   sycl::queue queue(sycl::property_list{sycl::property::queue::in_order()});
 
   CHECK(queue.has_property<sycl::property::queue::in_order>());
@@ -44,7 +43,6 @@ TEST_CASE("Check queue (async_handler) constructor", "[queue]") {
 }
 
 TEST_CASE("Check queue (async_handler, property_list) constructor", "[queue]") {
-  auto device = util::get_cts_object::device();
   cts_async_handler asyncHandler;
   sycl::queue queue(asyncHandler, {sycl::property::queue::in_order()});
 
