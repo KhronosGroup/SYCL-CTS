@@ -140,7 +140,6 @@ jobs:
         # Explicit bash needed because of if [[]] syntax in patching command. Remove if not needed
         shell: bash
         run: |
-          if [[ "${{matrix.sycl-impl}}" == "computecpp" ]]; then git apply --unsafe-paths --directory="/" ci/${{ matrix.sycl-impl }}.patch; fi;
           bash /scripts/configure.sh \
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
             -DSYCL_CTS_MEASURE_BUILD_TIMES=ON
