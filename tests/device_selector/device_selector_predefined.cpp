@@ -22,96 +22,180 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
-#define TEST_NAME device_selector_predefined
-
-namespace device_selector_predefined__ {
+namespace device_selector_predefined {
 using namespace sycl_cts;
 
-/** tests predefined selectors for sycl::device_selector
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+bool is_host(const sycl::device &device) {
+  return device.get_info<sycl::info::device::device_type>() !=
+         sycl::info::device_type::host;
+}
+
+TEST_CASE("predefined selectors", "[device_selector]") {
+  bool gpuAvailable = false;
+  bool cpuAvailable = false;
+  bool acceleratorAvailable = false;
+  auto devices = sycl::device::get_devices();
+  for (const auto &device : devices) {
+    if (device.is_gpu()) {
+      gpuAvailable = true;
+    }
+    if (device.is_cpu()) {
+      cpuAvailable = true;
+    }
+    if (device.is_accelerator()) {
+      acceleratorAvailable = true;
+    }
   }
+  const bool noneAvailable =
+      !cpuAvailable && !gpuAvailable && !acceleratorAvailable;
 
-  /** execute the test
-   */
-  void run(util::logger &log) override {
-    {
-      bool gpuAvailable = false;
-      bool cpuAvailable = false;
-      bool acceleratorAvailable = false;
-      auto devices = sycl::device::get_devices();
-      for (auto device : devices) {
-        if (device.is_gpu()) {
-          gpuAvailable = true;
-        }
-        if (device.is_cpu()) {
-          cpuAvailable = true;
-        }
-        if (device.is_accelerator()) {
-          acceleratorAvailable = true;
-        }
-      }
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
+#endif
 
-      /** check default_selector
-      */
-      if (!cpuAvailable && !gpuAvailable && !acceleratorAvailable) {
-        sycl::default_selector defaultSelector;
-        try {
-          auto defaultDevice = util::get_cts_object::device(defaultSelector);
-          if (defaultDevice.get_info<sycl::info::device::device_type>() !=
-              sycl::info::device_type::host) {
-            std::string errorMsg =
-                "a SYCL exception occured when default_selector tried to "
-                "select a device when no opencl devices available";
-            FAIL(log, errorMsg.c_str());
-          }
-        } catch (const sycl::exception &e) {
-          log_exception(log, e);
-          FAIL(log,
-               "default_selector failed to select a host device when no opencl "
-               "devices available");
-        }
-      }
+  // Compatibility with old SYCL 1.2.1 device selectors.
 
-      /** check cpu_selector
-      */
-      if (cpuAvailable) {
-        sycl::cpu_selector cpuSelector;
-        auto cpuDevice = util::get_cts_object::device(cpuSelector);
-        if (!(cpuDevice.is_cpu())) {
-          FAIL(log, "cpu_selector failed to select an appropriate device");
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+  {  // default_selector
+    if (noneAvailable) {
+      sycl::default_selector defaultSelector;
+      try {
+        auto defaultDevice = util::get_cts_object::device(defaultSelector);
+        if (is_host(defaultDevice)) {
+          FAIL("selected a non-host device when no devices are available");
         }
-      }
-
-      /** check gpu_selector
-      */
-      if (gpuAvailable) {
-        sycl::gpu_selector gpuSelector;
-        auto gpuDevice = util::get_cts_object::device(gpuSelector);
-        if (!(gpuDevice.is_gpu())) {
-          FAIL(log, "gpu_selector failed to select an appropriate device");
-        }
-      }
-
-      /** check accelerator_selector
-      */
-      if (acceleratorAvailable) {
-        sycl::accelerator_selector acceleratorSelector;
-        auto acceleratorDevice = util::get_cts_object::device(acceleratorSelector);
-        if (!(acceleratorDevice.is_accelerator())) {
-          FAIL(log, "accelerator_selector failed to select an appropriate device");
-        }
+      } catch (const sycl::exception &e) {
+        FAIL("failed to select a host device when no devices are available");
       }
     }
   }
-};
+  {  // cpu_selector
+    sycl::cpu_selector cpuSelector;
+    if (cpuAvailable) {
+      auto cpuDevice = util::get_cts_object::device(cpuSelector);
+      CHECK(cpuDevice.is_cpu());
+    } else {
+      try {
+        auto cpuDevice = util::get_cts_object::device(cpuSelector);
+        FAIL("selected a CPU device when none are available");
+      } catch (const sycl::runtime_error &e) {
+        // sycl::runtime_error is expected
+      } catch (...) {
+        FAIL("wrong error thrown when no CPU devices are available");
+      }
+    }
+  }
+  {  // gpu_selector
+    sycl::gpu_selector gpuSelector;
+    if (gpuAvailable) {
+      auto gpuDevice = util::get_cts_object::device(gpuSelector);
+      CHECK(gpuDevice.is_gpu());
+    } else {
+      try {
+        auto gpuDevice = util::get_cts_object::device(gpuSelector);
+        FAIL("selected a GPU device when none are available");
+      } catch (const sycl::runtime_error &e) {
+        // sycl::runtime_error is expected
+      } catch (...) {
+        FAIL("wrong error thrown when no GPU devices are available");
+      }
+    }
+  }
+  {  // accelerator_selector
+    sycl::accelerator_selector acceleratorSelector;
+    if (acceleratorAvailable) {
+      auto acceleratorDevice =
+          util::get_cts_object::device(acceleratorSelector);
+      CHECK(acceleratorDevice.is_accelerator());
+    } else {
+      try {
+        auto acceleratorDevice =
+            util::get_cts_object::device(acceleratorSelector);
+        FAIL("selected an accelerator device when none are available");
+      } catch (const sycl::runtime_error &e) {
+        // sycl::runtime_error is expected
+      } catch (...) {
+        FAIL("wrong error thrown when no accelerator devices are available");
+      }
+    }
+  }
+#endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
-// register this test with the test_collection
-util::test_proxy<TEST_NAME> proxy;
+  // SYCL2020 device selectors.
 
-} /* namespace device_selector_predefined__ */
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+  {  // default_selector_v
+    if (noneAvailable) {
+      try {
+        auto defaultDevice =
+            util::get_cts_object::device(sycl::default_selector_v);
+        if (is_host(defaultDevice)) {
+          FAIL("selected non-host device when no devices are available");
+        }
+      } catch (const sycl::exception &e) {
+// ComputeCpp cannot make comparison
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        CHECK((sycl::errc::runtime == e.code()));
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      }
+    }
+  }
+  {  // cpu_selector_v
+    const auto cpuSelector = sycl::cpu_selector_v;
+    if (cpuAvailable) {
+      auto cpuDevice = util::get_cts_object::device(cpuSelector);
+      CHECK(cpuDevice.is_cpu());
+    } else {
+      try {
+        auto cpuDevice = util::get_cts_object::device(cpuSelector);
+        FAIL("selected a CPU device when none are available");
+      } catch (const sycl::exception &e) {
+// ComputeCpp cannot make comparison
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        CHECK((sycl::errc::runtime == e.code()));
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      }
+    }
+  }
+  {  // gpu_selector_v
+    const auto gpuSelector = sycl::gpu_selector_v;
+    if (gpuAvailable) {
+      auto gpuDevice = util::get_cts_object::device(gpuSelector);
+      CHECK(gpuDevice.is_gpu());
+    } else {
+      try {
+        auto gpuDevice = util::get_cts_object::device(gpuSelector);
+        FAIL("selected a GPU device when none are available");
+      } catch (const sycl::exception &e) {
+// ComputeCpp cannot make comparison
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        CHECK((sycl::errc::runtime == e.code()));
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      }
+    }
+  }
+  {  // accelerator_selector_v
+    const auto acceleratorSelector = sycl::accelerator_selector_v;
+    if (acceleratorAvailable) {
+      auto acceleratorDevice =
+          util::get_cts_object::device(acceleratorSelector);
+      CHECK(acceleratorDevice.is_accelerator());
+    } else {
+      try {
+        auto acceleratorDevice =
+            util::get_cts_object::device(acceleratorSelector);
+        FAIL("selected an accelerator device when none are available");
+      } catch (const sycl::exception &e) {
+        // ComputeCpp cannot make comparison
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        CHECK(sycl::errc::runtime == e.code());
+#endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
+      }
+    }
+  }
+#else
+  WARN("DPCPP does not implement predefined device selector instances");
+#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
+}
+
+}  // namespace device_selector_predefined

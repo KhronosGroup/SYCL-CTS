@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -172,8 +172,7 @@ class image_accessor_dims {
      */
     {
       constexpr auto target = sycl::target::image;
-      using verifier =
-          check_all_accessor_constructors_image<T, dims, target>;
+      using verifier = check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_image<T, dims, target>;
 
@@ -202,7 +201,8 @@ class image_accessor_dims {
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(dummy_functor<T, sycl::target::image>{});
+        using dummy = dummy_functor<T, sycl::target::image>;
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }
@@ -266,8 +266,7 @@ public:
     /** check image array accessor constructors for image
      */
     {
-      using verifier =
-          check_all_accessor_constructors_image<T, dims, target>;
+      using verifier = check_all_accessor_constructors_image<T, dims, target>;
       using semantics_verifier =
           check_accessor_common_by_reference_image<T, dims, target>;
 
@@ -296,8 +295,8 @@ public:
 
         /** dummy kernel as no kernel is required for these checks
          */
-        h.single_task(
-            dummy_functor<T, sycl::target::image_array>{});
+        using dummy = dummy_functor<T, sycl::target::image_array>;
+        h.single_task<dummy>(dummy{});
       });
       queue.wait_and_throw();
     }

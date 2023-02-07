@@ -61,7 +61,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_default>(stream_kernel{});
     });
   }
 
@@ -82,7 +82,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_property>(stream_kernel{});
     });
   }
 
@@ -118,7 +118,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value after copy constructed.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_copy>(stream_kernel{});
     });
   }
 
@@ -155,7 +155,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value after copy assigned.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_assignment>(stream_kernel{});
     });
   }
 
@@ -177,7 +177,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value after move constructed.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_move>(stream_kernel{});
     });
   }
 
@@ -200,7 +200,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "incorrect value after move assigned.");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_move_assignment>(stream_kernel{});
     });
   }
 
@@ -242,7 +242,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "(comparing same)");
       }
 
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_equality>(stream_kernel{});
     });
   }
 
@@ -260,7 +260,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
             "stream hashing does not work correctly (hashing of equal "
             "failed)");
       }
-      handler.single_task(stream_kernel{});
+      handler.single_task<class kernel_hashing>(stream_kernel{});
     });
   }
 

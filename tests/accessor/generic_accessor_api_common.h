@@ -2,9 +2,22 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides common code for generic sycl::accessor api tests
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
 #ifndef SYCL_CTS_GENERIC_ACCESSOR_API_COMMON_H
 #define SYCL_CTS_GENERIC_ACCESSOR_API_COMMON_H
 #include "accessor_common.h"
@@ -92,6 +105,15 @@ void test_accessor_types() {
                             sycl::access::decorated::no>>);
   }
 }
+
+template <typename T, typename AccessT, typename DimensionT, typename TargetT>
+class kernel_buffer_accessor;
+
+template <typename T, typename AccessT, typename DimensionT, typename TargetT>
+class kernel_offset;
+
+template <typename T, typename AccessT, typename DimensionT, typename TargetT>
+class kernel_swap;
 
 template <typename T, typename AccessT, typename DimensionT, typename TargetT>
 class run_api_tests {
@@ -221,8 +243,10 @@ class run_api_tests {
                   }
                 });
               } else {
+                using kname =
+                    kernel_buffer_accessor<T, AccessT, DimensionT, TargetT>;
                 sycl::accessor res_acc(res_buf, cgh);
-                cgh.single_task([acc, res_acc]() {
+                cgh.single_task<kname>([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
                   res_acc[0] &= test_begin_end_device(acc, expected_val,
                                                       expected_val, false);
@@ -326,8 +350,9 @@ class run_api_tests {
                     }
                   });
                 } else {
+                  using kname = kernel_offset<T, AccessT, DimensionT, TargetT>;
                   sycl::accessor res_acc(res_buf, cgh);
-                  cgh.single_task([=]() {
+                  cgh.single_task<kname>([=]() {
                     test_accessor_ptr_device(acc, T(), res_acc);
                     res_acc[0] &= test_begin_end_device(
                         acc, value_operations::init<T>(0),
@@ -382,8 +407,9 @@ class run_api_tests {
                   }
                 });
               } else {
+                using kname = kernel_swap<T, AccessT, DimensionT, TargetT>;
                 sycl::accessor res_acc(res_buf, cgh);
-                cgh.single_task([=]() {
+                cgh.single_task<kname>([=]() {
                   if constexpr (0 < dims) {
                     typename AccT::reference acc_ref1 =
                         get_accessor_reference<dims>(acc1);

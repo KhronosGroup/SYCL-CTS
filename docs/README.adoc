@@ -417,3 +417,6 @@ While legacy test cases are still mapped to Catch2 under the hood, they require 
 Although technically not required, usually only one class extending `test_base` is defined per file.
 
 IMPORTANT: Always write new-style test cases.
+
+=== Reduced and full feature set
+SYCL 2020 specifies a full and a reduced feature set. The full feature set includes all features in the core SYCL specification without exceptions, the reduced feature set makes certain features optional. To ensure that reduced feature set implementations can test conformance, the CTS option `SYCL_CTS_ENABLE_FEATURE_SET_FULL` is available, which can be set to `OFF` (it is `ON` by default). Tests for full features should be conditionally included with `#if SYCL_CTS_ENABLE_FEATURE_SET_FULL` to compile-time disable these tests for reduced feature set implementations.
