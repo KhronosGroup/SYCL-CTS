@@ -63,7 +63,7 @@ bool equal(const T& a, const U& b) {
  * As a result the helper below is needed
  */
 template <typename T, typename U>
-T init_helper(const U init) {
+T splat_init(const U init) {
   T res;
   value_operations::assign(res, init);
   return res;

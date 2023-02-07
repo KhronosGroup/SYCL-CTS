@@ -41,7 +41,7 @@ void broadcast_group(sycl::queue& queue) {
   size_t work_group_size = work_group_range.size();
 
   // array to return results
-  T res[test_matrix] = {init_helper<T>(0)};
+  T res[test_matrix] = {splat_init<T>(0)};
   {
     sycl::buffer<T, 1> res_sycl(res, sycl::range<1>(test_matrix));
 
@@ -61,7 +61,7 @@ void broadcast_group(sycl::queue& queue) {
               --last_item[i];
             }
 
-            T local_var = init_helper<T>(item.get_local_linear_id() + 1);
+            T local_var = splat_init<T>(item.get_local_linear_id() + 1);
 
             // broadcast from the first workitem
             ASSERT_RETURN_TYPE(
@@ -73,7 +73,7 @@ void broadcast_group(sycl::queue& queue) {
                 group.get_local_linear_range() - 1)
               res_acc[0] = local_var;
 
-            local_var = init_helper<T>(item.get_local_linear_id() + 1);
+            local_var = splat_init<T>(item.get_local_linear_id() + 1);
 
             // broadcast from the last workitem 1
             ASSERT_RETURN_TYPE(
@@ -87,7 +87,7 @@ void broadcast_group(sycl::queue& queue) {
                 group, local_var, group.get_local_linear_range() - 1);
             if (item.get_local_linear_id() == 0) res_acc[1] = local_var;
 
-            local_var = init_helper<T>(item.get_local_linear_id() + 1);
+            local_var = splat_init<T>(item.get_local_linear_id() + 1);
 
             // broadcast from the last workitem 2
             ASSERT_RETURN_TYPE(
@@ -101,8 +101,8 @@ void broadcast_group(sycl::queue& queue) {
     });
   }
 
-  T expected[test_matrix] = {init_helper<T>(1), init_helper<T>(work_group_size),
-                             init_helper<T>(work_group_size)};
+  T expected[test_matrix] = {splat_init<T>(1), splat_init<T>(work_group_size),
+                             splat_init<T>(work_group_size)};
 
   for (int i = 0; i < test_matrix; ++i) {
     std::string work_group = util::work_group_print(work_group_range);
@@ -131,7 +131,7 @@ void broadcast_sub_group(sycl::queue& queue) {
   sycl::range<D> work_group_range = util::work_group_range<D>(queue);
 
   // array to return results
-  T res[test_matrix + 1] = {init_helper<T>(0)};
+  T res[test_matrix + 1] = {splat_init<T>(0)};
   {
     sycl::buffer<T, 1> res_sycl(res, sycl::range<1>(test_matrix + 1));
 
@@ -145,7 +145,7 @@ void broadcast_sub_group(sycl::queue& queue) {
           D, T>>(executionRange, [=](sycl::nd_item<D> item) {
         sycl::sub_group sub_group = item.get_sub_group();
 
-        T local_var(init_helper<T>(0));
+        T local_var(splat_init<T>(0));
 
         if (sub_group.get_group_id()[0] == 0) {
           // find local id of last group item
@@ -153,7 +153,7 @@ void broadcast_sub_group(sycl::queue& queue) {
           --last_item[0];
 
           // broadcast from the first workitem
-          local_var = init_helper<T>(item.get_global_linear_id() + 1);
+          local_var = splat_init<T>(item.get_global_linear_id() + 1);
           ASSERT_RETURN_TYPE(
               T, sycl::group_broadcast(sub_group, local_var),
               "Return type of group_broadcast(sub_group g, T x) is wrong\n");
@@ -164,7 +164,7 @@ void broadcast_sub_group(sycl::queue& queue) {
             res_acc[0] = local_var;
 
           // broadcast from the last workitem 1
-          local_var = init_helper<T>(item.get_global_linear_id() + 1);
+          local_var = splat_init<T>(item.get_global_linear_id() + 1);
           ASSERT_RETURN_TYPE(
               T, sycl::group_broadcast(sub_group, local_var, last_item),
               "Return type of group_broadcast(sub_group g, T x, "
@@ -175,7 +175,7 @@ void broadcast_sub_group(sycl::queue& queue) {
           if (sub_group.get_local_linear_id() == 0) res_acc[1] = local_var;
 
           // broadcast from the last workitem 2
-          local_var = init_helper<T>(item.get_global_linear_id() + 1);
+          local_var = splat_init<T>(item.get_global_linear_id() + 1);
           ASSERT_RETURN_TYPE(
               T, sycl::group_broadcast(sub_group, local_var, last_item),
               "Return type of group_broadcast(sub_group g, T x, "
@@ -185,7 +185,7 @@ void broadcast_sub_group(sycl::queue& queue) {
           if (sub_group.get_local_linear_id() == 0) res_acc[2] = local_var;
 
           // select from the last workitem
-          local_var = init_helper<T>(item.get_global_linear_id() + 1);
+          local_var = splat_init<T>(item.get_global_linear_id() + 1);
           ASSERT_RETURN_TYPE(
               T, sycl::select_from_group(sub_group, local_var, last_item),
               "Return type of select_from_group(sub_group g, T x, "
@@ -201,7 +201,7 @@ void broadcast_sub_group(sycl::queue& queue) {
       });
     });
   }
-  T expected[test_matrix] = {init_helper<T>(1), res[4], res[4], res[4]};
+  T expected[test_matrix] = {splat_init<T>(1), res[4], res[4], res[4]};
   for (int i = 0; i < test_matrix; ++i) {
     std::string work_group = util::work_group_print(work_group_range);
     CAPTURE(D, work_group);

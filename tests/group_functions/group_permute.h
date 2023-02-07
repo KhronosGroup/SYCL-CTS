@@ -57,8 +57,8 @@ void permute_group(sycl::queue& queue) {
             using lin_id_type = typename sycl::group<D>::linear_id_type;
             const lin_id_type llid = group.get_local_linear_id();
 
-            T local_var(init_helper<T>(llid + 1));
-            T permuted_var(init_helper<T>(llid + 1));
+            T local_var(splat_init<T>(llid + 1));
+            T permuted_var(splat_init<T>(llid + 1));
 
             ASSERT_RETURN_TYPE(T,
                                sycl::permute_group_by_xor(group, local_var, 0),
@@ -68,7 +68,7 @@ void permute_group(sycl::queue& queue) {
             bool res = true;
             for (lin_id_type mask = 1u; mask > 0; mask <<= 1) {
               permuted_var = sycl::permute_group_by_xor(group, local_var, mask);
-              res &= equal(permuted_var, init_helper<T>((llid ^ mask) + 1)) ||
+              res &= equal(permuted_var, splat_init<T>((llid ^ mask) + 1)) ||
                      ((llid ^ mask) >= group.get_local_linear_range());
             }
             res_acc[0 * work_group_size + llid] = res;
@@ -119,8 +119,8 @@ void permute_sub_group(sycl::queue& queue) {
             using lin_id_type = typename sycl::sub_group::linear_id_type;
             const lin_id_type llid = sub_group.get_local_linear_id();
 
-            T local_var(init_helper<T>(llid + 1));
-            T permuted_var(init_helper<T>(llid + 1));
+            T local_var(splat_init<T>(llid + 1));
+            T permuted_var(splat_init<T>(llid + 1));
 
             ASSERT_RETURN_TYPE(
                 T, sycl::permute_group_by_xor(sub_group, local_var, 0),
@@ -131,7 +131,7 @@ void permute_sub_group(sycl::queue& queue) {
             for (lin_id_type mask = 1u; mask > 0; mask <<= 1) {
               permuted_var =
                   sycl::permute_group_by_xor(sub_group, local_var, mask);
-              res &= equal(permuted_var, init_helper<T>((llid ^ mask) + 1)) ||
+              res &= equal(permuted_var, splat_init<T>((llid ^ mask) + 1)) ||
                      ((llid ^ mask) >= sub_group.get_local_linear_range());
             }
             res_acc[0 * work_group_size + item.get_local_linear_id()] = res;

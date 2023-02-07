@@ -60,8 +60,8 @@ void shift_group(sycl::queue& queue) {
             const typename sycl::group<D>::linear_id_type llid =
                 item.get_local_linear_id();
 
-            T local_var(init_helper<T>(llid + 1));
-            T shifted_var(init_helper<T>(llid + 1));
+            T local_var(splat_init<T>(llid + 1));
+            T shifted_var(splat_init<T>(llid + 1));
 
             ASSERT_RETURN_TYPE(
                 T, sycl::shift_group_left(group, local_var),
@@ -69,7 +69,7 @@ void shift_group(sycl::queue& queue) {
 
             shifted_var = sycl::shift_group_left(group, local_var);
             res_acc[0 * work_group_size + llid] =
-                equal(shifted_var, init_helper<T>(llid + 2)) ||
+                equal(shifted_var, splat_init<T>(llid + 2)) ||
                 (llid + 1 >= group.get_local_linear_range());
 
             ASSERT_RETURN_TYPE(T, sycl::shift_group_left(group, local_var, 3),
@@ -78,7 +78,7 @@ void shift_group(sycl::queue& queue) {
 
             shifted_var = sycl::shift_group_left(group, local_var, 3);
             res_acc[1 * work_group_size + llid] =
-                equal(shifted_var, init_helper<T>(llid + 4)) ||
+                equal(shifted_var, splat_init<T>(llid + 4)) ||
                 (llid + 3 >= group.get_local_linear_range());
 
             ASSERT_RETURN_TYPE(
@@ -87,7 +87,7 @@ void shift_group(sycl::queue& queue) {
 
             shifted_var = sycl::shift_group_right(group, local_var);
             res_acc[2 * work_group_size + llid] =
-                equal(shifted_var, init_helper<T>(llid)) || (llid < 1);
+                equal(shifted_var, splat_init<T>(llid)) || (llid < 1);
 
             ASSERT_RETURN_TYPE(T, sycl::shift_group_right(group, local_var, 2),
                                "Return type of shift_group_right(group g, T x, "
@@ -95,7 +95,7 @@ void shift_group(sycl::queue& queue) {
 
             shifted_var = sycl::shift_group_right(group, local_var, 2);
             res_acc[3 * work_group_size + llid] =
-                equal(shifted_var, init_helper<T>(llid - 1)) || (llid < 2);
+                equal(shifted_var, splat_init<T>(llid - 1)) || (llid < 2);
           });
     });
   }
@@ -145,8 +145,8 @@ void shift_sub_group(sycl::queue& queue) {
         const sycl::sub_group::linear_id_type llid =
             sub_group.get_local_linear_id();
 
-        T local_var(init_helper<T>(llid + 1));
-        T shifted_var(init_helper<T>(llid + 1));
+        T local_var(splat_init<T>(llid + 1));
+        T shifted_var(splat_init<T>(llid + 1));
 
         ASSERT_RETURN_TYPE(
             T, sycl::shift_group_left(sub_group, local_var),
@@ -154,7 +154,7 @@ void shift_sub_group(sycl::queue& queue) {
 
         shifted_var = sycl::shift_group_left(sub_group, local_var);
         res_acc[0 * work_group_size + item.get_local_linear_id()] =
-            equal(shifted_var, init_helper<T>(llid + 2)) ||
+            equal(shifted_var, splat_init<T>(llid + 2)) ||
             (llid + 1 >= sub_group.get_local_linear_range());
 
         ASSERT_RETURN_TYPE(T, sycl::shift_group_left(sub_group, local_var, 3),
@@ -163,7 +163,7 @@ void shift_sub_group(sycl::queue& queue) {
 
         shifted_var = sycl::shift_group_left(sub_group, local_var, 3);
         res_acc[1 * work_group_size + item.get_local_linear_id()] =
-            equal(shifted_var, init_helper<T>(llid + 4)) ||
+            equal(shifted_var, splat_init<T>(llid + 4)) ||
             (llid + 3 >= sub_group.get_local_linear_range());
 
         ASSERT_RETURN_TYPE(
@@ -172,7 +172,7 @@ void shift_sub_group(sycl::queue& queue) {
 
         shifted_var = sycl::shift_group_right(sub_group, local_var);
         res_acc[2 * work_group_size + item.get_local_linear_id()] =
-            equal(shifted_var, init_helper<T>(llid)) || (llid < 1);
+            equal(shifted_var, splat_init<T>(llid)) || (llid < 1);
 
         ASSERT_RETURN_TYPE(T, sycl::shift_group_right(sub_group, local_var, 2),
                            "Return type of shift_group_right(sub_group g, T x, "
@@ -180,7 +180,7 @@ void shift_sub_group(sycl::queue& queue) {
 
         shifted_var = sycl::shift_group_right(sub_group, local_var, 2);
         res_acc[3 * work_group_size + item.get_local_linear_id()] =
-            equal(shifted_var, init_helper<T>(llid - 1)) || (llid < 2);
+            equal(shifted_var, splat_init<T>(llid - 1)) || (llid < 2);
       });
     });
   }
