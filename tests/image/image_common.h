@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -437,6 +437,8 @@ template <int dims>
 struct image_kernel_read;
 template <int dims>
 struct image_kernel_write;
+template <int dims, typename T, typename AllocatorT>
+struct image_kernel_access;
 class empty_kernel {
  public:
   void operator()() const {}
@@ -628,7 +630,8 @@ class image_api_check {
           // target::image
           auto imgAcc =
               img.template get_access<T, sycl::access_mode::write>(cgh);
-          cgh.single_task(empty_kernel());
+          using kname = image_kernel_access<dims, T, AllocatorT>;
+          cgh.single_task<kname>(empty_kernel());
         });
 
         testQueue.wait_and_throw();

@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides common functions for optional kernel features tests
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides common functions for optional kernel features tests
 
 #ifndef SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
 #define SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H
@@ -251,7 +265,7 @@ constexpr sycl::aspect get_another_aspect() {
  * exception or not
  */
 inline void check_async_exception(sycl::queue &queue,
-                           const bool is_exception_expected) {
+                                  const bool is_exception_expected) {
   INFO("Check if async exception was thrown");
   bool is_async_exception_thrown{};
   try {
@@ -336,12 +350,19 @@ void execute_tasks_and_check_exception(
   }
 }
 
+enum class call_type { no_arg, item_arg, group_arg };
+
+template <typename KernelName, call_type CallType>
+class kernel_separate_lambda;
+
 /**
  * @brief The function helps to run separate lambdas in the kernel by
  * executing them in single_task, parallel_for and parallel_for_work_group.
  * The function also expects exception depending on is_exception_expected
  * flag.
  *
+ * @tparam KernelName The name of the kernel. All \p run_separate_lambda calls
+ *         should have a unique name.
  * @tparam LambdaNoArg The type of lambda for single_task invocation
  * @tparam LambdaItemArg The type of lambda for parallel_for invocation
  * @tparam LambdaGroupArg The type of lambda for parallel_for_work_group
@@ -355,7 +376,8 @@ void execute_tasks_and_check_exception(
  * @param separate_lambda_group_arg The lambda for parallel_for_work_group
  * invocation
  */
-template <typename LambdaNoArg, typename LambdaItemArg, typename LambdaGroupArg>
+template <typename KernelName, typename LambdaNoArg, typename LambdaItemArg,
+          typename LambdaGroupArg>
 void run_separate_lambda(const bool is_exception_expected,
                          const sycl::errc errc_expected, sycl::queue &queue,
                          LambdaNoArg separate_lambda_no_arg,
@@ -364,22 +386,27 @@ void run_separate_lambda(const bool is_exception_expected,
   auto single_task_action = [&queue, separate_lambda_no_arg] {
     queue
         .submit([&](sycl::handler &cgh) {
-          cgh.single_task(separate_lambda_no_arg);
+          cgh.single_task<
+              kernel_separate_lambda<KernelName, call_type::no_arg>>(
+              separate_lambda_no_arg);
         })
         .wait();
   };
   auto parallel_for_action = [&queue, separate_lambda_item_arg] {
     queue
         .submit([&](sycl::handler &cgh) {
-          cgh.parallel_for(sycl::range{1}, separate_lambda_item_arg);
+          cgh.parallel_for<
+              kernel_separate_lambda<KernelName, call_type::item_arg>>(
+              sycl::range{1}, separate_lambda_item_arg);
         })
         .wait();
   };
   auto parallel_for_wg_action = [&queue, separate_lambda_group_arg] {
     queue
         .submit([&](sycl::handler &cgh) {
-          cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},
-                                      separate_lambda_group_arg);
+          cgh.parallel_for_work_group<
+              kernel_separate_lambda<KernelName, call_type::group_arg>>(
+              sycl::range{1}, sycl::range{1}, separate_lambda_group_arg);
         })
         .wait();
   };
@@ -440,8 +467,11 @@ void run_functor(const bool is_exception_expected,
                                     parallel_for_action, parallel_for_action);
 }
 
-#define NO_ATTRIBUTE /*no attribute*/
+#define NO_ATTRIBUTE   /*no attribute*/
 #define NO_KERNEL_BODY /*no kernel code*/
+
+template <typename KernelName, call_type CallType>
+class kernel_submission_call;
 
 /**
  * @brief The function like macros that helps to define and run kernels through
@@ -454,43 +484,51 @@ void run_functor(const bool is_exception_expected,
  * @param ERRC The error code that expected from sycl::exception
  * @param QUEUE The sycl::queue instance for device
  * @param ATTRIBUTE The attribute that will be applied to the submission call.
+ * @param KERNEL_NAME Name of the kernel. Each \p RUN_SUBMISSION_CALL call
+ *        should have a unique name,
  * @param __VA_ARGS__ Body of the submission call that have to be executed on
  * the device
  */
-#define RUN_SUBMISSION_CALL(IS_EXCEPTION_EXPECTED, ERRC, QUEUE, ATTRIBUTE,   \
-                            ...)                                             \
-                                                                             \
-  {                                                                          \
-    auto single_task_action = [&QUEUE] {                                     \
-      QUEUE                                                                  \
-          .submit([&](sycl::handler &cgh) {                                  \
-            cgh.single_task([=]() ATTRIBUTE { __VA_ARGS__; });               \
-          })                                                                 \
-          .wait();                                                           \
-    };                                                                       \
-    auto parallel_for_action = [&QUEUE] {                                    \
-      QUEUE                                                                  \
-          .submit([&](sycl::handler &cgh) {                                  \
-            cgh.parallel_for(sycl::range{1},                                 \
-                             [=](sycl::item<1>) ATTRIBUTE { __VA_ARGS__; }); \
-          })                                                                 \
-          .wait();                                                           \
-    };                                                                       \
-    auto parallel_for_wg_action = [&QUEUE] {                                 \
-      QUEUE                                                                  \
-          .submit([&](sycl::handler &cgh) {                                  \
-            cgh.parallel_for_work_group(sycl::range{1}, sycl::range{1},      \
-                                        [=](sycl::group<1>)                  \
-                                            ATTRIBUTE { __VA_ARGS__; });     \
-          })                                                                 \
-          .wait();                                                           \
-    };                                                                       \
-                                                                             \
-    execute_tasks_and_check_exception(                                       \
-        IS_EXCEPTION_EXPECTED, ERRC, QUEUE, "submission call",               \
-        single_task_action, parallel_for_action, parallel_for_action);       \
+#define RUN_SUBMISSION_CALL(IS_EXCEPTION_EXPECTED, ERRC, QUEUE, ATTRIBUTE,  \
+                            KERNEL_NAME, ...)                               \
+                                                                            \
+  {                                                                         \
+    auto single_task_action = [&QUEUE] {                                    \
+      QUEUE                                                                 \
+          .submit([&](sycl::handler &cgh) {                                 \
+            cgh.single_task<                                                \
+                kernel_submission_call<KERNEL_NAME, call_type::no_arg>>(    \
+                [=]() ATTRIBUTE { __VA_ARGS__; });                          \
+          })                                                                \
+          .wait();                                                          \
+    };                                                                      \
+    auto parallel_for_action = [&QUEUE] {                                   \
+      QUEUE                                                                 \
+          .submit([&](sycl::handler &cgh) {                                 \
+            cgh.parallel_for<                                               \
+                kernel_submission_call<KERNEL_NAME, call_type::item_arg>>(  \
+                sycl::range{1},                                             \
+                [=](sycl::item<1>) ATTRIBUTE { __VA_ARGS__; });             \
+          })                                                                \
+          .wait();                                                          \
+    };                                                                      \
+    auto parallel_for_wg_action = [&QUEUE] {                                \
+      QUEUE                                                                 \
+          .submit([&](sycl::handler &cgh) {                                 \
+            cgh.parallel_for_work_group<                                    \
+                kernel_submission_call<KERNEL_NAME, call_type::group_arg>>( \
+                sycl::range{1}, sycl::range{1},                             \
+                [=](sycl::group<1>) ATTRIBUTE { __VA_ARGS__; });            \
+          })                                                                \
+          .wait();                                                          \
+    };                                                                      \
+                                                                            \
+    execute_tasks_and_check_exception(                                      \
+        IS_EXCEPTION_EXPECTED, ERRC, QUEUE, "submission call",              \
+        single_task_action, parallel_for_action, parallel_for_action);      \
   }
-#endif  //#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#endif  // #if !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 };      // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H

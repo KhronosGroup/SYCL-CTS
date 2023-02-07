@@ -22,7 +22,7 @@ Define `To` and `From` as:
 Test is performed for following types for `To` and `From`:
 
 * `T`
-* `T[5]`
+* `T[2]`
 * `class Base with a non-static member variable of type T`
 * `class Derived with non-virtual base class Base`
 
@@ -52,6 +52,8 @@ For following `T` in full conformance mode:
 * pointers to above types
 
 Test is performed for all valid combinations of `To` and `From` types i.e. for types which size is equal.
+Test is skipped if the `To` type is set to `T[2]` due to array can't be a returned type and if `To` type 
+is set to `bool` since it can lead to undefined behavior (`bool` can only take 2 values).
 
 == Tests
 

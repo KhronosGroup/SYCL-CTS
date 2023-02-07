@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for multi_ptr comparison operators
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides code for multi_ptr comparison operators
 
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_COMPARISON_OP_H
 #define __SYCLCTS_TESTS_MULTI_PTR_COMPARISON_OP_H
@@ -111,6 +125,10 @@ struct mptr_nullptr_mptr_test_results {
 
 }  // namespace detail
 
+template <typename T, typename AddrSpaceT, typename IsDecoratedT,
+          typename KernelName>
+class kernel_comparison_op;
+
 /**
  * @brief Provides functor for verification on multi_ptr comparison operators
  * @tparam T Current data type
@@ -132,7 +150,8 @@ class run_multi_ptr_comparison_op_test {
   static constexpr size_t m_values_arr_size =
       sizeof(m_values_arr) / sizeof(*m_values_arr);
 
-  template <typename TestActionT, typename ExpectedTestResultT>
+  template <typename KernelName, typename TestActionT,
+            typename ExpectedTestResultT>
   void run_test(sycl::queue &queue, TestActionT test_action,
                 const ExpectedTestResultT &expected_results) {
     // Variable that contains all variables that will be used to verify test
@@ -143,6 +162,8 @@ class run_multi_ptr_comparison_op_test {
       sycl::buffer<T> array_buffer(m_values_arr, m_values_arr_size);
       sycl::buffer<ExpectedTestResultT> test_result_buffer(&test_results, m_r);
       queue.submit([&](sycl::handler &cgh) {
+        using kname =
+            kernel_comparison_op<T, AddrSpaceT, IsDecoratedT, KernelName>;
         auto array_acc =
             array_buffer.template get_access<sycl::access_mode::read>(cgh);
         auto test_result_acc =
@@ -152,7 +173,7 @@ class run_multi_ptr_comparison_op_test {
         if constexpr (space == sycl::access::address_space::local_space) {
           sycl::local_accessor<T, 1> acc_for_mptr{
               sycl::range(m_values_arr_size), cgh};
-          cgh.parallel_for(
+          cgh.parallel_for<kname>(
               sycl::nd_range(m_r, m_r), [=](sycl::nd_item<1> item) {
                 for (size_t i = 0; i < m_values_arr_size; ++i)
                   value_operations::assign(acc_for_mptr[i], array_acc[i]);
@@ -161,7 +182,7 @@ class run_multi_ptr_comparison_op_test {
               });
         } else if constexpr (space ==
                              sycl::access::address_space::private_space) {
-          cgh.single_task([=] {
+          cgh.single_task<kname>([=] {
             std::array<T, m_values_arr_size> priv_arr(
                 multi_ptr_common::init_array<T, m_values_arr_size>::value);
             for (size_t i = 0; i < m_values_arr_size; ++i)
@@ -174,7 +195,8 @@ class run_multi_ptr_comparison_op_test {
             test_action(priv_arr_mptr, test_result_acc);
           });
         } else {
-          cgh.single_task([=] { test_action(array_acc, test_result_acc); });
+          cgh.single_task<kname>(
+              [=] { test_action(array_acc, test_result_acc); });
         }
       });
     }
@@ -223,7 +245,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.first_second_mptr_result_val = mptr_1 == mptr_2;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class eq>(queue, run_test_action, expected_results);
     }
     SECTION(
         sycl_cts::section_name(
@@ -255,7 +277,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.first_second_mptr_result_val = mptr_1 != mptr_2;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class neq>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<(const multi_ptr&, const multi_ptr&)")
@@ -286,7 +308,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.first_second_mptr_result_val = mptr_1 < mptr_2;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class lt>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>(const multi_ptr&, const multi_ptr&)")
@@ -317,7 +339,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.second_first_mptr_result_val = mptr_2 > mptr_1;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class gt>(queue, run_test_action, expected_results);
     }
     SECTION(
         sycl_cts::section_name(
@@ -353,7 +375,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.second_first_mptr_result_val = mptr_2 <= mptr_1;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class leq>(queue, run_test_action, expected_results);
     }
     SECTION(
         sycl_cts::section_name(
@@ -389,7 +411,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.second_first_mptr_result_val = mptr_1 >= mptr_2;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class geq>(queue, run_test_action, expected_results);
     }
     SECTION(
         sycl_cts::section_name(
@@ -426,7 +448,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.value_mptr_nullptr_result_val = nullptr == value_mptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class eq_null>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator!=(std::nullptr_t, const multi_ptr&)")
@@ -462,7 +484,7 @@ class run_multi_ptr_comparison_op_test {
         test_result.value_mptr_nullptr_result_val = value_mptr != nullptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class neq_null>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<(std::nullptr_t, const multi_ptr&)")
@@ -494,7 +516,7 @@ class run_multi_ptr_comparison_op_test {
             value_mptr < nullptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class lt_null>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>(std::nullptr_t, const multi_ptr&)")
@@ -526,7 +548,7 @@ class run_multi_ptr_comparison_op_test {
             value_mptr > nullptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class gt_null>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator<=(std::nullptr_t, const multi_ptr&)")
@@ -558,7 +580,7 @@ class run_multi_ptr_comparison_op_test {
             value_mptr <= nullptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class leq_null>(queue, run_test_action, expected_results);
     }
     SECTION(sycl_cts::section_name(
                 "Check multi_ptr operator>=(std::nullptr_t, const multi_ptr&)")
@@ -590,7 +612,7 @@ class run_multi_ptr_comparison_op_test {
             value_mptr >= nullptr;
       };
 
-      run_test(queue, run_test_action, expected_results);
+      run_test<class geq_null>(queue, run_test_action, expected_results);
     }
   }
 };
