@@ -17,9 +17,10 @@ function(add_sycl_executable_implementation)
     add_library(${object_lib_name} OBJECT ${test_cases_list})
     add_executable(${exe_name} $<TARGET_OBJECTS:${object_lib_name}>)
 
-    # hipSYCL needs the macro to be called on the executable target. Setting
-    # properties on source files is insufficient.
-    add_sycl_to_target(TARGET ${exe_name} SOURCES ${test_cases_list})
+    # hipSYCL needs the macro to be called on both the object library (to
+    # override the compiler) and the executable (to override the linker).
+    add_sycl_to_target(TARGET ${object_lib_name} SOURCES ${test_cases_list})
+    add_sycl_to_target(TARGET ${exe_name})
 
     set_target_properties(${object_lib_name} PROPERTIES
         INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${exe_name},INCLUDE_DIRECTORIES>
