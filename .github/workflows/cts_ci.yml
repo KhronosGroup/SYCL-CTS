@@ -136,7 +136,6 @@ jobs:
           submodules: true
       - name: Configure CMake
         working-directory: ${{ env.container-workspace }}
-        shell: bash
         run: |
           bash /scripts/configure.sh \
             -DSYCL_CTS_EXCLUDE_TEST_CATEGORIES="${{ env.container-workspace }}/ci/${{ matrix.sycl-impl }}.filter" \
