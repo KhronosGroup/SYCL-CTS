@@ -51,7 +51,9 @@ TEST_CASE(
 
   queue.submit([&](sycl::handler &cgh) {
     cgh.single_task<KernelName>([=](sycl::kernel_handler h) {
-      int a = h.get_specialization_constant<SpecName>();
+      // just to establish `kernel_handler::get_specialization_constant()` call
+      // usage of spec constants is checked in spec_constants tests
+      h.get_specialization_constant<SpecName>();
     });
   });
 
@@ -62,8 +64,7 @@ TEST_CASE(
   constexpr int new_value = 10;
 
   if (!inputBundle.has_kernel(sycl::get_kernel_id<KernelName>())) {
-    WARN("kernel_bundle doesn't have required kernel. Test is skipped.");
-    return;
+    SKIP("kernel_bundle doesn't have required kernel. Test is skipped.");
   }
 
   inputBundle.set_specialization_constant<SpecName>(new_value);
