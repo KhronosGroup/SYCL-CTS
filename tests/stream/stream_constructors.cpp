@@ -26,8 +26,6 @@ struct stream_kernel {
   void operator()() const {}
 };
 
-// DPCPP does not define stream::size nor stream::get_work_item_buffer_size
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * Check equality of two stream objects. Returns true on equal, false
  * otherwise. */
@@ -38,10 +36,8 @@ static bool areEqual(sycl::stream &osA, sycl::stream &osB) {
     return false;
   return true;
 }
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
 
-DISABLED_FOR_TEST_CASE(DPCPP)
-("stream_constructors", "[stream]")({
+TEST_CASE("stream_constructors", "[stream]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   size_t bufferSize = 2048;
   size_t workItemBufferSize = 80;
@@ -265,4 +261,4 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   }
 
   queue.wait_and_throw();
-});
+}
