@@ -20,6 +20,7 @@
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
