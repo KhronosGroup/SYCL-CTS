@@ -59,10 +59,10 @@ In addition, if the device has aspect::fp16:
 
 If function accepts another types, the following list of types is added:
 
-* `vec<2, int>`
-* `vec<16, unsigned long long>`
-* `marray<5, float>`
-* `marray<7, short>`
+* `vec<int, 2>`
+* `vec<unsigned long long, 16>`
+* `marray<float, 5>`
+* `marray<short, 7>`
 * `struct { int a; bool b; }`
 
 Pointers are taken from the same list of types.
@@ -83,7 +83,8 @@ Data for the functions are sequences of 1, 2, 3, etc. corresponding to increasin
 Functions will be executed by a group using `sycl::parallel_for` with `nd_range<Dims>`
 corresponding to one group of maximal group size available on device with `Dims = 1,2,3`
 (by querying `info::device::max_work_item_sizes<Dims>` and `info::device::max_work_group_size`).
-Sub-group variants will execute functions on the first subgroup of this large group only.
+Sub-group variants will execute functions on all the subgroups or, if this is not possible,
+on the first subgroup of this large group only.
 
 === Traits
 

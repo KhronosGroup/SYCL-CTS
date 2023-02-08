@@ -11,6 +11,7 @@ hierarchical
 host_task
 id
 image
+image_accessor
 kernel
 kernel_args
 kernel_bundle

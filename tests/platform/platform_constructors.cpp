@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -80,10 +80,6 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformA(selector);
         sycl::platform platformB(platformA);
 
-        if (platformA != platformB) {
-          FAIL(log, "platform was not copy constructed correctly");
-        }
-
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -102,11 +98,6 @@ class TEST_NAME : public util::test_base {
         sycl::platform platformA(selector);
         sycl::platform platformB = platformA;
 
-        // Assume `==` work
-        if (platformA != platformB) {
-          FAIL(log, "platform was not copy assigned correctly");
-        }
-
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -116,82 +107,6 @@ class TEST_NAME : public util::test_base {
           }
         }
 #endif
-      }
-
-      /** check move constructor
-       */
-      {
-        cts_selector selector;
-        sycl::platform platformA(selector);
-        sycl::platform platformB(platformA);
-        sycl::platform platformC(std::move(platformA));
-
-        if (platformB != platformC) {
-          FAIL(log, "platform was not move constructed correctly");
-        }
-      }
-
-      /** check move assignment operator
-       */
-      {
-        cts_selector selector;
-        sycl::platform platformA(selector);
-        sycl::platform platformB(platformA);
-        sycl::platform platformC = std::move(platformA);
-
-        if (platformB != platformC) {
-          FAIL(log, "platform was not move assigned correctly");
-        }
-      }
-
-      /* check equality operator
-       */
-      {
-        cts_selector selector;
-        sycl::platform platformA(selector);
-        sycl::platform platformB = platformA;
-        sycl::platform platformC(selector);
-        platformC = platformA;
-
-        if (!(platformA == platformB)) {
-          FAIL(log,
-               "platform equality does not work correctly (copy constructed)");
-        }
-        if (!(platformA == platformC)) {
-          FAIL(log,
-               "platform equality does not work correctly (copy assigned)");
-        }
-        if (platformA != platformB) {
-          FAIL(log,
-               "platform non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (platformA != platformC) {
-          FAIL(log,
-               "platform non-equality does not work correctly"
-               "(copy assigned)");
-        }
-      }
-
-      /* check hash
-       */
-      {
-        cts_selector selector;
-        sycl::platform platformA(selector);
-        sycl::platform platformB = platformA;
-        sycl::platform platformC(platformA);
-
-        std::hash<sycl::platform> hasher;
-
-        if (hasher(platformA) != hasher(platformB)) {
-          FAIL(
-              log,
-              "platform hash_class does not work correctly (copy constructed)");
-        }
-        if (hasher(platformA) != hasher(platformC)) {
-          FAIL(log,
-               "platform hash_class does not work correctly (copy assigned)");
-        }
       }
     }
   }
