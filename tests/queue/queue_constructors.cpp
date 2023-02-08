@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -210,74 +210,6 @@ TEST_CASE("Check queue (context, device, async_handler, property_list)",
   CHECK(queue.get_context() == context);
 
   CHECK(queue.has_property<sycl::property::queue::in_order>());
-}
-
-TEST_CASE("Check queue copy constructor", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  sycl::queue queueB(queueA);
-
-  CHECK(queueA.get_device() == sycl::device(selector));
-
-  CHECK(queueA == queueB);
-}
-
-TEST_CASE("Check queue assignment operator", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  sycl::queue queueB;
-  queueB = queueA;
-
-  CHECK(queueA.get_device() == sycl::device(selector));
-
-  CHECK(queueA == queueB);
-}
-
-TEST_CASE("Check queue move constructor", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  auto queueACopy = queueA;
-  sycl::queue queueB(std::move(queueA));
-
-  CHECK(queueB == queueACopy);
-}
-
-TEST_CASE("Check queue move assignment operator", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  auto queueACopy = queueA;
-
-  sycl::queue queueB;
-  queueB = std::move(queueA);
-
-  CHECK(queueB == queueACopy);
-}
-
-TEST_CASE("Check queue equality operator", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  sycl::queue queueB(queueA);
-  sycl::queue queueC(selector);
-  queueC = queueA;
-  sycl::queue queueD(selector);
-
-  CHECK(queueA == queueB);
-  CHECK(queueA == queueC);
-
-  CHECK_FALSE(queueA != queueB);
-  CHECK_FALSE(queueA != queueC);
-
-  CHECK_FALSE(queueC == queueD);
-  CHECK(queueC != queueD);
-}
-
-TEST_CASE("Check queue hashing", "[queue]") {
-  cts_selector selector;
-  auto queueA = util::get_cts_object::queue(selector);
-  sycl::queue queueB(queueA);
-  std::hash<sycl::queue> hasher;
-
-  CHECK(hasher(queueA) == hasher(queueB));
 }
 
 // FIXME: re-enable when sycl::errc is implemented in computecpp

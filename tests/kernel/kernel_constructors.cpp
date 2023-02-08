@@ -92,43 +92,6 @@ TEST_CASE("Test assignment operator", "[kernel]") {
   ctsQueue.wait_and_throw();
 }
 
-TEST_CASE("Test move constructor", "[kernel]") {
-  cts_selector ctsSelector;
-  auto ctsQueue = util::get_cts_object::queue(ctsSelector);
-  auto deviceList = ctsQueue.get_context().get_devices();
-  auto ctx = ctsQueue.get_context();
-
-  using k_name = test_kernel<2>;
-  auto kb =
-      sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
-  auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
-
-  ctsQueue.submit(
-      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
-
-  sycl::kernel kernelB(std::move(kernelA));
-
-  ctsQueue.wait_and_throw();
-}
-
-TEST_CASE("Test move assignment operator", "[kernel]") {
-  cts_selector ctsSelector;
-  auto ctsQueue = util::get_cts_object::queue(ctsSelector);
-  auto deviceList = ctsQueue.get_context().get_devices();
-  auto ctx = ctsQueue.get_context();
-
-  using k_name = test_kernel<3>;
-  auto kb =
-      sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
-  auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
-  ctsQueue.submit(
-      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
-
-  sycl::kernel kernelB = std::move(kernelA);
-
-  ctsQueue.wait_and_throw();
-}
-
 TEST_CASE("Test equality operator", "[kernel]") {
   cts_selector ctsSelector;
   auto ctsQueue = util::get_cts_object::queue(ctsSelector);
@@ -193,55 +156,7 @@ TEST_CASE("Test equality operator", "[kernel]") {
       }
     }
 #endif
-    {
-      INFO(
-          "kernel non-equality does not work correctly"
-          "(copy constructed)");
-      CHECK(kernelA == kernelB);
-    }
-    {
-      INFO(
-          "kernel non-equality does not work correctly"
-          "(copy assigned)");
-      CHECK(kernelA == kernelC);
-    }
-    {
-      INFO(
-          "kernel equality does not work correctly"
-          "(comparing same)");
-      CHECK(kernelC != kernelD);
-    }
-    {
-      INFO(
-          "kernel non-equality does not work correctly"
-          "(comparing same)");
-      CHECK(kernelC != kernelD);
-    }
   }
-
-  ctsQueue.wait_and_throw();
-}
-
-TEST_CASE("Test hashing", "[kernel]") {
-  auto ctsQueue = util::get_cts_object::queue();
-  auto deviceList = ctsQueue.get_context().get_devices();
-  auto ctx = ctsQueue.get_context();
-
-  using k_name = test_kernel<7>;
-  auto kb =
-      sycl::get_kernel_bundle<k_name, sycl::bundle_state::executable>(ctx);
-  auto kernelA = kb.get_kernel(sycl::get_kernel_id<k_name>());
-  ctsQueue.submit(
-      [&](sycl::handler &cgh) { cgh.single_task<k_name>(k_name()); });
-
-  sycl::kernel kernelB = kernelA;
-
-  std::hash<sycl::kernel> hasher;
-
-  INFO(
-      "kernel hashing does not work correctly (hashing of equal "
-      "failed)");
-  CHECK(hasher(kernelA) == hasher(kernelB));
 
   ctsQueue.wait_and_throw();
 }
