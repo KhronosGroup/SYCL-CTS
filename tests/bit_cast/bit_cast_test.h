@@ -35,19 +35,18 @@ class kernel_name;
 
 template <typename ToType, typename FromType>
 class bit_cast_test {
-  static constexpr bool is_invalid_test_case() {
-    return std::is_array_v<ToType> || sizeof(ToType) != sizeof(FromType) ||
-           std::is_same_v<ToType, bool>;
-  }
+  static constexpr bool is_invalid_test_case =
+      std::is_array_v<ToType> || sizeof(ToType) != sizeof(FromType) ||
+      std::is_same_v<ToType, bool>;
 
  public:
   void operator()(const std::string& to_type_name,
                   const std::string& from_type_name) {
     auto queue = sycl_cts::util::get_cts_object::queue();
-    if constexpr (is_invalid_test_case())
+    if constexpr (is_invalid_test_case)
       return;
     else {
-      std::array<bool, 2> test_result = {false, false};
+      std::array test_result{false, false};
       {
         sycl::buffer<bool, 1> buf_result(test_result.data(),
                                          sycl::range<1>(test_result.size()));
