@@ -61,7 +61,7 @@ Checks:
 * Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * `src` buffer elements should be initialized with `expected_val`. `dest` buffer elements should be initialized with `init_val`.
-`width` should satisfy the conditions: `width` < `destPitch` and `width` <= `srcPitch`. Check after performing `ext_oneapi_memcpy2d`
+`width` should satisfy the conditions: `width` < `destPitch` and `width` +<=+ `srcPitch`. Check after performing `ext_oneapi_memcpy2d`
 that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val` and elements
 outside of that area are not changed.
 
@@ -81,7 +81,7 @@ Checks:
 * Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * `src` buffer elements should be initialized with `T(expected_val`). `dest` buffer elements should be initialized with `T(init_val)`.
-`width` should satisfy the conditions: `width` < `destPitch` and `width` <= `srcPitch`. Check after performing `ext_oneapi_copy2d`
+`width` should satisfy the conditions: `width` < `destPitch` and `width` +<=+ `srcPitch`. Check after performing `ext_oneapi_copy2d`
 that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `T(expected_val)` and elements
 outside of that area are not changed.
 
