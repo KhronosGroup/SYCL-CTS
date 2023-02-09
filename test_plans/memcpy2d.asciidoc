@@ -54,11 +54,16 @@ Check function with combinations of `host pointer` and `pointer within device US
 In case of pointer within device USM allocation and the selected device lacks this capability
 (aspect `aspect::usm_device_allocations`), this test is skipped.
 
+Type of `src` and `dest` buffers elements is `unsigned char`.
+
 Checks:
 
 * Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
-* `src` buffer elements should be initialized with `expected_val`. `dest` buffer elements should be initialized with `init_val`. Check after performing `ext_oneapi_memcpy2d` that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val`.
+* `src` buffer elements should be initialized with `expected_val`. `dest` buffer elements should be initialized with `init_val`.
+`width` should satisfy the conditions: `width` < `destPitch` and `width` <= `srcPitch`. Check after performing `ext_oneapi_memcpy2d`
+that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val` and elements
+outside of that area are not changed.
 
 ==== ext_oneapi_copy2d
 
@@ -75,7 +80,10 @@ Checks:
 
 * Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
 * Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
-* `src` buffer elements should be initialized with `T(expected_val`). `dest` buffer elements should be initialized with `T(init_val)`. Check after performing `ext_oneapi_copy2d` that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `T(expected_val)`.
+* `src` buffer elements should be initialized with `T(expected_val`). `dest` buffer elements should be initialized with `T(init_val)`.
+`width` should satisfy the conditions: `width` < `destPitch` and `width` <= `srcPitch`. Check after performing `ext_oneapi_copy2d`
+that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `T(expected_val)` and elements
+outside of that area are not changed.
 
 ==== ext_oneapi_memset2d
 
@@ -89,7 +97,10 @@ Type of `dest` buffer elements is `unsigned char`.
 Checks:
 
 * Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
-* `dest` buffer elements should be initialized with `init_val`. `value` variable should be initialized with `expected_val` in the range `[1, 255]`. Check after performing `ext_oneapi_memset2d` that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val`.
+* `dest` buffer elements should be initialized with `init_val`. `value` variable should be initialized with `expected_val` in the range `[1, 255]`.
+`width` should satisfy the condition: `width` < `destPitch`. Check after performing `ext_oneapi_memset2d` that the `dest`
+buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val` and elements
+outside of that area are not changed.
 
 ==== ext_oneapi_fill2d
 
@@ -102,7 +113,10 @@ void ext_oneapi_fill2d(void *dest, size_t destPitch,
 Checks:
 
 * Set `value` of width large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
-* `dest` buffer elements should be initialized with `T(init_val)`. `value` variable should be initialized with `T(expected_val)`. Check after performing `ext_oneapi_fill2d` that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `T(expected_val)`.
+* `dest` buffer elements should be initialized with `T(init_val)`. `value` variable should be initialized with `T(expected_val)`.
+`width` should satisfy the condition: `width` < `destPitch`. Check after performing `ext_oneapi_fill2d` that the `dest` buffer elements
+in the area defined by `height` and `width` parameters are equal to the `T(expected_val)` and elements outside of that area are not changed.
+
 
 === Additional sycl::queue class methods
 
