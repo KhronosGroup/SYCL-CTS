@@ -60,8 +60,9 @@ class check_buffer_accessor_api_methods {
         "check_buffer_accessor_api_methods", typeName, log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
-    auto data = get_buffer_input_data<T>(count, dims);
-    buffer_t<T, dims> buffer(data.data(), range);
+    std::unique_ptr<T[]> data;
+    get_buffer_input_data<T>(count, dims, data);
+    buffer_t<T, dims> buffer(data.get(), range);
 
     // Prepare access range and access offset
     const auto accessRange = range / 2;
@@ -156,8 +157,8 @@ class check_buffer_accessor_api_methods {
 
     auto errors = get_error_data(2);
     {
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      error_buffer_t errorBuffer(errors.get(),
+                                 sycl::range<1>(2));
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer);
@@ -173,11 +174,11 @@ class check_buffer_accessor_api_methods {
     }
 
     using error_code_t = buffer_accessor_api_pointer_error_code;
-    if (errors[error_code_t::pointer_read_access] != 0) {
+    if (errors.get()[error_code_t::pointer_read_access] != 0) {
       fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
           "accessor did not read from the correct pointer");
     }
-    if (errors[error_code_t::pointer_write_access] != 0) {
+    if (errors.get()[error_code_t::pointer_write_access] != 0) {
       fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
           "accessor did not write to the correct pointer");
     }
@@ -200,8 +201,8 @@ class check_buffer_accessor_api_methods {
 
     auto errors = get_error_data(2);
     {
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      error_buffer_t errorBuffer(errors.get(),
+                                 sycl::range<1>(2));
 
       queue.submit([&](sycl::handler &cgh) {
         auto accessor = makeAccessor(cgh);
@@ -222,11 +223,11 @@ class check_buffer_accessor_api_methods {
     }
 
     using error_code_t = buffer_accessor_api_pointer_error_code;
-    if (errors[error_code_t::pointer_read_access] != 0) {
+    if (errors.get()[error_code_t::pointer_read_access] != 0) {
       fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
           "accessor did not read from the correct pointer");
     }
-    if (errors[error_code_t::pointer_write_access] != 0) {
+    if (errors.get()[error_code_t::pointer_write_access] != 0) {
       fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
           "accessor did not write to the correct pointer");
     }
@@ -409,33 +410,37 @@ class check_buffer_accessor_api {
         "check_buffer_accessor_api::reads", typeName, log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
-    auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
-    auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims);
-    auto errors = get_error_data(2);
+    std::unique_ptr<T[]> dataIdSyntax;
+    get_buffer_input_data<T>(count, dims, dataIdSyntax);
+    std::unique_ptr<T[]> dataMultiDimSyntax;
+    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax);
 
+    auto errors = get_error_data(2);
     {
-      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.data(), range);
-      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.data(), range);
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.get(), range);
+      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.get(), range);
+      error_buffer_t errorBuffer(errors.get(),
+                                 sycl::range<1>(2));
 
       check_command_group_read_only(queue, bufIdSyntax, bufMultiDimSyntax,
                                     errorBuffer, range,
                                     acc_type_tag::get<target, placeholder>());
     }
 
+
+
     using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
-      if (errors[error_code_t::zero_dim_access] != 0) {
+      if (errors.get()[error_code_t::zero_dim_access] != 0) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator dataT&() did not read from the correct index");
       }
     } else {
-      if (errors[error_code_t::multi_dim_read_id] != 0) {
+      if (errors.get()[error_code_t::multi_dim_read_id] != 0) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[id<N>] did not read from the correct index");
       }
-      if (errors[error_code_t::multi_dim_read_size_t] != 0) {
+      if (errors.get()[error_code_t::multi_dim_read_size_t] != 0) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[size_t][size_t][size_t] did not read from the correct "
             "index");
@@ -585,12 +590,14 @@ class check_buffer_accessor_api {
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     static constexpr bool useIndexes = false;
-    auto dataIdSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
-    auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
+    std::unique_ptr<T[]> dataIdSyntax;
+    get_buffer_input_data<T>(count, dims, dataIdSyntax, useIndexes);
+    std::unique_ptr<T[]> dataMultiDimSyntax;
+    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexes);
 
     {
-      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.data(), range);
-      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.data(), range);
+      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.get(), range);
+      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.get(), range);
 
       check_command_group_writes(queue, bufIdSyntax, bufMultiDimSyntax, range,
                                  acc_type_tag::get<target, placeholder>());
@@ -599,7 +606,7 @@ class check_buffer_accessor_api {
     if (dims == 0) {
       const auto expected =
           buffer_accessor_expected_value<T, dims>::expected_write();
-      if (!check_elems_equal(dataIdSyntax[0], expected)) {
+      if (!check_elems_equal(dataIdSyntax.get()[0], expected)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator dataT&() did not write to the correct index");
       }
@@ -607,12 +614,12 @@ class check_buffer_accessor_api {
       const auto mul = buffer_accessor_expected_value<T, dims>::write_mul;
       const auto offset = buffer_accessor_expected_value<T, dims>::write_offset;
 
-      if (!check_linear_index(log, dataIdSyntax.data(),
+      if (!check_linear_index(log, dataIdSyntax.get(),
                               count, mul, offset)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[id<N>] did not assign to the correct index");
       }
-      if (!check_linear_index(log, dataMultiDimSyntax.data(),
+      if (!check_linear_index(log, dataMultiDimSyntax.get(),
                               count, mul, offset)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[size_t][size_t][size_t] did not assign to the correct "
@@ -731,19 +738,20 @@ class check_buffer_accessor_api {
     // In case of dims == 0, there will be a read from dataIdSyntax
     // and a write to dataMultiDimSyntax
     static constexpr bool useIndexesWrite = (dims > 0);
-    auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
-    auto dataMultiDimSyntax =
-        get_buffer_input_data<T>(count, dims, useIndexesWrite);
+    std::unique_ptr<T[]> dataIdSyntax;
+    get_buffer_input_data<T>(count, dims, dataIdSyntax);
+    std::unique_ptr<T[]> dataMultiDimSyntax;
+    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexesWrite);
 
-    static constexpr bool isHostBuffer =
+    static constexpr bool isHostBuffer =-
         (target == sycl::target::host_buffer);
-    auto errors = get_error_data(isHostBuffer ? 2 : 4);
 
+    auto errors = get_error_data(isHostBuffer ? 2 : 4);
     {
-      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.data(), range);
-      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.data(), range);
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      buffer_t<T, dims> bufIdSyntax(dataIdSyntax.get(), range);
+      buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.get(), range);
+      error_buffer_t errorBuffer(errors.get(),
+                                 sycl::range<1>(isHostBuffer ? 2 : 4));
 
       check_command_group_reads_writes(
           queue, bufIdSyntax, bufMultiDimSyntax, errorBuffer, range,
@@ -753,23 +761,23 @@ class check_buffer_accessor_api {
     using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
       if ((mode != sycl::access_mode::discard_read_write) &&
-          (errors[error_code_t::zero_dim_access] != 0)) {
+          (errors.get()[error_code_t::zero_dim_access] != 0)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator dataT&() did not read from the correct index");
       }
       const auto expected =
           buffer_accessor_expected_value<T, dims>::expected_write();
-      if (!check_elems_equal(dataIdSyntax[0], expected)) {
+      if (!check_elems_equal(dataIdSyntax.get()[0], expected)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator dataT&() did not write to the correct index");
       }
     } else {
       if (mode != sycl::access_mode::discard_read_write) {
-        if (errors[error_code_t::multi_dim_read_id] != 0) {
+        if (errors.get()[error_code_t::multi_dim_read_id] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[id<N>] did not read from the correct index");
         }
-        if (errors[error_code_t::multi_dim_read_size_t] != 0) {
+        if (errors.get()[error_code_t::multi_dim_read_size_t] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
               "operator[size_t][size_t][size_t] did not read from the "
               "correct index");
@@ -778,23 +786,23 @@ class check_buffer_accessor_api {
       const auto mul = buffer_accessor_expected_value<T, dims>::write_mul;
       const auto offset = buffer_accessor_expected_value<T, dims>::write_offset;
 
-      if (!check_linear_index(log, dataIdSyntax.data(),
+      if (!check_linear_index(log, dataIdSyntax.get(),
                               count, mul, offset)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[id<N>] did not assign to the correct index");
       }
-      if (!check_linear_index(log, dataMultiDimSyntax.data(),
+      if (!check_linear_index(log, dataMultiDimSyntax.get(),
                               count, mul, offset)) {
         fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
             "operator[size_t][size_t][size_t] did not write to the correct "
             "index");
       }
       if (!isHostBuffer) {
-        if (errors[error_code_t::multi_dim_write_id] != 0) {
+        if (errors.get()[error_code_t::multi_dim_write_id] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
               "operator[id<N>] did not write to the correct index");
         }
-        if (errors[error_code_t::multi_dim_write_size_t] != 0) {
+        if (errors.get()[error_code_t::multi_dim_write_size_t] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
               "operator[size_t][size_t][size_t] did not write to the correct "
               "index");
