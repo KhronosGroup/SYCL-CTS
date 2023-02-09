@@ -1,0 +1,81 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for deduction guides
+
+This is a test plan for deduction guides functionality of classes with templates, such as buffer, multi_ptr, range, id and vec.
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line if not stated otherwise.
+
+== Tests
+
+=== buffer
+
+==== `buffer` constructors deduction guides
+
+Check that constructing an object without specifying template variables initializes correct `InputIterator`, `AllocatorT`, `Dimensions` and `Container` classes.
+
+** `template <class InputIterator, class AllocatorT> +
+buffer(InputIterator, InputIterator, AllocatorT, const property_list& = {}) -> buffer<typename std::iterator_traits<InputIterator>::value_type, 1, AllocatorT>;`
+
+** `template <class InputIterator> +
+buffer(InputIterator, InputIterator, const property_list& = {}) -> buffer<typename std::iterator_traits<InputIterator>::value_type, 1>;`
+
+** `template <class T, int Dimensions, class AllocatorT> +
+buffer(const T*, const range<Dimensions>&, AllocatorT, const property_list& = {}) -> buffer<T, Dimensions, AllocatorT>;`
+
+** `template <class T, int Dimensions> +
+buffer(const T*, const range<Dimensions>&, const property_list& = {}) -> buffer<T, Dimensions>;`
+
+** `template <class Container, class AllocatorT> +
+buffer(Container&, AllocatorT, const property_list& = {}) -> buffer<typename Container::value_type, 1, AllocatorT>;`
+
+** `template <class Container> +
+buffer(Container&, const property_list& = {}) -> buffer<typename Container::value_type, 1>;`
+
+==== buffer member functions
+Check that `get_range()`, `size()` and `get_allocator()` return same results as buffers constructed without deduction guides.
+
+=== multi_ptr
+
+==== `multi_ptr` constructors deduction guides
+
+Check that constructing an object without specifying template variables initializes correct `T`. `access_mode`, `placeholder` and `Dimensions` classes.
+
+** `template <int Dimensions, access_mode Mode, access::placeholder IsPlaceholder,class T> +
+multi_ptr(accessor<T, Dimensions, Mode, target::device, IsPlaceholder>) -> multi_ptr<T, access::address_space::global_space, access::decorated::no>;`
+
+** `template <int Dimensions, access_mode Mode, access::placeholder IsPlaceholder, class T> +
+multi_ptr(local_accessor<T, Dimensions>) -> multi_ptr<T, access::address_space::local_space, access::decorated::no>;`
+
+==== `multi_ptr` member functions
+Check that `get()` returns the underlying pointer
+
+=== range and id
+
+==== `range` and `id` constructors deduction guides
+
+Check that constructing an object without specifying `Dimensions` passes correct number of `size_t` arguments.
+
+** `range(size_t) -> range<1>;`
+** `range(size_t, size_t) -> range<2>;`
+** `range(size_t, size_t, size_t) -> range<3>;`
+
+** `id(size_t)->id<1>;`
+** `id(size_t, size_t)->id<2>;`
+** `id(size_t, size_t, size_t)->id<3>;`
+
+==== `range` an `id` member functions
+
+Check that `get()` return correct `Dimensions`.
+
+=== vec
+
+==== vec constructors deduction guides
+
+** `template <class T, class... U> vec(T, U...) -> vec<T, sizeof...(U) + 1>;`
