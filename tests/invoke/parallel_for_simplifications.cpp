@@ -20,6 +20,7 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "catch2/catch_template_test_macros.hpp"
 
 #include "../common/get_cts_object.h"
@@ -56,26 +57,33 @@ void check(ActionT action) {
   for (int i = 0; i < N; i++) CHECK(arr[i] == i);
 }
 
-TEST_CASE("Check parallel_for(N, some_kernel)",
-          "[parallel_for_simplifications]") {
+// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("Check parallel_for(N, some_kernel)", "[parallel_for_simplifications]")({
   constexpr int N = 2;
   auto action = [=](auto& cgh, auto& acc) {
     cgh.parallel_for(N, kernel<1>(acc));
   };
   check<N>(action);
-}
+});
 
-TEST_CASE("Check parallel_for({N}, some_kernel)",
-          "[parallel_for_simplifications]") {
+// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("Check parallel_for({N}, some_kernel)", "[parallel_for_simplifications]")({
   constexpr int N = 2;
   auto action = [=](auto& cgh, auto& acc) {
     cgh.parallel_for({N}, kernel<1>(acc));
   };
   check<N>(action);
-}
+});
 
-TEST_CASE("Check parallel_for({N1, N2}, some_kernel)",
-          "[parallel_for_simplifications]") {
+// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("Check parallel_for({N1, N2}, some_kernel)",
+ "[parallel_for_simplifications]")({
   constexpr int N1 = 2;
   constexpr int N2 = 3;
   constexpr int N = N1 * N2;
@@ -83,10 +91,13 @@ TEST_CASE("Check parallel_for({N1, N2}, some_kernel)",
     cgh.parallel_for({N1, N2}, kernel<2>(acc));
   };
   check<N>(action);
-}
+});
 
-TEST_CASE("Check parallel_for({N1, N2, N3}, some_kernel)",
-          "[parallel_for_simplifications]") {
+// FIXME: re-enable when parallel_for simplifications implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+("Check parallel_for({N1, N2, N3}, some_kernel)",
+ "[parallel_for_simplifications]")({
   constexpr int N1 = 2;
   constexpr int N2 = 3;
   constexpr int N3 = 5;
@@ -95,6 +106,6 @@ TEST_CASE("Check parallel_for({N1, N2, N3}, some_kernel)",
     cgh.parallel_for({N1, N2, N3}, kernel<3>(acc));
   };
   check<N>(action);
-}
+});
 
 }  // namespace parallel_for_simplifications
