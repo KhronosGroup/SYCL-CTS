@@ -28,12 +28,10 @@ namespace queue_shortcuts_explicit_core {
 using namespace queue_shortcuts_common;
 using namespace queue_shortcuts_explict;
 
-// DPCPP does not define the explicit copy operations
-DISABLED_FOR_TEST_CASE(DPCPP)
-("queue shortcuts explicit copy core", "[queue]")({
+TEST_CASE("queue shortcuts explicit copy core", "[queue]") {
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   const auto types = get_types();
   for_all_types<check_queue_shortcuts_explicit_for_type>(types, queue);
-})
+}
 
 }  // namespace queue_shortcuts_explicit_core
