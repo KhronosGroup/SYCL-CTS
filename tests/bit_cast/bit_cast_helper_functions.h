@@ -74,10 +74,14 @@ inline auto get_primary_type_pack() {
 template <typename PrimaryType>
 inline auto get_derived_type_pack(const std::string& primary_type_name) {
   static const auto types = named_type_pack<
-      PrimaryType, PrimaryType[array_size], Base<PrimaryType>,
+      PrimaryType, PrimaryType[array_size],
+      sycl::marray<PrimaryType, array_size>, Base<PrimaryType>,
       Derived<PrimaryType>>::generate(primary_type_name,
                                       primary_type_name + "[" +
                                           std::to_string(array_size) + "]",
+                                      "sycl::marray<" + primary_type_name +
+                                          ", " + std::to_string(array_size) +
+                                          ">",
                                       "Base<" + primary_type_name + ">",
                                       "Derived<" + primary_type_name + ">");
   return types;
