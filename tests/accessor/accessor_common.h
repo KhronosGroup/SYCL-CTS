@@ -223,6 +223,7 @@ inline auto get_all_dimensions() {
   return dimensions;
 }
 // FIXME: re-enable when target::host_task is implemented
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Factory function for getting type_pack with target values
@@ -256,6 +257,7 @@ struct tag_factory {
                 "There is no tag support for such accessor type");
 };
 // FIXME: re-enable when target::host_task is implemented
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
@@ -343,6 +345,7 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computcpp
 // FIXME: re-enable when target::host_task is implemented in dpcpp
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
@@ -450,6 +453,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computecpp
 // FIXME: re-enable when target::host_task is implemented in dpcpp
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
@@ -566,6 +570,7 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computecpp
 // FIXME: re-enable when target::host_task is implemented in dpcpp
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
     !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
@@ -738,6 +743,7 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 // FIXME: re-enable when target::host_task is implemented
+// Issue link https://github.com/intel/llvm/issues/8298
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 
 template <accessor_type AccType, typename DataT, int Dimension,
