@@ -25,7 +25,7 @@
 #include "atomic_ref_common.h"
 #include <type_traits>
 
-namespace atomic_ref::constructors {
+namespace atomic_ref::tests::constructors {
 using namespace atomic_ref::tests::common;
 
 template <typename T, typename MemoryOrderT, typename MemoryScopeT,
@@ -56,33 +56,12 @@ class run_constructor_tests {
       value = &data;
     else
       value = data;
-// FIXME: legal address spaces are not yet defined for atomic_ref used on the
-// host, it's possible that will be decided that atomic_ref isn't allowed in
-// host code at all. It can be tracked in this issue
-// https://gitlab.khronos.org/sycl/Specification/-/issues/637. When the decision
-// about atomic_ref usage have been done re-enable test running on host side or
-// remove it
-#if SYCL_CTS_ATOMIC_REF_ON_HOST == 1
-    if constexpr (AddressSpace != sycl::access::address_space::local_space) {
-      SECTION(get_section_name(type_name, memory_order_name, memory_scope_name,
-                               address_space_name,
-                               "Check constructors on host")) {
-        atomic_ref_type a_r(value);
-        auto result = a_r.load();
-        CHECK(result == value);
-        STATIC_CHECK(std::is_same_v<decltype(result), T>);
 
-        atomic_ref_type a_r_copy(a_r);
-        auto result_copy = a_r.load();
-        CHECK(result_copy == value);
-      }
-    }
-#endif
     SECTION(get_section_name(type_name, memory_order_name, memory_scope_name,
                              address_space_name,
                              "Check constructors on device")) {
       if constexpr (AddressSpace != sycl::access::address_space::global_space) {
-        std::array<bool, 2> res = {false, false};
+        std::array res{false, false, false};
         {
           sycl::buffer result_buf(res.data(), sycl::range(2));
 
@@ -103,6 +82,9 @@ class run_constructor_tests {
                                    atomic_ref_type a_r_copy(a_r);
                                    auto result_copy = a_r.load();
                                    result_accessor[1] = (result_copy == value);
+
+                                   result_accessor[2] =
+                                       std::is_same_v<decltype(result), T>;
                                  });
               })
               .wait_and_throw();
@@ -115,9 +97,13 @@ class run_constructor_tests {
           INFO("check copy-constructor (local space)");
           CHECK(res[1]);
         }
+        {
+          INFO("Error returned type for load() (local space)");
+          CHECK(res[2]);
+        }
       }
       if constexpr (AddressSpace != sycl::access::address_space::local_space) {
-        std::array<bool, 2> res = {false, false};
+        std::array res{false, false, false};
         {
           sycl::buffer data_buf(&value, sycl::range(1));
           sycl::buffer result_buf(res.data(), sycl::range(2));
@@ -139,6 +125,8 @@ class run_constructor_tests {
                   atomic_ref_type a_r_copy(a_r);
                   auto result_copy = a_r.load();
                   result_accessor[1] = (result_copy == value);
+
+                  result_accessor[2] = std::is_same_v<decltype(result), T>;
                 });
               })
               .wait_and_throw();
@@ -150,6 +138,10 @@ class run_constructor_tests {
         {
           INFO("check copy-constructor (global space)");
           CHECK(res[1]);
+        }
+        {
+          INFO("Error returned type for load() (global space)");
+          CHECK(res[2]);
         }
       }
     }
@@ -176,5 +168,6 @@ struct run_test {
   }
 };
 
-}  // namespace atomic_ref::constructors
+}  // namespace atomic_ref::tests::constructors
+
 #endif  // SYCL_CTS_ATOMIC_REF_CONSTRUCTORS_H

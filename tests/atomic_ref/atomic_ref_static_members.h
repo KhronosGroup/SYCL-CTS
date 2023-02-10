@@ -24,7 +24,7 @@
 
 #include "atomic_ref_common.h"
 
-namespace atomic_ref::static_members {
+namespace atomic_ref::tests::static_members {
 using namespace sycl_cts;
 using namespace atomic_ref::tests::common;
 
@@ -105,6 +105,6 @@ class run_test {
   }
 };
 
-}  // namespace atomic_ref::static_members
+}  // namespace atomic_ref::tests::static_members
 
 #endif  // SYCL_CTS_ATOMIC_REF_STATIC_MEMBERS_H

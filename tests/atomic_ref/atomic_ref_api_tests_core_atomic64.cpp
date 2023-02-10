@@ -16,26 +16,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides sycl::atomic_ref static members test for generic types
+//  Provides sycl::atomic_ref api test for atomic64 types
 //
 *******************************************************************************/
-#include "../common/disabled_for_test_case.h"
-#include "catch2/catch_test_macros.hpp"
+#include "atomic_ref_api_tests.h"
 
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+namespace atomic_ref::tests::api::core::atomic64 {
 
-#include "atomic_ref_static_members.h"
+TEST_CASE("sycl::atomic_ref api tests. atomic64 types", "[atomic_ref]") {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::atomic64)) {
+    SKIP(
+        "Device does not support atomic64 operations. "
+        "Skipping the test case.");
+    return;
+  }
+  const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
+  for_all_types<atomic_ref::tests::api::run_tests>(type_pack);
+}
 
-#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-namespace atomic_ref::tests::static_members::core {
-
-// FIXME: re-enable when sycl::access::address_space::generic_space is
-// implemented in computecpp
-DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::atomic_ref static members. core types", "[atomic_ref]")({
-  const auto types = atomic_ref::tests::common::get_conformance_type_pack();
-  for_all_types<atomic_ref::tests::static_members::run_test>(types);
-});
-
-}  // namespace atomic_ref::tests::static_members::core
+}  // namespace atomic_ref::tests::api::core::atomic64

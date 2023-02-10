@@ -23,18 +23,10 @@
 #ifndef SYCL_CTS_ATOMIC_REF_COMMON_H
 #define SYCL_CTS_ATOMIC_REF_COMMON_H
 
+#include "../../util/accuracy.h"
 #include "../common/common.h"
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
-
-// FIXME: legal address spaces are not yet defined for atomic_ref used on the
-// host, it's possible that will be decided that atomic_ref isn't allowed in
-// host code at all. It can be tracked in this issue
-// https://gitlab.khronos.org/sycl/Specification/-/issues/637. When the decision
-// about atomic_ref usage have been done re-enable test running on host side
-// by setting this define to 1 or remove it and the corresponding code
-// conserning of testing sycl::atomic_ref on host side
-#define SYCL_CTS_ATOMIC_REF_ON_HOST 0
 
 namespace atomic_ref::tests::common {
 using namespace sycl_cts;
@@ -224,8 +216,11 @@ inline bool memory_order_and_scope_are_not_supported(sycl::queue& q,
  * @brief Function to compare two floating point values
  */
 template <typename T>
-bool compare_floats(T actual, T expected, T eps) {
-  return ((expected - eps) <= actual) && (actual <= (expected - eps));
+bool compare_floats(T actual, T expected) {
+  const T difference = static_cast<T>(std::fabs(actual - expected));
+  const T difference_expected = get_ulp_sycl(expected);
+
+  return difference <= difference_expected;
 }
 
 }  // namespace atomic_ref::tests::common

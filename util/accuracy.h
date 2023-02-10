@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <limits>
-
+#include <sycl/sycl.hpp>
 /**
  * @brief Provides ulp(x) by definition given in OpenCL 1.2 rev. 19, 7.4
  *        See Jean-Michel Muller "On the definition of ulp (x)", definition 7

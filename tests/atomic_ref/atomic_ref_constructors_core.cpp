@@ -34,12 +34,12 @@
 
 #endif
 
-namespace atomic_ref::constructors::core {
+namespace atomic_ref::tests::constructors::core {
 
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("sycl::atomic_ref constructors. core types", "[atomic_ref]")({
   const auto types = atomic_ref::tests::common::get_conformance_type_pack();
-  for_all_types<atomic_ref::constructors::run_test>(types);
+  for_all_types<atomic_ref::tests::constructors::run_test>(types);
 });
 
-}  // namespace atomic_ref::constructors::core
+}  // namespace atomic_ref::tests::constructors::core

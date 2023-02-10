@@ -130,6 +130,70 @@ struct StringMaker<sycl::aspect> {
     }
   }
 };
+
+template <>
+struct StringMaker<sycl::memory_order> {
+  using type = sycl::memory_order;
+  static std::string convert(const type& order) {
+    switch (order) {
+      case type::relaxed:
+        return "memory_order::relaxed";
+      case type::acq_rel:
+        return "memory_order::acq_rel";
+      case type::seq_cst:
+        return "memory_order::seq_cst";
+      case type::acquire:
+        return "memory_order::acquire";
+      case type::release:
+        return "memory_order::release";
+      default:
+        return "unknown memory_order";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::memory_scope> {
+  using type = sycl::memory_scope;
+  static std::string convert(const type& scope) {
+    switch (scope) {
+      case type::work_item:
+        return "memory_scope::work_item";
+      case type::sub_group:
+        return "memory_scope::sub_group";
+      case type::work_group:
+        return "memory_scope::work_group";
+      case type::device:
+        return "memory_scope::device";
+      case type::system:
+        return "memory_scope::system";
+      default:
+        return "unknown memory_scope";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::access::address_space> {
+  using type = sycl::access::address_space;
+  static std::string convert(const type& addr_space) {
+    switch (addr_space) {
+      case type::global_space:
+        return "address_space::global_space";
+      case type::local_space:
+        return "address_space::local_space";
+      case type::generic_space:
+        return "address_space::generic_space";
+      case type::private_space:
+        return "address_space::private_space";
+      case type::constant_space:
+        return "address_space::constant_space (deprecated)";
+      default:
+        return "unknown address_space";
+    }
+  }
+};
+
 }  // namespace Catch
 
 #endif  // __SYCLCTS_TESTS_COMMON_STRING_MAKERS_H

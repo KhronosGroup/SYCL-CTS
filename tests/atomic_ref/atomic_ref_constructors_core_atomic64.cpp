@@ -34,19 +34,19 @@
 
 #endif
 
-namespace atomic_ref::constructors::core::atomic64 {
+namespace atomic_ref::tests::constructors::core::atomic64 {
 
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("sycl::atomic_ref constructors. atomic64 types", "[atomic_ref]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::atomic64)) {
-    WARN(
+    SKIP(
         "Device does not support atomic64 operations. "
         "Skipping the test case.");
     return;
   }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
-  for_all_types<atomic_ref::constructors::run_test>(type_pack);
+  for_all_types<atomic_ref::tests::constructors::run_test>(type_pack);
 });
 
-}  // namespace atomic_ref::constructors::core::atomic64
+}  // namespace atomic_ref::tests::constructors::core::atomic64
