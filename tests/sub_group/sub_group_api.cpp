@@ -96,6 +96,53 @@ static size_t get_work_group_size(const sycl::device& device) {
   return size;
 }
 
+/** Returns maximum size of buffer keeping test results that can be allocated
+ * on device. */
+inline uint64_t max_device_buf_size() {
+  using buf_el_type = size_t;
+  sycl::device device = sycl_cts::util::get_cts_object::device();
+  uint64_t mem_aloc_size_in_bytes =
+      device.get_info<sycl::info::device::max_mem_alloc_size>();
+  uint64_t max_buf_size_in_elements =
+      mem_aloc_size_in_bytes / sizeof(buf_el_type);
+  return max_buf_size_in_elements;
+}
+
+/** Returns required size for buffer keeping test results. */
+inline size_t result_buf_size(size_t linear_execution_range) {
+  return linear_execution_range * member_function_cnt;
+}
+
+/** Checks if result buffer can be allocated on device. */
+inline bool result_buffer_cant_be_alloc_in_device(size_t required_buffer_size) {
+  return required_buffer_size > max_device_buf_size();
+};
+
+/** Returns global range for given number of work group and work group size. */
+inline sycl::range<3> make_global_range(const sycl::range<3>& work_group_num,
+                                        size_t work_group_size_dim) {
+  return work_group_num * sycl::range<3>{work_group_size_dim,
+                                         work_group_size_dim,
+                                         work_group_size_dim};
+}
+
+/**
+ * Reduces current size of each dimension of a three dimensional work-group to
+ * nearest multiple two value to ensure test reslut buffer will be able to be
+ * allocated on device. Returns resulting dimension size. */
+size_t reduce_work_group_size_to_suitable_multiple_two(
+    const sycl::range<3>& work_group_num, size_t current_work_group_size_dim) {
+  uint64_t max_dev_buf_size = max_device_buf_size();
+  uint64_t required_res_buffer_size = result_buf_size(
+      make_global_range(work_group_num, current_work_group_size_dim).size());
+  while (required_res_buffer_size > max_dev_buf_size) {
+    current_work_group_size_dim >>= 1;
+    required_res_buffer_size = result_buf_size(
+        make_global_range(work_group_num, current_work_group_size_dim).size());
+  }
+  return current_work_group_size_dim;
+};
+
 std::string format_range(const sycl::range<3>& range) {
   std::ostringstream ss;
   ss << "(" << range[0] << ", " << range[1] << ", " << range[2] << ")";
@@ -170,6 +217,18 @@ TEST_CASE("sub-group api", "[sub_group]") {
   // if possible, reduce size by one to attempt to create incomplete sub-groups
   if (local_size_dim > 1) {
     --local_size_dim;
+    // if required size for result buffer for current work group dimension size
+    // exceed maximum memory allocation size on device reduce initial
+    // local_size_dim (i.e. current local_size_dim + 1) to nearest multiple two
+    // and if possible, again reduce size by one to attempt to create incomplete
+    // sub-groups
+    size_t required_res_buffer_size =
+        result_buf_size(make_global_range(local_range, local_size_dim).size());
+    if (result_buffer_cant_be_alloc_in_device(required_res_buffer_size)) {
+      local_size_dim = reduce_work_group_size_to_suitable_multiple_two(
+          local_range, local_size_dim + 1);
+      local_size_dim = local_size_dim > 1 ? local_size_dim - 1 : local_size_dim;
+    }
   }
   sycl::range<3> local_size{local_size_dim, local_size_dim, local_size_dim};
 
@@ -182,7 +241,7 @@ TEST_CASE("sub-group api", "[sub_group]") {
 
   // allocate space for results to be gathered,
   // initialize arrays to special value to ensure a write happens
-  const size_t result_count = linear_execution_range * member_function_cnt;
+  const size_t result_count = result_buf_size(linear_execution_range);
   constexpr size_t empty = std::numeric_limits<size_t>::max();
   std::vector<size_t> results(result_count, empty);
   {
