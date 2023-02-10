@@ -31,7 +31,7 @@ coverage is coded in Python code generators therefore these type generators will
 full Table 165. _Generic type name description, which serves as a description for all valid types
 of parameters to kernel functions_. 
 
-More specifically, new `marray` types will be introduced with 1, 2, 3, 4, and 5 elements and
+More specifically, new `marray` types will be introduced with 1, 2, 3, 4, 5, and 17 elements and
 they will be added to the following generic type names (this will extend also more generic names):
 
 [[table.gentypes]]

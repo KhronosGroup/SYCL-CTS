@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for tests for multi_ptr implicit conversions
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides code for tests for multi_ptr implicit conversions
+
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_IMPLICIT_CONVERSIONS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_IMPLICIT_CONVERSIONS_H
 
@@ -45,6 +60,10 @@ struct avoid_implicit_conversion {
   }
 };
 }  // namespace detail
+
+template <typename T, typename AddrSpaceT, typename IsDecoratedT,
+          typename src_multi_ptr_t, typename dest_multi_ptr_t>
+class kernel_implicit_conversions;
 
 template <typename T, typename AddrSpaceT, typename IsDecoratedT>
 class run_implicit_convert_tests {
@@ -112,17 +131,21 @@ class run_implicit_convert_tests {
                         user_def_types::get_init_value_helper<T>(expected_val));
         };
 
+        using kname =
+            kernel_implicit_conversions<T, AddrSpaceT, IsDecoratedT,
+                                        src_multi_ptr_t, dest_multi_ptr_t>;
         if constexpr (address_space ==
                       sycl::access::address_space::local_space) {
           sycl::local_accessor<T> expected_val_acc{sycl::range(1), cgh};
-          cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
-            value_operations::assign(expected_val_acc, value);
-            sycl::group_barrier(item.get_group());
-            test_device_code(expected_val_acc);
-          });
+          cgh.parallel_for<kname>(
+              sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+                value_operations::assign(expected_val_acc, value);
+                sycl::group_barrier(item.get_group());
+                test_device_code(expected_val_acc);
+              });
         } else if constexpr (address_space ==
                              sycl::access::address_space::private_space) {
-          cgh.single_task([=] {
+          cgh.single_task<kname>([=] {
             T priv_val = value;
             sycl::multi_ptr<T, sycl::access::address_space::private_space,
                             decorated>
@@ -135,7 +158,7 @@ class run_implicit_convert_tests {
           auto expected_val_acc =
               expected_val_buffer.template get_access<sycl::access_mode::read>(
                   cgh);
-          cgh.single_task([=] { test_device_code(expected_val_acc); });
+          cgh.single_task<kname>([=] { test_device_code(expected_val_acc); });
         }
       });
     }

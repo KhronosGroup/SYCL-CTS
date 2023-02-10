@@ -2,10 +2,25 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides tests that the sycl::local_accessor can access the memory shared
-//  among work-items.
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides tests that the sycl::local_accessor can access the memory shared
+//  among work-items.
+
 #ifndef SYCL_CTS_LOCAL_ACCESSOR_ACCESS_AMONG_WORK_ITEMS_H
 #define SYCL_CTS_LOCAL_ACCESSOR_ACCESS_AMONG_WORK_ITEMS_H
 #include "accessor_common.h"
@@ -13,6 +28,9 @@
 namespace local_accessor_access_among_work_items {
 using namespace sycl_cts;
 using namespace accessor_tests_common;
+
+template <typename T, typename DimensionTypeT>
+class kernel_local_accessor;
 
 /**
  * @brief Provides a functor that provides verification that local_accessor can
@@ -54,7 +72,7 @@ class run_test {
               val_is_equal_to_expected_buffer
                   .template get_access<sycl::access_mode::write>(cgh);
           sycl::local_accessor<T, Dimension> acc(range, cgh);
-          cgh.parallel_for(
+          cgh.parallel_for<kernel_local_accessor<T, DimensionTypeT>>(
               sycl::nd_range(range, range), [=](sycl::nd_item<Dimension> item) {
                 auto lid = item.get_local_id();
                 auto zid = sycl::id<Dimension>();

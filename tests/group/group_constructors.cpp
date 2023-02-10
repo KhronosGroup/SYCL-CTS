@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@
 //
 *******************************************************************************/
 
-#include "../common/common.h"
-#include "../common/common_semantics.h"
-#include "../common/invoke.h"
 #include "../../util/array.h"
+#include "../common/common.h"
+#include "../common/invoke.h"
+#include "../common/semantics_by_value.h"
 
 #include <array>
 

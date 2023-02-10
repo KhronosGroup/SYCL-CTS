@@ -13,10 +13,12 @@ handler
 hierarchical
 host_task
 image
+image_accessor
 item
 kernel
 kernel_args
 kernel_bundle
+marray
 math_builtin_api
 marray
 multi_ptr

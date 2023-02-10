@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_semantics.h"
 #include "../common/invoke.h"
+#include "../common/semantics_by_value.h"
 
 #define TEST_NAME group_equality
 
@@ -56,12 +56,12 @@ class TEST_NAME : public util::test_base {
           store_instances<numItems, invoke_group<numDims, setup_kernel_t>>();
 
       // Check nd_item equality operator on the device side
-      common_semantics::on_device_checker<item_t>::template
-          run<group_equality_kernel<numDims>>(
-              log, items, "group " + std::to_string(numDims) + " (device)");
+      common_by_value_semantics::on_device_checker<item_t>::template run<
+          group_equality_kernel<numDims>>(
+          log, items, "group " + std::to_string(numDims) + " (device)");
 
       // Check group equality operator on the host side
-      common_semantics::check_on_host(
+      common_by_value_semantics::check_on_host(
           log, items[0], "group " + std::to_string(numDims) + " (host)");
     }
   }

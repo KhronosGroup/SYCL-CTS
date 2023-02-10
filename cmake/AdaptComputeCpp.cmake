@@ -1,13 +1,6 @@
-find_program(SYCLCC_EXECUTABLE syclcc-clang
-    PATH_SUFFIXES bin)
-
-if(NOT SYCLCC_EXECUTABLE)
-  message(SEND_ERROR "Could not find hipSYCL syclcc-clang compiler")
-endif()
-
-set(CMAKE_CXX_COMPILER  ${SYCLCC_EXECUTABLE})
-
 add_library(SYCL::SYCL INTERFACE IMPORTED GLOBAL)
+target_link_libraries(SYCL::SYCL INTERFACE ComputeCpp::ComputeCpp)
+target_compile_definitions(SYCL::SYCL INTERFACE SYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
 # add_sycl_executable_implementation function
 # Builds a SYCL program, compiling multiple SYCL test case source files into a
 # test executable, invoking a single-source/device compiler
@@ -25,11 +18,14 @@ function(add_sycl_executable_implementation)
     add_library(${object_lib_name} OBJECT ${test_cases_list})
     add_executable(${exe_name} $<TARGET_OBJECTS:${object_lib_name}>)
 
+    # ComputeCpp allows calling the macro on the object library only. Hooking
+    # integration header gen targets and force-includes on source files is ok.
+    add_sycl_to_target(TARGET ${object_lib_name} SOURCES ${test_cases_list})
+
     set_target_properties(${object_lib_name} PROPERTIES
         INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${exe_name},INCLUDE_DIRECTORIES>
         COMPILE_DEFINITIONS $<TARGET_PROPERTY:${exe_name},COMPILE_DEFINITIONS>
         COMPILE_OPTIONS     $<TARGET_PROPERTY:${exe_name},COMPILE_OPTIONS>
-        COMPILE_FEATURES    $<TARGET_PROPERTY:${exe_name},COMPILE_FEATURES>
-        POSITION_INDEPENDENT_CODE ON)
+        COMPILE_FEATURES    $<TARGET_PROPERTY:${exe_name},COMPILE_FEATURES>)
 
 endfunction()

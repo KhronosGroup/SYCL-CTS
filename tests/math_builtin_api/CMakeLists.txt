@@ -29,7 +29,7 @@ foreach(cat ${MATH_CAT_WITH_VARIANT})
       GENERATOR "generate_math_builtin.py"
       OUTPUT "math_builtin_${cat}_${var}.cpp"
       INPUT "math_builtin.template"
-      EXTRA_ARGS -test ${cat} -variante ${var}
+      EXTRA_ARGS -test ${cat} -variante ${var} -marray true
       DEPENDS ${math_builtin_depends}
     )
   endforeach()
@@ -42,7 +42,7 @@ foreach(cat ${MATH_CAT})
     GENERATOR "generate_math_builtin.py"
     OUTPUT "math_builtin_${cat}.cpp"
     INPUT "math_builtin.template"
-    EXTRA_ARGS -test ${cat}
+    EXTRA_ARGS -test ${cat} -marray true
     DEPENDS ${math_builtin_depends}
   )
 endforeach()
