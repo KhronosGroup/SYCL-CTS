@@ -18,7 +18,9 @@ is selected on the CTS command line if not stated otherwise.
 
 Check that constructing an object without specifying template variables initializes correct `InputIterator`, `AllocatorT`, `Dimensions` and `Container` classes.
 
-* Create `buffer` using following constructors without templates.
+* Create `InputIterator`, `Allocator` and `Container`.
+
+* Create `buffer` using following constructors without templates using existing `InputIterator`, `Allocator`, `Container` and from 0 to 3 `Dimensions`.
 
 ** `template <class InputIterator, class AllocatorT> +
 buffer(InputIterator, InputIterator, AllocatorT, const property_list& = {}) -> buffer<typename std::iterator_traits<InputIterator>::value_type, 1, AllocatorT>;`
@@ -39,14 +41,16 @@ buffer(Container&, AllocatorT, const property_list& = {}) -> buffer<typename Con
 buffer(Container&, const property_list& = {}) -> buffer<typename Container::value_type, 1>;`
 
 * Using `std::is_same_v` compare resulting object with deduction guide.
-* Check that `get_range()` returns same `Dimensions` as in deduction guide.
+* Check that `get_range()` returns `range` with same `Dimensions` as in deduction guide.
 * Check that `get_allocator()` returns same `AllocatorT` as in deduction guide.
 
 === `multi_ptr`
 
 Check that constructing an object without specifying template variables initializes correct `T`. `access_mode`, `placeholder` and `Dimensions` classes.
 
-* Create `multi_ptr` using following constructors without templates.
+* Create an `accessor`.
+
+* Create `multi_ptr` using following constructors without templates .
 
 ** `template <int Dimensions, access_mode Mode, access::placeholder IsPlaceholder,class T> +
 multi_ptr(accessor<T, Dimensions, Mode, target::device, IsPlaceholder>) -> multi_ptr<T, access::address_space::global_space, access::decorated::no>;`
@@ -55,7 +59,7 @@ multi_ptr(accessor<T, Dimensions, Mode, target::device, IsPlaceholder>) -> multi
 multi_ptr(local_accessor<T, Dimensions>) -> multi_ptr<T, access::address_space::local_space, access::decorated::no>;`
 
 * Using `std::is_same_v` compare resulting object with deduction guide.
-* Check that `get()` returns the underlying pointer same as deduction guide.
+* Check that `get()` with * returns same value as `accessor` ref.
 
 === `range` and `id`
 
@@ -70,7 +74,7 @@ Check that constructing an object without specifying `Dimensions` passes correct
 ** `id(size_t, size_t)->id<2>;`
 ** `id(size_t, size_t, size_t)->id<3>;`
 
-* Check that `get()` return correct `Dimensions`.
+* Using `std::is_same_v` compare resulting object with deduction guide.
 
 === `vec`
 * Create `vec` using constructor
@@ -79,4 +83,4 @@ Check that constructing an object without specifying `Dimensions` passes correct
 
 * Create another `vec` with specifying `T` and `U` with same vector elements.
 
-* Use `for` loop to check that elements inside vectors arethe same.
+* Use `for` loop to check that elements inside vectors are the same.
