@@ -146,9 +146,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
       "Skipping the test case.");
 #endif  // SYCL_CTS_COMPILING_WITH_COMPUTECPP
   // ComputeCpp gives an error next time the function is called
-  // DPCPP no member named 'update_host' in 'sycl::queue'
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   //  update_host
   {
     std::unique_ptr<T[]> src = std::make_unique<T[]>(element_count);
@@ -159,7 +157,7 @@ void test_explicit_copy(sycl::queue q, unsigned int element_count) {
   }
 #else
   WARN(
-      "queue.update_host() test does not compile for ComputeCPP and DPCPP"
+      "queue.update_host() test does not compile for ComputeCPP"
       "Skipping the test case.");
 #endif
   // ComputeCpp function not defined

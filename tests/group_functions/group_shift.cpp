@@ -1,0 +1,59 @@
+/*******************************************************************************
+//
+//  SYCL 2020 Conformance Test Suite
+//
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+*******************************************************************************/
+
+#include "group_shift.h"
+
+// errors in hipSYCL with bool and 8-bit types - only in group shifts
+TEMPLATE_LIST_TEST_CASE("Group and sub-group shift",
+                        "[group_func][type_list][dim]", CustomTypes) {
+  // check types to only print warning once
+  if constexpr (std::is_same_v<TestType, char>) {
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
+    WARN(
+        "hipSYCL has not implemented sycl::marray type yet. Skipping the test "
+        "cases.");
+#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    WARN(
+        "DPCPP does not implement shift functions. "
+        "Skipping the test.");
+#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    WARN(
+        "ComputeCpp does not implement shift functions. "
+        "Skipping the test.");
+#endif
+  }
+
+  // FIXME: DPCPP and ComputeCpp do not implement shift functions
+#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
+    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  return;
+#else
+  auto queue = sycl_cts::util::get_cts_object::queue();
+
+  // check all work group dimensions
+  shift_group<1, TestType>(queue);
+  shift_group<2, TestType>(queue);
+  shift_group<3, TestType>(queue);
+
+  shift_sub_group<1, TestType>(queue);
+  shift_sub_group<2, TestType>(queue);
+  shift_sub_group<3, TestType>(queue);
+#endif
+}

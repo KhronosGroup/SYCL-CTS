@@ -20,6 +20,11 @@ else()
 endif()
 
 find_package(${SYCL_IMPLEMENTATION} REQUIRED)
+find_file(SYCL_IMPLEMENTATION_ADAPTER
+  Adapt${SYCL_IMPLEMENTATION}.cmake
+  PATHS ${CMAKE_MODULE_PATH}
+)
+include("${SYCL_IMPLEMENTATION_ADAPTER}")
 
 if(NOT TARGET SYCL::SYCL)
     message(FATAL_ERROR
@@ -30,8 +35,17 @@ if(NOT TARGET SYCL::SYCL)
     )
 endif()
 
+if(NOT COMMAND add_sycl_to_target)
+    message(FATAL_ERROR
+        "The SYCL CTS requires a CMake function/macro with the signature: "
+        "`add_sycl_to_target(TARGET <tgt> [SOURCES <srcs>])` to be present."
+        "It should provide all the special treatment targets with source files <srcs>"
+        "containing SYCL code require to compile and link."
+    )
+endif()
+
 set(SYCL_IMPLEMENTATION_DETECTION_MACRO "SYCL_CTS_COMPILING_WITH_${CANONICAL_SYCL_IMPLEMENTATION}")
-target_compile_options(SYCL::SYCL INTERFACE "-D${SYCL_IMPLEMENTATION_DETECTION_MACRO}")
+target_compile_definitions(SYCL::SYCL INTERFACE "${SYCL_IMPLEMENTATION_DETECTION_MACRO}")
 target_link_libraries(SYCL::SYCL INTERFACE CTS::OpenCL_Proxy)
 
 if(NOT COMMAND add_sycl_executable_implementation)

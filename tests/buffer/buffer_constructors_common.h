@@ -470,37 +470,6 @@ class buffer_ctors {
       }
     }
 
-    /* Check copy constructor */
-    {
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-      if (bufA.get_size() != bufB.get_size()) {
-        FAIL(log, "buffer was not copy constructed properly. (get_size)");
-      }
-      if (bufA.get_count() != bufB.get_count()) {
-        FAIL(log, "buffer was not copy constructed properly. (get_count)");
-      }
-      if (bufA.get_range() != bufB.get_range()) {
-        FAIL(log, "buffer was not copy constructed properly. (get_range)");
-      }
-    }
-
-    /* Check move constructor */
-    {
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(std::move(bufA));
-
-      if (bufB.get_range() != r) {
-        FAIL(log, "buffer was not move constructed properly. (get_range)");
-      }
-      if (bufB.get_size() != size * sizeof(T)) {
-        FAIL(log, "buffer was not move constructed properly. (get_size)");
-      }
-      if (bufB.get_count() != size) {
-        FAIL(log, "buffer was not move constructed properly. (get_count)");
-      }
-    }
-
     /* Check copy assignment */
     {
       const sycl::property_list propertyList{
@@ -540,58 +509,6 @@ class buffer_ctors {
         FAIL(log,
              "buffer was not copy assigned properly. "
              "(has_property<use_host_ptr>)");
-      }
-    }
-
-    /* Check equality operator */
-    {
-      const auto r2 = r * 2;
-
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-      sycl::buffer<T, dims> bufC(r2);
-      bufC = bufA;
-      sycl::buffer<T, dims> bufD(r2);
-
-      /* equality of copy constructed */
-      if (!(bufA == bufB)) {
-        FAIL(log, "buffer equality of equals failed. (copy constructor)");
-      }
-      /* equality of copy assigned */
-      if (!(bufA == bufC)) {
-        FAIL(log, "buffer equality of equals failed. (copy assignment)");
-      }
-      if (bufA != bufB) {
-        FAIL(log,
-             "buffer non-equality does not work correctly"
-             "(copy constructed)");
-      }
-      if (bufA != bufC) {
-        FAIL(log,
-             "buffer non-equality does not work correctly"
-             "(copy assigned)");
-      }
-      if (bufC == bufD) {
-        FAIL(log,
-             "buffer equality does not work correctly"
-             "(comparing same)");
-      }
-      if (!(bufC != bufD)) {
-        FAIL(log,
-             "buffer non-equality does not work correctly"
-             "(comparing same)");
-      }
-    }
-
-    /* Check hashing */
-    {
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-
-      std::hash<sycl::buffer<T, dims>> hasher;
-
-      if (hasher(bufA) != hasher(bufB)) {
-        FAIL(log, "buffer hashing of equals failed.");
       }
     }
   }

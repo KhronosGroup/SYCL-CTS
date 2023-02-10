@@ -28,9 +28,7 @@ namespace queue_shortcuts_explicit_fp16 {
 using namespace sycl_cts;
 using namespace queue_shortcuts_explict;
 
-// DPCPP does not define the explicit copy operations
-DISABLED_FOR_TEST_CASE(DPCPP)
-("queue shortcuts explicit copy fp16", "[queue]")({
+TEST_CASE("queue shortcuts explicit copy fp16", "[queue]") {
   auto queue = util::get_cts_object::queue();
   using availability =
       util::extensions::availability<util::extensions::tag::fp16>;
@@ -42,6 +40,6 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   }
 
   check_queue_shortcuts_explicit_for_type<sycl::half>{}(queue, "sycl::half");
-})
+}
 
 }  // namespace queue_shortcuts_explicit_fp16
