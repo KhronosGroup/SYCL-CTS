@@ -6,36 +6,24 @@
 //  scalar types.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reduction_with_identity_param.h"
+#endif
 
-#define TEST_NAME reduction_with_identity_param_core
+namespace reduction_with_identity_param_core {
 
-namespace TEST_NAMESPACE {
-using namespace sycl_cts;
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("reduction_with_identity_param_core", "[reduction]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
 
-/** Test instance
- */
-class TEST_NAME : public sycl_cts::util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
-
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    {
-      auto queue = util::get_cts_object::queue();
-
-      for_all_types<reduction_with_identity::run_test_for_type>(
-          reduction_common::scalar_types, queue, log);
-    }
-  }
-};
-
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-}  // namespace TEST_NAMESPACE
+  for_all_types<reduction_with_identity_param::run_test_for_type>(
+      reduction_common::scalar_types, queue);
+});
+}  // namespace reduction_with_identity_param_core
