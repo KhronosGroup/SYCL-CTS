@@ -246,14 +246,10 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::opencl_c_version, std::string>(
         dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+
     check_get_info_param<sycl::info::device::aspects,
                          std::vector<sycl::aspect>>(dev);
-#else
-    WARN(
-        "Implementation does not support sycl::info::device::aspects "
-        "Skipping the test case.");
-#endif
+
     check_get_info_param<sycl::info::device::extensions,
                          std::vector<std::string>>(dev);
     check_get_info_param<sycl::info::device::printf_buffer_size, size_t>(dev);
