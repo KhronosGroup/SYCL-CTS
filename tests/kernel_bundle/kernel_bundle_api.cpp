@@ -79,36 +79,33 @@ TEST_CASE(
   }
 }
 
-// FIXME: re-enable when sycl::kernel_bundle::has_kernel<KernelName>() is
-// implemented
-DISABLED_FOR_TEST_CASE(DPCPP)
-("Check kernel_bundle::has_kernel<typename KernelName>()"
- "kernels",
- "[kernel_bundle]")({
+TEST_CASE(
+    "Check kernel_bundle::has_kernel<typename KernelName>()"
+    "kernels",
+    "[kernel_bundle]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto device = queue.get_device();
-  using kernel_name = class simple_kernel;
+  using kernel_name = class simple_kernel_has_kernel;
   sycl_cts::tests::kernel_bundle::define_kernel<kernel_name>(queue);
   auto kernel_bundle =
       sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(
           queue.get_context());
   CHECK(kernel_bundle.has_kernel<kernel_name>());
-});
+}
 
-// FIXME: re-enable when sycl::kernel_bundle::has_kernel<KernelName>(const
-// device&) is implemented
-DISABLED_FOR_TEST_CASE(DPCPP)
-("Check kernel_bundle::has_kernel<typename KernelName>(const device&)"
- "kernels",
- "[kernel_bundle]")({
+TEST_CASE(
+    "Check kernel_bundle::has_kernel<typename KernelName>(const device&)"
+    "kernels",
+    "[kernel_bundle]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
-  using kernel_name = class simple_kernel;
+  auto device = queue.get_device();
+  using kernel_name = class simple_kernel_has_kernel_device;
   sycl_cts::tests::kernel_bundle::define_kernel<kernel_name>(queue);
   auto kernel_bundle =
       sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(
           queue.get_context());
   CHECK(kernel_bundle.has_kernel<kernel_name>(device));
-});
+}
 
 TEST_CASE(
     "Check kernel_bundle::get_kernel_ids()"
@@ -143,7 +140,7 @@ DISABLED_FOR_TEST_CASE(DPCPP)
  "kernels",
  "[kernel_bundle]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
-  using kernel_name = class simple_kernel;
+  using kernel_name = class simple_kernel_get_kernel;
   sycl_cts::tests::kernel_bundle::define_kernel<kernel_name>(queue);
   auto kernel_bundle =
       sycl::get_kernel_bundle<kernel_name, sycl::bundle_state::executable>(
