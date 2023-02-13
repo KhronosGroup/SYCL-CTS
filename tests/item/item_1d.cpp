@@ -128,7 +128,7 @@ void test_item_1d(util::logger &log) {
 
       kernel_item_1d kern =
           kernel_item_1d(accIn, accOut, accOutDeprecated, dataRange);
-      cgh.parallel_for(dataRange, kern);
+      cgh.parallel_for<kernel_item_1d>(dataRange, kern);
     });
 
     cmdQueue.wait_and_throw();

@@ -123,7 +123,7 @@ void test_item_2d(util::logger &log) {
 
       kernel_item_2d kern =
           kernel_item_2d(accIn, accOut, accOutDeprecated, dataRange);
-      cgh.parallel_for(dataRange, kern);
+      cgh.parallel_for<kernel_item_2d>(dataRange, kern);
     });
 
     cmdQueue.wait_and_throw();

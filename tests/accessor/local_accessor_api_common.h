@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides common code for sycl::local_accessor api tests
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides common code for sycl::local_accessor api tests
+
 #ifndef SYCL_CTS_LOCAL_ACCESSOR_API_COMMON_H
 #define SYCL_CTS_LOCAL_ACCESSOR_API_COMMON_H
 #include "accessor_common.h"
@@ -88,12 +103,16 @@ AccT get_accessor(sycl::handler &cgh, const sycl::range<range_dims> &r) {
 }
 
 template <typename T, typename DimensionTypeT>
+class kernel_api;
+
+template <typename T, typename DimensionTypeT>
 class run_api_tests {
   static constexpr int dims = DimensionTypeT::value;
   using AccT = sycl::local_accessor<T, dims>;
 
  public:
   void operator()(const std::string &type_name) {
+    using kname = kernel_api<T, DimensionTypeT>;
     auto queue = util::get_cts_object::queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
 
@@ -153,7 +172,8 @@ class run_api_tests {
                                                local_range /*expected_range*/);
 
                 sycl::accessor res_acc(res_buf, cgh);
-                cgh.parallel_for(nd_range, [=](sycl::nd_item<dims> item) {
+                cgh.parallel_for<kname>(nd_range, [=](sycl::nd_item<dims>
+                                                          item) {
                   auto &&ref_1 = acc[sycl::id<dims>()];
 
                   auto &&ref_2 = get_subscript_overload<T, AccT, dims>(acc, 1);
@@ -223,7 +243,7 @@ class run_api_tests {
                     r.size() /*expected_size*/);
 
                 sycl::accessor res_acc(res_buf, cgh);
-                cgh.parallel_for(
+                cgh.parallel_for<kname>(
                     sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
                       typename AccT::reference dref = acc;
                       if constexpr (!std::is_const_v<T>) {

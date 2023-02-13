@@ -28,9 +28,7 @@ namespace queue_shortcuts_explicit_fp64 {
 using namespace sycl_cts;
 using namespace queue_shortcuts_explict;
 
-// DPCPP does not define the explicit copy operations
-DISABLED_FOR_TEST_CASE(DPCPP)
-("queue shortcuts explicit copy fp64", "[queue]")({
+TEST_CASE("queue shortcuts explicit copy fp64", "[queue]") {
   auto queue = util::get_cts_object::queue();
   using availability =
       util::extensions::availability<util::extensions::tag::fp64>;
@@ -42,6 +40,6 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   }
 
   check_queue_shortcuts_explicit_for_type<double>{}(queue, "double");
-})
+}
 
 }  // namespace queue_shortcuts_explicit_fp64

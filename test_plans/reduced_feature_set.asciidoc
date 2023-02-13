@@ -7,7 +7,7 @@ This is a test plan for the full and reduced feature sets as described in Append
 
 Currently, the CTS does not take into account the full and reduced feature sets. This test plan proposes a way to modify the CTS in such a way that it may be specified whether conformance should be tested for the reduced or the full feature set. For the remainder of this plan, let "full feature" refer to a feature that is part of the full feature set, but not part of the reduced feature set.
 
-A CTS option is introduced, `SYCL_CTS_ENABLE_FEATURE_SET_FULL`, which specifies that full features should be tested in addition to the features of the reduced feature set. The tests for the full features should be guarded if `#ifdef SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
+A CTS option is introduced, `SYCL_CTS_ENABLE_FEATURE_SET_FULL`, which specifies that full features should be tested in addition to the features of the reduced feature set. The tests for the full features should be guarded if `#if SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
 
 In all existing tests, the full features are removed and replaced with a workaround. Since the CTS was not written with the feature sets in mind, a "best effort" is made to remove the full features in the CTS. New additions should not use full features unless guarded with `SYCL_CTS_ENABLE_FEATURE_SET_FULL`.
 

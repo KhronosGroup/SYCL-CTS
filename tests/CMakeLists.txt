@@ -225,3 +225,4 @@ endforeach()
 
 target_link_libraries(test_all PRIVATE CTS::util CTS::main_function oclmath)
 target_link_libraries(test_all PRIVATE Catch2::Catch2 Threads::Threads)
+add_sycl_to_target(TARGET test_all)
