@@ -50,8 +50,7 @@ enum class test_type {
 bool check_atomic_fence_order_capability(sycl::queue& queue,
                                          sycl::memory_order order,
                                          const std::string& order_name) {
-// FIXME: re-enable when sycl::info::device::atomic_fence_order_capabilities is
-// implemented
+// FIXME: re-enable when https://github.com/intel/llvm/issues/8293 is fixed
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
   auto orders =
       queue.get_device()
@@ -75,8 +74,7 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
 bool check_atomic_fence_scope_capability(sycl::queue& queue,
                                          sycl::memory_scope scope,
                                          const std::string& scope_name) {
-// FIXME: re-enable when sycl::info::device::atomic_fence_scope_capabilities is
-// implemented
+// FIXME: re-enable when https://github.com/intel/llvm/issues/8293 is fixed
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
   auto scopes =
       queue.get_device()
