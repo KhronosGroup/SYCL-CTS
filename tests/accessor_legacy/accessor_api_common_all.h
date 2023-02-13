@@ -61,7 +61,8 @@ void check_accessor_members(sycl_cts::util::logger &log,
                 "value_type is of wrong type");
 
   using reference = typename acc_t::reference;
-  static_assert(std::is_same_v<reference, T &>, "reference is of wrong type");
+  static_assert(std::is_same_v<reference, value_type &>,
+                "reference is of wrong type");
 
   using const_reference = typename acc_t::const_reference;
   static_assert(std::is_same_v<const_reference, const T &>,
