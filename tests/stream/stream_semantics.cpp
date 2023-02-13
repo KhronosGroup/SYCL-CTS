@@ -42,6 +42,8 @@ struct storage {
         ) {
   }
 
+  // Enable when https://github.com/intel/llvm/issues/8326
+  // been solved
   bool check(const sycl::stream& stream) const {
     return
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
