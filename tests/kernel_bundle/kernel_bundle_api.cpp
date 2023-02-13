@@ -135,6 +135,8 @@ TEST_CASE(
 
 // FIXME: re-enable when sycl::kernel_bundle::get_kernel<KernelName>() is
 // implemented
+// Issue link https://github.com/intel/llvm/issues/8328
+// PR link https://github.com/intel/llvm/pull/8294
 DISABLED_FOR_TEST_CASE(DPCPP)
 ("Check kernel_bundle::get_kernel<KernelName>()"
  "kernels",
