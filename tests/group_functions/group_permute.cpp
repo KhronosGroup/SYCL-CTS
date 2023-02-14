@@ -42,11 +42,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group permute",
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
 
-  // check all work group dimensions
-//  permute_group<1, TestType>(queue);
-//  permute_group<2, TestType>(queue);
-//  permute_group<3, TestType>(queue);
-
   permute_sub_group<1, TestType>(queue);
   permute_sub_group<2, TestType>(queue);
   permute_sub_group<3, TestType>(queue);
