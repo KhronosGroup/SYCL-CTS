@@ -23,6 +23,7 @@
 #include "../common/semantics_reference.h"
 #include "default_image.h"
 
+// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
 #if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) ||    \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
       defined(SYCL_CTS_COMPILING_WITH_DPCPP))
@@ -65,7 +66,7 @@ struct storage_unsampled {
 };
 
 #endif
-
+// Enable all tests when fixed https://github.com/intel/llvm/issues/8304
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sampled_image common reference semantics", "[sampled_image]")({
   auto sampled_image_0 = default_sampled_image::get();
