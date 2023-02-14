@@ -63,7 +63,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                using red_t = decltype(reducer);
+                using red_t = std::remove_reference_t<decltype(reducer)>;
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -99,7 +99,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                using red_t = decltype(reducer);
+                using red_t = std::remove_reference_t<decltype(reducer)>;
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -138,7 +138,7 @@ struct check_reducer_subscript {
               size_t i = 0;
 
               {
-                using red_t = decltype(reducer);
+                using red_t = std::remove_reference_t<decltype(reducer)>;
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =
@@ -147,7 +147,7 @@ struct check_reducer_subscript {
               }
 
               {
-                using red_t = decltype(reducer[0]);
+                using red_t = std::remove_reference_t<decltype(reducer[0])>;
                 acc_results[i++] =
                     std::is_same_v<AccumulatorT, typename red_t::value_type>;
                 acc_results[i++] =

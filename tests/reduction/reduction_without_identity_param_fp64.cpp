@@ -6,43 +6,33 @@
 //  identity param.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reduction_without_identity_param_common.h"
+#endif
 
-#define TEST_NAME reduction_without_identity_param_fp64
+namespace reduction_without_identity_param_fp64 {
 
-namespace TEST_NAMESPACE {
-using namespace sycl_cts;
-using namespace reduction_without_identity;
-using namespace reduction_common;
+// FIXME: re-enable when compilation failure for reduction with custom type is
+// fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("reduction_without_identity_param", "[reduction]")({
+  using namespace reduction_without_identity_param_common;
 
-/** Test instance
- */
-class TEST_NAME : public sycl_cts::util::test_base {
- public:
-  /** return information about this test
-   */
-  void get_info(test_base::info& out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
+  auto queue = sycl_cts::util::get_cts_object::queue();
+
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    SKIP("Device does not support double precision floating point operations");
   }
 
-  /** execute the test
-   */
-  void run(util::logger& log) override {
-    auto queue = util::get_cts_object::queue();
-    if (!queue.get_device().has(sycl::aspect::fp64)) {
-      log.note(
-          "Device does not support double precision floating point operations");
-      return;
-    }
+  run_tests_for_all_functors<double, run_test_without_property>()(
+      reduction_common::range, queue, "double");
+  run_tests_for_all_functors<double, run_test_with_property>()(
+      reduction_common::nd_range, queue, "double");
+});
 
-    run_tests_for_all_functors<double, run_test_without_property>()(
-        range, queue, log, "double");
-    run_tests_for_all_functors<double, run_test_with_property>()(
-        nd_range, queue, log, "double");
-  }
-};
-
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-}  // namespace TEST_NAMESPACE
+}  // namespace reduction_without_identity_param_fp64
