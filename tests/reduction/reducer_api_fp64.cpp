@@ -27,9 +27,8 @@
 #endif
 
 #include <string>
-// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp and
-// DPCPP
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL, DPCPP)
+// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("reducer api fp64", "[reducer][fp64]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   using avaliability = sycl_cts::util::extensions::availability<
