@@ -17,6 +17,12 @@
 //  limitations under the License.
 //
 //  Provides tests for parallel_for simplifications
+//  parallel_for(N, some_kernel)
+//  parallel_for({N}, some_kernel)
+//  parallel_for({N1, N2}, some_kernel)
+//  parallel_for({N1, N2, N3}, some_kernel)
+//  Test plan:
+https://github.com/KhronosGroup/SYCL-CTS/blob/SYCL-2020/test_plans/parallel_for_simplifications.asciidoc
 //
 *******************************************************************************/
 
@@ -43,8 +49,7 @@ struct kernel {
 
 template <int N, typename ActionT>
 void check(ActionT action) {
-  std::array<int, N> arr;
-  std::fill(arr.begin(), arr.end(), 0);
+  std::array<int, N> arr{};
   {
     sycl::buffer<int, 1> buf(arr.data(), sycl::range<1>(N));
     sycl::queue queue = sycl_cts::util::get_cts_object::queue();
