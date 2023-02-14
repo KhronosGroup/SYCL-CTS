@@ -41,8 +41,10 @@ class work_group_decorated_functor {
 using AtomicRefT =
     sycl::atomic_ref<unsigned long long, sycl::memory_order::relaxed,
                      sycl::memory_scope::device>;
+template <int Case>
+class kernel_speculative;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Speculative compilation with supported feature", "[kernel_features]")({
   auto queue = util::get_cts_object::queue();
   const sycl::errc errc_expected = sycl::errc::success;
@@ -56,9 +58,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       const auto separate_lambda_item_arg = [](sycl::item<1>) {};
       const auto separate_lambda_group_arg = [](sycl::group<1>) {};
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<1>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -68,7 +70,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          NO_ATTRIBUTE, NO_KERNEL_BODY);
+                          NO_ATTRIBUTE, kernel_speculative<1>, NO_KERNEL_BODY);
     }
   }
 
@@ -84,9 +86,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         use_feature_function_non_decorated<sycl::half>();
       };
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<2>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -96,7 +98,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          NO_ATTRIBUTE,
+                          NO_ATTRIBUTE, kernel_speculative<2>,
                           use_feature_function_non_decorated<sycl::half>());
     }
   }
@@ -113,9 +115,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         use_feature_function_non_decorated<double>();
       };
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<3>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -125,7 +127,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          NO_ATTRIBUTE,
+                          NO_ATTRIBUTE, kernel_speculative<3>,
                           use_feature_function_non_decorated<double>());
     }
   }
@@ -142,9 +144,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
         use_feature_function_non_decorated<AtomicRefT>();
       };
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<4>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -154,12 +156,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          NO_ATTRIBUTE,
+                          NO_ATTRIBUTE, kernel_speculative<4>,
                           use_feature_function_non_decorated<AtomicRefT>());
     }
   }
 
   constexpr size_t testing_wg_size[2] = {16, 4294967295};
+#define TESTING_WG_SIZE0 16
+#define TESTING_WG_SIZE1 4294967295
   auto max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
 
@@ -172,9 +176,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<5>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -184,8 +188,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(testing_wg_size[0])]],
-                          NO_KERNEL_BODY);
+                          [[sycl::reqd_work_group_size(TESTING_WG_SIZE0)]],
+                          kernel_speculative<5>, NO_KERNEL_BODY);
     }
   }
 
@@ -198,9 +202,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<6>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -210,12 +214,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(testing_wg_size[1])]],
-                          NO_KERNEL_BODY);
+                          [[sycl::reqd_work_group_size(TESTING_WG_SIZE1)]],
+                          kernel_speculative<6>, NO_KERNEL_BODY);
     }
   }
 
   constexpr size_t testing_sg_size[2] = {16, 4099};
+#define TESTING_SG_SIZE0 16
+#define TESTING_SG_SIZE1 4099
   const auto sg_sizes_vec =
       queue.get_device().get_info<sycl::info::device::sub_group_sizes>();
   auto find_res =
@@ -229,9 +235,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<7>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -241,8 +247,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(testing_sg_size[0])]],
-                          NO_KERNEL_BODY);
+                          [[sycl::reqd_sub_group_size(TESTING_SG_SIZE0)]],
+                          kernel_speculative<7>, NO_KERNEL_BODY);
     }
   }
 
@@ -257,9 +263,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
 
-      run_separate_lambda(is_exception_expected, errc_expected, queue,
-                          separate_lambda_no_arg, separate_lambda_item_arg,
-                          separate_lambda_group_arg);
+      run_separate_lambda<kernel_speculative<8>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
+          separate_lambda_item_arg, separate_lambda_group_arg);
     }
 
     {
@@ -269,8 +275,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(testing_sg_size[1])]],
-                          NO_KERNEL_BODY);
+                          [[sycl::reqd_sub_group_size(TESTING_SG_SIZE1)]],
+                          kernel_speculative<8>, NO_KERNEL_BODY);
     }
   }
 });
