@@ -27,9 +27,7 @@ struct storage {
 
   explicit storage(const sycl::stream& stream)
       : size(stream.size()),
-        max_statement_size(stream.get_max_statement_size()
-        ) {
-  }
+        max_statement_size(stream.get_max_statement_size()) {}
 
   // Enable when https://github.com/intel/llvm/issues/8326
   // been solved
