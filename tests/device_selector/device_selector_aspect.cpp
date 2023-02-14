@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -30,6 +29,7 @@ using namespace sycl_cts;
 
 /** Return a named value pack of all defined aspects. */
 static auto get_aspect_pack() {
+// FIXME: remove when https://github.com/intel/llvm/issues/8324 is fixed
 #ifdef SYCL_CTS_COMPILING_WITH_DPCPP
   WARN(
       "DPCPP does not define sycl::aspect::emulated."
@@ -60,14 +60,10 @@ static auto get_aspect_pack() {
  Check whether all specified constructors for \p aspect_selector are
  available. */
 void check_no_aspects() {
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  CHECK(false);  // ensure workaround will be removed
-#else
   const auto selector_vector = sycl::aspect_selector({});
   const auto selector_vector_deny = sycl::aspect_selector({}, {});
   const auto selector_args = sycl::aspect_selector();
   const auto selector_params = sycl::aspect_selector<>();
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
 }
 
 /**
@@ -191,7 +187,6 @@ void test_selector(const Selector& selector,
 template <sycl::aspect... Aspects>
 void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
   const std::vector<sycl::aspect> accept_list{Aspects...};
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   test_selector(sycl::aspect_selector(accept_list), accept_list);
   if (!deny_list.empty()) {
     test_selector(sycl::aspect_selector(accept_list, deny_list), accept_list,
@@ -199,7 +194,6 @@ void check_aspect_selector(const std::vector<sycl::aspect>& deny_list) {
   }
   test_selector(sycl::aspect_selector(Aspects...), accept_list);
   test_selector(sycl::aspect_selector<Aspects...>(), accept_list);
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
 }
 
 /**
@@ -401,9 +395,7 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
   create_random_sets(aspect_tuple, set_sizes);
 }
 
-// DPCPP does not implement sycl::aspect_selector
-DISABLED_FOR_TEST_CASE(DPCPP)
-("aspect", "[device_selector]")({
+TEST_CASE("aspect", "[device_selector]") {
 #if SYCL_CTS_COMPILING_WITH_COMPUTECPP
   WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
 #endif
@@ -427,6 +419,6 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   // randomly-generated list of forbidden aspects
   constexpr unsigned int random_aspects_count = 100;
   check_for_random_set<random_aspects_count>(aspect_pack);
-})
+}
 
 }  // namespace device_selector_aspect
