@@ -29,10 +29,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group shift",
     WARN(
         "hipSYCL has not implemented sycl::marray type yet. Skipping the test "
         "cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    WARN(
-        "DPCPP does not implement shift functions. "
-        "Skipping the test.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement shift functions. "
@@ -40,17 +36,11 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group shift",
 #endif
   }
 
-  // FIXME: DPCPP and ComputeCpp do not implement shift functions
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp do not implement shift functions
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
-
-  // check all work group dimensions
-  shift_group<1, TestType>(queue);
-  shift_group<2, TestType>(queue);
-  shift_group<3, TestType>(queue);
 
   shift_sub_group<1, TestType>(queue);
   shift_sub_group<2, TestType>(queue);
