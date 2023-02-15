@@ -16,10 +16,11 @@
 #include "reduction_get_lambda.h"
 #include <cstddef>
 
-namespace reduction_without_identity {
+namespace reduction_without_identity_param_common {
 
 static constexpr size_t number_elements{2};
-template <typename VariableT, int TestCase>
+template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
+          typename FunctorT, typename RangeT, int TestCase>
 class kernel;
 
 constexpr int init_value_without_property_case{99};
@@ -119,17 +120,14 @@ auto get_reduction_for_span(SpanT &span, FunctorT functor) {
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
 void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
-                            sycl::queue &queue, sycl_cts::util::logger &log,
-                            const std::string &type_name) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) {
-    return;
-  }
+                            sycl::queue &queue, const std::string &type_name) {
+  reduction_common::check_usm_shared_aspect(queue);
+
   sycl::buffer<VariableT> initial_buf{
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
@@ -142,20 +140,21 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
   *variable_for_reduction.get() =
       reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
                                                      UsePropertyFlag>();
-  queue.submit([&](sycl::handler &cgh) {
-    auto reduction{get_reduction_for_value_ptr<UsePropertyFlag>(
-        variable_for_reduction.get(), functor)};
-    auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
-                                                 UseCombineFlagT, FunctorT>(
-        initial_buf.template get_access<sycl::access_mode::read>(cgh))};
+  queue
+      .submit([&](sycl::handler &cgh) {
+        auto reduction{get_reduction_for_value_ptr<UsePropertyFlag>(
+            variable_for_reduction.get(), functor)};
+        auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
+                                                     UseCombineFlagT, FunctorT>(
+            initial_buf.template get_access<sycl::access_mode::read>(cgh))};
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 1>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
 
-    cgh.parallel_for<kernel<VariableT, 1>>(range, reduction, lambda);
-  });
-  if (*variable_for_reduction.get() != expected_value) {
-    log.fail(get_fail_message(type_name, *variable_for_reduction.get(),
-                              expected_value),
-             __LINE__);
-  }
+  INFO(get_fail_message(type_name, *variable_for_reduction.get(),
+                        expected_value));
+  CHECK(*variable_for_reduction.get() == expected_value);
 }
 
 /** @brief Run test for reduction that receive sycl::buffer for construct
@@ -170,38 +169,38 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
 void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
-                         sycl_cts::util::logger &log,
                          const std::string &type_name) {
   sycl::buffer<VariableT> initial_buf{
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT,
-                                                          FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT,
+                                                          UsePropertyFlag>())};
   VariableT output_result{
       reduction_common::get_init_value_for_reduction<VariableT, FunctorT,
                                                      UsePropertyFlag>()};
   sycl::buffer<VariableT> output_buffer{&output_result, 1};
 
-  queue.submit([&](sycl::handler &cgh) {
-    auto reduction{
-        get_reduction_for_buffer<UsePropertyFlag>(output_buffer, cgh, functor)};
-    auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
-                                                 UseCombineFlagT, FunctorT>(
-        initial_buf.template get_access<sycl::access_mode::read>(cgh))};
-    cgh.parallel_for<kernel<VariableT, 2>>(range, reduction, lambda);
-  });
-  if (output_buffer.get_host_access()[0] != expected_value) {
-    log.fail(get_fail_message(type_name, output_buffer.get_host_access()[0],
-                              expected_value),
-             __LINE__);
-  }
+  queue
+      .submit([&](sycl::handler &cgh) {
+        auto reduction{get_reduction_for_buffer<UsePropertyFlag>(output_buffer,
+                                                                 cgh, functor)};
+        auto lambda{reduction_get_lambda::get_lambda<VariableT, RangeT,
+                                                     UseCombineFlagT, FunctorT>(
+            initial_buf.template get_access<sycl::access_mode::read>(cgh))};
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 2>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
+
+  INFO(get_fail_message(type_name, output_buffer.get_host_access()[0],
+                        expected_value));
+  CHECK(output_buffer.get_host_access()[0] == expected_value);
 }
 
 /** @brief Run test for reduction that receive sycl::span for construct
@@ -216,23 +215,20 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
 void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
-                       sycl_cts::util::logger &log,
                        const std::string &type_name) {
-  if (!reduction_common::check_usm_shared_aspect(queue, log)) {
-    return;
-  }
+  reduction_common::check_usm_shared_aspect(queue);
+
   sycl::buffer<VariableT> initial_buf{
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value(
       functor, initial_buf,
-      reduction_common::get_init_value_for_expected_value<VariableT,
-                                                          FunctorT>())};
+      reduction_common::get_init_value_for_expected_value<VariableT, FunctorT,
+                                                          UsePropertyFlag>())};
   auto allocated_memory{
       usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, VariableT>(
           queue, number_elements)};
@@ -243,23 +239,23 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
     allocated_memory.get()[i] = value_for_filling;
   }
 
-  queue.submit([&](sycl::handler &cgh) {
-    sycl::span<VariableT, number_elements> span(allocated_memory.get(),
-                                                number_elements);
-    auto reduction{get_reduction_for_span<UsePropertyFlag>(span, functor)};
-    auto lambda{
-        reduction_get_lambda::get_lambda_for_span<VariableT, RangeT,
-                                                  UseCombineFlagT, FunctorT>(
+  queue
+      .submit([&](sycl::handler &cgh) {
+        sycl::span<VariableT, number_elements> span(allocated_memory.get(),
+                                                    number_elements);
+        auto reduction{get_reduction_for_span<UsePropertyFlag>(span, functor)};
+        auto lambda{reduction_get_lambda::get_lambda_for_span<
+            VariableT, RangeT, UseCombineFlagT, FunctorT>(
             initial_buf.template get_access<sycl::access_mode::read>(cgh),
             number_elements)};
-    cgh.parallel_for<kernel<VariableT, 3>>(range, reduction, lambda);
-  });
+        cgh.parallel_for<kernel<VariableT, UseCombineFlagT, UsePropertyFlag,
+                                FunctorT, RangeT, 3>>(range, reduction, lambda);
+      })
+      .wait_and_throw();
   for (size_t i = 0; i < number_elements; i++) {
-    if (allocated_memory.get()[i] != expected_value) {
-      log.fail(get_fail_message(type_name, allocated_memory.get()[i],
-                                expected_value),
-               __LINE__);
-    }
+    INFO(
+        get_fail_message(type_name, allocated_memory.get()[i], expected_value));
+    CHECK(allocated_memory.get()[i] == expected_value);
   }
 }
 
@@ -274,29 +270,24 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
  *  @param functor The functor (plus, multiplies e.t.c) with which the test runs
  *  @param range sycl::range or sycl::nd_range type object
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           typename FunctorT, typename RangeT>
 void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
                                        sycl::queue &queue,
-                                       sycl_cts::util::logger &log,
                                        const std::string &type_name) {
   if constexpr (is_sycl_floating_point<VariableT>::value &&
                 (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_xor<VariableT>>::value)) {
-    log.note(
-        "Test skipped due to floating point variable cannot be used with " +
-        std::string(typeid(FunctorT).name()) + " functor");
   } else {
     run_test_for_value_ptr<VariableT, UseCombineFlagT, UsePropertyFlag>(
-        functor, range, queue, log, type_name);
+        functor, range, queue, type_name);
     run_test_for_buffer<VariableT, UseCombineFlagT, UsePropertyFlag>(
-        functor, range, queue, log, type_name);
+        functor, range, queue, type_name);
     run_test_for_span<VariableT, UseCombineFlagT, UsePropertyFlag>(
-        functor, range, queue, log, type_name);
+        functor, range, queue, type_name);
   }
 }
 
@@ -306,14 +297,13 @@ void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
  *          let switch between using and don't using
  *          sycl::property::reduction::initialize_to_identity
  *  @param queue sycl::queue class object
- *  @param log sycl_cts::util::logger class object
  *  @param type_name a string representing the currently tested type
  */
 template <typename VariableT, typename UsePropertyFlagT>
 struct run_tests_for_all_functors {
   template <typename RangeT>
   void operator()(RangeT &range, sycl::queue &queue,
-                  sycl_cts::util::logger &log, const std::string &type_name) {
+                  const std::string &type_name) {
     constexpr bool use_lambda_without_combine{
         reduction_get_lambda::without_combine};
     constexpr bool use_lambda_with_combine{reduction_get_lambda::with_combine};
@@ -322,42 +312,44 @@ struct run_tests_for_all_functors {
     // for functors that can be called by .combine() or overloaded operator()
     // for functors that can be called by .combine() or overloaded operator()
     // test will be called twice using operator +, *, ^= e.t.c.  and .combine()
+    run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
+                                      use_property_flag>(
+        sycl::plus<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
-        sycl::plus<VariableT>(), range, queue, log, type_name);
+        sycl::plus<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::multiplies<VariableT>(), range, queue, log, type_name);
+        sycl::multiplies<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
-        sycl::multiplies<VariableT>(), range, queue, log, type_name);
+        sycl::multiplies<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::bit_and<VariableT>(), range, queue, log, type_name);
+        sycl::bit_and<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
-        sycl::bit_and<VariableT>(), range, queue, log, type_name);
+        sycl::bit_and<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::bit_or<VariableT>(), range, queue, log, type_name);
+        sycl::bit_or<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
-        sycl::bit_or<VariableT>(), range, queue, log, type_name);
+        sycl::bit_or<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::bit_xor<VariableT>(), range, queue, log, type_name);
+        sycl::bit_xor<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_without_combine,
                                       use_property_flag>(
-        sycl::bit_xor<VariableT>(), range, queue, log, type_name);
+        sycl::bit_xor<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::minimum<VariableT>(), range, queue, log, type_name);
+        sycl::minimum<VariableT>(), range, queue, type_name);
     run_test_for_all_reductions_types<VariableT, use_lambda_with_combine,
                                       use_property_flag>(
-        sycl::maximum<VariableT>(), range, queue, log, type_name);
+        sycl::maximum<VariableT>(), range, queue, type_name);
   }
 };
-
-}  // namespace reduction_without_identity
+}  // namespace reduction_without_identity_param_common
 
 #endif  // __SYCL_CTS_TEST_REDUCTION_WITHOUT_IDENTITY_PARAM_COMMON_H

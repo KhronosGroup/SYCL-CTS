@@ -17,9 +17,13 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reducer_api.h"
+#endif
 
 #include <functional>
 #include <numeric>
@@ -28,7 +32,10 @@
 
 struct kernel_name;
 
-TEST_CASE("reducer class", "[reducer]") {
+// FIXME: re-enable when sycl::reduction is implemented in hipSYCL and
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("reducer class", "[reducer]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
   // dummy output value
@@ -59,9 +66,12 @@ TEST_CASE("reducer class", "[reducer]") {
   // all results are expected to evaluate to true
   CHECK(
       std::all_of(results.begin(), results.end(), [](int val) { return val; }));
-}
+});
 
-TEST_CASE("reducer api core", "[reducer]") {
+// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp and
+// DPCPP
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL, DPCPP)
+("reducer api core", "[reducer]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
   // check subscript operator
@@ -70,4 +80,4 @@ TEST_CASE("reducer api core", "[reducer]") {
   // check identity operator
   for_all_types<check_reducer_identity>(reduction_common::scalar_types, queue);
   check_reducer_identity<bool>{}(queue, "bool");
-}
+});
