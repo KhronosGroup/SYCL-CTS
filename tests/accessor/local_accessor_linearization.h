@@ -29,6 +29,9 @@ namespace local_accessor_linearization {
 using namespace accessor_tests_common;
 
 template <typename T, typename DimensionT>
+class kernel_linearization;
+
+template <typename T, typename DimensionT>
 class run_linearization_tests {
   static constexpr int dims = DimensionT::value;
   using AccT = sycl::local_accessor<T, dims>;
@@ -55,16 +58,17 @@ class run_linearization_tests {
             .submit([&](sycl::handler &cgh) {
               AccT acc(local_range, cgh);
               sycl::accessor res_acc(res_buf, cgh);
-              cgh.parallel_for(nd_range, [=](sycl::nd_item<dims> item) {
-                acc[item.get_local_id()] =
-                    value_operations::init<T>(item.get_global_linear_id());
-                sycl::group_barrier(item.get_group());
-                sycl::id<dims> id{};
-                for (auto &elem : acc) {
-                  res_acc[0] &= value_operations::are_equal(elem, acc[id]);
-                  id = next_id_linearly(id, range_size);
-                }
-              });
+              cgh.parallel_for<kernel_linearization<T, DimensionT>>(
+                  nd_range, [=](sycl::nd_item<dims> item) {
+                    acc[item.get_local_id()] =
+                        value_operations::init<T>(item.get_global_linear_id());
+                    sycl::group_barrier(item.get_group());
+                    sycl::id<dims> id{};
+                    for (auto &elem : acc) {
+                      res_acc[0] &= value_operations::are_equal(elem, acc[id]);
+                      id = next_id_linearly(id, range_size);
+                    }
+                  });
             })
             .wait_and_throw();
       }

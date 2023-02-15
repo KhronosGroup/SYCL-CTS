@@ -103,19 +103,20 @@ using constant_ptr_legacy =
  */
 inline auto get_types() {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  return named_type_pack<bool, float, double, char,   // types grouped
+  return named_type_pack<bool, float, char,           // types grouped
                          signed char, unsigned char,  // by sign
                          short, unsigned short,       //
                          int, unsigned int,           //
                          long, unsigned long,         //
-                         long long, unsigned long long>::generate(
-      "bool",        "float",
-      "double",      "char",
-      "signed char", "unsigned char",
-      "short",       "unsigned short",
-      "int",         "unsigned int",
-      "long",        "unsigned long",
-      "long long",   "unsigned long long");
+                         long long,
+                         unsigned long long>::generate("bool", "float", "char",
+                                                       "signed char",
+                                                       "unsigned char", "short",
+                                                       "unsigned short", "int",
+                                                       "unsigned int", "long",
+                                                       "unsigned long",
+                                                       "long long",
+                                                       "unsigned long long");
 #else
   return named_type_pack<int, float>::generate("int", "float");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
@@ -161,6 +162,26 @@ struct check_pointer {
     action<data_t, data_t>{}(std::forward<argsT>(args)...);
     action<const data_t, const data_t>{}(std::forward<argsT>(args)...);
   }
+};
+
+/** @brief Initializes all elements in a container with 0
+ */
+template <typename T, int N, int... Vals>
+struct zero_init_container : zero_init_container<T, N - 1, 0, Vals...> {};
+template <typename T, int... Vals>
+struct zero_init_container<T, 0, Vals...> {
+  using elem_type = typename T::value_type;
+  static inline constexpr T value = {elem_type{Vals}...};
+};
+
+/** @brief Initializes an std::array with either 0's or using the default
+ * constructor
+ */
+template <typename T, int N>
+struct init_array : zero_init_container<std::array<T, N>, N> {};
+template <int N>
+struct init_array<user_def_types::def_cnstr, N> {
+  static inline constexpr std::array<user_def_types::def_cnstr, N> value;
 };
 
 }  // namespace multi_ptr_common

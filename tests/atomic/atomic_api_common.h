@@ -3,7 +3,7 @@
 //  SYCL 2020 Conformance Test Suite
 //
 //  Copyright (c) 2018-2022 Codeplay Software LTD. All Rights Reserved.
-//  Copyright (c) 2022 The Khronos Group Inc.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -98,9 +98,10 @@ class check_atomics {
     sycl::buffer<T, 1> buf(&data, sycl::range<1>(1));
 
     testQueue.submit([&](sycl::handler &cgh) {
+      using functor = check_atomics_functor<T, target>;
       auto acc = target_map<target>::get_accessor(buf, cgh);
-      auto f = check_atomics_functor<T, target>(acc);
-      cgh.single_task(f);
+      auto f = functor(acc);
+      cgh.single_task<functor>(f);
     });
   }
 };

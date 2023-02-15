@@ -12,7 +12,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/common_by_reference.h"
 #include "get_kernel_id.h"
 #include "kernel_bundle.h"
 

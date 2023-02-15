@@ -2,10 +2,25 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide verification that accessor's iterators are conforming to named
-//  requirement LegacyRandomAccessIterator
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provide verification that accessor's iterators are conforming to named
+//  requirement LegacyRandomAccessIterator
+
 #include <tuple>
 
 #include "../../util/named_requirement_verification/legacy_random_access_iterator.h"
@@ -32,6 +47,9 @@ inline void print_errors(const std::array<int, N>& errors) {
     }
   }
 }
+
+template <typename AccT, typename IteratorT>
+class kernel_fill_errors;
 
 template <typename ConstructAcc, typename GetIterator>
 inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
@@ -71,13 +89,16 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
     q.submit([&](sycl::handler& cgh) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
       auto dummy_acc = std::get<0>(ftuple)(cgh, dummy_buf);
+      // obtain a unique kernel name using the accessor and iterator type
+      using kname = kernel_fill_errors<
+          AccT, std::invoke_result_t<GetIterator, decltype(dummy_acc)&>>;
       if constexpr (std::is_same_v<decltype(dummy_acc), AccT>) {
-        cgh.single_task([=] { action(dummy_acc, res_acc, ftuple); });
+        cgh.single_task<kname>([=] { action(dummy_acc, res_acc, ftuple); });
       } else if constexpr (std::is_same_v<decltype(dummy_acc), LocAccT>) {
         sycl::range<1> r(1);
-        cgh.parallel_for(sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
-          action(dummy_acc, res_acc, ftuple);
-        });
+        cgh.parallel_for<kname>(
+            sycl::nd_range(r, r),
+            [=](sycl::nd_item<1> item) { action(dummy_acc, res_acc, ftuple); });
       } else {
         auto dummy_acc_it = std::get<1>(ftuple)(dummy_acc);
         auto verification_result =
@@ -125,7 +146,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "reverse iterator",
  "[accessor]")({
@@ -141,7 +162,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::accessor "
  "const reverse iterator",
  "[accessor]")({
@@ -259,7 +280,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "reverse iterator",
  "[accessor]")({
@@ -276,7 +297,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   print_errors(errors);
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("LegacyRandomAccessIterator requirement verification for sycl::host_accessor "
  "const reverse iterator",
  "[accessor]")({

@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provide common functions for type coverage
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provide common functions for type coverage
 
 #ifndef __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
 #define __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H
@@ -21,7 +35,7 @@
 
 #include "catch2/catch_tostring.hpp"
 
-#include <cstddef> // for std::size_t
+#include <cstddef>  // for std::size_t
 
 /**
  * @brief Retrieve type name; by default just forward the given one
@@ -43,6 +57,8 @@ struct type_name_string<sycl::vec<T, nElements>> {
   }
 };
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Specialization of type name retrieve for sycl::marray class
  * @param T Type of the data stored in marray
@@ -54,6 +70,7 @@ struct type_name_string<sycl::marray<T, nElements>> {
     return "sycl::marray<" + dataType + "," + std::to_string(nElements) + ">";
   }
 };
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Specialization of type name retrieve for std::array class
@@ -155,7 +172,7 @@ class named_type_pack {
  public:
   // We need a specific names to differentiate types on logic level, with no
   // dependency on actual type implementation and typeid
-  const std::string names[sizeof...(Types)];
+  const std::array<std::string, sizeof...(Types)> names;
 
   // Factory function to properly generate the type pack
   //
@@ -440,6 +457,8 @@ void for_all_types_and_vectors(const named_type_pack<types...> &typeList,
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type, vectors and marrays of this type
  * @tparam action Functor template for action to run
@@ -477,7 +496,10 @@ void for_type_vectors_marray(argsT &&...args) {
         std::forward<argsT>(args)...);
   }
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types, vectors and marrays of types given by
  *        named_type_pack instance
@@ -505,6 +527,7 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
   // Ensure there is no silent miss for coverage
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 /**
  * @brief Run action for std device_copyable containers with type T
@@ -537,8 +560,8 @@ void for_device_copyable_std_containers(argsT &&...args) {
  */
 template <template <typename, typename...> class action,
           typename... actionArgsT, typename... types, typename... argsT>
-void for_all_device_copyable_std_containers(const named_type_pack<types...> &typeList,
-                                     argsT &&...args) {
+void for_all_device_copyable_std_containers(
+    const named_type_pack<types...> &typeList, argsT &&...args) {
   // run action for each type from types... parameter pack
   // Using fold expression to iterate over all types within type pack
 
@@ -553,6 +576,8 @@ void for_all_device_copyable_std_containers(const named_type_pack<types...> &typ
   assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
 }
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for type and marrays of this type
  * @tparam action Functor template for action to run
@@ -570,7 +595,10 @@ void for_type_and_marrays(argsT &&...args) {
                 typename sycl::template marray<T, 10>>{},
       std::forward<argsT>(args)...);
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
+// FIXME: re-enable when marrray is implemented in hipsycl
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**
  * @brief Run action for each of types and marrays of types given by
  *        named_type_pack instance
@@ -595,4 +623,5 @@ void for_all_types_and_marrays(const named_type_pack<types...> &typeList,
     ++typeNameIndex),
    ...);
 }
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_COVERAGE_H

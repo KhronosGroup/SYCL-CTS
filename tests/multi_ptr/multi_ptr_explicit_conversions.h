@@ -2,9 +2,24 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides code for tests for multi_ptr explicit conversions
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides code for tests for multi_ptr explicit conversions
+
 #ifndef __SYCLCTS_TESTS_MULTI_PTR_EXPLICIT_CONVERSIONS_H
 #define __SYCLCTS_TESTS_MULTI_PTR_EXPLICIT_CONVERSIONS_H
 
@@ -14,6 +29,9 @@
 #include "multi_ptr_common.h"
 
 namespace multi_ptr_explicit_conversions {
+
+template <typename T, typename AddrSpaceT, typename IsDecorated, typename T1>
+class kernel_explicit_conversions;
 
 constexpr int expected_val = 42;
 
@@ -53,13 +71,15 @@ class run_explicit_convert_tests {
       sycl::buffer<bool> res_buf(&res, sycl::range<1>(1));
       sycl::buffer<T> val_buffer(&value, sycl::range<1>(1));
       queue.submit([&](sycl::handler &cgh) {
+        using kname =
+            kernel_explicit_conversions<T, AddrSpaceT, IsDecorated, T1>;
         auto res_acc =
             res_buf.template get_access<sycl::access_mode::write>(cgh);
         if constexpr (target_space ==
                       sycl::access::address_space::global_space) {
           auto val_acc =
               val_buffer.template get_access<sycl::access_mode::read>(cgh);
-          cgh.single_task([=] {
+          cgh.single_task<kname>([=] {
             input_multi_ptr_t<T> mptr_in(val_acc);
             auto mptr_out =
                 sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
@@ -69,31 +89,32 @@ class run_explicit_convert_tests {
           });
         } else {
           sycl::local_accessor<T> local_acc(r, cgh);
-          cgh.parallel_for(sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
-            if constexpr (target_space ==
-                          sycl::access::address_space::local_space) {
-              auto &ref = local_acc[0];
-              value_operations::assign(ref, expected_val);
-              sycl::group_barrier(item.get_group());
+          cgh.parallel_for<kname>(
+              sycl::nd_range<1>(r, r), [=](sycl::nd_item<1> item) {
+                if constexpr (target_space ==
+                              sycl::access::address_space::local_space) {
+                  auto &ref = local_acc[0];
+                  value_operations::assign(ref, expected_val);
+                  sycl::group_barrier(item.get_group());
 
-              input_multi_ptr_t<T> mptr_in(local_acc);
+                  input_multi_ptr_t<T> mptr_in(local_acc);
 
-              auto mptr_out =
-                  sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
-              res_acc[0] = (*(mptr_out.get()) == ref);
-            } else {
-              T private_val =
-                  user_def_types::get_init_value_helper<T>(expected_val);
+                  auto mptr_out =
+                      sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
+                  res_acc[0] = (*(mptr_out.get()) == ref);
+                } else {
+                  T private_val =
+                      user_def_types::get_init_value_helper<T>(expected_val);
 
-              input_multi_ptr_t<T> mptr_in = sycl::address_space_cast<
-                  sycl::access::address_space::generic_space, decorated, T>(
-                  &private_val);
+                  input_multi_ptr_t<T> mptr_in = sycl::address_space_cast<
+                      sycl::access::address_space::generic_space, decorated, T>(
+                      &private_val);
 
-              auto mptr_out =
-                  sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
-              res_acc[0] = *(mptr_out.get_raw()) == private_val;
-            }
-          });
+                  auto mptr_out =
+                      sycl::multi_ptr<T1, target_space, decorated>(mptr_in);
+                  res_acc[0] = *(mptr_out.get_raw()) == private_val;
+                }
+              });
         }
       });
     }

@@ -151,7 +151,7 @@ class TEST_NAME : public util::test_base {
 
           /** check get_size()
            */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto size = os.get_size();
             check_return_type<size_t>(log, size, "sycl::stream::get_size()");
@@ -160,21 +160,15 @@ class TEST_NAME : public util::test_base {
 
           /** check size()
            */
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
           {
             auto size = os.size();
             check_return_type<size_t>(log, size, "sycl::stream::size()");
             CHECK(noexcept(os.size()));
           }
-#else
-          WARN(
-              "DPCPP does not define sycl::stream::size(). "
-              "Skipping the test case.");
-#endif
 
           /** get_max_statement_size()
            */
-#ifdef SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
           {
             auto maxStatementSize = os.get_max_statement_size();
             check_return_type<size_t>(log, maxStatementSize,
@@ -184,19 +178,12 @@ class TEST_NAME : public util::test_base {
 
           /** check get_work_item_buffer_size()
            */
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
           {
             auto workItemBufferSize = os.get_work_item_buffer_size();
             check_return_type<size_t>(
                 log, workItemBufferSize,
                 "sycl::stream::get_work_item_buffer_size()");
           }
-#else
-          WARN(
-              "DPCPP does not define "
-              "sycl::stream::get_work_item_buffer_size(). "
-              "Skipping the test case.");
-#endif
 
           cgh.single_task<class test_kernel_0>([=]() {});
         });

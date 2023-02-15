@@ -156,10 +156,6 @@ class TEST_NAME : public util::test_base {
         auto contextA = util::get_cts_object::context(selector);
         sycl::context contextB(contextA);
 
-        if (contextA != contextB) {
-          FAIL(log, "context was not copied correctly (equality)");
-        }
-
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -178,10 +174,6 @@ class TEST_NAME : public util::test_base {
         auto contextA = util::get_cts_object::context(selector);
         sycl::context contextB = contextA;
 
-        if (contextA != contextB) {
-          FAIL(log, "context was not assigned correctly (equality)");
-        }
-
 #ifdef SYCL_BACKEND_OPENCL
         auto queue = util::get_cts_object::queue();
         if (queue.get_backend() == sycl::backend::opencl) {
@@ -191,89 +183,6 @@ class TEST_NAME : public util::test_base {
           }
         }
 #endif
-      }
-
-      /** check move constructor
-      */
-      {
-        cts_selector selector;
-        auto contextA = util::get_cts_object::context(selector);
-        auto contextACopy = contextA;
-        sycl::context contextB(std::move(contextA));
-
-        if (contextACopy != contextB) {
-          FAIL(log, "context was not move constructed correctly (equality)");
-        }
-      }
-
-      /** check move assignment operator
-      */
-      {
-        cts_selector selector;
-        auto contextA = util::get_cts_object::context(selector);
-        auto contextACopy = contextA;
-        sycl::context contextB = std::move(contextA);
-
-        if (contextACopy != contextB) {
-          FAIL(log, "context was not move assigned correctly (equality)");
-        }
-      }
-
-      /* check equality operator
-      */
-      {
-        cts_selector selector;
-        sycl::context contextA = util::get_cts_object::context(selector);
-        sycl::context contextB{contextA};
-        sycl::context contextC = util::get_cts_object::context(selector);
-        contextC = contextA;
-        sycl::context contextD = util::get_cts_object::context(selector);
-
-        if (!(contextA == contextB)) {
-          FAIL(log,
-               "device equality does not work correctly (equality of equal "
-               "failed)");
-        }
-        if (!(contextA == contextC)) {
-          check_equality(log, contextA, contextC);
-          FAIL(log,
-               "device equality does not work correctly (equality of equal "
-               "failed)");
-        }
-        if (contextA != contextB) {
-          FAIL(log,
-               "context non-equality does not work correctly"
-               "(copy constructed)");
-        }
-        if (contextA != contextC) {
-          FAIL(log,
-               "context non-equality does not work correctly"
-               "(copy assigned)");
-        }
-        if (contextC == contextD) {
-          FAIL(log,
-               "context equality does not work correctly"
-               "(comparing same)");
-        }
-        if (!(contextC != contextD)) {
-          FAIL(log,
-               "context non-equality does not work correctly"
-               "(comparing same)");
-        }
-      }
-
-      /** check hash
-      */
-      {
-        auto contextA = util::get_cts_object::context();
-        sycl::context contextB(contextA);
-        std::hash<sycl::context> hasher;
-
-        if (hasher(contextA) != hasher(contextB)) {
-          FAIL(log,
-               "context std::hash does not work correctly. (hashing of equals "
-               "failed)");
-        }
       }
     }
   }

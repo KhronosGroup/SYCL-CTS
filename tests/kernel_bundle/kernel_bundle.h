@@ -2,9 +2,23 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Provides common code for tests on kernel bundle
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 *******************************************************************************/
+
+//  Provides common code for tests on kernel bundle
 
 #ifndef __SYCLCTS_TESTS_KERNEL_BUNDLE_H
 #define __SYCLCTS_TESTS_KERNEL_BUNDLE_H
@@ -79,6 +93,37 @@ sycl_cts::util::kernel_restrictions get_restrictions() {
  */
 enum class submit_kernel { yes, no };
 
+/** @brief Call sycl::queue::submit only if dev_is_compat flag is true
+ *  @tparam KernelDescriptorT Kernel descriptor
+ *  @tparam BundleState sycl::bundle_state enum's enumeration's field
+ *  @param queue sycl::queue class object
+ *  @param dev sycl::device class object
+ */
+template <typename KernelDescriptorT, sycl::bundle_state BundleState>
+bool define_kernel(sycl::queue &queue,
+                   submit_kernel also_submit = submit_kernel::no) {
+  auto restrictions{get_restrictions<KernelDescriptorT, BundleState>()};
+  const bool dev_is_compat = restrictions.is_compatible(queue.get_device());
+  // We use sycl::queue::submit only for compatible pair of kernel and device
+  // but even for a case when device is not compatible we are sure that we can
+  // call sycl::get_kernel_id
+  if (also_submit == submit_kernel::yes && dev_is_compat) {
+    using kernel_functor = typename KernelDescriptorT::type;
+    using res_type = typename kernel_functor::element_type;
+    res_type result = kernel_functor::init_val;
+    {
+      sycl::buffer<res_type, 1> res_buffer(&result, sycl::range<1>(1));
+      queue.submit([&](sycl::handler &cgh) {
+        auto acc =
+            res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
+        cgh.parallel_for<kernel_functor>(sycl::range<1>(1),
+                                         kernel_functor{acc});
+      });
+    }
+    return result == kernel_functor::expected_val;
+  }
+  return false;
+}
 
 /** @brief Call queue::submit for each user-defined kernel from provided named
  *         type pack and then verify that this kernel was invoked (if device
@@ -166,37 +211,6 @@ struct verify_that_kernel_in_bundle {
     }
   }
 };
-
-/** @brief Call sycl::queue::submit only if dev_is_compat flag is true
- *  @tparam KernelDescriptorT Kernel descriptor
- *  @tparam BundleState sycl::bundle_state enum's enumeration's field
- *  @param queue sycl::queue class object
- *  @param dev sycl::device class object
- */
-template <typename KernelDescriptorT, sycl::bundle_state BundleState>
-bool define_kernel(sycl::queue &queue,
-                   submit_kernel also_submit = submit_kernel::no) {
-  auto restrictions{get_restrictions<KernelDescriptorT, BundleState>()};
-  const bool dev_is_compat = restrictions.is_compatible(queue.get_device());
-  // We use sycl::queue::submit only for compatible pair of kernel and device
-  // but even for a case when device is not compatible we are sure that we can
-  // call sycl::get_kernel_id
-  if (also_submit == submit_kernel::yes && dev_is_compat) {
-    using kernel_functor = typename KernelDescriptorT::type;
-    using res_type = typename kernel_functor::element_type;
-    res_type result = kernel_functor::init_val;
-    {
-      sycl::buffer<res_type, 1> res_buffer(&result, sycl::range<1>(1));
-      queue.submit([&](sycl::handler &cgh) {
-        auto acc =
-            res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.parallel_for(sycl::range<1>(1), kernel_functor{acc});
-      });
-    }
-    return result == kernel_functor::expected_val;
-  }
-  return false;
-}
 
 /** @brief Submit dummy kernel, without any requires with specific kernel name
  *  @tparam KernelName Name of the kernel that will be defined

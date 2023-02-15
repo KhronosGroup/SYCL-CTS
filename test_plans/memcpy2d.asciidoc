@@ -1,0 +1,165 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for 2D memcpy and associated routines that can copy a specified rectangular region in the presence of array padding.
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_memcpy2d.asciidoc[SYCL_EXT_ONEAPI_memcpy2d.asciidoc]
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_MEMCPY2D` so they can be skipped
+if feature is not supported.
+
+=== Type coverage
+
+All the tests described below are executed for the following types unless otherwise specified:
+
+* `char`
+* `short`
+* `int`
+* `long long`
+* `std::size_t`
+* `bool`
+* `float`
+* A user-defined trivially-copyable struct with multiple member variables.
+
+In addition, if the device has aspect `aspect::fp64`:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`:
+
+* `sycl::half`
+
+== Tests
+
+=== Handler class methods
+
+==== ext_oneapi_memcpy2d
+
+`void ext_oneapi_memcpy2d(void *dest, size_t destPitch,
+  const void *src, size_t srcPitch,
+  size_t width, size_t height)`
+
+Check function with combinations of `host pointer` and `pointer within device USM allocation` types of `src` and `dest`.
+In case of pointer within device USM allocation and the selected device lacks this capability
+(aspect `aspect::usm_device_allocations`), this test is skipped.
+
+Type of `src` and `dest` buffers elements is `unsigned char`.
+
+Checks:
+
+* Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* `src` buffer elements should be initialized with `expected_val`. `dest` buffer elements should be initialized with `init_val`.
+`width` should satisfy the conditions: `width` < `destPitch` and `width` +<=+ `srcPitch`. Check after performing `ext_oneapi_memcpy2d`
+that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val` and elements
+outside of that area are not changed.
+
+==== ext_oneapi_copy2d
+
+`template <typename T>
+void ext_oneapi_copy2d(const T *src, size_t srcPitch,
+  T *dest, size_t destPitch,
+  size_t width, size_t height)`
+
+Check function with combinations of `host pointer` and `pointer within device USM allocation` types of `src` and `dest`.
+In case of pointer within device USM allocation and the selected device lacks this capability
+(aspect `aspect::usm_device_allocations`), this test is skipped.
+
+Checks:
+
+* Set value of `width` large than `srcPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* `src` buffer elements should be initialized with `T(expected_val`). `dest` buffer elements should be initialized with `T(init_val)`.
+`width` should satisfy the conditions: `width` < `destPitch` and `width` +<=+ `srcPitch`. Check after performing `ext_oneapi_copy2d`
+that the `dest` buffer elements in the area defined by `height` and `width` parameters are equal to the `T(expected_val)` and elements
+outside of that area are not changed.
+
+==== ext_oneapi_memset2d
+
+`void ext_oneapi_memset2d(void *dest, size_t destPitch,
+  int value, size_t width, size_t height)`
+
+`dest` is pointer to USM buffer with allocation type `device`. If the selected device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
+
+Type of `dest` buffer elements is `unsigned char`.
+
+Checks:
+
+* Set value of `width` large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* `dest` buffer elements should be initialized with `init_val`. `value` variable should be initialized with `expected_val` in the range `[1, 255]`.
+`width` should satisfy the condition: `width` < `destPitch`. Check after performing `ext_oneapi_memset2d` that the `dest`
+buffer elements in the area defined by `height` and `width` parameters are equal to the `expected_val` and elements
+outside of that area are not changed.
+
+==== ext_oneapi_fill2d
+
+`template <typename T>
+void ext_oneapi_fill2d(void *dest, size_t destPitch,
+  const T& pattern, size_t width, size_t height)`
+
+`dest` is pointer to USM buffer with allocation type `device`. If the selected device lacks this capability (aspect `aspect::usm_device_allocations`), this test is skipped.
+
+Checks:
+
+* Set `value` of width large than `destPitch` and check if function throws a synchronous exception with the `errc::invalid` error code.
+* `dest` buffer elements should be initialized with `T(init_val)`. `value` variable should be initialized with `T(expected_val)`.
+`width` should satisfy the condition: `width` < `destPitch`. Check after performing `ext_oneapi_fill2d` that the `dest` buffer elements
+in the area defined by `height` and `width` parameters are equal to the `T(expected_val)` and elements outside of that area are not changed.
+
+
+=== Additional sycl::queue class methods
+
+The `sycl_ext_oneapi_memcpy2d` extension defines the following methods for the `queue` class:
+
+* `event ext_oneapi_memcpy2d(void *dest, size_t destPitch,
+  const void *src, size_t srcPitch,
+  size_t width, size_t height)`
+* `template <typename T>
+event ext_oneapi_copy2d(const T *src, size_t srcPitch,
+  T *dest, size_t destPitch,
+  size_t width, size_t height)`
+* `event ext_oneapi_memset2d(void *dest, size_t destPitch,
+  int value, size_t width, size_t height)`
+* `template <typename T>
+event ext_oneapi_fill2d(void *dest, size_t destPitch,
+  const T& pattern, size_t width, size_t height)`
+
+These methods should be checked the same as the corresponding methods of the `handler` class according
+to the algorithm description in paragraph `Handler class methods`.
+For all methods it is checked that the type of the return value is equal to `sycl::event`.
+
+=== Overloaded sycl::queue class methods
+
+All above additional methods of the `queue` class have two overloads with the parameter `event depEvent` and with the parameter `const std::vector<event>& depEvents`.
+
+==== Check algorithm for overloads
+
+Check algorithm for overload with `depEvent` parameter:
+
+* Perform a method call without the `depEvent` parameter
+* Perform an overload call with the `depEvent` parameter
+** The value of the `depEvent` parameter should be the event from the first method call
+** `dest` or last element of `dest` from the first method call should be used in the overload as `src`, `value`, or `pattern` parameter
+* Check that after performing an overload method, the value of the `dest` buffer elements is equal to `expected_val` or `T(expected_val)`
+
+Check algorithm for overload with `depEvents` parameter:
+
+* Perform a method call without the `depEvent` parameter
+* Perform an overload call with the `depEvent` parameter
+** The value of the `depEvent` parameter should be the event from the first method call
+** `dest` or last element of `dest` from the first method call should be used in the overload as `src`, `value`, or `pattern` parameter
+* Perform an overload call with the `depEvents` parameter
+** The value of the `depEvents` parameter should be the events from the previous method calls
+** `dest` or last element of `dest` from the second method call should be used in the overload as `src`, `value`, or `pattern` parameter
+* Check that after performing last method, the value of the `dest` buffer elements is equal to `expected_val` or `T(expected_val)`

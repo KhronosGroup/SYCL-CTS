@@ -598,14 +598,16 @@ class pointer_apis {
       queue.submit([&](sycl::handler &handler) {
         auto resAcc =
               resBuff.get_access<sycl::access_mode::read_write>(handler);
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::device>
-            globalAccessor(buffer, handler);
+        constexpr sycl::access_mode access_mode =
+            (std::is_const_v<T>) ? sycl::access_mode::read
+                                 : sycl::access_mode::read_write;
+        sycl::accessor<T, 1, access_mode, sycl::target::device> globalAccessor(
+            buffer, handler);
         sycl::accessor<T, 1, sycl::access_mode::read,
                            sycl::target::constant_buffer>
             constantAccessor(buffer, handler);
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::local>
+        sycl::accessor<data_t, 1, sycl::access_mode::read_write,
+                       sycl::target::local>
             localAccessor(size, handler);
 
         handler.single_task<class kernel0<T, U>>(
