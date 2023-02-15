@@ -43,7 +43,7 @@ using namespace sycl_cts;
 #define TEST_NAME marray_alignment
 
 // have no type "mbool2", "mbool3", "mbool4", "mbool8", "mbool16"
-DISABLED_FOR_TEST_CASE(ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("marray_alignment", "[marray]")({
   ALIAS_TEST(char, int8_t);
   ALIAS_TEST(uchar, uint8_t);

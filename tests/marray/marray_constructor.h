@@ -42,8 +42,7 @@ class run_marray_constructor_test {
             std::enable_if_t<num_elements != 1, bool> = true>
   void check_constexpr_single_element() {
     // cannot construct a constexpr instance using another constexpr instance
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     //  one DataT instance, one marray instance
     {
       constexpr sycl::marray<DataT, num_elements - 1> ma_const =
@@ -65,7 +64,7 @@ class run_marray_constructor_test {
     }
 #else
     WARN(
-        "ComputeCPP and DPCPP do not support constexpr constructors that use"
+        "ComputeCPP do not support constexpr constructors that use"
         "other constexpr instances. Skipping the test case.");
 #endif
   }

@@ -186,6 +186,8 @@ TEST_CASE("device info", "[device]") {
           dev.get_info<sycl::info::device::atomic_memory_order_capabilities>();
       CHECK(check_contains(capabilities, sycl::memory_order::relaxed));
     }
+// FIXME: re-enable when issue is fixed
+// https://github.com/intel/llvm/issues/8293
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
     {
       check_get_info_param<sycl::info::device::atomic_fence_order_capabilities,
@@ -210,6 +212,8 @@ TEST_CASE("device info", "[device]") {
           dev.get_info<sycl::info::device::atomic_memory_scope_capabilities>();
       CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
     }
+// FIXME: re-enable when issue is fixed
+// https://github.com/intel/llvm/issues/8293
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
     {
       check_get_info_param<sycl::info::device::atomic_fence_scope_capabilities,
@@ -246,14 +250,10 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::opencl_c_version, std::string>(
         dev);
     check_get_info_param<sycl::info::device::backend_version, std::string>(dev);
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+
     check_get_info_param<sycl::info::device::aspects,
                          std::vector<sycl::aspect>>(dev);
-#else
-    WARN(
-        "Implementation does not support sycl::info::device::aspects "
-        "Skipping the test case.");
-#endif
+
     check_get_info_param<sycl::info::device::extensions,
                          std::vector<std::string>>(dev);
     check_get_info_param<sycl::info::device::printf_buffer_size, size_t>(dev);
