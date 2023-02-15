@@ -68,9 +68,8 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       std::all_of(results.begin(), results.end(), [](int val) { return val; }));
 });
 
-// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp and
-// DPCPP
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL, DPCPP)
+// FIXME: re-enable when reducer is fully implemented in hipSYCL, ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("reducer api core", "[reducer]")({
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
 
