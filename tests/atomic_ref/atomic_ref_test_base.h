@@ -98,7 +98,7 @@ class atomic_ref_test {
                     cgh);
             auto result_accessor =
                 result_buf.template get_access<sycl::access_mode::write>(cgh);
-            cgh.single_task([=]() {
+            cgh.single_task([=] {
               AtomicRT a_r(data_accessor[0]);
               test_action(ref_val, ref_val_chgd, a_r, result_accessor,
                           data_accessor);
@@ -124,7 +124,7 @@ class atomic_ref_test {
   using sptr = std::shared_ptr<atomic_ref_test>;
 
   atomic_ref_test(sycl::queue& q) : queue(q) { reset_host_values(); }
-  virtual ~atomic_ref_test(){};
+  virtual ~atomic_ref_test() = default;
 
   virtual void run_on_device(
       const std::string& type_name, const std::string& memory_order,

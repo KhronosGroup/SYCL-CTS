@@ -47,11 +47,11 @@ class atomic_ref_is_lock_free_test
     auto is_lock_free_test = [](T val_expd, T val_chgd,
                                 typename base::AtomicRT& a_r, auto result_acc,
                                 auto ref_data_acc) {
-      auto lock = a_r.is_lock_free();
+      auto is_lock_free = a_r.is_lock_free();
       if constexpr (base::AtomicRT::is_always_lock_free == true) {
-        result_acc[0] = (lock == true);
+        result_acc[0] = (is_lock_free == true);
       }
-      result_acc[1] = std::is_same_v<decltype(lock), bool>;
+      result_acc[1] = std::is_same_v<decltype(is_lock_free), bool>;
     };
     if constexpr (base::address_space_is_not_local_space()) {
       std::array result{false, false};
