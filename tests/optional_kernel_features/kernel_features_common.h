@@ -473,12 +473,6 @@ void run_functor(const bool is_exception_expected,
 template <typename KernelName, call_type CallType>
 class kernel_submission_call;
 
-#define ANOTHER_ASPECT(current_aspect)                                    \
-  ((current_aspect == sycl::aspect::fp16)                                 \
-       ? sycl::aspect::fp64                                               \
-       : ((current_aspect == sycl::aspect::fp64) ? sycl::aspect::atomic64 \
-                                                 : sycl::aspect::fp16))
-
 /**
  * @brief The function like macros that helps to define and run kernels through
  * lambda in submission call. Macro generates execution in single_task,

@@ -161,9 +161,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
     }
   }
 
-  constexpr size_t testing_wg_size[2] = {16, 4294967295};
-#define TESTING_WG_SIZE0 16
-#define TESTING_WG_SIZE1 4294967295
+  static constexpr size_t testing_wg_size[2] = {16, 4294967295};
   auto max_wg_size =
       queue.get_device().get_info<sycl::info::device::max_work_group_size>();
 
@@ -188,7 +186,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(TESTING_WG_SIZE0)]],
+                          [[sycl::reqd_work_group_size(testing_wg_size[0])]],
                           kernel_speculative<5>, NO_KERNEL_BODY);
     }
   }
@@ -214,14 +212,13 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(TESTING_WG_SIZE1)]],
+                          [[sycl::reqd_work_group_size(testing_wg_size[1])]],
                           kernel_speculative<6>, NO_KERNEL_BODY);
     }
   }
 
-  constexpr size_t testing_sg_size[2] = {16, 4099};
-#define TESTING_SG_SIZE0 16
-#define TESTING_SG_SIZE1 4099
+  static constexpr size_t testing_sg_size[2] = {16, 4099};
+
   const auto sg_sizes_vec =
       queue.get_device().get_info<sycl::info::device::sub_group_sizes>();
   auto find_res =
@@ -247,7 +244,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(TESTING_SG_SIZE0)]],
+                          [[sycl::reqd_sub_group_size(testing_sg_size[0])]],
                           kernel_speculative<7>, NO_KERNEL_BODY);
     }
   }
@@ -275,7 +272,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
     {
       RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(TESTING_SG_SIZE1)]],
+                          [[sycl::reqd_sub_group_size(testing_sg_size[1])]],
                           kernel_speculative<8>, NO_KERNEL_BODY);
     }
   }

@@ -377,7 +377,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   // Set expected error code
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
-  constexpr sycl::aspect AnotherFeatureAspect =
+  static constexpr sycl::aspect AnotherFeatureAspect =
       get_another_aspect<FeatureAspectT>();
   bool other_feature_exception_expect = true;
   if (queue.get_device().has(AnotherFeatureAspect) &&
@@ -412,8 +412,8 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 
   {
     RUN_SUBMISSION_CALL(other_feature_exception_expect, expected_errc, queue,
-                        [[sycl::device_has(ANOTHER_ASPECT(FeatureAspectT))]],
-                        kname, USE_FEATURE(FeatureTypeT));
+                        [[sycl::device_has(AnotherFeatureAspect)]], kname,
+                        USE_FEATURE(FeatureTypeT));
   }
 
 });
@@ -441,7 +441,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   // Set expected error code
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
-  constexpr sycl::aspect AnotherFeatureAspect =
+  static constexpr sycl::aspect AnotherFeatureAspect =
       get_another_aspect<FeatureAspectT>();
   bool other_feature_exception_expect = true;
   if (queue.get_device().has(AnotherFeatureAspect) &&
@@ -477,7 +477,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   {
     RUN_SUBMISSION_CALL(
         other_feature_exception_expect, expected_errc, queue,
-        [[sycl::device_has(ANOTHER_ASPECT(FeatureAspectT))]], kname,
+        [[sycl::device_has(AnotherFeatureAspect)]], kname,
         use_feature_function_external_decorated<FeatureTypeT,
                                                 FeatureAspectT>());
   }
