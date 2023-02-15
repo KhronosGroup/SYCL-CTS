@@ -41,6 +41,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
         "Skipping such test cases.");
     WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8341
     WARN(
         "DPCPP cannot handle cases of different types. "
         "Skipping such test cases.");
@@ -51,6 +52,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -72,6 +74,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
   // check dimensions to only print warning once
   if constexpr (D == 1) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8341
     WARN(
         "DPCPP cannot handle cases of different types. "
         "Skipping such test cases.");
@@ -87,6 +90,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
