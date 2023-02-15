@@ -26,22 +26,11 @@ struct storage {
   std::size_t max_statement_size;
 
   explicit storage(const sycl::stream& stream)
-      : size(
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-            0
-#else
-            stream.size()
-#endif
-            ),
-        max_statement_size(
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-            0
-#else
-            stream.get_max_statement_size()
-#endif
-        ) {
-  }
+      : size(stream.size()),
+        max_statement_size(stream.get_max_statement_size()) {}
 
+  // Enable when https://github.com/intel/llvm/issues/8326
+  // been solved
   bool check(const sycl::stream& stream) const {
     return
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
