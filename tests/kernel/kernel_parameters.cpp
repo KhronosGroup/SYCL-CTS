@@ -80,8 +80,6 @@ inline auto get_lightweight_primary_type_pack() {
  * @return named_type_pack
  */
 inline auto get_primary_type_pack() {
-// FIXME: re-enable when std::pair[], std::tuple[] or std::variant[] is
-// implemented
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   return get_full_primary_type_pack();
 #else

@@ -363,7 +363,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_another_feature;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel with tested feature but with attribute [[sycl::device_has()]] "
  "for another feature.",
  "[kernel_features]",
@@ -374,16 +374,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
   using kname = kernel_use_another_feature<FeatureTypeT, FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
-  // Check if the device supports testing feature
-  bool is_exception_expected = true;
-  if (queue.get_device().has(FeatureAspectT)) {
-    is_exception_expected = false;
-  }
-
   // Set expected error code
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
-  constexpr sycl::aspect AnotherFeatureAspect =
+  static constexpr sycl::aspect AnotherFeatureAspect =
       get_another_aspect<FeatureAspectT>();
   bool other_feature_exception_expect = true;
   if (queue.get_device().has(AnotherFeatureAspect) &&
@@ -421,6 +415,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
                         [[sycl::device_has(AnotherFeatureAspect)]], kname,
                         USE_FEATURE(FeatureTypeT));
   }
+
 });
 
 #ifdef SYCL_EXTERNAL
@@ -428,7 +423,7 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
 template <typename FeatureTypeT, sycl::aspect FeatureAspectT>
 class kernel_use_feature_function_external_decorated_with_attr;
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
 ("Kernel with attribute [[sycl::device_has()]] for not currently tested "
  "feature but with SYCL_EXTERNAL function with tested feature and "
  "attribute [[sycl::device_has()]] with tested feature that is defined in "
@@ -443,16 +438,10 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL, DPCPP)
                                                                FeatureAspectT>;
   auto queue = util::get_cts_object::queue();
 
-  // Check if the device supports testing feature
-  bool is_exception_expected = true;
-  if (queue.get_device().has(FeatureAspectT)) {
-    is_exception_expected = false;
-  }
-
   // Set expected error code
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
-  constexpr sycl::aspect AnotherFeatureAspect =
+  static constexpr sycl::aspect AnotherFeatureAspect =
       get_another_aspect<FeatureAspectT>();
   bool other_feature_exception_expect = true;
   if (queue.get_device().has(AnotherFeatureAspect) &&
