@@ -13,50 +13,52 @@ All of the tests described below are performed only on the default device that
 is selected on the CTS command line if not stated otherwise.
 
 === Types coverage
-`buffer` and `milti_ptr` are tested using vector types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float` and scalar types: `std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
 
-`buffer` are tested with `sycl::buffer_allocator` and `std::allocator` as `AllocatorT` template.
-`Container` template for `buffer` is `std::vector`.
-
-
+`buffer` and `milti_ptr` are tested using types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float, std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
 
 == Tests
 
 === `buffer`
 
-Check that constructing an object without specifying template variables initializes correct `InputIterator`, `AllocatorT`, `Dimensions` and `Container` classes.
+Check that constructing an object without specifying template variables initializes object with correct `InputIterator`, `AllocatorT`, `range<Dimensions>` and `Container` classes.
 
-* Create class for `buffer` deduction guides in existing API.
+* Create `buffer` using following constructors without templates using
+** `InputIterator` from Types coverage
+** `Allocator` - `sycl::buffer_allocator` and `std::allocator`
+** `Container` template for `buffer` is `std::vector`
+** `Dimensions` from 1 to 3
 
-* Create `buffer` using following constructors without templates using existing `InputIterator`, `Allocator`, `Container` and from 0 to 3 `Dimensions`.
-
-** `template <class InputIterator, class AllocatorT> +
+* `template <class InputIterator, class AllocatorT> +
 buffer(InputIterator, InputIterator, AllocatorT, const property_list& = {}) -> buffer<typename std::iterator_traits<InputIterator>::value_type, 1, AllocatorT>;`
 
-** `template <class InputIterator> +
+* `template <class InputIterator> +
 buffer(InputIterator, InputIterator, const property_list& = {}) -> buffer<typename std::iterator_traits<InputIterator>::value_type, 1>;`
 
-** `template <class T, int Dimensions, class AllocatorT> +
+* `template <class T, int Dimensions, class AllocatorT> +
 buffer(const T*, const range<Dimensions>&, AllocatorT, const property_list& = {}) -> buffer<T, Dimensions, AllocatorT>;`
 
-** `template <class T, int Dimensions> +
+* `template <class T, int Dimensions> +
 buffer(const T*, const range<Dimensions>&, const property_list& = {}) -> buffer<T, Dimensions>;`
 
-** `template <class Container, class AllocatorT> +
+* `template <class Container, class AllocatorT> +
 buffer(Container&, AllocatorT, const property_list& = {}) -> buffer<typename Container::value_type, 1, AllocatorT>;`
 
-** `template <class Container> +
+* `template <class Container> +
 buffer(Container&, const property_list& = {}) -> buffer<typename Container::value_type, 1>;`
 
 * Using `std::is_same_v` compare resulting object with deduction guide.
-* Check that `get_range()` returns `range` with same `Dimensions` as in deduction guide.
-* Check that `get_allocator()` returns same `AllocatorT` as in deduction guide.
+** Check that `value_type` is the same with `T`
+** Check that `get_range()` returns same `range<Dimensions>`
+** Check that `get_allocator()` returns same `AllocatorT`
 
 === `multi_ptr`
 
-Check that constructing an object without specifying template variables initializes correct `T`. `access_mode`, `placeholder` and `Dimensions` classes.
+Check that constructing an object without specifying template variables initializes object with correct `T`, `access_mode`, `placeholder` and `Dimensions` classes.
 
-* Create class for multi_ptr deduction guides in existing API.
+* Create `accessor` and `local_accessor` using
+** `T` from Types coverage
+** `Dimensions` from 1 to 3
+** `Mode` - `access::mode::read`, `access::mode::write`, `access::mode::read_write`
 
 * Create `multi_ptr` using following constructors without specifying templates with existing `accessor`.
 
@@ -66,14 +68,11 @@ multi_ptr(accessor<T, Dimensions, Mode, target::device, IsPlaceholder>) -> multi
 ** `template <int Dimensions, access_mode Mode, access::placeholder IsPlaceholder, class T> +
 multi_ptr(local_accessor<T, Dimensions>) -> multi_ptr<T, access::address_space::local_space, access::decorated::no>;`
 
-* Using `std::is_same_v` compare resulting object with deduction guide.
-* Check that `get()` with * returns same value as `accessor` ref.
+* Using `std::is_same_v` Check that `get()` with * operator is same as `accessor::reference`.
 
 === `range` and `id`
 
 Check that constructing an object without specifying `Dimensions` passes correct number of `size_t` arguments.
-
-* Create new classes for `range` and `id` deduction guides in in existing API.
 
 * Create `range` and `id` objects using following constructors
 ** `range(size_t) -> range<1>;`
@@ -84,11 +83,12 @@ Check that constructing an object without specifying `Dimensions` passes correct
 ** `id(size_t, size_t)->id<2>;`
 ** `id(size_t, size_t, size_t)->id<3>;`
 
-* Using `std::is_same_v` compare resulting object with deduction guide.
+* Using `std::is_same_v` compare type of resulting object and type with specified `Dimesions` template.
 
 === `vec`
 * Create `vec` using constructor
-
 ** `template <class T, class... U> vec(T, U...) -> vec<T, sizeof...(U) + 1>;`
+
+* Check sizeofthe `vec` using `size()`.
 
 * Use `for` loop to check that elements inside vectors are the same with passed.
