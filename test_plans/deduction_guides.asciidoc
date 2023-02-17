@@ -53,6 +53,7 @@ buffer(Container&, const property_list& = {}) -> buffer<typename Container::valu
 * Using `std::is_same_v` compare resulting object with expected type from deduction guide.
 
 Additionaly, use `buffer` member functions to:
+
 * Check that `value_type` is the same with `T`
 * Check that `get_range()` returns same `range<Dimensions>`
 * Check that `get_allocator()` returns same `AllocatorT`
