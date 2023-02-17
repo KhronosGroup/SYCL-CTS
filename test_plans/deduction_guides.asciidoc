@@ -14,7 +14,9 @@ is selected on the CTS command line if not stated otherwise.
 
 === Types coverage
 
-`buffer` and `milti_ptr` are tested using types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float, std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
+`buffer`, `milti_ptr` and `vec` are tested using types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float.
+
+Additionaly, `buffer` and `milti_ptr` are tested with `std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
 
 == Tests
 
@@ -27,7 +29,7 @@ Check that constructing an object without specifying template variables initiali
 * Create `buffer` using following constructors without templates using
 ** `InputIterator` - `std::vector<T>::begin()` and `std::vector<T>::end()`
 ** `Allocator` - `sycl::buffer_allocator` and `std::allocator`
-** `Container` template for `buffer` is `std::vector`
+** `Container` - existing `std::vector<T>`
 ** `Dimensions` from 1 to 3
 
 * `template <class InputIterator, class AllocatorT> +
@@ -50,10 +52,10 @@ buffer(Container&, const property_list& = {}) -> buffer<typename Container::valu
 
 * Using `std::is_same_v` compare resulting object with expected type from deduction guide.
 
-* Optional
-** Check that `value_type` is the same with `T`
-** Check that `get_range()` returns same `range<Dimensions>`
-** Check that `get_allocator()` returns same `AllocatorT`
+Additionaly, use `buffer` member functions to:
+* Check that `value_type` is the same with `T`
+* Check that `get_range()` returns same `range<Dimensions>`
+* Check that `get_allocator()` returns same `AllocatorT`
 
 === `multi_ptr`
 
@@ -89,13 +91,15 @@ Check that constructing an object without specifying `Dimensions` passes correct
 ** `id(size_t N1, size_t N2)->id<2>;`
 ** `id(size_t N1, size_t N2, size_t N3)->id<3>;`
 
-* With `N, N1 = 4`, `N2 = 8`, `N3 = 10`, check that `size()` of resulting `range` is `N`, `N1 * N2`, `N1 * N2 * N3` respectively.
+* With `N, N1 = 4`, `N2 = 8`, `N3 = 10`, check that `size()` of resulting `range` object is `N`, `N1 * N2`, `N1 * N2 * N3` respectively.
+
+* Using `operator[]` of `range` and `id`, check that every element inside object is same with passed.
 
 * Using `std::is_same_v` compare type of resulting object and type with specified `Dimesions` template.
 
 === `vec`
 
-* Since `NumElement` of `vec` can only be 2, 3, 4, 8 and 16, create sets of data with following number of elements and `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float, std::size_t` types.
+* Since `NumElement` of `vec` can only be 1, 2, 3, 4, 8 and 16, create sets of data with mentioned number of elements and types from Types coverage.
 
 * Create `vec` using following constructor and passing created sets of data
 ** `template <class T, class... U> vec(T, U...) -> vec<T, sizeof...(U) + 1>;`
