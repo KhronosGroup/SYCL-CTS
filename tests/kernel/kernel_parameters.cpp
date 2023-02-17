@@ -304,7 +304,7 @@ class named_kernel_test<sycl::id<Dim>> {
 template <typename T>
 class unnamed_kernel_test {
   template <typename BufType>
-  void queue_submit_task(BufType buf_expected, T changed) {
+  void queue_submit_task(BufType buf_expected, T& changed) {
     queue
         .submit([&](sycl::handler& cgh) {
           auto acc_expected =
