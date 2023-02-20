@@ -140,7 +140,7 @@ class atomic_ref_bitwise_op_test
       std::array result{false, false, false, false, false,
                         false, false, false, false};
       this->queue_submit_local_scope(result, bitwise_op_test);
-      check_test_result_buffer(result, description, "global");
+      check_test_result_buffer(result, description, "local");
     }
   }
 
