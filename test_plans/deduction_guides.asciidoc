@@ -14,7 +14,7 @@ is selected on the CTS command line if not stated otherwise.
 
 === Types coverage
 
-All of the tests described below are performed using each of the following `typename T`:
+All of the tests for `buffer` and `multi_ptr` described below are performed using each of the following `typename T`:
 
 In Regular mode:
 
@@ -40,6 +40,8 @@ In full conformance mode:
   destructor or member functions.
 * A user-defined class with several scalar member variables, a deleted default
   constructor, and a user-defined (non-default) constructor.
+
+Tests for `vec` are performed using `char`, `unsigned char`, `short`, `unsigned short`, `int`, `unsigned int`, `long`, `unsigned long` and `float`.
 
 == Tests
 
