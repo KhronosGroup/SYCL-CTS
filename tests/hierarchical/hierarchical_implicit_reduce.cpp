@@ -47,8 +47,8 @@ template <typename T, int dim> class sth {};
 
 template <typename T, int dim> class sth_else {};
 
-template <typename T, int dim>
-T reduce(T input[inputSize], sycl::device_selector *selector) {
+template <typename T, int dim, class DeviceSelector>
+T reduce(T input[inputSize], DeviceSelector* selector) {
   T mGroupSums[numGroups];
 
   auto myQueue = util::get_cts_object::queue(*selector);

@@ -10,7 +10,7 @@
 
 #include "cuda_helper.hpp"
 
-class cuda_selector : public sycl::device_selector {
+class cuda_selector {
  public:
   int operator()(const sycl::device& dev) const override {
     return (dev.get_platform().get_info<sycl::info::platform::name>().find(

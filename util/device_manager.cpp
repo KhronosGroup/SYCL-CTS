@@ -53,7 +53,7 @@ static std::string get_device_type_str(const sycl::device& d) {
 
 void device_manager::list_devices() const {
   const auto all_devices = sycl::device::get_devices();
-  const auto cts_device = cts_selector{}.select_device();
+  const auto cts_device = sycl::device(cts_selector{});
 
   if (all_devices.empty()) {
     printf("No devices available.\n");

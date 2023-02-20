@@ -30,7 +30,7 @@
 
 /** test suite specific device selector
  */
-class cts_selector : public sycl::device_selector {
+class cts_selector {
  public:
   /** Returns true if the default platform of the selector is host.
    * @return boolean specifying whether the default platform is host. */
@@ -44,14 +44,14 @@ class cts_selector : public sycl::device_selector {
    *  return <  0  : device will never be selected
    *  return >= 0  : positive device rating
    */
-  virtual int operator()(const sycl::device& dev) const {
+  int operator()(const sycl::device& dev) const {
     using namespace sycl_cts;
     using namespace sycl_cts::util;
 
     auto& device_regex = get<device_manager>().get_device_regex();
 
     if (!device_regex.has_value()) {
-      return sycl::default_selector{}(dev);
+      return sycl::default_selector_v(dev);
     }
 
     const auto platform_name =

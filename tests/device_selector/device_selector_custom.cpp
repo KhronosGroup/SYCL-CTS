@@ -26,9 +26,9 @@
 namespace device_selector_custom__ {
 using namespace sycl_cts;
 
-/** tests custom selectors for sycl::device_selector
+/** tests custom device selectors
  */
-class call_selector : public sycl::device_selector {
+class call_selector {
  public:
   mutable bool called;
 
@@ -42,7 +42,7 @@ class call_selector : public sycl::device_selector {
 
 /** create a selector for testing negative scores
  */
-class negative_selector : public sycl::device_selector {
+class negative_selector {
  public:
   negative_selector(const sycl::device &excludeDevice)
       : excludedDevice{excludeDevice} {}
