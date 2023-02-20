@@ -16,7 +16,7 @@ is selected on the CTS command line if not stated otherwise.
 
 `buffer`, `milti_ptr` and `vec` are tested using types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float.
 
-Additionaly, `buffer` and `milti_ptr` are tested with `std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
+Additionaly, `buffer` and `multi_ptr` are tested with `std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
 
 == Tests
 
