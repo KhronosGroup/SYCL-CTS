@@ -14,9 +14,32 @@ is selected on the CTS command line if not stated otherwise.
 
 === Types coverage
 
-`buffer`, `milti_ptr` and `vec` are tested using types: `char, unsigned char, short, unsigned short, int, unsigned int, long, unsigned long, float.
+All of the tests described below are performed using each of the following `typename T`:
 
-Additionaly, `buffer` and `multi_ptr` are tested with `std::size_t, user_struct, different_namespace::diff_namespace_struct, nested_struct::nested_user_struct`.
+In Regular mode:
+
+* `int`
+* `float`
+* A user-defined class with several scalar member variables and a user-defined
+  default constructor.
+
+In full conformance mode:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+* `bool`
+* A user-defined struct with several scalar member variables, no constructor,
+  destructor or member functions.
+* A user-defined class with several scalar member variables, a deleted default
+  constructor, and a user-defined (non-default) constructor.
 
 == Tests
 
