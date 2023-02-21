@@ -182,8 +182,12 @@ struct StringMaker<sycl::access::address_space> {
         return "address_space::global_space";
       case type::local_space:
         return "address_space::local_space";
+// FIXME: re-enable when sycl::access::address_space::generic_space is
+// implemented in computecpp
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       case type::generic_space:
         return "address_space::generic_space";
+#endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       case type::private_space:
         return "address_space::private_space";
       case type::constant_space:
