@@ -31,6 +31,10 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 
   run_tests_for_all_functors<double, run_test_without_property>()(
       reduction_common::range, queue, "double");
+  run_tests_for_all_functors<double, run_test_without_property>()(
+      reduction_common::nd_range, queue, "double");
+  run_tests_for_all_functors<double, run_test_with_property>()(
+      reduction_common::range, queue, "double");
   run_tests_for_all_functors<double, run_test_with_property>()(
       reduction_common::nd_range, queue, "double");
 });

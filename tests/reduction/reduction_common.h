@@ -118,16 +118,15 @@ VariableT get_init_value_for_reduction() {
 template <typename VariableT, typename FunctorT, bool UsePropertyFlagT = false>
 VariableT get_init_value_for_expected_value() {
   VariableT init_value{};
-  if constexpr (std::is_same_v<VariableT, bool>)
-    get_init_value_bool<FunctorT, UsePropertyFlagT>(init_value);
-  else if constexpr (UsePropertyFlagT) {
+  if constexpr (UsePropertyFlagT) {
     // case when using reduction with initialize_to_identity
     if constexpr (sycl::has_known_identity<FunctorT, VariableT>::value)
       init_value = sycl::known_identity<FunctorT, VariableT>::value;
     else
       init_value = identity_value;
   } else {
-    init_value = init_value_without_property_case;
+    // otherwise it should use the same intial value as the reduction.
+    init_value = get_init_value_for_reduction<VariableT, FunctorT>();
   }
   return init_value;
 }

@@ -52,16 +52,30 @@ void run_all_core_tests(RangeT& range, sycl::queue& queue) {
   for_all_types<run_tests_for_all_functors, UsePropertyFlagT>(scalar_types,
                                                               range, queue);
 
-  run_test_for_all_reductions_types<
-      custom_type, reduction_get_lambda::with_combine, UsePropertyFlagT::value>(
-      sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
-  run_test_for_all_reductions_types<custom_type,
-                                    reduction_get_lambda::without_combine,
-                                    UsePropertyFlagT::value>(
-      sycl::plus<custom_type>(), range, queue, "reduction_common::custom_type");
-  run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT::value>(
-      op_without_identity<int>(), range, queue, "int with custom functor");
+  // sycl::property::reduction::initialize_to_identity cannot be used with
+  // reductions that have neither a specified nor known identity.
+  if constexpr (!UsePropertyFlagT::value) {
+    static_assert(
+        !sycl::has_known_identity_v<sycl::plus<custom_type>, custom_type>,
+        "sycl::plus<custom_type> should not have a known identity.");
+    static_assert(
+        !sycl::has_known_identity_v<op_without_identity<int>(), int>,
+        "op_without_identity<int>() should not have a known identity.");
+
+    run_test_for_all_reductions_types<custom_type,
+                                      reduction_get_lambda::with_combine,
+                                      UsePropertyFlagT::value>(
+        sycl::plus<custom_type>(), range, queue,
+        "reduction_common::custom_type");
+    run_test_for_all_reductions_types<custom_type,
+                                      reduction_get_lambda::without_combine,
+                                      UsePropertyFlagT::value>(
+        sycl::plus<custom_type>(), range, queue,
+        "reduction_common::custom_type");
+    run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
+                                      UsePropertyFlagT::value>(
+        op_without_identity<int>(), range, queue, "int with custom functor");
+  }
 
   run_test_for_bool_variable<UsePropertyFlagT>(range, queue);
 }
