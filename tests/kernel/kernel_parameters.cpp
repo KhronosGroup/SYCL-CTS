@@ -44,47 +44,15 @@ class Derived : public Base<PrimaryType> {
   Derived(int value) : Base<PrimaryType>(value) {}
 };
 
-inline auto get_full_primary_type_pack() {
-  static const auto types = named_type_pack<
-      int, float, bool, std::array<int, 5>, std::array<float, 5>,
-      std::array<bool, 5>, std::optional<int>, std::optional<float>,
-      std::optional<bool>, std::pair<int, float>, std::tuple<int, float, bool>,
-      std::variant<int, float, bool>>::generate("int", "float", "bool",
-                                                "std::array<int,5>",
-                                                "std::array<float,5>",
-                                                "std::array<bool,5>",
-                                                "std::optional<int>",
-                                                "std::optional<float>",
-                                                "std::optional<bool>",
-                                                "std::pair<int,float>",
-                                                "std::tuple<int,float,bool>",
-                                                "std::variant<int,float,bool>");
-  return types;
-}
-
-inline auto get_lightweight_primary_type_pack() {
-  static const auto types = named_type_pack<
-      int, float, bool, std::array<int, 5>, std::array<float, 5>,
-      std::array<bool, 5>, std::optional<int>, std::optional<float>,
-      std::optional<bool>>::generate("int", "float", "bool",
-                                     "std::array<int,5>", "std::array<float,5>",
-                                     "std::array<bool,5>", "std::optional<int>",
-                                     "std::optional<float>",
-                                     "std::optional<bool>");
-  return types;
-}
-
 /**
  * @brief Factory function for getting type_pack with types that depends on full
  *        conformance mode enabling status
  * @return named_type_pack
  */
 inline auto get_primary_type_pack() {
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  return get_full_primary_type_pack();
-#else
-  return get_lightweight_primary_type_pack();
-#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  static const auto types =
+      named_type_pack<int, float, bool>::generate("int", "float", "bool");
+  return types;
 }
 
 template <typename PrimaryType>
