@@ -656,43 +656,43 @@ template <typename T> class check_buffer_ctors_for_type {
    void operator()(util::logger &log, const std::string &typeName) {
      INFO("testing: " + typeName);
 
-    const int size = 8;
-    sycl::range<1> range1d(size);
-    sycl::range<2> range2d(size, size);
-    sycl::range<3> range3d(size, size, size);
+     const int size = 8;
+     sycl::range<1> range1d(size);
+     sycl::range<2> range2d(size, size);
+     sycl::range<3> range3d(size, size, size);
 
-    sycl::id<1> id1d(2);
-    sycl::id<2> id2d(2, 0);
-    sycl::id<3> id3d(2, 0, 0);
+     sycl::id<1> id1d(2);
+     sycl::id<2> id2d(2, 0);
+     sycl::id<3> id3d(2, 0, 0);
 
-    buffer_ctors<T, size, 1> buf1d;
-    buffer_ctors<T, size * size, 2> buf2d;
-    buffer_ctors<T, size * size * size, 3> buf3d;
+     buffer_ctors<T, size, 1> buf1d;
+     buffer_ctors<T, size * size, 2> buf2d;
+     buffer_ctors<T, size * size * size, 3> buf3d;
 
-    buffer_ctors<T, size, 1> buf1d_with_properties;
-    buffer_ctors<T, size * size, 2> buf2d_with_properties;
-    buffer_ctors<T, size * size * size, 3> buf3d_with_properties;
+     buffer_ctors<T, size, 1> buf1d_with_properties;
+     buffer_ctors<T, size * size, 2> buf2d_with_properties;
+     buffer_ctors<T, size * size * size, 3> buf3d_with_properties;
 
-    /* create property lists */
+     /* create property lists */
 
-    const sycl::property_list empty_pl{};
-    std::mutex mutex;
-    auto context = util::get_cts_object::context();
-    const sycl::property_list pl{
-        sycl::property::buffer::use_mutex(mutex),
-        sycl::property::buffer::context_bound(context)};
+     const sycl::property_list empty_pl{};
+     std::mutex mutex;
+     auto context = util::get_cts_object::context();
+     const sycl::property_list pl{
+         sycl::property::buffer::use_mutex(mutex),
+         sycl::property::buffer::context_bound(context)};
 
-    /* test buffer constructors with empty property list */
+     /* test buffer constructors with empty property list */
 
-    buf1d(range1d, id1d, empty_pl, log);
-    buf2d(range2d, id2d, empty_pl, log);
-    buf3d(range3d, id3d, empty_pl, log);
+     buf1d(range1d, id1d, empty_pl, log);
+     buf2d(range2d, id2d, empty_pl, log);
+     buf3d(range3d, id3d, empty_pl, log);
 
-    /* test buffer constructors with non-empty property list */
+     /* test buffer constructors with non-empty property list */
 
-    buf1d_with_properties(range1d, id1d, pl, log);
-    buf2d_with_properties(range2d, id2d, pl, log);
-    buf3d_with_properties(range3d, id3d, pl, log);
+     buf1d_with_properties(range1d, id1d, pl, log);
+     buf2d_with_properties(range2d, id2d, pl, log);
+     buf3d_with_properties(range3d, id3d, pl, log);
   }
 };
 

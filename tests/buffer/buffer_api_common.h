@@ -561,8 +561,7 @@ class check_buffer_linearization {
   void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
-    INFO("testing: linearization in " + std::to_string(dims) +
-             " dimensions.");
+    INFO("testing: linearization in " + std::to_string(dims) + " dimensions.");
     auto q = util::get_cts_object::queue();
 
     sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
