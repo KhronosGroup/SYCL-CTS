@@ -520,7 +520,7 @@ template <typename T> class check_buffer_api_for_type {
 
 public:
   void operator()(util::logger &log, const std::string &typeName) {
-    log.note("testing: " + type_name_string<T>::get(typeName));
+    INFO("testing: " + type_name_string<T>::get(typeName));
     check_with_alloc<sycl::buffer_allocator<T>>(log);
     check_with_alloc<std::allocator<T>>(log);
   }
@@ -542,12 +542,12 @@ class check_buffer_linearization {
                               sycl::range<3>{size, size, size});
     // clang-format on
 
-    log.note("testing: sycl::buffer_allocator<size_t>");
+    INFO("testing: sycl::buffer_allocator<size_t>");
     test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log, range1d);
     test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log, range2d);
     test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log, range3d);
 
-    log.note("testing: std::allocator<size_t>");
+    INFO("testing: std::allocator<size_t>");
     test_buffer_linearization<1, std::allocator<size_t>>(log, range1d);
     test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
     test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
@@ -561,7 +561,7 @@ class check_buffer_linearization {
   void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
-    log.note("testing: linearization in " + std::to_string(dims) +
+    INFO("testing: linearization in " + std::to_string(dims) +
              " dimensions.");
     auto q = util::get_cts_object::queue();
 

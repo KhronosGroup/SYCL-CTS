@@ -668,7 +668,7 @@ template <typename T> class check_buffer_ctors_for_type {
 
  public:
    void operator()(util::logger &log, const std::string &typeName) {
-     log.note("testing: " + typeName);
+     INFO("testing: " + typeName);
 
     const int size = 8;
     sycl::range<1> range1d(size);
