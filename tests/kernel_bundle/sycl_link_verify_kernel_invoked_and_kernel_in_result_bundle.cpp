@@ -108,14 +108,13 @@ void run_verification(util::logger &log, sycl::queue &queue) {
       sycl::compile(sycl::get_kernel_bundle<sycl::bundle_state::input>(
           ctx, {second_simple_kernel_id}))};
 
-  vector_with_object_bundles kernel_bundles{
-      kb_with_first_simple_kernel, kb_with_second_simple_kernel};
+  vector_with_object_bundles kernel_bundles{kb_with_first_simple_kernel,
+                                            kb_with_second_simple_kernel};
   vector_with_object_bundles kernel_bundles_from_input{
       kb_with_first_simple_kernel_from_input,
       kb_with_second_simple_kernel_from_input};
   vector_with_object_bundles mixed_kernel_bundles{
-      kb_with_first_simple_kernel_from_input,
-      kb_with_second_simple_kernel};
+      kb_with_first_simple_kernel_from_input, kb_with_second_simple_kernel};
 
   std::vector<sycl::device> dev_vector{ctx.get_devices()};
   std::vector<sycl::device> current_dev_vector{util::get_cts_object::device()};
