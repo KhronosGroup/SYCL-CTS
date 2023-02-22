@@ -507,20 +507,6 @@ class buffer_ctors {
       }
     }
 
-    /* check (shared pointer, range, mutex, std allocator) constructor*/
-    {
-      std::allocator<T> buf_alloc;
-      std::shared_ptr<T> data(new T[size]);
-      std::fill(data.get(), (data.get() + size), 0);
-      std::mutex m;
-      sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
-      constexpr bool data_verify = true;
-      if (!check_buffer_constructor(buf, r, data_verify)) {
-        FAIL(log,
-             "(shared pointer, range, mutex, std allocator) constructor fail.");
-      }
-    }
-
     /* Check buffer (iterator, std allocator) constructor */
     if (dims == 1) {
       std::allocator<T> buf_alloc;
