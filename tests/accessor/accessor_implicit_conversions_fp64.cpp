@@ -9,6 +9,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
     !defined(__SYCL_COMPILER_VERSION)
 #include "accessor_common.h"
