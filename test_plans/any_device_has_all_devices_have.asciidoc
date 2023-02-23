@@ -34,9 +34,8 @@ Tests described below are performed for following aspects:
 
 == Tests
 
-* Check that `any_device_has<aspect>` inherits from `std::true_type` if there is any device available that supports tested aspect,
-and inherits from `std::false_type` otherwise
-* Check that `any_device_has_v<aspect>` = `any_device_has<aspect>::value`
-* Check that `all_devices_have<aspect>` inherits from `std::true_type` if all available device that supports tested aspect,
-and inherits from `std::false_type` otherwise
-* Check that `all_devices_have_v<aspect>` = `all_devices_have<aspect>::value`
+* Check each device to see if it has aspect `A`.
+* If some device has aspect `A`, check that `any_device_has_v<A>` is `true`
+and `any_device_has<A>` inherits from `std::true_type`.
+* If some device does not have aspect `A`, check that `all_devices_have_v<A>` is `false`
+and `all_devices_have<A>` inherits from `std::false_type`.
