@@ -11,6 +11,7 @@ hierarchical
 host_task
 id
 image
+image_accessor
 kernel
 kernel_args
 kernel_bundle
@@ -19,7 +20,6 @@ multi_ptr
 nd_item
 opencl_interop
 platform
-reduction
 spec_constants
 stream
 sub_group_mask

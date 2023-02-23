@@ -443,7 +443,7 @@ class check_marray_operators_for_type {
                                                             "post --");
     for_all_combinations<run_unary_post, DataT>(num_elements,
                                                 unary_post_operators);
-
+// Link to issue https://github.com/intel/llvm/issues/8331
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
     defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     WARN(
@@ -459,6 +459,7 @@ class check_marray_operators_for_type {
     //  'const cl::sycl::marray<bool, 1>'
     // && and || for any? type 'static_assert failed due to
     //  requirement 'num_elements<bool>() == 2UL'
+// Link to issue https://github.com/intel/llvm/issues/8331
 #if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
       defined(SYCL_CTS_COMPILING_WITH_DPCPP))
                         ,
@@ -466,6 +467,7 @@ class check_marray_operators_for_type {
 #endif
                         >::generate("+", "-", "*", "/", "%", "|", "&", "^",
                                     "<<", ">>"
+// Link to issue https://github.com/intel/llvm/issues/8331
 #if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
       defined(SYCL_CTS_COMPILING_WITH_DPCPP))
                                     ,

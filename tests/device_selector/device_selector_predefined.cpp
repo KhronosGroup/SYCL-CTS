@@ -123,7 +123,6 @@ TEST_CASE("predefined selectors", "[device_selector]") {
 
   // SYCL2020 device selectors.
 
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   {  // default_selector_v
     if (noneAvailable) {
       try {
@@ -193,9 +192,6 @@ TEST_CASE("predefined selectors", "[device_selector]") {
       }
     }
   }
-#else
-  WARN("DPCPP does not implement predefined device selector instances");
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
 }
 
 }  // namespace device_selector_predefined

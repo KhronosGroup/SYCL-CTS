@@ -143,7 +143,7 @@ The tests below tests specify a "mutation" of an instance `T`. This means to cha
 * detection: create an accessor, read from the accessor.
 - `event` (in the host application): an event `e0` can be created by scheduling a command group with a host task that waits for a future value to become available. Event `e0` can be resolved by making this value available. Event `e1` is created by scheduling a command group that depends on an event `e0`.
 * mutation: resolve the event `e0` which is in the wait list of `e1`.
-* detection: query the size of the wait list of `e1`.
+* detection: query the contents of the wait list of `e1`.
 - `host_accessor` (in the host application):
 * mutation: write to the accessor.
 * detection: read from the accessor.
@@ -156,9 +156,8 @@ The tests below tests specify a "mutation" of an instance `T`. This means to cha
 - `unsampled_image` (in the host application):
 * mutation: create an accessor, write to the accessor.
 * detection: create an accessor, read from the accessor.
-- `unsampled_image_accessor<int, 1, access_mode::read>` (in a kernel function):
-* mutation: write to the accessor.
-* detection: read from the accessor.
+
+`host_sampled_image_accessor`, `sampled_image`, and `sampled_image_accessor` are not included since a sampled image is read-only. `unsampled_image_accessor` is not included since access mode is either read or write, not both.
 
 ==== Mutation to copy
 

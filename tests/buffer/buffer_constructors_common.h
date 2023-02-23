@@ -455,25 +455,7 @@ class buffer_ctors {
       CHECK(check_buffer_constructor(buf_iter, r_exp, data_verify));
     }
 
-    {
-      INFO("Check copy constructor");
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-      CHECK(bufA.get_size() == bufB.get_size());
-      CHECK(bufA.get_count() == bufB.get_count());
-      CHECK(bufA.get_range() == bufB.get_range());
-    }
-
-    {
-      INFO("Check move constructor");
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(std::move(bufA));
-
-      CHECK(bufB.get_range() == r);
-      CHECK(bufB.get_size() == size * sizeof(T));
-      CHECK(bufB.get_count() == size);
-    }
-
+    /* Check copy assignment */
     {
       INFO("Check copy assignment");
       const sycl::property_list propertyList{
@@ -506,36 +488,6 @@ class buffer_ctors {
           sycl::property::buffer::use_host_ptr>();
 
       CHECK(hasHostPtrProperty);
-    }
-
-    {
-      INFO("Check equality operator");
-      const auto r2 = r * 2;
-
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-      sycl::buffer<T, dims> bufC(r2);
-      bufC = bufA;
-      sycl::buffer<T, dims> bufD(r2);
-
-      /* equality of copy constructed */
-      CHECK(bufA == bufB);
-      /* equality of copy assigned */
-      CHECK(bufA == bufC);
-      CHECK_FALSE(bufA != bufB);
-      CHECK_FALSE(bufA != bufC);
-      CHECK_FALSE(bufC == bufD);
-      CHECK(bufC != bufD);
-    }
-
-    {
-      INFO("Check hashing");
-      sycl::buffer<T, dims> bufA(r);
-      sycl::buffer<T, dims> bufB(bufA);
-
-      std::hash<sycl::buffer<T, dims>> hasher;
-
-      CHECK(hasher(bufA) == hasher(bufB));
     }
   }
 };
