@@ -1,0 +1,41 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for traits `any_device_has` and `all_devices_have`
+
+This is a test plan for traits that the application can use to query aspects at compilation time
+that are described in SYCL 2020 https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:device-aspects[4.6.4.3. Device aspects].
+
+== Testing scope
+
+=== Aspect coverage
+
+Tests described below are performed for following aspects:
+
+* `sycl::aspect::cpu`
+* `sycl::aspect::gpu`
+* `sycl::aspect::accelerator`
+* `sycl::aspect::custom`
+* `sycl::aspect::emulated`
+* `sycl::aspect::host_debuggable`
+* `sycl::aspect::fp16`
+* `sycl::aspect::fp64`
+* `sycl::aspect::atomic64`
+* `sycl::aspect::image`
+* `sycl::aspect::online_compiler`
+* `sycl::aspect::online_linker`
+* `sycl::aspect::queue_profiling`
+* `sycl::aspect::usm_device_allocations`
+* `sycl::aspect::usm_host_allocations`
+* `sycl::aspect::usm_atomic_host_allocations`
+* `sycl::aspect::usm_shared_allocations`
+* `sycl::aspect::usm_atomic_shared_allocations`
+* `sycl::aspect::usm_system_allocations`
+
+== Tests
+
+* Check each device to see if it has aspect `A`.
+* If some device has aspect `A`, check that `any_device_has_v<A>` is `true`
+and `any_device_has<A>` inherits from `std::true_type`.
+* If some device does not have aspect `A`, check that `all_devices_have_v<A>` is `false`
+and `all_devices_have<A>` inherits from `std::false_type`.
