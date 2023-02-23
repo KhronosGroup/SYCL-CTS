@@ -50,7 +50,7 @@ struct explicit_pointer<T, sycl::target::local> {
 */
 template <typename T>
 struct explicit_pointer<T, sycl::target::device> {
-  using type = sycl::global_ptr<T>;
+  using type = std::add_pointer_t<T>;
 };
 
 /** explicit pointer type (specialization for constant_buffer)
@@ -64,7 +64,7 @@ struct explicit_pointer<T, sycl::target::constant_buffer> {
 */
 template <typename T>
 struct explicit_pointer<T, sycl::target::host_buffer> {
-  using type = T *;
+  using type = std::add_pointer_t<T>;;
 };
 
 /** explicit pointer alias

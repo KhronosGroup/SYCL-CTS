@@ -181,7 +181,7 @@ class check_local_accessor_api_reads_and_writes {
         "check_local_accessor_api_reads_and_writes", typeName, log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
-    auto errors = get_error_data(2);
+    auto errors = get_error_data(4);
 
     static constexpr auto errorTarget = sycl::target::device;
 

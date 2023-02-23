@@ -138,8 +138,8 @@ class check_buffer_accessor_api_methods {
     {
       /** check return type for get_pointer() method
        */
-      check_acc_return_type<explicit_pointer_t<T, target>>(
-          log, accessor.get_pointer(), "get_pointer()", typeName);
+      check_acc_return_type<explicit_pointer_t<typename acc_t::value_type, target>>(
+        log, accessor.get_pointer(), "get_pointer()", typeName);
     }
   }
 
@@ -743,7 +743,7 @@ class check_buffer_accessor_api {
     std::unique_ptr<T[]> dataMultiDimSyntax;
     get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexesWrite);
 
-    static constexpr bool isHostBuffer =-
+    static constexpr bool isHostBuffer =
         (target == sycl::target::host_buffer);
 
     auto errors = get_error_data(isHostBuffer ? 2 : 4);
@@ -800,7 +800,7 @@ class check_buffer_accessor_api {
       if (!isHostBuffer) {
         if (errors.get()[error_code_t::multi_dim_write_id] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-              "operator[id<N>] did not write to the correct index");
+              "operator[id<N>] did not write to the correct index" + typeName);
         }
         if (errors.get()[error_code_t::multi_dim_write_size_t] != 0) {
           fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,

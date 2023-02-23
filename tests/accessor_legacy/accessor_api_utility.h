@@ -593,9 +593,9 @@ template <typename expectedT, typename dataT, int dims,
 inline void check_acc_return_type(sycl_cts::util::logger& log, returnT returnVal,
                                   const std::string& functionName,
                                   const std::string& typeName) {
-  if (!std::is_same<returnT, expectedT>::value) {
+  if (!std::is_same_v<returnT, expectedT>) {
     fail_for_accessor<dataT, dims, mode, target, placeholder>(log, typeName,
-        functionName + " has incorrect return type -> "
+        functionName + " has incorrect return type -> " + typeid(expectedT).name() + " "
             + typeid(returnT).name());
   }
 }
