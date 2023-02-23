@@ -50,6 +50,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       get_op_types(), types_only_double, types_only_double);
 });
 
+// Issue link https://github.com/intel/llvm/issues/8331
 DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
 ("function objects void specializations vector fp64",
  "[function_objects][fp64]")({

@@ -61,7 +61,8 @@ struct StringMaker<sycl::target> {
     switch (value) {
       case type::device:
         return "target::device";
-
+// FIXME: re-enable when target::host_task is implemented
+// Issue link for DPCPP https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
       case type::host_task:
@@ -93,6 +94,8 @@ struct StringMaker<sycl::aspect> {
         return "aspect::accelerator";
       case type::custom:
         return "aspect::custom";
+// FIXME: re-enable when aspect::emulated is implemented
+// Issue link https://github.com/intel/llvm/issues/8324
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
       case type::emulated:
         return "aspect::emulated";

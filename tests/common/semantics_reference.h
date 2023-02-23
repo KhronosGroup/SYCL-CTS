@@ -208,6 +208,9 @@ struct test_equality {
  compiler-specific exception. */
 template <typename T>
 bool hash_equality_helper(const T& t0, const T& t1) {
+// FIXME: enable when std::hash specializations for local_accessor and
+// host_accessor are implemented link to issue
+// https://github.com/intel/llvm/issues/8332
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<
