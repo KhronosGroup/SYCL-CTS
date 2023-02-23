@@ -26,19 +26,14 @@
 namespace device_selector_custom__ {
 using namespace sycl_cts;
 
+bool called;
+
 /** tests custom device selectors
  */
-class call_selector {
- public:
-  mutable bool called;
-
-  call_selector() : called(false) {}
-
-  virtual int operator()(const sycl::device &device) const {
-    called = true;
-    return 1;
-  }
-};
+int call_selector(const sycl::device &device) {
+  called = true;
+  return 1;
+}
 
 /** create a selector for testing negative scores
  */
@@ -47,7 +42,7 @@ class negative_selector {
   negative_selector(const sycl::device &excludeDevice)
       : excludedDevice{excludeDevice} {}
 
-  virtual int operator()(const sycl::device &device) const {
+  int operator()(const sycl::device &device) const {
     return device == excludedDevice ? -1 : 1;
   }
 
@@ -72,37 +67,34 @@ class TEST_NAME : public util::test_base {
       /** check a custom selector for a device
       */
       {
-        call_selector selector;
-        auto device = util::get_cts_object::device(selector);
+        called = false;
+        auto device = util::get_cts_object::device(call_selector);
 
         /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a device");
-        }
+        INFO("calling custom selector for creating a device");
+        CHECK(called);
       }
 
       /** check a custom selector for a platform
       */
       {
-        call_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
+        called = false;
+        auto platform = util::get_cts_object::platform(call_selector);
 
         /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a platform");
-        }
+        INFO("calling custom selector for creating a platform");
+        CHECK(called);
       }
 
       /** check a custom selector for a queue
       */
       {
-        call_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        called = false;
+        auto queue = util::get_cts_object::queue(call_selector);
 
         /* check our device selector was used */
-        if (!selector.called) {
-          FAIL(log, "custom selector was never used for creating a queue");
-        }
+        INFO("calling custom selector for creating a queue");
+        CHECK(called);
       }
 
       /** check the ability to set negative scores
@@ -115,10 +107,8 @@ class TEST_NAME : public util::test_base {
           auto device = util::get_cts_object::device(selector);
 
           /* check our device selector was used */
-          if (device == excludedDevice) {
-            FAIL(log,
-                 "custom selector selected a device with a negative score");
-          }
+          INFO("custom selector selected a device with a negative score");
+          CHECK(device != excludedDevice);
         }
       }
     }
