@@ -125,7 +125,7 @@ VariableT get_init_value_for_expected_value() {
     else
       init_value = identity_value;
   } else {
-    // otherwise it should use the same intial value as the reduction.
+    // Otherwise it should use the same initial value as the reduction.
     init_value = get_init_value_for_reduction<VariableT, FunctorT>();
   }
   return init_value;
