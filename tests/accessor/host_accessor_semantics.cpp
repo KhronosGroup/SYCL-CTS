@@ -58,6 +58,7 @@ struct storage {
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("host_accessor common reference semantics", "[host_accessor]")({
+// Issue link https://github.com/intel/llvm/issues/8332
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(

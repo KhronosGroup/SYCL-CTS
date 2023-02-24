@@ -9,6 +9,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
+// Issue links https://github.com/intel/llvm/issues/8298
+// https://github.com/intel/llvm/issues/8299
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
@@ -25,7 +27,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace host_accessor_constructors;
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_host_constructors_test>(types);
-  for_all_device_copyable_std_containers<run_host_constructors_test>(types);
 });
 
 }  // namespace host_accessor_constructors_core

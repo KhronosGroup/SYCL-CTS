@@ -10,6 +10,7 @@
 #define __SYCLCTS_TESTS_COMMON_TYPE_LIST_H
 
 #include "../common/type_coverage.h"
+#include "../common/value_operations.h"
 
 /** user defined struct that is used in accessor tests
  */
@@ -34,6 +35,24 @@ struct user_struct {
   friend bool operator!=(const user_struct &lhs, const user_struct &rhs) {
     return !(lhs == rhs);
   }
+};
+
+/** Trivially copyable types that are used in sycl::bit_cast test
+ */
+template <typename PrimaryType>
+class Base {
+ public:
+  PrimaryType member;
+  Base() = default;
+  Base(int value) { value_operations::assign(member, value); }
+  bool operator==(const Base &rhs) const { return member == rhs.member; }
+};
+
+template <typename PrimaryType>
+class Derived : public Base<PrimaryType> {
+ public:
+  Derived() = default;
+  Derived(int value) : Base<PrimaryType>(value) {}
 };
 
 namespace user_def_types {
@@ -208,6 +227,12 @@ inline auto get_vector_types() {
 #endif
   return pack;
 }
+
+inline auto get_fp64_type() {
+  static const auto types = named_type_pack<double>::generate("double");
+  return types;
+}
+
 }  // namespace get_cts_types
 
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_LIST_H

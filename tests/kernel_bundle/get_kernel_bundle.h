@@ -23,26 +23,25 @@ inline auto kernels_with_attributes = named_type_pack<
     kernels::kernel_likely_unsupported_sub_group_size_descriptor,
     kernels::kernel_likely_supported_sub_group_size_descriptor,
     kernels::kernel_likely_unsupported_work_group_size_descriptor,
-    kernels::kernel_likely_supported_work_group_size_descriptor>::generate(
-    "kernel_cpu_descriptor",
-    "kernel_gpu_descriptor",
-    "kernel_accelerator_descriptor",
-    "simple_kernel_descriptor",
-    "simple_kernel_descriptor_second",
-    "kernel_likely_unsupported_sub_group_size_descriptor",
-    "kernel_likely_supported_sub_group_size_descriptor",
-    "kernel_likely_unsupported_work_group_size_descriptor",
-    "kernel_likely_supported_work_group_size_descriptor");
+    kernels::kernel_likely_supported_work_group_size_descriptor>::
+    generate("kernel_cpu_descriptor", "kernel_gpu_descriptor",
+             "kernel_accelerator_descriptor", "simple_kernel_descriptor",
+             "simple_kernel_descriptor_second",
+             "kernel_likely_unsupported_sub_group_size_descriptor",
+             "kernel_likely_supported_sub_group_size_descriptor",
+             "kernel_likely_unsupported_work_group_size_descriptor",
+             "kernel_likely_supported_work_group_size_descriptor");
 
 inline auto kernels_without_attributes =
     named_type_pack<kernels::simple_kernel_descriptor,
                     kernels::simple_kernel_descriptor_second,
                     kernels::kernel_fp16_no_attr_descriptor,
                     kernels::kernel_fp64_no_attr_descriptor,
-                    kernels::kernel_atomic64_no_attr_descriptor>::generate(
-        "simple_kernel_descriptor", "simple_kernel_descriptor_second",
-        "kernel_fp16_no_attr_descriptor", "kernel_fp64_no_attr_descriptor",
-        "kernel_atomic64_no_attr_descriptor");
+                    kernels::kernel_atomic64_no_attr_descriptor>::
+        generate("simple_kernel_descriptor", "simple_kernel_descriptor_second",
+                 "kernel_fp16_no_attr_descriptor",
+                 "kernel_fp64_no_attr_descriptor",
+                 "kernel_atomic64_no_attr_descriptor");
 
 template <sycl::bundle_state BundleState>
 class TestCaseDescription
@@ -180,7 +179,6 @@ inline void run_test_for_all_overload_types(
     const std::vector<sycl::kernel_id> &user_defined_kernel_ids) {
   const auto context{queue.get_context()};
   const auto device{queue.get_device()};
-  const size_t number_devices{context.get_devices().size()};
   constexpr unsigned int kernel_descriptor_count =
       sizeof...(KernelDescriptorsT);
 
@@ -224,7 +222,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(
         context, context.get_devices(), selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
     CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
@@ -235,7 +233,7 @@ inline void run_test_for_all_overload_types(
     has_kernel_dev.reset();
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context, selector)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
     CHECK((has_kernel.all() && has_kernel_dev.all()));
   }
   {
@@ -245,7 +243,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(
         context, context.get_devices(), user_defined_kernel_ids)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -254,7 +252,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{
         sycl::get_kernel_bundle<BundleState>(context, context.get_devices())};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -263,7 +261,7 @@ inline void run_test_for_all_overload_types(
     auto kernel_bundle{
         sycl::get_kernel_bundle<BundleState>(context, user_defined_kernel_ids)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
   {
     log.note(
@@ -271,7 +269,7 @@ inline void run_test_for_all_overload_types(
         "overload");
     auto kernel_bundle{sycl::get_kernel_bundle<BundleState>(context)};
     for_all_types<kernel_bundle::verify_that_kernel_in_bundle>(
-        kernel_descriptors, log, kernel_bundle, number_devices);
+        kernel_descriptors, log, kernel_bundle, context.get_devices());
   }
 }
 

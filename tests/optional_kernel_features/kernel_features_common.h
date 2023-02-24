@@ -527,8 +527,9 @@ class kernel_submission_call;
         IS_EXCEPTION_EXPECTED, ERRC, QUEUE, "submission call",              \
         single_task_action, parallel_for_action, parallel_for_action);      \
   }
+
 #endif  // #if !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-};      // namespace kernel_features_common
+}  // namespace kernel_features_common
 
 #endif  // SYCL_CTS_TEST_KERNEL_FEATURES_COMMON_H

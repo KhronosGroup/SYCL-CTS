@@ -60,9 +60,12 @@ class TEST_NAME : public sycl_cts::util::test_base {
     using k_name = kb_join_post_exe_kernel;
     auto queue = util::get_cts_object::queue();
     const auto ctx = queue.get_context();
+    const auto dev = queue.get_device();
 
-    auto kb_1 = sycl::get_kernel_bundle<sycl::bundle_state::executable>(ctx);
-    auto kb_2 = sycl::get_kernel_bundle<sycl::bundle_state::executable>(ctx);
+    auto kb_1 =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(ctx, {dev});
+    auto kb_2 =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(ctx, {dev});
     auto k_id = sycl::get_kernel_id<k_name>();
 
     auto joined_kb = sycl::join<sycl::bundle_state::executable>({kb_1, kb_2});

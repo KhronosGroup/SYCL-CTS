@@ -38,6 +38,7 @@ TEST_CASE("context info", "[context]") {
         ctx.get_info<sycl::info::context::atomic_memory_order_capabilities>();
     CHECK(check_contains(capabilities, sycl::memory_order::relaxed));
   }
+// Issue link https://github.com/intel/llvm/issues/8323
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   {  // check get_info for info::context::atomic_fence_order_capabilities
     check_get_info_param<sycl::info::context::atomic_fence_order_capabilities,
@@ -62,6 +63,7 @@ TEST_CASE("context info", "[context]") {
         ctx.get_info<sycl::info::context::atomic_memory_scope_capabilities>();
     CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
   }
+// Issue link https://github.com/intel/llvm/issues/8323
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   {  // check get_info for info::context::atomic_fence_scope_capabilities
     check_get_info_param<sycl::info::context::atomic_fence_scope_capabilities,

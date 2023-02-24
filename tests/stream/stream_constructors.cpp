@@ -26,8 +26,7 @@ struct stream_kernel {
   void operator()() const {}
 };
 
-DISABLED_FOR_TEST_CASE(DPCPP)
-("stream_constructors", "[stream]")({
+TEST_CASE("stream_constructors", "[stream]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   size_t bufferSize = 2048;
   size_t workItemBufferSize = 80;
@@ -73,4 +72,4 @@ DISABLED_FOR_TEST_CASE(DPCPP)
   }
 
   queue.wait_and_throw();
-});
+}

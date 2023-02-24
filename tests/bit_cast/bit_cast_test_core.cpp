@@ -16,27 +16,27 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//  Provides sycl::bit_cast test for generic types.
+//
 *******************************************************************************/
-
-#include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
-#include "../common/type_coverage.h"
+#include "catch2/catch_test_macros.hpp"
 
-// fixme: re-enable when sycl::marray is implemented in hipSYCL
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-#include "function_objects.h"
-#endif
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("function objects void specializations scalar core", "[function_objects]")({
-  const auto types = named_type_pack<TYPES>::generate(TYPE_NAMES);
-  for_all_combinations<check_scalar_return_type>(get_op_types(), types, types);
+#include "bit_cast_test.h"
+
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+
+namespace bit_cast::tests::core {
+
+// FIXME: re-enable when sycl::bit_cast() is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Test sycl::bit_cast, core types", "[bit_cast]")({
+  const auto primary_types =
+      bit_cast::tests::helper_functions::get_primary_type_pack();
+  for_all_combinations<bit_cast::tests::run_bit_cast_test>(primary_types,
+                                                           primary_types);
 });
 
-// Issue link https://github.com/intel/llvm/issues/8331
-DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
-("function objects void specializations vector core", "[function_objects]")({
-  const auto types_vector =
-      named_type_pack<TYPES_VECTOR>::generate(TYPE_NAMES_VECTOR);
-  for_all_combinations<check_vector_return_type>(get_op_types(), types_vector);
-});
+}  // namespace bit_cast::tests::core

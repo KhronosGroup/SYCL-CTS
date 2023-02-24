@@ -58,6 +58,7 @@ struct storage {
 };
 
 // DPCPP has no member 'host_task' in 'sycl::access::target'.
+// Issue link https://github.com/intel/llvm/issues/8298
 DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
 ("generic accessor common reference semantics (host)", "[accessor]")({
   {  // target::host_task
@@ -93,6 +94,7 @@ DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
 });
 
 // DPCPP has no member 'host_task' in 'sycl::access::target'.
+// Issue link https://github.com/intel/llvm/issues/8298
 DISABLED_FOR_TEST_CASE(DPCPP, hipSYCL)
 ("generic accessor common reference semantics, mutation (host)", "[accessor]")({
   constexpr int new_val = 2;

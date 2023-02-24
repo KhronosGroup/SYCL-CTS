@@ -75,6 +75,7 @@ TEST_CASE("property api", "[property]") {
     const auto objects = named_type_pack<sycl::buffer<int>>::generate("buffer");
     for_all_combinations<check_property_object>(properties, objects);
   }
+// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
 #if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
   {
@@ -95,6 +96,7 @@ TEST_CASE("property api", "[property]") {
       "Skipping the test case.");
 #endif
   {
+// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
@@ -108,6 +110,7 @@ TEST_CASE("property api", "[property]") {
     // provide any template argument for the types that require it
     const auto objects =
         named_type_pack<sycl::accessor<int>, sycl::host_accessor<int>
+// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
 #if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
                         ,
@@ -115,6 +118,7 @@ TEST_CASE("property api", "[property]") {
                         sycl::host_unsampled_image_accessor
 #endif
                         >::generate("accessor", "host_accessor"
+// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
 #if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
                                     ,

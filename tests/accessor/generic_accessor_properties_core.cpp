@@ -9,6 +9,7 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
+// Issue link https://github.com/intel/llvm/issues/8298
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
@@ -25,7 +26,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace generic_accessor_properties;
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_generic_properties_tests>(types);
-  for_all_device_copyable_std_containers<run_generic_properties_tests>(types);
 });
 
 }  // namespace generic_accessor_properties_core

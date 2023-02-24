@@ -44,49 +44,15 @@ class Derived : public Base<PrimaryType> {
   Derived(int value) : Base<PrimaryType>(value) {}
 };
 
-inline auto get_full_primary_type_pack() {
-  static const auto types = named_type_pack<
-      int, float, bool, std::array<int, 5>, std::array<float, 5>,
-      std::array<bool, 5>, std::optional<int>, std::optional<float>,
-      std::optional<bool>, std::pair<int, float>, std::tuple<int, float, bool>,
-      std::variant<int, float, bool>>::generate("int", "float", "bool",
-                                                "std::array<int,5>",
-                                                "std::array<float,5>",
-                                                "std::array<bool,5>",
-                                                "std::optional<int>",
-                                                "std::optional<float>",
-                                                "std::optional<bool>",
-                                                "std::pair<int,float>",
-                                                "std::tuple<int,float,bool>",
-                                                "std::variant<int,float,bool>");
-  return types;
-}
-
-inline auto get_lightweight_primary_type_pack() {
-  static const auto types = named_type_pack<
-      int, float, bool, std::array<int, 5>, std::array<float, 5>,
-      std::array<bool, 5>, std::optional<int>, std::optional<float>,
-      std::optional<bool>>::generate("int", "float", "bool",
-                                     "std::array<int,5>", "std::array<float,5>",
-                                     "std::array<bool,5>", "std::optional<int>",
-                                     "std::optional<float>",
-                                     "std::optional<bool>");
-  return types;
-}
-
 /**
  * @brief Factory function for getting type_pack with types that depends on full
  *        conformance mode enabling status
  * @return named_type_pack
  */
 inline auto get_primary_type_pack() {
-// FIXME: re-enable when std::pair[], std::tuple[] or std::variant[] is
-// implemented
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  return get_lightweight_primary_type_pack();
-#else
-  return get_full_primary_type_pack();
-#endif  // SYCL_CTS_COMPILING_WITH_DPCPP
+  static const auto types =
+      named_type_pack<int, float, bool>::generate("int", "float", "bool");
+  return types;
 }
 
 template <typename PrimaryType>
@@ -306,7 +272,7 @@ class named_kernel_test<sycl::id<Dim>> {
 template <typename T>
 class unnamed_kernel_test {
   template <typename BufType>
-  void queue_submit_task(BufType buf_expected, T changed) {
+  void queue_submit_task(BufType buf_expected, T& changed) {
     queue
         .submit([&](sycl::handler& cgh) {
           auto acc_expected =

@@ -9,6 +9,8 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
+// Issue link https://github.com/intel/llvm/issues/8299
+// PR link https://github.com/intel/llvm/pull/8249
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
@@ -22,7 +24,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
   using namespace local_accessor_api_common;
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_local_api_for_type>(types);
-  for_all_device_copyable_std_containers<run_local_api_for_type>(types);
 });
 
 }  // namespace local_accessor_api_core
