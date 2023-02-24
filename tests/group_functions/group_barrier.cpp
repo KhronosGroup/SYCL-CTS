@@ -24,7 +24,7 @@
 #include "group_functions_common.h"
 
 /** Returns maximum int32_t elements which can be allocated in device global or
- * local memory. */
+    local memory. */
 template <typename DeviceMemoryInfoAspect>
 inline uint64_t max_elements_in_device_memory() {
   using el_type = int32_t;
