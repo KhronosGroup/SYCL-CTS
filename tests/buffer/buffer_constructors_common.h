@@ -61,11 +61,6 @@ class logging_alloc {
   }
 };
 
-template <typename T>
-struct deleter {
-  void operator()(T const *p) { delete[] p; }
-};
-
 template <typename T, int size, int dims>
 class BufferInteropNoEvent;
 
@@ -129,7 +124,7 @@ class buffer_ctors {
     {
       INFO("check (data pointer, range) constructor");
       T data[size];
-      std::fill(data, (data + size), 0);
+      std::fill(data, data + size, 0);
       sycl::buffer<T, dims> buf(data, r, propList);
       sycl::buffer<T, dims> buf1(data, r);
       constexpr bool data_verify = true;
@@ -207,8 +202,8 @@ class buffer_ctors {
 
     {
       INFO("check (shared pointer, range) constructor");
-      std::shared_ptr<T> data(new T[size], deleter<T>());
-      std::fill(data.get(), (data.get() + size), 0);
+      std::shared_ptr<T> data(new T[size], std::default_delete<T[]>());
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims> buf(data, r, propList);
       sycl::buffer<T, dims> buf1(data, r);
       constexpr bool data_verify = true;
@@ -219,7 +214,7 @@ class buffer_ctors {
     {
       INFO("check (shared pointer[], range) constructor");
       std::shared_ptr<T[]> data(new T[size]);
-      std::fill(data.get(), (data.get() + size), 0);
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims> buf(data, r, propList);
       sycl::buffer<T, dims> buf1(data, r);
       constexpr bool data_verify = true;
@@ -281,8 +276,8 @@ class buffer_ctors {
       INFO(
           "check (shared pointer, range) constructor with allocator template "
           "param");
-      std::shared_ptr<T> data(new T[size], deleter<T>());
-      std::fill(data.get(), (data.get() + size), 0);
+      std::shared_ptr<T> data(new T[size], std::default_delete<T[]>());
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
       constexpr bool data_verify = true;
@@ -295,7 +290,7 @@ class buffer_ctors {
           "check (shared pointer[], range) constructor with allocator template "
           "param");
       std::shared_ptr<T[]> data(new T[size]);
-      std::fill(data.get(), (data.get() + size), 0);
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, propList);
       sycl::buffer<T, dims, std::allocator<T>> buf1(data, r);
       constexpr bool data_verify = true;
@@ -363,8 +358,8 @@ class buffer_ctors {
     {
       INFO("check (shared pointer, range, allocator) constructor");
       sycl::buffer_allocator<T> buf_alloc;
-      std::shared_ptr<T> data(new T[size], deleter<T>());
-      std::fill(data.get(), (data.get() + size), 0);
+      std::shared_ptr<T> data(new T[size], std::default_delete<T[]>());
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       sycl::buffer<T, dims> buf1(data, r, buf_alloc);
       constexpr bool data_verify = true;
@@ -376,7 +371,7 @@ class buffer_ctors {
       INFO("check (shared pointer[], range, allocator) constructor");
       sycl::buffer_allocator<T> buf_alloc;
       std::shared_ptr<T[]> data(new T[size]);
-      std::fill(data.get(), (data.get() + size), 0);
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims> buf(data, r, buf_alloc, propList);
       sycl::buffer<T, dims> buf1(data, r, buf_alloc);
       constexpr bool data_verify = true;
@@ -426,8 +421,8 @@ class buffer_ctors {
     {
       INFO("check (shared pointer, range, std allocator) constructor");
       std::allocator<T> buf_alloc;
-      std::shared_ptr<T> data(new T[size], deleter<T>());
-      std::fill(data.get(), (data.get() + size), 0);
+      std::shared_ptr<T> data(new T[size], std::default_delete<T[]>());
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
       constexpr bool data_verify = true;
       CHECK(check_buffer_constructor(buf, r, data_verify));
@@ -437,7 +432,7 @@ class buffer_ctors {
       INFO("check (shared pointer[], range, std allocator) constructor");
       std::allocator<T> buf_alloc;
       std::shared_ptr<T[]> data(new T[size]);
-      std::fill(data.get(), (data.get() + size), 0);
+      std::fill(data.get(), data.get() + size, 0);
       sycl::buffer<T, dims, std::allocator<T>> buf(data, r, buf_alloc);
       constexpr bool data_verify = true;
       CHECK(check_buffer_constructor(buf, r, data_verify));
