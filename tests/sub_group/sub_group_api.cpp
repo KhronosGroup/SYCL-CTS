@@ -113,8 +113,8 @@ inline size_t result_buf_size(size_t linear_execution_range) {
   return linear_execution_range * member_function_cnt;
 }
 
-/** Checks if result buffer can be allocated on device. */
-inline bool result_buffer_cant_be_alloc_in_device(size_t required_buffer_size) {
+/** Checks that result buffer can't be allocated on device. */
+inline bool result_buffer_cant_be_alloc_on_device(size_t required_buffer_size) {
   return required_buffer_size > max_device_buf_size();
 };
 
@@ -128,9 +128,9 @@ inline sycl::range<3> make_global_range(const sycl::range<3>& work_group_num,
 
 /**
  * Reduces current size of each dimension of a three dimensional work-group to
- * nearest multiple two value to ensure test reslut buffer will be able to be
- * allocated on device. Returns resulting dimension size. */
-size_t reduce_work_group_size_to_suitable_multiple_two(
+ * nearest suitable power-of-two value to ensure test result buffer will be able
+ * to be allocated on device. Returns resulting dimension size. */
+size_t reduce_work_group_size_to_suitable_power_of_two(
     const sycl::range<3>& work_group_num, size_t current_work_group_size_dim) {
   uint64_t max_dev_buf_size = max_device_buf_size();
   uint64_t required_res_buffer_size = result_buf_size(
@@ -217,17 +217,17 @@ TEST_CASE("sub-group api", "[sub_group]") {
   // if possible, reduce size by one to attempt to create incomplete sub-groups
   if (local_size_dim > 1) {
     --local_size_dim;
-    // if required size for result buffer for current work group dimension size
-    // exceed maximum memory allocation size on device reduce initial
-    // local_size_dim (i.e. current local_size_dim + 1) to nearest multiple two
-    // and if possible, again reduce size by one to attempt to create incomplete
-    // sub-groups
+    // If required size for result buffer for current work group dimension size
+    // exceeds maximum memory allocation size on device, reduce initial
+    // local_size_dim (i.e. current local_size_dim + 1) to nearest suitable
+    // power-of-two value and if possible, again reduce size by one to attempt
+    // to create incomplete sub-groups
     size_t required_res_buffer_size =
         result_buf_size(make_global_range(local_range, local_size_dim).size());
-    if (result_buffer_cant_be_alloc_in_device(required_res_buffer_size)) {
-      local_size_dim = reduce_work_group_size_to_suitable_multiple_two(
+    if (result_buffer_cant_be_alloc_on_device(required_res_buffer_size)) {
+      local_size_dim = reduce_work_group_size_to_suitable_power_of_two(
           local_range, local_size_dim + 1);
-      local_size_dim = local_size_dim > 1 ? local_size_dim - 1 : local_size_dim;
+      local_size_dim = std::max(local_size_dim - 1, 1);
     }
   }
   sycl::range<3> local_size{local_size_dim, local_size_dim, local_size_dim};
