@@ -19,8 +19,11 @@
 
 namespace sycl_cts::tests::has_kernel_bundle::check {
 
-static const std::string error_message{
-    "sycl::has_kernel_bundle return true for zero kernels"};
+static const std::string error_message_ex_false{
+    "sycl::has_kernel_bundle returned true for zero kernel"};
+
+static const std::string error_message_ex_true{
+    "sycl::has_kernel_bundle returned false for empty kernel_id vector"};
 
 /** @brief Call sycl::has_kernel_bundle with sycl::bundle_state, context and
  *         verify that has_kernel_bundle return false
@@ -35,7 +38,7 @@ struct zero_kernels<KernelDescriptorT, BundleState, overload::id::ctx_only> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
     if (sycl::has_kernel_bundle<BundleState>(ctx)) {
-      FAIL(log, error_message);
+      FAIL(log, error_message_ex_false);
     }
   }
 };
@@ -54,8 +57,8 @@ struct zero_kernels<KernelDescriptorT, BundleState, overload::id::ctx_kid> {
                   const sycl::device &dev) {
     std::vector<sycl::kernel_id> k_ids{};
 
-    if (sycl::has_kernel_bundle<BundleState>(ctx, {k_ids})) {
-      FAIL(log, error_message);
+    if (!sycl::has_kernel_bundle<BundleState>(ctx, {k_ids})) {
+      FAIL(log, error_message_ex_true);
     }
   }
 };
@@ -73,7 +76,7 @@ struct zero_kernels<KernelDescriptorT, BundleState, overload::id::ctx_dev> {
   void operator()(sycl_cts::util::logger &log, const sycl::context &ctx,
                   const sycl::device &dev) {
     if (sycl::has_kernel_bundle<BundleState>(ctx, {dev})) {
-      FAIL(log, error_message);
+      FAIL(log, error_message_ex_false);
     }
   }
 };
@@ -92,8 +95,8 @@ struct zero_kernels<KernelDescriptorT, BundleState, overload::id::ctx_dev_kid> {
                   const sycl::device &dev) {
     std::vector<sycl::kernel_id> k_ids{};
 
-    if (sycl::has_kernel_bundle<BundleState>(ctx, {dev}, {k_ids})) {
-      FAIL(log, error_message);
+    if (!sycl::has_kernel_bundle<BundleState>(ctx, {dev}, {k_ids})) {
+      FAIL(log, error_message_ex_true);
     }
   }
 };
