@@ -20,10 +20,10 @@
 namespace sycl_cts::tests::has_kernel_bundle::check {
 
 static const std::string error_message_ex_false{
-    "sycl::has_kernel_bundle return true for zero kernels"};
+    "sycl::has_kernel_bundle returned true for zero kernel"};
 
 static const std::string error_message_ex_true{
-    "sycl::has_kernel_bundle return false for empty kernel_id vector"};
+    "sycl::has_kernel_bundle returned false for empty kernel_id vector"};
 
 /** @brief Call sycl::has_kernel_bundle with sycl::bundle_state, context and
  *         verify that has_kernel_bundle return false
