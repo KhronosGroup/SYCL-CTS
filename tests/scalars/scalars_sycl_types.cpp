@@ -101,7 +101,7 @@ class TEST_NAME : public util::test_base {
           auto accSizeResult =
               bufSizeResult.get_access<sycl::access_mode::read_write>(cgh);
 
-          cgh.single_task<TEST_NAME>([=]() {
+          cgh.single_task<TEST_NAME>([=] {
             // SYCL Integral Data Types
             // signs
             accSignResult[0] = check_type_sign<unsigned char>(false);
@@ -147,7 +147,7 @@ class TEST_NAME : public util::test_base {
             auto accSizeResult =
                 bufSizeResult.get_access<sycl::access_mode::read_write>(cgh);
 
-            cgh.single_task<scalars_sycl_fp16>([=]() {
+            cgh.single_task<scalars_sycl_fp16>([=] {
               // Floating Point 16 Interop Data Type
               // sign
               accSignResult[12] = check_type_sign<sycl::half>(true);
@@ -168,7 +168,7 @@ class TEST_NAME : public util::test_base {
                     bufSizeResult.get_access<sycl::access_mode::read_write>(
                         cgh);
 
-                cgh.single_task<scalars_sycl_fp64>([=]() {
+                cgh.single_task<scalars_sycl_fp64>([=] {
                   // Floating Point 64 Interop Data Type
                   // sign
                   accSignResult[14] = check_type_sign<double>(true);
