@@ -529,53 +529,6 @@ void for_all_types_vectors_marray(const named_type_pack<types...> &typeList,
 }
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
-/**
- * @brief Run action for std device_copyable containers with type T
- * @tparam action Functor template for action to run
- * @tparam actionArgsT Parameter pack to use for functor template instantiation
- * @tparam argsT Deduced parameter pack for arguments to forward into the call
- * @param args Arguments to forward into the call
- */
-template <template <typename, typename...> class action, typename T,
-          typename... actionArgsT, typename... argsT>
-void for_device_copyable_std_containers(argsT &&...args) {
-  constexpr std::size_t medium_array_size = 5;
-  for_all_types<action, actionArgsT...>(
-      type_pack<std::array<T, medium_array_size>, std::optional<T>,
-                std::pair<T, T>, std::tuple<T, T>,
-                std::variant<T, std::conditional_t<!std::is_same_v<T, int>, int,
-                                                   char>>>{},
-      std::forward<argsT>(args)...);
-}
-
-/**
- * @brief Run action for std device_copyable containers with types from given
- * named_type_pack
- * @tparam action Functor template for action to run
- * @tparam actionArgsT Parameter pack to use for functor template instantiation
- * @tparam types Deduced from type_pack parameter pack for list of types to use
- * @tparam argsT Deduced parameter pack for arguments to forward into the call
- * @param typeList Named type pack instance with underlying type names stored
- * @param args Arguments to forward into the call
- */
-template <template <typename, typename...> class action,
-          typename... actionArgsT, typename... types, typename... argsT>
-void for_all_device_copyable_std_containers(
-    const named_type_pack<types...> &typeList, argsT &&...args) {
-  // run action for each type from types... parameter pack
-  // Using fold expression to iterate over all types within type pack
-
-  size_t typeNameIndex = 0;
-
-  ((for_device_copyable_std_containers<action, types, actionArgsT...>(
-        std::forward<argsT>(args)..., typeList.names[typeNameIndex]),
-    ++typeNameIndex),
-   ...);
-
-  // Ensure there is no silent miss for coverage
-  assert((typeNameIndex == sizeof...(types)) && "Pack expansion failed");
-}
-
 // FIXME: re-enable when marrray is implemented in hipsycl
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 /**

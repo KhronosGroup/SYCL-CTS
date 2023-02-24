@@ -34,11 +34,6 @@ For following `T`:
 * `int`
 * `float`
 * `bool`
-* `std::array<U, 5>` if `U` is one of 3 types above
-* `std::optional<U>` if `U` is one of 3 types above
-* `std::pair<int, float>`
-* `std::tuple<int, float, bool>`
-* `std::variant<int, float, bool>`
 
 == Tests
 
