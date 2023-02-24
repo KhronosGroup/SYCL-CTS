@@ -28,6 +28,7 @@ template <sycl::bundle_state State>
 void run_verification(util::logger &log) {
   auto queue = util::get_cts_object::queue();
   const auto ctx = queue.get_context();
+  const auto dev = queue.get_device();
 
   auto kb = sycl::get_kernel_bundle<State>(ctx);
 

@@ -54,8 +54,8 @@ void verify_results(
     util::logger &log, const std::vector<sycl::device> &dev_vector,
     const sycl::context &ctx,
     const sycl::kernel_bundle<sycl::bundle_state::executable> &kernel_bundle) {
-  for_all_types<verify_that_kernel_in_bundle>(
-      kernels_for_link_and_build, log, kernel_bundle, ctx.get_devices().size());
+  for_all_types<verify_that_kernel_in_bundle>(kernels_for_link_and_build, log,
+                                              kernel_bundle, dev_vector);
   if (kernel_bundle.get_context() != ctx) {
     FAIL(log, "Kernel bundle's context does not equal to provided context");
   }
@@ -120,31 +120,11 @@ void run_verification(util::logger &log, sycl::queue &q) {
   auto ctx = q.get_context();
   std::vector<sycl::device> dev_vector{ctx.get_devices()[0]};
 
-  const auto cpu_kernel_id = sycl::get_kernel_id<cpu_kernel>();
-  const auto gpu_kernel_id = sycl::get_kernel_id<gpu_kernel>();
-  const auto accelerator_kernel_id = sycl::get_kernel_id<accelerator_kernel>();
   const auto first_simple_kernel_id =
       sycl::get_kernel_id<first_simple_kernel>();
   const auto second_simple_kernel_id =
       sycl::get_kernel_id<second_simple_kernel>();
-  const auto fp16_kernel_id = sycl::get_kernel_id<fp16_kernel>();
-  const auto fp64_kernel_id = sycl::get_kernel_id<fp64_kernel>();
-  const auto atomic64_kernel_id = sycl::get_kernel_id<atomic64_kernel>();
 
-  auto kb_with_cpu_kernel{
-      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {cpu_kernel_id})};
-  auto kb_with_gpu_kernel{
-      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx, {gpu_kernel_id})};
-  auto kb_with_accelerator_kernel{
-      sycl::get_kernel_bundle<sycl::bundle_state::input>(
-          ctx, {accelerator_kernel_id})};
-  auto kb_with_fp16_kernel{sycl::get_kernel_bundle<sycl::bundle_state::input>(
-      ctx, {fp16_kernel_id})};
-  auto kb_with_fp64_kernel{sycl::get_kernel_bundle<sycl::bundle_state::input>(
-      ctx, {fp64_kernel_id})};
-  auto kb_with_atomic64_kernel{
-      sycl::get_kernel_bundle<sycl::bundle_state::input>(ctx,
-                                                         {atomic64_kernel_id})};
   auto kb_with_first_simple_kernel{
       sycl::get_kernel_bundle<sycl::bundle_state::input>(
           ctx, {first_simple_kernel_id})};
@@ -153,9 +133,6 @@ void run_verification(util::logger &log, sycl::queue &q) {
           ctx, {second_simple_kernel_id})};
 
   std::vector<sycl::kernel_bundle<sycl::bundle_state::input>> kernel_bundles{
-      kb_with_cpu_kernel,          kb_with_gpu_kernel,
-      kb_with_accelerator_kernel,  kb_with_fp16_kernel,
-      kb_with_fp64_kernel,         kb_with_atomic64_kernel,
       kb_with_first_simple_kernel, kb_with_second_simple_kernel};
 
   const sycl::kernel_bundle<sycl::bundle_state::input> all_kernel_bundles{
