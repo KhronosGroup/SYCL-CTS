@@ -97,9 +97,7 @@ class test_buffer_reinterpret {
     sycl::buffer<TIn, dims> a(data, rangeIn);
     auto r = a.template reinterpret<TOut, dims>(rangeOut);
 
-    if (r.byte_size() != (elementsCount * sizeof(TOut))) {
-      FAIL(log, "Reinterpretation failed! The buffers have different size");
-    }
+    CHECK(r.byte_size() == (elementsCount * sizeof(TOut)));
   }
 };
 
@@ -127,21 +125,9 @@ class test_buffer_reinterpret_no_range {
 
     auto buf2 = buf1.template reinterpret<TOut>();
 
-    if (buf2.size() != buf1.size()) {
-      const auto msg = "Reinterpret buffer has wrong count: " +
-                       std::to_string(buf2.size()) +
-                       " != " + std::to_string(buf1.size());
-      FAIL(log, msg);
-    }
-    if (buf2.byte_size() != buf1.byte_size()) {
-      const auto msg = "Reinterpret buffer has wrong size: " +
-                       std::to_string(buf2.byte_size()) +
-                       " != " + std::to_string(buf1.byte_size());
-      FAIL(log, msg);
-    }
-    if (buf2.get_range() != buf1.get_range()) {
-      FAIL(log, "Reinterpret buffer has wrong range");
-    }
+    CHECK(buf2.size() == buf1.size());
+    CHECK(buf2.byte_size() == buf1.byte_size());
+    CHECK(buf2.get_range() == buf1.get_range());
   }
 };
 
@@ -165,21 +151,9 @@ class test_buffer_reinterpret_no_range<TIn, TOut, inputDim, 1> {
 
     auto buf2 = buf1.template reinterpret<TOut, 1>();
 
-    if (buf2.size() != expectedOutputCount) {
-      const auto msg = "Reinterpret buffer has wrong count: " +
-                       std::to_string(buf2.size()) +
-                       " != " + std::to_string(expectedOutputCount);
-      FAIL(log, msg);
-    }
-    if (buf2.byte_size() != buf1.byte_size()) {
-      const auto msg = "Reinterpret buffer has wrong size: " +
-                       std::to_string(buf2.byte_size()) +
-                       " != " + std::to_string(buf1.byte_size());
-      FAIL(log, msg);
-    }
-    if (buf2.get_range() != sycl::range<1>{expectedOutputCount}) {
-      FAIL(log, "Reinterpret buffer has wrong range");
-    }
+    CHECK(buf2.size() == expectedOutputCount);
+    CHECK(buf2.byte_size() == buf1.byte_size());
+    CHECK(buf2.get_range() == sycl::range<1>{expectedOutputCount});
   }
 };
 
@@ -266,22 +240,14 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 
     /* Check that ret_range is the correct size */
     for (int i = 0; i < dims; ++i) {
-      if (ret_range[i] != r[i]) {
-        FAIL(log,
-             "sycl::buffer::get_range does not return "
-             "the correct range size!");
-      }
+      CHECK(ret_range[i] == r[i]);
     }
 
     /* check the buffer returns the correct element count */
     auto count = buf.size();
     check_return_type<size_t>(log, count, "sycl::buffer::size()");
 
-    if (count != size) {
-      FAIL(log,
-           "sycl::buffer::size() does not return "
-           "the correct number of elements");
-    }
+    CHECK(count == size);
 
     /* check the buffer returns the correct element count
        with deprecated get_count */
@@ -289,22 +255,14 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     auto count_depr = buf.get_count();
     check_return_type<size_t>(log, count_depr, "sycl::buffer::get_count()");
 
-    if (count_depr != size) {
-      FAIL(log,
-           "sycl::buffer::get_count() does not return "
-           "the correct number of elements");
-    }
+    CHECK(count_depr == size);
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
 
     /* check the buffer returns the correct byte size */
     auto ret_size = buf.byte_size();
     check_return_type<size_t>(log, ret_size, "sycl::buffer::byte_size()");
 
-    if (ret_size != size * sizeof(T)) {
-      FAIL(log,
-           "sycl::buffer::byte_size() does not return "
-           "the correct size of the buffer");
-    }
+    CHECK(ret_size == size * sizeof(T));
 
     /* check the buffer returns the correct byte size
      with deprecated get_size*/
@@ -312,11 +270,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     auto ret_size_depr = buf.get_size();
     check_return_type<size_t>(log, ret_size_depr, "sycl::buffer::get_size()");
 
-    if (ret_size_depr != size * sizeof(T)) {
-      FAIL(log,
-           "sycl::buffer::get_size() does not return "
-           "the correct size of the buffer");
-    }
+    CHECK(ret_size_depr == size * sizeof(T));
 #endif
 
     auto q = util::get_cts_object::queue();
@@ -396,9 +350,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
       check_return_type<alloc>(log, allocator, "get_allocator()");
 
       auto ptr = allocator.allocate(1);
-      if (ptr == nullptr) {
-        FAIL(log, "get_allocator() returned an invalid allocator ");
-      }
+      CHECK(ptr != nullptr);
       allocator.deallocate(ptr, 1);
     }
 
@@ -411,9 +363,8 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
       auto isSubBuffer = buf_sub.is_sub_buffer();
       auto isOrigSubBuffer = buf.is_sub_buffer();
       check_return_type<bool>(log, isSubBuffer, "is_sub_buffer()");
-      if (!isSubBuffer || isOrigSubBuffer) {
-        FAIL(log, "is_sub_buffer() return a wrong result");
-      }
+      CHECK(isSubBuffer);
+      CHECK_FALSE(isOrigSubBuffer);
     }
 
     /* check buffer properties */
@@ -432,17 +383,13 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           buf.template has_property<sycl::property::buffer::use_mutex>();
       check_return_type<bool>(log, hasUseMutexProperty,
                               "has_property<use_mutex>()");
-      if (!hasUseMutexProperty) {
-        FAIL(log, "has_property<use_mutex> return a wrong result ");
-      }
+      CHECK(hasUseMutexProperty);
 
       auto hasContentBoundProperty = buf.template has_property<
           sycl::property::buffer::context_bound>();
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
-      if (!hasContentBoundProperty) {
-        FAIL(log, "has_property<context_bound> return a wrong result ");
-      }
+      CHECK(hasContentBoundProperty);
 
       /* check get_property() */
 
@@ -520,7 +467,7 @@ template <typename T> class check_buffer_api_for_type {
 
 public:
   void operator()(util::logger &log, const std::string &typeName) {
-    log.note("testing: " + type_name_string<T>::get(typeName));
+    INFO("testing: " + type_name_string<T>::get(typeName));
     check_with_alloc<sycl::buffer_allocator<T>>(log);
     check_with_alloc<std::allocator<T>>(log);
   }
@@ -542,12 +489,12 @@ class check_buffer_linearization {
                               sycl::range<3>{size, size, size});
     // clang-format on
 
-    log.note("testing: sycl::buffer_allocator<size_t>");
+    INFO("testing: sycl::buffer_allocator<size_t>");
     test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log, range1d);
     test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log, range2d);
     test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log, range3d);
 
-    log.note("testing: std::allocator<size_t>");
+    INFO("testing: std::allocator<size_t>");
     test_buffer_linearization<1, std::allocator<size_t>>(log, range1d);
     test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
     test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
@@ -561,8 +508,7 @@ class check_buffer_linearization {
   void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
-    log.note("testing: linearization in " + std::to_string(dims) +
-             " dimensions.");
+    INFO("testing: linearization in " + std::to_string(dims) + " dimensions.");
     auto q = util::get_cts_object::queue();
 
     sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
