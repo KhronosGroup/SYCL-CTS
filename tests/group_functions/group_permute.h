@@ -22,11 +22,6 @@
 
 #include "group_functions_common.h"
 
-/**
- * @brief Provides test for permute values inside the group
- * @tparam D Dimension to use for group instance
- * @tparam T Type for permutted value
- */
 template <int D, typename T>
 class permute_sub_group_kernel;
 

@@ -22,11 +22,6 @@
 
 #include "group_functions_common.h"
 
-/**
- * @brief Provides test for shift (shuffle) values inside the group
- * @tparam D Dimension to use for group instance
- * @tparam T Type for shifted value
- */
 template <int D, typename T>
 class shift_sub_group_kernel;
 
