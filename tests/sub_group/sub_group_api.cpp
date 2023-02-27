@@ -16,6 +16,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//  The test executes kernel function on a big number of work groups using
+//  almost every work items available for work group on particular device. Test
+//  results are checked for all work items in execution range, a buffer is used
+//  to keep test results. The test should check available buffer size on device
+//  to chose legal work group size.
 *******************************************************************************/
 
 #include "../common/common.h"
