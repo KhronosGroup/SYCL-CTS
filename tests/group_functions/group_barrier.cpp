@@ -90,17 +90,20 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   using el_type = int32_t;
   sycl::device device = queue.get_device();
-  
-  uint64_t global_mem_size_in_bytes = device.get_info<sycl::info::device::max_mem_alloc_size>();
-  uint64_t global_mem_size_in_elements = global_mem_size_in_bytes / sizeof(el_type);
 
-  uint64_t local_mem_size_in_bytes = device.get_info<sycl::info::device::local_mem_size>();
-  uint64_t local_mem_size_in_elements = local_mem_size_in_bytes / sizeof(el_type);
+  uint64_t global_mem_size_in_bytes =
+      device.get_info<sycl::info::device::max_mem_alloc_size>();
+  uint64_t global_mem_size_in_elements =
+      global_mem_size_in_bytes / sizeof(el_type);
 
-  uint64_t work_items_limit = std::min(
-      global_mem_size_in_elements, local_mem_size_in_elements);
-  
-  
+  uint64_t local_mem_size_in_bytes =
+      device.get_info<sycl::info::device::local_mem_size>();
+  uint64_t local_mem_size_in_elements =
+      local_mem_size_in_bytes / sizeof(el_type);
+
+  uint64_t work_items_limit =
+      std::min(global_mem_size_in_elements, local_mem_size_in_elements);
+
   sycl::range<D> work_group_range =
       util::work_group_range<D>(queue, work_items_limit);
   size_t work_group_size = work_group_range.size();
