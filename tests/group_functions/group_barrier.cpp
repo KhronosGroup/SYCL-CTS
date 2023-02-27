@@ -23,17 +23,6 @@
 
 #include "group_functions_common.h"
 
-/** Returns maximum int32_t elements which can be allocated in device global or
-    local memory. */
-template <typename DeviceMemoryInfoAspect>
-inline uint64_t max_elements_in_device_memory() {
-  using el_type = int32_t;
-  sycl::device device = sycl_cts::util::get_cts_object::device();
-  uint64_t mem_size_in_bytes = device.get_info<DeviceMemoryInfoAspect>();
-  uint64_t mem_size_in_elements = mem_size_in_bytes / sizeof(el_type);
-  return mem_size_in_elements;
-}
-
 template <int D>
 class test_fence;
 
@@ -99,9 +88,19 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
     }
   }
 
+  using el_type = int32_t;
+  sycl::device device = queue.get_device();
+  
+  uint64_t global_mem_size_in_bytes = device.get_info<sycl::info::device::max_mem_alloc_size>();
+  uint64_t global_mem_size_in_elements = global_mem_size_in_bytes / sizeof(el_type);
+
+  uint64_t local_mem_size_in_bytes = device.get_info<sycl::info::device::local_mem_size>();
+  uint64_t local_mem_size_in_elements = local_mem_size_in_bytes / sizeof(el_type);
+
   uint64_t work_items_limit = std::min(
-      max_elements_in_device_memory<sycl::info::device::max_mem_alloc_size>(),
-      max_elements_in_device_memory<sycl::info::device::local_mem_size>());
+      global_mem_size_in_elements, local_mem_size_in_elements);
+  
+  
   sycl::range<D> work_group_range =
       util::work_group_range<D>(queue, work_items_limit);
   size_t work_group_size = work_group_range.size();
