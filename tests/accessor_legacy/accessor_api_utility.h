@@ -594,9 +594,10 @@ inline void check_acc_return_type(sycl_cts::util::logger& log, returnT returnVal
                                   const std::string& functionName,
                                   const std::string& typeName) {
   if (!std::is_same_v<returnT, expectedT>) {
-    fail_for_accessor<dataT, dims, mode, target, placeholder>(log, typeName,
-        functionName + " has incorrect return type -> " + typeid(expectedT).name() + " "
-            + typeid(returnT).name());
+    fail_for_accessor<dataT, dims, mode, target, placeholder>(
+        log, typeName,
+        functionName + " has incorrect return type -> " +
+            typeid(expectedT).name() + " " + typeid(returnT).name());
   }
 }
 
@@ -734,7 +735,8 @@ T get_zero_dim_buffer_value() {
  *        If false, data will be zero initialized.
  */
 template <typename T>
-void get_buffer_input_data(size_t count, int dims, std::unique_ptr<T[]>& data, bool useIndexes = true) {
+void get_buffer_input_data(size_t count, int dims, std::unique_ptr<T[]>& data,
+                           bool useIndexes = true) {
   data = std::make_unique<T[]>(count);
   if (useIndexes) {
     for (size_t i = 0; i < count; ++i) {

@@ -64,7 +64,8 @@ struct explicit_pointer<T, sycl::target::constant_buffer> {
 */
 template <typename T>
 struct explicit_pointer<T, sycl::target::host_buffer> {
-  using type = std::add_pointer_t<T>;;
+  using type = std::add_pointer_t<T>;
+  ;
 };
 
 /** explicit pointer alias
