@@ -738,8 +738,7 @@ class check_buffer_accessor_api {
     std::unique_ptr<T[]> dataMultiDimSyntax;
     get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexesWrite);
 
-    static constexpr bool isHostBuffer =
-        (target == sycl::target::host_buffer);
+    static constexpr bool isHostBuffer = (target == sycl::target::host_buffer);
 
     auto errors = get_error_data(isHostBuffer ? 2 : 4);
     {
