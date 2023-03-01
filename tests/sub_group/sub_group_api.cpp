@@ -16,6 +16,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//  The test executes kernel function on a big number of work groups using
+//  almost every work items available for work group on particular device. Test
+//  results are checked for all work items in execution range, a buffer is used
+//  to keep test results. The test should check available buffer size on device
+//  to chose legal work group size.
 *******************************************************************************/
 
 #include "../common/common.h"
@@ -54,10 +59,10 @@ static size_t get_idx(size_t id, member_function member_func) {
 }
 
 /**
- * Returns the largest possible size that each dimension of a three dimensional
+ * Returns the largest possible sizes that each dimension of a three dimensional
  * work-group may have such that it is a power of two and
  * smaller or equal to 1024. */
-static size_t get_work_group_size(const sycl::device& device) {
+static std::vector<size_t> get_3d_work_group_sizes(const sycl::device& device) {
 #if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
   const sycl::id<3> max_work_item_sizes =
@@ -68,33 +73,117 @@ static size_t get_work_group_size(const sycl::device& device) {
       "Implementation does not define device.get_info<max_work_item_sizes>. "
       "Using work-group of size (1, 1, 1).");
 #endif
-  const size_t smallest_max_work_item_size =
-      std::min(max_work_item_sizes[0],
-               std::min(max_work_item_sizes[1], max_work_item_sizes[2]));
-  const size_t desired_work_group_size =
-      std::min<size_t>(smallest_max_work_item_size, 1024);
   const size_t max_work_group_size =
       device.get_info<sycl::info::device::max_work_group_size>();
 
-  // calc ilog2(desired_work_group_size), desired_work_group_size is at least 1
-  size_t tmp = desired_work_group_size;
-  size_t desired_work_group_size_exp = 0;
-  while (tmp >>= 1) desired_work_group_size_exp++;
+  std::vector<size_t> desired_work_group_sizes = {
+      std::min<size_t>(max_work_item_sizes[0], 1024),
+      std::min<size_t>(max_work_item_sizes[1], 1024),
+      std::min<size_t>(max_work_item_sizes[2], 1024)};
 
-  size_t size = 1;
-  for (size_t curr_exp = 1; curr_exp < desired_work_group_size_exp;
-       curr_exp++) {
-    const size_t curr_size = static_cast<size_t>(1) << curr_exp;
-    if (curr_size <= desired_work_group_size &&
-        curr_size * curr_size * curr_size <= max_work_group_size) {
-      size = curr_size;
-    } else {
-      break;
+  // calc ilog2(desired_work_group_sizes), desired_work_group_sizes is at least
+  // 1
+  auto ilog2 = [](size_t dim_size) {
+    size_t dim_size_exp = 0;
+    while (dim_size >>= 1) dim_size_exp++;
+    return dim_size_exp;
+  };
+
+  // Initialize sizes of work group dimensions by 1 for first and second
+  // dimensions and by 2^n for third dimension, where n is a maximum exponent
+  // that ensures that the number of work items in the third dimension is less
+  // than the maximum allowed
+  std::vector<size_t> actual_work_group_sizes{
+      1, 1, size_t{1} << ilog2(desired_work_group_sizes[2])};
+
+  // Lambda multiplies current size of chosen dimension (first or second) of
+  // work group by 2 as long as possible Result value of dimension size will be
+  // a power-of-two
+  auto increase_dim_size = [max_work_group_size](std::vector<size_t>& wg_sizes,
+                                                 size_t dim_idx,
+                                                 size_t dim_exp) {
+    if (dim_idx == 0 || dim_idx == 1) {
+      for (size_t curr_exp = 1; curr_exp <= dim_exp; curr_exp++) {
+        // Increase by 2 times until total number of work items in the work
+        // group exceeds maximum allowed number of work items for chosen device
+        // or until dimension size reaches value 2^dim_exp, dim_exp - maximum
+        // exponent value
+        wg_sizes[dim_idx] <<= 1;
+        size_t tot_work_items = wg_sizes[0] * wg_sizes[1] * wg_sizes[2];
+        if (tot_work_items > max_work_group_size) {
+          wg_sizes[dim_idx] >>= 1;
+          break;
+        }
+      }
     }
-  }
+  };
 
-  return size;
+  // Increase the size of the second and then first dimension of work group as
+  // long as possible as an attempt to get asymmetrical work group range
+  increase_dim_size(actual_work_group_sizes, 1,
+                    ilog2(desired_work_group_sizes[1]));
+  increase_dim_size(actual_work_group_sizes, 0,
+                    ilog2(desired_work_group_sizes[0]));
+
+  return actual_work_group_sizes;
 }
+
+/** Returns maximum size of buffer keeping test results that can be allocated
+    on device. */
+inline uint64_t max_device_buf_size() {
+  using buf_el_type = size_t;
+  sycl::device device = sycl_cts::util::get_cts_object::device();
+  uint64_t mem_aloc_size_in_bytes =
+      device.get_info<sycl::info::device::max_mem_alloc_size>();
+  uint64_t max_buf_size_in_elements =
+      mem_aloc_size_in_bytes / sizeof(buf_el_type);
+  return max_buf_size_in_elements;
+}
+
+/** Returns required size for buffer keeping test results. */
+inline size_t result_buf_size(size_t linear_execution_range) {
+  return linear_execution_range * member_function_cnt;
+}
+
+/** Checks that result buffer can't be allocated on device. */
+inline bool result_buffer_cant_be_alloc_on_device(
+    size_t requested_buffer_size) {
+  return requested_buffer_size > max_device_buf_size();
+};
+
+/** Returns global range for given number of work group and work group sizes. */
+inline sycl::range<3> make_global_range(
+    const sycl::range<3>& work_group_num,
+    const std::vector<size_t>& work_group_size_dims) {
+  return work_group_num * sycl::range<3>{work_group_size_dims[0],
+                                         work_group_size_dims[1],
+                                         work_group_size_dims[2]};
+}
+
+/**
+ * Reduces current size of each dimension of a three dimensional work-group to
+ * nearest suitable power-of-two value to ensure test result buffer will be able
+ * to be allocated on device. Returns resulting sizes for each dimension. */
+std::vector<size_t> reduce_work_group_size_to_suitable_power_of_two(
+    const sycl::range<3>& work_group_num,
+    std::vector<size_t> current_work_group_size_dims) {
+  uint64_t max_dev_buf_size = max_device_buf_size();
+  uint64_t requested_res_buffer_size = result_buf_size(
+      make_global_range(work_group_num, current_work_group_size_dims).size());
+  uint32_t iter = 0;
+  // Halve size of each dimension of the work group until result buffer fits
+  // into the available memory on the device, dimension index changes at each
+  // iteration and takes the value 0, 1 or 2 depending on the iteration number
+  // as the remainder of dividing the iteration number by 3
+  while (requested_res_buffer_size > max_dev_buf_size) {
+    size_t& dim_size = current_work_group_size_dims[iter % 3];
+    dim_size = std::max(dim_size >> 1, size_t{1});
+    requested_res_buffer_size = result_buf_size(
+        make_global_range(work_group_num, current_work_group_size_dims).size());
+    iter++;
+  }
+  return current_work_group_size_dims;
+};
 
 std::string format_range(const sycl::range<3>& range) {
   std::ostringstream ss;
@@ -166,12 +255,31 @@ TEST_CASE("sub-group api", "[sub_group]") {
   sycl::queue queue = sycl_cts::util::get_cts_object::queue();
   const sycl::range<3> local_range{2, 3, 5};
   const size_t work_group_count = local_range.size();
-  size_t local_size_dim = get_work_group_size(device);
+  std::vector<size_t> local_size_dims = get_3d_work_group_sizes(device);
   // if possible, reduce size by one to attempt to create incomplete sub-groups
-  if (local_size_dim > 1) {
-    --local_size_dim;
+  std::vector<size_t> reduced_local_size_dims{local_size_dims};
+  auto reduce_if_possible = [](size_t& dim_size) {
+    dim_size = std::max(dim_size - 1, size_t{1});
+  };
+  std::for_each(reduced_local_size_dims.begin(), reduced_local_size_dims.end(),
+                reduce_if_possible);
+  // If requested size for result buffer for current work group dimension size
+  // exceeds maximum memory allocation size on device, reduce initial
+  // local_size_dims to nearest suitable
+  // power-of-two value and if possible, again reduce sizes by one to attempt
+  // to create incomplete sub-groups
+  size_t requested_res_buffer_size = result_buf_size(
+      make_global_range(local_range, reduced_local_size_dims).size());
+  if (result_buffer_cant_be_alloc_on_device(requested_res_buffer_size)) {
+    reduced_local_size_dims = reduce_work_group_size_to_suitable_power_of_two(
+        local_range, local_size_dims);
+    std::for_each(reduced_local_size_dims.begin(),
+                  reduced_local_size_dims.end(), reduce_if_possible);
   }
-  sycl::range<3> local_size{local_size_dim, local_size_dim, local_size_dim};
+
+  sycl::range<3> local_size{reduced_local_size_dims[0],
+                            reduced_local_size_dims[1],
+                            reduced_local_size_dims[2]};
 
   const sycl::nd_range<3> execution_range{local_range * local_size, local_size};
   INFO("number of work-groups: " << format_range(local_range)
@@ -182,7 +290,7 @@ TEST_CASE("sub-group api", "[sub_group]") {
 
   // allocate space for results to be gathered,
   // initialize arrays to special value to ensure a write happens
-  const size_t result_count = linear_execution_range * member_function_cnt;
+  const size_t result_count = result_buf_size(linear_execution_range);
   constexpr size_t empty = std::numeric_limits<size_t>::max();
   std::vector<size_t> results(result_count, empty);
   {

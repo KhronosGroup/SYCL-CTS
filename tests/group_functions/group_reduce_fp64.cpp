@@ -55,6 +55,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
         "Ptr first, Ptr last, BinaryOperation binary_op) over sub-groups. "
         "Skipping the test case.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8348
     WARN(
         "DPCPP does not implement joint_reduce without init. Skipping the test "
         "case.");
@@ -74,6 +75,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault
   //        clang-8: error: spirv-ll-tool command failed due to signal
+  // Link to issue https://github.com/intel/llvm/issues/8348
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -100,6 +102,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8341
     WARN(
         "DPCPP cannot handle cases of different types. "
         "Skipping such test cases.");
@@ -124,6 +127,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
   return;
 #else
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
@@ -179,6 +183,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   // check types to only print warning once
   if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8341
     WARN(
         "DPCPP cannot handle cases of different types. "
         "Skipping such test cases.");
@@ -204,6 +209,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
 #else
   if (queue.get_device().has(sycl::aspect::fp64)) {
     // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+    // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     if constexpr (std::is_same_v<T, U>)

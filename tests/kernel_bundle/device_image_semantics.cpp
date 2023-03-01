@@ -41,8 +41,10 @@ struct storage {
 
 TEST_CASE("device_image common reference semantics", "[device_image]") {
   sycl::context context = sycl_cts::util::get_cts_object::context();
+  sycl::device device = sycl_cts::util::get_cts_object::device();
   sycl::kernel_bundle<sycl::bundle_state::executable> kernel_bundle =
-      sycl::get_kernel_bundle<sycl::bundle_state::executable>(context);
+      sycl::get_kernel_bundle<dummy_kernel, sycl::bundle_state::executable>(
+          context, {device});
   // only accessible as const reference
   const sycl::device_image<sycl::bundle_state::executable>& device_image =
       kernel_bundle.begin()[0];
