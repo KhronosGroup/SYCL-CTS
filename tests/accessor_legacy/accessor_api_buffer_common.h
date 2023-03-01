@@ -60,8 +60,7 @@ class check_buffer_accessor_api_methods {
         "check_buffer_accessor_api_methods", typeName, log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
-    std::unique_ptr<T[]> data;
-    get_buffer_input_data<T>(count, dims, data);
+    auto data = get_buffer_input_data<T>(count, dims);
     buffer_t<T, dims> buffer(data.get(), range);
 
     // Prepare access range and access offset
@@ -409,10 +408,8 @@ class check_buffer_accessor_api {
         "check_buffer_accessor_api::reads", typeName, log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
-    std::unique_ptr<T[]> dataIdSyntax;
-    get_buffer_input_data<T>(count, dims, dataIdSyntax);
-    std::unique_ptr<T[]> dataMultiDimSyntax;
-    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax);
+    auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
+    auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims);
 
     auto errors = get_error_data(2);
     {
@@ -586,10 +583,8 @@ class check_buffer_accessor_api {
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
 
     static constexpr bool useIndexes = false;
-    std::unique_ptr<T[]> dataIdSyntax;
-    get_buffer_input_data<T>(count, dims, dataIdSyntax, useIndexes);
-    std::unique_ptr<T[]> dataMultiDimSyntax;
-    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexes);
+    auto dataIdSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
+    auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims, useIndexes);
 
     {
       buffer_t<T, dims> bufIdSyntax(dataIdSyntax.get(), range);
@@ -733,10 +728,8 @@ class check_buffer_accessor_api {
     // In case of dims == 0, there will be a read from dataIdSyntax
     // and a write to dataMultiDimSyntax
     static constexpr bool useIndexesWrite = (dims > 0);
-    std::unique_ptr<T[]> dataIdSyntax;
-    get_buffer_input_data<T>(count, dims, dataIdSyntax);
-    std::unique_ptr<T[]> dataMultiDimSyntax;
-    get_buffer_input_data<T>(count, dims, dataMultiDimSyntax, useIndexesWrite);
+    auto dataIdSyntax = get_buffer_input_data<T>(count, dims);
+    auto dataMultiDimSyntax = get_buffer_input_data<T>(count, dims);
 
     static constexpr bool isHostBuffer = (target == sycl::target::host_buffer);
 

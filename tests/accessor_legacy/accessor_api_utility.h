@@ -728,16 +728,15 @@ T get_zero_dim_buffer_value() {
  * @tparam T Underlying type of the buffer
  * @param count Number of elements of type T to allocate
  * @param dims Number of accessor dimensions
- * @param data Pointer to uninitialized array
  * @param useIndexes Whether to initialize data with indexes.
  *        If (dims == 0), the data will be initialized using the common value
  *        for testing a zero-dim accessor.
  *        If false, data will be zero initialized.
+ * @return unique_ptr to initialized array
  */
 template <typename T>
-void get_buffer_input_data(size_t count, int dims, std::unique_ptr<T[]>& data,
-                           bool useIndexes = true) {
-  data = std::make_unique<T[]>(count);
+std::unique_ptr<T[]> get_buffer_input_data(size_t count, int dims, bool useIndexes = true) {
+  auto data = std::make_unique<T[]>(count);
   if (useIndexes) {
     for (size_t i = 0; i < count; ++i) {
       data[i] = T(i);
@@ -746,24 +745,21 @@ void get_buffer_input_data(size_t count, int dims, std::unique_ptr<T[]>& data,
       data[0] = get_zero_dim_buffer_value<T>();
     }
   } else {
-    for (size_t i = 0; i < count; ++i) {
-      data[i] = 0;
-    }
+    std::fill(data.get(), data.get() + count, 0);
   }
+  return data;
 }
 
 /**
  * @brief Retrieves the input data for a SYCL buffer that will be used
  *        for storing error in a kernel
  * @param count Number of error categories
- * @return Pointer to array
+ * @return unique_ptr to initialized array
  */
 std::unique_ptr<int[]> get_error_data(size_t count) {
   static constexpr int dims = 1;
   static constexpr bool useIndexes = false;
-  std::unique_ptr<int[]> errors;
-  get_buffer_input_data<int>(count, dims, errors, useIndexes);
-  return errors;
+  return get_buffer_input_data<int>(count, dims, useIndexes);
 }
 
 }  // namespace
