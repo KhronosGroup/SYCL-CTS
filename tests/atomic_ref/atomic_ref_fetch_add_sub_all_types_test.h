@@ -71,13 +71,14 @@ class atomic_ref_fetch_add_sub_all_types_test
   }
 
  public:
-  atomic_ref_fetch_add_sub_all_types_test(sycl::queue& q) : base(q) {
+  atomic_ref_fetch_add_sub_all_types_test() {
     if constexpr (std::is_floating_point_v<T>)
       operand_val = 1.25;
     else
       operand_val = 1;
   }
 
+ private:
   void run_on_device(const std::string& type_name,
                      const std::string& memory_order,
                      const std::string& memory_scope,
@@ -141,6 +142,23 @@ class atomic_ref_fetch_add_sub_all_types_test
   }
 
   bool require_combination_for_full_conformance() { return true; }
+};
+
+template <typename T>
+struct run_fetch_add_sub_all_types_test {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders = get_memory_orders();
+    const auto memory_scopes = get_memory_scopes();
+    const auto address_spaces = get_address_spaces();
+
+    for_all_combinations<atomic_ref_fetch_add_sub_all_types_test, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
+
+    std::string type_name_for_pointer_types = type_name + "*";
+    for_all_combinations<atomic_ref_fetch_add_sub_all_types_test, T*>(
+        memory_orders, memory_scopes, address_spaces,
+        type_name_for_pointer_types);
+  }
 };
 
 }  // namespace atomic_ref::tests::api

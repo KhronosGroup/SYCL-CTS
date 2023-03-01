@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref operator^=()/operator|=()/operator&=()
-methods
+//  Provides tests for sycl::atomic_ref
+//  operator^=()/operator|=()/operator&=() methods
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_BITWISE_OP_TEST_H
@@ -31,7 +31,7 @@ template <typename T, typename MemoryOrderT, typename MemoryScopeT,
 class atomic_ref_bitwise_op_test
     : public atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT> {
   using base = atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT>;
-  using base::atomic_ref_test;
+
   void check_test_result_buffer(std::array<bool, 9>& result,
                                 const std::string& description,
                                 std::string addr_space) {
@@ -82,7 +82,6 @@ class atomic_ref_bitwise_op_test
     }
   }
 
- public:
   void run_on_device(const std::string& type_name,
                      const std::string& memory_order,
                      const std::string& memory_scope,
@@ -145,6 +144,20 @@ class atomic_ref_bitwise_op_test
   }
 
   bool require_combination_for_full_conformance() { return false; }
+};
+
+template <typename T>
+struct run_bitwise_op_test {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders = get_memory_orders();
+    const auto memory_scopes = get_memory_scopes();
+    const auto address_spaces = get_address_spaces();
+
+    if constexpr (std::is_integral_v<T>) {
+      for_all_combinations<atomic_ref_bitwise_op_test, T>(
+          memory_orders, memory_scopes, address_spaces, type_name);
+    }
+  }
 };
 
 }  // namespace atomic_ref::tests::api

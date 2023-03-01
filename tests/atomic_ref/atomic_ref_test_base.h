@@ -30,6 +30,13 @@ template <typename T, typename MemoryOrderT, typename MemoryScopeT,
           typename AddressSpaceT>
 class atomic_ref_test {
  public:
+  static constexpr sycl::memory_order memory_orders[] = {
+      sycl::memory_order::relaxed, sycl::memory_order::acq_rel,
+      sycl::memory_order::seq_cst};
+  static constexpr sycl::memory_scope memory_scopes[] = {
+      sycl::memory_scope::work_item, sycl::memory_scope::sub_group,
+      sycl::memory_scope::work_group, sycl::memory_scope::device,
+      sycl::memory_scope::system};
   static constexpr sycl::memory_order memory_order_for_atomic_ref_obj =
       MemoryOrderT::value;
   static constexpr sycl::memory_scope memory_scope_for_atomic_ref_obj =
@@ -47,7 +54,7 @@ class atomic_ref_test {
   ReferencedType host_data_chgd;
   T host_val_expd;
   T host_val_chgd;
-  sycl::queue& queue;
+  sycl::queue queue;
 
   static constexpr bool address_space_is_not_local_space() {
     return address_space_for_atomic_ref_obj !=
@@ -120,12 +127,7 @@ class atomic_ref_test {
     }
   }
 
- public:
-  using sptr = std::shared_ptr<atomic_ref_test>;
-
-  atomic_ref_test(sycl::queue& q) : queue(q) { reset_host_values(); }
-  virtual ~atomic_ref_test() = default;
-
+ private:
   virtual void run_on_device(
       const std::string& type_name, const std::string& memory_order,
       const std::string& memory_scope, const std::string& address_space,
@@ -133,21 +135,45 @@ class atomic_ref_test {
       sycl::memory_scope memory_scope_val =
           memory_scope_for_atomic_ref_obj) = 0;
 
-  void run_test(
-      const std::string& type_name, const std::string& memory_order,
-      const std::string& memory_scope, const std::string& address_space,
-      sycl::memory_order memory_order_val = memory_order_for_atomic_ref_obj,
-      sycl::memory_scope memory_scope_val = memory_scope_for_atomic_ref_obj) {
-    if (memory_order_and_scope_are_not_supported(queue, memory_order_val,
-                                                 memory_scope_val)) {
-      return;
-    }
-
-    run_on_device(type_name, memory_order, memory_scope, address_space,
-                  memory_order_val, memory_scope_val);
-  }
-
   virtual bool require_combination_for_full_conformance() = 0;
+
+ public:
+  using sptr = std::shared_ptr<atomic_ref_test>;
+
+  atomic_ref_test() : queue(util::get_cts_object::queue()) {
+    reset_host_values();
+  }
+  virtual ~atomic_ref_test() = default;
+
+  void operator()(const std::string& type_name, const std::string& memory_order,
+                  const std::string& memory_scope,
+                  const std::string& address_space) {
+    if (memory_order_and_scope_are_supported(queue,
+                                             memory_order_for_atomic_ref_obj,
+                                             memory_scope_for_atomic_ref_obj)) {
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+      if (require_combination_for_full_conformance()) {
+        for (auto order : memory_orders) {
+          for (auto scope : memory_scopes) {
+            if (memory_order_and_scope_are_not_supported(queue, order, scope)) {
+              continue;
+            }
+            run_on_device(type_name, memory_order, memory_scope, address_space,
+                          order, scope);
+          }
+        }
+      } else {
+        run_on_device(type_name, memory_order, memory_scope, address_space,
+                      memory_order_for_atomic_ref_obj,
+                      memory_scope_for_atomic_ref_obj);
+      }
+#else
+      run_on_device(type_name, memory_order, memory_scope, address_space,
+                    memory_order_for_atomic_ref_obj,
+                    memory_scope_for_atomic_ref_obj);
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+    }
+  }
 };
 
 }  // namespace atomic_ref::tests::api

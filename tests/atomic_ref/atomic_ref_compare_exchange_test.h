@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Provides tests for sycl::atomic_ref
-compare_exchange_strong()/compare_exchange_weak() methods
+//  compare_exchange_strong()/compare_exchange_weak() methods
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_COMPARE_EXCHANGE_TEST_H
@@ -29,8 +29,8 @@ namespace atomic_ref::tests::api {
 struct strong;
 struct weak;
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
 class atomic_ref_compare_exchange_test
     : public atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT> {
   using base = atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT>;
@@ -40,7 +40,7 @@ class atomic_ref_compare_exchange_test
   class kernel_to_check_op_with_eq_values {
    private:
     bool exec_cmpr_exch(AtomicRT& a_r, T& expected, T desired) const {
-      if constexpr (std::is_same_v<exchange_type, weak>)
+      if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          failure_order, scope);
       else
@@ -49,7 +49,7 @@ class atomic_ref_compare_exchange_test
     }
 
     bool exec_cmpr_exch_ovrld(AtomicRT& a_r, T& expected, T desired) const {
-      if constexpr (std::is_same_v<exchange_type, weak>)
+      if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);
       else
@@ -80,7 +80,7 @@ class atomic_ref_compare_exchange_test
     template <typename res_acc_type>
     void check_cmpr_exch(res_acc_type result_accessor, bool success,
                          T referenced_val, T desired, int check_number) const {
-      if constexpr (std::is_same_v<exchange_type, weak>)
+      if constexpr (std::is_same_v<ExchangeType, weak>)
         check_cmpr_exch_weak(result_accessor, success, referenced_val, desired,
                              check_number);
       else
@@ -124,7 +124,7 @@ class atomic_ref_compare_exchange_test
   class kernel_to_check_op_with_uneq_values {
    private:
     bool exec_cmpr_exch(AtomicRT& a_r, T& expected, T desired) const {
-      if constexpr (std::is_same_v<exchange_type, weak>)
+      if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          failure_order, scope);
       else
@@ -133,7 +133,7 @@ class atomic_ref_compare_exchange_test
     }
 
     bool exec_cmpr_exch_ovrld(AtomicRT& a_r, T& expected, T desired) const {
-      if constexpr (std::is_same_v<exchange_type, weak>)
+      if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);
       else
@@ -189,8 +189,9 @@ class atomic_ref_compare_exchange_test
   void check_comp_exch_result_for_uneq_vals(std::array<bool, 6>& result);
 
  public:
-  atomic_ref_compare_exchange_test(sycl::queue& q);
+  atomic_ref_compare_exchange_test();
 
+ private:
   void run_on_device(const std::string& type_name,
                      const std::string& memory_order,
                      const std::string& memory_scope,
@@ -203,24 +204,23 @@ class atomic_ref_compare_exchange_test
   bool require_combination_for_full_conformance() { return true; }
 };
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
 atomic_ref_compare_exchange_test<
-    T, MemoryOrderT, MemoryScopeT, AddressSpaceT,
-    exchange_type>::atomic_ref_compare_exchange_test(sycl::queue& q)
-    : base(q) {
-  if constexpr (std::is_same_v<exchange_type, weak>) {
+    ExchangeType, T, MemoryOrderT, MemoryScopeT,
+    AddressSpaceT>::atomic_ref_compare_exchange_test() {
+  if constexpr (std::is_same_v<ExchangeType, weak>) {
     checked_method_name = "Check compare_exchange_weak() method";
   } else {
     checked_method_name = "Check compare_exchange_strong() method";
   }
 }
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
 void atomic_ref_compare_exchange_test<
-    T, MemoryOrderT, MemoryScopeT, AddressSpaceT,
-    exchange_type>::run_on_device(const std::string& type_name,
+    ExchangeType, T, MemoryOrderT, MemoryScopeT,
+    AddressSpaceT>::run_on_device(const std::string& type_name,
                                   const std::string& memory_order,
                                   const std::string& memory_scope,
                                   const std::string& address_space,
@@ -238,11 +238,11 @@ void atomic_ref_compare_exchange_test<
   check_for_unequal_values_on_device();
 }
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
 void atomic_ref_compare_exchange_test<
-    T, MemoryOrderT, MemoryScopeT, AddressSpaceT,
-    exchange_type>::check_for_equal_values_on_device() {
+    ExchangeType, T, MemoryOrderT, MemoryScopeT,
+    AddressSpaceT>::check_for_equal_values_on_device() {
   kernel_to_check_op_with_eq_values comp_exch_test{
       memory_order_read_write, memory_order_read, memory_scope_val};
 
@@ -259,10 +259,10 @@ void atomic_ref_compare_exchange_test<
   }
 }
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
-void atomic_ref_compare_exchange_test<T, MemoryOrderT, MemoryScopeT,
-                                      AddressSpaceT, exchange_type>::
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
+void atomic_ref_compare_exchange_test<ExchangeType, T, MemoryOrderT,
+                                      MemoryScopeT, AddressSpaceT>::
     check_comp_exch_result_for_eq_vals(std::array<bool, 4>& result) {
   {
     INFO(test_description + "\ncompare_exchange call failed");
@@ -272,7 +272,7 @@ void atomic_ref_compare_exchange_test<T, MemoryOrderT, MemoryScopeT,
     INFO(test_description + "\ncompare_exchange_overloaded call failed");
     CHECK(result[1]);
   }
-  if constexpr (std::is_same_v<exchange_type, strong>) {
+  if constexpr (std::is_same_v<ExchangeType, strong>) {
     {
       INFO(test_description +
            "\nError, referenced value is not updated after compare_exchange "
@@ -289,11 +289,11 @@ void atomic_ref_compare_exchange_test<T, MemoryOrderT, MemoryScopeT,
   }
 }
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
 void atomic_ref_compare_exchange_test<
-    T, MemoryOrderT, MemoryScopeT, AddressSpaceT,
-    exchange_type>::check_for_unequal_values_on_device() {
+    ExchangeType, T, MemoryOrderT, MemoryScopeT,
+    AddressSpaceT>::check_for_unequal_values_on_device() {
   kernel_to_check_op_with_uneq_values comp_exch_test{
       memory_order_read_write, memory_order_read, memory_scope_val};
 
@@ -310,10 +310,10 @@ void atomic_ref_compare_exchange_test<
   }
 }
 
-template <typename T, typename MemoryOrderT, typename MemoryScopeT,
-          typename AddressSpaceT, typename exchange_type>
-void atomic_ref_compare_exchange_test<T, MemoryOrderT, MemoryScopeT,
-                                      AddressSpaceT, exchange_type>::
+template <typename ExchangeType, typename T, typename MemoryOrderT,
+          typename MemoryScopeT, typename AddressSpaceT>
+void atomic_ref_compare_exchange_test<ExchangeType, T, MemoryOrderT,
+                                      MemoryScopeT, AddressSpaceT>::
     check_comp_exch_result_for_uneq_vals(std::array<bool, 6>& result) {
   {
     INFO(test_description +
@@ -349,6 +349,30 @@ void atomic_ref_compare_exchange_test<T, MemoryOrderT, MemoryScopeT,
     CHECK(result[5]);
   }
 }
+
+template <typename T>
+struct run_compare_exchange_test {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders = get_memory_orders();
+    const auto memory_scopes = get_memory_scopes();
+    const auto address_spaces = get_address_spaces();
+
+    for_all_combinations<atomic_ref_compare_exchange_test, weak, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
+
+    std::string type_name_for_pointer_types = type_name + "*";
+    for_all_combinations<atomic_ref_compare_exchange_test, weak, T*>(
+        memory_orders, memory_scopes, address_spaces,
+        type_name_for_pointer_types);
+
+    for_all_combinations<atomic_ref_compare_exchange_test, strong, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
+
+    for_all_combinations<atomic_ref_compare_exchange_test, strong, T*>(
+        memory_orders, memory_scopes, address_spaces,
+        type_name_for_pointer_types);
+  }
+};
 
 }  // namespace atomic_ref::tests::api
 
