@@ -32,6 +32,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   // FIXME: hipSYCL and DPCPP have no implemented
   //  atomic_fence_scope_capabilities query
+  //  Issue to link https://github.com/intel/llvm/issues/8323
 #if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
       defined(SYCL_CTS_COMPILING_WITH_DPCPP))
   std::vector<sycl::memory_scope> supported_barriers =

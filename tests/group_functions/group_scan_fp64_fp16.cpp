@@ -55,6 +55,7 @@ TEST_CASE("Group and sub-group joint scan functions",
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for InPtr and OutPtr. "
       "Skipping the test.");
@@ -65,6 +66,7 @@ TEST_CASE("Group and sub-group joint scan functions",
 
   // FIXME: ComputeCpp does not implement joint scan and half type
   // FIXME: hipSYCL and DPCPP cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_DPCPP) ||   \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -95,6 +97,7 @@ TEST_CASE("Group and sub-group joint scan functions with init",
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T, *InPtr and "
       "*OutPtr. Skipping the test.");
@@ -105,6 +108,7 @@ TEST_CASE("Group and sub-group joint scan functions with init",
 
   // FIXME: ComputeCpp does not implement joint scan and half type
   // FIXME: hipSYCL and DPCPP cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_DPCPP) ||   \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -131,6 +135,7 @@ TEST_CASE("Group and sub-group scan functions with init",
       "hipSYCL has wrong arguments order in inclusive_scan_over_group: init "
       "and op are interchanged.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T and V. Skipping the "
       "test.");
@@ -143,6 +148,7 @@ TEST_CASE("Group and sub-group scan functions with init",
 
   // FIXME: ComputeCpp has no half
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+  // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;

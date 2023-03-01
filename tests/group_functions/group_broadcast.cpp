@@ -21,6 +21,7 @@
 #include "group_broadcast.h"
 
 // FIXME: DPCPP does not implement group_broadcast for sycl::vec
+// Link to issue https://github.com/intel/llvm/issues/8349
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
 using BroadcastTypes =
     concatenation<FundamentalTypes, std::tuple<bool, sycl::marray<float, 5>,
@@ -48,6 +49,7 @@ TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8349
     WARN(
         "DPCPP does not implement group_broadcast for vec types. "
         "Skipping those test cases.");
@@ -81,6 +83,7 @@ TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // Link to issue https://github.com/intel/llvm/issues/8349
     WARN(
         "DPCPP does not implement group_broadcast for vec types. "
         "Skipping those test cases.");

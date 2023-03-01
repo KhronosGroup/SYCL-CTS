@@ -24,26 +24,20 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group permute", "[group_func][fp16][dim]",
                        ((int D), D), 1, 2, 3) {
   // check dimensions to only print warning once
   if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    WARN(
-        "DPCPP does not implement permute functions. "
-        "Skipping the test.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement permute functions. "
         "Skipping the test.");
 #endif
   }
 
-  // FIXME: DPCPP and ComputeCpp do not implement permute functions
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp do not implement permute functions
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    permute_group<D, sycl::half>(queue);
     permute_sub_group<D, sycl::half>(queue);
   } else {
     WARN("Device does not support half precision floating point operations.");
