@@ -16,7 +16,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref operator=() method
+//  Provides tests for sycl::atomic_ref::operator=() method
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_ASSIGN_OP_TEST_H
@@ -30,9 +30,7 @@ template <typename T, typename MemoryOrderT, typename MemoryScopeT,
 struct atomic_ref_assign_op_test
     : public atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT> {
   using base = atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT>;
-  using base::atomic_ref_test;
 
- public:
   void run_on_device(const std::string& type_name,
                      const std::string& memory_order,
                      const std::string& memory_scope,
@@ -100,6 +98,23 @@ struct atomic_ref_assign_op_test
   }
 
   bool require_combination_for_full_conformance() { return false; }
+};
+
+template <typename T>
+struct run_assign_op_test {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders = get_memory_orders();
+    const auto memory_scopes = get_memory_scopes();
+    const auto address_spaces = get_address_spaces();
+
+    for_all_combinations<atomic_ref_assign_op_test, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
+
+    std::string type_name_for_pointer_types = type_name + "*";
+    for_all_combinations<atomic_ref_assign_op_test, T*>(
+        memory_orders, memory_scopes, address_spaces,
+        type_name_for_pointer_types);
+  }
 };
 
 }  // namespace atomic_ref::tests::api

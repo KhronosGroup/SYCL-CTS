@@ -99,7 +99,7 @@ class atomic_ref_fetch_min_max_test
   }
 
  public:
-  atomic_ref_fetch_min_max_test(sycl::queue& q) : base(q) {
+  atomic_ref_fetch_min_max_test() {
     if constexpr (std::is_floating_point_v<T>) {
       big_value = this->host_val_expd + 1.25;
       small_value = this->host_val_expd - 1.25;
@@ -109,6 +109,7 @@ class atomic_ref_fetch_min_max_test
     }
   }
 
+ private:
   bool require_combination_for_full_conformance() { return true; }
 
   void run_on_device(const std::string& type_name,
@@ -194,6 +195,18 @@ class atomic_ref_fetch_min_max_test
       this->queue_submit_local_scope(result, fetch_min_max_test);
       check_test_result_buffer(result, description, "local");
     }
+  }
+};
+
+template <typename T>
+struct run_fetch_min_max_test {
+  void operator()(const std::string& type_name) {
+    const auto memory_orders = get_memory_orders();
+    const auto memory_scopes = get_memory_scopes();
+    const auto address_spaces = get_address_spaces();
+
+    for_all_combinations<atomic_ref_fetch_min_max_test, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
   }
 };
 
