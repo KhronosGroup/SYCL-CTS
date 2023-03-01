@@ -735,8 +735,7 @@ T get_zero_dim_buffer_value() {
  * @return unique_ptr to initialized array
  */
 template <typename T>
-std::unique_ptr<T[]> get_buffer_input_data(size_t count, int dims,
-                                           bool useIndexes = true) {
+std::unique_ptr<T[]> get_buffer_input_data(size_t count, int dims, bool useIndexes = true) {
   auto data = std::make_unique<T[]>(count);
   if (useIndexes) {
     for (size_t i = 0; i < count; ++i) {
