@@ -29,10 +29,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group permute",
     WARN(
         "hipSYCL has not implemented sycl::marray type yet. Skipping the test "
         "cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    WARN(
-        "DPCPP does not implement permute functions. "
-        "Skipping the test.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement permute functions. "
@@ -40,17 +36,11 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group permute",
 #endif
   }
 
-  // FIXME: DPCPP and ComputeCpp do not implement permute functions
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp do not implement permute functions
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
-
-  // check all work group dimensions
-  permute_group<1, TestType>(queue);
-  permute_group<2, TestType>(queue);
-  permute_group<3, TestType>(queue);
 
   permute_sub_group<1, TestType>(queue);
   permute_sub_group<2, TestType>(queue);

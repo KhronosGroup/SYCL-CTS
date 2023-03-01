@@ -52,6 +52,7 @@ TEST_CASE("Group and sub-group joint scan functions",
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for InPtr and OutPtr. "
       "Skipping such test cases.");
@@ -66,6 +67,7 @@ TEST_CASE("Group and sub-group joint scan functions",
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: hipSYCL and DPCPP cannot handle cases of different types
+    // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     for_all_combinations<invoke_joint_scan_group_same_type>(Dims, HalfType{},
@@ -91,6 +93,7 @@ TEST_CASE("Group and sub-group joint scan functions with init",
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T, *InPtr and "
       "*OutPtr. Skipping such test cases.");
@@ -105,6 +108,7 @@ TEST_CASE("Group and sub-group joint scan functions with init",
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: hipSYCL and DPCPP cannot handle cases of different types
+    // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     for_all_combinations<invoke_init_joint_scan_group_same_type>(
@@ -140,6 +144,7 @@ TEST_CASE("Group and sub-group scan functions with init",
       "hipSYCL has wrong arguments order in inclusive_scan_over_group: init "
       "and op are interchanged.");
 #elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+  // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T and V. Skipping such "
       "test cases.");
@@ -159,6 +164,7 @@ TEST_CASE("Group and sub-group scan functions with init",
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
+    // Link to issue https://github.com/intel/llvm/issues/8341
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     for_all_combinations<invoke_init_scan_over_group_same_type>(
