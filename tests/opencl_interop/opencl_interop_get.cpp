@@ -60,14 +60,13 @@ class TEST_NAME :
             "backend types");
         return;
       }
-      cts_selector ctsSelector;
-      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsContext = util::get_cts_object::context(cts_selector);
       const auto ctsDevice = ctsContext.get_devices()[0];
 
       /** check get_native() for platform
        */
       {
-        auto platform = util::get_cts_object::platform(ctsSelector);
+        auto platform = util::get_cts_object::platform(cts_selector);
         auto interopPlatformID =
             sycl::get_native<sycl::backend::opencl>(platform);
         check_return_type<cl_platform_id>(log, interopPlatformID,
@@ -83,7 +82,7 @@ class TEST_NAME :
       /** check get_native() for device
        */
       {
-        auto device = util::get_cts_object::device(ctsSelector);
+        auto device = util::get_cts_object::device(cts_selector);
         auto interopDeviceID = sycl::get_native<sycl::backend::opencl>(device);
         check_return_type<cl_device_id>(log, interopDeviceID,
                                         "get_native(device)");
@@ -96,7 +95,7 @@ class TEST_NAME :
       /** check get_native() for context
        */
       {
-        auto context = util::get_cts_object::context(ctsSelector);
+        auto context = util::get_cts_object::context(cts_selector);
         auto interopContext = sycl::get_native<sycl::backend::opencl>(context);
         check_return_type<cl_context>(log, interopContext,
                                       "get_native(context)");
@@ -109,7 +108,7 @@ class TEST_NAME :
       /** check get_native() for queue
        */
       {
-        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto queue = util::get_cts_object::queue(cts_selector);
         auto interopQueue = sycl::get_native<sycl::backend::opencl>(queue);
         check_return_type<cl_command_queue>(log, interopQueue,
                                             "get_native(queue)");
@@ -124,7 +123,7 @@ class TEST_NAME :
       /** check get_native() for kernel_bundle
        */
       {
-        if (!util::get_cts_object::queue(ctsSelector)
+        if (!util::get_cts_object::queue(cts_selector)
                  .get_device()
                  .get_info<sycl::info::device::is_compiler_available>()) {
           log.note("online compiler not available -- skipping check");
@@ -197,7 +196,7 @@ class TEST_NAME :
       /** check get_native() for event
        */
       {
-        auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+        auto ctsQueue = util::get_cts_object::queue(cts_selector);
 
         sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
           cgh.single_task<class event_kernel>([]() {});

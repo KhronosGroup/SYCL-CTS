@@ -61,8 +61,7 @@ class TEST_NAME :
         return;
       }
 
-      cts_selector ctsSelector;
-      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsContext = util::get_cts_object::context(cts_selector);
       const auto ctsDevice = ctsContext.get_devices()[0];
 
 
@@ -254,7 +253,7 @@ class TEST_NAME :
         int data[size] = {0};
         cl_int error = CL_SUCCESS;
 
-        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         cl_mem clBuffer = clCreateBuffer(
             sycl::get_native<sycl::backend::opencl>(queue.get_context()),
@@ -317,7 +316,7 @@ class TEST_NAME :
         int data[size] = {0};
         cl_int error = CL_SUCCESS;
 
-        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         // create an event to wait for
         sycl::event event = queue.submit([](sycl::handler &cgh) {

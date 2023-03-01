@@ -51,8 +51,8 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL device
   */
-  template <class DeviceSelector = cts_selector>
-  static sycl::device device(const DeviceSelector &selector = cts_selector()) {
+  template <class DeviceSelector = decltype(cts_selector)>
+  static sycl::device device(const DeviceSelector &selector = cts_selector) {
     return sycl::device(selector);
   }
 
@@ -62,9 +62,9 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL platform
   */
-  template <class DeviceSelector = cts_selector>
+  template <class DeviceSelector = decltype(cts_selector)>
   static sycl::platform platform(
-      const DeviceSelector &selector = cts_selector()) {
+      const DeviceSelector &selector = cts_selector) {
     return sycl::platform(selector);
   }
 
@@ -74,8 +74,8 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL queue
   */
-  template <class DeviceSelector = cts_selector>
-  static sycl::queue queue(const DeviceSelector &selector = cts_selector()) {
+  template <class DeviceSelector = decltype(cts_selector)>
+  static sycl::queue queue(DeviceSelector selector = cts_selector) {
     static cts_async_handler asyncHandler;
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
     return sycl::queue(selector, asyncHandler, sycl::property_list{});
@@ -91,9 +91,8 @@ struct get_cts_object {
     selector by default.
     @return Default SYCL context
   */
-  template <class DeviceSelector = cts_selector>
-  static sycl::context context(
-      const DeviceSelector &selector = cts_selector()) {
+  template <class DeviceSelector = decltype(cts_selector)>
+  static sycl::context context(const DeviceSelector &selector = cts_selector) {
     static cts_async_handler asyncHandler;
     return sycl::context(sycl::device(selector), asyncHandler);
   }

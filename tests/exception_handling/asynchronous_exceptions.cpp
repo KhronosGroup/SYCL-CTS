@@ -139,8 +139,7 @@ class TEST_NAME : public util::test_base {
             }
           };
 
-      cts_selector selector;
-      sycl::queue q(selector, asyncHandlerLambda);
+      sycl::queue q(cts_selector, asyncHandlerLambda);
 
       q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME>([=]() {});
@@ -156,8 +155,7 @@ class TEST_NAME : public util::test_base {
     {
       async_handler_functor asyncHandlerFunctor;
 
-      cts_selector selector;
-      sycl::queue q(selector, asyncHandlerFunctor);
+      sycl::queue q(cts_selector, asyncHandlerFunctor);
 
       q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME_2>([=]() {});
@@ -171,8 +169,7 @@ class TEST_NAME : public util::test_base {
 
     /*test function async handler*/
     {
-      cts_selector selector;
-      sycl::queue q(selector, async_handler_function);
+      sycl::queue q(cts_selector, async_handler_function);
 
       q.submit([&](sycl::handler &cgh) {
         cgh.single_task<class TEST_NAME_3>([=]() {});

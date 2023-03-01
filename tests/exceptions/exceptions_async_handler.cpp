@@ -119,8 +119,7 @@ TEST_CASE("Priorities of async handlers", "[exception]") {
   context_async_handler::exceptions_handled = 0;
   queue_async_handler qHandler;
   context_async_handler cHandler;
-  cts_selector selector;
-  auto device = util::get_cts_object::device(selector);
+  auto device = util::get_cts_object::device(cts_selector);
   sycl::context context(device, cHandler);
 
   SECTION("Сheck that queue's handler is used first") {

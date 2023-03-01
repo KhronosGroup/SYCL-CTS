@@ -66,14 +66,13 @@ class TEST_NAME :
             "backend types");
         return;
       }
-      cts_selector ctsSelector;
-      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsContext = util::get_cts_object::context(cts_selector);
 
       {
         const size_t bufferSize = 32;
         int bufferData[bufferSize] = {0};
 
-        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto queue = util::get_cts_object::queue(cts_selector);
         auto context = queue.get_context();
         auto device = queue.get_device();
 

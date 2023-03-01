@@ -28,42 +28,32 @@
 
 #include <regex>
 
-/** test suite specific device selector
+namespace {
+
+/** device selection operator
+ *  return <  0  : device will never be selected
+ *  return >= 0  : positive device rating
  */
-class cts_selector {
- public:
-  /** Returns true if the default platform of the selector is host.
-   * @return boolean specifying whether the default platform is host. */
-  bool is_host() const {
-    sycl::device device(*this);
-    return device.get_info<sycl::info::device::device_type>() ==
-           sycl::info::device_type::host;
+int cts_selector(const sycl::device& dev) {
+  using namespace sycl_cts;
+  using namespace sycl_cts::util;
+
+  auto& device_regex = get<device_manager>().get_device_regex();
+
+  if (!device_regex.has_value()) {
+    return sycl::default_selector_v(dev);
   }
 
-  /** device selection operator
-   *  return <  0  : device will never be selected
-   *  return >= 0  : positive device rating
-   */
-  int operator()(const sycl::device& dev) const {
-    using namespace sycl_cts;
-    using namespace sycl_cts::util;
+  const auto platform_name =
+      dev.get_platform().get_info<sycl::info::platform::name>();
+  const auto device_name = dev.get_info<sycl::info::device::name>();
 
-    auto& device_regex = get<device_manager>().get_device_regex();
-
-    if (!device_regex.has_value()) {
-      return sycl::default_selector_v(dev);
-    }
-
-    const auto platform_name =
-        dev.get_platform().get_info<sycl::info::platform::name>();
-    const auto device_name = dev.get_info<sycl::info::device::name>();
-
-    if (std::regex_search(platform_name + " / " + device_name, *device_regex)) {
-      return 1000;
-    }
-
-    return -1;
+  if (std::regex_search(platform_name + " / " + device_name, *device_regex)) {
+    return 1000;
   }
-};
 
+  return -1;
+}
+
+}  // namespace
 #endif  // __SYCLCTS_TESTS_COMMON_CTS_SELECTOR_H

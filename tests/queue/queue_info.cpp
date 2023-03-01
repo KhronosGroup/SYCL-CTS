@@ -46,8 +46,7 @@ class TEST_NAME : public util::test_base {
       /** check get_info parameters
        */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
         check_get_info_param<sycl::info::queue::context, sycl::context>(log,
                                                                         queue);
         check_get_info_param<sycl::info::queue::device, sycl::device>(log,

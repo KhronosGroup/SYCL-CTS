@@ -161,12 +161,11 @@ class Multiplier {
 
 template <int dim> void check_dim(util::logger &log) {
   {
-      cts_selector sel;
       {
         Adder data[inputSize];
         for (int i = 0; i < inputSize; i++) data[i] = Adder(2);
 
-        Adder result = reduce<Adder, dim>(data, &sel);
+        Adder result = reduce<Adder, dim>(data, &cts_selector);
 
         int expectedResult = inputSize * 2;
 
@@ -182,7 +181,7 @@ template <int dim> void check_dim(util::logger &log) {
         Multiplier data[inputSize];
         for (int i = 0; i < inputSize; i++) data[i] = Multiplier(2);
 
-        Multiplier result = reduce<Multiplier, dim>(data, &sel);
+        Multiplier result = reduce<Multiplier, dim>(data, &cts_selector);
 
         auto expectedResult = std::int64_t{1} << inputSize;
 

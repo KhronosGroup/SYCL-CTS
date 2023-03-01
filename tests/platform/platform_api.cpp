@@ -43,8 +43,7 @@ class TEST_NAME : public util::test_base {
       /** check get_devices() member function
       */
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         auto devs = plt.get_devices();
         check_return_type<std::vector<sycl::device>>(
             log, devs, "platform::get_devices()");
@@ -53,8 +52,7 @@ class TEST_NAME : public util::test_base {
       /** check get_devices(info::device_type::all) member function
       */
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         auto devs = plt.get_devices(sycl::info::device_type::all);
         if (devs.size() != 0) {
           check_return_type<std::vector<sycl::device>>(
@@ -65,8 +63,7 @@ class TEST_NAME : public util::test_base {
       /** check has() member function
       */
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         auto extensionSupported = plt.has(sycl::aspect::cpu);
         check_return_type<bool>(log, extensionSupported,
                                 "platform::has(sycl::aspect)");
@@ -76,8 +73,7 @@ class TEST_NAME : public util::test_base {
       */
       // TODO: mark this check as testing deprecated functionality
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         auto extensionSupported =
             plt.has_extension(std::string("cl_khr_icd"));
         check_return_type<bool>(log, extensionSupported,
@@ -87,8 +83,7 @@ class TEST_NAME : public util::test_base {
       /** check get_info() member function
       */
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         auto platformName = plt.get_info<sycl::info::platform::name>();
         check_return_type<std::string>(log, platformName,
                                                   "platform::get_info()");

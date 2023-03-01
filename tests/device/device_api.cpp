@@ -79,8 +79,7 @@ class TEST_NAME : public util::test_base {
       /** check get_platform() member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto parentPlatform = dev.get_platform();
         check_return_type<sycl::platform>(log, parentPlatform,
                                               "device::get_platform()");
@@ -89,8 +88,7 @@ class TEST_NAME : public util::test_base {
       /** check is_cpu() member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto isCPU = dev.is_cpu();
         check_return_type<bool>(log, isCPU, "device::is_cpu()");
       }
@@ -98,8 +96,7 @@ class TEST_NAME : public util::test_base {
       /** check is_gpu() member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto isGPU = dev.is_gpu();
         check_return_type<bool>(log, isGPU, "device::is_gpu()");
       }
@@ -107,8 +104,7 @@ class TEST_NAME : public util::test_base {
       /** check is_accelerator() member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto isAcc = dev.is_accelerator();
         check_return_type<bool>(log, isAcc, "device::is_accelerator()");
       }
@@ -116,8 +112,7 @@ class TEST_NAME : public util::test_base {
       /** check get_info() member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto platformName = dev.get_info<sycl::info::device::name>();
         check_return_type<std::string>(log, platformName,
                                                   "device::get_info()");
@@ -126,8 +121,7 @@ class TEST_NAME : public util::test_base {
       /** check has() member function
       */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         auto extensionSupported =
             dev.has(sycl::aspect::fp64);
         check_return_type<bool>(log, extensionSupported,
@@ -139,8 +133,7 @@ class TEST_NAME : public util::test_base {
        * member function
        */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         if (supports_partition_property(
                 dev, sycl::info::partition_property::partition_equally)) {
           auto subDevices = dev.create_sub_devices<
@@ -155,8 +148,7 @@ class TEST_NAME : public util::test_base {
        * member function
       */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         if (supports_partition_property(
                 dev, sycl::info::partition_property::partition_by_counts)) {
           std::vector<size_t> devicePartitionCounts;
@@ -176,8 +168,7 @@ class TEST_NAME : public util::test_base {
        * member function
       */
       {
-        cts_selector selector;
-        auto dev = util::get_cts_object::device(selector);
+        auto dev = util::get_cts_object::device(cts_selector);
         sycl::info::partition_property partitionProperty =
             sycl::info::partition_property::partition_by_affinity_domain;
         sycl::info::partition_affinity_domain affinityDomain =

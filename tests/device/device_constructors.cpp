@@ -53,10 +53,9 @@ class TEST_NAME : public util::test_base {
       /** check (device_selector) constructor
        */
       {
-        cts_selector selector;
-        sycl::device device(selector);
+        sycl::device device(cts_selector);
 
-        if (device != sycl::device(selector)) {
+        if (device != sycl::device(cts_selector)) {
           FAIL(log, "device was not constructed correctly (equality)");
         }
       }
@@ -64,8 +63,7 @@ class TEST_NAME : public util::test_base {
       /** check copy constructor
        */
       {
-        cts_selector selector;
-        sycl::device deviceA(selector);
+        sycl::device deviceA(cts_selector);
         sycl::device deviceB(deviceA);
 
 #ifdef SYCL_BACKEND_OPENCL
@@ -82,8 +80,7 @@ class TEST_NAME : public util::test_base {
       /** check assignment operator
        */
       {
-        cts_selector selector;
-        sycl::device deviceA(selector);
+        sycl::device deviceA(cts_selector);
         sycl::device deviceB = deviceA;
 
 #ifdef SYCL_BACKEND_OPENCL
