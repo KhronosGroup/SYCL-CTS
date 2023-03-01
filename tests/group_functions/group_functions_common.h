@@ -99,7 +99,9 @@ inline sycl::range<3> get_default_range() {
  * @tparam Dimensions Dimension to use for group instance
  */
 template <int Dimensions>
-sycl::range<Dimensions> work_group_range(sycl::queue queue) {
+sycl::range<Dimensions> work_group_range(
+    sycl::queue queue,
+    uint64_t work_items_limit = std::numeric_limits<uint64_t>::max()) {
   // query device for work-group sizes
   size_t max_work_item_sizes[Dimensions];
   {
@@ -118,8 +120,9 @@ sycl::range<Dimensions> work_group_range(sycl::queue queue) {
       max_work_item_sizes[i] = sizes.get(i);
     }
   }
-  size_t max_work_group_size =
-      queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+  size_t max_work_group_size = std::min(
+      queue.get_device().get_info<sycl::info::device::max_work_group_size>(),
+      work_items_limit);
 
   // make work-group size as much square/cubic as possible
   size_t work_group_sizes[Dimensions] = {
