@@ -26,6 +26,11 @@
 namespace scalars_interopability_types__ {
 using namespace sycl_cts;
 
+/** Kernel names for fp16 and fp64 types tests for devices which supports these
+ * types */
+class scalars_interopability_fp16;
+class scalars_interopability_fp64;
+
 /** Test SYCL OpenCL interop scalar data types are of the minimum sizes and are
  *  correctly signed/unsigned
  */
@@ -44,6 +49,12 @@ class TEST_NAME : public util::test_base {
    */
   void run(util::logger &log) override {
     {
+      auto myQueue = util::get_cts_object::queue();
+
+      auto device = myQueue.get_device();
+      bool device_supports_fp16 = device.has(sycl::aspect::fp16);
+      bool device_supports_fp64 = device.has(sycl::aspect::fp64);
+
       // Integral Interop Data Types
       if (!check_type_min_size<cl_bool>(1)) {
         FAIL(log,
@@ -76,8 +87,6 @@ class TEST_NAME : public util::test_base {
       check_type_min_size_sign_log<sycl::cl_double>(log, 8, true,
                                                         "sycl::cl_double");
 
-      auto myQueue = util::get_cts_object::queue();
-
       bool signResults[11];
       bool sizeResults[12];
       {
@@ -92,7 +101,7 @@ class TEST_NAME : public util::test_base {
           auto accSizeResult =
               bufSizeResult.get_access<sycl::access_mode::read_write>(cgh);
 
-          cgh.single_task<TEST_NAME>([=]() {
+          cgh.single_task<TEST_NAME>([=] {
             // Integral Interop Data Types
             // signs
             accSignResult[0] = check_type_sign<sycl::cl_char>(true);
@@ -115,19 +124,54 @@ class TEST_NAME : public util::test_base {
             accSizeResult[7] = check_type_min_size<sycl::cl_long>(8);
             accSizeResult[8] = check_type_min_size<sycl::cl_ulong>(8);
 
-            // Floating Point Interop Data Types
-            // signs
-            accSignResult[8] = check_type_sign<sycl::cl_half>(true);
+            // Floating Point Interop Data Type
+            // sign
             accSignResult[9] = check_type_sign<sycl::cl_float>(true);
-            accSignResult[10] = check_type_sign<sycl::cl_double>(true);
 
-            // sizes
-            accSizeResult[9] = check_type_min_size<sycl::cl_half>(2);
+            // size
             accSizeResult[10] = check_type_min_size<sycl::cl_float>(4);
-            accSizeResult[11] = check_type_min_size<sycl::cl_double>(8);
-
           });
         });
+
+        if (device_supports_fp16) {
+          myQueue.submit([&](sycl::handler &cgh) {
+            auto accSignResult =
+                bufSignResult.get_access<sycl::access_mode::read_write>(cgh);
+            auto accSizeResult =
+                bufSizeResult.get_access<sycl::access_mode::read_write>(cgh);
+
+            cgh.single_task<scalars_interopability_fp16>([=] {
+              // Floating Point 16 Interop Data Type
+              // sign
+              accSignResult[8] = check_type_sign<sycl::cl_half>(true);
+
+              // size
+              accSizeResult[9] = check_type_min_size<sycl::cl_half>(2);
+            });
+          });
+        }
+
+        if (device_supports_fp64) {
+          myQueue
+              .submit([&](sycl::handler &cgh) {
+                auto accSignResult =
+                    bufSignResult.get_access<sycl::access_mode::read_write>(
+                        cgh);
+                auto accSizeResult =
+                    bufSizeResult.get_access<sycl::access_mode::read_write>(
+                        cgh);
+
+                cgh.single_task<scalars_interopability_fp64>([=] {
+                  // Floating Point 64 Interop Data Type
+                  // sign
+                  accSignResult[10] = check_type_sign<sycl::cl_double>(true);
+
+                  // size
+                  accSizeResult[11] = check_type_min_size<sycl::cl_double>(8);
+                });
+              })
+              .wait_and_throw();
+        }
       }
 
       // signs
@@ -155,13 +199,13 @@ class TEST_NAME : public util::test_base {
       if (!signResults[7]) {
         FAIL(log, errorStr + "sign: sycl::cl_ulong");
       }
-      if (!signResults[8]) {
+      if (!signResults[8] && device_supports_fp16) {
         FAIL(log, errorStr + "sign: sycl::cl_half");
       }
       if (!signResults[9]) {
         FAIL(log, errorStr + "sign: sycl::cl_float");
       }
-      if (!signResults[10]) {
+      if (!signResults[10] && device_supports_fp64) {
         FAIL(log, errorStr + "sign: sycl::cl_double");
       }
 
@@ -193,13 +237,13 @@ class TEST_NAME : public util::test_base {
       if (!sizeResults[8]) {
         FAIL(log, errorStr + "size: sycl::cl_ulong");
       }
-      if (!sizeResults[9]) {
+      if (!sizeResults[9] && device_supports_fp16) {
         FAIL(log, errorStr + "size: sycl::cl_half");
       }
       if (!sizeResults[10]) {
         FAIL(log, errorStr + "size: sycl::cl_float");
       }
-      if (!sizeResults[11]) {
+      if (!sizeResults[11] && device_supports_fp64) {
         FAIL(log, errorStr + "size: sycl::cl_double");
       }
 
