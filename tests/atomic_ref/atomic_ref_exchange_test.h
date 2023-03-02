@@ -48,7 +48,7 @@ class atomic_ref_exchange_test
                          "the referenced object in device code");
     auto exchange_test = [memory_order_val, memory_scope_val](
                              T val_expd, T val_chgd,
-                             typename base::AtomicRT& a_r, auto result_acc,
+                             typename base::atomic_ref_type& a_r, auto result_acc,
                              auto ref_data_acc) {
       T original_val = val_expd;
       auto ref_val_before_exchange =
@@ -107,6 +107,8 @@ struct run_exchange_test {
 
     for_all_combinations<atomic_ref_exchange_test, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_exchange_test, T*>(

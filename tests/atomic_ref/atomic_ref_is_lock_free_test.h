@@ -43,10 +43,10 @@ class atomic_ref_is_lock_free_test
         get_section_name(type_name, memory_order, memory_scope, address_space,
                          "Check is_lock_free() method");
     auto is_lock_free_test = [](T val_expd, T val_chgd,
-                                typename base::AtomicRT& a_r, auto result_acc,
+                                typename base::atomic_ref_type& a_r, auto result_acc,
                                 auto ref_data_acc) {
       auto is_lock_free = a_r.is_lock_free();
-      if constexpr (base::AtomicRT::is_always_lock_free == true) {
+      if constexpr (base::atomic_ref_type::is_always_lock_free == true) {
         result_acc[0] = (is_lock_free == true);
       }
       result_acc[1] = std::is_same_v<decltype(is_lock_free), bool>;
@@ -54,7 +54,7 @@ class atomic_ref_is_lock_free_test
     if constexpr (base::address_space_is_not_local_space()) {
       std::array result{false, false};
       this->queue_submit_global_scope(result, is_lock_free_test);
-      if constexpr (base::AtomicRT::is_always_lock_free == true) {
+      if constexpr (base::atomic_ref_type::is_always_lock_free == true) {
         INFO(description + " (global space)" + "\nError returned value");
         CHECK(result[0]);
       }
@@ -65,7 +65,7 @@ class atomic_ref_is_lock_free_test
     if constexpr (base::address_space_is_not_global_space()) {
       std::array result{false, false};
       this->queue_submit_local_scope(result, is_lock_free_test);
-      if constexpr (base::AtomicRT::is_always_lock_free == true) {
+      if constexpr (base::atomic_ref_type::is_always_lock_free == true) {
         INFO(description + " (local space)" + "\nError returned value");
         CHECK(result[0]);
       }
@@ -86,6 +86,8 @@ struct run_is_lock_free_test {
 
     for_all_combinations<atomic_ref_is_lock_free_test, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_is_lock_free_test, T*>(

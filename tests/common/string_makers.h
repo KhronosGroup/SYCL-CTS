@@ -193,10 +193,26 @@ struct StringMaker<sycl::access::address_space> {
 #endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
       case type::private_space:
         return "address_space::private_space";
-      case type::constant_space:
-        return "address_space::constant_space (deprecated)";
       default:
-        return "unknown address_space";
+        // no stringification for deprecated ones
+        return "unknown or deprecated address_space";
+    }
+  }
+};
+
+template <>
+struct StringMaker<sycl::access::decorated> {
+  using type = sycl::access::decorated;
+  static std::string convert(type value) {
+    switch (value) {
+      case type::yes:
+        return "access::decorated::yes";
+      case type::no:
+        return "access::decorated::no";
+      case type::legacy:
+        return "access::decorated::legacy";
+      default:
+        return "unknown";
     }
   }
 };

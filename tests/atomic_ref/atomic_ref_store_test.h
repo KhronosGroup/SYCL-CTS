@@ -48,7 +48,7 @@ class atomic_ref_store_test
                            ? sycl::memory_order::release
                            : memory_order_val;
     auto store_test = [memory_order_val, memory_scope_val](
-                          T val_expd, T val_chgd, typename base::AtomicRT& a_r,
+                          T val_expd, T val_chgd, typename base::atomic_ref_type& a_r,
                           auto result_acc, auto ref_data_acc) {
       a_r.store(val_chgd, memory_order_val, memory_scope_val);
       result_acc[0] = ref_data_acc[0] == val_chgd;
@@ -81,6 +81,8 @@ struct run_store_test {
 
     for_all_combinations<atomic_ref_store_test, T>(memory_orders, memory_scopes,
                                                    address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_store_test, T*>(

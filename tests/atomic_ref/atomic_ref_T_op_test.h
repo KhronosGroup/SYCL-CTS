@@ -43,7 +43,7 @@ class atomic_ref_T_op_test
         type_name, memory_order, memory_scope, address_space,
         "Check if operator T() const loads the value of the object"
         " referenced by this atomic_ref in device code");
-    auto t_op_test = [](T val_expd, T val_chgd, typename base::AtomicRT& a_r,
+    auto t_op_test = [](T val_expd, T val_chgd, typename base::atomic_ref_type& a_r,
                         auto result_acc, auto ref_data_acc) {
       T val = a_r;
       result_acc[0] = val == ref_data_acc[0];
@@ -76,6 +76,8 @@ struct run_T_op_test {
 
     for_all_combinations<atomic_ref_T_op_test, T>(memory_orders, memory_scopes,
                                                   address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_T_op_test, T*>(memory_orders, memory_scopes,
