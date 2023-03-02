@@ -35,31 +35,22 @@ void check_exception_list_types() {
   static_assert(std::is_same<value_type, std::exception_ptr>::value,
                 "exception_list::value_type is of wrong type");
 
-  {
-    check_type_existence<sycl::exception_list::reference>();
-  }
-  {
-    check_type_existence<sycl::exception_list::const_reference>();
-  }
+  { check_type_existence<sycl::exception_list::reference>(); }
+  { check_type_existence<sycl::exception_list::const_reference>(); }
 
   using size_type = sycl::exception_list::size_type;
   static_assert(std::is_same<size_type, std::size_t>::value,
                 "exception_list::size_type is of wrong type");
 
-  {
-    check_type_existence<sycl::exception_list::iterator>();
-  }
-  {
-    check_type_existence<sycl::exception_list::const_iterator>();
-  }
+  { check_type_existence<sycl::exception_list::iterator>(); }
+  { check_type_existence<sycl::exception_list::const_iterator>(); }
 }
 
 /**
  * @brief Checks exception_list for member functions
  * @param exceptionList List to check
  */
-void check_exception_list_members(
-    const sycl::exception_list &exceptionList) {
+void check_exception_list_members(const sycl::exception_list &exceptionList) {
   auto size = exceptionList.size();
   auto beginIt = exceptionList.begin();
   auto endIt = exceptionList.end();
@@ -94,9 +85,8 @@ class TEST_NAME : public util::test_base {
 
   /** log the exceptions.
    */
-  void check_exceptions(
-      util::logger &log,
-      std::vector<std::exception_ptr> &excps) const {
+  void check_exceptions(util::logger &log,
+                        std::vector<std::exception_ptr> &excps) const {
     for (auto &e : excps) {
       try {
         throw e;
@@ -128,8 +118,8 @@ class TEST_NAME : public util::test_base {
     /*test lambda async handler*/
     {
       std::vector<std::exception_ptr> excps;
-      std::function<void(sycl::exception_list)>
-          asyncHandlerLambda = [&excps](sycl::exception_list l) {
+      std::function<void(sycl::exception_list)> asyncHandlerLambda =
+          [&excps](sycl::exception_list l) {
             // Check the exception list interface
             check_exception_list_types();
             check_exception_list_members(l);
@@ -183,4 +173,4 @@ class TEST_NAME : public util::test_base {
 
 util::test_proxy<TEST_NAME> proxy;
 
-}  // TEST_NAMESPACE
+}  // namespace TEST_NAMESPACE

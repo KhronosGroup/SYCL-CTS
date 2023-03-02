@@ -37,20 +37,20 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute this test
-  */
+   */
   void run(util::logger &log) override {
     {
       /** check get_devices() member function
-      */
+       */
       {
         auto plt = util::get_cts_object::platform(cts_selector);
         auto devs = plt.get_devices();
-        check_return_type<std::vector<sycl::device>>(
-            log, devs, "platform::get_devices()");
+        check_return_type<std::vector<sycl::device>>(log, devs,
+                                                     "platform::get_devices()");
       }
 
       /** check get_devices(info::device_type::all) member function
-      */
+       */
       {
         auto plt = util::get_cts_object::platform(cts_selector);
         auto devs = plt.get_devices(sycl::info::device_type::all);
@@ -61,7 +61,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check has() member function
-      */
+       */
       {
         auto plt = util::get_cts_object::platform(cts_selector);
         auto extensionSupported = plt.has(sycl::aspect::cpu);
@@ -70,27 +70,26 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check has_extensions() member function
-      */
+       */
       // TODO: mark this check as testing deprecated functionality
       {
         auto plt = util::get_cts_object::platform(cts_selector);
-        auto extensionSupported =
-            plt.has_extension(std::string("cl_khr_icd"));
+        auto extensionSupported = plt.has_extension(std::string("cl_khr_icd"));
         check_return_type<bool>(log, extensionSupported,
                                 "platform::has_extension(string_class)");
       }
 
       /** check get_info() member function
-      */
+       */
       {
         auto plt = util::get_cts_object::platform(cts_selector);
         auto platformName = plt.get_info<sycl::info::platform::name>();
         check_return_type<std::string>(log, platformName,
-                                                  "platform::get_info()");
+                                       "platform::get_info()");
       }
 
       /** check get_platforms() static method
-      */
+       */
       {
         auto plt = sycl::platform::get_platforms();
         check_return_type<std::vector<sycl::platform>>(

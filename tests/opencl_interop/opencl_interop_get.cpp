@@ -199,7 +199,7 @@ class TEST_NAME :
         auto ctsQueue = util::get_cts_object::queue(cts_selector);
 
         sycl::event event = ctsQueue.submit([&](sycl::handler &cgh) {
-          cgh.single_task<class event_kernel>([]() {});
+          cgh.single_task<class event_kernel>([](){});
         });
 
         auto interopEventVec = sycl::get_native<sycl::backend::opencl>(event);

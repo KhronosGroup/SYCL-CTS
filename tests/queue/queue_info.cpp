@@ -38,7 +38,7 @@ class TEST_NAME : public util::test_base {
   }
 
   /** execute this test
-  */
+   */
   void run(util::logger &log) override {
     {
       // FIXME: Reenable when struct information descriptors are implemented

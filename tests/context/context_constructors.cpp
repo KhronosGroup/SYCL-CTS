@@ -30,7 +30,7 @@ using namespace sycl_cts;
  */
 class TEST_NAME : public util::test_base {
   /** return information about this test
-  */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
@@ -71,19 +71,15 @@ class TEST_NAME : public util::test_base {
 
     {
       /** check default constructor and destructor
-      */
-      {
-        sycl::context context;
-      }
+       */
+      { sycl::context context; }
 
       /** check (async_handler) constructor
-      */
-      {
-        sycl::context context(asyncHandler);
-      }
+       */
+      { sycl::context context(asyncHandler); }
 
       /** check (device) constructor
-      */
+       */
       {
         auto device = util::get_cts_object::device(cts_selector);
         sycl::context context(device);
@@ -92,7 +88,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (device, async_handler) constructor
-      */
+       */
       {
         cts_async_handler asyncHandler;
         auto device = util::get_cts_object::device(cts_selector);
@@ -102,7 +98,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (std::vector<device>) constructor
-      */
+       */
       {
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
@@ -112,7 +108,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (std::vector<device>, async_handler) constructor
-      */
+       */
       {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
@@ -123,7 +119,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (platform) constructor
-      */
+       */
       {
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
@@ -133,7 +129,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (platform, async_handler) constructor
-      */
+       */
       {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
@@ -144,7 +140,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check copy constructor
-      */
+       */
       {
         auto contextA = util::get_cts_object::context(cts_selector);
         sycl::context contextB(contextA);
@@ -161,7 +157,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check assignment operator
-      */
+       */
       {
         auto contextA = util::get_cts_object::context(cts_selector);
         sycl::context contextB = contextA;

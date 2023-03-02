@@ -64,15 +64,13 @@ class TEST_NAME :
       const auto ctsContext = util::get_cts_object::context(cts_selector);
       const auto ctsDevice = ctsContext.get_devices()[0];
 
-
       std::string kernelSource = R"(
             __kernel void opencl_interop_constructors_kernel(__global float *input)
             {
               input[get_global_id(0)] = get_global_id(0);
             }
             )";
-      std::string programBinaryFile =
-          "opencl_interop_constructors.bin";
+      std::string programBinaryFile = "opencl_interop_constructors.bin";
       /** check make_platform (cl_platform_id)
        */
       {
@@ -145,7 +143,6 @@ class TEST_NAME :
         if (interopQueue != clQueueCopy) {
           FAIL(log, "queue destination was not copy constructed correctly");
         }
-
       }
 
       /** check make_queue (cl_command_queue, const context&, async_handler)
@@ -181,8 +178,7 @@ class TEST_NAME :
                   sycl::get_native<sycl::backend::opencl>(ctsContext),
                   sycl::get_native<sycl::backend::opencl>(ctsDevice), clProgram,
                   log)) {
-            std::string errorMsg =
-                "create_program_with_binary failed.";
+            std::string errorMsg = "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
                 programBinaryFile + " in same path as the executable binary";
@@ -221,8 +217,7 @@ class TEST_NAME :
                   sycl::get_native<sycl::backend::opencl>(ctsContext),
                   sycl::get_native<sycl::backend::opencl>(ctsDevice), clProgram,
                   log)) {
-            std::string errorMsg =
-                "create_program_with_binary failed.";
+            std::string errorMsg = "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
                 programBinaryFile + " in same path as the executable binary";
@@ -271,7 +266,6 @@ class TEST_NAME :
         sycl::range<1> interopRange{size};
         size_t interopSize = size * sizeof(int);
 
-
         // check the buffer
         if (buffer.is_sub_buffer()) {
           FAIL(log,
@@ -284,9 +278,9 @@ class TEST_NAME :
                "(byte_size) ");
         }
         if (buffer.get_range() != interopRange) {
-          FAIL(
-              log,
-              "opencl buffer was not interop constructed properly. (get_range) ");
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. "
+               "(get_range) ");
         }
         if (buffer.size() != size) {
           FAIL(log,
@@ -294,11 +288,10 @@ class TEST_NAME :
         }
 
         queue.submit([&](sycl::handler &handler) {
-          auto accessor =
-              buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::device>(
-                  handler);
-          handler.single_task<class buffer_interop_constructor_kernel_no_event>([]() {});
+          auto accessor = buffer.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(handler);
+          handler.single_task<class buffer_interop_constructor_kernel_no_event>(
+              [](){});
         });
 
         error = clReleaseMemObject(clBuffer);
@@ -321,7 +314,7 @@ class TEST_NAME :
         // create an event to wait for
         sycl::event event = queue.submit([](sycl::handler &cgh) {
           cgh.single_task<class buffer_interop_event>(
-              []() {});  // do not do anything here, we only need the event
+              [](){});  // do not do anything here, we only need the event
         });
 
         cl_mem clBuffer = clCreateBuffer(
@@ -340,7 +333,6 @@ class TEST_NAME :
         sycl::range<1> interopRange{size};
         size_t interopSize = size * sizeof(int);
 
-
         // check the buffer
         if (buffer.is_sub_buffer()) {
           FAIL(log,
@@ -353,9 +345,9 @@ class TEST_NAME :
                "(byte_size) ");
         }
         if (buffer.get_range() != interopRange) {
-          FAIL(
-              log,
-              "opencl buffer was not interop constructed properly. (get_range) ");
+          FAIL(log,
+               "opencl buffer was not interop constructed properly. "
+               "(get_range) ");
         }
         if (buffer.size() != size) {
           FAIL(log,
@@ -363,11 +355,11 @@ class TEST_NAME :
         }
 
         queue.submit([&](sycl::handler &handler) {
-          auto accessor =
-              buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::device>(
-                  handler);
-          handler.single_task<class buffer_interop_constructor_kernel_with_event>([]() {});
+          auto accessor = buffer.get_access<sycl::access_mode::read_write,
+                                            sycl::target::device>(handler);
+          handler
+              .single_task<class buffer_interop_constructor_kernel_with_event>(
+                  [](){});
         });
 
         error = clReleaseMemObject(clBuffer);

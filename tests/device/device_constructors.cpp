@@ -100,4 +100,4 @@ class TEST_NAME : public util::test_base {
 // register this test with the test_collection
 util::test_proxy<TEST_NAME> proxy;
 
-} /* namespace device_constructors__ */
+}  // namespace TEST_NAMESPACE
