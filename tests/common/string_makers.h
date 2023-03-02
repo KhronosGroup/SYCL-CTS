@@ -200,6 +200,9 @@ struct StringMaker<sycl::access::address_space> {
   }
 };
 
+// FIXME: re-enable when sycl::access::decorated is implemented in computecpp
+// and hipsycl
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <>
 struct StringMaker<sycl::access::decorated> {
   using type = sycl::access::decorated;
@@ -216,6 +219,7 @@ struct StringMaker<sycl::access::decorated> {
     }
   }
 };
+#endif
 
 }  // namespace Catch
 
