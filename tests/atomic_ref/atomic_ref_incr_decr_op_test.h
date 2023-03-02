@@ -112,8 +112,9 @@ class atomic_ref_incr_decr_op_test
     std::string description =
         get_section_name(type_name, memory_order, memory_scope, address_space,
                          "Check increment/decrement operators in device code");
-    auto incr_op_test = [](T val_expd, T val_chgd, typename base::atomic_ref_type& a_r,
-                           auto result_acc, auto ref_data_acc) {
+    auto incr_op_test = [](T val_expd, T val_chgd,
+                           typename base::atomic_ref_type& a_r, auto result_acc,
+                           auto ref_data_acc) {
       T val_before_op = ref_data_acc[0];
 
       auto ref_val_before_post_incr = a_r++;

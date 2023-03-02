@@ -95,10 +95,10 @@ class atomic_ref_add_sub_op_all_types_test
         " and returns the original value +/- operand"
         " in device code");
     operand_type operand_val_copy = operand_val;
-    auto add_sub_op_test = [operand_val_copy](T val_expd, T val_chgd,
-                                              typename base::atomic_ref_type& a_r,
-                                              auto result_acc,
-                                              auto ref_data_acc) {
+    auto add_sub_op_test = [operand_val_copy](
+                               T val_expd, T val_chgd,
+                               typename base::atomic_ref_type& a_r,
+                               auto result_acc, auto ref_data_acc) {
       T original_val = val_expd;
       T val_expd_after_adding = original_val + operand_val_copy;
       T val_expd_after_subtract = original_val;

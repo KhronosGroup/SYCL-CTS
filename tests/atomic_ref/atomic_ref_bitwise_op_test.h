@@ -94,8 +94,8 @@ class atomic_ref_bitwise_op_test
         type_name, memory_order, memory_scope, address_space,
         "Check operator^=(), operator|=(), operator&=() in device code");
     auto bitwise_op_test = [](T val_expd, T val_chgd,
-                              typename base::atomic_ref_type& a_r, auto result_acc,
-                              auto ref_data_acc) {
+                              typename base::atomic_ref_type& a_r,
+                              auto result_acc, auto ref_data_acc) {
       T val_before_op = ref_data_acc[0];
       T operand_val_for_xor = 0x3f;
       T val_expd_after_xor = val_before_op ^ operand_val_for_xor;

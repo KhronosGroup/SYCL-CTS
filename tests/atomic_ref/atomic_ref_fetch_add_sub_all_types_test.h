@@ -97,10 +97,10 @@ class atomic_ref_fetch_add_sub_all_types_test
                          "the referenced object in device code");
     operand_type operand_val_copy = operand_val;
     auto fetch_add_sub_test = [memory_order_val, memory_scope_val,
-                               operand_val_copy](T val_expd, T val_chgd,
-                                                 typename base::atomic_ref_type& a_r,
-                                                 auto result_acc,
-                                                 auto ref_data_acc) {
+                               operand_val_copy](
+                                  T val_expd, T val_chgd,
+                                  typename base::atomic_ref_type& a_r,
+                                  auto result_acc, auto ref_data_acc) {
       T original_val = val_expd;
       T val_expd_after_adding = original_val + operand_val_copy;
       T val_expd_after_subtract = original_val;

@@ -134,8 +134,8 @@ class atomic_ref_fetch_min_max_test
     auto fetch_min_max_test = [memory_order_val, memory_scope_val,
                                big_value_copy, small_value_copy](
                                   T val_expd, T val_chgd,
-                                  typename base::atomic_ref_type& a_r, auto result_acc,
-                                  auto ref_data_acc) {
+                                  typename base::atomic_ref_type& a_r,
+                                  auto result_acc, auto ref_data_acc) {
       T original_val = ref_data_acc[0];
 
       auto ref_val_before_fetch_max =

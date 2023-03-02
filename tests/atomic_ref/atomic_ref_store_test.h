@@ -48,8 +48,9 @@ class atomic_ref_store_test
                            ? sycl::memory_order::release
                            : memory_order_val;
     auto store_test = [memory_order_val, memory_scope_val](
-                          T val_expd, T val_chgd, typename base::atomic_ref_type& a_r,
-                          auto result_acc, auto ref_data_acc) {
+                          T val_expd, T val_chgd,
+                          typename base::atomic_ref_type& a_r, auto result_acc,
+                          auto ref_data_acc) {
       a_r.store(val_chgd, memory_order_val, memory_scope_val);
       result_acc[0] = ref_data_acc[0] == val_chgd;
     };

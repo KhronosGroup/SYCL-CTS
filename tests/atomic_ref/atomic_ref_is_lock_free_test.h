@@ -43,8 +43,8 @@ class atomic_ref_is_lock_free_test
         get_section_name(type_name, memory_order, memory_scope, address_space,
                          "Check is_lock_free() method");
     auto is_lock_free_test = [](T val_expd, T val_chgd,
-                                typename base::atomic_ref_type& a_r, auto result_acc,
-                                auto ref_data_acc) {
+                                typename base::atomic_ref_type& a_r,
+                                auto result_acc, auto ref_data_acc) {
       auto is_lock_free = a_r.is_lock_free();
       if constexpr (base::atomic_ref_type::is_always_lock_free == true) {
         result_acc[0] = (is_lock_free == true);
