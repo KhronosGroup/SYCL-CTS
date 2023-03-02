@@ -406,14 +406,10 @@ class check_any_device_has_all_devices_have {
  public:
   void operator()(const std::string& aspect_name) {
     auto device_has_aspect = [=](auto d) { return d.has(aspect); };
-    auto platforms = sycl::platform::get_platforms();
-    bool any_device = false;
-    bool all_devices = true;
-    for (auto p : platforms) {
-      auto devices = p.get_devices();
-      any_device |= any_of(devices.begin(), devices.end(), device_has_aspect);
-      all_devices &= all_of(devices.begin(), devices.end(), device_has_aspect);
-    }
+    auto devices = sycl::device::get_devices();
+    bool any_device = any_of(devices.begin(), devices.end(), device_has_aspect);
+    bool all_devices =
+        all_of(devices.begin(), devices.end(), device_has_aspect);
     if (any_device) {
       INFO(
           "Check that if some device has aspect A, "
