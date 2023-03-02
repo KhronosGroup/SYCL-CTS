@@ -53,10 +53,7 @@ TEST_CASE("Test copy constructor", "[kernel]") {
     INFO(
         "kernel was not constructed correctly. (contains different "
         "OpenCL kernel object)");
-    CHECK((sycl::device(cts_selector)
-                   .get_info<sycl::info::device::device_type>() ==
-               sycl::info::device_type::host ||
-           (iopKernelA == iopKernelB)));
+    CHECK(iopKernelA == iopKernelB);
   }
 #endif
 
@@ -86,10 +83,7 @@ TEST_CASE("Test assignment operator", "[kernel]") {
     INFO(
         "kernel was not constructed correctly. (contains different "
         "OpenCL kernel object)");
-    CHECK((sycl::device(cts_selector)
-                   .get_info<sycl::info::device::device_type>() ==
-               sycl::info::device_type::host ||
-           (iopKernelA == iopKernelB)));
+    CHECK(iopKernelA == iopKernelB);
   }
 #endif
 
@@ -125,8 +119,6 @@ TEST_CASE("Test equality operator", "[kernel]") {
   ctsQueue.submit(
       [&](sycl::handler &cgh) { cgh.single_task<k_name6>(k_name6()); });
 
-  if (sycl::device(cts_selector).get_info<sycl::info::device::device_type>() !=
-      sycl::info::device_type::host) {
 #ifdef SYCL_BACKEND_OPENCL
     if (ctsQueue.get_backend() == sycl::backend::opencl) {
       auto iopKernelA = sycl::get_native<sycl::backend::opencl>(kernelA);
@@ -160,7 +152,6 @@ TEST_CASE("Test equality operator", "[kernel]") {
       }
     }
 #endif
-  }
 
   ctsQueue.wait_and_throw();
 }
