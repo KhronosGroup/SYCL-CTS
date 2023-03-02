@@ -48,7 +48,8 @@ class atomic_ref_compare_exchange_test
                                            failure_order, scope);
     }
 
-    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected,
+                              T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);
@@ -132,7 +133,8 @@ class atomic_ref_compare_exchange_test
                                            failure_order, scope);
     }
 
-    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected,
+                              T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);

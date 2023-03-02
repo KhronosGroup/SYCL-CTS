@@ -97,8 +97,8 @@ class atomic_ref_fetch_bitwise_test
         "Check fetch_xor(), fetch_or(), fetch_and() methods in device code");
     auto fetch_bitwise_test = [memory_order_val, memory_scope_val](
                                   T val_expd, T val_chgd,
-                                  typename base::atomic_ref_type& a_r, auto result_acc,
-                                  auto ref_data_acc) {
+                                  typename base::atomic_ref_type& a_r,
+                                  auto result_acc, auto ref_data_acc) {
       T val_before_op = ref_data_acc[0];
       T operand_val_for_xor = 0x3f;
       T val_expd_after_xor = val_before_op ^ operand_val_for_xor;

@@ -48,8 +48,8 @@ class atomic_ref_exchange_test
                          "the referenced object in device code");
     auto exchange_test = [memory_order_val, memory_scope_val](
                              T val_expd, T val_chgd,
-                             typename base::atomic_ref_type& a_r, auto result_acc,
-                             auto ref_data_acc) {
+                             typename base::atomic_ref_type& a_r,
+                             auto result_acc, auto ref_data_acc) {
       T original_val = val_expd;
       auto ref_val_before_exchange =
           a_r.exchange(val_chgd, memory_order_val, memory_scope_val);

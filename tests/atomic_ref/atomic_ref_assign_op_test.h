@@ -45,8 +45,8 @@ class atomic_ref_assign_op_test
                          " referenced by this atomic_ref and returned value is "
                          "\"desired\" in device code");
     auto assign_op_test = [](T val_expd, T val_chgd,
-                             typename base::atomic_ref_type& a_r, auto result_acc,
-                             auto ref_data_acc) {
+                             typename base::atomic_ref_type& a_r,
+                             auto result_acc, auto ref_data_acc) {
       auto desired = (a_r = val_chgd);
       result_acc[0] = (ref_data_acc[0] == val_chgd);
       result_acc[1] = (desired == val_chgd);

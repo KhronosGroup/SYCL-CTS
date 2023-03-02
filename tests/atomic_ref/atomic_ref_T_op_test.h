@@ -43,8 +43,9 @@ class atomic_ref_T_op_test
         type_name, memory_order, memory_scope, address_space,
         "Check if operator T() const loads the value of the object"
         " referenced by this atomic_ref in device code");
-    auto t_op_test = [](T val_expd, T val_chgd, typename base::atomic_ref_type& a_r,
-                        auto result_acc, auto ref_data_acc) {
+    auto t_op_test = [](T val_expd, T val_chgd,
+                        typename base::atomic_ref_type& a_r, auto result_acc,
+                        auto ref_data_acc) {
       T val = a_r;
       result_acc[0] = val == ref_data_acc[0];
     };

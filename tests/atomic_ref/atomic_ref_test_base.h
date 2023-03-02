@@ -45,8 +45,8 @@ class atomic_ref_test {
       address_space_for_atomic_ref_obj = AddressSpaceT::value;
 
   using atomic_ref_type = sycl::atomic_ref<T, memory_order_for_atomic_ref_obj,
-                                    memory_scope_for_atomic_ref_obj,
-                                    address_space_for_atomic_ref_obj>;
+                                           memory_scope_for_atomic_ref_obj,
+                                           address_space_for_atomic_ref_obj>;
   using ReferencedType = std::remove_pointer_t<T>;
 
  protected:
