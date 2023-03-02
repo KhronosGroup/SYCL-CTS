@@ -44,7 +44,7 @@ class atomic_ref_test {
   static constexpr sycl::access::address_space
       address_space_for_atomic_ref_obj = AddressSpaceT::value;
 
-  using AtomicRT = sycl::atomic_ref<T, memory_order_for_atomic_ref_obj,
+  using atomic_ref_type = sycl::atomic_ref<T, memory_order_for_atomic_ref_obj,
                                     memory_scope_for_atomic_ref_obj,
                                     address_space_for_atomic_ref_obj>;
   using ReferencedType = std::remove_pointer_t<T>;
@@ -81,7 +81,7 @@ class atomic_ref_test {
             sycl::local_accessor<T, 1> loc_acc(sycl::range<1>(1), cgh);
             cgh.parallel_for(sycl::nd_range<1>(1, 1), [=](sycl::nd_item<1>) {
               loc_acc[0] = ref_val;
-              AtomicRT a_r(loc_acc[0]);
+              atomic_ref_type a_r(loc_acc[0]);
               test_action(ref_val, ref_val_chgd, a_r, result_accessor, loc_acc);
             });
           })
@@ -106,7 +106,7 @@ class atomic_ref_test {
             auto result_accessor =
                 result_buf.template get_access<sycl::access_mode::write>(cgh);
             cgh.single_task([=] {
-              AtomicRT a_r(data_accessor[0]);
+              atomic_ref_type a_r(data_accessor[0]);
               test_action(ref_val, ref_val_chgd, a_r, result_accessor,
                           data_accessor);
             });

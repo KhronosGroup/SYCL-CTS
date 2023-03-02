@@ -223,6 +223,17 @@ bool compare_floats(T actual, T expected) {
   return difference <= difference_expected;
 }
 
+inline bool device_has_not_aspect_atomic64() {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  return !queue.get_device().has(sycl::aspect::atomic64);
+}
+
+template <typename T, typename = std::enable_if_t<std::is_pointer_v<T>>>
+inline bool is_64_bits_pointer() {
+  constexpr uint32_t bytes_in_64_bits = 8;
+  return sizeof(T) == bytes_in_64_bits;
+}
+
 }  // namespace atomic_ref::tests::common
 
 #endif  // SYCL_CTS_ATOMIC_REF_COMMON_H

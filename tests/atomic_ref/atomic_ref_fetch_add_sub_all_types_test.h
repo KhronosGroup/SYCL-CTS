@@ -98,7 +98,7 @@ class atomic_ref_fetch_add_sub_all_types_test
     operand_type operand_val_copy = operand_val;
     auto fetch_add_sub_test = [memory_order_val, memory_scope_val,
                                operand_val_copy](T val_expd, T val_chgd,
-                                                 typename base::AtomicRT& a_r,
+                                                 typename base::atomic_ref_type& a_r,
                                                  auto result_acc,
                                                  auto ref_data_acc) {
       T original_val = val_expd;
@@ -153,6 +153,8 @@ struct run_fetch_add_sub_all_types_test {
 
     for_all_combinations<atomic_ref_fetch_add_sub_all_types_test, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_fetch_add_sub_all_types_test, T*>(

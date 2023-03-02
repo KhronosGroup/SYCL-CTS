@@ -27,7 +27,7 @@
 namespace atomic_ref::tests::api {
 template <typename T, typename MemoryOrderT, typename MemoryScopeT,
           typename AddressSpaceT>
-struct atomic_ref_assign_op_test
+class atomic_ref_assign_op_test
     : public atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT> {
   using base = atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT>;
 
@@ -45,7 +45,7 @@ struct atomic_ref_assign_op_test
                          " referenced by this atomic_ref and returned value is "
                          "\"desired\" in device code");
     auto assign_op_test = [](T val_expd, T val_chgd,
-                             typename base::AtomicRT& a_r, auto result_acc,
+                             typename base::atomic_ref_type& a_r, auto result_acc,
                              auto ref_data_acc) {
       auto desired = (a_r = val_chgd);
       result_acc[0] = (ref_data_acc[0] == val_chgd);
@@ -55,7 +55,7 @@ struct atomic_ref_assign_op_test
 
     if constexpr (base::address_space_is_not_local_space()) {
       std::array result{false, false, false};
-      this->queue_submit_global_space(result, assign_op_test);
+      this->queue_submit_global_scope(result, assign_op_test);
       {
         INFO(
             description +
@@ -77,7 +77,7 @@ struct atomic_ref_assign_op_test
 
     if constexpr (base::address_space_is_not_global_space()) {
       std::array result{false, false, false};
-      this->queue_submit_local_space(result, assign_op_test);
+      this->queue_submit_local_scope(result, assign_op_test);
       {
         INFO(description +
              "\nError, call of operator=() didn't update referenced val (local "
@@ -109,6 +109,8 @@ struct run_assign_op_test {
 
     for_all_combinations<atomic_ref_assign_op_test, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
 
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_assign_op_test, T*>(

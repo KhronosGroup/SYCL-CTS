@@ -35,11 +35,11 @@ class atomic_ref_compare_exchange_test
     : public atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT> {
   using base = atomic_ref_test<T, MemoryOrderT, MemoryScopeT, AddressSpaceT>;
 
-  using AtomicRT = typename base::AtomicRT;
+  using atomic_ref_type = typename base::atomic_ref_type;
 
   class kernel_to_check_op_with_eq_values {
    private:
-    bool exec_cmpr_exch(AtomicRT& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch(atomic_ref_type& a_r, T& expected, T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          failure_order, scope);
@@ -48,7 +48,7 @@ class atomic_ref_compare_exchange_test
                                            failure_order, scope);
     }
 
-    bool exec_cmpr_exch_ovrld(AtomicRT& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected, T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);
@@ -101,7 +101,7 @@ class atomic_ref_compare_exchange_test
     }
 
     template <typename res_acc_type, typename data_acc_type>
-    void operator()(T ref_val, T ref_val_chgd, AtomicRT& a_r,
+    void operator()(T ref_val, T ref_val_chgd, atomic_ref_type& a_r,
                     res_acc_type res_accessor,
                     data_acc_type data_accessor) const {
       T expected = ref_val;
@@ -123,7 +123,7 @@ class atomic_ref_compare_exchange_test
   };
   class kernel_to_check_op_with_uneq_values {
    private:
-    bool exec_cmpr_exch(AtomicRT& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch(atomic_ref_type& a_r, T& expected, T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          failure_order, scope);
@@ -132,7 +132,7 @@ class atomic_ref_compare_exchange_test
                                            failure_order, scope);
     }
 
-    bool exec_cmpr_exch_ovrld(AtomicRT& a_r, T& expected, T desired) const {
+    bool exec_cmpr_exch_ovrld(atomic_ref_type& a_r, T& expected, T desired) const {
       if constexpr (std::is_same_v<ExchangeType, weak>)
         return a_r.compare_exchange_weak(expected, desired, success_order,
                                          scope);
@@ -154,7 +154,7 @@ class atomic_ref_compare_exchange_test
     }
 
     template <typename res_acc_type, typename data_acc_type>
-    void operator()(T ref_val, T ref_val_chgd, AtomicRT& a_r,
+    void operator()(T ref_val, T ref_val_chgd, atomic_ref_type& a_r,
                     res_acc_type res_accessor,
                     data_acc_type data_accessor) const {
       T expected = ref_val_chgd;
@@ -360,13 +360,15 @@ struct run_compare_exchange_test {
     for_all_combinations<atomic_ref_compare_exchange_test, weak, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
 
+    for_all_combinations<atomic_ref_compare_exchange_test, strong, T>(
+        memory_orders, memory_scopes, address_spaces, type_name);
+
+    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
+
     std::string type_name_for_pointer_types = type_name + "*";
     for_all_combinations<atomic_ref_compare_exchange_test, weak, T*>(
         memory_orders, memory_scopes, address_spaces,
         type_name_for_pointer_types);
-
-    for_all_combinations<atomic_ref_compare_exchange_test, strong, T>(
-        memory_orders, memory_scopes, address_spaces, type_name);
 
     for_all_combinations<atomic_ref_compare_exchange_test, strong, T*>(
         memory_orders, memory_scopes, address_spaces,
