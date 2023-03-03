@@ -30,7 +30,7 @@ using namespace sycl_cts;
  */
 class TEST_NAME : public util::test_base {
   /** return information about this test
-  */
+   */
   void get_info(test_base::info &out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
@@ -71,43 +71,36 @@ class TEST_NAME : public util::test_base {
 
     {
       /** check default constructor and destructor
-      */
-      {
-        sycl::context context;
-      }
+       */
+      { sycl::context context; }
 
       /** check (async_handler) constructor
-      */
-      {
-        sycl::context context(asyncHandler);
-      }
+       */
+      { sycl::context context(asyncHandler); }
 
       /** check (device) constructor
-      */
+       */
       {
-        cts_selector selector;
-        auto device = util::get_cts_object::device(selector);
+        auto device = util::get_cts_object::device(cts_selector);
         sycl::context context(device);
 
         check_context_after_ctor(context, device, log);
       }
 
       /** check (device, async_handler) constructor
-      */
+       */
       {
-        cts_selector selector;
         cts_async_handler asyncHandler;
-        auto device = util::get_cts_object::device(selector);
+        auto device = util::get_cts_object::device(cts_selector);
         sycl::context context(device, asyncHandler);
 
         check_context_after_ctor(context, device, log);
       }
 
       /** check (std::vector<device>) constructor
-      */
+       */
       {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
+        auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList);
 
@@ -115,11 +108,10 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (std::vector<device>, async_handler) constructor
-      */
+       */
       {
-        cts_selector selector;
         cts_async_handler asyncHandler;
-        auto platform = util::get_cts_object::platform(selector);
+        auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList, asyncHandler);
 
@@ -127,10 +119,9 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (platform) constructor
-      */
+       */
       {
-        cts_selector selector;
-        auto platform = util::get_cts_object::platform(selector);
+        auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(platform);
 
@@ -138,11 +129,10 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (platform, async_handler) constructor
-      */
+       */
       {
-        cts_selector selector;
         cts_async_handler asyncHandler;
-        auto platform = util::get_cts_object::platform(selector);
+        auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(platform, asyncHandler);
 
@@ -150,10 +140,9 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check copy constructor
-      */
+       */
       {
-        cts_selector selector;
-        auto contextA = util::get_cts_object::context(selector);
+        auto contextA = util::get_cts_object::context(cts_selector);
         sycl::context contextB(contextA);
 
 #ifdef SYCL_BACKEND_OPENCL
@@ -168,10 +157,9 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check assignment operator
-      */
+       */
       {
-        cts_selector selector;
-        auto contextA = util::get_cts_object::context(selector);
+        auto contextA = util::get_cts_object::context(cts_selector);
         sycl::context contextB = contextA;
 
 #ifdef SYCL_BACKEND_OPENCL

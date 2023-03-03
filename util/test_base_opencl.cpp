@@ -60,8 +60,7 @@ bool test_base_opencl::setup(logger &log) {
 
   cl_int error = CL_SUCCESS;
 
-  cts_selector ctsSelector;
-  const auto ctsContext = util::get_cts_object::context(ctsSelector);
+  const auto ctsContext = util::get_cts_object::context(cts_selector);
 
   if (ctsContext.get_devices().empty()) {
     FAIL(log, "Unable to retrieve list of devices via cts_selector");

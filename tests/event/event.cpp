@@ -163,7 +163,7 @@ struct test_exception {
 class test_exception_handler {
  public:
   test_exception_handler()
-      : queue{cts_selector{},
+      : queue{cts_selector,
               [this](sycl::exception_list el) { capture(std::move(el)); }} {}
   sycl::queue& get_queue() { return queue; }
 
@@ -359,7 +359,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
   check_get_profiling_info_return_type<
       sycl::info::event_profiling::command_end>();
 
-  const auto device = sycl::device{cts_selector{}};
+  const auto device = sycl::device{cts_selector};
   if (!device.has(sycl::aspect::queue_profiling)) {
     WARN(
         "Skipping test because device does not have "

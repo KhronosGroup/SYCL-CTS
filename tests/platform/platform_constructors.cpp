@@ -61,9 +61,8 @@ class TEST_NAME : public util::test_base {
       /** check (const device_selector) constructor
        */
       {
-        const cts_selector selector;
-        sycl::platform platform(selector);
-        sycl::device device(selector);
+        sycl::platform platform(cts_selector);
+        sycl::device device(cts_selector);
         const auto platform_devices = platform.get_devices();
         if (std::find(platform_devices.begin(), platform_devices.end(),
                       device) == platform_devices.end()) {
@@ -76,8 +75,7 @@ class TEST_NAME : public util::test_base {
       /** check copy constructor
        */
       {
-        cts_selector selector;
-        sycl::platform platformA(selector);
+        sycl::platform platformA(cts_selector);
         sycl::platform platformB(platformA);
 
 #ifdef SYCL_BACKEND_OPENCL
@@ -94,8 +92,7 @@ class TEST_NAME : public util::test_base {
       /** check assignment operator
        */
       {
-        cts_selector selector;
-        sycl::platform platformA(selector);
+        sycl::platform platformA(cts_selector);
         sycl::platform platformB = platformA;
 
 #ifdef SYCL_BACKEND_OPENCL

@@ -120,8 +120,7 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
 
 TEST_CASE("check property::queue::in_order", "[queue]") {
   cts_async_handler asyncHandler;
-  cts_selector selector;
-  auto context = util::get_cts_object::context(selector);
+  auto context = util::get_cts_object::context(cts_selector);
   auto device = util::get_cts_object::device();
 
   SECTION("with constructor (propList)") {
@@ -134,12 +133,12 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
     check_in_order(queue);
   }
   SECTION("with constructor (deviceSelector, propList)") {
-    sycl::queue queue(selector,
+    sycl::queue queue(cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
   SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
-    sycl::queue queue(selector, asyncHandler,
+    sycl::queue queue(cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
@@ -154,14 +153,14 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
     check_in_order(queue);
   }
   SECTION("with constructor (syclContext, deviceSelector, propList)") {
-    sycl::queue queue(context, selector,
+    sycl::queue queue(context, cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
   SECTION(
       "with constructor (syclContext, deviceSelector, asyncHandler, "
       "propList)") {
-    sycl::queue queue(context, selector, asyncHandler,
+    sycl::queue queue(context, cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
   }
@@ -184,8 +183,7 @@ TEST_CASE("check both queue properties in_order and enable_profiling",
   if (!device.has(sycl::aspect::queue_profiling))
     SKIP("Device does not support queue_profiling");
   cts_async_handler asyncHandler;
-  cts_selector selector;
-  auto context = util::get_cts_object::context(selector);
+  auto context = util::get_cts_object::context(cts_selector);
 
   SECTION("with constructor (propList)") {
     sycl::queue queue(
@@ -201,14 +199,15 @@ TEST_CASE("check both queue properties in_order and enable_profiling",
     check_props(queue);
   }
   SECTION("with constructor (deviceSelector, propList)") {
-    sycl::queue queue(selector, sycl::property_list{
-                                    sycl::property::queue::in_order(),
-                                    sycl::property::queue::enable_profiling()});
+    sycl::queue queue(
+        cts_selector,
+        sycl::property_list{sycl::property::queue::in_order(),
+                            sycl::property::queue::enable_profiling()});
     check_props(queue);
   }
   SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
     sycl::queue queue(
-        selector, asyncHandler,
+        cts_selector, asyncHandler,
         sycl::property_list{sycl::property::queue::in_order(),
                             sycl::property::queue::enable_profiling()});
     check_props(queue);
@@ -228,7 +227,7 @@ TEST_CASE("check both queue properties in_order and enable_profiling",
   }
   SECTION("with constructor (syclContext, deviceSelector, propList)") {
     sycl::queue queue(
-        context, selector,
+        context, cts_selector,
         sycl::property_list{sycl::property::queue::in_order(),
                             sycl::property::queue::enable_profiling()});
     check_props(queue);
@@ -237,7 +236,7 @@ TEST_CASE("check both queue properties in_order and enable_profiling",
       "with constructor (syclContext, deviceSelector, asyncHandler, "
       "propList)") {
     sycl::queue queue(
-        context, selector, asyncHandler,
+        context, cts_selector, asyncHandler,
         sycl::property_list{sycl::property::queue::in_order(),
                             sycl::property::queue::enable_profiling()});
     check_in_order(queue);

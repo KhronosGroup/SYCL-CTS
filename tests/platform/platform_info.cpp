@@ -45,8 +45,7 @@ class TEST_NAME : public util::test_base {
       /** check get_info parameters
        */
       {
-        cts_selector selector;
-        auto plt = util::get_cts_object::platform(selector);
+        auto plt = util::get_cts_object::platform(cts_selector);
         check_get_info_param<sycl::info::platform::profile, std::string>(log,
                                                                          plt);
         check_get_info_param<sycl::info::platform::version, std::string>(log,

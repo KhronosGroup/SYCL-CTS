@@ -53,7 +53,7 @@ static std::string get_device_type_str(const sycl::device& d) {
 
 void device_manager::list_devices() const {
   const auto all_devices = sycl::device::get_devices();
-  const auto cts_device = cts_selector{}.select_device();
+  const auto cts_device = sycl::device(cts_selector);
 
   if (all_devices.empty()) {
     printf("No devices available.\n");
@@ -75,10 +75,8 @@ void device_manager::list_devices() const {
 }
 
 void device_manager::dump_info(const std::string& infoDumpFile) {
-  cts_selector selector;
-
-  auto chosenDevice = sycl::device(selector);
-  auto chosenPlatform = sycl::platform(selector);
+  auto chosenDevice = sycl::device(cts_selector);
+  auto chosenPlatform = sycl::platform(cts_selector);
 
   std::fstream infoFile(infoDumpFile, std::ios::out);
 
