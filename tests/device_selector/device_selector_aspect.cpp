@@ -396,6 +396,9 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
   create_random_sets(aspect_tuple, set_sizes);
 }
 
+template <typename AspectT>
+class kernel_aspect;
+
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  Functor that checks any_device_has and all_devices_have functionality. */
@@ -405,11 +408,20 @@ class check_any_device_has_all_devices_have {
 
  public:
   void operator()(const std::string& aspect_name) {
-    auto device_has_aspect = [=](auto d) { return d.has(aspect); };
+    using k_name = kernel_aspect<AspectT>;
+
+    sycl::queue queue = util::get_cts_object::queue();
+    queue.submit(
+        [&](sycl::handler& cgh) { cgh.single_task<k_name>([=]() {}); });
+
+    auto exec_device_has_aspect = [=](auto d) {
+      return d.has(aspect) && sycl::is_compatible<k_name>(d);
+    };
     auto devices = sycl::device::get_devices();
-    bool any_device = any_of(devices.begin(), devices.end(), device_has_aspect);
+    bool any_device =
+        any_of(devices.begin(), devices.end(), exec_device_has_aspect);
     bool all_devices =
-        all_of(devices.begin(), devices.end(), device_has_aspect);
+        all_of(devices.begin(), devices.end(), exec_device_has_aspect);
     if (any_device) {
       INFO(
           "Check that if some device has aspect A, "
