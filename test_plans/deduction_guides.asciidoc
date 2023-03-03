@@ -102,8 +102,6 @@ multi_ptr(local_accessor<T, Dimensions>) -> multi_ptr<T, access::address_space::
 
 * Using `std::is_same_v` compare resulting object with expected type from deduction guide.
 
-* Using `std::is_same_v` Check that `get()` with * operator is same as `accessor::reference`.
-
 === `range` and `id`
 
 Check that constructing an object without specifying `Dimensions` passes correct number of `size_t` arguments.
