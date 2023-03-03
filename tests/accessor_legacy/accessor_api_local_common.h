@@ -109,7 +109,7 @@ class check_local_accessor_api_methods {
                       target == sycl::access::target::local ||
                       target == sycl::access::target::host_buffer) {
           /** check get_pointer() method for deprecated accessor targets
-          */
+           */
           auto pointer = acc.get_pointer();
           check_return_type<explicit_pointer_t<T, mode, target>>(
               log, pointer, "get_pointer()");
