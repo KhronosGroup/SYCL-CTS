@@ -105,12 +105,14 @@ class check_local_accessor_api_methods {
           }
         }
         check_get_range(log, acc, range, typeName, is_zero_dim<dims>{});
-        {
-          /** check get_pointer() method
+        if constexpr (target == sycl::access::target::constant_buffer ||
+                      target == sycl::access::target::local ||
+                      target == sycl::access::target::host_buffer) {
+          /** check get_pointer() method for deprecated accessor targets
           */
           auto pointer = acc.get_pointer();
-          check_return_type<explicit_pointer_t<T, target>>(log, pointer,
-                                                           "get_pointer()");
+          check_return_type<explicit_pointer_t<T, mode, target>>(
+              log, pointer, "get_pointer()");
           if (pointer == nullptr) {
             fail_for_accessor<T, dims, mode, target>(log, typeName,
                 "accessor does not return the correct pointer");
