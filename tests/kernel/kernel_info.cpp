@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 // Disable test when compiling with ComputeCpp
@@ -32,7 +33,7 @@ class kernel0;
 
 TEST_CASE("Test kernel info", "[kernel]") {
   auto queue = util::get_cts_object::queue();
-  auto deviceList = queue.get_context().get_devices();
+  auto dev = util::get_cts_object::device();
   auto ctx = queue.get_context();
 
   using k_name = kernel0;
@@ -44,15 +45,51 @@ TEST_CASE("Test kernel info", "[kernel]") {
 
   /** check program info parameters
    */
-  auto uint32Ret = kernel.get_info<sycl::info::kernel::num_args>();
-  check_return_type<uint32_t>(
-      uint32Ret, "sycl::kernel::get_info<sycl::info::kernel::num_args>()");
+  auto incorrect_num_args_usage = [&kernel] {
+    auto uint32Ret = kernel.get_info<sycl::info::kernel::num_args>();
+  };
 
-  auto stringRet = kernel.get_info<sycl::info::kernel::attributes>();
-  check_return_type<std::string>(
-      stringRet, "sycl::kernel::get_info<sycl::info::kernel::attributes>()");
+  {
+    INFO(
+        "Exception isn't thrown in case of invalid usage of "
+        "sycl::info::kernel::num_args descriptor");
+    CHECK_THROWS_MATCHES(incorrect_num_args_usage, sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
 
-  auto dev = util::get_cts_object::device();
+  auto incorrect_global_work_size_usage = [&kernel, &dev] {
+    auto range3Ret =
+        kernel.get_info<sycl::info::kernel_device_specific::global_work_size>(
+            dev);
+  };
+
+  {
+    INFO(
+        "Exception isn't thrown in case of invalid usage of "
+        "sycl::info::kernel_device_specific::global_work_size descriptor");
+    CHECK_THROWS_MATCHES(incorrect_global_work_size_usage, sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
+  }
+
+  auto built_in_kernel_ids =
+      dev.get_info<sycl::info::device::built_in_kernel_ids>();
+  if (!built_in_kernel_ids.empty()) {
+    auto built_in_kernel = kb.get_kernel(built_in_kernel_ids[0]);
+
+    auto uint32Ret = built_in_kernel.get_info<sycl::info::kernel::num_args>();
+    check_return_type<uint32_t>(
+        uint32Ret, "sycl::kernel::get_info<sycl::info::kernel::num_args>()");
+
+    auto range3Ret =
+        built_in_kernel
+            .get_info<sycl::info::kernel_device_specific::global_work_size>(
+                dev);
+    check_return_type<sycl::range<3>>(
+        range3Ret,
+        "sycl::kernel::get_info<sycl::info::kernel_device_specific::global_"
+        "work_size>(dev) for built_in_kernel");
+  }
+
   if (dev.get_info<sycl::info::device::device_type>() ==
       sycl::info::device_type::custom) {
     auto range3Ret =
@@ -61,8 +98,12 @@ TEST_CASE("Test kernel info", "[kernel]") {
     check_return_type<sycl::range<3>>(
         range3Ret,
         "sycl::kernel::get_info<sycl::info::kernel_device_specific::global_"
-        "work_size>(dev)");
+        "work_size>(dev) for custom device");
   }
+
+  auto stringRet = kernel.get_info<sycl::info::kernel::attributes>();
+  check_return_type<std::string>(
+      stringRet, "sycl::kernel::get_info<sycl::info::kernel::attributes>()");
 
   auto range3Ret = kernel.get_info<
       sycl::info::kernel_device_specific::compile_work_group_size>(dev);
@@ -132,4 +173,5 @@ TEST_CASE("Test kernel info", "[kernel]") {
 };
 
 } /* namespace kernel_info__ */
+
 #endif // SYCL_CTS_COMPILING_WITH_COMPUTECPP
