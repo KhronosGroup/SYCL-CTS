@@ -28,7 +28,7 @@
 
 #endif  // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
-namespace atomic_ref::static_members::core::atomic64 {
+namespace atomic_ref::tests::static_members::core::atomic64 {
 
 // FIXME: re-enable when sycl::access::address_space::generic_space is
 // implemented in computecpp
@@ -41,7 +41,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
         "Skipping the test case.");
   }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
-  for_all_types<atomic_ref::static_members::run_test>(type_pack);
+  for_all_types<atomic_ref::tests::static_members::run_test>(type_pack);
 });
 
-}  // namespace atomic_ref::static_members::core::atomic64
+}  // namespace atomic_ref::tests::static_members::core::atomic64

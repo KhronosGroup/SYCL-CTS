@@ -16,7 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides sycl::atomic_ref constructors test for generic types.
+//  Provides sycl::atomic_ref coperator^=()/operator|=()/operator&=()
+//  test for atomic64 types
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
@@ -24,12 +25,12 @@
 
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
-#include "atomic_ref_constructors.h"
+#include "atomic_ref_bitwise_op_test.h"
 
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
-namespace atomic_ref::tests::constructors::core {
+namespace atomic_ref::tests::api::core::atomic64 {
 
 // FIXME: re-enable for computecpp when
 // sycl::access::address_space::generic_space and possibility of a SYCL kernel
@@ -38,9 +39,16 @@ namespace atomic_ref::tests::constructors::core {
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
 // hipsycl
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("sycl::atomic_ref constructors. core types", "[atomic_ref]")({
-  const auto types = atomic_ref::tests::common::get_conformance_type_pack();
-  for_all_types<atomic_ref::tests::constructors::run_test>(types);
+("sycl::atomic_ref operator^=()/operator|=()/operator&=() test. atomic64 types",
+ "[atomic_ref]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::atomic64)) {
+    SKIP(
+        "Device does not support atomic64 operations. "
+        "Skipping the test case.");
+  }
+  const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
+  for_all_types<atomic_ref::tests::api::run_bitwise_op_test>(type_pack);
 });
 
-}  // namespace atomic_ref::tests::constructors::core
+}  // namespace atomic_ref::tests::api::core::atomic64
