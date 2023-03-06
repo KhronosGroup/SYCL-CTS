@@ -69,8 +69,8 @@ class run_queue_shortcut_exceptions_tests {
     fill_memory<T, DestPtrType>(dst.get(), init_v,
                                 (dest_pitch + extra_bit) * array_height, queue);
 
-    auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-    auto src_address = src.get() + shift_row * src_pitch + shift_col;
+    auto dest_address = get_region_address(dst.get(), dest_pitch);
+    auto src_address = get_region_address(src.get(), src_pitch);
 
     if constexpr (std::is_same_v<T, unsigned char>) {
       SECTION(sycl_cts::section_name(std::string("Check memcpy2d with T = ") +
@@ -85,9 +85,14 @@ class run_queue_shortcut_exceptions_tests {
                                            src_address, src_pitch, reg_width,
                                            region_height);
         };
+        // Check that if reg_width is greater than src_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action1(src_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action1(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -98,9 +103,14 @@ class run_queue_shortcut_exceptions_tests {
                                            src_address, src_pitch, reg_width,
                                            region_height, event1);
         };
+        // Check that if reg_width is greater than src_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action2(src_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action2(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -111,9 +121,14 @@ class run_queue_shortcut_exceptions_tests {
                                     src_pitch, reg_width, region_height,
                                     {event1, event2});
         };
+        // Check that if reg_width is greater than src_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action3(src_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action3(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -130,9 +145,14 @@ class run_queue_shortcut_exceptions_tests {
         return queue.ext_oneapi_copy2d(src_address, src_pitch, dest_address,
                                        dest_pitch, reg_width, region_height);
       };
+      // Check that if reg_width is greater than src_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action1(src_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action1(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -143,9 +163,14 @@ class run_queue_shortcut_exceptions_tests {
                                        dest_pitch, reg_width, region_height,
                                        event1);
       };
+      // Check that if reg_width is greater than src_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action2(src_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action2(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -156,9 +181,14 @@ class run_queue_shortcut_exceptions_tests {
                                        dest_pitch, reg_width, region_height,
                                        {event1, event2});
       };
+      // Check that if reg_width is greater than src_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action3(src_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action3(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -177,9 +207,8 @@ class run_queue_shortcut_exceptions_tests {
           return queue.ext_oneapi_memset2d(dest_address, dest_pitch, value,
                                            reg_width, region_height);
         };
-        CHECK_THROWS_MATCHES(
-            action1(src_pitch + extra_bit), sycl::exception,
-            sycl_cts::util::equals_exception(sycl::errc::invalid));
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action1(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -189,9 +218,8 @@ class run_queue_shortcut_exceptions_tests {
           return queue.ext_oneapi_memset2d(dest_address, dest_pitch, value,
                                            reg_width, region_height, event1);
         };
-        CHECK_THROWS_MATCHES(
-            action2(src_pitch + extra_bit), sycl::exception,
-            sycl_cts::util::equals_exception(sycl::errc::invalid));
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action2(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -202,9 +230,8 @@ class run_queue_shortcut_exceptions_tests {
                                            reg_width, region_height,
                                            {event1, event2});
         };
-        CHECK_THROWS_MATCHES(
-            action3(src_pitch + extra_bit), sycl::exception,
-            sycl_cts::util::equals_exception(sycl::errc::invalid));
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action3(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -223,9 +250,8 @@ class run_queue_shortcut_exceptions_tests {
         return queue.ext_oneapi_fill2d(dest_address, dest_pitch, value,
                                        reg_width, region_height);
       };
-      CHECK_THROWS_MATCHES(
-          action1(src_pitch + extra_bit), sycl::exception,
-          sycl_cts::util::equals_exception(sycl::errc::invalid));
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action1(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -235,9 +261,8 @@ class run_queue_shortcut_exceptions_tests {
         return queue.ext_oneapi_fill2d(dest_address, dest_pitch, value,
                                        reg_width, region_height, event1);
       };
-      CHECK_THROWS_MATCHES(
-          action2(src_pitch + extra_bit), sycl::exception,
-          sycl_cts::util::equals_exception(sycl::errc::invalid));
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action2(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -248,9 +273,8 @@ class run_queue_shortcut_exceptions_tests {
                                        reg_width, region_height,
                                        {event1, event2});
       };
-      CHECK_THROWS_MATCHES(
-          action3(src_pitch + extra_bit), sycl::exception,
-          sycl_cts::util::equals_exception(sycl::errc::invalid));
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action3(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));

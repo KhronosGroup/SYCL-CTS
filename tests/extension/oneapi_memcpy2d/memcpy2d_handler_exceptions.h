@@ -80,15 +80,20 @@ class run_handler_exceptions_tests {
                   .create()) {
         auto action = [&](auto reg_width) {
           queue.submit([&](sycl::handler& cgh) {
-            auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-            auto src_address = src.get() + shift_row * src_pitch + shift_col;
+            auto dest_address = get_region_address(dst.get(), dest_pitch);
+            auto src_address = get_region_address(src.get(), src_pitch);
             cgh.ext_oneapi_memcpy2d(dest_address, dest_pitch, src_address,
                                     src_pitch, reg_width, region_height);
           });
         };
+        // Check that if reg_width is greater than src_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action(src_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -103,15 +108,20 @@ class run_handler_exceptions_tests {
             .create()) {
       auto action = [&](auto reg_width) {
         queue.submit([&](sycl::handler& cgh) {
-          auto dest_address = dst.get() + (shift_row * dest_pitch + shift_col);
-          auto src_address = src.get() + (shift_row * src_pitch + shift_col);
+          auto dest_address = get_region_address(dst.get(), dest_pitch);
+          auto src_address = get_region_address(src.get(), src_pitch);
           cgh.ext_oneapi_copy2d(src_address, src_pitch, dest_address,
                                 dest_pitch, reg_width, region_height);
         });
       };
+      // Check that if reg_width is greater than src_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action(src_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
+
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -126,16 +136,15 @@ class run_handler_exceptions_tests {
                   .create()) {
         auto action = [&](auto reg_width) {
           queue.submit([&](sycl::handler& cgh) {
-            auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-            auto src_address = src.get() + shift_row * src_pitch + shift_col;
+            auto dest_address = get_region_address(dst.get(), dest_pitch);
+            auto src_address = get_region_address(src.get(), src_pitch);
             int value = expected_val;
             cgh.ext_oneapi_memset2d(dest_address, dest_pitch, value, reg_width,
                                     region_height);
           });
         };
-        CHECK_THROWS_MATCHES(
-            action(src_pitch + extra_bit), sycl::exception,
-            sycl_cts::util::equals_exception(sycl::errc::invalid));
+        // Check that if reg_width is greater than dest_pitch function throws a
+        // synchronous exception with the errc::invalid error code
         CHECK_THROWS_MATCHES(
             action(dest_pitch + extra_bit), sycl::exception,
             sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -150,16 +159,15 @@ class run_handler_exceptions_tests {
                 .create()) {
       auto action = [&](auto reg_width) {
         queue.submit([&](sycl::handler& cgh) {
-          auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-          auto src_address = src.get() + shift_row * src_pitch + shift_col;
+          auto dest_address = get_region_address(dst.get(), dest_pitch);
+          auto src_address = get_region_address(src.get(), src_pitch);
           T value = value_operations::init<T>(expected_val);
           cgh.ext_oneapi_fill2d(dest_address, dest_pitch, value, reg_width,
                                 region_height);
         });
       };
-      CHECK_THROWS_MATCHES(
-          action(src_pitch + extra_bit), sycl::exception,
-          sycl_cts::util::equals_exception(sycl::errc::invalid));
+      // Check that if reg_width is greater than dest_pitch function throws a
+      // synchronous exception with the errc::invalid error code
       CHECK_THROWS_MATCHES(
           action(dest_pitch + extra_bit), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));

@@ -77,21 +77,18 @@ class run_handler_tests {
                                      dest_ptr_type_name)
                   .create()) {
         queue.submit([&](sycl::handler& cgh) {
-          auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-          auto src_address = src.get() + shift_row * src_pitch + shift_col;
+          auto dest_address = get_region_address(dst.get(), dest_pitch);
+          auto src_address = get_region_address(src.get(), src_pitch);
           cgh.ext_oneapi_memcpy2d(dest_address, dest_pitch, src_address,
                                   src_pitch, region_width, region_height);
         });
         queue.wait();
         copy_destination_to_host_result<DestPtrType>(dst.get(), result,
                                                      result_size, queue);
-        for (size_t i = 0; i < array_height; ++i) {
-          for (size_t j = 0; j < dest_pitch; ++j) {
-            size_t address = j + dest_pitch * i;
-            T val = get_expected_value(address, init_v, expected_v);
-            CHECK(val == result[address]);
-          }
-        }
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result[index]);
+        });
       }
     }
     SECTION(sycl_cts::section_name(std::string("Check copy2d with T = ") +
@@ -102,21 +99,18 @@ class run_handler_tests {
                                    dest_ptr_type_name)
                 .create()) {
       queue.submit([&](sycl::handler& cgh) {
-        auto dest_address = dst.get() + (shift_row * dest_pitch + shift_col);
-        auto src_address = src.get() + (shift_row * src_pitch + shift_col);
+        auto dest_address = get_region_address(dst.get(), dest_pitch);
+        auto src_address = get_region_address(src.get(), src_pitch);
         cgh.ext_oneapi_copy2d(src_address, src_pitch, dest_address, dest_pitch,
                               region_width, region_height);
       });
       queue.wait();
       copy_destination_to_host_result<DestPtrType>(dst.get(), result,
                                                    result_size, queue);
-      for (size_t i = 0; i < array_height; ++i) {
-        for (size_t j = 0; j < dest_pitch; ++j) {
-          size_t address = (j + dest_pitch * i);
-          T val = get_expected_value(address, init_v, expected_v);
-          CHECK(val == result[address]);
-        }
-      }
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result[index]);
+      });
     }
     if constexpr (std::is_same_v<T, unsigned char>) {
       SECTION(sycl_cts::section_name(std::string("Check memset2d with T = ") +
@@ -127,8 +121,8 @@ class run_handler_tests {
                                      dest_ptr_type_name)
                   .create()) {
         queue.submit([&](sycl::handler& cgh) {
-          auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-          auto src_address = src.get() + shift_row * src_pitch + shift_col;
+          auto dest_address = get_region_address(dst.get(), dest_pitch);
+          auto src_address = get_region_address(src.get(), src_pitch);
           int value = expected_val;
           cgh.ext_oneapi_memset2d(dest_address, dest_pitch, value, region_width,
                                   region_height);
@@ -136,13 +130,10 @@ class run_handler_tests {
         queue.wait();
         copy_destination_to_host_result<DestPtrType>(dst.get(), result,
                                                      result_size, queue);
-        for (size_t i = 0; i < array_height; ++i) {
-          for (size_t j = 0; j < dest_pitch; ++j) {
-            size_t address = j + dest_pitch * i;
-            T val = get_expected_value(address, init_v, expected_v);
-            CHECK(val == result[address]);
-          }
-        }
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result[index]);
+        });
       }
     }
     SECTION(sycl_cts::section_name(std::string("Check fill2d with T = ") +
@@ -153,8 +144,8 @@ class run_handler_tests {
                                    dest_ptr_type_name)
                 .create()) {
       queue.submit([&](sycl::handler& cgh) {
-        auto dest_address = dst.get() + shift_row * dest_pitch + shift_col;
-        auto src_address = src.get() + shift_row * src_pitch + shift_col;
+        auto dest_address = get_region_address(dst.get(), dest_pitch);
+        auto src_address = get_region_address(src.get(), src_pitch);
         T value = value_operations::init<T>(expected_val);
         cgh.ext_oneapi_fill2d(dest_address, dest_pitch, value, region_width,
                               region_height);
@@ -162,13 +153,10 @@ class run_handler_tests {
       queue.wait();
       copy_destination_to_host_result<DestPtrType>(dst.get(), result,
                                                    result_size, queue);
-      for (size_t i = 0; i < array_height; ++i) {
-        for (size_t j = 0; j < dest_pitch; ++j) {
-          size_t address = j + dest_pitch * i;
-          T val = get_expected_value(address, init_v, expected_v);
-          CHECK(val == result[address]);
-        }
-      }
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result[index]);
+      });
     }
   }
 };

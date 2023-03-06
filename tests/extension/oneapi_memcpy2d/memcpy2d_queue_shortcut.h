@@ -88,35 +88,32 @@ class run_queue_shortcut_tests {
                                      " dest_ptr_type = " +
                                      dest_ptr_type_name)
                   .create()) {
-        auto dest_address = dst1.get() + shift_row * dest_pitch + shift_col;
-        auto src_address = src.get() + shift_row * src_pitch + shift_col;
-        auto queue1 =
+        auto dest_address = get_region_address(dst1.get(), dest_pitch);
+        auto src_address = get_region_address(src.get(), src_pitch);
+        auto event1 =
             queue.ext_oneapi_memcpy2d(dest_address, dest_pitch, src_address,
                                       src_pitch, region_width, region_height);
 
-        dest_address = dst2.get() + shift_row * dest_pitch + shift_col;
-        src_address = dst1.get() + shift_row * dest_pitch + shift_col;
-        auto queue2 = queue.ext_oneapi_memcpy2d(
+        dest_address = get_region_address(dst2.get(), dest_pitch);
+        src_address = get_region_address(dst1.get(), dest_pitch);
+        auto event2 = queue.ext_oneapi_memcpy2d(
             dest_address, dest_pitch, src_address, dest_pitch, region_width,
-            region_height, queue1);
+            region_height, event1);
 
-        dest_address = dst3.get() + shift_row * dest_pitch + shift_col;
-        src_address = dst2.get() + shift_row * dest_pitch + shift_col;
+        dest_address = get_region_address(dst3.get(), dest_pitch);
+        src_address = get_region_address(dst2.get(), dest_pitch);
         queue.ext_oneapi_memcpy2d(dest_address, dest_pitch, src_address,
                                   dest_pitch, region_width, region_height,
-                                  {queue1, queue2});
+                                  {event1, event2});
 
         queue.wait();
         copy_destination_to_host_result<DestPtrType>(dst3.get(), result,
                                                      result_size, queue);
 
-        for (size_t i = 0; i < array_height; ++i) {
-          for (size_t j = 0; j < dest_pitch; ++j) {
-            size_t address = j + dest_pitch * i;
-            T val = get_expected_value(address, init_v, expected_v);
-            CHECK(val == result[address]);
-          }
-        }
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result[index]);
+        });
       }
     }
     SECTION(sycl_cts::section_name(std::string("Check copy2d with T = ") +
@@ -126,34 +123,31 @@ class run_queue_shortcut_tests {
                                    " dest_ptr_type = " +
                                    dest_ptr_type_name)
                 .create()) {
-      auto dest_address = dst1.get() + (shift_row * dest_pitch + shift_col);
-      auto src_address = src.get() + (shift_row * src_pitch + shift_col);
-      auto queue1 =
+      auto dest_address = get_region_address(dst1.get(), dest_pitch);
+      auto src_address = get_region_address(src.get(), src_pitch);
+      auto event1 =
           queue.ext_oneapi_copy2d(src_address, src_pitch, dest_address,
                                   dest_pitch, region_width, region_height);
 
-      dest_address = dst2.get() + shift_row * dest_pitch + shift_col;
-      src_address = dst1.get() + shift_row * dest_pitch + shift_col;
-      auto queue2 = queue.ext_oneapi_copy2d(
+      dest_address = get_region_address(dst2.get(), dest_pitch);
+      src_address = get_region_address(dst1.get(), dest_pitch);
+      auto event2 = queue.ext_oneapi_copy2d(
           src_address, dest_pitch, dest_address, dest_pitch, region_width,
-          region_height, queue1);
+          region_height, event1);
 
-      dest_address = dst3.get() + shift_row * dest_pitch + shift_col;
-      src_address = dst2.get() + shift_row * dest_pitch + shift_col;
+      dest_address = get_region_address(dst3.get(), dest_pitch);
+      src_address = get_region_address(dst2.get(), dest_pitch);
       queue.ext_oneapi_copy2d(src_address, dest_pitch, dest_address, dest_pitch,
-                              region_width, region_height, {queue1, queue2});
+                              region_width, region_height, {event1, event2});
 
       queue.wait();
       copy_destination_to_host_result<DestPtrType>(dst3.get(), result,
                                                    result_size, queue);
 
-      for (size_t i = 0; i < array_height; ++i) {
-        for (size_t j = 0; j < dest_pitch; ++j) {
-          size_t address = (j + dest_pitch * i);
-          T val = get_expected_value(address, init_v, expected_v);
-          CHECK(val == result[address]);
-        }
-      }
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result[index]);
+      });
     }
     if constexpr (std::is_same_v<T, unsigned char>) {
       SECTION(sycl_cts::section_name(std::string("Check memset2d with T = ") +
@@ -165,38 +159,43 @@ class run_queue_shortcut_tests {
                   .create()) {
         int value = expected_val;
 
-        auto dest_address = dst1.get() + shift_row * dest_pitch + shift_col;
-        auto src_address = src.get() + shift_row * src_pitch + shift_col;
-        auto queue1 = queue.ext_oneapi_memset2d(dest_address, dest_pitch, value,
+        auto dest_address = get_region_address(dst1.get(), dest_pitch);
+        auto src_address = get_region_address(src.get(), src_pitch);
+        auto event1 = queue.ext_oneapi_memset2d(dest_address, dest_pitch, value,
                                                 region_width, region_height);
 
-        dest_address = dst2.get() + shift_row * dest_pitch + shift_col;
-        src_address = dst1.get() + shift_row * dest_pitch + shift_col;
-        auto queue2 =
+        dest_address = get_region_address(dst2.get(), dest_pitch);
+        src_address = get_region_address(dst1.get(), dest_pitch);
+        auto event2 =
             queue.ext_oneapi_memset2d(dest_address, dest_pitch, value,
-                                      region_width, region_height, queue1);
+                                      region_width, region_height, event1);
 
-        dest_address = dst3.get() + shift_row * dest_pitch + shift_col;
-        src_address = dst2.get() + shift_row * dest_pitch + shift_col;
+        dest_address = get_region_address(dst3.get(), dest_pitch);
+        src_address = get_region_address(dst2.get(), dest_pitch);
         queue.ext_oneapi_memset2d(dest_address, dest_pitch, value, region_width,
-                                  region_height, {queue1, queue2});
+                                  region_height, {event1, event2});
 
         queue.wait();
         copy_destination_to_host_result<DestPtrType>(dst1.get(), result,
                                                      result_size, queue);
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result[index]);
+        });
+
         copy_destination_to_host_result<DestPtrType>(dst2.get(), result2,
                                                      result_size, queue);
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result2[index]);
+        });
+
         copy_destination_to_host_result<DestPtrType>(dst3.get(), result3,
                                                      result_size, queue);
-        for (size_t i = 0; i < array_height; ++i) {
-          for (size_t j = 0; j < dest_pitch; ++j) {
-            size_t address = j + dest_pitch * i;
-            T val = get_expected_value(address, init_v, expected_v);
-            CHECK(val == result[address]);
-            CHECK(val == result2[address]);
-            CHECK(val == result3[address]);
-          }
-        }
+        for_index([&](size_t index) {
+          T val = get_expected_value(index, init_v, expected_v);
+          CHECK(val == result3[index]);
+        });
       }
     }
     SECTION(sycl_cts::section_name(std::string("Check fill2d with T = ") +
@@ -208,37 +207,42 @@ class run_queue_shortcut_tests {
                 .create()) {
       T value = value_operations::init<T>(expected_val);
 
-      auto dest_address = dst1.get() + shift_row * dest_pitch + shift_col;
-      auto src_address = src.get() + shift_row * src_pitch + shift_col;
-      auto queue1 = queue.ext_oneapi_fill2d(dest_address, dest_pitch, value,
+      auto dest_address = get_region_address(dst1.get(), dest_pitch);
+      auto src_address = get_region_address(src.get(), src_pitch);
+      auto event1 = queue.ext_oneapi_fill2d(dest_address, dest_pitch, value,
                                             region_width, region_height);
 
-      dest_address = dst2.get() + shift_row * dest_pitch + shift_col;
-      src_address = dst1.get() + shift_row * dest_pitch + shift_col;
-      auto queue2 = queue.ext_oneapi_fill2d(
-          dest_address, dest_pitch, value, region_width, region_height, queue1);
+      dest_address = get_region_address(dst2.get(), dest_pitch);
+      src_address = get_region_address(dst1.get(), dest_pitch);
+      auto event2 = queue.ext_oneapi_fill2d(
+          dest_address, dest_pitch, value, region_width, region_height, event1);
 
-      dest_address = dst3.get() + shift_row * dest_pitch + shift_col;
-      src_address = dst2.get() + shift_row * dest_pitch + shift_col;
+      dest_address = get_region_address(dst3.get(), dest_pitch);
+      src_address = get_region_address(dst2.get(), dest_pitch);
       queue.ext_oneapi_fill2d(dest_address, dest_pitch, value, region_width,
-                              region_height, {queue1, queue2});
+                              region_height, {event1, event2});
 
       queue.wait();
       copy_destination_to_host_result<DestPtrType>(dst1.get(), result,
                                                    result_size, queue);
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result[index]);
+      });
+
       copy_destination_to_host_result<DestPtrType>(dst2.get(), result2,
                                                    result_size, queue);
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result2[index]);
+      });
+
       copy_destination_to_host_result<DestPtrType>(dst3.get(), result3,
                                                    result_size, queue);
-      for (size_t i = 0; i < array_height; ++i) {
-        for (size_t j = 0; j < dest_pitch; ++j) {
-          size_t address = j + dest_pitch * i;
-          T val = get_expected_value(address, init_v, expected_v);
-          CHECK(val == result[address]);
-          CHECK(val == result2[address]);
-          CHECK(val == result3[address]);
-        }
-      }
+      for_index([&](size_t index) {
+        T val = get_expected_value(index, init_v, expected_v);
+        CHECK(val == result3[index]);
+      });
     }
   }
 };
