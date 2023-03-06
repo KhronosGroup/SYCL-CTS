@@ -51,7 +51,8 @@ TEST_CASE("Test kernel info", "[kernel]") {
 
   {
     INFO(
-        "Exception isn't thrown in case of invalid usage of "
+        "Check that exception with error code \"errc::invalid\" is thrown in "
+        "case of invalid usage of "
         "sycl::info::kernel::num_args descriptor");
     CHECK_THROWS_MATCHES(incorrect_num_args_usage, sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
@@ -65,7 +66,8 @@ TEST_CASE("Test kernel info", "[kernel]") {
 
   {
     INFO(
-        "Exception isn't thrown in case of invalid usage of "
+        "Check exception with error code \"errc::invalid\" is thrown in case "
+        "of invalid usage of "
         "sycl::info::kernel_device_specific::global_work_size descriptor");
     CHECK_THROWS_MATCHES(incorrect_global_work_size_usage, sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
