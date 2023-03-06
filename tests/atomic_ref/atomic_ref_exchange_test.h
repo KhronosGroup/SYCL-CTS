@@ -16,7 +16,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref::exchange() method
+//  Provides tests for sycl::atomic_ref::exchange() member function
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_EXCHANGE_TEST_H

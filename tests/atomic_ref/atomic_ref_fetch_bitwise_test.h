@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Provides tests for sycl::atomic_ref
-//  fetch_xor()/fetch_or()/fetch_and() methods
+//  fetch_xor()/fetch_or()/fetch_and() member functions
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_FETCH_BITWISE_TEST_H

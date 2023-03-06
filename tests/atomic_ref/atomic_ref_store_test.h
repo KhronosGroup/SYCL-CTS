@@ -16,7 +16,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref::store() method
+//  Provides tests for sycl::atomic_ref::store() member function
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_STORE_TEST_H

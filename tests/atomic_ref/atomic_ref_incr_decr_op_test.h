@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Provides tests for sycl::atomic_ref
-//  operator++(int)/operator++()/operator--(int)/operator--() methods
+//  operator++(int)/operator++()/operator--(int)/operator--() member functions
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_INCR_DECR_OP_TEST_H

@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Provides tests for sycl::atomic_ref
-//  operator^=()/operator|=()/operator&=() methods
+//  operator^=()/operator|=()/operator&=() member functions
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_BITWISE_OP_TEST_H

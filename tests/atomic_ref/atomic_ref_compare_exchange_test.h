@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Provides tests for sycl::atomic_ref
-//  compare_exchange_strong()/compare_exchange_weak() methods
+//  compare_exchange_strong()/compare_exchange_weak() member functions
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_COMPARE_EXCHANGE_TEST_H

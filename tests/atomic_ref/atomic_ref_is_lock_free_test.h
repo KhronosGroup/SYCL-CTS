@@ -16,7 +16,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref::is_lock_free() method
+//  Provides tests for sycl::atomic_ref::is_lock_free() member function
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_IS_LOCK_FREE_TEST_H

@@ -16,7 +16,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for sycl::atomic_ref::operator T() method
+//  Provides tests for sycl::atomic_ref::operator T() conversion operator
 //
 *******************************************************************************/
 #ifndef SYCL_CTS_ATOMIC_REF_T_OP_TEST_H
