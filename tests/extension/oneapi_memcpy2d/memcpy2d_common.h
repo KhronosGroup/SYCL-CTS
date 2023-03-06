@@ -198,6 +198,9 @@ T get_expected_value(size_t address, T& ival, T& chval) {
              : ival;
 }
 
+/**
+ * @brief Function to apply functor for each cell in array
+ */
 template <typename Functor>
 void for_index(Functor&& functor) {
   for (size_t i = 0; i < array_height; ++i) {
@@ -208,6 +211,9 @@ void for_index(Functor&& functor) {
   }
 }
 
+/**
+ * @brief Function for calculating address in array depends on pitch size
+ */
 template <typename T>
 T* get_region_address(T* base, size_t pitch) {
   return base + shift_row * pitch + shift_col;
