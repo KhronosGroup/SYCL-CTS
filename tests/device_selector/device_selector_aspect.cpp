@@ -19,6 +19,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -397,7 +398,7 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
 
 template <typename AspectT>
 class kernel_aspect;
-
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  Functor that checks any_device_has and all_devices_have functionality. */
 template <typename AspectT>
@@ -437,7 +438,7 @@ class check_any_device_has_all_devices_have {
     }
   }
 };
-
+#endif
 TEST_CASE("aspect", "[device_selector]") {
 #if SYCL_CTS_COMPILING_WITH_COMPUTECPP
   WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
@@ -464,10 +465,13 @@ TEST_CASE("aspect", "[device_selector]") {
   check_for_random_set<random_aspects_count>(aspect_pack);
 }
 
-TEST_CASE("Check any_device_has and all_devices_have", "[device_selector]") {
+// FIXME: re-enable when any_device_has and all_devices_have are implemented for
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("Check any_device_has and all_devices_have", "[device_selector]")({
   const auto aspect_pack = get_aspect_pack();
 
   for_all_combinations<check_any_device_has_all_devices_have>(aspect_pack);
-};
+});
 
 }  // namespace device_selector_aspect
