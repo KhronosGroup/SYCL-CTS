@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -399,7 +398,6 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
 template <typename AspectT>
 class kernel_aspect;
 
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 /**
  Functor that checks any_device_has and all_devices_have functionality. */
 template <typename AspectT>
@@ -427,7 +425,7 @@ class check_any_device_has_all_devices_have {
           "Check that if some device has aspect A, "
           "any_device_has_v<A> is true.");
       CHECK(std::is_base_of_v<std::true_type, sycl::any_device_has<aspect>>);
-      CHECK(any_device_has_v < aspect >>);
+      CHECK(sycl::any_device_has_v<aspect>);
     }
 
     if (!all_devices) {
@@ -435,11 +433,10 @@ class check_any_device_has_all_devices_have {
           "Check that if some device does not have aspect A, "
           "all_devices_have_v<A> is false.");
       CHECK(std::is_base_of_v<std::false_type, sycl::all_devices_have<aspect>>);
-      CHECK_FALSE(all_devices_have_v < aspect >>);
+      CHECK_FALSE(sycl::all_devices_have_v<aspect>);
     }
   }
 };
-#endif
 
 TEST_CASE("aspect", "[device_selector]") {
 #if SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -467,13 +464,10 @@ TEST_CASE("aspect", "[device_selector]") {
   check_for_random_set<random_aspects_count>(aspect_pack);
 }
 
-// FIXME: re-enable when sycl::any_device_has, sycl::all_devices_have are
-// implemented
-DISABLED_FOR_TEST_CASE(DPCPP)
-("Check any_device_has and all_devices_have", "[device_selector]")({
+TEST_CASE("Check any_device_has and all_devices_have", "[device_selector]") {
   const auto aspect_pack = get_aspect_pack();
 
   for_all_combinations<check_any_device_has_all_devices_have>(aspect_pack);
-});
+};
 
 }  // namespace device_selector_aspect
