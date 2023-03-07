@@ -235,4 +235,26 @@ inline auto get_fp64_type() {
 
 }  // namespace get_cts_types
 
+namespace deduction {
+#if !SYCL_CTS_ENABLE_FULL_CONFORMANCE
+static const auto vector_types =
+    named_type_pack<int, float>::generate(
+        "int", "float");
+#else
+static const auto vector_types =
+    named_type_pack<char, signed char, unsigned char, short int,
+      unsigned short int, unsigned int, long int, unsigned long int,
+      long long int, unsigned long long int, bool, float
+      >::generate(
+      "char", "signed char", "unsigned char", "short int", "unsigned short int",
+      "unsigned int", "long int", "unsigned long int", "long long int",
+      "unsigned long long int", "bool", "float");
+#endif
+
+static const auto scalar_types =
+    named_type_pack<user_struct, user_def_types::no_cnstr, user_def_types::no_def_cnstr
+    >::generate(
+    "user_struct", "no_cnstr", "no_def_cnstr");
+} // namespace deduction
+
 #endif  // __SYCLCTS_TESTS_COMMON_TYPE_LIST_H
