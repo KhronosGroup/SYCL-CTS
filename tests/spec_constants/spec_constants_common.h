@@ -59,13 +59,13 @@ template <typename T, int numElements>
 void fill_init_values(sycl::vec<T, numElements> &result, int val) {
   // Fill manually because sycl::vec does not have iterators
   for (int i = 0; i < numElements; ++i) {
-    result[i] = val + i;
+    result[i] = val;
   }
 }
 
 template <typename T, std::size_t numElements>
 void fill_init_values(sycl::marray<T, numElements> &result, int val) {
-  std::iota(result.begin(), result.end(), val);
+  std::fill(result.begin(), result.end(), val);
 }
 
 enum class test_cases_external {
