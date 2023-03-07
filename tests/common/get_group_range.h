@@ -56,7 +56,6 @@ template <int Dimensions>
 sycl::range<Dimensions> work_group_range(
     sycl::queue queue,
     uint64_t work_items_limit = std::numeric_limits<uint64_t>::max()) {
-
   // query device for work-group sizes
   size_t max_work_item_sizes[Dimensions];
   {
