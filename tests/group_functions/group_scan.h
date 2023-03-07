@@ -20,6 +20,7 @@
 
 #include <valarray>
 
+#include "../../util/accuracy.h"
 #include "group_functions_common.h"
 
 template <int D, typename T, typename U, typename Group, bool with_init,
@@ -144,11 +145,17 @@ void check_scan(sycl::queue& queue, size_t size,
   for (int i = 0; i < size; i++) {
     {
       INFO("Check joint_exclusive_scan for element " + std::to_string(i));
-      CHECK(res_e[i] == reference_e[i]);
+      INFO("Result: " + std::to_string(res_e[i]));
+      INFO("Expected: " + std::to_string(reference_e[i]));
+      // ulp is i because there can be different rounding mods
+      CHECK(compare_with_ulp(res_e[i], reference_e[i], i));
     }
     {
       INFO("Check joint_inclusive_scan for element " + std::to_string(i));
-      CHECK(res_i[i] == reference_i[i]);
+      INFO("Result: " + std::to_string(res_i[i]));
+      INFO("Expected: " + std::to_string(reference_i[i]));
+      // ulp is i because there can be different rounding mods
+      CHECK(compare_with_ulp(res_i[i], reference_i[i], i));
     }
   }
 }
@@ -369,12 +376,10 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
                 auto index = item.get_global_linear_id();
                 local_id_acc[index] = group.get_local_linear_id();
 
-                if (with_init || sycl::has_known_identity_v<OpT, T>) {
-                  auto res_e = exclusive_scan_over_group_helper<T>(
-                      group, v_acc[index], op, with_init);
-                  res_e_acc[index] = res_e;
-                  ret_type_e_acc[0] = std::is_same_v<T, decltype(res_e)>;
-                }
+                auto res_e = exclusive_scan_over_group_helper<T>(
+                    group, v_acc[index], op, with_init);
+                res_e_acc[index] = res_e;
+                ret_type_e_acc[0] = std::is_same_v<T, decltype(res_e)>;
 
                 auto res_i = inclusive_scan_over_group_helper<T>(
                     group, v_acc[index], op, with_init);
@@ -399,20 +404,25 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
     int shift = i - local_id[i];
     ;
     auto startIter = v.begin() + shift;
-    if (with_init || sycl::has_known_identity_v<OpT, T>) {
+    {
       INFO("Check exclusive_scan_over_group for element " + std::to_string(i));
-      INFO(std::to_string(res_e[i]));
       std::vector<T> reference(i + 1, T(-1));
       std::exclusive_scan(startIter, v.begin() + i + 1, reference.begin(),
                           init_value, op);
-      CHECK(res_e[i] == reference[i - shift]);
+      INFO("Result: " + std::to_string(res_e[i]));
+      INFO("Expected: " + std::to_string(reference[i - shift]));
+      // ulp is i - shift because there can be different rounding mods
+      CHECK(compare_with_ulp(res_e[i], reference[i - shift], i - shift));
     }
     {
       INFO("Check inclusive_scan_over_group for element " + std::to_string(i));
       std::vector<T> reference(i + 1, T(-1));
       std::inclusive_scan(startIter, v.begin() + i + 1, reference.begin(), op,
                           init_value);
-      CHECK(res_i[i] == reference[i - shift]);
+      INFO("Result: " + std::to_string(res_i[i]));
+      INFO("Expected: " + std::to_string(reference[i - shift]));
+      // ulp is i - shift because there can be different rounding mods
+      CHECK(compare_with_ulp(res_i[i], reference[i - shift], i - shift));
     }
   }
 }

@@ -49,4 +49,22 @@ inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   return static_cast<sycl::half>(ulp * multiplier);
 }
 
+template <typename T>
+bool compare_with_ulp(T actual, T expected, unsigned int ulpsExpected) {
+  if (actual == expected)
+    return true;
+  else if constexpr (!std::is_integral_v<T>) {
+    const T difference = static_cast<T>(std::fabs(actual - expected));
+    const T differenceExpected = ulpsExpected * get_ulp_sycl(expected);
+
+    return (difference <= differenceExpected)
+           // for close to inf cases
+           || (actual + differenceExpected == expected) ||
+           (expected + differenceExpected == actual) ||
+           (actual - differenceExpected == expected) ||
+           (expected - differenceExpected == actual);
+  }
+  return false;
+}
+
 #endif // __SYCLCTS_UTIL_ACCURACY_H
