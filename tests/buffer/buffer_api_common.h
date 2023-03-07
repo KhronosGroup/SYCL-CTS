@@ -23,6 +23,7 @@
 #define __SYCLCTS_TESTS_BUFFER_API_COMMON_H
 
 #include "../common/common.h"
+#include "../common/get_group_range.h"
 
 namespace buffer_api_common {
 using namespace sycl_cts;
@@ -480,24 +481,27 @@ class check_buffer_linearization {
  public:
   void operator()(util::logger &log) {
     constexpr int size = 8;
-    // clang-format off
-    sycl::nd_range<1> range1d(sycl::range<1>{size},
-                              sycl::range<1>{size});
-    sycl::nd_range<2> range2d(sycl::range<2>{size, size},
-                              sycl::range<2>{size, size});
-    sycl::nd_range<3> range3d(sycl::range<3>{size, size, size},
-                              sycl::range<3>{size, size, size});
-    // clang-format on
+    auto q = util::get_cts_object::queue();
+    sycl::range<1> range1d = sycl_cts::util::work_group_range<1>(q);
+    sycl::range<2> range2d = sycl_cts::util::work_group_range<2>(q);
+    sycl::range<3> range3d = sycl_cts::util::work_group_range<3>(q);
+
+    sycl::nd_range<1> nd_range1d(range1d, range1d);
+    sycl::nd_range<2> nd_range2d(range2d, range2d);
+    sycl::nd_range<3> nd_range3d(range3d, range3d);
 
     INFO("testing: sycl::buffer_allocator<size_t>");
-    test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log, range1d);
-    test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log, range2d);
-    test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log, range3d);
+    test_buffer_linearization<1, sycl::buffer_allocator<size_t>>(log,
+                                                                 nd_range1d);
+    test_buffer_linearization<2, sycl::buffer_allocator<size_t>>(log,
+                                                                 nd_range2d);
+    test_buffer_linearization<3, sycl::buffer_allocator<size_t>>(log,
+                                                                 nd_range3d);
 
     INFO("testing: std::allocator<size_t>");
-    test_buffer_linearization<1, std::allocator<size_t>>(log, range1d);
-    test_buffer_linearization<2, std::allocator<size_t>>(log, range2d);
-    test_buffer_linearization<3, std::allocator<size_t>>(log, range3d);
+    test_buffer_linearization<1, std::allocator<size_t>>(log, nd_range1d);
+    test_buffer_linearization<2, std::allocator<size_t>>(log, nd_range2d);
+    test_buffer_linearization<3, std::allocator<size_t>>(log, nd_range3d);
   }
 
  private:

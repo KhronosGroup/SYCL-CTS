@@ -37,7 +37,7 @@ void broadcast_group(sycl::queue& queue) {
       "T group_broadcast(group g, T x, group::linear_id_type local_linear_id)",
       "T group_broadcast(group g, T x, group::id_type local_id)"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   // array to return results
@@ -105,7 +105,7 @@ void broadcast_group(sycl::queue& queue) {
                              splat_init<T>(work_group_size)};
 
   for (int i = 0; i < test_matrix; ++i) {
-    std::string work_group = util::work_group_print(work_group_range);
+    std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Return value of "
          << test_names[i] << " with T = " << type_name<T>() << " is "
@@ -128,7 +128,7 @@ void broadcast_sub_group(sycl::queue& queue) {
       "T group_broadcast(sub_group g, T x, sub_group::id_type local_id)",
       "T select_from_group(sub_group g, T x, sub_group::id_type local_id)"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
 
   // array to return results
   T res[test_matrix + 1] = {splat_init<T>(0)};
@@ -203,7 +203,7 @@ void broadcast_sub_group(sycl::queue& queue) {
   }
   T expected[test_matrix] = {splat_init<T>(1), res[4], res[4], res[4]};
   for (int i = 0; i < test_matrix; ++i) {
-    std::string work_group = util::work_group_print(work_group_range);
+    std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Return value of "
          << test_names[i] << " with T = " << type_name<T>() << " is "

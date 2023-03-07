@@ -33,7 +33,7 @@ void permute_sub_group(sycl::queue& queue) {
       "T permute_group_by_xor(sub_group g, T x, sub_group::linear_id_type "
       "mask)"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   // array to return results:
@@ -77,7 +77,7 @@ void permute_sub_group(sycl::queue& queue) {
     for (size_t j = 1; j < work_group_size; ++j)
       result &= res[i * work_group_size + j];
 
-    std::string work_group = util::work_group_print(work_group_range);
+    std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Value of " << test_names[i] << " with T = " << type_name<T>()
                      << " is " << (result ? "right" : "wrong"));
