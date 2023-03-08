@@ -134,11 +134,13 @@ class check_buffer_accessor_api_methods {
             "accessor does not return the correct size");
       }
     }
-    {
-      /** check return type for get_pointer() method
+    if constexpr (target == sycl::access::target::constant_buffer ||
+                  target == sycl::access::target::local ||
+                  target == sycl::access::target::host_buffer) {
+      /** check return type for get_pointer() member function for deprecated
+       * accessor targets
        */
-      check_acc_return_type<
-          explicit_pointer_t<typename acc_t::value_type, target>>(
+      check_acc_return_type<explicit_pointer_t<T, mode, target>>(
           log, accessor.get_pointer(), "get_pointer()", typeName);
     }
   }

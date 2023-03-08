@@ -36,41 +36,35 @@ namespace {
 
 /** explicit pointer type
 */
-template <typename T, sycl::target target>
+template <typename T, sycl::access::mode mode, sycl::target target>
 struct explicit_pointer;
 
 /** explicit pointer type (specialization for local)
 */
-template <typename T>
-struct explicit_pointer<T, sycl::target::local> {
+template <typename T, sycl::access::mode mode>
+struct explicit_pointer<T, mode, sycl::target::local> {
   using type = sycl::local_ptr<T>;
-};
-
-/** explicit pointer type (specialization for device)
-*/
-template <typename T>
-struct explicit_pointer<T, sycl::target::device> {
-  using type = std::add_pointer_t<T>;
 };
 
 /** explicit pointer type (specialization for constant_buffer)
 */
-template <typename T>
-struct explicit_pointer<T, sycl::target::constant_buffer> {
+template <typename T, sycl::access::mode mode>
+struct explicit_pointer<T, mode, sycl::target::constant_buffer> {
   using type = sycl::constant_ptr<T>;
 };
 
 /** explicit pointer type (specialization for host_buffer)
 */
-template <typename T>
-struct explicit_pointer<T, sycl::target::host_buffer> {
-  using type = std::add_pointer_t<T>;
+template <typename T, sycl::access::mode mode>
+struct explicit_pointer<T, mode, sycl::target::host_buffer> {
+  using type = std::add_pointer_t<
+      std::conditional_t<mode == sycl::access::mode::read, const T, T>>;
 };
 
 /** explicit pointer alias
  */
-template <typename T, sycl::target target>
-using explicit_pointer_t = typename explicit_pointer<T, target>::type;
+template <typename T, sycl::access::mode mode, sycl::target target>
+using explicit_pointer_t = typename explicit_pointer<T, mode, target>::type;
 
 }  // namespace
 
