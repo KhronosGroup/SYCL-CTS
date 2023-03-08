@@ -65,8 +65,7 @@ class check_local_accessor_api_methods {
     {
       auto kernelRange =
           util::get_cts_object::range<data_dim<dims>::value>::get(1, 1, 1);
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      error_buffer_t errorBuffer(errors.get(), sycl::range<1>(2));
 
       queue.submit([&](sycl::handler &h) {
         auto acc = make_local_accessor_generic<T, dims, mode>(range, h);
@@ -137,11 +136,11 @@ class check_local_accessor_api_methods {
     }
 
     using error_code_t = buffer_accessor_api_pointer_error_code;
-    if (errors[error_code_t::pointer_read_access] != 0) {
+    if (errors.get()[error_code_t::pointer_read_access] != 0) {
       fail_for_accessor<T, dims, mode, target>(log, typeName,
           "accessor did not read from the correct pointer");
     }
-    if (errors[error_code_t::pointer_write_access] != 0) {
+    if (errors.get()[error_code_t::pointer_write_access] != 0) {
       fail_for_accessor<T, dims, mode, target>(log, typeName,
           "accessor did not write to the correct pointer");
     }
@@ -186,8 +185,7 @@ class check_local_accessor_api_reads_and_writes {
     static constexpr auto errorTarget = sycl::target::device;
 
     {
-      error_buffer_t errorBuffer(errors.data(),
-                                 sycl::range<1>(errors.size()));
+      error_buffer_t errorBuffer(errors.get(), sycl::range<1>(4));
       queue.submit([&](sycl::handler &handler) {
         auto accIdSyntax =
             make_local_accessor_generic<T, dims, mode>(
@@ -215,26 +213,26 @@ class check_local_accessor_api_reads_and_writes {
     using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
       // Cannot check for read data
-      if (errors[error_code_t::zero_dim_access] != 0) {
+      if (errors.get()[error_code_t::zero_dim_access] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator dataT&() did not write to the correct index");
       }
     } else {
-      if (errors[error_code_t::multi_dim_read_id] != 0) {
+      if (errors.get()[error_code_t::multi_dim_read_id] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[id<N>] did not read from the correct index");
       }
-      if (errors[error_code_t::multi_dim_read_size_t] != 0) {
+      if (errors.get()[error_code_t::multi_dim_read_size_t] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[size_t][size_t][size_t] did not read from the "
             "correct index");
       }
 
-      if (errors[error_code_t::multi_dim_write_id] != 0) {
+      if (errors.get()[error_code_t::multi_dim_write_id] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[id<N>] did not write to the correct index");
       }
-      if (errors[error_code_t::multi_dim_write_size_t] != 0) {
+      if (errors.get()[error_code_t::multi_dim_write_size_t] != 0) {
         fail_for_accessor<T, dims, mode, target>(log, typeName,
             "operator[size_t][size_t][size_t] did not write to the correct "
             "index");
