@@ -137,7 +137,7 @@ class check_buffer_accessor_api_methods {
     if constexpr (target == sycl::access::target::constant_buffer ||
                   target == sycl::access::target::local ||
                   target == sycl::access::target::host_buffer) {
-      /** check return type for get_pointer() method for deprecated accessor
+      /** check return type for get_pointer() member function for deprecated accessor
        *  targets
        */
       check_acc_return_type<explicit_pointer_t<T, mode, target>>(
