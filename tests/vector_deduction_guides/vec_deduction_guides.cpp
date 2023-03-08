@@ -22,8 +22,8 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/type_list.h"
 #include "../common/disabled_for_test_case.h"
+#include "../common/type_list.h"
 
 namespace vec_deduction_guides {
 using namespace sycl;
