@@ -66,19 +66,17 @@ class TEST_NAME :
             "backend types");
         return;
       }
-      cts_selector ctsSelector;
-      const auto ctsContext = util::get_cts_object::context(ctsSelector);
+      const auto ctsContext = util::get_cts_object::context(cts_selector);
 
       {
         const size_t bufferSize = 32;
         int bufferData[bufferSize] = {0};
 
-        auto queue = util::get_cts_object::queue(ctsSelector);
+        auto queue = util::get_cts_object::queue(cts_selector);
         auto context = queue.get_context();
         auto device = queue.get_device();
 
-        sycl::buffer<int, 1> buffer(bufferData,
-                                        sycl::range<1>(bufferSize));
+        sycl::buffer<int, 1> buffer(bufferData, sycl::range<1>(bufferSize));
 
         cl_program clProgram{};
         if (online_compiler_supported(
@@ -104,16 +102,14 @@ class TEST_NAME :
             FAIL(log, "create_built_program failed");
           }
         } else {
-          std::string programBinaryFile =
-              "opencl_interop_kernel.bin";
+          std::string programBinaryFile = "opencl_interop_kernel.bin";
 
           if (!create_program_with_binary(
                   programBinaryFile,
                   sycl::get_native<sycl::backend::opencl>(context),
                   sycl::get_native<sycl::backend::opencl>(device), clProgram,
                   log)) {
-            std::string errorMsg =
-                "create_program_with_binary failed.";
+            std::string errorMsg = "create_program_with_binary failed.";
             errorMsg +=
                 " Since online compile is not supported, expecting to find " +
                 programBinaryFile + " in same path as the executable binary";
@@ -135,8 +131,7 @@ class TEST_NAME :
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::device>(
-                  handler);
+                                sycl::target::device>(handler);
 
           simple_struct simpleStruct{19, 13.37f};
 
@@ -160,8 +155,7 @@ class TEST_NAME :
         queue.submit([&](sycl::handler &handler) {
           auto bufferAccessor =
               buffer.get_access<sycl::access_mode::read_write,
-                                sycl::target::device>(
-                  handler);
+                                sycl::target::device>(handler);
 
           simple_struct simpleStruct{19, 13.37f};
 

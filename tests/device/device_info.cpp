@@ -84,8 +84,7 @@ TEST_CASE("device info", "[device]") {
   // FIXME: Reenable when struct information descriptors are implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   {
-    cts_selector selector;
-    auto dev = sycl_cts::util::get_cts_object::device(selector);
+    auto dev = sycl_cts::util::get_cts_object::device(cts_selector);
     check_get_info_param<sycl::info::device::device_type,
                          sycl::info::device_type>(dev);
     check_get_info_param<sycl::info::device::vendor_id, sycl::cl_uint>(dev);

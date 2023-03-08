@@ -46,6 +46,13 @@ struct explicit_pointer<T, mode, sycl::target::local> {
   using type = sycl::local_ptr<T>;
 };
 
+/** explicit pointer type (specialization for device)
+*/
+template <typename T>
+struct explicit_pointer<T, sycl::target::device> {
+  using type = std::add_pointer_t<T>;
+};
+
 /** explicit pointer type (specialization for constant_buffer)
 */
 template <typename T, sycl::access::mode mode>
@@ -57,8 +64,8 @@ struct explicit_pointer<T, mode, sycl::target::constant_buffer> {
 */
 template <typename T, sycl::access::mode mode>
 struct explicit_pointer<T, mode, sycl::target::host_buffer> {
-  using type =
-      std::conditional_t<mode == sycl::access::mode::read, const T*, T*>;
+  using type = std::add_pointer_t<
+      std::conditional_t<mode == sycl::access::mode::read, const T, T>>;
 };
 
 /** explicit pointer alias

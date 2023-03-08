@@ -48,30 +48,27 @@ class TEST_NAME : public util::test_base {
       /** check get_context() member function
        */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         auto context = queue.get_context();
         check_return_type<sycl::context>(log, context,
-                                             "sycl::queue::get_context()");
+                                         "sycl::queue::get_context()");
       }
 
       /** check get_device() member function
        */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         auto device = queue.get_device();
         check_return_type<sycl::device>(log, device,
-                                            "sycl::queue::get_device()");
+                                        "sycl::queue::get_device()");
       }
 
       /** check submit(command_group_scope) member function
-      */
+       */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         auto event = queue.submit([&](sycl::handler &handler) {
           handler.single_task<class queue_api_0>([=]() {});
@@ -80,10 +77,9 @@ class TEST_NAME : public util::test_base {
             log, event, "sycl::queue::submit(command_group_scope)");
       }
       /** check submit(command_group_scope, queue) member function
-      */
+       */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         auto secondaryQueue = util::get_cts_object::queue();
         auto event = queue.submit(
@@ -97,28 +93,25 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check wait() member function
-      */
+       */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         queue.wait();
       }
 
       /** check wait_and_throw() member function
-      */
+       */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         queue.wait_and_throw();
       }
 
       /** check throw_asynchronous() member function
-      */
+       */
       {
-        cts_selector selector;
-        auto queue = util::get_cts_object::queue(selector);
+        auto queue = util::get_cts_object::queue(cts_selector);
 
         queue.throw_asynchronous();
       }

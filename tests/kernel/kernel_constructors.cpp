@@ -31,8 +31,7 @@ namespace kernel_constructors__ {
 using namespace sycl_cts;
 
 TEST_CASE("Test copy constructor", "[kernel]") {
-  cts_selector ctsSelector;
-  auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+  auto ctsQueue = util::get_cts_object::queue(cts_selector);
   auto deviceList = ctsQueue.get_context().get_devices();
   auto ctx = ctsQueue.get_context();
 
@@ -54,7 +53,7 @@ TEST_CASE("Test copy constructor", "[kernel]") {
     INFO(
         "kernel was not constructed correctly. (contains different "
         "OpenCL kernel object)");
-    CHECK((ctsSelector.is_host() || (iopKernelA == iopKernelB)));
+    CHECK(iopKernelA == iopKernelB);
   }
 #endif
 
@@ -62,8 +61,7 @@ TEST_CASE("Test copy constructor", "[kernel]") {
 }
 
 TEST_CASE("Test assignment operator", "[kernel]") {
-  cts_selector ctsSelector;
-  auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+  auto ctsQueue = util::get_cts_object::queue(cts_selector);
   auto deviceList = ctsQueue.get_context().get_devices();
   auto ctx = ctsQueue.get_context();
 
@@ -85,7 +83,7 @@ TEST_CASE("Test assignment operator", "[kernel]") {
     INFO(
         "kernel was not constructed correctly. (contains different "
         "OpenCL kernel object)");
-    CHECK((ctsSelector.is_host() || (iopKernelA == iopKernelB)));
+    CHECK(iopKernelA == iopKernelB);
   }
 #endif
 
@@ -93,8 +91,7 @@ TEST_CASE("Test assignment operator", "[kernel]") {
 }
 
 TEST_CASE("Test equality operator", "[kernel]") {
-  cts_selector ctsSelector;
-  auto ctsQueue = util::get_cts_object::queue(ctsSelector);
+  auto ctsQueue = util::get_cts_object::queue(cts_selector);
   auto deviceList = ctsQueue.get_context().get_devices();
   auto ctx = ctsQueue.get_context();
 
@@ -122,41 +119,39 @@ TEST_CASE("Test equality operator", "[kernel]") {
   ctsQueue.submit(
       [&](sycl::handler &cgh) { cgh.single_task<k_name6>(k_name6()); });
 
-  if (!ctsSelector.is_host()) {
 #ifdef SYCL_BACKEND_OPENCL
-    if (ctsQueue.get_backend() == sycl::backend::opencl) {
-      auto iopKernelA = sycl::get_native<sycl::backend::opencl>(kernelA);
-      auto iopKernelB = sycl::get_native<sycl::backend::opencl>(kernelB);
-      auto iopKernelC = sycl::get_native<sycl::backend::opencl>(kernelC);
-      auto iopCtxA =
-          sycl::get_native<sycl::backend::opencl>(kernelA.get_context());
-      auto iopCtxB =
-          sycl::get_native<sycl::backend::opencl>(kernelB.get_context());
-      auto iopCtxC =
-          sycl::get_native<sycl::backend::opencl>(kernelC.get_context());
-      auto iopProgA =
-          sycl::get_native<sycl::backend::opencl>(kernelA.get_kernel_bundle());
-      auto iopProgB =
-          sycl::get_native<sycl::backend::opencl>(kernelB.get_kernel_bundle());
-      auto iopProgC =
-          sycl::get_native<sycl::backend::opencl>(kernelC.get_kernel_bundle());
-      {
-        INFO(
-            "kernel equality does not work correctly (copy "
-            "constructed)");
-        CHECK((kernelA != kernelB ||
-               (iopKernelA == iopKernelB && iopCtxA == iopCtxB &&
-                iopProgA == iopProgB)));
-      }
-      {
-        INFO("kernel equality does not work correctly (copy assigned)");
-        CHECK((kernelA != kernelC ||
-               (iopKernelA == iopKernelC && iopCtxA == iopCtxC &&
-                iopProgA == iopProgC)));
-      }
+  if (ctsQueue.get_backend() == sycl::backend::opencl) {
+    auto iopKernelA = sycl::get_native<sycl::backend::opencl>(kernelA);
+    auto iopKernelB = sycl::get_native<sycl::backend::opencl>(kernelB);
+    auto iopKernelC = sycl::get_native<sycl::backend::opencl>(kernelC);
+    auto iopCtxA =
+        sycl::get_native<sycl::backend::opencl>(kernelA.get_context());
+    auto iopCtxB =
+        sycl::get_native<sycl::backend::opencl>(kernelB.get_context());
+    auto iopCtxC =
+        sycl::get_native<sycl::backend::opencl>(kernelC.get_context());
+    auto iopProgA =
+        sycl::get_native<sycl::backend::opencl>(kernelA.get_kernel_bundle());
+    auto iopProgB =
+        sycl::get_native<sycl::backend::opencl>(kernelB.get_kernel_bundle());
+    auto iopProgC =
+        sycl::get_native<sycl::backend::opencl>(kernelC.get_kernel_bundle());
+    {
+      INFO(
+          "kernel equality does not work correctly (copy "
+          "constructed)");
+      CHECK(
+          (kernelA != kernelB || (iopKernelA == iopKernelB &&
+                                  iopCtxA == iopCtxB && iopProgA == iopProgB)));
     }
-#endif
+    {
+      INFO("kernel equality does not work correctly (copy assigned)");
+      CHECK(
+          (kernelA != kernelC || (iopKernelA == iopKernelC &&
+                                  iopCtxA == iopCtxC && iopProgA == iopProgC)));
+    }
   }
+#endif
 
   ctsQueue.wait_and_throw();
 }

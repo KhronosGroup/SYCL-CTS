@@ -16,11 +16,22 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides sycl::atomic_ref constructors test for atomic64 types.
+//  Provides sycl::atomic_ref
+//  operator++(int)/operator++()/operator--(int)/operator--()
+//  test for atomic64 types
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
+
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+#include "atomic_ref_incr_decr_op_test.h"
+
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
+namespace atomic_ref::tests::api::core::atomic64 {
 
 // FIXME: re-enable for computecpp when
 // sycl::access::address_space::generic_space and possibility of a SYCL kernel
@@ -28,25 +39,17 @@
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
 // hipsycl
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-#include "atomic_ref_constructors.h"
-
-#endif
-
-namespace atomic_ref::constructors::core::atomic64 {
-
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("sycl::atomic_ref constructors. atomic64 types", "[atomic_ref]")({
+("sycl::atomic_ref increment/decrement operators test. atomic64 types",
+ "[atomic_ref]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::atomic64)) {
-    WARN(
+    SKIP(
         "Device does not support atomic64 operations. "
         "Skipping the test case.");
-    return;
   }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
-  for_all_types<atomic_ref::constructors::run_test>(type_pack);
+  for_all_types<atomic_ref::tests::api::run_incr_decr_op_test>(type_pack);
 });
 
-}  // namespace atomic_ref::constructors::core::atomic64
+}  // namespace atomic_ref::tests::api::core::atomic64
