@@ -733,12 +733,13 @@ class check_buffer_accessor_api {
 
     static constexpr bool isHostBuffer = (target == sycl::target::host_buffer);
 
-    auto errors = get_error_data(isHostBuffer ? 2 : 4);
+    const std::size_t error_buffer_size = isHostBuffer ? 2 : 4;
+    auto errors = get_error_data(error_buffer_size);
     {
       buffer_t<T, dims> bufIdSyntax(dataIdSyntax.get(), range);
       buffer_t<T, dims> bufMultiDimSyntax(dataMultiDimSyntax.get(), range);
       error_buffer_t errorBuffer(errors.get(),
-                                 sycl::range<1>(isHostBuffer ? 2 : 4));
+                                 sycl::range<1>(error_buffer_size));
 
       check_command_group_reads_writes(
           queue, bufIdSyntax, bufMultiDimSyntax, errorBuffer, range,
