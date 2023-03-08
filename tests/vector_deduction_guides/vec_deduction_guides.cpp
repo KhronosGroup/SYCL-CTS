@@ -23,6 +23,7 @@
 
 #include "../common/common.h"
 #include "../common/type_list.h"
+#include "../common/disabled_for_test_case.h"
 
 namespace vec_deduction_guides {
 using namespace sycl;
@@ -84,7 +85,9 @@ class check_vec_deduction {
   }
 };
 
-TEST_CASE("vec deduction guides", "[vec_deduction]") {
+// FIXME: re-enable when vec deduction is implemented in hipSYCL
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("vec deduction guides", "[vec_deduction]")({
   for_all_types<check_vec_deduction>(deduction::vector_types);
-}
+});
 }  // namespace vec_deduction_guides
