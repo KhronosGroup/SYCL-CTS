@@ -140,6 +140,42 @@ inline auto get_conformance_type_pack() {
 }
 
 /**
+ * @brief Factory function for getting type_pack with all pointers types
+ */
+inline auto get_full_conformance_pointers_type_pack() {
+  static const auto types =
+      named_type_pack<int*, unsigned int*, long int*, unsigned long int*,
+                      long long*, unsigned long long*, float*,
+                      double*>::generate("int *", "unsigned int *",
+                                         "long int *", "unsigned long int *",
+                                         "long long *", "unsigned long long *",
+                                         "float *", "double *");
+  return types;
+}
+
+/**
+ * @brief Factory function for getting type_pack with generic pointers types
+ */
+inline auto get_lightweight_pointers_type_pack() {
+  static const auto types =
+      named_type_pack<int*, float*>::generate("int *", "float *");
+  return types;
+}
+
+/**
+ * @brief Factory function for getting type_pack with pointers types that
+ * depends on full conformance mode enabling status
+ * @return lightweight or full named_type_pack for pointers types
+ */
+inline auto get_conformance_pointers_type_pack() {
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  return get_full_conformance_pointers_type_pack();
+#else
+  return get_lightweight_pointers_type_pack();
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+}
+
+/**
  * @brief Factory function for getting type_pack with memory_order values
  */
 inline auto get_memory_orders() {

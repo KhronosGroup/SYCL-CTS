@@ -107,13 +107,6 @@ struct run_exchange_test {
 
     for_all_combinations<atomic_ref_exchange_test, T>(
         memory_orders, memory_scopes, address_spaces, type_name);
-
-    if (is_64_bits_pointer<T*>() && device_has_not_aspect_atomic64()) return;
-
-    std::string type_name_for_pointer_types = type_name + "*";
-    for_all_combinations<atomic_ref_exchange_test, T*>(
-        memory_orders, memory_scopes, address_spaces,
-        type_name_for_pointer_types);
   }
 };
 
