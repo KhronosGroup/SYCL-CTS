@@ -37,20 +37,22 @@ Group get_group(const sycl::nd_item<D>& item) {
     return item.get_group();
 }
 
-template <typename I, typename T, typename U, typename Group, typename OpT>
+template <bool with_init, typename I, typename T, typename U, typename Group,
+          typename OpT>
 auto joint_inclusive_scan_helper(Group group, T* v_begin, T* v_end,
-                                 U* r_i_begin, OpT op, bool with_init) {
-  if (with_init) {
+                                 U* r_i_begin, OpT op) {
+  if constexpr (with_init) {
     return sycl::joint_inclusive_scan(group, v_begin, v_end, r_i_begin, op,
                                       I(init));
   } else
     return sycl::joint_inclusive_scan(group, v_begin, v_end, r_i_begin, op);
 }
 
-template <typename I, typename T, typename U, typename Group, typename OpT>
+template <bool with_init, typename I, typename T, typename U, typename Group,
+          typename OpT>
 auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
-                                 U* r_e_begin, OpT op, bool with_init) {
-  if (with_init) {
+                                 U* r_e_begin, OpT op) {
+  if constexpr (with_init) {
     return sycl::joint_exclusive_scan(group, v_begin, v_end, r_e_begin, I(init),
                                       op);
   } else
@@ -111,12 +113,12 @@ void check_scan(sycl::queue& queue, size_t size,
                 U* r_e_begin = res_e_acc.get_pointer();
                 U* r_i_begin = res_i_acc.get_pointer();
 
-                auto r_e_end = joint_exclusive_scan_helper<I>(
-                    group, v_begin, v_end, r_e_begin, op, with_init);
+                auto r_e_end = joint_exclusive_scan_helper<with_init, I>(
+                    group, v_begin, v_end, r_e_begin, op);
                 ret_type_e_acc[0] = std::is_same_v<U*, decltype(r_e_end)>;
 
-                auto r_i_end = joint_inclusive_scan_helper<I>(
-                    group, v_begin, v_end, r_i_begin, op, with_init);
+                auto r_i_end = joint_inclusive_scan_helper<with_init, I>(
+                    group, v_begin, v_end, r_i_begin, op);
                 ret_type_i_acc[0] = std::is_same_v<U*, decltype(r_i_end)>;
 
                 end_e_acc[0] = (r_e_begin + res_e_acc.size() == r_e_end);
@@ -134,7 +136,7 @@ void check_scan(sycl::queue& queue, size_t size,
 
 #if SYCL_CTS_COMPILING_WITH_HIPSYCL
   I init_value = (with_init) ? I(init)
-                 : (std::is_same_v<OpT, sycl::plus>)
+                 : (std::is_same_v<OpT, sycl::plus<U>>)
                      ? I{}
                      : std::numeric_limits<I>::lowest();
 #else
@@ -295,31 +297,29 @@ class scan_over_group_kernel;
 // FIXME: hipSYCL has wrong arguments order: init and op are interchanged
 #ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename Group, typename V, typename T, typename BinaryOperation>
-T inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
-                                 T init) {
+auto inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
+                                    T init) {
   return sycl::inclusive_scan_over_group(g, x, init, binary_op);
 }
 #else
 template <typename Group, typename V, typename T, typename BinaryOperation>
-T inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
-                                 T init) {
+auto inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
+                                    T init) {
   return sycl::inclusive_scan_over_group(g, x, binary_op, init);
 }
 #endif
 
-template <typename T, typename U, typename Group, typename OpT>
-auto inclusive_scan_over_group_helper(Group group, U x, OpT op,
-                                      bool with_init) {
-  if (with_init) {
+template <bool with_init, typename T, typename U, typename Group, typename OpT>
+auto inclusive_scan_over_group_helper(Group group, U x, OpT op) {
+  if constexpr (with_init) {
     return inclusive_scan_over_group_impl(group, x, op, T(init));
   } else
     return sycl::inclusive_scan_over_group(group, x, op);
 }
 
-template <typename T, typename U, typename Group, typename OpT>
-auto exclusive_scan_over_group_helper(Group group, U x, OpT op,
-                                      bool with_init) {
-  if (with_init) {
+template <bool with_init, typename T, typename U, typename Group, typename OpT>
+auto exclusive_scan_over_group_helper(Group group, U x, OpT op) {
+  if constexpr (with_init) {
     return sycl::exclusive_scan_over_group(group, x, T(init), op);
   } else
     return sycl::exclusive_scan_over_group(group, x, op);
@@ -376,13 +376,13 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
                 auto index = item.get_global_linear_id();
                 local_id_acc[index] = group.get_local_linear_id();
 
-                auto res_e = exclusive_scan_over_group_helper<T>(
-                    group, v_acc[index], op, with_init);
+                auto res_e = exclusive_scan_over_group_helper<with_init, T>(
+                    group, v_acc[index], op);
                 res_e_acc[index] = res_e;
                 ret_type_e_acc[0] = std::is_same_v<T, decltype(res_e)>;
 
-                auto res_i = inclusive_scan_over_group_helper<T>(
-                    group, v_acc[index], op, with_init);
+                auto res_i = inclusive_scan_over_group_helper<with_init, T>(
+                    group, v_acc[index], op);
                 res_i_acc[index] = res_i;
                 ret_type_i_acc[0] = std::is_same_v<T, decltype(res_i)>;
               });
@@ -394,7 +394,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
 
 #if SYCL_CTS_COMPILING_WITH_HIPSYCL
   T init_value = (with_init) ? T(init)
-                 : (std::is_same_v<OpT, sycl::plus>)
+                 : (std::is_same_v<OpT, sycl::plus<T>>)
                      ? T{}
                      : std::numeric_limits<T>::lowest();
 #else
