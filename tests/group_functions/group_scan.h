@@ -150,14 +150,14 @@ void check_scan(sycl::queue& queue, size_t size,
       INFO("Result: " + std::to_string(res_e[i]));
       INFO("Expected: " + std::to_string(reference_e[i]));
       // ulp is i because there can be different rounding mods
-      CHECK(compare_with_ulp(res_e[i], reference_e[i], i));
+      CHECK(is_equal_with_ulp(res_e[i], reference_e[i], i));
     }
     {
       INFO("Check joint_inclusive_scan for element " + std::to_string(i));
       INFO("Result: " + std::to_string(res_i[i]));
       INFO("Expected: " + std::to_string(reference_i[i]));
       // ulp is i because there can be different rounding mods
-      CHECK(compare_with_ulp(res_i[i], reference_i[i], i));
+      CHECK(is_equal_with_ulp(res_i[i], reference_i[i], i));
     }
   }
 }
@@ -412,7 +412,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
       INFO("Result: " + std::to_string(res_e[i]));
       INFO("Expected: " + std::to_string(reference[i - shift]));
       // ulp is i - shift because there can be different rounding mods
-      CHECK(compare_with_ulp(res_e[i], reference[i - shift], i - shift));
+      CHECK(is_equal_with_ulp(res_e[i], reference[i - shift], i - shift));
     }
     {
       INFO("Check inclusive_scan_over_group for element " + std::to_string(i));
@@ -422,7 +422,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
       INFO("Result: " + std::to_string(res_i[i]));
       INFO("Expected: " + std::to_string(reference[i - shift]));
       // ulp is i - shift because there can be different rounding mods
-      CHECK(compare_with_ulp(res_i[i], reference[i - shift], i - shift));
+      CHECK(is_equal_with_ulp(res_i[i], reference[i - shift], i - shift));
     }
   }
 }
