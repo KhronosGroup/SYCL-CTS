@@ -21,6 +21,7 @@
 // need also double tests enabled
 #ifdef SYCL_CTS_ENABLE_DOUBLE_TESTS
 
+#include "../common/disabled_for_test_case.h"
 #include "group_scan.h"
 
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
@@ -128,13 +129,12 @@ TEST_CASE("Group and sub-group joint scan functions with init",
 #endif
 }
 
-TEST_CASE("Group and sub-group scan functions with init",
-          "[group_func][fp16][fp64][dim]") {
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-  WARN(
-      "hipSYCL has wrong arguments order in inclusive_scan_over_group: init "
-      "and op are interchanged.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
+// and op are interchanged
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions with init",
+ "[group_func][fp16][fp64][dim]")({
+#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
   // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T and V. Skipping the "
@@ -166,6 +166,6 @@ TEST_CASE("Group and sub-group scan functions with init",
         "operations simultaneously.");
   }
 #endif
-}
+});
 
 #endif

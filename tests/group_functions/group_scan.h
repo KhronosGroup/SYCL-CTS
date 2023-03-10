@@ -134,6 +134,7 @@ void check_scan(sycl::queue& queue, size_t size,
   std::vector<U> reference_e(size, U(-1));
   std::vector<U> reference_i(size, U(-1));
 
+// FIXME: known_identity is not implemented in hipSYCL yet
 #if SYCL_CTS_COMPILING_WITH_HIPSYCL
   I init_value = (with_init) ? I(init)
                  : (std::is_same_v<OpT, sycl::plus<U>>)
@@ -294,25 +295,10 @@ template <int D, typename T, typename Group, bool with_init, typename U,
           typename OpT>
 class scan_over_group_kernel;
 
-// FIXME: hipSYCL has wrong arguments order: init and op are interchanged
-#ifdef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename Group, typename V, typename T, typename BinaryOperation>
-auto inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
-                                    T init) {
-  return sycl::inclusive_scan_over_group(g, x, init, binary_op);
-}
-#else
-template <typename Group, typename V, typename T, typename BinaryOperation>
-auto inclusive_scan_over_group_impl(Group g, V x, BinaryOperation binary_op,
-                                    T init) {
-  return sycl::inclusive_scan_over_group(g, x, binary_op, init);
-}
-#endif
-
 template <bool with_init, typename T, typename U, typename Group, typename OpT>
 auto inclusive_scan_over_group_helper(Group group, U x, OpT op) {
   if constexpr (with_init) {
-    return inclusive_scan_over_group_impl(group, x, op, T(init));
+    return sycl::inclusive_scan_over_group(group, x, op, T(init));
   } else
     return sycl::inclusive_scan_over_group(group, x, op);
 }
@@ -392,6 +378,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
   CHECK(ret_type_e);
   CHECK(ret_type_i);
 
+// FIXME: known_identity is not implemented in hipSYCL yet
 #if SYCL_CTS_COMPILING_WITH_HIPSYCL
   T init_value = (with_init) ? T(init)
                  : (std::is_same_v<OpT, sycl::plus<T>>)
