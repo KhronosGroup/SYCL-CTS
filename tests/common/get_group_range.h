@@ -48,14 +48,14 @@ inline sycl::range<3> get_default_range() {
 /**
  * @brief Provides range for maximal size work-group
  *        supported by device of a given queue.
- *        Multidimentional work-group range is made
- *        as hyper-cybic as possible
+ *        Multidimensional work-group range is made
+ *        as hypercybic as possible
  * @tparam Dimensions Dimension to use for group instance
  */
 template <int Dimensions>
 sycl::range<Dimensions> work_group_range(
     sycl::queue queue,
-    uint64_t work_items_limit = std::numeric_limits<uint64_t>::max()) {
+    size_t work_items_limit = std::numeric_limits<size_t>::max()) {
   // query device for work-group sizes
   size_t max_work_item_sizes[Dimensions];
   {
