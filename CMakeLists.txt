@@ -49,6 +49,9 @@ add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_SUB_GROUP_MASK_TESTS
 add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_DEVICE_GLOBAL_TESTS
     "Enable extension oneAPI device_global tests" OFF)
 
+add_cts_option(SYCL_CTS_ENABLE_EXT_ONEAPI_MEMCPY2D_TESTS
+    "Enable extension oneAPI memcpy2d tests" OFF)
+
 # TODO: Deprecated - remove
 add_cts_option(SYCL_CTS_ENABLE_VERBOSE_LOG
     "Enable debug-level logs (deprecated)" OFF)

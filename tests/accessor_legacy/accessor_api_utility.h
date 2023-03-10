@@ -593,10 +593,11 @@ template <typename expectedT, typename dataT, int dims,
 inline void check_acc_return_type(sycl_cts::util::logger& log, returnT returnVal,
                                   const std::string& functionName,
                                   const std::string& typeName) {
-  if (!std::is_same<returnT, expectedT>::value) {
-    fail_for_accessor<dataT, dims, mode, target, placeholder>(log, typeName,
-        functionName + " has incorrect return type -> "
-            + typeid(returnT).name());
+  if (!std::is_same_v<returnT, expectedT>) {
+    fail_for_accessor<dataT, dims, mode, target, placeholder>(
+        log, typeName,
+        functionName + " has incorrect return type -> " +
+            typeid(expectedT).name() + " " + typeid(returnT).name());
   }
 }
 
@@ -731,12 +732,12 @@ T get_zero_dim_buffer_value() {
  *        If (dims == 0), the data will be initialized using the common value
  *        for testing a zero-dim accessor.
  *        If false, data will be zero initialized.
- * @return Initialized data container
+ * @return unique_ptr to initialized array
  */
 template <typename T>
-std::vector<T> get_buffer_input_data(size_t count, int dims,
-                                                bool useIndexes = true) {
-  auto data = std::vector<T>(count);
+std::unique_ptr<T[]> get_buffer_input_data(size_t count, int dims,
+                                           bool useIndexes = true) {
+  auto data = std::make_unique<T[]>(count);
   if (useIndexes) {
     for (size_t i = 0; i < count; ++i) {
       data[i] = T(i);
@@ -745,7 +746,7 @@ std::vector<T> get_buffer_input_data(size_t count, int dims,
       data[0] = get_zero_dim_buffer_value<T>();
     }
   } else {
-    std::fill(std::begin(data), std::end(data), 0);
+    std::fill(data.get(), data.get() + count, 0);
   }
   return data;
 }
@@ -754,9 +755,9 @@ std::vector<T> get_buffer_input_data(size_t count, int dims,
  * @brief Retrieves the input data for a SYCL buffer that will be used
  *        for storing error in a kernel
  * @param count Number of error categories
- * @return Zero-initialized data container
+ * @return unique_ptr to initialized array
  */
-std::vector<int> get_error_data(size_t count) {
+std::unique_ptr<int[]> get_error_data(size_t count) {
   static constexpr int dims = 1;
   static constexpr bool useIndexes = false;
   return get_buffer_input_data<int>(count, dims, useIndexes);
