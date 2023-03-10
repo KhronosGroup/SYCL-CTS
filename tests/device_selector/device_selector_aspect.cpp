@@ -421,6 +421,10 @@ class check_any_device_has_all_devices_have {
         any_of(devices.begin(), devices.end(), exec_device_has_aspect);
     bool all_devices =
         all_of(devices.begin(), devices.end(), exec_device_has_aspect);
+    // Check only positive case because any_device_has_v is true if the
+    // compilation environment supports any device with aspect in question but
+    // compilation environment could support some devices that are not present
+    // on the system.
     if (any_device) {
       INFO(
           "Check that if some device has aspect A, "
@@ -428,7 +432,9 @@ class check_any_device_has_all_devices_have {
       CHECK(std::is_base_of_v<std::true_type, sycl::any_device_has<aspect>>);
       CHECK(sycl::any_device_has_v<aspect>);
     }
-
+    // Check only negative case because there can be device in compilation
+    // environment that doesn't support aspect in question but not present in
+    // the system and therefore didn't affect value of all_devices.
     if (!all_devices) {
       INFO(
           "Check that if some device does not have aspect A, "
