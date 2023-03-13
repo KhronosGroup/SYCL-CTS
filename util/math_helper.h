@@ -73,10 +73,13 @@ int numElements(const sycl::vec<T, numElems> &) {
 
 /* Generic function for both scalar and marray types to
  * return the number of elements in a type. */
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, size_t numElems>
 int numElements(const sycl::marray<T, numElems> &) {
   return numElems;
 }
+#endif
 
 /* Generic function for both scalar and vector types to
  * extract an individual element. */
