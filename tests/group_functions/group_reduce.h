@@ -42,7 +42,7 @@ void joint_reduce_group(sycl::queue& queue) {
   constexpr int test_cases = 2;
   const std::string test_cases_names[test_cases] = {"plus", "maximum"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
@@ -122,7 +122,8 @@ void joint_reduce_group(sycl::queue& queue) {
     int index = 0;
     for (int i = 0; i < test_matrix; ++i)
       for (int j = 0; j < test_cases; ++j) {
-        std::string work_group = util::work_group_print(work_group_range);
+        std::string work_group =
+            sycl_cts::util::work_group_print(work_group_range);
         CAPTURE(D, work_group, size);
         INFO("Value of " << test_names[i] << " with " << test_cases_names[j]
                          << " operation"
@@ -155,7 +156,7 @@ void init_joint_reduce_group(sycl::queue& queue) {
   constexpr int test_cases = 2;
   const std::string test_cases_names[test_cases] = {"plus", "maximum"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
@@ -238,7 +239,8 @@ void init_joint_reduce_group(sycl::queue& queue) {
     int index = 0;
     for (int i = 0; i < test_matrix; ++i)
       for (int j = 0; j < test_cases; ++j) {
-        std::string work_group = util::work_group_print(work_group_range);
+        std::string work_group =
+            sycl_cts::util::work_group_print(work_group_range);
         CAPTURE(D, work_group, size);
         INFO("Value of " << test_names[i] << " with " << test_cases_names[j]
                          << " operation"
@@ -268,7 +270,7 @@ void reduce_over_group(sycl::queue& queue) {
   constexpr int test_cases = 2;
   const std::string test_cases_names[test_cases] = {"plus", "maximum"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
 
   // array to return results
   bool res[test_matrix * test_cases] = {false};
@@ -336,7 +338,8 @@ void reduce_over_group(sycl::queue& queue) {
   int index = 0;
   for (int i = 0; i < test_matrix; ++i)
     for (int j = 0; j < test_cases; ++j) {
-      std::string work_group = util::work_group_print(work_group_range);
+      std::string work_group =
+          sycl_cts::util::work_group_print(work_group_range);
       CAPTURE(D, work_group);
       INFO("Value of " << test_names[i] << " with " << test_cases_names[j]
                        << " operation"
@@ -367,7 +370,7 @@ void init_reduce_over_group(sycl::queue& queue) {
   constexpr int test_cases = 2;
   const std::string test_cases_names[test_cases] = {"plus", "maximum"};
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
 
   // array to return results
   bool res[test_matrix * test_cases] = {false};
@@ -443,7 +446,8 @@ void init_reduce_over_group(sycl::queue& queue) {
   int index = 0;
   for (int i = 0; i < test_matrix; ++i)
     for (int j = 0; j < test_cases; ++j) {
-      std::string work_group = util::work_group_print(work_group_range);
+      std::string work_group =
+          sycl_cts::util::work_group_print(work_group_range);
       CAPTURE(D, work_group);
       INFO("Value of " << test_names[i] << " with " << test_cases_names[j]
                        << " operation"

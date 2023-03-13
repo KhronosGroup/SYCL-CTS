@@ -111,7 +111,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       std::min(global_mem_size_in_elements, local_mem_size_in_elements);
 
   sycl::range<D> work_group_range =
-      util::work_group_range<D>(queue, work_items_limit);
+      sycl_cts::util::work_group_range<D>(queue, work_items_limit);
   size_t work_group_size = work_group_range.size();
 
   std::vector<int32_t> v(work_group_size, 0);
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
 
   for (int i = 0; i < group_barrier_variants; ++i) {
     bool result = std::get<s::test>(group_barriers[i]);
-    std::string work_group = util::work_group_print(work_group_range);
+    std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Result of group_barrier invocation for group and "
          << group_barriers_names[i] << " memory scope is "
@@ -252,7 +252,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
   }
   for (int i = 0; i < sub_group_barrier_variants; ++i) {
     bool result = std::get<s::test>(sub_group_barriers[i]);
-    std::string work_group = util::work_group_print(work_group_range);
+    std::string work_group = sycl_cts::util::work_group_print(work_group_range);
     CAPTURE(D, work_group);
     INFO("Result of group_barrier invocation for sub-group and "
          << sub_group_barriers_names[i] << " memory scope is "
