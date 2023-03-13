@@ -165,7 +165,7 @@ void check_scan(sycl::queue& queue, size_t size,
 template <int D, typename T, typename U>
 void joint_scan_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   sycl::nd_range<D> executionRange(work_group_range, work_group_range);
@@ -229,7 +229,7 @@ class init_joint_scan_group_kernel;
 template <int D, typename T, typename U, typename I>
 void init_joint_scan_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
   size_t work_group_size = work_group_range.size();
@@ -409,7 +409,7 @@ template <int D, typename T>
 void scan_over_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
   size_t work_group_size = work_group_range.size();
 
   SECTION("Check scan_over_group for group with sycl::plus") {
@@ -455,7 +455,7 @@ template <int D, typename T, typename U>
 void init_scan_over_group(sycl::queue& queue) {
   INFO(" with types " + type_name<T>() + " and " + type_name<U>());
 
-  sycl::range<D> work_group_range = util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
 
   SECTION("Check scan_over_group for group with sycl::plus") {
     check_scan_over_group<D, T, sycl::group<D>, true, U>(
