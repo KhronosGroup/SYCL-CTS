@@ -408,6 +408,7 @@ class check_any_device_has_all_devices_have {
  public:
   void operator()(const std::string& aspect_name) {
     using k_name = kernel_aspect<AspectT>;
+    INFO("Check for aspect: " + aspect_name);
 
     sycl::queue queue = util::get_cts_object::queue();
     queue.submit(
@@ -417,30 +418,23 @@ class check_any_device_has_all_devices_have {
       return d.has(aspect) && sycl::is_compatible<k_name>(d);
     };
     auto devices = sycl::device::get_devices();
-    bool any_device =
-        any_of(devices.begin(), devices.end(), exec_device_has_aspect);
-    bool all_devices =
-        all_of(devices.begin(), devices.end(), exec_device_has_aspect);
-    // Check only positive case because any_device_has_v is true if the
-    // compilation environment supports any device with aspect in question but
-    // compilation environment could support some devices that are not present
-    // on the system.
-    if (any_device) {
-      INFO(
-          "Check that if some device has aspect A, "
-          "any_device_has_v<A> is true.");
-      CHECK(std::is_base_of_v<std::true_type, sycl::any_device_has<aspect>>);
-      CHECK(sycl::any_device_has_v<aspect>);
-    }
-    // Check only negative case because there can be device in compilation
-    // environment that doesn't support aspect in question but not present in
-    // the system and therefore didn't affect value of all_devices.
-    if (!all_devices) {
-      INFO(
-          "Check that if some device does not have aspect A, "
-          "all_devices_have_v<A> is false.");
-      CHECK(std::is_base_of_v<std::false_type, sycl::all_devices_have<aspect>>);
-      CHECK_FALSE(sycl::all_devices_have_v<aspect>);
+    for (auto d : devices) {
+      bool compatible = sycl::is_compatible<k_name>(d);
+      bool has_aspect = d.has(aspect);
+      if (compatible && has_aspect) {
+        CHECK(std::is_base_of_v<std::true_type, sycl::any_device_has<aspect>>);
+        CHECK(sycl::any_device_has_v<aspect>);
+      }
+      if (!sycl::any_device_has_v<aspect>)
+        CHECK_FALSE((compatible && has_aspect));
+
+      if (compatible && !has_aspect) {
+        CHECK(
+            std::is_base_of_v<std::false_type, sycl::all_devices_have<aspect>>);
+        CHECK_FALSE(sycl::all_devices_have_v<aspect>);
+      }
+      if (sycl::all_devices_have_v<aspect>)
+        CHECK(((compatible && has_aspect) || (!compatible && !has_aspect)));
     }
   }
 };
