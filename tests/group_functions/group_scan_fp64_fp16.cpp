@@ -45,8 +45,9 @@ using DoubleHalfExtendedTypes = concatenation<ScanTypes, DoubleHalfTypes>::type;
 static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
-TEST_CASE("Group and sub-group joint scan functions",
-          "[group_func][fp16][fp64][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions", "[group_func][fp16][fp64][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
@@ -85,10 +86,12 @@ TEST_CASE("Group and sub-group joint scan functions",
         "operations simultaneously.");
   }
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group joint scan functions with init",
-          "[group_func][type_list][fp16][fp64][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions with init",
+ "[group_func][type_list][fp16][fp64][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for T, *InPtr and "
@@ -127,10 +130,10 @@ TEST_CASE("Group and sub-group joint scan functions with init",
         "operations simultaneously.");
   }
 #endif
-}
+});
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged
+// and op are interchanged. known_identity is not impemented yet.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][fp16][fp64][dim]")({

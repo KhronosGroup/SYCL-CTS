@@ -134,15 +134,8 @@ void check_scan(sycl::queue& queue, size_t size,
   std::vector<U> reference_e(size, U(-1));
   std::vector<U> reference_i(size, U(-1));
 
-// FIXME: known_identity is not implemented in hipSYCL yet
-#if SYCL_CTS_COMPILING_WITH_HIPSYCL
-  I init_value = (with_init) ? I(init)
-                 : (std::is_same_v<OpT, sycl::plus<U>>)
-                     ? I{}
-                     : std::numeric_limits<I>::lowest();
-#else
   I init_value = (with_init) ? I(init) : sycl::known_identity<OpT, I>::value;
-#endif
+
   std::exclusive_scan(v.begin(), v.end(), reference_e.begin(), init_value, op);
   std::inclusive_scan(v.begin(), v.end(), reference_i.begin(), op, init_value);
   for (int i = 0; i < size; i++) {
@@ -378,15 +371,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
   CHECK(ret_type_e);
   CHECK(ret_type_i);
 
-// FIXME: known_identity is not implemented in hipSYCL yet
-#if SYCL_CTS_COMPILING_WITH_HIPSYCL
-  T init_value = (with_init) ? T(init)
-                 : (std::is_same_v<OpT, sycl::plus<T>>)
-                     ? T{}
-                     : std::numeric_limits<T>::lowest();
-#else
   T init_value = (with_init) ? T(init) : sycl::known_identity<OpT, T>::value;
-#endif
+
   for (int i = 0; i < range_size; i++) {
     int shift = i - local_id[i];
     ;

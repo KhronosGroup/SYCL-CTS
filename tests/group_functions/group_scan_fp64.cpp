@@ -42,8 +42,10 @@ using DoubleExtendedTypes = concatenation<ScanTypes, double>::type;
 static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 
-TEST_CASE("Group and sub-group joint scan functions",
-          "[group_func][type_list][fp64][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions",
+ "[group_func][type_list][fp64][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
@@ -80,10 +82,12 @@ TEST_CASE("Group and sub-group joint scan functions",
     WARN("Device does not support double precision floating point operations.");
   }
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group joint scan functions with init",
-          "[group_func][type_list][fp64][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions with init",
+ "[group_func][type_list][fp64][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for T, *InPtr and "
@@ -121,9 +125,11 @@ TEST_CASE("Group and sub-group joint scan functions with init",
     WARN("Device does not support double precision floating point operations.");
   }
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group scan functions", "[group_func][fp64][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions", "[group_func][fp64][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp fails to compile with segfault in the compiler. "
@@ -143,10 +149,10 @@ TEST_CASE("Group and sub-group scan functions", "[group_func][fp64][dim]") {
     WARN("Device does not support double precision floating point operations.");
   }
 #endif
-}
+});
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged
+// and op are interchanged. known_identity is not impemented yet.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][type_list][fp64][dim]")({

@@ -60,7 +60,9 @@ inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
 template <typename T>
 bool is_equal_with_ulp(T actual, T expected, unsigned int ulpsExpected) {
   if (actual == expected) return true;
-  if constexpr (!std::is_integral_v<T>) {
+  if constexpr (std::is_integral_v<T>)
+    return false;
+  else {
     const T difference = static_cast<T>(std::fabs(actual - expected));
     const T differenceExpected = ulpsExpected * get_ulp_sycl(expected);
 
@@ -71,7 +73,6 @@ bool is_equal_with_ulp(T actual, T expected, unsigned int ulpsExpected) {
            (actual - differenceExpected == expected) ||
            (expected - differenceExpected == actual);
   }
-  return false;
 }
 
 #endif  // __SYCLCTS_UTIL_ACCURACY_H
