@@ -34,8 +34,14 @@ Tests described below are performed for following aspects:
 
 == Tests
 
-* Check each device to see if it has aspect `A`.
-* If some device has aspect `A`, check that `any_device_has_v<A>` is `true`
-and `any_device_has<A>` inherits from `std::true_type`.
-* If some device does not have aspect `A`, check that `all_devices_have_v<A>` is `false`
-and `all_devices_have<A>` inherits from `std::false_type`.
+* The test defines an empty kernel K as a mechanism to determine which devices are supported by the compilation environment.
+* At runtime, iterate over all devices returned by device::get_devices. For each device `D`:
+** Check if `is_compatible<K>(D)` is `true`. Since kernel `K` is empty, it should be compatible with any device that is supported by the compilation environment.
+** For each aspect `A` check if `D.has_aspect(A)` is `true`.
+** If `(is_compatible<K>(D) && D.has(A))` is `true`, then `any_device_has_v<A>` must be `true` and `any_device_has<A>` must inherit from `std::true_type`.
+** If `any_device_has_v<A>` is `false` then `(is_compatible<K>(D) && D.has(A))` must be `false`.
+** If `(is_compatible<K>(D) && !D.has(A))` is `true`, then `all_devices_have_v<A>` must be `false`
+and `all_devices_have<A>` must inherit from `std::false_type`.
+** If `all_devices_have_v<A>` is `true` then `(is_compatible<K>(D) && D.has(A))` or `(!is_compatible<K>(D) && !D.has(A))` must be `true`.
+
+
