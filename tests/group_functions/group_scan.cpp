@@ -18,7 +18,9 @@
 //
 *******************************************************************************/
 
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
+#endif
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
