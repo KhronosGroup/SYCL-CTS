@@ -58,7 +58,6 @@ test_case_templates_check = {
 
     "local" : ("""
 {
-  $DECL
   $PTR_REF
   check_function_multi_ptr_local<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
@@ -69,7 +68,6 @@ test_case_templates_check = {
 
     "global" : ("""
 {
-  $DECL
   $PTR_REF
   check_function_multi_ptr_global<$TEST_ID, $RETURN_TYPE>(log,
       [=]($ACCESSOR acc){
@@ -118,9 +116,13 @@ def generate_value(base_type, dim):
 def generate_multi_ptr(var_name, var_type, memory):
     decl = ""
     if memory == "global":
-        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
+        source_name = "multiPtrSourceData"
+        decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
     if memory == "local":
-        decl = "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
+        source_name = "multiPtrSourceData"
+        decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
     if memory == "private":
         source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"

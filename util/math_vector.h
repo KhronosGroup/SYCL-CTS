@@ -22,12 +22,6 @@
 #ifndef SYCL_CONFORMANCE_SUITE_MATH_VECTOR_H
 #define SYCL_CONFORMANCE_SUITE_MATH_VECTOR_H
 
-template <typename T, int dim>
-T getElement(const sycl::vec<T, dim> f, int ix);
-
-template <typename T, int dim>
-void setElement(const sycl::vec<T, dim> &f, int ix, T value);
-
 #define CASE_GET_ELEMENT(NUM, COMPONENT) \
   case NUM:                              \
     return f.s##COMPONENT();

@@ -37,7 +37,7 @@
     return sycl_cts::math::run_func_on_vector<T, T, N>( \
         [](T x) { return func(x); }, a);                \
   }                                                     \
-  template <typename T, int N>                          \
+  template <typename T, size_t N>                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a) {       \
     return sycl_cts::math::run_func_on_marray<T, T, N>( \
         [](T x) { return func(x); }, a);                \
@@ -49,7 +49,7 @@
     return sycl_cts::math::run_func_on_vector<T, T, N>(                 \
         [](T x, T y) { return func(x, y); }, a, b);                     \
   }                                                                     \
-  template <typename T, int N>                                          \
+  template <typename T, size_t N>                                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a, sycl::marray<T, N> b) { \
     return sycl_cts::math::run_func_on_marray<T, T, N>(                 \
         [](T x, T y) { return func(x, y); }, a, b);                     \
@@ -62,7 +62,7 @@
     return sycl_cts::math::run_func_on_vector<T, T, N>(               \
         [](T x, T y, T z) { return func(x, y, z); }, a, b, c);        \
   }                                                                   \
-  template <typename T, int N>                                        \
+  template <typename T, size_t N>                                     \
   sycl::marray<T, N> func(sycl::marray<T, N> a, sycl::marray<T, N> b, \
                           sycl::marray<T, N> c) {                     \
     return sycl_cts::math::run_func_on_marray<T, T, N>(               \
@@ -75,7 +75,7 @@
     return sycl_cts::math::run_func_on_vector<T, T, N>( \
         [](T x, T y) { return func(x, y); }, a, b);     \
   }                                                     \
-  template <typename T, int N>                          \
+  template <typename T, size_t N>                       \
   sycl::marray<T, N> func(sycl::marray<T, N> a, T b) {  \
     return sycl_cts::math::run_func_on_marray<T, T, N>( \
         [](T x, T y) { return func(x, y); }, a, b);     \
@@ -214,9 +214,9 @@ int any(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 bool any(sycl::marray<T, N> a) {
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     if (any(a[i]) == 1) return true;
   }
   return false;
@@ -236,9 +236,9 @@ int all(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 bool all(sycl::marray<T, N> a) {
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     if (all(a[i]) == 0) return false;
   }
   return true;
@@ -272,11 +272,11 @@ sycl::vec<T, N> select(sycl::vec<T, N> a, sycl::vec<T, N> b,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> select(sycl::marray<T, N> a, sycl::marray<T, N> b,
                           sycl::marray<bool, N> c) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = c[i] ? b[i] : a[i];
   }
   return res;
@@ -305,7 +305,8 @@ sycl::vec<R, N> abs_diff(sycl::vec<T, N> a, sycl::vec<T, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N, typename R = typename std::make_unsigned<T>::type>
+template <typename T, size_t N,
+          typename R = typename std::make_unsigned<T>::type>
 sycl::marray<R, N> abs_diff(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray<R, T, N>(
       [](T x, T y) { return abs_diff(x, y); }, a, b);
@@ -374,18 +375,18 @@ sycl_cts::resultRef<sycl::vec<T, N>> clamp(sycl::vec<T, N> a, T b, T c) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> clamp(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b,
                                               sycl::marray<T, N> c) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y, T z) { return clamp(x, y, z); }, a, b, c);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> clamp(sycl::marray<T, N> a, T b, T c) {
   sycl::marray<T, N> res;
   std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     sycl_cts::resultRef<T> element = clamp(a[i], b, c);
     if (element.undefined.empty())
       res[i] = element.res;
@@ -460,13 +461,13 @@ sycl_cts::resultRef<sycl::vec<T, N>> max(sycl::vec<T, N> a, T b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> max(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return max(x, y); }, a, b);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> max(sycl::marray<T, N> a, T b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return max(x, y); }, a, b);
@@ -491,13 +492,13 @@ sycl_cts::resultRef<sycl::vec<T, N>> min(sycl::vec<T, N> a, T b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> min(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return min(x, y); }, a, b);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> min(sycl::marray<T, N> a, T b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y) { return min(x, y); }, a, b);
@@ -618,7 +619,7 @@ sycl::vec<typename upsample_t<T>::type, N> upsample(
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<typename upsample_t<T>::type, N> upsample(
     sycl::marray<T, N> a,
     sycl::marray<typename std::make_unsigned<T>::type, N> b) {
@@ -649,7 +650,7 @@ sycl_cts::resultRef<sycl::vec<T, N>> mad24(sycl::vec<T, N> a, sycl::vec<T, N> b,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mad24(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b,
                                               sycl::marray<T, N> c) {
@@ -670,7 +671,7 @@ sycl_cts::resultRef<sycl::vec<T, N>> mul24(sycl::vec<T, N> a,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mul24(sycl::marray<T, N> a,
                                               sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
@@ -718,19 +719,19 @@ sycl_cts::resultRef<sycl::vec<T, N>> mix(sycl::vec<T, N> a, sycl::vec<T, N> b,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mix(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b,
                                             sycl::marray<T, N> c) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y, T z) { return mix(x, y, z); }, a, b, c);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> mix(sycl::marray<T, N> a,
                                             sycl::marray<T, N> b, T c) {
   sycl::marray<T, N> res;
   std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     sycl_cts::resultRef<T> element = mix(a[i], b[i], c);
     if (element.undefined.empty())
       res[i] = element.res;
@@ -763,10 +764,10 @@ sycl::vec<T, N> step(T a, sycl::vec<T, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> step(T a, sycl::marray<T, N> b) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = step(a, b[i]);
   }
   return res;
@@ -801,19 +802,19 @@ sycl_cts::resultRef<sycl::vec<T, N>> smoothstep(T a, T b, sycl::vec<T, N> c) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> smoothstep(sycl::marray<T, N> a,
                                                    sycl::marray<T, N> b,
                                                    sycl::marray<T, N> c) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
       [](T x, T y, T z) { return smoothstep(x, y, z); }, a, b, c);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> smoothstep(T a, T b,
                                                    sycl::marray<T, N> c) {
   sycl::marray<T, N> res;
   std::map<int, bool> undefined;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     sycl_cts::resultRef<T> element = smoothstep(a, b, c[i]);
     if (element.undefined.empty())
       res[i] = element.res;
@@ -854,7 +855,7 @@ struct higher_accuracy<sycl::vec<T, N>> {
 };
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 struct higher_accuracy<sycl::marray<T, N>> {
   using type = sycl::marray<typename higher_accuracy<T>::type, N>;
 };
@@ -1033,11 +1034,11 @@ sycl::vec<T, N> fract(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> fract(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
   sycl::marray<T, N> resPtr;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     T value;
     res[i] = fract(a[i], &value);
     resPtr[i] = value;
@@ -1062,11 +1063,11 @@ sycl::vec<T, N> frexp(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> frexp(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<T, N> res;
   sycl::marray<int, N> resPtr;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     int value;
     res[i] = frexp(a[i], &value);
     ;
@@ -1094,10 +1095,10 @@ sycl::vec<int, N> ilogb(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<int, N> ilogb(sycl::marray<T, N> a) {
   sycl::marray<int, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = ilogb(a[i]);
   }
   return res;
@@ -1116,10 +1117,10 @@ sycl::vec<T, N> ldexp(sycl::vec<T, N> a, sycl::vec<int, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = ldexp(a[i], b[i]);
   }
   return res;
@@ -1135,10 +1136,10 @@ sycl::vec<T, N> ldexp(sycl::vec<T, N> a, int b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> ldexp(sycl::marray<T, N> a, int b) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = ldexp(a[i], b);
   }
   return res;
@@ -1167,11 +1168,11 @@ sycl::vec<T, N> lgamma_r(sycl::vec<T, N> a, sycl::vec<int, N> *b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> lgamma_r(sycl::marray<T, N> a, sycl::marray<int, N> *b) {
   sycl::marray<T, N> res;
   sycl::marray<int, N> resPtr;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     int value;
     res[i] = lgamma_r(a[i], &value);
     resPtr[i] = value;
@@ -1250,7 +1251,7 @@ sycl::vec<T, N> modf(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> modf(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
   sycl::marray<T, N> resPtr;
@@ -1282,12 +1283,12 @@ nan(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <int N>
+template <size_t N>
 sycl::marray<float, N> nan(sycl::marray<unsigned int, N> a) {
   return sycl_cts::math::run_func_on_marray<float, unsigned int, N>(
       [](unsigned int x) { return nan(x); }, a);
 }
-template <typename T, int N>
+template <typename T, size_t N>
 std::enable_if_t<std::is_same_v<unsigned long, T> ||
                      std::is_same_v<unsigned long long, T>,
                  sycl::marray<double, N>>
@@ -1324,10 +1325,10 @@ sycl::vec<T, N> pown(sycl::vec<T, N> a, sycl::vec<int, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> pown(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = pown(a[i], b[i]);
   }
   return res;
@@ -1348,7 +1349,7 @@ sycl_cts::resultRef<sycl::vec<T, N>> powr(sycl::vec<T, N> a,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl_cts::resultRef<sycl::marray<T, N>> powr(sycl::marray<T, N> a,
                                              sycl::marray<T, N> b) {
   return sycl_cts::math::run_func_on_marray_result_ref<T, N>(
@@ -1376,12 +1377,12 @@ sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> remquo(sycl::marray<T, N> a, sycl::marray<T, N> b,
                           sycl::marray<int, N> *c) {
   sycl::marray<T, N> res;
   sycl::marray<int, N> resPtr;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     int value;
     res[i] = remquo(a[i], b[i], &value);
     resPtr[i] = value;
@@ -1410,10 +1411,10 @@ sycl::vec<T, N> rootn(sycl::vec<T, N> a, sycl::vec<int, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> rootn(sycl::marray<T, N> a, sycl::marray<int, N> b) {
   sycl::marray<T, N> res;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     res[i] = rootn(a[i], b[i]);
   }
   return res;
@@ -1448,11 +1449,11 @@ sycl::vec<T, N> sincos(sycl::vec<T, N> a, sycl::vec<T, N> *b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> sincos(sycl::marray<T, N> a, sycl::marray<T, N> *b) {
   sycl::marray<T, N> res;
   sycl::marray<T, N> resPtr;
-  for (int i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     T value;
     res[i] = sincos(a[i], &value);
     resPtr[i] = value;
@@ -1551,10 +1552,10 @@ T dot(sycl::vec<T, N> a, sycl::vec<T, N> b) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 T dot(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   T res = 0;
-  for (int i = 0; i < N; i++) res += a[i] * b[i];
+  for (size_t i = 0; i < N; i++) res += a[i] * b[i];
   return res;
 }
 #endif
@@ -1585,12 +1586,12 @@ sycl::vec<T, N> normalize(sycl::vec<T, N> a) {
 }
 // FIXME: hipSYCL does not support marray
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-template <typename T, int N>
+template <typename T, size_t N>
 sycl::marray<T, N> normalize(sycl::marray<T, N> a) {
   sycl::marray<T, N> res;
   T len_a = reference::length(a);
   if (len_a == 0) return sycl::marray<T, N>(0);
-  for (int i = 0; i < N; i++) res[i] = a[i] / len_a;
+  for (size_t i = 0; i < N; i++) res[i] = a[i] / len_a;
   return res;
 }
 #endif
