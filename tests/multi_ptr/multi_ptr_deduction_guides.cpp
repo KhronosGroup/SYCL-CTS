@@ -2,7 +2,6 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
 //  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +31,7 @@ template <typename T>
 class check_multi_ptr_deduction {
  public:
   void operator()(const std::string& type) {
-    typeName = type;
+    type_name = type;
 
     check_for_space<global>();
     check_for_space<local>();
@@ -44,7 +43,7 @@ class check_multi_ptr_deduction {
   static constexpr access::address_space local =
       access::address_space::local_space;
 
-  std::string typeName;
+  std::string type_name;
 
   template <access::address_space space>
   void check_for_space() {
@@ -71,7 +70,7 @@ class check_multi_ptr_deduction {
 
     std::string mode_str{sycl_cts::get_cts_string::for_mode<Mode>()};
     std::string space_str{(accessor_space == global) ? "global" : "local"};
-    std::string fail_str{"Incorrect deduction with type " + typeName + " in " +
+    std::string fail_str{"Incorrect deduction with type " + type_name + " in " +
                          std::to_string(dims) + " dimensions and " + mode_str +
                          " mode in " + space_str + " space "};
 

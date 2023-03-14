@@ -2,7 +2,6 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
 //  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +31,7 @@ template <typename T>
 class check_vec_deduction {
  public:
   void operator()(const std::string& type) {
-    typeName = type;
+    type_name = type;
 
     T data[max_size];
     for (int i = 0; i < max_size; ++i) {
@@ -66,7 +65,7 @@ class check_vec_deduction {
 
  private:
   const int max_size = 16;
-  std::string typeName;
+  std::string type_name;
 
   template <int expected_size, class vecT>
   void check_vector_type(vecT vector) {
@@ -79,7 +78,7 @@ class check_vec_deduction {
     for (int i = 0; i < vector.size(); ++i) {
       INFO("Wrong vec value on index " + std::to_string(i) +
            " with value: " + std::to_string(vector[i]) + " vec type: vec<" +
-           typeName + ", " + std::to_string(vector.size()) + "> ");
+           type_name + ", " + std::to_string(vector.size()) + "> ");
       CHECK(vector[i] == static_cast<T>(i));
     }
   }

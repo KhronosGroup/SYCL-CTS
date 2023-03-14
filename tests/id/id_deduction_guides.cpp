@@ -2,7 +2,6 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
 //  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,14 +27,14 @@ namespace id_deduction_guides {
 using namespace sycl;
 
 // array with sizes
-constexpr std::size_t N[3] = {4, 8, 10};
+constexpr std::size_t n[3] = {4, 8, 10};
 
 template <int dims, class idT>
 void check_id_operator(idT _id) {
   for (int i = 0; i < dims; ++i) {
     INFO("operator[] returns wrong value with id<" + std::to_string(dims) +
          ">");
-    CHECK(_id[i] == N[i]);
+    CHECK(_id[i] == n[i]);
   }
 }
 
@@ -46,9 +45,9 @@ void check_id_type(idT _id) {
 }
 
 TEST_CASE("id deduction guides", "[id]") {
-  id id_1d(N[0]);
-  id id_2d(N[0], N[1]);
-  id id_3d(N[0], N[1], N[2]);
+  id id_1d(n[0]);
+  id id_2d(n[0], n[1]);
+  id id_3d(n[0], n[1], n[2]);
 
   check_id_operator<1>(id_1d);
   check_id_operator<2>(id_2d);

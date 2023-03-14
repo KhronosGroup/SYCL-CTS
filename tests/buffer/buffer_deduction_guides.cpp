@@ -2,7 +2,6 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
 //  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +44,7 @@ class check_buffer_deduction {
     std::array<T, size> arr = {user_def_types::get_init_value_helper<T>(0),
                                user_def_types::get_init_value_helper<T>(0),
                                user_def_types::get_init_value_helper<T>(0)};
-    typeName = type;
+    type_name = type;
 
     test_inputiterator(arr);
     test_container(arr);
@@ -61,10 +60,10 @@ class check_buffer_deduction {
  private:
   std::allocator<T> std_alloc;
   buffer_allocator<T> buf_alloc;
-  std::string typeName;
+  std::string type_name;
 
   inline void test_inputiterator(std::array<T, size> data) {
-    INFO("buffer_ctors_deduction::test_inputiterator() " + typeName);
+    INFO("buffer_ctors_deduction::test_inputiterator() " + type_name);
     // buffer with no allocator and no property list
     {
       buffer buf(data.begin(), data.end());
@@ -128,7 +127,7 @@ class check_buffer_deduction {
                     user_def_types::get_init_value_helper<T>(0),
                     user_def_types::get_init_value_helper<T>(0)});
 
-    INFO("buffer_ctors_deduction::test_type() " + typeName);
+    INFO("buffer_ctors_deduction::test_type() " + type_name);
     // buffer with no alloccator and no property list
     {
       buffer buf(data.get(), r);
@@ -178,7 +177,7 @@ class check_buffer_deduction {
   }
 
   inline void test_container(std::array<T, size> data) {
-    INFO("buffer_ctors_deduction::test_container() " + typeName);
+    INFO("buffer_ctors_deduction::test_container() " + type_name);
     // buffer with no alloccator and no property list
     {
       buffer buf(data);
