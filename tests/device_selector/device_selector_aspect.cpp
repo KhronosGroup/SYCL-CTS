@@ -433,7 +433,7 @@ class check_any_device_has_all_devices_have {
             std::is_base_of_v<std::false_type, sycl::all_devices_have<aspect>>);
         CHECK_FALSE(sycl::all_devices_have_v<aspect>);
       }
-      if (sycl::all_devices_have_v<aspect>) CHECK(has_aspect || !compatible);
+      if (sycl::all_devices_have_v<aspect>) CHECK((has_aspect || !compatible));
     }
   }
 };
