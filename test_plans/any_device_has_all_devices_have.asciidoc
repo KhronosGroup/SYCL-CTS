@@ -42,6 +42,6 @@ Tests described below are performed for following aspects:
 ** If `any_device_has_v<A>` is `false` then `(is_compatible<K>(D) && D.has(A))` must be `false`.
 ** If `(is_compatible<K>(D) && !D.has(A))` is `true`, then `all_devices_have_v<A>` must be `false`
 and `all_devices_have<A>` must inherit from `std::false_type`.
-** If `all_devices_have_v<A>` is `true` then `(is_compatible<K>(D) && D.has(A))` or `(!is_compatible<K>(D) && !D.has(A))` must be `true`.
+** If `all_devices_have_v<A>` is `true` then `(D.has(A) || !is_compatible<K>(D))` must be `true`.
 
 
