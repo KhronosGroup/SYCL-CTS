@@ -20,7 +20,6 @@
 
 #include <valarray>
 
-#include "../../util/accuracy.h"
 #include "group_functions_common.h"
 
 template <int D, typename T, typename U, typename Group, bool with_init,
@@ -28,6 +27,7 @@ template <int D, typename T, typename U, typename Group, bool with_init,
 class joint_scan_group_kernel;
 
 constexpr int init = 42;
+constexpr size_t test_size = 12;
 
 template <typename Group, int D>
 Group get_group(const sycl::nd_item<D>& item) {
@@ -143,15 +143,13 @@ void check_scan(sycl::queue& queue, size_t size,
       INFO("Check joint_exclusive_scan for element " + std::to_string(i));
       INFO("Result: " + std::to_string(res_e[i]));
       INFO("Expected: " + std::to_string(reference_e[i]));
-      // ulp is i because there can be different rounding mods
-      CHECK(is_equal_with_ulp(res_e[i], reference_e[i], i));
+      CHECK(res_e[i] == reference_e[i]);
     }
     {
       INFO("Check joint_inclusive_scan for element " + std::to_string(i));
       INFO("Result: " + std::to_string(res_i[i]));
       INFO("Expected: " + std::to_string(reference_i[i]));
-      // ulp is i because there can be different rounding mods
-      CHECK(is_equal_with_ulp(res_i[i], reference_i[i], i));
+      CHECK(res_i[i] == reference_i[i]);
     }
   }
 }
@@ -165,7 +163,8 @@ void check_scan(sycl::queue& queue, size_t size,
 template <int D, typename T, typename U>
 void joint_scan_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
+
   size_t work_group_size = work_group_range.size();
 
   sycl::nd_range<D> executionRange(work_group_range, work_group_range);
@@ -229,7 +228,7 @@ class init_joint_scan_group_kernel;
 template <int D, typename T, typename U, typename I>
 void init_joint_scan_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
   sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
   size_t work_group_size = work_group_range.size();
@@ -384,8 +383,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
                           init_value, op);
       INFO("Result: " + std::to_string(res_e[i]));
       INFO("Expected: " + std::to_string(reference[i - shift]));
-      // ulp is i - shift because there can be different rounding mods
-      CHECK(is_equal_with_ulp(res_e[i], reference[i - shift], i - shift));
+      CHECK(res_e[i] == reference[i - shift]);
     }
     {
       INFO("Check inclusive_scan_over_group for element " + std::to_string(i));
@@ -394,8 +392,7 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
                           init_value);
       INFO("Result: " + std::to_string(res_i[i]));
       INFO("Expected: " + std::to_string(reference[i - shift]));
-      // ulp is i - shift because there can be different rounding mods
-      CHECK(is_equal_with_ulp(res_i[i], reference[i - shift], i - shift));
+      CHECK(res_i[i] == reference[i - shift]);
     }
   }
 }
@@ -409,7 +406,7 @@ template <int D, typename T>
 void scan_over_group(sycl::queue& queue) {
   INFO(" with type " + type_name<T>());
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
   size_t work_group_size = work_group_range.size();
 
   SECTION("Check scan_over_group for group with sycl::plus") {
@@ -455,7 +452,7 @@ template <int D, typename T, typename U>
 void init_scan_over_group(sycl::queue& queue) {
   INFO(" with types " + type_name<T>() + " and " + type_name<U>());
 
-  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue);
+  sycl::range<D> work_group_range = sycl_cts::util::work_group_range<D>(queue, test_size);
 
   SECTION("Check scan_over_group for group with sycl::plus") {
     check_scan_over_group<D, T, sycl::group<D>, true, U>(
