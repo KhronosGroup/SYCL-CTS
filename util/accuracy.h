@@ -51,28 +51,4 @@ inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   return static_cast<sycl::half>(ulp * multiplier);
 }
 
-/**
- * @brief Uses provided allowed difference in ULPs to calculate max allowed
- *        difference between actual and expected values to consider them equal.
- *        Returns whether the values are equal by such definition.
- *        If type T is integral, result of exact comparing is returned.
- */
-template <typename T>
-bool is_equal_with_ulp(T actual, T expected, unsigned int ulpsExpected) {
-  if (actual == expected) return true;
-  if constexpr (std::is_integral_v<T>)
-    return false;
-  else {
-    const T difference = static_cast<T>(std::fabs(actual - expected));
-    const T differenceExpected = ulpsExpected * get_ulp_sycl(expected);
-
-    return (difference <= differenceExpected)
-           // for close to inf cases
-           || (actual + differenceExpected == expected) ||
-           (expected + differenceExpected == actual) ||
-           (actual - differenceExpected == expected) ||
-           (expected - differenceExpected == actual);
-  }
-}
-
 #endif  // __SYCLCTS_UTIL_ACCURACY_H

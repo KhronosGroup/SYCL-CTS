@@ -376,7 +376,6 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
 
   for (int i = 0; i < range_size; i++) {
     int shift = i - local_id[i];
-    ;
     auto startIter = v.begin() + shift;
     {
       INFO("Check exclusive_scan_over_group for element " + std::to_string(i));
