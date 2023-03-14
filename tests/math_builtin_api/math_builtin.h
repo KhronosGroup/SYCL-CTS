@@ -102,8 +102,7 @@ verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r,
   log.note("value: " + printable(value) + ", reference: " +
            printable(reference));
   std::string msg = "Expected accuracy in ULP: " + std::to_string(accuracy);
-  if (comment != "")
-    msg += ", " + comment;
+  if (!comment.empty()) msg += ", " + comment;
   log.note(msg);
   return false;
 }
@@ -152,7 +151,7 @@ bool verify(sycl_cts::util::logger &log, T a, T b, int accuracy,
 template <int N, typename returnT, typename funT>
 void check_function(sycl_cts::util::logger &log, funT fun,
                     sycl_cts::resultRef<returnT> ref, int accuracy = 0,
-                    const std::string &comment = "") {
+                    const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
@@ -180,7 +179,7 @@ template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
                                       sycl_cts::resultRef<returnT> ref,
                                       argT ptrRef, int accuracy = 0,
-                                      const std::string &comment = "") {
+                                      const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
@@ -218,7 +217,7 @@ template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
                                      argT arg, sycl_cts::resultRef<returnT> ref,
                                      argT ptrRef, int accuracy = 0,
-                                     const std::string &comment = "") {
+                                     const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
@@ -252,7 +251,7 @@ template <int N, typename returnT, typename funT, typename argT>
 void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
                                     argT arg, sycl_cts::resultRef<returnT> ref,
                                     argT ptrRef, int accuracy = 0,
-                                    const std::string &comment = "") {
+                                    const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   auto&& testQueue = once_per_unit::get_queue();
