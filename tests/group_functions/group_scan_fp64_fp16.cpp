@@ -21,7 +21,9 @@
 // need also double tests enabled
 #ifdef SYCL_CTS_ENABLE_DOUBLE_TESTS
 
+#include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+#include "type_coverage.h"
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 #endif
