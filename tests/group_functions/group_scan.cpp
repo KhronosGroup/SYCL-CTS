@@ -18,12 +18,9 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
-#endif
-#include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
-#include "type_coverage.h"
 
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
 // long int
@@ -42,7 +39,7 @@ using ScanTypes = Types;
 
 static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 // FIXME: known_identity is not impemented yet for hipSYCL.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group joint scan functions", "[group_func][type_list][dim]")({
