@@ -10,9 +10,9 @@
 #define __SYCLCTS_TESTS_COMMON_DISABLED_FOR_TEST_CASE_H
 
 // This is required for detecting the active SYCL implementation
-#include <sycl/sycl.hpp>
-
 #include "macro_utils.h"
+#include <catch2/catch_test_macros.hpp>
+#include <sycl/sycl.hpp>
 
 // TODO: Add other Catch2 test case variants, as needed
 
