@@ -1,0 +1,107 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for weak object
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_weak_object.asciidoc[SYCL_EXT_ONEAPI_WEAK_OBJECT.asciidoc]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT` so they can be skipped
+if feature is not supported.
+
+=== Type coverage
+All of the tests for `weak_object` described below are performed using each of the following `typename SyclObject`:
+
+* `accessor<int>`
+* `buffer<int>`
+* `multi_ptr<int>`
+* `queue`
+* `stream`
+* `vec<int>`
+
+== Objects creation
+
+All of the tests for `weak_object` described below using empty or non-empty objects:
+
+* Empty `weak_object` created by using `constexpr weak_object()` constructor
+
+* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor
+
+== Tests
+
+=== Constructors
+
+Create instances of `weak_object` using: +
+`constexpr weak_object()` +
+`weak_object(const SyclObject &SYCLObj)` +
+`weak_object(const weak_object &Other)` +
+`weak_object(weak_object &&Other)` +
+
+* Check that using `object_type` is the same type with `SyclObject` using `std::is_same_v`
+* Check that `try_lock()` returns same object with same value and type using `==` and `std::is_same_v` respectivly
+* Check that `expire()` returns `false` for non-empty objects
+
+=== Copy and move assignment operators
+
+Use existing instances of `weak_object` to copy or move them into other objects +
+`weak_object &operator=(const SyclObject &SYCLObj)` +
+`weak_object &operator=(const weak_object &Other)` +
+`weak_object &operator=(weak_object &&Other)`
+
+* Check that resulting object are the same with initial object using `std::is_same_v`
+* Check that `lock()` member function returns same results both in initial and new objects using `==` operator
+* Check that `expire()` returns `false`
+
+=== Release, exchange and expired member functios
+
+* For empty `weak_object`:
+    ** check that `expired()` returns `true`
+    ** call `swap()` with non-empty `weak_object` and check that `expired()` returns `false`
+    ** call `reset()` and check that `expired()` returns `true` again
+
+* For non-empty `weak_object`
+    ** check that `expired()` returns `false`
+    ** call `swap()` and check that `lock()` returns reference to same object
+    ** call `reset()` and check that `expired()` returns `true`
+
+=== Lock exception
+
+`SyclObject lock() const;` - check throwing `errc::invalid` exception if object is empty
+
+=== Expire
+
+* Create local scope with `SyclObject` and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SyclObject` is destroyed outside the scope.
+
+* Check that `expire()` returns `bool` type using `std::is_same_v`
+
+=== owner_before and owner_less
+
+Create two `weak_object` referring to two different `SyclObject`
+
+* Check that calling `owner_before(const weak_object &Other)` with passing second object as `Other` returns `true` for first `weak_object` and `false` otherwise
+
+* Check that `owner_before(const SyclObject &Other)` returns `true` if `weak_object` was declared before `Other`
+
+* Check that `owner_less{}(const T &lhs, const T &rhs)` +
+`owner_less{}(const weak_object<T> &lhs, const weak_object<T> &rhs)` +
+`owner_less{}(const T &lhs, const weak_object<T> &rhs)` +
+`owner_less{}(const weak_object<T> &lhs, const T &rhs)` +
+return `true` if `lhs` or object it refers to was first declared and `false` otherwise
+
+=== ext_oneapi_owner_before
+Create two `SyclObject` and `weak_object` referring to first declared `SYCLObject`
+
+* Check that `ext_oneapi_owner_before(const T &Other)` returns `true` for first object and `false` for second
+
+* Check that `ext_oneapi_owner_before(const ext::oneapi::weak_object<T> &Other)` returns `true` for second object and `false` for first (refer to the same object)
+
+Check that `owner_before()`, `owner_less()` and `ext_oneapi_owner_before()` return `bool` type using `std::is_same_v`
