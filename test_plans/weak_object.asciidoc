@@ -21,20 +21,20 @@ if feature is not supported.
 === Type coverage
 All of the tests for `weak_object` described below are performed using each of the following `typename SyclObject`:
 
-`accessor<int>`
-`buffer<int>`
-`context`
-`device`
-`device_image<bundle_state::executable>`
-`event`,
-`host_accessor<int>`
-`kernel`
-`kernel_id`
-`kernel_bundle<bundle_state::executable>`
-`local_accessor<int>`
-`platform`
-`queue`
-`stream`
+* `accessor<int>` +
+* `buffer<int>` +
+* `context` +
+* `device` +
+* `device_image<bundle_state::executable>` +
+* `event` +
+* `host_accessor<int>` +
+* `kernel` +
+* `kernel_id` +
+* `kernel_bundle<bundle_state::executable>` +
+* `local_accessor<int>` +
+* `platform` +
+* `queue` +
+* `stream` +
 
 == Objects creation
 
