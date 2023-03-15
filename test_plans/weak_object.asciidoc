@@ -21,12 +21,20 @@ if feature is not supported.
 === Type coverage
 All of the tests for `weak_object` described below are performed using each of the following `typename SyclObject`:
 
-* `accessor<int>`
-* `buffer<int>`
-* `multi_ptr<int, access::address_space::global_space>`
-* `queue`
-* `stream`
-* `vec<int, 1>`
+`accessor<int>`
+`buffer<int>`
+`context`
+`device`
+`device_image<bundle_state::executable>`
+`event`,
+`host_accessor<int>`
+`kernel`
+`kernel_id`
+`kernel_bundle<bundle_state::executable>`
+`local_accessor<int>`
+`platform`
+`queue`
+`stream`
 
 == Objects creation
 
@@ -52,13 +60,13 @@ Create instances of `weak_object` using: +
 
 === Copy and move assignment operators
 
-Use existing instances of `weak_object` to copy or move them into other objects +
+Use the existing instances of `weak_object` from the previous section other than empty object to copy or move them into other objects +
 `weak_object &operator=(const SyclObject &SYCLObj)` +
 `weak_object &operator=(const weak_object &Other)` +
 `weak_object &operator=(weak_object &&Other)`
 
 * Check that resulting object are the same with initial object using `std::is_same_v`
-* Check that `lock()` member function returns same results both in initial and new objects using `==` operator
+* Check that `try_lock()` member function returns same results both in initial and new objects using `==` operator
 * Check that `expired()` returns `false`
 
 === Reset, swap and expired member functions
