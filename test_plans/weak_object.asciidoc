@@ -23,10 +23,10 @@ All of the tests for `weak_object` described below are performed using each of t
 
 * `accessor<int>`
 * `buffer<int>`
-* `multi_ptr<int>`
+* `multi_ptr<int, access::address_space::global_space>`
 * `queue`
 * `stream`
-* `vec<int>`
+* `vec<int, 1>`
 
 == Objects creation
 
@@ -34,7 +34,7 @@ All of the tests for `weak_object` described below using empty or non-empty obje
 
 * Empty `weak_object` created by using `constexpr weak_object()` constructor
 
-* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor
+* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor, where `SyclObject` was created using default class constructor or with sample data
 
 == Tests
 
@@ -46,9 +46,9 @@ Create instances of `weak_object` using: +
 `weak_object(const weak_object &Other)` +
 `weak_object(weak_object &&Other)` +
 
-* Check that using `object_type` is the same type with `SyclObject` using `std::is_same_v`
-* Check that `try_lock()` returns same object with same value and type using `==` and `std::is_same_v` respectivly
-* Check that `expire()` returns `false` for non-empty objects
+* Check that `object_type` is the same type with `SyclObject` using `std::is_same_v`
+* Check that `try_lock()` returns same `SyclObject` with same value and type using `==` and `std::is_same_v` respectively for non-empty and `std::nullopt` for empty objects
+* Check that `expired()` returns `true` for empty and `false` for non-empty objects
 
 === Copy and move assignment operators
 
@@ -59,9 +59,9 @@ Use existing instances of `weak_object` to copy or move them into other objects 
 
 * Check that resulting object are the same with initial object using `std::is_same_v`
 * Check that `lock()` member function returns same results both in initial and new objects using `==` operator
-* Check that `expire()` returns `false`
+* Check that `expired()` returns `false`
 
-=== Release, exchange and expired member functios
+=== Reset, swap and expired member functions
 
 * For empty `weak_object`:
     ** check that `expired()` returns `true`
@@ -79,7 +79,7 @@ Use existing instances of `weak_object` to copy or move them into other objects 
 
 === Expire
 
-* Create local scope with `SyclObject` and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SyclObject` is destroyed outside the scope.
+* Create local scope with `SyclObject` and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SyclObject` is destroyed outside the scope
 
 * Check that `expire()` returns `bool` type using `std::is_same_v`
 
