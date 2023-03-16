@@ -20,8 +20,8 @@
 //
 *******************************************************************************/
 
-#include "catch2/catch_test_macros.hpp"
 #include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
 #include "exceptions.h"
 
@@ -41,9 +41,10 @@ struct check_template_exists {};
 // !FIXME Disabled for dpcpp until error_category_for() is implemented according
 // to SYCL 2020 specification (4.13.2. Exception class interface)
 // https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#subsec:exception.class
-DISABLED_FOR_TEST_CASE(DPCPP)("Check sycl::exception sycl::errc_for enum",
-        "[exception]")({
-  if (false == check_opencl_supporting(sycl_cts::util::get_cts_object::queue())) {
+DISABLED_FOR_TEST_CASE(DPCPP)
+("Check sycl::exception sycl::errc_for enum", "[exception]")({
+  if (false ==
+      check_opencl_supporting(sycl_cts::util::get_cts_object::queue())) {
     SKIP("OpenCL backend is not supported on this device");
     return;
   }
@@ -55,18 +56,26 @@ DISABLED_FOR_TEST_CASE(DPCPP)("Check sycl::exception sycl::errc_for enum",
   // check that sycl::errc_for is enum and scoped enum
   {
     INFO("sycl::errc_for is not enum");
-    CHECK( true == std::is_enum_v<sycl_errc_enum_t>);
+    CHECK(true == std::is_enum_v<sycl_errc_enum_t>);
   }
   {
-    INFO("sycl::errc_for is not a scoped enum cause it can be implicitly converted to int");
-    CHECK( false == std::is_convertible_v<sycl_errc_enum_t, std::underlying_type<sycl_errc_enum_t>>);
+    INFO(
+        "sycl::errc_for is not a scoped enum cause it can be implicitly "
+        "converted to int");
+    CHECK(false ==
+          std::is_convertible_v<sycl_errc_enum_t,
+                                std::underlying_type<sycl_errc_enum_t>>);
   }
   const auto errc_value{static_cast<sycl_errc_enum_t>(0)};
   std::error_code err_code(errc_value,
                            sycl::error_category_for<sycl::backend::opencl>());
   {
-    INFO("error_code::default_error_condition() is not equal to std::error_condition");
-    CHECK(err_code.default_error_condition() == std::error_condition(errc_value, sycl::error_category_for<sycl::backend::opencl>()));
+    INFO(
+        "error_code::default_error_condition() is not equal to "
+        "std::error_condition");
+    CHECK(err_code.default_error_condition() ==
+          std::error_condition(
+              errc_value, sycl::error_category_for<sycl::backend::opencl>()));
   }
   {
     INFO("sycl::errc_for is not a error code enumeration");
@@ -77,7 +86,9 @@ DISABLED_FOR_TEST_CASE(DPCPP)("Check sycl::exception sycl::errc_for enum",
     CHECK(false == std::is_error_condition_enum_v<sycl_errc_enum_t>);
   }
   {
-    INFO("sycl::error_category_for<sycl::backend::opencl> name is not equal to \"opencl\"");
+    INFO(
+        "sycl::error_category_for<sycl::backend::opencl> name is not equal to "
+        "\"opencl\"");
     CHECK(sycl::error_category_for<sycl::backend::opencl>().name() == "opencl");
   }
 #endif  // SYCL_BACKEND_OPENCL

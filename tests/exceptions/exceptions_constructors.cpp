@@ -21,8 +21,8 @@
 *******************************************************************************/
 
 #include "../../util/sycl_exceptions.h"
-#include "catch2/catch_test_macros.hpp"
 #include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
 
 #include "exceptions.h"
 
@@ -206,8 +206,8 @@ TEST_CASE("Constructors for sycl::exception with sycl::errc error codes",
 // !FIXME Disabled for dpcpp until error_category_for() is implemented according
 // to SYCL 2020 specification (4.13.2. Exception class interface)
 // https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#subsec:exception.class
-DISABLED_FOR_TEST_CASE(DPCPP)("Constructors for sycl::exception with OpenCL error code",
-          "[exception]")({
+DISABLED_FOR_TEST_CASE(DPCPP)
+("Constructors for sycl::exception with OpenCL error code", "[exception]")({
   auto prefer_open_cl = [](const sycl::device& d) -> int {
     return d.get_backend() == sycl::backend::opencl;
   };
