@@ -108,7 +108,7 @@ verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r,
 }
 
 template <typename T>
-typename std::enable_if<std::is_integral<T>::value, bool>::type verify(
+typename std::enable_if_t<std::is_integral_v<T>, bool> verify(
     sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r, int,
     const std::string &) {
   bool result = value == r.res || !r.undefined.empty();
