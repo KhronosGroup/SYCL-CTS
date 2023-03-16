@@ -38,9 +38,8 @@ bool check_opencl_supporting(const sycl::queue &q) {
 template <template <sycl::backend> class arg>
 struct check_template_exists {};
 
-// !FIXME Disabled for dpcpp until error_category_for() is implemented according
-// to SYCL 2020 specification (4.13.2. Exception class interface)
-// https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#subsec:exception.class
+// !FIXME Disabled until issue
+// https://github.com/KhronosGroup/SYCL-Docs/issues/182 is not resolved.
 DISABLED_FOR_TEST_CASE(DPCPP)
 ("Check sycl::exception sycl::errc_for enum", "[exception]")({
   if (false ==
