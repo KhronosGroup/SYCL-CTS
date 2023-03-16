@@ -25,7 +25,6 @@ All of the tests for `weak_object` described below are performed using each of t
 * `buffer<int>` +
 * `context` +
 * `device` +
-* `device_image<bundle_state::executable>` +
 * `event` +
 * `host_accessor<int>` +
 * `kernel` +
@@ -42,7 +41,11 @@ All of the tests for `weak_object` described below using empty or non-empty obje
 
 * Empty `weak_object` created by using `constexpr weak_object()` constructor
 
-* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor, where `SyclObject` was created using default class constructor or with sample data
+* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor,
+where `SyclObject` was created using
+    ** Default class constructor
+    ** Sample data constructor
+    ** `get_<typenmane>()` member functions from other objects. For example `device = queue.get_device()`
 
 == Tests
 
