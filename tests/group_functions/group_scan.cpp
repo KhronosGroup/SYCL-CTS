@@ -135,7 +135,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 });
 
 // FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
-// and op are interchanged. known_identity is not impemented yet.
+// and op are interchanged. known_identity is not implemented yet.
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][type_list][dim]")({
