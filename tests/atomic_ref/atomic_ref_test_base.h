@@ -66,7 +66,7 @@ class atomic_ref_test {
            sycl::access::address_space::global_space;
   }
 
-  template <unsigned long result_buf_size, typename TestActionT>
+  template <size_t result_buf_size, typename TestActionT>
   void queue_submit_local_scope(std::array<bool, result_buf_size>& result,
                                 TestActionT& test_action) {
     T ref_val = host_val_expd;
@@ -89,7 +89,7 @@ class atomic_ref_test {
     }
   }
 
-  template <unsigned long result_buf_size, typename TestActionT>
+  template <size_t result_buf_size, typename TestActionT>
   void queue_submit_global_scope(std::array<bool, result_buf_size>& result,
                                  TestActionT& test_action) {
     T ref_val = host_val_expd;
