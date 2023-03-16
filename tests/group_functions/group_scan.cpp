@@ -18,6 +18,8 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
 #include "group_scan.h"
 
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
@@ -37,9 +39,10 @@ using ScanTypes = Types;
 
 static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
-
-TEST_CASE("Group and sub-group joint scan functions",
-          "[group_func][type_list][dim]") {
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions", "[group_func][type_list][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for InPtr and OutPtr. "
@@ -70,10 +73,12 @@ TEST_CASE("Group and sub-group joint scan functions",
   for_all_combinations<invoke_joint_scan_group>(Dims, ScanTypes{}, ScanTypes{},
                                                 queue);
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group joint scan functions with init",
-          "[group_func][type_list][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group joint scan functions with init",
+ "[group_func][type_list][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
       "hipSYCL cannot handle cases of different types for T, *InPtr and "
@@ -104,10 +109,11 @@ TEST_CASE("Group and sub-group joint scan functions with init",
   for_all_combinations<invoke_init_joint_scan_group>(
       Dims, ScanTypes{}, ScanTypes{}, ScanTypes{}, queue);
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group scan functions",
-          "[group_func][type_list][dim]") {
+// FIXME: known_identity is not impemented yet for hipSYCL.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions", "[group_func][type_list][dim]")({
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
@@ -126,15 +132,14 @@ TEST_CASE("Group and sub-group scan functions",
 #else
   for_all_combinations<invoke_scan_over_group>(Dims, ScanTypes{}, queue);
 #endif
-}
+});
 
-TEST_CASE("Group and sub-group scan functions with init",
-          "[group_func][type_list][dim]") {
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
-  WARN(
-      "hipSYCL has wrong arguments order in inclusive_scan_over_group: init "
-      "and op are interchanged.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+// FIXME: hipSYCL has wrong arguments order for inclusive_scan_over_group: init
+// and op are interchanged. known_identity is not implemented yet.
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Group and sub-group scan functions with init",
+ "[group_func][type_list][dim]")({
+#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
   // Link to issue https://github.com/intel/llvm/issues/8341
   WARN(
       "DPCPP cannot handle cases of different types for T and V. Skipping such "
@@ -167,4 +172,4 @@ TEST_CASE("Group and sub-group scan functions with init",
   for_all_combinations<invoke_init_scan_over_group>(Dims, ScanTypes{},
                                                     ScanTypes{}, queue);
 #endif
-}
+});

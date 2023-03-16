@@ -17,7 +17,8 @@
  *        See Jean-Michel Muller "On the definition of ulp (x)", definition 7
  *        Using std functions.
  */
-template <typename T> T get_ulp_std(T x) {
+template <typename T>
+T get_ulp_std(T x) {
   const T inf = std::numeric_limits<T>::infinity();
   const T negative = std::fabs(std::nextafter(x, -inf) - x);
   const T positive = std::fabs(std::nextafter(x, inf) - x);
@@ -35,7 +36,8 @@ inline sycl::half get_ulp_std<sycl::half>(sycl::half x) {
  *        See Jean-Michel Muller "On the definition of ulp (x)", definition 7
  *        Using sycl functions.
  */
-template <typename T> T get_ulp_sycl(T x) {
+template <typename T>
+T get_ulp_sycl(T x) {
   const T inf = std::numeric_limits<T>::infinity();
   const T negative = sycl::fabs(sycl::nextafter(x, -inf) - x);
   const T positive = sycl::fabs(sycl::nextafter(x, inf) - x);
@@ -49,4 +51,4 @@ inline sycl::half get_ulp_sycl<sycl::half>(sycl::half x) {
   return static_cast<sycl::half>(ulp * multiplier);
 }
 
-#endif // __SYCLCTS_UTIL_ACCURACY_H
+#endif  // __SYCLCTS_UTIL_ACCURACY_H
