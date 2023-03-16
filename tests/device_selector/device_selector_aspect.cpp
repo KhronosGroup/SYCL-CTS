@@ -19,6 +19,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 #include "../common/type_coverage.h"
 
 #include <random>
@@ -395,6 +396,48 @@ constexpr void check_for_random_set(const named_type_pack<AspectsT...>&) {
   create_random_sets(aspect_tuple, set_sizes);
 }
 
+template <typename AspectT>
+class kernel_aspect;
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+/**
+ Functor that checks any_device_has and all_devices_have functionality. */
+template <typename AspectT>
+class check_any_device_has_all_devices_have {
+  static constexpr sycl::aspect aspect = AspectT::value;
+
+ public:
+  void operator()(const std::string& aspect_name) {
+    using k_name = kernel_aspect<AspectT>;
+    INFO("Check for aspect: " + aspect_name);
+
+    sycl::queue queue = util::get_cts_object::queue();
+    queue.submit(
+        [&](sycl::handler& cgh) { cgh.single_task<k_name>([=]() {}); });
+
+    auto exec_device_has_aspect = [=](auto d) {
+      return d.has(aspect) && sycl::is_compatible<k_name>(d);
+    };
+    auto devices = sycl::device::get_devices();
+    for (auto d : devices) {
+      bool compatible = sycl::is_compatible<k_name>(d);
+      bool has_aspect = d.has(aspect);
+      if (compatible && has_aspect) {
+        CHECK(std::is_base_of_v<std::true_type, sycl::any_device_has<aspect>>);
+        CHECK(sycl::any_device_has_v<aspect>);
+      }
+      if (!sycl::any_device_has_v<aspect>)
+        CHECK_FALSE((compatible && has_aspect));
+
+      if (compatible && !has_aspect) {
+        CHECK(
+            std::is_base_of_v<std::false_type, sycl::all_devices_have<aspect>>);
+        CHECK_FALSE(sycl::all_devices_have_v<aspect>);
+      }
+      if (sycl::all_devices_have_v<aspect>) CHECK((has_aspect || !compatible));
+    }
+  }
+};
+#endif
 TEST_CASE("aspect", "[device_selector]") {
 #if SYCL_CTS_COMPILING_WITH_COMPUTECPP
   WARN("ComputeCPP cannot compare exception code. Workaround is in place.");
@@ -420,5 +463,14 @@ TEST_CASE("aspect", "[device_selector]") {
   constexpr unsigned int random_aspects_count = 100;
   check_for_random_set<random_aspects_count>(aspect_pack);
 }
+
+// FIXME: re-enable when any_device_has and all_devices_have are implemented for
+// ComputeCpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("Check any_device_has and all_devices_have", "[device_selector]")({
+  const auto aspect_pack = get_aspect_pack();
+
+  for_all_combinations<check_any_device_has_all_devices_have>(aspect_pack);
+});
 
 }  // namespace device_selector_aspect
