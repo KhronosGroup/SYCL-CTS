@@ -2,15 +2,31 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides tests for sycl::exception constructors
 //
 *******************************************************************************/
+
 #include "../../util/sycl_exceptions.h"
 #include "catch2/catch_test_macros.hpp"
-#include "catch2/matchers/catch_matchers.hpp"
+#include "../common/disabled_for_test_case.h"
+
 #include "exceptions.h"
 
-namespace exception_constructors {
+namespace exception_constructors_test {
 
 /**
  * @brief The function helps to verify that exception was constructed correctly.
@@ -187,8 +203,11 @@ TEST_CASE("Constructors for sycl::exception with sycl::errc error codes",
 }
 
 #ifdef SYCL_BACKEND_OPENCL
-TEST_CASE("Constructors for sycl::exception with OpenCL error code",
-          "[exception]") {
+// !FIXME Disabled for dpcpp until error_category_for() is implemented according
+// to SYCL 2020 specification (4.13.2. Exception class interface)
+// https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#subsec:exception.class
+DISABLED_FOR_TEST_CASE(DPCPP)("Constructors for sycl::exception with OpenCL error code",
+          "[exception]")({
   auto prefer_open_cl = [](const sycl::device& d) -> int {
     return d.get_backend() == sycl::backend::opencl;
   };
@@ -299,11 +318,11 @@ TEST_CASE("Constructors for sycl::exception with OpenCL error code",
     check_exception(e, std_errc,
                     sycl::error_category_for<sycl::backend::opencl>(), ctx);
   }
-}
+});
 #endif
 
 TEST_CASE("sycl::exception is derived from std::exception", "[exception]") {
   CHECK(std::is_base_of_v<std::exception, sycl::exception>);
 }
 
-}  // namespace exception_constructors
+}  // namespace exception_constructors_test
