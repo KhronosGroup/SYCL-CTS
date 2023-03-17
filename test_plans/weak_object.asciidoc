@@ -4,7 +4,7 @@
 = Test plan for weak object
 
 This is a test plan for the APIs described in
-https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_weak_object.asciidoc[SYCL_EXT_ONEAPI_WEAK_OBJECT.asciidoc]
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_weak_object.asciidoc[sycl_ext_oneapi_weak_object]
 
 == Testing scope
 
@@ -21,33 +21,96 @@ if feature is not supported.
 === Type coverage
 All of the tests for `weak_object` described below are performed using each of the following `typename SyclObject`:
 
-* `accessor<int>` +
-* `buffer<int>` +
-* `context` +
-* `device` +
-* `event` +
-* `host_accessor<int>` +
-* `kernel` +
-* `kernel_id` +
-* `kernel_bundle<bundle_state::executable>` +
+* `buffer<int>`         +
+* `accessor<int>`       +
+* `host_accessor<int>`  +
 * `local_accessor<int>` +
-* `platform` +
-* `queue` +
-* `stream` +
+* `context`             +
+* `event`               +
+* `queue`               +
+* `stream`
 
 == Objects creation
 
-All of the tests for `weak_object` described below using empty or non-empty objects:
+All of the tests for `weak_object` described below using SYCL objects and empty or non-empty objects:
+
+* SYCL objects created by using default constructors or passing sample data:
+
+** `buffer<int>`
++
+----
+buffer<int> b{{1}}
+----
+
+** `accessor<int>`
++
+----
+buffer<int> b{{1}};
+accessor a{b}
+----
+
+** `host_accessor<int>`
++
+----
+buffer<int> b{{1}};
+host_accessor a{b}
+----
+
+** `local_accessor<int>`
++
+----
+queue q;
+q.submit([&](handler &cgh) {
+    local_accessor<int> a{{1}, cgh};
+})
+----
+
+** `context`
++
+----
+context c;
+----
+
+** `event`
++
+----
+event e;
+----
+
+** `queue`
++
+----
+queue q;
+----
+
+** `stream`
++
+----
+queue q;
+q.submit([&](handler &cgh) {
+  stream s{1, 1, cgh};
+})
+----
 
 * Empty `weak_object` created by using `constexpr weak_object()` constructor
 
-* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor,
-where `SyclObject` was created using one of the following:
-    ** Default class constructor
-    ** Sample data constructor
-    ** `get_<typenmane>()` member functions from other objects. For example `device = queue.get_device()`
+* Non-empty `weak_object` created by using `weak_object(const SyclObject &SYCLObj)` constructor
 
 == Tests
+
+=== API tests
+
+General checks for all of created `weak_object`. First initialize `ret` using `try_lock()`, then:
+
+* If the weak_object was constructed with an underlying SYCL object `SyclObj`, check that:
+** `ret.value() == SYCLObj`
+** `std::is_same_v<decltype(ret.value(), SyclObject)>`
+** Call `lock` and verify that the value it returns compares equal to `SyclObj`.
+** Call `reset`, and then verify that `expired()` returns `false`.
+
+* If the weak_object was constructed with no underlying SYCL object, check that:
+** `ret.has_value() == false`
+** Call `lock` and verify that it throws `errc::invalid` exception
 
 === Constructors
 
@@ -57,38 +120,28 @@ Create instances of `weak_object` using: +
 `weak_object(const weak_object &Other)` +
 `weak_object(weak_object &&Other)` +
 
-* Check that `object_type` is the same type with `SyclObject` using `std::is_same_v`
-* Check that `try_lock()` returns same `SyclObject` with same value and type using `==` and `std::is_same_v` respectively for non-empty and `std::nullopt` for empty objects
-* Check that `expired()` returns `true` for empty and `false` for non-empty objects
+Perform tests described above in the "API" section.
 
 === Copy and move assignment operators
 
-Use the existing instances of `weak_object` from the previous section other than empty object to copy or move them into other objects +
+Use the existing instances of `weak_object` from the previous section, copy or move them into another objects using following operators: +
 `weak_object &operator=(const SyclObject &SYCLObj)` +
 `weak_object &operator=(const weak_object &Other)` +
 `weak_object &operator=(weak_object &&Other)`
 
-* Check that resulting object are the same with initial object using `std::is_same_v`
-* Check that `try_lock()` member function returns same results both in initial and new objects using `==` operator
-* Check that `expired()` returns `false`
+Perform tests described above in the "API" section.
 
-=== Reset, swap and expired member functions
+=== swap member function
 
-* For empty `weak_object`:
-    ** check that `expired()` returns `true`
-    ** call `swap()` with non-empty `weak_object` and check that `expired()` returns `false`
-    ** call `reset()` and check that `expired()` returns `true` again
+Using the objects created in the "Constructors" section, do the following:
 
-* For non-empty `weak_object`
-    ** check that `expired()` returns `false`
-    ** call `swap()` and check that `lock()` returns reference to same object
-    ** call `reset()` and check that `expired()` returns `true`
+* Create an empty `weak_object` of the same type by using the default constructor.
 
-=== Lock exception
+* Call `swap` on that object, passing the object from the "Constructors" section.
 
-`SyclObject lock() const;` - check throwing `errc::invalid` exception if object is empty
+* Perform tests described above in the "API" section.
 
-=== Expire
+=== Expiring
 
 * Create local scope with `SyclObject` and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SyclObject` is destroyed outside the scope
 
@@ -96,23 +149,19 @@ Use the existing instances of `weak_object` from the previous section other than
 
 === owner_before and owner_less
 
-Create two `weak_object` referring to two different `SyclObject`
+Create two pairs of `weak_object` objects, the first of which encapsulate the same SYCLObj, and the second are empty
 
-* Check that calling `owner_before(const weak_object &Other)` with passing second object as `Other` returns `true` for first `weak_object` and `false` otherwise
+* Check that `owner_before(const weak_object &Other)` returns `false` with passing second `weak_object` for both pairs
 
-* Check that `owner_before(const SyclObject &Other)` returns `true` if `weak_object` was declared before `Other`
+* CHeck that `owner_before(const SyclObject &Other)`returns `false` with passing referred SyclObj for both pairs
 
 * Check that `owner_less{}(const T &lhs, const T &rhs)` +
 `owner_less{}(const weak_object<T> &lhs, const weak_object<T> &rhs)` +
 `owner_less{}(const T &lhs, const weak_object<T> &rhs)` +
 `owner_less{}(const weak_object<T> &lhs, const T &rhs)` +
-return `true` if `lhs` or object it refers to was first declared and `false` otherwise
+return `false` if `lhs` and `rhs` `weak_object` or `SYCLObj` they refers are both the same or empty
 
 === ext_oneapi_owner_before
-Create two `SyclObject` and `weak_object` referring to first declared `SYCLObject`
+Create `SyclObject` and `weak_object` which encapsulate it.
 
-* Check that `ext_oneapi_owner_before(const T &Other)` returns `true` for first object and `false` for second
-
-* Check that `ext_oneapi_owner_before(const ext::oneapi::weak_object<T> &Other)` returns `true` for second object and `false` for first (refer to the same object)
-
-Check that `owner_before()`, `owner_less()` and `ext_oneapi_owner_before()` return `bool` type using `std::is_same_v`
+* Check that `SyclObject::ext_oneapi_owner_before` returns `false` with passing created `weak_object`
