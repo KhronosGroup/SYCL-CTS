@@ -50,6 +50,15 @@ TEST_CASE("Test kernel info", "[kernel]") {
   };
 
   {
+    /** According to SYCL specification info::kernel::num_args descriptor may
+       only be used to query a kernel that resides in a kernel bundle that was
+       constructed using a backend specific interoperability function or to
+       query a device built-in kernel. In other cases an exception with the
+       errc::invalid error code is thrown. We attampt to use
+       info::kernel::num_args descriptor with user defined kernel which resides
+       in a kernel bundle that was constructed without using interoperability
+       function. So we expect that exception will be thrown.
+     */
     INFO(
         "Check that exception with error code \"errc::invalid\" is thrown in "
         "case of invalid usage of "
@@ -63,8 +72,16 @@ TEST_CASE("Test kernel info", "[kernel]") {
         kernel.get_info<sycl::info::kernel_device_specific::global_work_size>(
             dev);
   };
-
-  {
+  /** According to SYCL specification
+     info::kernel_device_specific::global_work_size descriptor may only be used
+     if the device type is device_type::custom or if the kernel is a built-in
+     kernel. In other cases an exception with the errc::invalid error code is
+     thrown. We attampt to use info::kernel_device_specific::global_work_size
+     descriptor with user defined kernel and expect that exception will be
+     thrown if device type is not custom.
+   */
+  if (dev.get_info<sycl::info::device::device_type>() !=
+      sycl::info::device_type::custom) {
     INFO(
         "Check exception with error code \"errc::invalid\" is thrown in case "
         "of invalid usage of "
