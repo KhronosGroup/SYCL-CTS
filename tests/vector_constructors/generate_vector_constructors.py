@@ -27,7 +27,7 @@ import itertools
 from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel, wrap_with_test_func,
-                               make_func_call, write_source_file, get_types)
+                               make_func_call, write_source_file, get_types, cast_to_bool)
 
 TEST_NAME = 'CONSTRUCTORS'
 
@@ -132,6 +132,10 @@ def generate_constructor_tests(type_str, input_file, output_file):
     """Generates a string for each constructor type containing each combination of test
     Constructor types: default, explicit, vec, opencl
     A cross section of variadic constructors are provided by the template"""
+
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
+
     test_str = ''
     test_func_str = ''
     func_calls = ''

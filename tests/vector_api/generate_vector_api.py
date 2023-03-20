@@ -27,7 +27,7 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file, get_types)
+                               write_source_file, get_types, cast_to_bool)
 
 TEST_NAME = 'API'
 
@@ -45,9 +45,14 @@ vector_api_template = Template("""
             sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
           resAcc[0] = false;
         }
-        if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
+// FIXME: re-enable type conversion for bool when bool -> other types
+// is implemented in dpcpp
+#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
+        if constexpr (!std::is_same_v<${type}, bool>)
+#endif
+          if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
             resAcc[0] = false;
-        }
+          }
 """)
 
 lo_hi_odd_even_template = Template("""
@@ -118,6 +123,9 @@ def make_optional_tests(type_str, input_file, output_file, dest, dest_type):
                     output_file.replace('.cpp','_as_convert_to_'+dest+'.cpp'), type_str)
 
 def make_tests(type_str, input_file, output_file, target_enable):
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
+
     api_checks = ''
     func_calls = ''
     for size in Data.standard_sizes:

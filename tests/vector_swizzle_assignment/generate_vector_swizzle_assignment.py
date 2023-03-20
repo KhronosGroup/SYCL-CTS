@@ -28,7 +28,7 @@ from itertools import permutations
 sys.path.append('../common/')
 from common_python_vec import (
     Data, swap_pairs, generate_value_list, append_fp_postfix, wrap_with_kernel,
-    wrap_with_test_func, make_func_call, write_source_file, get_types)
+    wrap_with_test_func, make_func_call, write_source_file, get_types, cast_to_bool)
 
 TEST_NAME = 'SWIZZLE_ASSIGNMENT'
 
@@ -89,7 +89,7 @@ def gen_ordered_values(index_string, type_str):
     ordered_val_list = [None] * len(index_string)
     val = 0
     for index in index_string:
-        ordered_val_list[index_positions_dict[index]] = str(val)
+        ordered_val_list[index_positions_dict[index]] = 'static_cast<bool>(' + str(val) + ' % 2)' if type_str == 'bool' else str(val)
         val += 1
     return ordered_val_list
 
@@ -230,6 +230,9 @@ def gen_test(type_str, size):
 
 
 def make_tests(type_str, input_file, output_file):
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
+
     test_str = ''
     func_calls = ''
     for size in Data.standard_sizes:

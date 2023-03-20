@@ -509,6 +509,12 @@ bool check_convert_as_all_dims(sycl::vec<vecType, N> inputVec) {
 template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
+
+// FIXME: re-enable type conversion to bool when vecType -> bool is implemented
+// https://github.com/intel/llvm/issues/8543
+#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
+  result += check_convert_as_all_dims<vecType, N, bool>(inputVec);
+#endif
   result += check_convert_as_all_dims<vecType, N, char>(inputVec);
   result += check_convert_as_all_dims<vecType, N, signed char>(inputVec);
   result += check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
