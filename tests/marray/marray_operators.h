@@ -233,22 +233,22 @@ inline constexpr bool init_seq_contains_too_big_values_for_shift_op(
 }
 
 /**
- * @brief The function checks that for particular test case there is no
- * undefined behavior for left or right shift operation. In case of shift
- * operation too large value of right hand side argument can lead to undefined
- * behavior. For initialization sequences: seq_inc, seq_dec the right hand side
- * argument can take values up to 64. So we should exclude test cases for such
- * big shift values. Left shift operation by 8 bits is guaranteed legal for our
- * tests beacuse maximum value after shift operation will be 64 * 2^8 = 2^14 (64
- * is maximum value in initialization sequence) that can be stored inside int
- * type (which should be at least 16 bits width) and inside wider types. It is
- * also valid for shift operation with small integral types (such as char)
- * because of its integral promotions to int before the operation execution. For
- * right shift operation with right hand side argument is greater or equal to
- * the number of bits in the promoted left operand, the behavior is undefined.
- * So right shift operation by N bits with N is less than sizeof(int) - 1 is
- * guaranteed legal for type int, wider types and for small integral types
- * because of its integral promotions to int. */
+  @brief The function checks that for particular test case there is no
+  undefined behavior for left or right shift operation. In case of shift
+  operation too large value of right hand side argument can lead to undefined
+  behavior. For initialization sequences: seq_inc, seq_dec the right hand side
+  argument can take values up to 64. So we should exclude test cases for such
+  big shift values. Left shift operation by 8 bits is guaranteed legal for our
+  tests because maximum value after shift operation will be 64 * 2^8 = 2^14 (64
+  is maximum value in initialization sequence) that can be stored inside int
+  type (which should be at least 16 bits width) and inside wider types. It is
+  also valid for shift operation with small integral types (such as char)
+  because of its integral promotions to int before the operation execution. For
+  right shift operation with right hand side argument is greater or equal to
+  the number of bits in the promoted left operand, the behavior is undefined.
+  So right shift operation by N bits with N is less than sizeof(int) - 1 is
+  guaranteed legal for type int, wider types and for small integral types
+  because of its integral promotions to int. */
 template <typename OpT, typename InitSeqForRhs, std::size_t seq_el_num>
 inline constexpr bool test_case_is_invalid_for_shift_op() {
   constexpr int max_left_shift_wo_undef_behavior = 8;
