@@ -46,7 +46,7 @@ vector_api_template = Template("""
           resAcc[0] = false;
         }
 // FIXME: re-enable type conversion for bool when bool -> other types
-// is implemented in dpcpp
+// https://github.com/intel/llvm/issues/8543
 #ifdef SYCL_CTS_COMPILING_WITH_DPCPP
         if constexpr (!std::is_same_v<${type}, bool>)
 #endif
