@@ -133,14 +133,10 @@ TEST_CASE(
   }
 }
 
-// FIXME: re-enable when sycl::kernel_bundle::get_kernel<KernelName>() is
-// implemented
-// Issue link https://github.com/intel/llvm/issues/8328
-// PR link https://github.com/intel/llvm/pull/8294
-DISABLED_FOR_TEST_CASE(DPCPP)
-("Check kernel_bundle::get_kernel<KernelName>()"
- "kernels",
- "[kernel_bundle]")({
+TEST_CASE(
+    "Check kernel_bundle::get_kernel<KernelName>()"
+    "kernels",
+    "[kernel_bundle]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   using kernel_name = class simple_kernel_get_kernel;
   sycl_cts::tests::kernel_bundle::define_kernel<kernel_name>(queue);
@@ -149,4 +145,4 @@ DISABLED_FOR_TEST_CASE(DPCPP)
           queue.get_context());
   auto kernel = kernel_bundle.get_kernel<kernel_name>();
   CHECK(std::is_same_v<decltype(kernel), sycl::kernel>);
-});
+}
