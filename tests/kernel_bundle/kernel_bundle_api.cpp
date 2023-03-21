@@ -133,10 +133,10 @@ TEST_CASE(
   }
 }
 
-TEST_CASE
-("Check kernel_bundle::get_kernel<KernelName>()"
- "kernels",
- "[kernel_bundle]"){
+TEST_CASE(
+    "Check kernel_bundle::get_kernel<KernelName>()"
+    "kernels",
+    "[kernel_bundle]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   using kernel_name = class simple_kernel_get_kernel;
   sycl_cts::tests::kernel_bundle::define_kernel<kernel_name>(queue);
