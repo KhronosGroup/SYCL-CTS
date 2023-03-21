@@ -16,16 +16,22 @@ is selected on the CTS command line.
 
 === Feature test macro
 
-All of the tests should use `#ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK` so they can be skipped
-if feature is not supported.
+Part of the extension feature is available from revision 1 and tests for it should use
+`#if SYCL_EXT_ONEAPI_SUB_GROUP_MASK >= 1` and can be skipped if the feature is not supported.
+The other part of the feature is available from revision 2 and tests for it should use
+`#if SYCL_EXT_ONEAPI_SUB_GROUP_MASK >= 2` and can be skipped if the feature is not supported.
 
 == Tests
 
 All of the following tests have these initial steps performed in defferent .cpp files :
 
 * Create a `queue` from the tested device and call `queue::submit()`.
-* Submit a kernel via `handler::parallel_for()` with parameters `sycl::nd_range<1>(range<1>(128), range<1>(32))`
+* Submit a kernel via `handler::parallel_for()` with parameters `sycl::nd_range<1>(range<1>(32), range<1>(32))`
   and lambda finction with parameter `sycl::nd_item<1>`.
+* Lambda function should be decorated with attribute `reqd_sub_group_size(N)` with `N` values = `[8,16,32]`.
+  If device does not support `sub_group` size `N`, test for size `N` can be skipped.
+  `device.get_info<sycl::info::device::sub_group_sizes>()` should be used
+  to check supported `sub_group` sizes.
 * In lambda function use `nd_item::get_sub_group()` to get `sycl::sub_group` instance.
 * Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
 * Use accessor to buffer for type `bool` to save results.
@@ -35,6 +41,101 @@ All of the following tests have these initial steps performed in defferent .cpp 
 === Test for max_bits
 
 Check that member `size_t max_bits` exists.
+
+=== Tests for constructors and operator=
+
+==== sub_group_mask()
+
+Available from revision 2.
+
+* Construct `sub_group_mask` instance `s` `with sub_group_mask()` ctor.
+* Check that `s.none() == true`.
+* Check that `s.size() == sub_group.max_local_range().size()`.
+
+==== sub_group_mask(unsigned long long val)
+
+Available from revision 2.
+
+* Construct `sub_group_mask` instance `s` with `sub_group_mask(unsigned long long val)` ctor
+  and `val == item.get_global_linear_id()`.
+* Extract bits to `unsigned long long` `out` variable with function `s.extract_bits(out)`.
+* Check that `out == val`.
+
+==== template <typename T, std::size_t K> sub_group_mask(const sycl::marray<T, K>& val)
+
+For T equals to integral types below:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+
+And `marray<T, dim>` where T is the integral type above
+and `dim` == `sub_group.max_local_range().size()`.
+
+* Init `marray<T, dim> val` variable with `value = item.get_global_linear_id()%std::numeric_limits<T>::max()`.
+* Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
+* Extract bits to `marray<T, dim>` `out` variable with function `s.extract_bits(out)`.
+* Check that `out == val`.
+
+==== sub_group_mask(const sub_group_mask& other)
+
+For T equals to integral types below:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+
+And `marray<T, dim>` where T is the integral type above
+and `dim` == `sub_group.max_local_range().size()`.
+
+* Init `marray<T, dim> val` variable with `value = item.get_global_linear_id()%std::numeric_limits<T>::max()`.
+* Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
+* Construct `sub_group_mask` instance `copy` with `sub_group_mask(s)` copy ctor.
+* Extract bits to `marray<T, dim>` `out` variable with function `copy.extract_bits(out)`.
+* Check that `out == val`.
+
+==== sub_group_mask& operator=(const sub_group_mask& other)
+
+For T equals to integral types below:
+
+* `char`
+* `signed char`
+* `unsigned char`
+* `short int`
+* `unsigned short int`
+* `int`
+* `unsigned int`
+* `long int`
+* `unsigned long int`
+* `long long int`
+* `unsigned long long int`
+
+And `marray<T, dim>` where T is the integral type above
+and `dim` == `sub_group.max_local_range().size()`.
+
+* Init `marray<T, dim> expexted` variable with `value = expected_val`.
+* Init `marray<T, dim> changed` variable with `value = changed_val`.
+* Construct `sub_group_mask` instance `e_mask` with `sub_group_mask(expected)` ctor.
+* Construct `sub_group_mask` instance `ch_mask` with `sub_group_mask(changed)` copy ctor.
+* Use `ch_mask = e_mask` to assign ch_mask instance with copy of e_mask.
+* Extract bits to `marray<T, dim>` `out` variable with function `ch_mask.extract_bits(out)`.
+* Check that `out == expected`.
 
 === Tests for Member Functions
 
@@ -46,99 +147,113 @@ Member functions from Table are checked with following steps:
 * Check return type.
 * Check that Expression returns Exprected value.
 
-[%header,cols="2,2,1,2,2"]
+[%header,cols="2,2,1,1,2,2"]
 |===
 |Function
+|Revision
 |Predicate
 |Return type
 |Expression
 |Expected value
 
 |`operator[](id<1> id) const`
+|1
 |`sub_group.get_local_id().size_t()%2 == 0`
 |`bool`
 |`sub_group_mask[id(N)]` for `N = 0...sub_group_mask.size - 1`
 |`N%2 == 0`
 
 |`test(id<1> id) const`
+|1
 |`sub_group.get_local_id().size_t()%2 == 0`
 |`bool`
 |`sub_group_mask.test(id(N))` for `N = 0...sub_group_mask.size - 1`
 |`N%2 == 0`
 
 |`all() const`
+|1
 |`sub_group.get_local_id().size_t()%2 == 0`
 |`bool`
 |`sub_group_mask.all()`
 |`false`
 
 |`all() const`
+|1
 |`true`
 |`bool`
 |`sub_group_mask.all()`
 |`true`
 
 |`any() const`
+|1
 |`sub_group.get_local_id().size_t()%2 == 0`
 |`bool`
 |`sub_group_mask.any()`
 |`true`
 
 |`any() const`
+|1
 |`false`
 |`bool`
 |`sub_group_mask.any()`
 |`false`
 
 |`none() const`
+|1
 |`sub_group.get_local_id().size_t()%2 == 0`
 |`bool`
 |`sub_group_mask.none()`
 |`false`
 
 |`none() const`
+|1
 |`false`
 |`bool`
 |`sub_group_mask.none()`
 |`true`
 
 |`count() const`
+|1
 |`sub_group.get_local_id().size_t() < sub_group.get_local_range().size_t()/2`
 |`uint32_t`
 |`sub_group_mask.count()`
 |`sub_group.get_local_range().size()/2`
 
 |`size() const`
+|1
 |`true`
 |`uint32_t`
 |`sub_group_mask.size()`
 |`sub_group.get_local_range().size()`
 
 |`find_low() const`
+|1
 |`sub_group.get_local_id().size_t() > sub_group.get_local_range().size_t()/2 - 1`
 |`id<1>`
 |`sub_group_mask.find_low()`
 |`id(sub_group.get_local_range().size()/2)`
 
 |`find_low() const`
+|1
 |`false`
 |`id<1>`
 |`sub_group_mask.find_low()`
 |`id(sub_group.get_local_range().size())`
 
 |`find_high() const`
+|1
 |`sub_group.get_local_id().size_t() < sub_group.get_local_range().size_t()/2`
 |`id<1>`
 |`sub_group_mask.find_high()`
 |`id(sub_group.get_local_range().size_t()/2 - 1)`
 
 |`find_high() const`
+|1
 |`false`
 |`id<1>`
 |`sub_group_mask.find_high()`
 |`id(sub_group.get_local_range().size_t())`
 |===
-
 
 ==== operator[](id<1> id)
 
