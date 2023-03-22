@@ -33,8 +33,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   for_all_combinations<check_scalar_return_type>(get_op_types(), types, types);
 });
 
-// Issue link https://github.com/intel/llvm/issues/8331
-DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("function objects void specializations vector core", "[function_objects]")({
   const auto types_vector =
       named_type_pack<TYPES_VECTOR>::generate(TYPE_NAMES_VECTOR);
