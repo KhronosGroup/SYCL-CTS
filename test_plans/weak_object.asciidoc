@@ -19,7 +19,7 @@ All of the tests should use `#ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT` so they can be 
 if feature is not supported.
 
 === Type coverage
-All of the tests for `weak_object` described below are performed using each of the following `typename SyclObject`:
+All of the tests for `weak_object` described below are performed using each of the following `typename SYCLObjT`:
 
 * `buffer<int>`         +
 * `accessor<int>`       +
@@ -104,7 +104,7 @@ General checks for all of created `weak_object`. First initialize `ret` using `t
 
 * If the weak_object was constructed with an underlying SYCL object `SyclObj`, check that:
 ** `ret.value() == SYCLObj`
-** `std::is_same_v<decltype(ret.value(), SyclObject)>`
+** `std::is_same_v<decltype(ret.value(), SYCLObjT)>`
 ** Call `lock` and verify that the value it returns compares equal to `SyclObj`.
 ** Call `reset`, and then verify that `expired()` returns `false`.
 
@@ -114,20 +114,23 @@ General checks for all of created `weak_object`. First initialize `ret` using `t
 
 === Constructors
 
-Create instances of `weak_object` using: +
-`constexpr weak_object()` +
-`weak_object(const SyclObject &SYCLObj)` +
-`weak_object(const weak_object &Other)` +
-`weak_object(weak_object &&Other)` +
+* Create SYCL object of type `SyclObjT`, call it `SyclObject`.
+* Create temporary `weak_object` object from `SyclObject`, call it `WeakObjectOther`.
+* Create empty weak object using `constexpr weak_object()` constructor, call it `w_empty`.
+* Create `weak_object` using `weak_object(const SyclObject &SYCLObj)` constructor and passing `SyclObject`, call it 'w_obj'.
+* Create `weak_object` using `weak_object(const weak_object &Other)` constructor and passing `WeakObjectOther`, call it 'w_copy'.
+* Create `weak_object` using `weak_object(weak_object &&Other)` constructor and passing `std::move(WeakObjectOther)`, call it 'w_move'.
 
 Perform tests described above in the "API" section.
 
 === Copy and move assignment operators
 
-Use the existing instances of `weak_object` from the previous section, copy or move them into another objects using following operators: +
-`weak_object &operator=(const SyclObject &SYCLObj)` +
-`weak_object &operator=(const weak_object &Other)` +
-`weak_object &operator=(weak_object &&Other)`
+* Create SYCL object of type `SyclObjT`, call it `SyclObject`.
+* Create temporary `weak_object` object from `SyclObject`, call it `WeakObjectOther`.
+* Declare three uninitialized instances of `weak_object`, call them `w_obj`, `w_copy` and `w_move`.
+* Assign `SyclObject` to `w_obj` using `weak_object &operator=(const SyclObject &SYCLObj)` operator.
+* Assign `WeakObjectOther` to `w_copy` using `weak_object &operator=(const weak_object &Other)` operator.
+* Assign `std::move(WeakObjectOther)` to `w_move` using `weak_object &operator=(weak_object &&Other)` operator.
 
 Perform tests described above in the "API" section.
 
@@ -143,25 +146,67 @@ Using the objects created in the "Constructors" section, do the following:
 
 === Expiring
 
-* Create local scope with `SyclObject` and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SyclObject` is destroyed outside the scope
+* Create local scope with `SYCLObjT` object and assign it to `weak_object` that is outside this scope. Check that `expired()` returns `false` now and `true` after `SYCLObjT` object was destroyed outside the scope.
 
-* Check that `expire()` returns `bool` type using `std::is_same_v`
+* Check that `expired()` returns `bool` type using `std::is_same_v`
 
-=== owner_before and owner_less
+=== owner_before and ext_oneap_owner_before
 
-Create two pairs of `weak_object` objects, the first of which encapsulate the same SYCLObj, and the second are empty
+* Verify that `owner_before` compares equivalent for two weak objects that both refer to the same underlying SYCL object:
+  ** Create a SYCL object of type `SyclObjT`. Call it `SyclObject`.
+  ** Create two weak_object objects from SyclObject. Call them `w1` and `w2`.
+  ** Verify that `w1.owner_before(w2) == false` and `w2.owner_before(w1) == false`.
+  ** Verify that `w1.owner_before(SyclObject) == false` and `w2.owner_before(SyclObject) == false`.
+  ** Verify that `SyclObject.ext_oneapi_owner_before(w1) == false` and
+  ** Verify that `SyclObject.ext_oneapi_owner_before(w2) == false`.
 
-* Check that `owner_before(const weak_object &Other)` returns `false` with passing second `weak_object` for both pairs
+* Verify that `owner_before` compares equivalent for two weak objects that are both empty:
+  ** Create a SYCL object of type `SyclObjT`. Call it `SyclObject`.
+  ** Create two empty weak_object objects by using the default constructor. Call them `w1` and `w2`.
+  ** Verify that `w1.owner_before(w2) == false` and `w2.owner_before(w1) == false`.
+  ** Verify that `SyclObject.ext_oneapi_owner_before(w1) == true` or
+  ** Verify that `SyclObject.ext_oneapi_owner_before(w2) == true`.
 
-* CHeck that `owner_before(const SyclObject &Other)`returns `false` with passing referred SyclObj for both pairs
+* Verify that `owner_before` has some order for two weak object that refer to different underlying SYCL objects:
+  ** Create two SYCL objects of type `SyclObjT`. Call them `SyclObject1` and `SyclObject2`.
+  ** Create a `weak_object` object from `SyclObject1` and another from `SyclObject2`. Call them `w1` and `w2`.
+  ** Verify that exactly one of the following is `true` for weak objects:
+    *** `w1.owner_before(w2) == true && w2.owner_before(w1) == false`, or
+    *** `w1.owner_before(w2) == false && w2.owner_before(w1) == true`.
+  ** Verify that exactly one of the following is `true` for SYCL objects:
+    *** `SyclObject1.ext_aoneapi_owner_before(w2) == true && SyclObject2.ext_aoneapi_owner_before(w1) == false`, or
+    *** `SyclObject1.ext_aoneapi_owner_before(w2) == false && SyclObject2.ext_aoneapi_owner_before(w1) == true`.
+  ** Verify that `w1.owner_before(SyclObject2) == w1.owner_before(w2)`
+  ** Verify that `w2.owner_before(SyclObject1) == w2.owner_before(w1)`
+  ** Verify that `SyclObject1.ext_oneapi_owner_before(SyclObject2) == Sycl_object1.ext_oneapi_owner_before(w2)`
+  ** Verify that `SyclObject2.ext_oneapi_owner_before(SyclObject1) == Sycl_object2.ext_oneapi_owner_before(w1)`
 
-* Check that `owner_less{}(const T &lhs, const T &rhs)` +
-`owner_less{}(const weak_object<T> &lhs, const weak_object<T> &rhs)` +
-`owner_less{}(const T &lhs, const weak_object<T> &rhs)` +
-`owner_less{}(const weak_object<T> &lhs, const T &rhs)` +
-return `false` if `lhs` and `rhs` `weak_object` or `SYCLObj` they refers are both the same or empty
+=== owner_less
 
-=== ext_oneapi_owner_before
-Create `SyclObject` and `weak_object` which encapsulate it.
+Similar to previous section.
 
-* Check that `SyclObject::ext_oneapi_owner_before` returns `false` with passing created `weak_object`
+* Verify that `owner_less` compares equivalent for two weak objects that both refer to the same underlying SYCL object:
+  ** Create a SYCL object of type `SyclObjT`. Call it `SyclObject`.
+  ** Create two weak_object objects from SyclObject. Call them `w1` and `w2`.
+  ** Verify that:
+    *** `ext::oneapi::owner_less(w1, w2) == false`.
+    *** `ext::oneapi::owner_less(w2, w1) == false`.
+    *** `ext::oneapi::owner_less(w1, SyclObject) == false`.
+    *** `ext::oneapi::owner_less(SyclObject, w1) == false`.
+    *** `ext::oneapi::owner_less(w2, SyclObject) == false`.
+    *** `ext::oneapi::owner_less(SyclObject, w2) == false`.
+
+* Verify that `owner_less` compares equivalent for two weak objects that are both empty:
+  ** Create a SYCL object of type `SyclObjT`. Call it `SyclObject`.
+  ** Create two empty weak_object objects by using the default constructor. Call them `w1` and `w2`.
+  ** Verify that `ext::oneapi::owner_less(w1, w2) == false`.
+  ** Verify that `ext::oneapi::owner_less(w1, SyclObject) == true` or `ext::oneapi::owner_less(w2, SyclObject) == true`
+
+* Verify that `owner_less` has some order for two weak object that refer to different underlying SYCL objects:
+  ** Create two SYCL objects of type `SyclObjT`. Call them `SyclObject1` and `SyclObject2`.
+  ** Create a `weak_object` object from `SyclObject1` and another from `SyclObject2`. Call them `w1` and `w2`.
+  ** Verify that exactly one of the following is `true` for weak objects:
+    *** `ext::oneapi::owner_less(w1, w2) == true && `ext::oneapi::owner_less(w2, w1) == false` or
+    *** `ext::oneapi::owner_less(w1, w2) == false && `ext::oneapi::owner_less(w2, w1) == true`
+  ** Verify that `ext::oneapi::owner_less(w1, SyclObject2) == ext::oneapi::owner_less(w1, w2)`
+  ** Verify that `ext::oneapi::owner_less(w2, SyclObject1) == ext::oneapi::owner_less(w2, w1)`
