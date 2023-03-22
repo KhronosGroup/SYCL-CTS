@@ -2,6 +2,20 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides tests for sycl::host_accessor constructors
 //
 *******************************************************************************/
@@ -51,6 +65,7 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
                                      const std::string& type_name) {
   const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   const auto offset = sycl::id<Dimension>();
+  const auto r_zero = util::get_cts_object::range<Dimension>::get(0, 0, 0);
 
   auto section_name = get_section_name<Dimension>(type_name, access_mode_name,
                                                   "From buffer constructor");
@@ -61,6 +76,17 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         r, get_acc_functor);
+  }
+
+  section_name = get_section_name<Dimension>(
+      type_name, access_mode_name, "From zero-length buffer constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -75,6 +101,19 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
   }
 
   section_name = get_section_name<Dimension>(
+      type_name, access_mode_name,
+      "From zero-length buffer and range constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [r_zero](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf,
+                                                               r_zero);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
+  }
+
+  section_name = get_section_name<Dimension>(
       type_name, access_mode_name, "From buffer,range and offset constructor");
 
   SECTION(section_name) {
@@ -86,6 +125,20 @@ void test_common_buffer_constructors(const std::string& access_mode_name,
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         r, get_acc_functor);
   }
+
+  section_name = get_section_name<Dimension>(
+      type_name, access_mode_name,
+      "From zero-length buffer,range and offset constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [r_zero,
+                            offset](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, r_zero,
+                                                               offset);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
+  }
 }
 
 template <typename DataT, int Dimension, sycl::access_mode AccessMode>
@@ -93,6 +146,7 @@ void test_common_buffer_constructors_tag_t_deduction(
     const std::string& access_mode_name, const std::string& type_name) {
   const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   const auto offset = sycl::id<Dimension>();
+  const auto r_zero = util::get_cts_object::range<Dimension>::get(0, 0, 0);
   auto tagT = tag_factory<AccType>::get_tag<AccessMode>();
 
   auto section_name = get_section_name<Dimension>(
@@ -108,6 +162,18 @@ void test_common_buffer_constructors_tag_t_deduction(
 
   section_name = get_section_name<Dimension>(
       type_name, access_mode_name,
+      "TagT deduction from zero-length buffer constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [tagT](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor<DataT, Dimension, AccessMode>(data_buf, tagT);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
+  }
+
+  section_name = get_section_name<Dimension>(
+      type_name, access_mode_name,
       "TagT deduction from buffer and range constructor");
 
   SECTION(section_name) {
@@ -116,6 +182,19 @@ void test_common_buffer_constructors_tag_t_deduction(
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         r, get_acc_functor);
+  }
+
+  section_name = get_section_name<Dimension>(
+      type_name, access_mode_name,
+      "TagT deduction from zero-length buffer and range constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [r_zero,
+                            tagT](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor(data_buf, r_zero, tagT);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
   }
 
   section_name =
@@ -130,6 +209,20 @@ void test_common_buffer_constructors_tag_t_deduction(
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode>(
         r, get_acc_functor);
+  }
+
+  section_name = get_section_name<Dimension>(
+      type_name, access_mode_name,
+      "TagT deduction from zero-length buffer,range and "
+      "offset constructor");
+
+  SECTION(section_name) {
+    auto get_acc_functor = [r_zero, offset,
+                            tagT](sycl::buffer<DataT, Dimension> data_buf) {
+      return sycl::host_accessor(data_buf, r_zero, offset, tagT);
+    };
+    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode>(
+        get_acc_functor);
   }
 }
 
