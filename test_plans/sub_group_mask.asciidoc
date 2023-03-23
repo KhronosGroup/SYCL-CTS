@@ -54,23 +54,20 @@ Check that member `size_t max_bits` exists.
 Features described in this paragraph are available from revision 2 of the
 extension.
 
-==== sub_group_mask() [[empty_ctor]]
+==== sub_group_mask() [[default_ctor]]
 
 * Construct `sub_group_mask` instance `s` `with sub_group_mask()` ctor.
 * Check that `s.none() == true`.
-* Check that `s.size() == sub_group.max_local_range().size()`.
 
 ==== sub_group_mask(unsigned long long val) [[ull_ctor]]
 
 * Construct `sub_group_mask` instance `s` with `sub_group_mask(unsigned long long val)` ctor
-  and `val == item.get_global_linear_id()`.
-* Extract bits to `unsigned long long` `out` variable with function `s.extract_bits(out)`.
-* Check that `out == val`.
-* Check that `s.size() == sub_group.max_local_range().size()`.
+  and `size_t val` == `[item.get_local_linear_id(), 0b1010...]`.
+* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`
 
 ==== template <typename T, std::size_t K> sub_group_mask(const sycl::marray<T, K>& val) [[marray_ctor]]
 
-For T equals to integral types below:
+For marray<T, dim> where T equals to integral types below:
 
 * `char`
 * `signed char`
@@ -84,25 +81,26 @@ For T equals to integral types below:
 * `long long int`
 * `unsigned long long int`
 
-And `marray<T, dim>` where T is the integral type above
-and `dim` == `sub_group.max_local_range().size()`.
+and `dim` is `2`, `5`, and `10`.
 
-* Init `marray<T, dim> val` variable with `value = item.get_global_linear_id()%std::numeric_limits<T>::max()`.
+For `size_t value = [item.get_local_linear_id(), 0b1010...]` and `marray<T, dim> val`:
+* If `CHAR_BIT * sizeof(val) < CHAR_BIT * sizeof(value)`
+  for `N = CHAR_BIT * sizeof(val)` set `N` bits of `val` to `N` bits of `value`.
+* If `CHAR_BIT * sizeof(val) >= CHAR_BIT * sizeof(value)`
+  for `N = CHAR_BIT * sizeof(value)` set `N` bits of `val` to `N` bits of `value`.
 * Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
-* Extract bits to `marray<T, dim>` `out` variable with function `s.extract_bits(out)`.
-* Check that `out == val`.
-* Check that `s.size() == sub_group.max_local_range().size()`.
+* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`
 
 ==== sub_group_mask(const sub_group_mask& other)
 
-* Construct `sub_group_mask` instance `s` with every test case described in <<empty_ctor>> <<ull_ctor>> and
+* Construct `sub_group_mask` instance `s` with every test case described in <<default_ctor>> <<ull_ctor>> and
 <<marray_ctor>>.
 * Construct `sub_group_mask` instance `copy` with `sub_group_mask(s)` copy ctor.
 * Apply checks for `copy` as described in the corresponding paragraph.
 
 ==== sub_group_mask& operator=(const sub_group_mask& other)
 
-* Construct `sub_group_mask` instance `s` with every test case described in <<empty_ctor>> <<ull_ctor>> and
+* Construct `sub_group_mask` instance `s` with every test case described in <<default_ctor>> <<ull_ctor>> and
 <<marray_ctor>>..
 * Construct `sub_group_mask` instance `other` with the same size as s.
 * Use `other = s` to assign `other` instance with copy of `s`.
