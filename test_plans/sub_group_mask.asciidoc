@@ -40,7 +40,6 @@ All of the following tests have these initial steps performed in defferent .cpp 
   `device.get_info<sycl::info::device::sub_group_sizes>()` should be used
   to check supported `sub_group` sizes.
 * In lambda function use `nd_item::get_sub_group()` to get `sycl::sub_group` instance.
-* Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
 * Use accessor to buffer for type `bool` to save results.
 * For regular test run check is performed only for leader work-item
 * For full conformance test run check is performed for all work-items.
@@ -85,9 +84,9 @@ and `dim` is `2`, `5`, and `10`.
 
 For `size_t value = [item.get_local_linear_id(), 0b1010...]` and `marray<T, dim> val`:
 * If `CHAR_BIT * sizeof(val) < CHAR_BIT * sizeof(value)`
-  for `N = CHAR_BIT * sizeof(val)` set `N` bits of `val` to `N` bits of `value`.
+  for `N = CHAR_BIT * sizeof(val)` set first `N` bits of `val` to first `N` bits of `value`.
 * If `CHAR_BIT * sizeof(val) >= CHAR_BIT * sizeof(value)`
-  for `N = CHAR_BIT * sizeof(value)` set `N` bits of `val` to `N` bits of `value`.
+  for `N = CHAR_BIT * sizeof(value)` set first `N` bits of `val` to first `N` bits of `value`.
 * Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
 * Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`
 
@@ -115,7 +114,7 @@ extension.
 
 Member functions from Table are checked with following steps:
 
-* Use const instance of `sub_group_mask`.
+* Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
 * Check return type.
 * Check that Expression returns Exprected value.
 
