@@ -27,7 +27,7 @@ from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel,
                                wrap_with_test_func, make_func_call,
-                               write_source_file, get_types)
+                               write_source_file, get_types, cast_to_bool)
 
 TEST_NAME = 'OPERATORS'
 
@@ -185,87 +185,91 @@ all_type_test_template = Template("""
   }
 
   // Post and pre increment and decrement
-  for (int i = 0; i < ${size}; ++i) {
-    resArr[i] = static_cast<${type}>(${test_value_1});
-  }
-  for (int i = 0; i < ${size}; ++i) {
-    resArr2[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
-  }
-  testVec1Copy = testVec1;
-  resVec = testVec1Copy++;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr2)) {
-    resAcc[0] = false;
-  }
-  testVec1Copy = testVec1;
-  resVec = testVec1Copy.${swizzle}++;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr2)) {
-    resAcc[0] = false;
-  }
-  for (int i = 0; i < ${size}; ++i) {
-    resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
-  }
-  testVec1Copy = testVec1;
-  resVec = ++testVec1Copy;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr)) {
-    resAcc[0] = false;
-  }
-  testVec1Copy = testVec1;
-  resVec = ++testVec1Copy.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr)) {
-    resAcc[0] = false;
-  }
-  for (int i = 0; i < ${size}; ++i) {
-    resArr[i] = static_cast<${type}>(${test_value_1});
-  }
-  for (int i = 0; i < ${size}; ++i) {
-    resArr2[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
-  }
-  testVec1Copy = testVec1;
-  resVec = testVec1Copy--;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr2)) {
-    resAcc[0] = false;
-  }
-  testVec1Copy = testVec1;
-  resVec = testVec1Copy.${swizzle}--;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr2)) {
-    resAcc[0] = false;
-  }
-  for (int i = 0; i < ${size}; ++i) {
-    resArr[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
-  }
-  testVec1Copy = testVec1;
-  resVec = --testVec1Copy;
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr)) {
-    resAcc[0] = false;
-  }
-  testVec1Copy = testVec1;
-  resVec = --testVec1Copy.${swizzle};
-  if (!check_vector_values(resVec, resArr)) {
-    resAcc[0] = false;
-  }
-  if (!check_vector_values(testVec1Copy, resArr)) {
-    resAcc[0] = false;
+  // C++17 does not allow ++ or -- (either prefix or postfix) for the bool type
+  // So skip tests for these operators if DataT is bool
+  if constexpr (!std::is_same_v<${type}, bool>) {
+    for (int i = 0; i < ${size}; ++i) {
+      resArr[i] = static_cast<${type}>(${test_value_1});
+    }
+    for (int i = 0; i < ${size}; ++i) {
+      resArr2[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
+    }
+    testVec1Copy = testVec1;
+    resVec = testVec1Copy++;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr2)) {
+      resAcc[0] = false;
+    }
+    testVec1Copy = testVec1;
+    resVec = testVec1Copy.${swizzle}++;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr2)) {
+      resAcc[0] = false;
+    }
+    for (int i = 0; i < ${size}; ++i) {
+      resArr[i] = static_cast<${type}>(${test_value_1}) + static_cast<${type}>(1);
+    }
+    testVec1Copy = testVec1;
+    resVec = ++testVec1Copy;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr)) {
+      resAcc[0] = false;
+    }
+    testVec1Copy = testVec1;
+    resVec = ++testVec1Copy.${swizzle};
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr)) {
+      resAcc[0] = false;
+    }
+    for (int i = 0; i < ${size}; ++i) {
+      resArr[i] = static_cast<${type}>(${test_value_1});
+    }
+    for (int i = 0; i < ${size}; ++i) {
+      resArr2[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
+    }
+    testVec1Copy = testVec1;
+    resVec = testVec1Copy--;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr2)) {
+      resAcc[0] = false;
+    }
+    testVec1Copy = testVec1;
+    resVec = testVec1Copy.${swizzle}--;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr2)) {
+      resAcc[0] = false;
+    }
+    for (int i = 0; i < ${size}; ++i) {
+      resArr[i] = static_cast<${type}>(${test_value_1}) - static_cast<${type}>(1);
+    }
+    testVec1Copy = testVec1;
+    resVec = --testVec1Copy;
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr)) {
+      resAcc[0] = false;
+    }
+    testVec1Copy = testVec1;
+    resVec = --testVec1Copy.${swizzle};
+    if (!check_vector_values(resVec, resArr)) {
+      resAcc[0] = false;
+    }
+    if (!check_vector_values(testVec1Copy, resArr)) {
+      resAcc[0] = false;
+    }
   }
 
   // Assignment operators
@@ -1162,6 +1166,23 @@ non_fp_arithmetic_test_template = Template("""
   }
 """)
 
+subscript_operator_test_template = Template("""
+  // subscript operator value
+  ${type} data[] = { ${data} };
+  sycl::vec<${type}, ${size}> subscriptVec1(${data});
+
+  // subscript operator assignment
+  sycl::vec<${type}, ${size}> subscriptVec2;
+  for (int i = 0; i < ${size}; ++i) {
+    subscriptVec2[i] = data[i];
+  }
+
+  for (int i = 0; i < ${size}; ++i) {
+    if (subscriptVec1[i] != data[i] || subscriptVec2[i] != data[i]) {
+      resAcc[0] = false;
+    }
+  }
+""")
 
 def get_swizzle(size):
     return 'template swizzle<' + ', '.join(
@@ -1169,7 +1190,11 @@ def get_swizzle(size):
 
 
 def generate_all_type_test(type_str, size):
-    test_string = all_type_test_template.substitute(
+    test_string = subscript_operator_test_template.substitute(
+        type=type_str,
+        size=str(size),
+        data=', '.join(Data.vals_list_dict[size]))
+    test_string += all_type_test_template.substitute(
         type=type_str,
         size=str(size),
         swizzle=get_swizzle(size),
@@ -1240,6 +1265,8 @@ def generate_non_fp_arithmetic_test(type_str, size):
 
 def generate_operator_tests(type_str, input_file, output_file):
     """"""
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
     test_func_str = ''
     func_calls = ''
     for size in Data.standard_sizes:

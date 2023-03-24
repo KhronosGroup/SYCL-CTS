@@ -28,7 +28,7 @@ sys.path.append('../common/')
 from common_python_vec import (Data, append_fp_postfix, make_func_call,
                                wrap_with_test_func, write_source_file,
                                wrap_with_extension_checks, get_types,
-                               remove_namespaces_whitespaces)
+                               remove_namespaces_whitespaces, cast_to_bool)
 
 TEST_NAME = 'LOAD_STORE'
 
@@ -107,6 +107,9 @@ def gen_load_store_test(type_str, size):
 
 
 def make_tests(type_str, input_file, output_file):
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
+
     test_string = ''
     func_calls = ''
     for size in Data.standard_sizes:
