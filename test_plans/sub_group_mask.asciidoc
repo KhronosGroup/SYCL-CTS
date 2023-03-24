@@ -4,7 +4,7 @@
 = Test plan for sub_group_mask
 
 This is a test plan for the APIs described in
-https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/GroupMask/GroupMask.asciidoc[GroupMask.asciidoc]
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_sub_group_mask.asciidoc[sycl_ext_oneapi_sub_group_mask]
 
 
 == Testing scope
