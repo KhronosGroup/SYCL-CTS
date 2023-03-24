@@ -41,7 +41,7 @@ All of the following tests have these initial steps performed in defferent .cpp 
   to check supported `sub_group` sizes.
 * In lambda function use `nd_item::get_sub_group()` to get `sycl::sub_group` instance.
 * Use accessor to buffer for type `bool` to save results.
-* For regular test run check is performed only for leader work-item
+* For regular test run check is performed only for leader work-item.
 * For full conformance test run check is performed for all work-items.
 
 === Test for max_bits
@@ -61,12 +61,12 @@ extension.
 ==== sub_group_mask(unsigned long long val) [[ull_ctor]]
 
 * Construct `sub_group_mask` instance `s` with `sub_group_mask(unsigned long long val)` ctor
-  and `size_t val` == `[item.get_local_linear_id(), 0b1010...]`.
-* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`
+  and `size_t val`. Where `val` is `item.get_local_linear_id()` and  `0b1010...`.
+* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`.
 
 ==== template <typename T, std::size_t K> sub_group_mask(const sycl::marray<T, K>& val) [[marray_ctor]]
 
-For marray<T, dim> where T equals to integral types below:
+For `marray<T, dim>` where `T` equals to integral types below:
 
 * `char`
 * `signed char`
@@ -82,13 +82,14 @@ For marray<T, dim> where T equals to integral types below:
 
 and `dim` is `2`, `5`, and `10`.
 
-For `size_t value = [item.get_local_linear_id(), 0b1010...]` and `marray<T, dim> val`:
+* Construct `marray<T, dim>` instance `val` with default ctor.
+* Use initial variable `size_t value` with values `item.get_local_linear_id()` and `0b1010...`.
 * If `CHAR_BIT * sizeof(val) < CHAR_BIT * sizeof(value)`
   for `N = CHAR_BIT * sizeof(val)` set first `N` bits of `val` to first `N` bits of `value`.
 * If `CHAR_BIT * sizeof(val) >= CHAR_BIT * sizeof(value)`
   for `N = CHAR_BIT * sizeof(value)` set first `N` bits of `val` to first `N` bits of `value`.
 * Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
-* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`
+* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`.
 
 ==== sub_group_mask(const sub_group_mask& other)
 
