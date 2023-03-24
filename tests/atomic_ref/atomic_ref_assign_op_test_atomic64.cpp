@@ -36,8 +36,8 @@ namespace atomic_ref::tests::api::core::atomic64 {
 // with an unnamed type are implemented in computecpp, re-enable for hipsycl
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl, re-enable for dpcpp when atomic_ref<T*>::operator=() is implemented
-DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
+// hipsycl
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("sycl::atomic_ref::operator=() test. atomic64 types", "[atomic_ref]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::atomic64)) {
@@ -47,6 +47,14 @@ DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
   }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
   for_all_types<atomic_ref::tests::api::run_assign_op_test>(type_pack);
+
+  if (!queue.get_device().has(sycl::aspect::fp64)) {
+    SKIP(
+        "Device does not support fp64 operations. "
+        "Skipping the test case for double type.");
+  }
+  const auto type_pack_fp64 = get_cts_types::get_fp64_type();
+  for_all_types<atomic_ref::tests::api::run_assign_op_test>(type_pack_fp64);
 });
 
 }  // namespace atomic_ref::tests::api::core::atomic64

@@ -27,6 +27,7 @@
 #include "../common/common.h"
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
+#include "../common/type_list.h"
 
 namespace atomic_ref::tests::common {
 using namespace sycl_cts;
@@ -98,10 +99,10 @@ inline std::string get_section_name(const std::string& type_name,
 inline auto get_atomic64_types() {
   static const auto types =
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      named_type_pack<long long, unsigned long long, double>::generate(
-          "long long", "unsigned long long", "double");
+      named_type_pack<long long, unsigned long long>::generate(
+          "long long", "unsigned long long");
 #else
-      named_type_pack<long long, double>::generate("long long", "double");
+      named_type_pack<long long>::generate("long long");
 #endif
   return types;
 }
