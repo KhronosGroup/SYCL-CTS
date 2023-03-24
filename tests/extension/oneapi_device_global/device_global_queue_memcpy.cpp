@@ -25,7 +25,7 @@ namespace oneapi = sycl::ext::oneapi;
 template <typename T>
 struct check_memcpy_to_dg_kernel;
 
-template <typename T>
+template <typename T, bool ValDefault>
 struct memcpy_change_dg_kernel;
 
 // Creating instance with default constructor
@@ -50,26 +50,19 @@ void run_test_memcpy_to_device_global(util::logger& log,
   value_operations::assign(data, 1);
   const void* src_data = pointer_helper(data);
 
+  auto queue = util::get_cts_object::queue();
+
   // to generate events with generator from usm_api.h
   // gens will generate events that will fill array arr_src
   // in single_task that will take a significant amount of time
   constexpr size_t numEvents = 5;
   constexpr size_t gen_buf_size = 1000;
-  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
-      gens{};
+  usm_api::event_generator<element_type, gen_buf_size> gen{};
   element_type init_value{1};
-
-  auto queue = util::get_cts_object::queue();
+  sycl::event depEvent = gen.init(queue, init_value);
 
   auto event1 = queue.memcpy(dev_global1<T>, src_data);
   event1.wait();
-
-  // List of events that tested usm operation should wait
-  std::vector<sycl::event> depEvents(numEvents);
-  // Run time-consuming tasks to generate events
-  for (size_t i = 0; i < depEvents.size(); ++i) {
-    depEvents[i] = gens[i].init(queue, init_value);
-  }
 
   // Call overloads with events and check if they wait for events to pass.
   // Use fast copy arrays for future check. If overloads do not
@@ -77,18 +70,24 @@ void run_test_memcpy_to_device_global(util::logger& log,
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
   // will fail with generator function check().
 
-  auto event2 =
-      queue.memcpy(dev_global2<T>, src_data, sizeof(T), 0, depEvents[0]);
+  auto event2 = queue.memcpy(dev_global2<T>, src_data, sizeof(T), 0, depEvent);
   event2.wait();
-  gens[0].copy_arrays(queue);
+  gen.copy_arrays(queue);
+
+  // List of events that tested usm operation should wait
+  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
+      gens{};
+  std::vector<sycl::event> depEvents(numEvents);
+  // Run time-consuming tasks to generate events
+  for (size_t i = 0; i < depEvents.size(); ++i) {
+    depEvents[i] = gens[i].init(queue, init_value);
+  }
 
   auto event3 = queue.memcpy(dev_global3<T>, src_data, sizeof(T), 0, depEvents);
   event3.wait();
   // Reverse order is used to increase probability of data race.
-  // Array in gens[0] is already copied after event2,
-  // so it's not copied here to not to rewrite result for previous case.
-  for (size_t i = numEvents - 1; i > 1; --i) {
-    gens[i].copy_arrays(queue);
+  for (size_t i = numEvents; i > 0; --i) {
+    gens[i - 1].copy_arrays(queue);
   }
 
   bool events_result = true;
@@ -127,25 +126,24 @@ void run_test_memcpy_to_device_global(util::logger& log,
   }
 }
 
-template <typename T>
+template <typename T, bool ValDefault>
 oneapi::experimental::device_global<T> dev_global;
 
 /** @brief The function tests that queue memcpy overloads correctly copy from
  *  device_global
  *  @tparam T Type of underlying struct
- *  @param val_default The flag to determine if device_global should have
+ *  @tparam ValDefault The flag to determine if device_global should have
  *  default or changed value
  */
-template <typename T>
+template <typename T, bool ValDefault>
 void run_test_memcpy_from_device_global(util::logger& log,
-                                        const std::string& type_name,
-                                        bool val_default) {
+                                        const std::string& type_name) {
   using element_type = std::remove_all_extents_t<T>;
   T new_val{};
   value_operations::assign(new_val, 5);
   T expected{};
   T data1{}, data2{}, data3{};
-  if (val_default) {
+  if (ValDefault) {
     value_operations::assign(data1, new_val);
     value_operations::assign(data2, new_val);
     value_operations::assign(data3, new_val);
@@ -156,16 +154,17 @@ void run_test_memcpy_from_device_global(util::logger& log,
 
   auto queue = util::get_cts_object::queue();
 
-  if (!val_default) {
+  if (!ValDefault) {
     value_operations::assign(expected, new_val);
     queue.submit([&](sycl::handler& cgh) {
-      cgh.single_task<memcpy_change_dg_kernel<T>>(
-          [=] { value_operations::assign(dev_global<T>, new_val); });
+      cgh.single_task<memcpy_change_dg_kernel<T, ValDefault>>([=] {
+        value_operations::assign(dev_global<T, ValDefault>, new_val);
+      });
     });
     queue.wait_and_throw();
   }
 
-  auto event1 = queue.memcpy(dst_data1, dev_global<T>);
+  auto event1 = queue.memcpy(dst_data1, dev_global<T, ValDefault>);
   event1.wait();
 
   // to generate events with generator from usm_api.h
@@ -173,16 +172,9 @@ void run_test_memcpy_from_device_global(util::logger& log,
   // in single_task that will take a significant amount of time
   constexpr size_t numEvents = 5;
   constexpr size_t gen_buf_size = 1000;
-  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
-      gens{};
+  usm_api::event_generator<element_type, gen_buf_size> gen{};
   element_type init_value{1};
-
-  // List of events that tested usm operation should wait
-  std::vector<sycl::event> depEvents(numEvents);
-  // Run time-consuming tasks to generate events
-  for (size_t i = 0; i < depEvents.size(); ++i) {
-    depEvents[i] = gens[i].init(queue, init_value);
-  }
+  sycl::event depEvent = gen.init(queue, init_value);
 
   // Call overloads with events and check if they wait for events to pass.
   // Use fast copy arrays for future check. If overloads do not
@@ -190,18 +182,26 @@ void run_test_memcpy_from_device_global(util::logger& log,
   // initialized 'arr_src' will be copied to 'arr_dst' and the test
   // will fail with generator function check().
 
-  auto event2 =
-      queue.memcpy(dst_data2, dev_global<T>, sizeof(T), 0, depEvents[0]);
+  auto event2 = queue.memcpy(dst_data2, dev_global<T, ValDefault>, sizeof(T), 0,
+                             depEvent);
   event2.wait();
-  gens[0].copy_arrays(queue);
+  gen.copy_arrays(queue);
 
-  auto event3 = queue.memcpy(dst_data3, dev_global<T>, sizeof(T), 0, depEvents);
+  // List of events that tested usm operation should wait
+  std::array<usm_api::event_generator<element_type, gen_buf_size>, numEvents>
+      gens{};
+  std::vector<sycl::event> depEvents(numEvents);
+  // Run time-consuming tasks to generate events
+  for (size_t i = 0; i < depEvents.size(); ++i) {
+    depEvents[i] = gens[i].init(queue, init_value);
+  }
+
+  auto event3 = queue.memcpy(dst_data3, dev_global<T, ValDefault>, sizeof(T), 0,
+                             depEvents);
   event3.wait();
   // Reverse order is used to increase probability of data race.
-  // Array in gens[0] is already copied after event2,
-  // so it's not copied here to not to rewrite result for previous case.
-  for (size_t i = numEvents - 1; i > 1; --i) {
-    gens[i].copy_arrays(queue);
+  for (size_t i = numEvents; i > 0; --i) {
+    gens[i - 1].copy_arrays(queue);
   }
 
   bool events_result = true;
@@ -230,12 +230,12 @@ class check_queue_memcpy_overloads_for_type {
   void operator()(sycl_cts::util::logger& log, const std::string& type_name) {
     // Run test for queue overloads
     run_test_memcpy_to_device_global<T>(log, type_name);
-    run_test_memcpy_from_device_global<T>(log, type_name, false);
-    run_test_memcpy_from_device_global<T>(log, type_name, true);
+    run_test_memcpy_from_device_global<T, false>(log, type_name);
+    run_test_memcpy_from_device_global<T, true>(log, type_name);
 
     run_test_memcpy_to_device_global<T[5]>(log, type_name);
-    run_test_memcpy_from_device_global<T[5]>(log, type_name, false);
-    run_test_memcpy_from_device_global<T[5]>(log, type_name, true);
+    run_test_memcpy_from_device_global<T[5], false>(log, type_name);
+    run_test_memcpy_from_device_global<T[5], true>(log, type_name);
   }
 };
 #endif

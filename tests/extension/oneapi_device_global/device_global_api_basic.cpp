@@ -36,9 +36,9 @@ struct device_global_kernel_name;
 
 namespace get_multi_ptr_method {
 // Creating device_global instances with default constructor
-template <typename T>
+template <typename T, sycl::access::decorated Decorated>
 const device_global<T> const_dev_global;
-template <typename T>
+template <typename T, sycl::access::decorated Decorated>
 device_global<T> dev_global;
 
 // Used to address elements in the result array
@@ -90,8 +90,9 @@ void run_test(util::logger& log, const std::string& type_name) {
       std::memset(&value_ref_zero_init, 0, sizeof(value_ref_zero_init));
       cgh.single_task<kernel>([=] {
         auto cmptr =
-            const_dev_global<const T>.template get_multi_ptr<Decorated>();
-        auto mptr = dev_global<T>.template get_multi_ptr<Decorated>();
+            const_dev_global<const T, Decorated>.template get_multi_ptr<Decorated>();
+        auto mptr =
+            dev_global<T, Decorated>.template get_multi_ptr<Decorated>();
 
         // Check that underlying type of multi_ptr is same as T
         result_acc[integral(indx::same_type_const)] =
@@ -102,14 +103,14 @@ void run_test(util::logger& log, const std::string& type_name) {
         // if *mptr and *cmptr equal to default value, then
         // test will be marked as passed, otherwise the test is failed
         result_acc[integral(indx::correct_def_val_const)] =
-            (*(cmptr.get()) == value_ref_zero_init);
+            value_operations::are_equal(*(cmptr.get()), value_ref_zero_init);
         result_acc[integral(indx::correct_def_val_non_const)] =
-            (*(mptr.get()) == value_ref_zero_init);
+            value_operations::are_equal(*(mptr.get()), value_ref_zero_init);
         // Change value, that multi_ptr points to
         value_operations::assign(*mptr, 42);
         // Get current value from device_global, that should change in previous
         // step
-        const T& current_value = dev_global<T>.get();
+        const T& current_value = dev_global<T, Decorated>.get();
         result_acc[integral(indx::correct_changed_val)] =
             value_operations::are_equal(*mptr, current_value);
       });
@@ -177,9 +178,9 @@ void run_test(util::logger& log, const std::string& type_name) {
 
         // Check that resulted reference is to default value
         result_acc[integral(indx::is_def_value_const)] =
-            (value_ref_zero_init == instance);
+            value_operations::are_equal(value_ref_zero_init, instance);
         result_acc[integral(indx::is_def_value_non_const)] =
-            (value_ref_zero_init == const_instance);
+            value_operations::are_equal(value_ref_zero_init, const_instance);
 
         // Changing value
         value_operations::assign(dev_global<T>, 42);
@@ -261,9 +262,9 @@ void run_test(util::logger& log, const std::string& type_name) {
             std::is_same<decltype(instance), T&>::value;
         // Check that resulted reference is to default value
         result_acc[integral(indx::correct_def_val_const)] =
-            (const_instance == value_ref_zero_init);
+            value_operations::are_equal(const_instance, value_ref_zero_init);
         result_acc[integral(indx::correct_def_val_non_const)] =
-            (instance == value_ref_zero_init);
+            value_operations::are_equal(instance, value_ref_zero_init);
         // Assign new value an check that device_global instance contains new
         // value
         value_operations::assign(instance, 42);

@@ -41,8 +41,25 @@ oneapi::experimental::device_global<T> dev_global;
 }
 struct dum_struct {
   template <typename T>
-  static inline oneapi::experimental::device_global<T> dev_global;
+  static oneapi::experimental::device_global<T> dev_global;
 };
+
+// The static members inside dum_struct must be defined, otherwise they are
+// unresolvable external symbols.
+template <>
+oneapi::experimental::device_global<int> dum_struct::dev_global<int>{};
+template <>
+oneapi::experimental::device_global<int[5]> dum_struct::dev_global<int[5]>{};
+template <>
+oneapi::experimental::device_global<bool> dum_struct::dev_global<bool>{};
+template <>
+oneapi::experimental::device_global<bool[5]> dum_struct::dev_global<bool[5]>{};
+template <>
+oneapi::experimental::device_global<user_def_types::no_cnstr>
+    dum_struct::dev_global<user_def_types::no_cnstr>{};
+template <>
+oneapi::experimental::device_global<user_def_types::no_cnstr[5]>
+    dum_struct::dev_global<user_def_types::no_cnstr[5]>{};
 
 template <typename T>
 struct kernel;
