@@ -50,6 +50,7 @@ enum class accessor_type {
   local_accessor,
   host_accessor,
 };
+
 }  // namespace accessor_tests_common
 
 namespace Catch {
@@ -222,9 +223,7 @@ inline auto get_all_dimensions() {
   static const auto dimensions = integer_pack<0, 1, 2, 3>::generate_unnamed();
   return dimensions;
 }
-// FIXME: re-enable when target::host_task is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+
 /**
  * @brief Factory function for getting type_pack with target values
  */
@@ -234,7 +233,7 @@ inline auto get_targets() {
                  sycl::target::host_task>::generate_named();
   return targets;
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
+
 /**
  * @brief Function helps to generate type_pack with sycl::vec of all supported
  * sizes
@@ -256,9 +255,7 @@ struct tag_factory {
   static_assert(AccType != AccType,
                 "There is no tag support for such accessor type");
 };
-// FIXME: re-enable when target::host_task is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+
 /**
  * @brief Function helps to get TagT corresponding to AccessMode and Target
  * template parameters
@@ -294,7 +291,7 @@ struct tag_factory<accessor_type::generic_accessor> {
     }
   }
 };
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
+
 /**
  * @brief Function helps to get TagT corresponding to AccessMode parameter
  */
@@ -315,8 +312,8 @@ struct tag_factory<accessor_type::host_accessor> {
 };
 
 /**
- * @brief Common function that check default constructor post-conditions, and
- * store result in res_acc
+ * @brief Common function that check constructor post-conditions for empty
+ * accessor, and store result in res_acc
  *
  * @tparam TestingAccT Type of testing accessor
  * @tparam ResultAccT  Type of result accessor
@@ -325,8 +322,8 @@ struct tag_factory<accessor_type::host_accessor> {
  * @param res_acc Instance of result accessor
  */
 template <typename TestingAccT, typename ResultAccT>
-void check_def_constructor_post_conditions(TestingAccT testing_acc,
-                                           ResultAccT res_acc) {
+void check_empty_accessor_constructor_post_conditions(TestingAccT testing_acc,
+                                                      ResultAccT res_acc) {
   size_t res_i = 0;
   // (empty() == true)
   res_acc[res_i++] = testing_acc.empty() == true;
@@ -344,14 +341,7 @@ void check_def_constructor_post_conditions(TestingAccT testing_acc,
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computcpp
-// FIXME: re-enable when target::host_task is implemented in dpcpp
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
-    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::access_mode AccessMode, sycl::target Target>
-class kernel_def_constructor;
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 /**
  * @brief Common function that constructs accessor with default constructor
@@ -381,29 +371,78 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
           sycl::accessor res_acc(res_buf);
           auto acc = get_accessor_functor();
           if constexpr (Target == sycl::target::host_task) {
-            cgh.host_task(
-                [=] { check_def_constructor_post_conditions(acc, res_acc); });
+            cgh.host_task([=] {
+              check_empty_accessor_constructor_post_conditions(acc, res_acc);
+            });
           } else if constexpr (Target == sycl::target::device) {
-            using kname = kernel_def_constructor<AccType, DataT, Dimension,
-                                                 AccessMode, Target>;
-            cgh.parallel_for_work_group<kname>(
-                r, [acc, res_acc](sycl::group<1>) {
-                  check_def_constructor_post_conditions(acc, res_acc);
-                });
+            cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
+              check_empty_accessor_constructor_post_conditions(acc, res_acc);
+            });
           }
         })
         .wait_and_throw();
   } else {
     auto acc = get_accessor_functor();
-    check_def_constructor_post_conditions(acc, conditions_check);
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check);
   }
 
   for (size_t i = 0; i < conditions_checks_size; i++) {
     CHECK(conditions_check[i]);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+
+/**
+ * @brief Common function that constructs accessor with zero-length buffer
+ *and checks post-conditions
+ *
+ * @tparam AccType Type of the accessor
+ * @tparam DataT Type of underlying data
+ * @tparam Dimension Dimensions of the accessor
+ * @tparam AccessMode Access mode of the accessor
+ * @tparam Target Target of accessor
+ * @tparam GetAccFunctorT Type of functor for accessor creation
+ */
+template <accessor_type AccType, typename DataT, int Dimension,
+          sycl::access_mode AccessMode = sycl::access_mode::read_write,
+          sycl::target Target = sycl::target::device, typename GetAccFunctorT>
+void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
+  auto queue = util::get_cts_object::queue();
+  sycl::range<Dimension> r =
+      util::get_cts_object::range<Dimension>::get(0, 0, 0);
+  sycl::buffer<DataT, Dimension> data_buf(r);
+  const size_t conditions_checks_size = 8;
+  bool conditions_check[conditions_checks_size]{false};
+
+  if constexpr (AccType != accessor_type::host_accessor) {
+    sycl::buffer res_buf(conditions_check, sycl::range(conditions_checks_size));
+
+    queue
+        .submit([&](sycl::handler& cgh) {
+          sycl::accessor res_acc(res_buf);
+          auto acc = get_accessor_functor(data_buf, cgh);
+          if constexpr (Target == sycl::target::host_task) {
+            cgh.host_task([=] {
+              check_empty_accessor_constructor_post_conditions(acc, res_acc);
+            });
+          } else if constexpr (Target == sycl::target::device) {
+            cgh.parallel_for_work_group(r, [=](sycl::group<Dimension>) {
+              check_empty_accessor_constructor_post_conditions(acc, res_acc);
+            });
+          }
+        })
+        .wait_and_throw();
+  } else {
+    auto acc = get_accessor_functor(data_buf);
+    check_empty_accessor_constructor_post_conditions(acc, conditions_check);
+  }
+
+  for (size_t i = 0; i < conditions_checks_size; i++) {
+    CHECK(conditions_check[i]);
+  }
+}
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 namespace detail {
 /**
  * @brief Wraps callable to make possible chaining foo(boo(arg)) calls by fold
@@ -452,14 +491,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computecpp
-// FIXME: re-enable when target::host_task is implemented in dpcpp
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
-    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
-          sycl::target Target>
-class kernel_zero_dim_constructor;
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 /**
  * @brief Function helps to check zero dimension constructor of accessor
@@ -505,9 +537,7 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
-            using kname =
-                kernel_zero_dim_constructor<AccType, DataT, AccessMode, Target>;
-            cgh.parallel_for_work_group<kname>(r, [=](sycl::group<1>) {
+            cgh.parallel_for_work_group(r, [=](sycl::group<1>) {
               auto&& acc_instance =
                   (detail::invoke_helper{modify_accessor} = ... = acc);
               read_write_zero_dim_acc<DataT, AccessMode>(acc_instance, res_acc);
@@ -540,8 +570,9 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     }
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 /**
  * @brief Function that tries to read or/and write depending on AccessMode
  * parameter. Results of compare will be stored in res_acc
@@ -567,16 +598,10 @@ void read_write_acc(AccT testing_acc, ResultAccT res_acc) {
     value_operations::assign(testing_acc[id], changed_val);
   }
 }
+
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented in
 // hipsycl and computecpp
-// FIXME: re-enable when target::host_task is implemented in dpcpp
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL && \
-    !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::access_mode AccessMode, sycl::target Target>
-class kernel_common_constructor;
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 /**
  * @brief Function helps to check common constructor of accessor
@@ -626,9 +651,7 @@ void check_common_constructor(const sycl::range<Dimension>& r,
                                                            res_acc);
             });
           } else if constexpr (Target == sycl::target::device) {
-            using kname = kernel_common_constructor<AccType, DataT, Dimension,
-                                                    AccessMode, Target>;
-            cgh.parallel_for_work_group<kname>(
+            cgh.parallel_for_work_group(
                 sycl::range(1), [=](sycl::group<1>) {
                   auto&& acc_instance =
                       (detail::invoke_helper{modify_accessor} = ... = acc);
@@ -664,10 +687,6 @@ void check_common_constructor(const sycl::range<Dimension>& r,
   }
 }
 
-template <accessor_type AccType, typename DataT, int Dimension,
-          sycl::access_mode AccessMode, sycl::target Target>
-class kernel_placeholder_accessor_exception;
-
 /**
  * @brief Function helps to check if passing of a placeholder accessor triggers
  * the exception
@@ -699,10 +718,8 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
             if constexpr (Target == sycl::target::host_task) {
               cgh.host_task([=] {});
             } else if constexpr (Target == sycl::target::device) {
-              using kname = kernel_placeholder_accessor_exception<
-                  AccType, DataT, Dimension, AccessMode, Target>;
-              cgh.parallel_for_work_group<kname>(sycl::range(1),
-                                                 [=](sycl::group<1>) {});
+              cgh.parallel_for_work_group(sycl::range(1),
+                                          [=](sycl::group<1>) {});
             }
           })
           .wait_and_throw();
@@ -717,7 +734,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         sycl_cts::util::equals_exception(sycl::errc::kernel_argument));
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 /**
  * @brief Function mainly for testing no_init property. The function tries to
@@ -742,9 +759,6 @@ void write_read_acc(AccT testing_acc, ResultAccT res_acc) {
 }
 // FIXME: re-enable when handler.host_task and sycl::errc is implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-// FIXME: re-enable when target::host_task is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
 
 template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode, sycl::target Target>
@@ -779,12 +793,9 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
               write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
             });
           } else if (Target == sycl::target::device) {
-            using kname = kernel_no_init_prop<AccType, DataT, Dimension,
-                                              AccessMode, Target>;
-            cgh.parallel_for_work_group<kname>(
-                sycl::range(1), [=](sycl::group<1>) {
-                  write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
-                });
+            cgh.parallel_for_work_group(sycl::range(1), [=](sycl::group<1>) {
+              write_read_acc<DataT, Dimension, AccessMode>(acc, res_acc);
+            });
           }
         })
         .wait_and_throw();
@@ -802,7 +813,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
     CHECK(compare_res);
   }
 }
-#endif  // !SYCL_CTS_COMPILING_WITH_DPCPP
+
 /**
  * @brief Function helps to verify that constructor of accessor with no_init
  * property and access_mode::read triggers an exception
@@ -1126,7 +1137,6 @@ template <accessor_type AccType, typename T, int dims,
           sycl::access_mode AccessMode = sycl::access_mode::read_write,
           sycl::target Target = sycl::target::device>
 void check_linearization() {
-  using kname = kernel_linearization<AccType, T, dims, AccessMode, Target>;
   constexpr size_t range_size = 2;
   constexpr size_t buff_size = (dims == 3) ? 2 * 2 * 2 : 2 * 2;
 
@@ -1150,7 +1160,7 @@ void check_linearization() {
 
             if constexpr (Target == sycl::target::device) {
               sycl::accessor res_acc(res_buf, cgh);
-              cgh.single_task<kname>([=]() {
+              cgh.single_task([=] {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   res_acc[0] &= value_operations::are_equal(elem, acc[id]);
