@@ -1273,7 +1273,7 @@ void check_linearization() {
 
             if constexpr (Target == sycl::target::device) {
               sycl::accessor res_acc(res_buf, cgh);
-              cgh.single_task([=]() {
+              cgh.single_task([=] {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
                   res_acc[0] &= value_operations::are_equal(elem, acc[id]);

@@ -28,10 +28,11 @@ class Data:
     signs = [True, False]
     standard_sizes = [1, 2, 3, 4, 8, 16]
     standard_types = [
-        'char', 'short', 'int', 'long', 'long long', 'float', 'double',
-        'sycl::half'
+        'bool', 'char', 'short', 'int', 'long', 'long long', 'float',
+        'double', 'sycl::half'
     ]
     standard_type_dict = {
+        (True, 'bool'): 'bool',
         (False, 'char'): 'unsigned char',
         (True, 'char'): 'signed char',
         (False, 'short'): 'unsigned short',
@@ -87,6 +88,7 @@ class Data:
         'sycl::half': 'sycl::half'
     }
     value_default_dict = defaultdict(lambda: '0', {
+        'bool': 'false',
         'float': '0.0f',
         'double': '0.0',
         'sycl::half': '0.0f'
@@ -174,9 +176,8 @@ kernel_template = Template("""  bool resArray[1] = {true};
       });
     });
   }
-  if (!resArray[0]) {
-    fail_test(log, std::string("The following vector test failed: ${testName}"));
-  }
+  INFO("Checking ${testName}");
+  CHECK(resArray[0]);
 """)
 
 test_func_template = Template("""
@@ -191,6 +192,16 @@ void ${func_name}(util::logger &log) {
   }
 }
 """)
+
+def cast_to_bool(val_list_dict):
+    result_list_dict = val_list_dict.copy()
+    for key, val in val_list_dict.items():
+        for i in range(len(val)):
+            val[i] = str(
+                (int(val[i]) % 2 == 0).real)
+        result_list_dict[key] = val
+    return result_list_dict
+
 
 def remove_namespaces_whitespaces(type_str):
     """
@@ -286,7 +297,7 @@ def generate_value_list(type_str, size):
         vec_val_list.append(val)
     vec_val_list = append_fp_postfix(type_str, vec_val_list)
     vec_val_string = ', '.join(vec_val_list)
-    return vec_val_string
+    return str(vec_val_string)
 
 
 def swap_pairs(input_list):
@@ -364,7 +375,7 @@ def get_types():
     types = ['char', 'sycl::byte']
     for base_type in Data.standard_types:
         for sign in Data.signs:
-            if (base_type == 'float' or base_type == 'double'
+            if (base_type == 'float' or base_type == 'double' or base_type == 'bool'
                 or base_type == 'sycl::half') and sign is False:
                 continue
             types.append(Data.standard_type_dict[(sign, base_type)])
@@ -654,6 +665,9 @@ def get_reverse_type(type_str):
     return reverse_type_str
 
 def make_swizzles_tests(type_str, input_file, output_file):
+    if type_str == 'bool':
+        Data.vals_list_dict = cast_to_bool(Data.vals_list_dict)
+
     swizzles = [None] * 6
 
     convert_type_str = get_reverse_type(type_str)
@@ -671,4 +685,3 @@ def make_swizzles_tests(type_str, input_file, output_file):
     swizzles[5] = gen_swizzle_test(type_str, convert_type_str,
                                    as_type_str, 16)
     write_swizzle_source_file(swizzles, input_file, output_file, type_str)
-
