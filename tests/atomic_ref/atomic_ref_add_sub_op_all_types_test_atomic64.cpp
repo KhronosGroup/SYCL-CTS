@@ -49,10 +49,16 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
   for_all_types<atomic_ref::tests::api::run_add_sub_op_all_types_test>(
       type_pack);
+});
 
-  if (!queue.get_device().has(sycl::aspect::fp64)) {
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref operator+=()/operator-=() test. double type",
+ "[atomic_ref]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64) or
+      !queue.get_device().has(sycl::aspect::atomic64)) {
     SKIP(
-        "Device does not support fp64 operations. "
+        "Device does not support fp64 or atomic64 operations. "
         "Skipping the test case for double type.");
   }
   const auto type_pack_fp64 = get_cts_types::get_fp64_type();
