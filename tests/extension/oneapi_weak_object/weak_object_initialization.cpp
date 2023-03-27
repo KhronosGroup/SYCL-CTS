@@ -37,4 +37,4 @@ TEST_CASE("weak_object init", "[weak_object]") {
   SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
 #endif
 }
-} // namespace weak_object_initialization
+}  // namespace weak_object_initialization
