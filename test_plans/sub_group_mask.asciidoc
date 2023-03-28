@@ -4,7 +4,7 @@
 = Test plan for sub_group_mask
 
 This is a test plan for the APIs described in
-https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/GroupMask/GroupMask.asciidoc[GroupMask.asciidoc]
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_sub_group_mask.asciidoc[sycl_ext_oneapi_sub_group_mask]
 
 
 == Testing scope
@@ -16,33 +16,115 @@ is selected on the CTS command line.
 
 === Feature test macro
 
-All of the tests should use `#ifdef SYCL_EXT_ONEAPI_SUB_GROUP_MASK` so they can be skipped
-if feature is not supported.
+Part of the extension feature is available from revision 1 of the extension and
+tests for it should use `#if SYCL_EXT_ONEAPI_SUB_GROUP_MASK >= 1` and can be
+skipped if the feature is not supported. That part is described in paragraph
+<<member_functions_rev_1>>.
+
+The other part of the feature is available from revision 2 of the extension and
+tests for it should use `#if SYCL_EXT_ONEAPI_SUB_GROUP_MASK >= 2` and can be
+skipped if the feature is not supported. That part is described in paragraph
+<<ctors_rev_2>>.
+
+
 
 == Tests
 
 All of the following tests have these initial steps performed in defferent .cpp files :
 
 * Create a `queue` from the tested device and call `queue::submit()`.
-* Submit a kernel via `handler::parallel_for()` with parameters `sycl::nd_range<1>(range<1>(128), range<1>(32))`
+* Submit a kernel via `handler::parallel_for()` with parameters `sycl::nd_range<1>(range<1>(32), range<1>(32))`
   and lambda finction with parameter `sycl::nd_item<1>`.
+* Lambda function should be decorated with attribute `reqd_sub_group_size(N)` with `N` values = `[8,16,32]`.
+  If device does not support `sub_group` size `N`, test for size `N` can be skipped.
+  `device.get_info<sycl::info::device::sub_group_sizes>()` should be used
+  to check supported `sub_group` sizes.
 * In lambda function use `nd_item::get_sub_group()` to get `sycl::sub_group` instance.
-* Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
 * Use accessor to buffer for type `bool` to save results.
-* For regular test run check is performed only for leader work-item
+* For regular test run check is performed only for leader work-item.
 * For full conformance test run check is performed for all work-items.
 
 === Test for max_bits
 
 Check that member `size_t max_bits` exists.
 
-=== Tests for Member Functions
+=== Tests for constructors and operator= [[ctors_rev_2]]
+
+Features described in this paragraph are available from revision 2 of the
+extension.
+
+==== sub_group_mask() [[default_ctor]]
+
+* Construct `sub_group_mask` instance `s` `with sub_group_mask()` ctor.
+* Check that `s.none() == true`.
+
+==== sub_group_mask(unsigned long long val) [[ull_ctor]]
+
+Run the following test with `VALUE` = `item.get_local_linear_id()` and with `VALUE` = `0b1010...`:
+[source,c++]
+----
+size_t val = VALUE;
+sub_group_mask mask{val};
+for ( size_t i = 0; i < mask.size(); ++i ) {
+  if (mask[id(i)] != ((val >> i) & 1)) {
+    /* test fails */
+  }
+}
+----
+
+==== template <typename T, std::size_t K> sub_group_mask(const sycl::marray<T, K>& val) [[marray_ctor]]
+
+Run the following test with all combinations of:
+
+* TYPE: `char`, `signed char`, `unsigned char`, `short int`, `unsigned short int`, `int`, `unsigned int`, `long int`,
+`unsigned long int`, `long long int`, `unsigned long long int`
+* DIM: `2`, `5`, `10`
+* VALUE: `item.get_local_linear_id()`, `0b101010...`
+
+[source,c++]
+----
+marray<TYPE, DIM> ma;
+size_t val = VALUE;
+if (sizeof(ma) < sizeof(val)) {
+  int N = CHAR_BIT * sizeof(ma);
+  /* set first N bits of "ma" to first N bits of "val" */
+} else {
+  int N = CHAR_BIT * sizeof(val);
+  /* set first N  bits of "ma" to first N bits of "val" */
+}
+sub_group_mask mask{ma};
+for (size_t i = 0;  i < mask.size();  ++i) {
+  if (mask[id(i)] != ((val >> i) & 1)) {
+    /* test fails */
+  }
+}
+----
+
+==== sub_group_mask(const sub_group_mask& other)
+
+* Construct `sub_group_mask` instance `s` with every test case described in <<default_ctor>> <<ull_ctor>> and
+<<marray_ctor>>.
+* Construct `sub_group_mask` instance `copy` with `sub_group_mask(s)` copy ctor.
+* Apply checks for `copy` as described in the corresponding paragraph.
+
+==== sub_group_mask& operator=(const sub_group_mask& other)
+
+* Construct `sub_group_mask` instance `s` with every test case described in <<default_ctor>> <<ull_ctor>> and
+<<marray_ctor>>..
+* Construct `sub_group_mask` instance `other` with the same size as s.
+* Use `other = s` to assign `other` instance with copy of `s`.
+* Apply checks for `other` as described in the corresponding paragraph.
+
+=== Tests for Member Functions [[member_functions_rev_1]]
+
+Features described in this paragraph are available from revision 1 of the
+extension.
 
 ==== Simple const member functions
 
 Member functions from Table are checked with following steps:
 
-* Use const instance of `sub_group_mask`.
+* Use `sub_group_ballot` to get `sub_group_mask` instance with predicate suitable for test.
 * Check return type.
 * Check that Expression returns Exprected value.
 
@@ -138,7 +220,6 @@ Member functions from Table are checked with following steps:
 |`sub_group_mask.find_high()`
 |`id(sub_group.get_local_range().size_t())`
 |===
-
 
 ==== operator[](id<1> id)
 
