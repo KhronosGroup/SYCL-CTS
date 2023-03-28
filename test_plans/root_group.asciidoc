@@ -28,8 +28,7 @@ if feature is not supported.
 auto bundle = sycl::get_kernel_bundle(q.get_context());
 auto kernel = bundle.get_kernel<class KernelName>();
 auto maxWGs = kernel.ext_oneapi_get_info<sycl::ext::oneapi::experimental::info::kernel_queue_specific::max_num_work_group_sync>(q);
-if (maxWGs < 1)
-  SKIP("maxWGs should be at least 1");
+REQUIRE(maxWGs >= 1);
 auto nd_range = sycl::nd_range<Dimensions>{global_range, local_range};
 auto props = sycl::ext::oneapi::experimental::properties{sycl::ext::oneapi::experimental::use_root_sync};
 q.parallel_for<class KernelName>(nd_range, props, [=](sycl::nd_item<Dimensions> it) {
@@ -37,8 +36,6 @@ q.parallel_for<class KernelName>(nd_range, props, [=](sycl::nd_item<Dimensions> 
 });
 ----
 where `global_range.size()` = `local_range.size() * maxWGs`.
-
-`maxWGs` should be at least `1`, otherwise test for this `Dimensions` is skipped.
 
 * Check that `root` is of type `ext::oneapi::experimental::root_group<Dimensions>`
 
