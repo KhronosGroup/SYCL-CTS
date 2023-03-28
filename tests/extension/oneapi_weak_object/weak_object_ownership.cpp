@@ -24,7 +24,9 @@ namespace weak_object_ownership {
 using namespace weak_object_common;
 
 TEST_CASE("weak_object weak_object_ownership", "[weak_object]") {
-#ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT
+#if !defined SYCL_EXT_ONEAPI_WEAK_OBJECT
+  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
+#else
   test_weak_object_ownership<sycl::accessor<int>>{}("accessor");
   test_weak_object_ownership<sycl::host_accessor<int>>{}("host_accessor");
   test_weak_object_ownership<sycl::buffer<int>>{}("buffer");
@@ -34,8 +36,6 @@ TEST_CASE("weak_object weak_object_ownership", "[weak_object]") {
 
   test_weak_object_ownership<sycl::queue>::check_type();
   test_weak_object_ownership<sycl::queue>{}.test_local_types();
-#else
-  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
 #endif
 }
 }  // namespace weak_object_ownership

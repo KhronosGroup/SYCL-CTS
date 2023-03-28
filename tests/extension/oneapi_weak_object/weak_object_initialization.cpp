@@ -24,7 +24,9 @@ namespace weak_object_initialization {
 using namespace weak_object_common;
 
 TEST_CASE("weak_object init", "[weak_object]") {
-#ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT
+#if !defined SYCL_EXT_ONEAPI_WEAK_OBJECT
+  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
+#else
   test_weak_object_init<sycl::accessor<int>>{}("accessor");
   test_weak_object_init<sycl::host_accessor<int>>{}("host_accessor");
   test_weak_object_init<sycl::buffer<int>>{}("buffer");
@@ -33,8 +35,6 @@ TEST_CASE("weak_object init", "[weak_object]") {
   test_weak_object_init<sycl::event>{}("event");
 
   test_weak_object_init<sycl::queue>{}.test_local_types();
-#else
-  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
 #endif
 }
 }  // namespace weak_object_initialization

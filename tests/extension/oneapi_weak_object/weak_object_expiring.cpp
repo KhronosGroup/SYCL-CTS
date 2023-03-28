@@ -24,15 +24,15 @@ namespace weak_object_expiring {
 using namespace weak_object_common;
 
 TEST_CASE("weak_object expiring", "[weak_object]") {
-#ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT
+#if !defined SYCL_EXT_ONEAPI_WEAK_OBJECT
+  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
+#else
   test_weak_object_expiring<sycl::buffer<int>>{}("buffer");
   test_weak_object_expiring<sycl::accessor<int>>{}("accessor");
   test_weak_object_expiring<sycl::host_accessor<int>>{}("host_accessor");
   test_weak_object_expiring<sycl::queue>{}("queue");
   test_weak_object_expiring<sycl::context>{}("context");
   test_weak_object_expiring<sycl::event>{}("event");
-#else
-  SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
 #endif
 }
 }  // namespace weak_object_expiring
