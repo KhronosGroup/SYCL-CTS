@@ -60,36 +60,45 @@ extension.
 
 ==== sub_group_mask(unsigned long long val) [[ull_ctor]]
 
-* Construct `sub_group_mask` instance `s` with `sub_group_mask(unsigned long long val)` ctor
-  and `size_t val`. Where `val` is `item.get_local_linear_id()` and  `0b1010...`.
-* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`.
+Run the following test with `VALUE` = `item.get_local_linear_id()` and with `VALUE` = `0b1010...`:
+[source,c++]
+----
+size_t val = VALUE;
+sub_group_mask mask{val};
+for ( size_t i = 0; i < mask.size(); ++i ) {
+  if (mask[id(i)] != ((val >> i) & 1)) {
+    /* test fails */
+  }
+}
+----
 
 ==== template <typename T, std::size_t K> sub_group_mask(const sycl::marray<T, K>& val) [[marray_ctor]]
 
-For `marray<T, dim>` where `T` equals to integral types below:
+Run the following test with all combinations of:
 
-* `char`
-* `signed char`
-* `unsigned char`
-* `short int`
-* `unsigned short int`
-* `int`
-* `unsigned int`
-* `long int`
-* `unsigned long int`
-* `long long int`
-* `unsigned long long int`
+* TYPE: `char`, `signed char`, `unsigned char`, `short int`, `unsigned short int`, `int`, `unsigned int`, `long int`,
+`unsigned long int`, `long long int`, `unsigned long long int`
+* DIM: `2`, `5`, `10`
+* VALUE: `item.get_local_linear_id()`, `0b101010...`
 
-and `dim` is `2`, `5`, and `10`.
-
-* Construct `marray<T, dim>` instance `val` with default ctor.
-* Use initial variable `size_t value` with values `item.get_local_linear_id()` and `0b1010...`.
-* If `CHAR_BIT * sizeof(val) < CHAR_BIT * sizeof(value)`
-  for `N = CHAR_BIT * sizeof(val)` set first `N` bits of `val` to first `N` bits of `value`.
-* If `CHAR_BIT * sizeof(val) >= CHAR_BIT * sizeof(value)`
-  for `N = CHAR_BIT * sizeof(value)` set first `N` bits of `val` to first `N` bits of `value`.
-* Construct `sub_group_mask` instance `s` with `sub_group_mask(val)` ctor.
-* Check that for `N = 0...sub_group_mask.size() - 1` `s[id(N)]` == `((val >> N) & 1)`.
+[source,c++]
+----
+marray<TYPE, DIM> ma;
+size_t val = VALUE;
+if (sizeof(ma) < sizeof(val)) {
+  int N = CHAR_BIT * sizeof(ma);
+  /* set first N bits of "ma" to first N bits of "val" */
+} else {
+  int N = CHAR_BIT * sizeof(val);
+  /* set first N  bits of "ma" to first N bits of "val" */
+}
+sub_group_mask mask{ma};
+for (size_t i = 0;  i < mask.size();  ++i) {
+  if (mask[id(i)] != ((val >> i) & 1)) {
+    /* test fails */
+  }
+}
+----
 
 ==== sub_group_mask(const sub_group_mask& other)
 
