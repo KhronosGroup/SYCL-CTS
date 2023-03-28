@@ -16,16 +16,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides common functions sycl::item tests
+//  Provides sycl::item api tests
 //
 *******************************************************************************/
 
-#ifndef SYCL_CTS_ITEM_COMMON_H
-#define SYCL_CTS_ITEM_COMMON_H
+#include "catch2/catch_test_macros.hpp"
 
-#include <cmath>
+#include "../common/common.h"
 
-namespace item_common_test {
+namespace item_api_test {
 
 /** computes the linear id for 1 dimension
  */
@@ -116,8 +115,7 @@ void test_item(sycl::range<dims> dataRange) {
       auto accOutDeprecated =
           bufOutDeprecated.template get_access<sycl::access_mode::write>(cgh);
 
-      auto kern = item_common_test::kernel_item<dims>(accOut, accOutDeprecated,
-                                                      dataRange);
+      auto kern = kernel_item<dims>(accOut, accOutDeprecated, dataRange);
       cgh.parallel_for(dataRange, kern);
     });
 
@@ -137,6 +135,19 @@ void test_item(sycl::range<dims> dataRange) {
   STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::item<3>>);
 }
 
-}  // namespace item_common_test
+TEST_CASE("sycl::item<1> api", "[item]") {
+  sycl::range<1> dataRange(64);
+  test_item<1>(dataRange);
+}
 
-#endif  // SYCL_CTS_ITEM_COMMON_H
+TEST_CASE("sycl::item<2> api", "[item]") {
+  sycl::range<2> dataRange(8, 16);
+  test_item<2>(dataRange);
+}
+
+TEST_CASE("sycl::item<3> api", "[item]") {
+  sycl::range<3> dataRange(4, 8, 16);
+  test_item<3>(dataRange);
+}
+
+}  // namespace item_api_test
