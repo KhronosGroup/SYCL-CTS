@@ -31,6 +31,17 @@ from common_python_vec import (Data, ReverseData, append_fp_postfix, wrap_with_k
 
 TEST_NAME = 'API'
 
+vector_element_type_template = Template("""
+    CHECK(std::is_same_v<typename sycl::vec<${type}, ${size}>::element_type, ${type}>);
+// FIXME: re-enable when element_type for swizzle_vec is implemented
+// link to issue: https://github.com/intel/llvm/issues/8879
+#if !SYCL_CTS_COMPILING_WITH_DPCPP
+    sycl::vec<${type}, ${size}> vec;
+    CHECK(std::is_same_v<typename decltype(
+        vec.template swizzle<${swizIndexes}>())::element_type, ${type}>);
+#endif
+""")
+
 vector_api_template = Template("""
         auto inputVec = sycl::vec<${type}, ${size}>(${vals});
         ${type} reversed_vals[] = {${reversed_vals}};
@@ -96,6 +107,10 @@ def gen_checks(type_str, size):
         type_str, kernel_name,
         'API test for sycl::vec<' + type_str + ', ' + str(size) + '>',
         test_string)
+    string+= vector_element_type_template.substitute(
+        type=type_str,
+        size=size,
+        swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
     return wrap_with_test_func(TEST_NAME, type_str, string, str(size))
 
 def gen_optional_checks(type_str, size, dest, dest_type, TEST_NAME_OP):

@@ -27,7 +27,8 @@ import itertools
 from string import Template
 sys.path.append('../common/')
 from common_python_vec import (Data, ReverseData, wrap_with_kernel, wrap_with_test_func,
-                               make_func_call, write_source_file, get_types, cast_to_bool)
+                               make_func_call, write_source_file, get_types, cast_to_bool,
+                               append_fp_postfix)
 
 TEST_NAME = 'CONSTRUCTORS'
 
@@ -66,6 +67,33 @@ vec_constructor_vec_template = Template(
           resAcc[0] = false;
         }
         if (!check_vector_values<${type}, ${size}>(test, vals)) {
+          resAcc[0] = false;
+        }
+""")
+
+mixed_constructor_vec_template = Template(
+    """        sycl::vec<${type}, ${input_vec_size}> input_vec(${vals1});
+        ${type} vals1[] = {${vals1}, ${vals2}};
+        auto test1 = sycl::vec<${type}, ${size}>(input_vec, ${vals2});
+        if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test1)) {
+          resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(test1)) {
+          resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(test1, vals1)) {
+          resAcc[0] = false;
+        }
+
+        ${type} vals2[] = {${vals2}, ${vals1}};
+        auto test2 = sycl::vec<${type}, ${size}>(${vals2}, input_vec);
+        if (!check_equal_type_bool<sycl::vec<${type}, ${size}>>(test2)) {
+          resAcc[0] = false;
+        }
+        if (!check_vector_size<${type}, ${size}>(test2)) {
+          resAcc[0] = false;
+        }
+        if (!check_vector_values<${type}, ${size}>(test2, vals2)) {
           resAcc[0] = false;
         }
 """)
@@ -117,6 +145,25 @@ def generate_vec(type_str, size):
                             'const &vec constructor, sycl::vec<' + type_str
                             + ', ' + str(size) + '>', test_string)
 
+def generate_mixed(type_str, size):
+    """Generates test for vec<T, dims>(const &vec<T, dims>)"""
+    if size == 1:
+        return ''
+    input_vec_size = size//2
+    values_size = size - input_vec_size
+    vals_list1 = append_fp_postfix(type_str, Data.vals_list_dict[size][:input_vec_size])
+    vals_list2 = append_fp_postfix(type_str, Data.vals_list_dict[size][-values_size:])
+    test_string = mixed_constructor_vec_template.substitute(
+        type=type_str,
+        size=size,
+        input_vec_size=input_vec_size,
+        vals1=', '.join(vals_list1),
+        vals2=', '.join(vals_list2))
+    return wrap_with_kernel(type_str,
+                            'MIXED_VEC_CONSTRUCTOR_KERNEL_' + type_str + str(size),
+                            'const &vec constructor, sycl::vec<' + type_str
+                            + ', ' + str(size) + '>', test_string)
+
 
 def generate_opencl(type_str, size):
     """Generates test for vec(vector_t openclVector)"""
@@ -144,6 +191,7 @@ def generate_constructor_tests(type_str, input_file, output_file):
         test_str += generate_default(type_str, size)
         test_str += generate_explicit(type_str, size)
         test_str += generate_vec(type_str, size)
+        test_str += generate_mixed(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME, type_str,
                                              test_str, str(size))
         test_str = ''
