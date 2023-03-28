@@ -17,7 +17,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides api tests for sycl::item<1> tests
+//  Provides sycl::item<3> api tests
 //
 *******************************************************************************/
 
@@ -27,7 +27,7 @@
 namespace item_3d_test {
 
 TEST_CASE("sycl::item<3> api", "[item]") {
-  sycl::range<3> dataRange(64, 64, 64);
+  sycl::range<3> dataRange(4, 8, 16);
   item_common_test::test_item<3>(dataRange);
 }
 

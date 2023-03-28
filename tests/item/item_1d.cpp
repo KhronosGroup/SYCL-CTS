@@ -17,7 +17,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides api tests for sycl::item<1> tests
+//  Provides sycl::item<1> api tests
 //
 *******************************************************************************/
 

@@ -105,10 +105,6 @@ void test_item(sycl::range<dims> dataRange) {
   std::vector<int> dataOutDeprecated(nSize);
 
   {
-    //    sycl::range<3> dataRange(nWidth, nHeight, nDepth);
-    //    auto dataRange =
-    //    sycl_cts::util::get_cts_object::range<dims>::get(edge, edge, edge);
-
     sycl::buffer<int, dims> bufOut(dataOut.data(), dataRange);
     sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
                                              dataRange);
