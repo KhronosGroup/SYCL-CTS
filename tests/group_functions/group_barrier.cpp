@@ -30,11 +30,9 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                        2, 3) {
   auto queue = sycl_cts::util::get_cts_object::queue();
 
-  // FIXME: hipSYCL and DPCPP have no implemented
+  // FIXME: hipSYCL have no implemented
   //  atomic_fence_scope_capabilities query
-  //  Issue to link https://github.com/intel/llvm/issues/8323
-#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   std::vector<sycl::memory_scope> supported_barriers =
       queue.get_context()
           .get_info<sycl::info::context::atomic_fence_scope_capabilities>();
@@ -44,7 +42,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
       sycl::memory_scope::device, sycl::memory_scope::system};
   WARN(
-      "hipSYCL and DPCPP have no implementation of "
+      "hipSYCL have no implementation of "
       "atomic_fence_scope_capabilities query, suppose all barrier types as "
       "valid.");
 #endif
