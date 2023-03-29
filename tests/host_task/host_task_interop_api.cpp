@@ -55,7 +55,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cl_command_queue cl_native_queue{nullptr};
         q.submit([&](sycl::handler& cgh) {
           cgh.host_task([=, &cl_native_queue](sycl::interop_handle ih) {
-            cl_native_queue = ih.get_native_queue();
+            cl_native_queue = ih.get_native_queue<sycl::backend::opencl>();
           });
         });
         q.wait_and_throw();
@@ -69,7 +69,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cl_device_id cl_native_device_id{nullptr};
         q.submit([&](sycl::handler& cgh) {
           cgh.host_task([=, &cl_native_device_id](sycl::interop_handle ih) {
-            cl_native_device_id = ih.get_native_device();
+            cl_native_device_id = ih.get_native_device<sycl::backend::opencl>();
           });
         });
         q.wait_and_throw();
@@ -84,7 +84,7 @@ class TEST_NAME : public sycl_cts::util::test_base {
         cl_context cl_native_context{nullptr};
         q.submit([&](sycl::handler& cgh) {
           cgh.host_task([=, &cl_native_context](sycl::interop_handle ih) {
-            cl_native_context = ih.get_native_context();
+            cl_native_context = ih.get_native_context<sycl::backend::opencl>();
           });
         });
         q.wait_and_throw();
@@ -102,8 +102,10 @@ class TEST_NAME : public sycl_cts::util::test_base {
         q.submit([&](sycl::handler& cgh) {
           auto buf_acc_dev{buf.get_access<sycl::access_mode::read_write>(cgh)};
           cgh.host_task([=](sycl::interop_handle ih) {
-            cl_command_queue native_queue = ih.get_native_queue();
-            std::vector<cl_mem> native_mems = ih.get_native_mem(buf_acc_dev);
+            cl_command_queue native_queue =
+                ih.get_native_queue<sycl::backend::opencl>();
+            std::vector<cl_mem> native_mems =
+                ih.get_native_mem<sycl::backend::opencl>(buf_acc_dev);
             for (auto native_mem : native_mems)
               call_opencl(native_queue, native_mem, size, pattern);
           });
