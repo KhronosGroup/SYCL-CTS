@@ -23,8 +23,6 @@
 
 #include <algorithm>
 
-#define TEST_NAME nd_item_api
-
 namespace test_nd_item__ {
 using namespace sycl_cts;
 
@@ -44,17 +42,19 @@ class kernel_nd_item {
  protected:
   using t_readAccess = sycl::accessor<int, dimensions, sycl::access_mode::read,
                                       sycl::target::device>;
+  using t_errorAccess = sycl::accessor<int, 1, sycl::access_mode::write,
+                     sycl::target::device>;
   using t_writeAccess =
       sycl::accessor<int, dimensions, sycl::access_mode::write,
                      sycl::target::device>;
 
   t_readAccess m_globalID;
   t_readAccess m_localID;
-  t_writeAccess m_out;
+  t_errorAccess m_out;
   t_writeAccess m_out_deprecated;
 
  public:
-  kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_writeAccess out_,
+  kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_errorAccess out_,
                  t_writeAccess out_deprecated_)
       : m_globalID(inG_),
         m_localID(inL_),
@@ -62,57 +62,64 @@ class kernel_nd_item {
         m_out_deprecated(out_deprecated_) {}
 
   void operator()(sycl::nd_item<dimensions> myitem) const {
-    bool all_correct = true;
+    bool global_id_res = true;
+    bool local_id_res = true;
+    bool group_id_res = true;
+    bool range_res = true;
+    bool number_of_groups_res = true;
+    bool nd_range_res = true;
+    bool offset_res = true;
+    bool linear_id_res = true;
 
     /* test global ID */
     sycl::id<dimensions> global_id = myitem.get_global_id();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_global_id(i) == global_id.get(i);
+      global_id_res &= myitem.get_global_id(i) == global_id.get(i);
     }
 
     /* test local ID */
     sycl::id<dimensions> local_id = myitem.get_local_id();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_local_id(i) == local_id.get(i);
+      local_id_res &= myitem.get_local_id(i) == local_id.get(i);
     }
 
     /* test group ID */
     sycl::group<dimensions> group_id = myitem.get_group();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_group(i) == group_id.get_id(i);
+      group_id_res &= myitem.get_group(i) == group_id.get_id(i);
     }
 
     /* test range */
     sycl::range<dimensions> globalRange = myitem.get_global_range();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_global_range(i) == globalRange.get(i);
+      range_res &= myitem.get_global_range(i) == globalRange.get(i);
     }
 
     size_t globalIndex = getIndex(global_id, globalRange);
-    all_correct &= m_globalID[global_id] == globalIndex;
+    range_res &= m_globalID[global_id] == globalIndex;
 
     sycl::range<dimensions> localRange = myitem.get_local_range();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_local_range(i) == localRange.get(i);
+      range_res &= myitem.get_local_range(i) == localRange.get(i);
     }
 
     size_t localIndex = getIndex(local_id, localRange);
-    all_correct &= m_localID[local_id] == localIndex;
+    range_res &= m_localID[local_id] == localIndex;
 
     for (int i = 0; i < dimensions; ++i) {
       size_t ratio = global_id.get(i) / localRange.get(i);
-      all_correct &= group_id.get_id(i) == ratio;
+      range_res &= group_id.get_id(i) == ratio;
     }
 
     /* test number of groups */
     sycl::id<dimensions> num_groups = myitem.get_group_range();
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= myitem.get_group_range(i) == num_groups.get(i);
+      number_of_groups_res &= myitem.get_group_range(i) == num_groups.get(i);
     }
 
     for (int i = 0; i < dimensions; ++i) {
       size_t ratio = globalRange.get(i) / localRange.get(i);
-      all_correct &= ratio == num_groups.get(i);
+      number_of_groups_res &= ratio == num_groups.get(i);
     }
 
     /* test NDrange */
@@ -121,8 +128,8 @@ class kernel_nd_item {
     sycl::range<dimensions> ndLocal = NDRange.get_local_range();
 
     for (int i = 0; i < dimensions; ++i) {
-      all_correct &= globalRange.get(i) == ndGlobal.get(i);
-      all_correct &= localRange.get(i) == ndLocal.get(i);
+      nd_range_res &= globalRange.get(i) == ndGlobal.get(i);
+      nd_range_res &= localRange.get(i) == ndLocal.get(i);
     }
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
@@ -142,12 +149,18 @@ class kernel_nd_item {
     size_t grlid = myitem.get_group_linear_id();
     size_t groupIndex = getIndex(group_id.get_id(), myitem.get_group_range());
 
-    all_correct &= glid == globalIndex;
-    all_correct &= llid == localIndex;
-    all_correct &= grlid == groupIndex;
+    linear_id_res &= glid == globalIndex;
+    linear_id_res &= llid == localIndex;
+    linear_id_res &= grlid == groupIndex;
 
     /* write back whether all checks were successful */
-    m_out[global_id] = all_correct;
+    m_out[0] = global_id_res;
+    m_out[1] = local_id_res;
+    m_out[2] = group_id_res;
+    m_out[3] = range_res;
+    m_out[4] = number_of_groups_res;
+    m_out[5] = nd_range_res;
+    m_out[6] = linear_id_res;
   }
 };
 
@@ -173,49 +186,65 @@ void populate(int *globalBuf, int *localBuf, const int *localSize,
   }
 }
 
-void test_item(util::logger &log, sycl::queue &queue) {
+template <int dims>
+void test_item() {
+  auto queue = util::get_cts_object::queue();
+
   /* set sizes*/
   const int globalSize[3] = {16, 16, 16};
   const int localSize[3] = {4, 4, 4};
   const int nSize = globalSize[0] * globalSize[1] * globalSize[2];
+  const int nErrorSize = 8;
 
   /* allocate and set host buffers */
   std::vector<int> globalIDs(nSize);
   std::vector<int> localIDs(nSize);
   populate(globalIDs.data(), localIDs.data(), localSize, globalSize);
-  std::vector<int> dataOut(nSize);
+  std::vector<int> dataOut(nErrorSize, true);
   std::vector<int> dataOutDeprecated(nSize);
 
-  /* test 1 Dimension*/
   {
-    std::fill(dataOut.begin(), dataOut.end(), 0);
     std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
 
     /* create ranges*/
-    sycl::range<1> globalRange(globalSize[0]);
-    sycl::range<1> localRange(localSize[0]);
-    sycl::nd_range<1> dataRange(globalRange, localRange);
+    auto globalRange = util::get_cts_object::range<dims>::get(globalSize[0], globalSize[1], globalSize[2]);
+    auto localRange = util::get_cts_object::range<dims>::get(localSize[0], localSize[1], localSize[2]);
+    sycl::range<1> errorRange(nErrorSize);
+    sycl::nd_range<dims> dataRange(globalRange, localRange);
 
     {
-      sycl::buffer<int, 1> bufGlob(globalIDs.data(), globalRange);
-      sycl::buffer<int, 1> bufLoc(localIDs.data(), globalRange);
-      sycl::buffer<int, 1> bufOut(dataOut.data(), globalRange);
-      sycl::buffer<int, 1> bufOutDeprecated(dataOutDeprecated.data(),
+      sycl::buffer<int, dims> bufGlob(globalIDs.data(), globalRange);
+      sycl::buffer<int, dims> bufLoc(localIDs.data(), globalRange);
+      sycl::buffer<int, 1> bufOut(dataOut.data(), errorRange);
+      sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
                                             globalRange);
 
       queue.submit([&](sycl::handler &cgh) {
-        kernel_nd_item<1> kernel_1d(
+        kernel_nd_item<dims> kernel_(
             bufGlob.template get_access<sycl::access_mode::read>(cgh),
             bufLoc.template get_access<sycl::access_mode::read>(cgh),
             bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(
-                cgh));
-        cgh.parallel_for<kernel_nd_item<1>>(dataRange, kernel_1d);
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(cgh));
+        cgh.parallel_for<kernel_nd_item<dims>>(dataRange, kernel_);
       });
     }
 
-    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      [](int val) { return val; }));
+  // check api call results
+  std::string nd_item_tests[nErrorSize] = {
+    "global ID",
+    "local ID",
+    "group ID",
+    "range",
+    "number of groups",
+    "NDrange",
+    "linear_id"
+  };
+
+  for (int i = 0; i < nErrorSize; i++) {
+    INFO("Dimensions: " << std::to_string(dims));
+    INFO("nd_item " << nd_item_tests[i] << " tests fails");
+    CHECK(dataOut[i] != 0);
+  }
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK(std::all_of(dataOutDeprecated.begin(),
@@ -223,116 +252,20 @@ void test_item(util::logger &log, sycl::queue &queue) {
                       [](int val) { return val; }));
 #endif
 
-    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<1>>);
+    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<dims>>);
   }
-
-  /* test 2 Dimensions */
-  {
-    std::fill(dataOut.begin(), dataOut.end(), 0);
-    std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
-
-    /* create ranges*/
-    sycl::range<2> globalRange(globalSize[0], globalSize[1]);
-    sycl::range<2> localRange(localSize[0], localSize[1]);
-    sycl::nd_range<2> dataRange(globalRange, localRange);
-
-    {
-      sycl::buffer<int, 2> bufGlob(globalIDs.data(), globalRange);
-      sycl::buffer<int, 2> bufLoc(localIDs.data(), globalRange);
-      sycl::buffer<int, 2> bufOut(dataOut.data(), globalRange);
-      sycl::buffer<int, 2> bufOutDeprecated(dataOutDeprecated.data(),
-                                            globalRange);
-
-      queue.submit([&](sycl::handler &cgh) {
-        kernel_nd_item<2> kernel_2d(
-            bufGlob.template get_access<sycl::access_mode::read>(cgh),
-            bufLoc.template get_access<sycl::access_mode::read>(cgh),
-            bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(
-                cgh));
-        cgh.parallel_for<kernel_nd_item<2>>(dataRange, kernel_2d);
-      });
-    }
-
-    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      [](int val) { return val; }));
-
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::all_of(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(),
-                      [](int val) { return val; }));
-#endif
-
-    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<2>>);
-  }
-
-  /* test 3 Dimensions */
-  {
-    std::fill(dataOut.begin(), dataOut.end(), 0);
-    std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
-
-    /* create ranges*/
-    sycl::range<3> globalRange(globalSize[0], globalSize[1], globalSize[2]);
-    sycl::range<3> localRange(localSize[0], localSize[1], localSize[2]);
-    sycl::nd_range<3> dataRange(globalRange, localRange);
-
-    {
-      sycl::buffer<int, 3> bufGlob(globalIDs.data(), globalRange);
-      sycl::buffer<int, 3> bufLoc(localIDs.data(), globalRange);
-      sycl::buffer<int, 3> bufOut(dataOut.data(), globalRange);
-      sycl::buffer<int, 3> bufOutDeprecated(dataOutDeprecated.data(),
-                                            globalRange);
-
-      queue.submit([&](sycl::handler &cgh) {
-        kernel_nd_item<3> kernel_3d(
-            bufGlob.template get_access<sycl::access_mode::read>(cgh),
-            bufLoc.template get_access<sycl::access_mode::read>(cgh),
-            bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(
-                cgh));
-        cgh.parallel_for<kernel_nd_item<3>>(dataRange, kernel_3d);
-      });
-    }
-
-    CHECK(std::all_of(dataOut.begin(), dataOut.begin() + globalRange.size(),
-                      [](int val) { return val; }));
-
-#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::all_of(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(),
-                      [](int val) { return val; }));
-#endif
-
-    STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::nd_item<3>>);
-  }
+  queue.wait_and_throw();
 }
 
-/** test sycl::nd_item
- */
-class TEST_NAME : public util::test_base {
- public:
-  /** return information about this test
-   *  @param info, test_base::info structure as output
-   */
-  void get_info(test_base::info &out) const override {
-    set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
-  }
+TEST_CASE("nd_item_1d API", "[nd_item]") {
+  test_item<1>();
+}
 
-  /** execute the test
-   *  @param log, test transcript logging class
-   */
-  void run(util::logger &log) override {
-    {
-      auto cmd_queue = util::get_cts_object::queue();
+TEST_CASE("nd_item_2d API", "[nd_item]") {
+  test_item<2>();
+}
 
-      test_item(log, cmd_queue);
-
-      cmd_queue.wait_and_throw();
-    }
-  }
-};
-
-// construction of this proxy will register the above test
-util::test_proxy<TEST_NAME> proxy;
-
+TEST_CASE("nd_item_3d API", "[nd_item]") {
+  test_item<3>();
+}
 } /* namespace test_nd_item__ */
