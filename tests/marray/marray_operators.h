@@ -507,11 +507,9 @@ class check_marray_operators_for_type {
                                                             "post --");
     for_all_combinations<run_unary_post, DataT>(num_elements,
                                                 unary_post_operators);
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
-        "ComputeCPP and DPCPP do not compile for logical AND (&&) and logical "
+        "ComputeCPP does not compile for logical AND (&&) and logical "
         "OR "
         "(||). Skipping the test case.");
 #endif
@@ -524,17 +522,13 @@ class check_marray_operators_for_type {
     //  'const cl::sycl::marray<bool, 1>'
     // && and || for any? type 'static_assert failed due to
     //  requirement 'num_elements<bool>() == 2UL'
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
                         ,
                         op_land, op_lor
 #endif
                         >::generate("+", "-", "*", "/", "%", "|", "&", "^",
                                     "<<", ">>"
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
                                     ,
                                     "&&", "||"
 #endif
