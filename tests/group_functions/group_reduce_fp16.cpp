@@ -55,23 +55,11 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions",
         "Skipping the test case.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8348
-    WARN(
-        "DPCPP does not implement joint_reduce without init. Skipping the test "
-        "case.");
 #endif
   }
 
   // FIXME: ComputeCpp has no half
-  // FIXME: DPCPP compile error:
-  //        error: call to function 'joint_reduce' that is neither visible
-  //        in the template definition nor found by argument-dependent lookup
-  //        note: 'joint_reduce' should be declared prior to the call site
-  //        or in namespace 'sycl::ext::oneapi'
-  // Link to issue https://github.com/intel/llvm/issues/8348
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
