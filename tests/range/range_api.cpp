@@ -264,10 +264,10 @@ class TEST_NAME : public util::test_base {
         test3d(log, range_3d_g, range_3d_l, my_queue);
 
         // 32 bits, it's trivial. Sanity test.
-        test_empty_kernel_1d_range(std::numeric_limits<unsigned>::max, my_queue);
+        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max(), my_queue);
         // Most GPU hardware have limitation to 32bits * 1024 for their native API
         // so let's try more than that
-        test_empty_kernel_1d_range(std::numeric_limits<unsigned>::max*2024L, my_queue);
+        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max()*2024L, my_queue);
       }
     }
   }
