@@ -30,7 +30,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                        2, 3) {
   auto queue = sycl_cts::util::get_cts_object::queue();
 
-  // FIXME: hipSYCL have no implemented
+  // FIXME: hipSYCL has not implemented
   //  atomic_fence_scope_capabilities query
 #if !defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   std::vector<sycl::memory_scope> supported_barriers =
@@ -42,7 +42,7 @@ TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
       sycl::memory_scope::sub_group, sycl::memory_scope::work_group,
       sycl::memory_scope::device, sycl::memory_scope::system};
   WARN(
-      "hipSYCL have no implementation of "
+      "hipSYCL has no implementation of "
       "atomic_fence_scope_capabilities query, suppose all barrier types as "
       "valid.");
 #endif
