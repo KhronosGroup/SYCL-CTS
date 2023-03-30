@@ -212,7 +212,13 @@ class test_range {
   }
 };
 
-void test_empty_kernel_1d_range(size_t N, sycl::queue q) {
+// This tests is only here to check if one can submit a large kernel.
+// We don't use an `empty kernel` to avoid smart compiler
+// optimizing the submision away
+// This test:
+//    - Doesn't check that all the work-item have be submited
+//    - It's technicaly UB (concurent write)
+void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
   int *a = sycl::malloc_shared<int>(q, 1);
   a[0] = 0;
   q.parallel_for(sycl::range<1>(N), [=](auto i) { a[0] = 1; }).wait_and_throw();
@@ -263,13 +269,19 @@ class TEST_NAME : public util::test_base {
         test_range<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
 
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
         // 32 bits, it's trivial. Sanity test.
-        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max(),
-                                   my_queue);
+        test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
+                                    my_queue);
+
+        // Prime number bigger than UINT32_MAX
+        test_launch_kernel_1d_range(4294967311L, my_queue);
+
         // Most GPU hardware have limitation to 32bits * 1024 for their native
         // API so let's try more than that
-        test_empty_kernel_1d_range(
-            std::numeric_limits<unsigned int>::max() * 2024L, my_queue);
+        test_launch_kernel_1d_range(
+            std::numeric_limits<uint32_t>::max() * 2024L, my_queue);
+#endif
       }
     }
   }
