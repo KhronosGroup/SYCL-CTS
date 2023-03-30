@@ -35,7 +35,8 @@ TEST_CASE("weak_object weak_object_ownership", "[weak_object]") {
   test_weak_object_ownership<sycl::queue>{}("queue");
 
   test_weak_object_ownership<sycl::queue>::check_type();
-  test_weak_object_ownership<sycl::queue>{}.test_local_types();
+  test_weak_object_ownership<sycl::stream>{}.test_stream();
+  test_weak_object_ownership<sycl::local_accessor>{}.test_local_accessor();
 #endif
 }
 }  // namespace weak_object_ownership

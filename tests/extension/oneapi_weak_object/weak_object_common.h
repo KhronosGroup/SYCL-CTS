@@ -31,43 +31,23 @@ namespace weak_object_common {
 using namespace sycl;
 
 template <typename SYCLObjT>
-struct get_sycl_object;
+SYCLObjT get_sycl_object() {
+  static buffer<int> buf{{1}};
 
-template <>
-struct get_sycl_object<buffer<int>> {
-  auto operator()() { return buffer<int>(range{1}); }
-};
-
-template <>
-struct get_sycl_object<accessor<int>> {
-  auto operator()() {
-    buffer<int> buf{{1}};
+  if constexpr (std::is_same_v<SYCLObjT, buffer<int>>) {
+    return buffer<int>(range{1});
+  } else if constexpr (std::is_same_v<SYCLObjT, accessor<int>>) {
     return accessor<int>(buf);
-  }
-};
-
-template <>
-struct get_sycl_object<host_accessor<int>> {
-  auto operator()() {
-    buffer<int> buf{{1}};
+  } else if constexpr (std::is_same_v<SYCLObjT, host_accessor<int>>) {
     return host_accessor<int>(buf);
+  } else if constexpr (std::is_same_v<SYCLObjT, context>) {
+    return context();
+  } else if constexpr (std::is_same_v<SYCLObjT, event>) {
+    return event();
+  } else if constexpr (std::is_same_v<SYCLObjT, queue>) {
+    return queue();
   }
-};
-
-template <>
-struct get_sycl_object<context> {
-  auto operator()() { return context(); }
-};
-
-template <>
-struct get_sycl_object<event> {
-  auto operator()() { return event(); }
-};
-
-template <>
-struct get_sycl_object<queue> {
-  auto operator()() { return queue(); }
-};
+}
 
 template <typename SYCLObjT>
 class test_weak_object_init {
@@ -75,21 +55,27 @@ class test_weak_object_init {
   void operator()(const std::string& typeName) {
     INFO(typeName + " type: ");
 
-    auto object = get_sycl_object<SYCLObjT>{}();
+    auto object = get_sycl_object<SYCLObjT>();
     test_constructors(object);
     test_assign_operators(object);
     test_swap(object);
   }
 
-  void test_local_types() {
+  void test_stream() {
     queue q;
     q.submit([&](handler& cgh) {
       stream s(1024, 256, cgh);
-      local_accessor<int> l_accessor({1}, cgh);
 
       test_constructors(s);
       test_assign_operators(s);
       test_swap(s);
+    });
+  }
+
+  void test_local_accessor() {
+    queue q;
+    q.submit([&](handler& cgh) {
+      local_accessor<int> l_accessor({1}, cgh);
 
       test_constructors(l_accessor);
       test_assign_operators(l_accessor);
@@ -182,7 +168,7 @@ class test_weak_object_expiring {
     INFO(typeName + " type: ");
     ext::oneapi::weak_object<SYCLObjT> w;
     {
-      auto sycl_object = get_sycl_object<SYCLObjT>{}();
+      auto sycl_object = get_sycl_object<SYCLObjT>();
       w = sycl_object;
       INFO("Check that weak_object now has a value and not expired");
       CHECK(!w.expired());
@@ -198,8 +184,8 @@ class test_weak_object_ownership {
   void operator()(const std::string& typeName) {
     INFO(typeName + " type: ");
 
-    auto object1 = get_sycl_object<SYCLObjT>{}();
-    auto object2 = get_sycl_object<SYCLObjT>{}();
+    auto object1 = get_sycl_object<SYCLObjT>();
+    auto object2 = get_sycl_object<SYCLObjT>();
 
     test_owner_before_same_objects(object1);
     test_owner_before_empty_objects(object1);
@@ -217,14 +203,11 @@ class test_weak_object_ownership {
     CHECK(std::is_same_v<decltype(w1.owner_before(w2)), bool>);
   }
 
-  void test_local_types() {
+  void test_stream() {
     queue q;
     q.submit([&](handler& cgh) {
       stream stream1(1024, 256, cgh);
       stream stream2(1024, 256, cgh);
-
-      local_accessor<int> l_accessor1({1}, cgh);
-      local_accessor<int> l_accessor2({1}, cgh);
 
       test_owner_before_same_objects(stream1);
       test_owner_before_empty_objects(stream1);
@@ -232,6 +215,14 @@ class test_weak_object_ownership {
       test_owner_less_same_objects(stream1);
       test_owner_less_empty_objects(stream1);
       test_owner_less_different_objects(stream1, stream2);
+    });
+  }
+
+  void test_local_accessor() {
+    queue q;
+    q.submit([&](handler& cgh) {
+      local_accessor<int> l_accessor1({1}, cgh);
+      local_accessor<int> l_accessor2({1}, cgh);
 
       test_owner_before_same_objects(l_accessor1);
       test_owner_before_empty_objects(l_accessor1);
