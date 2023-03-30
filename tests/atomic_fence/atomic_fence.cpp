@@ -50,8 +50,6 @@ enum class test_type {
 bool check_atomic_fence_order_capability(sycl::queue& queue,
                                          sycl::memory_order order,
                                          const std::string& order_name) {
-// FIXME: re-enable when https://github.com/intel/llvm/issues/8293 is fixed
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
   auto orders =
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_order_capabilities>();
@@ -60,7 +58,6 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
          order_name);
     return false;
   }
-#endif
   return true;
 }
 
@@ -74,17 +71,14 @@ bool check_atomic_fence_order_capability(sycl::queue& queue,
 bool check_atomic_fence_scope_capability(sycl::queue& queue,
                                          sycl::memory_scope scope,
                                          const std::string& scope_name) {
-// FIXME: re-enable when https://github.com/intel/llvm/issues/8293 is fixed
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
   auto scopes =
       queue.get_device()
           .get_info<sycl::info::device::atomic_fence_scope_capabilities>();
-  if (std::find(scopes.begin(), scopes.end(), scope) == orders.end()) {
+  if (std::find(scopes.begin(), scopes.end(), scope) == scopes.end()) {
     WARN(std::string("Device does not support atomic_fence with scope = ") +
          scope_name);
     return false;
   }
-#endif
   return true;
 }
 
