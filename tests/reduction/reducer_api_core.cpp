@@ -52,7 +52,7 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       auto reduction = sycl::reduction(buf_output, cgh, sycl::plus<>{});
       cgh.parallel_for<kernel_name>(
           sycl::range<1>{1}, reduction, [=](sycl::id<1> idx, auto& reducer) {
-            using reducer_t = decltype(reducer);
+            using reducer_t = std::remove_reference_t<decltype(reducer)>;
             size_t i = 0;
             acc_results[i++] = !std::is_copy_constructible_v<reducer_t>;
             acc_results[i++] = !std::is_move_constructible_v<reducer_t>;
