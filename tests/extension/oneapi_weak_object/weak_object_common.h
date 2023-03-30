@@ -28,24 +28,23 @@
 #ifdef SYCL_EXT_ONEAPI_WEAK_OBJECT
 
 namespace weak_object_common {
-using namespace sycl;
 
 template <typename SYCLObjT>
 SYCLObjT get_sycl_object() {
-  static buffer<int> buf{{1}};
+  static sycl::buffer<int> buf{{1}};
 
-  if constexpr (std::is_same_v<SYCLObjT, buffer<int>>) {
-    return buffer<int>(range{1});
-  } else if constexpr (std::is_same_v<SYCLObjT, accessor<int>>) {
-    return accessor<int>(buf);
-  } else if constexpr (std::is_same_v<SYCLObjT, host_accessor<int>>) {
-    return host_accessor<int>(buf);
-  } else if constexpr (std::is_same_v<SYCLObjT, context>) {
-    return context();
-  } else if constexpr (std::is_same_v<SYCLObjT, event>) {
-    return event();
-  } else if constexpr (std::is_same_v<SYCLObjT, queue>) {
-    return queue();
+  if constexpr (std::is_same_v<SYCLObjT, sycl::buffer<int>>) {
+    return sycl::buffer<int>(sycl::range{1});
+  } else if constexpr (std::is_same_v<SYCLObjT, sycl::accessor<int>>) {
+    return sycl::accessor<int>(buf);
+  } else if constexpr (std::is_same_v<SYCLObjT, sycl::host_accessor<int>>) {
+    return sycl::host_accessor<int>(buf);
+  } else if constexpr (std::is_same_v<SYCLObjT, sycl::context>) {
+    return sycl::context();
+  } else if constexpr (std::is_same_v<SYCLObjT, sycl::event>) {
+    return sycl::event();
+  } else if constexpr (std::is_same_v<SYCLObjT, sycl::queue>) {
+    return sycl::queue();
   }
 }
 
@@ -62,9 +61,9 @@ class test_weak_object_init {
   }
 
   void test_stream() {
-    queue q;
-    q.submit([&](handler& cgh) {
-      stream s(1024, 256, cgh);
+    sycl::queue q;
+    q.submit([&](sycl::handler& cgh) {
+      sycl::stream s(1024, 256, cgh);
 
       test_constructors(s);
       test_assign_operators(s);
@@ -73,9 +72,9 @@ class test_weak_object_init {
   }
 
   void test_local_accessor() {
-    queue q;
-    q.submit([&](handler& cgh) {
-      local_accessor<int> l_accessor({1}, cgh);
+    sycl::queue q;
+    q.submit([&](sycl::handler& cgh) {
+      sycl::local_accessor<int> l_accessor({1}, cgh);
 
       test_constructors(l_accessor);
       test_assign_operators(l_accessor);
@@ -85,7 +84,7 @@ class test_weak_object_init {
 
  private:
   template <typename Optional>
-  void check_weak_object(ext::oneapi::weak_object<SYCLObjT> w,
+  void check_weak_object(sycl::ext::oneapi::weak_object<SYCLObjT> w,
                          const Optional& object, const std::string& init_type) {
     auto ret = w.try_lock();
     {
@@ -124,12 +123,12 @@ class test_weak_object_init {
 
   void test_constructors(SYCLObjT sycl_object) {
     // weak object for copy and move
-    auto w_other = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w_other = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
 
-    auto w_empty = ext::oneapi::weak_object<SYCLObjT>();
-    auto w_obj = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
-    auto w_copy = ext::oneapi::weak_object<SYCLObjT>(w_other);
-    auto w_move = ext::oneapi::weak_object<SYCLObjT>(std::move(w_other));
+    auto w_empty = sycl::ext::oneapi::weak_object<SYCLObjT>();
+    auto w_obj = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w_copy = sycl::ext::oneapi::weak_object<SYCLObjT>(w_other);
+    auto w_move = sycl::ext::oneapi::weak_object<SYCLObjT>(std::move(w_other));
 
     check_weak_object(w_empty, std::nullopt, "empty constructor");
     check_weak_object(w_obj, sycl_object, "SYCL object constructor");
@@ -138,11 +137,11 @@ class test_weak_object_init {
   }
 
   void test_assign_operators(SYCLObjT sycl_object) {
-    auto w_other = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w_other = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
 
-    ext::oneapi::weak_object<SYCLObjT> w_obj;
-    ext::oneapi::weak_object<SYCLObjT> w_copy;
-    ext::oneapi::weak_object<SYCLObjT> w_move;
+    sycl::ext::oneapi::weak_object<SYCLObjT> w_obj;
+    sycl::ext::oneapi::weak_object<SYCLObjT> w_copy;
+    sycl::ext::oneapi::weak_object<SYCLObjT> w_move;
     w_obj = sycl_object;
 
     w_copy = w_other;
@@ -154,8 +153,8 @@ class test_weak_object_init {
   }
 
   void test_swap(SYCLObjT sycl_object) {
-    auto w_empty = ext::oneapi::weak_object<SYCLObjT>();
-    auto w_other = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w_empty = sycl::ext::oneapi::weak_object<SYCLObjT>();
+    auto w_other = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
     w_empty.swap(w_other);
     check_weak_object(w_empty, sycl_object, "swap() member function");
   }
@@ -166,7 +165,7 @@ class test_weak_object_expiring {
  public:
   void operator()(const std::string& typeName) {
     INFO(typeName + " type: ");
-    ext::oneapi::weak_object<SYCLObjT> w;
+    sycl::ext::oneapi::weak_object<SYCLObjT> w;
     {
       auto sycl_object = get_sycl_object<SYCLObjT>();
       w = sycl_object;
@@ -196,18 +195,18 @@ class test_weak_object_ownership {
   }
 
   static void check_type() {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>();
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>();
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>();
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>();
 
     INFO("Check that weak_object owner_before() returns bool");
     CHECK(std::is_same_v<decltype(w1.owner_before(w2)), bool>);
   }
 
   void test_stream() {
-    queue q;
-    q.submit([&](handler& cgh) {
-      stream stream1(1024, 256, cgh);
-      stream stream2(1024, 256, cgh);
+    sycl::queue q;
+    q.submit([&](sycl::handler& cgh) {
+      sycl::stream stream1(1024, 256, cgh);
+      sycl::stream stream2(1024, 256, cgh);
 
       test_owner_before_same_objects(stream1);
       test_owner_before_empty_objects(stream1);
@@ -219,10 +218,10 @@ class test_weak_object_ownership {
   }
 
   void test_local_accessor() {
-    queue q;
-    q.submit([&](handler& cgh) {
-      local_accessor<int> l_accessor1({1}, cgh);
-      local_accessor<int> l_accessor2({1}, cgh);
+    sycl::queue q;
+    q.submit([&](sycl::handler& cgh) {
+      sycl::local_accessor<int> l_accessor1({1}, cgh);
+      sycl::local_accessor<int> l_accessor2({1}, cgh);
 
       test_owner_before_same_objects(l_accessor1);
       test_owner_before_empty_objects(l_accessor1);
@@ -235,8 +234,8 @@ class test_weak_object_ownership {
 
  private:
   void test_owner_before_same_objects(SYCLObjT sycl_object) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
     {
       bool weak_object_result = !w1.owner_before(w2) && !w2.owner_before(w1) &&
                                 !w1.owner_before(sycl_object) &&
@@ -259,15 +258,15 @@ class test_weak_object_ownership {
   }
 
   void test_owner_less_same_objects(SYCLObjT sycl_object) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
 
-    bool result = ext::oneapi::owner_less(w1, w2) == false &&
-                  ext::oneapi::owner_less(w2, w1) == false &&
-                  ext::oneapi::owner_less(w1, sycl_object) == false &&
-                  ext::oneapi::owner_less(sycl_object, w1) == false &&
-                  ext::oneapi::owner_less(w2, sycl_object) == false &&
-                  ext::oneapi::owner_less(sycl_object, w2) == false;
+    bool result = sycl::ext::oneapi::owner_less(w1, w2) == false &&
+                  sycl::ext::oneapi::owner_less(w2, w1) == false &&
+                  sycl::ext::oneapi::owner_less(w1, sycl_object) == false &&
+                  sycl::ext::oneapi::owner_less(sycl_object, w1) == false &&
+                  sycl::ext::oneapi::owner_less(w2, sycl_object) == false &&
+                  sycl::ext::oneapi::owner_less(sycl_object, w2) == false;
 
     INFO(
         "Verify that owner_less compares equivalent for two weak objects that "
@@ -276,8 +275,8 @@ class test_weak_object_ownership {
   }
 
   void test_owner_before_empty_objects(SYCLObjT sycl_object) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>();
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>();
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>();
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>();
     {
       bool weak_object_result = !w1.owner_before(w2) && !w2.owner_before(w1);
 
@@ -298,12 +297,12 @@ class test_weak_object_ownership {
   }
 
   void test_owner_less_empty_objects(SYCLObjT sycl_object) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>();
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>();
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>();
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>();
 
-    bool result = !ext::oneapi::owner_less(w1, w2) &&
-                  (ext::oneapi::owner_less(w1, sycl_object) ||
-                   ext::oneapi::owner_less(w2, sycl_object));
+    bool result = !sycl::ext::oneapi::owner_less(w1, w2) &&
+                  (sycl::ext::oneapi::owner_less(w1, sycl_object) ||
+                   sycl::ext::oneapi::owner_less(w2, sycl_object));
 
     INFO(
         "Verify that owner_less compares equivalent for two weak objects that "
@@ -313,8 +312,8 @@ class test_weak_object_ownership {
 
   void test_owner_before_different_objects(SYCLObjT sycl_object1,
                                            SYCLObjT sycl_object2) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
     {
       bool weak_object_result = (w1.owner_before(w2) && !w2.owner_before(w1)) ||
                                 (!w1.owner_before(w2) && w2.owner_before(w1));
@@ -361,13 +360,13 @@ class test_weak_object_ownership {
 
   void test_owner_less_different_objects(SYCLObjT sycl_object1,
                                          SYCLObjT sycl_object2) {
-    auto w1 = ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
-    auto w2 = ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
+    auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
+    auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
     {
       bool weak_object_result =
-          (ext::oneapi::owner_less(w1, w2) &&
-           !ext::oneapi::owner_less(w2, w1)) ||
-          (!ext::oneapi::owner_less(w1, w2) && ext::oneapi::owner_less(w2, w1));
+          (sycl::ext::oneapi::owner_less(w1, w2) &&
+           !sycl::ext::oneapi::owner_less(w2, w1)) ||
+          (!sycl::ext::oneapi::owner_less(w1, w2) && sycl::ext::oneapi::owner_less(w2, w1));
 
       INFO(
           "Verify that owner_less has some order for two weak object that "
@@ -375,10 +374,10 @@ class test_weak_object_ownership {
       CHECK(weak_object_result);
     }
     {
-      bool referred_result = ext::oneapi::owner_less(w1, sycl_object2) ==
-                                 ext::oneapi::owner_less(w1, w2) &&
-                             ext::oneapi::owner_less(w2, sycl_object1) ==
-                                 ext::oneapi::owner_less(w2, w1);
+      bool referred_result = sycl::ext::oneapi::owner_less(w1, sycl_object2) ==
+                                 sycl::ext::oneapi::owner_less(w1, w2) &&
+                             sycl::ext::oneapi::owner_less(w2, sycl_object1) ==
+                                 sycl::ext::oneapi::owner_less(w2, w1);
 
       INFO(
           "Check that owner_less returns same values with weak object and "
