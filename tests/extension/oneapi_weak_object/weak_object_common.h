@@ -363,10 +363,10 @@ class test_weak_object_ownership {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
     {
-      bool weak_object_result =
-          (sycl::ext::oneapi::owner_less(w1, w2) &&
-           !sycl::ext::oneapi::owner_less(w2, w1)) ||
-          (!sycl::ext::oneapi::owner_less(w1, w2) && sycl::ext::oneapi::owner_less(w2, w1));
+      bool weak_object_result = (sycl::ext::oneapi::owner_less(w1, w2) &&
+                                 !sycl::ext::oneapi::owner_less(w2, w1)) ||
+                                (!sycl::ext::oneapi::owner_less(w1, w2) &&
+                                 sycl::ext::oneapi::owner_less(w2, w1));
 
       INFO(
           "Verify that owner_less has some order for two weak object that "

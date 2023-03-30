@@ -35,7 +35,7 @@ TEST_CASE("weak_object init", "[weak_object]") {
   test_weak_object_init<sycl::event>{}("event");
 
   test_weak_object_init<sycl::stream>{}.test_stream();
-  test_weak_object_init<sycl::local_accessor<int>>{}.test_local_accessor();
+  test_weak_object_init<sycl::local_accessor<int> >{}.test_local_accessor();
 #endif
 }
 }  // namespace weak_object_initialization
