@@ -67,14 +67,14 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
         std::is_same_v<
             decltype(acc_multi_ptr_no),
             typename AccT::template accessor_ptr<sycl::access::decorated::no>>);
-    CHECK(value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data));
+    CHECK(value_operations::are_equal(*acc_multi_ptr_no, expected_data));
 
     auto acc_multi_ptr_yes =
         accessor.template get_multi_ptr<sycl::access::decorated::yes>();
     STATIC_CHECK(std::is_same_v<decltype(acc_multi_ptr_yes),
                                 typename AccT::template accessor_ptr<
                                     sycl::access::decorated::yes>>);
-    CHECK(value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data));
+    CHECK(value_operations::are_equal(*acc_multi_ptr_yes, expected_data));
   }
 
   {
