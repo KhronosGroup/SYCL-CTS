@@ -213,11 +213,11 @@ class test_range {
 };
 
 void test_empty_kernel_1d_range(size_t N, sycl::queue q) {
-    int *a = sycl::malloc_shared<int>(q, 1);
-    a[0] = 0;
-    q.parallel_for(N, [=](auto i){ a[0] = 1 ; }).wait_and_throw();
-    CHECK_VALUE_SCALAR(log, a[0], 1);
-    sycl::free(a, q);
+  int *a = sycl::malloc_shared<int>(q, 1);
+  a[0] = 0;
+  q.parallel_for(sycl::range<1>(N), [=](auto i) { a[0] = 1; }).wait_and_throw();
+  CHECK_VALUE_SCALAR(log, a[0], 1);
+  sycl::free(a, q);
 }
 
 /** test sycl::range::get(int index) return size_t
@@ -264,10 +264,12 @@ class TEST_NAME : public util::test_base {
         test3d(log, range_3d_g, range_3d_l, my_queue);
 
         // 32 bits, it's trivial. Sanity test.
-        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max(), my_queue);
-        // Most GPU hardware have limitation to 32bits * 1024 for their native API
-        // so let's try more than that
-        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max()*2024L, my_queue);
+        test_empty_kernel_1d_range(std::numeric_limits<unsigned int>::max(),
+                                   my_queue);
+        // Most GPU hardware have limitation to 32bits * 1024 for their native
+        // API so let's try more than that
+        test_empty_kernel_1d_range(
+            std::numeric_limits<unsigned int>::max() * 2024L, my_queue);
       }
     }
   }
