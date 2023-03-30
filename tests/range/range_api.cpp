@@ -268,8 +268,15 @@ class TEST_NAME : public util::test_base {
         test2d(log, range_2d_g, range_2d_l, my_queue);
         test_range<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        WARN(
+            "ComputeCpp does not implement unary minus operation. "
+            "Skipping the test for this operation.");
+#endif
 
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+// The tests are using unnamed lambda
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE && \
+    !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
         // 32 bits, it's trivial. Sanity test.
         test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
                                     my_queue);
