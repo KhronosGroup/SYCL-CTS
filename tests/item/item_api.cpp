@@ -23,8 +23,41 @@
 
 #include <algorithm>
 
-namespace test_item_2d__ {
+namespace test_item_api__ {
 using namespace sycl_cts;
+
+struct getter {
+  enum class methods : size_t {
+    get_id = 0,
+    subscript_operator,
+    get_range,
+    get_range_dim,
+    get_linear_id,
+    size_t_operator,
+    methods_count
+  };
+
+  static constexpr auto method_cnt = to_integral(methods::methods_count);
+
+  static const char* method_name(methods method) {
+    switch (method) {
+    case methods::get_id:
+      return "item.get_id(int)";
+    case methods::subscript_operator:
+      return "item[int]";
+    case methods::get_range:
+      return "item.get_range()";
+    case methods::get_range_dim:
+      return "item.get_range(int)";
+    case methods::get_linear_id:
+      return "item.get_linear_id()";
+    case methods::size_t_operator:
+      return "size_t()";
+    case methods::methods_count:
+      return "invalid enum value";
+    }
+  }
+};
 
 template <int dims>
 class kernel_item {
@@ -60,11 +93,11 @@ class kernel_item {
       get_id_res &= gid.get(i) == item.get_id(i);
       subscript_res &= gid.get(i) == item[i];
     }
-    out[0] = get_id_res;
-    out[1] = subscript_res;
+    out[to_integral(getter::methods::get_id)] = get_id_res;
+    out[to_integral(getter::methods::subscript_operator)] = subscript_res;
 
     sycl::range<dims> localRange = item.get_range();
-    out[2] = (localRange == r_exp);
+    out[to_integral(getter::methods::get_range)] = (localRange == r_exp);
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::id<dims> offset = item.get_offset();
@@ -78,14 +111,14 @@ class kernel_item {
 
     if constexpr (dims == 1) {
       /* get work item range */
-      out[3] = (nWidth == r_exp.get(0));
+      out[to_integral(getter::methods::get_range_dim)] = (nWidth == r_exp.get(0));
 
       /* find the array id for this work item */
       index = gid.get(0);
     } else if constexpr (dims == 2) {
       /* get work item range */
       nHeight = localRange.get(1);
-      out[3] = (nWidth == r_exp.get(0)) && (nHeight == r_exp.get(1));
+      out[to_integral(getter::methods::get_range_dim)] = (nWidth == r_exp.get(0)) && (nHeight == r_exp.get(1));
 
       /* find the row major array id for this work item */
       index = gid.get(1) +          /* y */
@@ -95,7 +128,7 @@ class kernel_item {
       /* get work item range */
       nHeight = localRange.get(1);
       nDepth = localRange.get(2);
-      out[3] = nWidth == r_exp.get(0) && nHeight == r_exp.get(1) &&
+      out[to_integral(getter::methods::get_range_dim)] = nWidth == r_exp.get(0) && nHeight == r_exp.get(1) &&
                nDepth == r_exp.get(2);
 
       /* find the row major array id for this work item */
@@ -106,7 +139,7 @@ class kernel_item {
 
     /* get the global linear id and compare against precomputed index */
     const size_t glid = item.get_linear_id();
-    out[4] = in[item] == static_cast<int>(index);
+    out[to_integral(getter::methods::get_linear_id)] = in[item] == static_cast<int>(index);
 
     if constexpr (dims == 1) {
       /* operator size_t() const */
@@ -116,7 +149,7 @@ class kernel_item {
       // value that is guaranteed to produce a failure
       size_t val = ~static_cast<size_t>(0);
 #endif
-      out[5] = (val == item.get_id(0));
+      out[to_integral(getter::methods::size_t_operator)] = (val == item.get_id(0));
       const sycl::item<1> item_const = item;
 #ifndef SYCL_CTS_COMPILING_WITH_COMPUTECPP
       val = item_const;
@@ -124,7 +157,7 @@ class kernel_item {
       // value that is guaranteed to produce a failure
       val = ~static_cast<size_t>(0);
 #endif
-      out[5] = (val == item.get_id(0));
+      out[to_integral(getter::methods::size_t_operator)] = (val == item.get_id(0));
     }
   }
 };
@@ -170,7 +203,7 @@ void test_item() {
   const int nDepth = dims > 2 ? 64 : 1;
 
   const int nSize = nWidth * nHeight * nDepth;
-  const int nErrorSize = 8;
+  const int nErrorSize = getter::method_cnt;
 
   /* allocate and clear host buffers */
   std::vector<int> dataIn(nSize);
@@ -202,19 +235,9 @@ void test_item() {
     cmdQueue.wait_and_throw();
   }
 
-  // check api call results
-  std::string methods[nErrorSize] = {
-    "item.get_id(int)",
-    "item[int]",
-    "item.get_range()",
-    "item.get_range(int)",
-    "item.get_linear_id()",
-    "size_t()"
-  };
-
   for (int i = 0; i < nErrorSize; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("Check " << methods[i] << " result");
+    INFO("Check " << getter::method_name(static_cast<getter::methods>(i)) << " result");
     CHECK(dataOut[i] != 0);
   }
 
@@ -242,4 +265,4 @@ TEST_CASE("item_3d API", "[item]") {
   test_item<3>();
 }
 
-} /* namespace test_item_2d__ */
+} /* namespace test_item_api__ */
