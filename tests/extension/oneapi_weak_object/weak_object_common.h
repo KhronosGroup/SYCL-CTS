@@ -324,13 +324,13 @@ class test_weak_object_ownership {
       CHECK(weak_object_result);
     }
     {
-      bool sycl_object_result = (sycl_object1.ext_aoneapi_owner_before(w2) &&
-                                 !sycl_object2.ext_aoneapi_owner_before(w1)) ||
-                                (!sycl_object1.ext_aoneapi_owner_before(w2) &&
-                                 sycl_object2.ext_aoneapi_owner_before(w1));
+      bool sycl_object_result = (sycl_object1.ext_oneapi_owner_before(w2) &&
+                                 !sycl_object2.ext_oneapi_owner_before(w1)) ||
+                                (!sycl_object1.ext_oneapi_owner_before(w2) &&
+                                 sycl_object2.ext_oneapi_owner_before(w1));
 
       INFO(
-          "Verify that ext_aoneapi_owner_before has some order for two weak "
+          "Verify that ext_oneapi_owner_before has some order for two weak "
           "object that refer to different underlying SYCL objects");
       CHECK(sycl_object_result);
     }
