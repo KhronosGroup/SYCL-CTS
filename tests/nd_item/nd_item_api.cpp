@@ -37,6 +37,42 @@ size_t getIndex(sycl::id<3> Id, sycl::range<3> Range) {
          Id.get(0) * Range.get(0) * Range.get(1);
 }
 
+struct getter {
+  enum class methods : size_t {
+    global_id = 0,
+    local_id,
+    group_id,
+    range,
+    number_of_groups,
+    nd_range,
+    linear_id,
+    methods_count
+  };
+
+  static constexpr auto method_cnt = to_integral(methods::methods_count);
+
+  static const char* method_name(methods method) {
+    switch (method) {
+    case methods::global_id:
+      return "global_id";
+    case methods::local_id:
+      return "local_id";
+    case methods::group_id:
+      return "group_id";
+    case methods::range:
+      return "range";
+    case methods::number_of_groups:
+      return "number_of_groups";
+    case methods::nd_range:
+      return "nd_range,";
+    case methods::linear_id:
+      return "linear_id";
+    case methods::methods_count:
+      return "invalid enum value";
+    }
+  }
+};
+
 template <int dimensions>
 class kernel_nd_item {
  protected:
@@ -154,13 +190,13 @@ class kernel_nd_item {
     linear_id_res &= grlid == groupIndex;
 
     /* write back whether all checks were successful */
-    m_out[0] = global_id_res;
-    m_out[1] = local_id_res;
-    m_out[2] = group_id_res;
-    m_out[3] = range_res;
-    m_out[4] = number_of_groups_res;
-    m_out[5] = nd_range_res;
-    m_out[6] = linear_id_res;
+    m_out[to_integral(getter::methods::global_id)] = global_id_res;
+    m_out[to_integral(getter::methods::local_id)] = local_id_res;
+    m_out[to_integral(getter::methods::group_id)] = group_id_res;
+    m_out[to_integral(getter::methods::range)] = range_res;
+    m_out[to_integral(getter::methods::number_of_groups)] = number_of_groups_res;
+    m_out[to_integral(getter::methods::nd_range)] = nd_range_res;
+    m_out[to_integral(getter::methods::linear_id)] = linear_id_res;
   }
 };
 
@@ -194,7 +230,7 @@ void test_item() {
   const int globalSize[3] = {16, 16, 16};
   const int localSize[3] = {4, 4, 4};
   const int nSize = globalSize[0] * globalSize[1] * globalSize[2];
-  const int nErrorSize = 8;
+  const int nErrorSize = getter::method_cnt;
 
   /* allocate and set host buffers */
   std::vector<int> globalIDs(nSize);
@@ -230,19 +266,9 @@ void test_item() {
     }
 
   // check api call results
-  std::string nd_item_tests[nErrorSize] = {
-    "global ID",
-    "local ID",
-    "group ID",
-    "range",
-    "number of groups",
-    "NDrange",
-    "linear_id"
-  };
-
   for (int i = 0; i < nErrorSize; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("nd_item " << nd_item_tests[i] << " tests fails");
+    INFO("nd_item " << getter::method_name(static_cast<getter::methods>(i)) << " tests fails");
     CHECK(dataOut[i] != 0);
   }
 
