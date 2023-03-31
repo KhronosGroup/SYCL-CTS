@@ -183,6 +183,8 @@ all_type_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
+// FIXME: re-enable when unary opeartor+ is implemented
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = static_cast<${type}>(${test_value_1});
   }
@@ -194,6 +196,7 @@ all_type_test_template = Template("""
   if (!check_vector_values(resVec, resArr)) {
     resAcc[0] = false;
   }
+#endif
   for (int i = 0; i < ${size}; ++i) {
     resArr[i] = -(static_cast<${type}>(${test_value_1}));
   }
@@ -1244,7 +1247,7 @@ subscript_operator_test_template = Template("""
       if (subscriptVec1[i] != data[i] || subscriptVec2[i] != data[i]
 // FIXME: re-enable when subscript operator for swizzle vec is implemented
 // link to issue: https://github.com/intel/llvm/issues/8880
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
         || subscriptVec1.${swizzle}[i] != data[i]
         || subscriptVec2.${swizzle}[i] != data[i]
 #endif
@@ -1261,7 +1264,8 @@ dataT_operator_test_template = Template("""
   {
     ${type} val = ${val};
     const sycl::vec<${type}, 1> testVec(${val});
-
+// FIXME: re-enable when subscript operator DataT() is implemented
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     ${type} data = testVec;
     if (data != val) {
       resAcc[0] = false;
@@ -1271,6 +1275,7 @@ dataT_operator_test_template = Template("""
     if (data != val) {
       resAcc[0] = false;
     }
+#endif
   }
 """)
 
