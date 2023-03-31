@@ -51,24 +51,24 @@ struct getter {
 
   static constexpr auto method_cnt = to_integral(methods::methods_count);
 
-  static const char* method_name(methods method) {
+  static const char *method_name(methods method) {
     switch (method) {
-    case methods::global_id:
-      return "global_id";
-    case methods::local_id:
-      return "local_id";
-    case methods::group_id:
-      return "group_id";
-    case methods::range:
-      return "range";
-    case methods::number_of_groups:
-      return "number_of_groups";
-    case methods::nd_range:
-      return "nd_range,";
-    case methods::linear_id:
-      return "linear_id";
-    case methods::methods_count:
-      return "invalid enum value";
+      case methods::global_id:
+        return "global_id";
+      case methods::local_id:
+        return "local_id";
+      case methods::group_id:
+        return "group_id";
+      case methods::range:
+        return "range";
+      case methods::number_of_groups:
+        return "number_of_groups";
+      case methods::nd_range:
+        return "nd_range,";
+      case methods::linear_id:
+        return "linear_id";
+      case methods::methods_count:
+        return "invalid enum value";
     }
   }
 };
@@ -78,8 +78,8 @@ class kernel_nd_item {
  protected:
   using t_readAccess = sycl::accessor<int, dimensions, sycl::access_mode::read,
                                       sycl::target::device>;
-  using t_errorAccess = sycl::accessor<int, 1, sycl::access_mode::write,
-                     sycl::target::device>;
+  using t_errorAccess =
+      sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
   using t_writeAccess =
       sycl::accessor<int, dimensions, sycl::access_mode::write,
                      sycl::target::device>;
@@ -194,7 +194,8 @@ class kernel_nd_item {
     m_out[to_integral(getter::methods::local_id)] = local_id_res;
     m_out[to_integral(getter::methods::group_id)] = group_id_res;
     m_out[to_integral(getter::methods::range)] = range_res;
-    m_out[to_integral(getter::methods::number_of_groups)] = number_of_groups_res;
+    m_out[to_integral(getter::methods::number_of_groups)] =
+        number_of_groups_res;
     m_out[to_integral(getter::methods::nd_range)] = nd_range_res;
     m_out[to_integral(getter::methods::linear_id)] = linear_id_res;
   }
@@ -243,8 +244,10 @@ void test_item() {
     std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
 
     /* create ranges*/
-    auto globalRange = util::get_cts_object::range<dims>::get(globalSize[0], globalSize[1], globalSize[2]);
-    auto localRange = util::get_cts_object::range<dims>::get(localSize[0], localSize[1], localSize[2]);
+    auto globalRange = util::get_cts_object::range<dims>::get(
+        globalSize[0], globalSize[1], globalSize[2]);
+    auto localRange = util::get_cts_object::range<dims>::get(
+        localSize[0], localSize[1], localSize[2]);
     sycl::range<1> errorRange(nErrorSize);
     sycl::nd_range<dims> dataRange(globalRange, localRange);
 
@@ -253,24 +256,26 @@ void test_item() {
       sycl::buffer<int, dims> bufLoc(localIDs.data(), globalRange);
       sycl::buffer<int, 1> bufOut(dataOut.data(), errorRange);
       sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
-                                            globalRange);
+                                               globalRange);
 
       queue.submit([&](sycl::handler &cgh) {
         kernel_nd_item<dims> kernel_(
             bufGlob.template get_access<sycl::access_mode::read>(cgh),
             bufLoc.template get_access<sycl::access_mode::read>(cgh),
             bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(cgh));
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+                cgh));
         cgh.parallel_for<kernel_nd_item<dims>>(dataRange, kernel_);
       });
     }
 
-  // check api call results
-  for (int i = 0; i < nErrorSize; i++) {
-    INFO("Dimensions: " << std::to_string(dims));
-    INFO("nd_item " << getter::method_name(static_cast<getter::methods>(i)) << " tests fails");
-    CHECK(dataOut[i] != 0);
-  }
+    // check api call results
+    for (int i = 0; i < nErrorSize; i++) {
+      INFO("Dimensions: " << std::to_string(dims));
+      INFO("nd_item " << getter::method_name(static_cast<getter::methods>(i))
+                      << " tests fails");
+      CHECK(dataOut[i] != 0);
+    }
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK(std::all_of(dataOutDeprecated.begin(),
@@ -283,15 +288,9 @@ void test_item() {
   queue.wait_and_throw();
 }
 
-TEST_CASE("nd_item_1d API", "[nd_item]") {
-  test_item<1>();
-}
+TEST_CASE("nd_item_1d API", "[nd_item]") { test_item<1>(); }
 
-TEST_CASE("nd_item_2d API", "[nd_item]") {
-  test_item<2>();
-}
+TEST_CASE("nd_item_2d API", "[nd_item]") { test_item<2>(); }
 
-TEST_CASE("nd_item_3d API", "[nd_item]") {
-  test_item<3>();
-}
+TEST_CASE("nd_item_3d API", "[nd_item]") { test_item<3>(); }
 } /* namespace test_nd_item__ */
