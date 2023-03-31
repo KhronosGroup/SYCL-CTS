@@ -32,13 +32,14 @@ namespace weak_object_common {
 template <typename SYCLObjT>
 SYCLObjT get_sycl_object() {
   static sycl::buffer<int> buf{{1}};
+  static sycl::buffer<int> host_buf{{1}};
 
   if constexpr (std::is_same_v<SYCLObjT, sycl::buffer<int>>) {
     return sycl::buffer<int>(sycl::range{1});
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::accessor<int>>) {
     return sycl::accessor<int>(buf);
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::host_accessor<int>>) {
-    return sycl::host_accessor<int>(buf);
+    return sycl::host_accessor<int>(host_buf);
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::context>) {
     return sycl::context();
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::event>) {
@@ -115,8 +116,14 @@ class test_weak_object_init {
         INFO("Check that empty object has no value");
         CHECK(ret.has_value() == false);
       }
+
+      auto action = [&] { w.lock(); };
+      INFO(
+          "Implementation has to throw a sycl::exception with "
+          "sycl::errc::invalid when empty weak_object tries to return "
+          "underlying SYCL object");
       CHECK_THROWS_MATCHES(
-          [&] { w.lock(); }, sycl::exception,
+          action(), sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
   }
@@ -233,6 +240,8 @@ class test_weak_object_ownership {
   }
 
  private:
+  sycl::ext::oneapi::owner_less<SYCLObjT> owner_less;
+
   void test_owner_before_same_objects(SYCLObjT sycl_object) {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
@@ -261,12 +270,11 @@ class test_weak_object_ownership {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
 
-    bool result = sycl::ext::oneapi::owner_less(w1, w2) == false &&
-                  sycl::ext::oneapi::owner_less(w2, w1) == false &&
-                  sycl::ext::oneapi::owner_less(w1, sycl_object) == false &&
-                  sycl::ext::oneapi::owner_less(sycl_object, w1) == false &&
-                  sycl::ext::oneapi::owner_less(w2, sycl_object) == false &&
-                  sycl::ext::oneapi::owner_less(sycl_object, w2) == false;
+    bool result = owner_less(w1, w2) == false && owner_less(w2, w1) == false &&
+                  owner_less(w1, sycl_object) == false &&
+                  owner_less(sycl_object, w1) == false &&
+                  owner_less(w2, sycl_object) == false &&
+                  owner_less(sycl_object, w2) == false;
 
     INFO(
         "Verify that owner_less compares equivalent for two weak objects that "
@@ -285,24 +293,14 @@ class test_weak_object_ownership {
           "that are both empty");
       CHECK(weak_object_result);
     }
-    {
-      bool sycl_object_result = sycl_object.ext_oneapi_owner_before(w1) ||
-                                sycl_object.ext_oneapi_owner_before(w2);
-
-      INFO(
-          "Verify that ext_oneapi_owner_before compares equivalent for two "
-          "weak objects that are both empty");
-      CHECK(sycl_object_result);
-    }
   }
 
   void test_owner_less_empty_objects(SYCLObjT sycl_object) {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>();
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>();
 
-    bool result = !sycl::ext::oneapi::owner_less(w1, w2) &&
-                  (sycl::ext::oneapi::owner_less(w1, sycl_object) ||
-                   sycl::ext::oneapi::owner_less(w2, sycl_object));
+    bool result = !owner_less(w1, w2) &&
+                  (owner_less(w1, sycl_object) || owner_less(w2, sycl_object));
 
     INFO(
         "Verify that owner_less compares equivalent for two weak objects that "
@@ -363,10 +361,8 @@ class test_weak_object_ownership {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object1);
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object2);
     {
-      bool weak_object_result = (sycl::ext::oneapi::owner_less(w1, w2) &&
-                                 !sycl::ext::oneapi::owner_less(w2, w1)) ||
-                                (!sycl::ext::oneapi::owner_less(w1, w2) &&
-                                 sycl::ext::oneapi::owner_less(w2, w1));
+      bool weak_object_result = (owner_less(w1, w2) && !owner_less(w2, w1)) ||
+                                (!owner_less(w1, w2) && owner_less(w2, w1));
 
       INFO(
           "Verify that owner_less has some order for two weak object that "
@@ -374,10 +370,9 @@ class test_weak_object_ownership {
       CHECK(weak_object_result);
     }
     {
-      bool referred_result = sycl::ext::oneapi::owner_less(w1, sycl_object2) ==
-                                 sycl::ext::oneapi::owner_less(w1, w2) &&
-                             sycl::ext::oneapi::owner_less(w2, sycl_object1) ==
-                                 sycl::ext::oneapi::owner_less(w2, w1);
+      bool referred_result =
+          owner_less(w1, sycl_object2) == owner_less(w1, w2) &&
+          owner_less(w2, sycl_object1) == owner_less(w2, w1);
 
       INFO(
           "Check that owner_less returns same values with weak object and "
