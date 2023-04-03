@@ -205,7 +205,7 @@ class api_tests {
   /** @brief Provides device-side checks for a single dimension
    */
   template <int currentDim, typename errorAcc_t>
-  static bool run_1d_checks(const sycl::h_item<dims>& item,
+  static void run_1d_checks(const sycl::h_item<dims>& item,
                             errorAcc_t errorAcc);
 
   /** @brief Provides device-side checks applicable for all dimensions
@@ -213,7 +213,7 @@ class api_tests {
    *             host side
    */
   template <typename errorAcc_t>
-  static bool run_nd_checks(const sycl::h_item<dims>& item, work_item_ids& ids,
+  static void run_nd_checks(const sycl::h_item<dims>& item, work_item_ids& ids,
                             errorAcc_t errorAcc);
 
   /** @brief Counts unique id values and validates value ranges
@@ -251,7 +251,6 @@ void api_tests<dims>::operator()() {
   const offset_helper offsets(numLogicalPerGroup, numLogicalWorkItems);
 
   const work_item_ids initialValue = {43210, 43211, 43212};
-  std::vector<int> consistency(offsets.total(), false);
   std::vector<work_item_ids> ids(offsets.total(), initialValue);
 
   const int errorSize_1d = getter::method_cnt_1d;
@@ -261,14 +260,11 @@ void api_tests<dims>::operator()() {
   {
     sycl::range<1> offsetsRange(offsets.total());
 
-    sycl::buffer<int> consistencyBuf(consistency.data(), offsetsRange);
     sycl::buffer<work_item_ids> idsBuf(ids.data(), offsetsRange);
     sycl::buffer<int> errorBuf_1d(errorData_1d.data(), {errorSize_1d});
     sycl::buffer<int> errorBuf_nd(errorData_nd.data(), {errorSize_nd});
 
     queue.submit([&](sycl::handler& cgh) {
-      auto consistency_acc =
-          consistencyBuf.get_access<sycl::access_mode::write>(cgh);
       auto id_acc = idsBuf.get_access<sycl::access_mode::write>(cgh);
 
       auto errorAcc_1d = errorBuf_1d.get_access<sycl::access_mode::write>(cgh);
@@ -279,7 +275,6 @@ void api_tests<dims>::operator()() {
           [=](sycl::group<dims> group) {
             group.parallel_for_work_item(
                 kernelLogicalLocalRange, [&](sycl::h_item<dims> item) {
-                  bool success = true;
                   const size_t offset = offsets.get(group, item);
 
                   if (offset > offsets.max()) {
@@ -289,19 +284,17 @@ void api_tests<dims>::operator()() {
                     return;
                   }
 
-                  success &= run_nd_checks(item, id_acc[offset], errorAcc_nd);
+                  run_nd_checks(item, id_acc[offset], errorAcc_nd);
 
                   if constexpr (dims >= 1) {
-                    success &= run_1d_checks<0>(item, errorAcc_1d);
+                    run_1d_checks<0>(item, errorAcc_1d);
                   }
                   if constexpr (dims >= 2) {
-                    success &= run_1d_checks<1>(item, errorAcc_1d);
+                    run_1d_checks<1>(item, errorAcc_1d);
                   }
                   if constexpr (dims >= 3) {
-                    success &= run_1d_checks<2>(item, errorAcc_1d);
+                    run_1d_checks<2>(item, errorAcc_1d);
                   }
-
-                  consistency_acc[offset] = success;
                 });
           });
     });
@@ -310,27 +303,16 @@ void api_tests<dims>::operator()() {
   // Check api 1d call results
   for (int i = 0; i < errorSize_1d; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("h_item " << getter::method_name(static_cast<getter::methods_1d>(i))
-                   << " tests fails");
+    INFO("h_item methods have incorrect return values: " <<
+         getter::method_name(static_cast<getter::methods_1d>(i)));
     CHECK(errorData_1d[i] != 0);
   }
 
   // Check api nd call results
   for (int i = 0; i < errorSize_nd; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("h_item " << getter::method_name(static_cast<getter::methods_nd>(i))
-                   << " tests fails");
+    INFO(getter::method_name(static_cast<getter::methods_nd>(i)));
     CHECK(errorData_nd[i] != 0);
-  }
-
-  // Validate consistency
-  for (size_t i = 0; i < ids.size(); ++i) {
-    const auto& id = ids[i];
-    const bool isConsistent = consistency[i];
-
-    INFO("API consistency checks failed or not run for " +
-         offsets.to_string<dims>(i));
-    CHECK(isConsistent);
   }
 
   // Count unique id values and validate value ranges
@@ -370,20 +352,18 @@ std::vector<size_t> api_tests<dims>::count_ids(
   for (size_t i = 0; i < ids.size(); ++i) {
     const size_t& value = id_descriptor_t::value(ids[i]);
 
-    if (value == initial) {
-      std::string message;
-      message += "No " + id_descriptor_t::description() + " stored for ";
-      message += offsets.to_string<dims>(i);
-      FAIL(message);
-    } else if (value > max) {
-      std::string message;
-      message += "Too big " + id_descriptor_t::description() + " value ";
-      message += std::to_string(value) + " for ";
-      message += offsets.to_string<dims>(i);
-      FAIL(message);
-    } else {
-      count[value] += 1;
+    {
+      INFO("Too big " + id_descriptor_t::description() + " value " <<
+           std::to_string(value) + " for " <<
+           offsets.to_string<dims>(i));
+      CHECK(value <= max);
     }
+    {
+      INFO("No " + id_descriptor_t::description() + " stored for " <<
+           offsets.to_string<dims>(i));
+      CHECK(value != initial);
+    }
+    count[value] += 1;
   }
   return count;
 }
@@ -394,21 +374,21 @@ void api_tests<dims>::validate_id_count(const std::vector<size_t>& count,
                                         const work_item_ids& expectedValues) {
   for (size_t i = 0; i < count.size(); ++i) {
     const auto& expected = id_descriptor_t::value(expectedValues);
-    if (count[i] != expected) {
-      std::string message("Unexpected number of occurences: ");
-      message += std::to_string(count[i]);
-      message += " for " + id_descriptor_t::description();
-      message += ", value " + std::to_string(i);
-      message += ", dimensions: " + std::to_string(dims);
-      message += "; expected: " + std::to_string(expected);
-      FAIL(message);
-    }
+
+    std::string message("Unexpected number of occurences: ");
+    message += std::to_string(count[i]);
+    message += " for " + id_descriptor_t::description();
+    message += ", value " + std::to_string(i);
+    message += ", dimensions: " + std::to_string(dims);
+    message += "; expected: " + std::to_string(expected);
+    INFO(message);
+    CHECK(count[i] == expected);
   }
 }
 
 template <int dims>
 template <int currentDim, typename errorAcc_t>
-bool api_tests<dims>::run_1d_checks(const sycl::h_item<dims>& item,
+void api_tests<dims>::run_1d_checks(const sycl::h_item<dims>& item,
                                     errorAcc_t errorAcc) {
   {
     auto value = item.get_global_range(currentDim);
@@ -458,13 +438,11 @@ bool api_tests<dims>::run_1d_checks(const sycl::h_item<dims>& item,
     errorAcc[to_integral(getter::methods_1d::get_physical_local_id)] =
         (value == expected);
   }
-  return std::all_of(errorAcc.begin(), errorAcc.end(),
-                     [](int val) { return val; });
 }
 
 template <int dims>
 template <typename errorAcc_t>
-bool api_tests<dims>::run_nd_checks(const sycl::h_item<dims>& item,
+void api_tests<dims>::run_nd_checks(const sycl::h_item<dims>& item,
                                     work_item_ids& ids, errorAcc_t errorAcc) {
   static constexpr bool with_offset = false;
 
@@ -516,9 +494,6 @@ bool api_tests<dims>::run_nd_checks(const sycl::h_item<dims>& item,
       (logicalLocalItem.get_id() == logicalLocalId);
   errorAcc[to_integral(getter::methods_nd::physical_local_id)] =
       (physicalLocalItem.get_id() == physicalLocalId);
-
-  return std::all_of(errorAcc.begin(), errorAcc.end(),
-                     [](int val) { return val; });
 }
 
 TEST_CASE("h_item_1d API", "[h_item]") { api_tests<1>{}(); }
