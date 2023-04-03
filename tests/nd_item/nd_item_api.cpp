@@ -191,13 +191,20 @@ class kernel_nd_item {
     linear_id_res &= grlid == groupIndex;
 
     /* write back whether all checks were successful */
-    m_out[sycl::id<2>(to_integral(getter::methods::global_id), item_id)] = global_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::local_id), item_id)] = local_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::group_id), item_id)] = group_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::range), item_id)] = range_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::number_of_groups), item_id)] = number_of_groups_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::nd_range), item_id)] = nd_range_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::linear_id), item_id)] = linear_id_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::global_id), item_id)] =
+        global_id_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::local_id), item_id)] =
+        local_id_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::group_id), item_id)] =
+        group_id_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::range), item_id)] =
+        range_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::number_of_groups),
+                      item_id)] = number_of_groups_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::nd_range), item_id)] =
+        nd_range_res;
+    m_out[sycl::id<2>(to_integral(getter::methods::linear_id), item_id)] =
+        linear_id_res;
   }
 };
 
@@ -231,9 +238,10 @@ void test_item() {
   constexpr int globalSize[3] = {16, 16, 16};
   constexpr int localSize[3] = {4, 4, 4};
   constexpr int nSize = globalSize[0] * globalSize[1] * globalSize[2];
-  constexpr int nCurrentSize = dims == 3   ? globalSize[0] * globalSize[1] * globalSize[2]
-                               : dims == 2 ? globalSize[0] * globalSize[1]
-                                           : globalSize[0];
+  constexpr int nCurrentSize =
+      dims == 3   ? globalSize[0] * globalSize[1] * globalSize[2]
+      : dims == 2 ? globalSize[0] * globalSize[1]
+                  : globalSize[0];
   constexpr int nErrorSize = getter::method_cnt;
 
   /* allocate and set host buffers */
@@ -265,19 +273,20 @@ void test_item() {
             bufGlob.template get_access<sycl::access_mode::read>(cgh),
             bufLoc.template get_access<sycl::access_mode::read>(cgh),
             bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(cgh));
+            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+                cgh));
         cgh.parallel_for<kernel_nd_item<dims>>(dataRange, kernel_);
       });
     }
 
-  // check api call results
-  for (int i = 0; i < nErrorSize; i++) {
-    INFO("Dimensions: " << std::to_string(dims));
-    INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
-                  << " result");
-    CHECK(std::all_of(dataOut[i].cbegin(), dataOut[i].cend(),
-                      [](bool val) { return val; }));
-  }
+    // check api call results
+    for (int i = 0; i < nErrorSize; i++) {
+      INFO("Dimensions: " << std::to_string(dims));
+      INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
+                    << " result");
+      CHECK(std::all_of(dataOut[i].cbegin(), dataOut[i].cend(),
+                        [](bool val) { return val; }));
+    }
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     CHECK(std::all_of(dataOutDeprecated.begin(),
                       dataOutDeprecated.begin() + globalRange.size(),
