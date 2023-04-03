@@ -303,8 +303,8 @@ void api_tests<dims>::operator()() {
   // Check api 1d call results
   for (int i = 0; i < errorSize_1d; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("h_item methods have incorrect return values: " <<
-         getter::method_name(static_cast<getter::methods_1d>(i)));
+    INFO("h_item methods have incorrect return values: "
+         << getter::method_name(static_cast<getter::methods_1d>(i)));
     CHECK(errorData_1d[i] != 0);
   }
 
@@ -353,14 +353,13 @@ std::vector<size_t> api_tests<dims>::count_ids(
     const size_t& value = id_descriptor_t::value(ids[i]);
 
     {
-      INFO("Too big " + id_descriptor_t::description() + " value " <<
-           std::to_string(value) + " for " <<
-           offsets.to_string<dims>(i));
+      INFO("Too big " + id_descriptor_t::description() + " value "
+           << std::to_string(value) + " for " << offsets.to_string<dims>(i));
       CHECK(value <= max);
     }
     {
-      INFO("No " + id_descriptor_t::description() + " stored for " <<
-           offsets.to_string<dims>(i));
+      INFO("No " + id_descriptor_t::description() + " stored for "
+           << offsets.to_string<dims>(i));
       CHECK(value != initial);
     }
     count[value] += 1;
