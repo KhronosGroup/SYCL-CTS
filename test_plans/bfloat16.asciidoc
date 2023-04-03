@@ -1,0 +1,16 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for bfloat16
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_bfloat16.asciidoc[sycl_ext_oneapi_bfloat16]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Type coverage
