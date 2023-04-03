@@ -45,7 +45,7 @@ void check_in_order_prop(const sycl::queue &queue) {
 }
 
 void check_in_order_functionality(sycl::queue &queue) {
-  if (queue.get_device().has(sycl::aspect::usm_device_allocations))
+  if (!queue.get_device().has(sycl::aspect::usm_device_allocations))
     SKIP(
         "test for in_order functionality is skipped because device doesn't "
         "support usm_device_allocations");
