@@ -25,6 +25,7 @@
 #include "../common/common.h"
 
 namespace item_api_test {
+using namespace sycl_cts;
 
 struct getter {
   enum class methods : size_t {
@@ -33,7 +34,6 @@ struct getter {
     get_range,
     get_range_dim,
     get_linear_id,
-    size_t_operator,
     methods_count
   };
 
@@ -41,20 +41,18 @@ struct getter {
 
   static const char* method_name(methods method) {
     switch (method) {
-    case methods::get_id:
-      return "item.get_id(int)";
-    case methods::subscript_operator:
-      return "item[int]";
-    case methods::get_range:
-      return "item.get_range()";
-    case methods::get_range_dim:
-      return "item.get_range(int)";
-    case methods::get_linear_id:
-      return "item.get_linear_id()";
-    case methods::size_t_operator:
-      return "size_t()";
-    case methods::methods_count:
-      return "invalid enum value";
+      case methods::get_id:
+        return "item.get_id(int)";
+      case methods::subscript_operator:
+        return "item[int]";
+      case methods::get_range:
+        return "item.get_range()";
+      case methods::get_range_dim:
+        return "item.get_range(int)";
+      case methods::get_linear_id:
+        return "item.get_linear_id()";
+      case methods::methods_count:
+        return "invalid enum value";
     }
   }
 };
@@ -83,18 +81,18 @@ inline size_t compute_linear_id(sycl::item<3>& item) {
 template <size_t dims>
 class kernel_item {
  protected:
-  using error_access_t =
-      sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
-  using write_access_t =
+  using out_accessor_t =
+      sycl::accessor<bool, 2, sycl::access_mode::write, sycl::target::device>;
+  using out_dep_accessor_t =
       sycl::accessor<int, dims, sycl::access_mode::write, sycl::target::device>;
 
-  error_access_t out;
-  write_access_t out_deprecated;
+  out_accessor_t out;
+  out_dep_accessor_t out_deprecated;
   sycl::range<dims> r_exp;
   sycl::id<dims> offset_exp;
 
  public:
-  kernel_item(error_access_t out_, write_access_t out_deprecated_,
+  kernel_item(out_accessor_t out_, out_dep_accessor_t out_deprecated_,
               sycl::range<dims> r)
       : out(out_),
         out_deprecated(out_deprecated_),
@@ -103,6 +101,7 @@ class kernel_item {
 
   void operator()(sycl::item<dims> item) const {
     sycl::id<dims> gid = item.get_id();
+    size_t item_id = item.get_linear_id();
 
     bool get_id_res = true;
     bool subscript_res = true;
@@ -110,11 +109,14 @@ class kernel_item {
       get_id_res &= (gid.get(i) == item.get_id(i));
       subscript_res &= (gid.get(i) == item[i]);
     }
-    out[to_integral(getter::methods::get_id)] = get_id_res;
-    out[to_integral(getter::methods::subscript_operator)] = subscript_res;
+    out[sycl::id<2>(to_integral(getter::methods::get_id), item_id)] =
+        get_id_res;
+    out[sycl::id<2>(to_integral(getter::methods::subscript_operator),
+                    item_id)] = subscript_res;
 
     sycl::range<dims> localRange = item.get_range();
-    out[to_integral(getter::methods::get_range)] = (localRange == r_exp);
+    out[sycl::id<2>(to_integral(getter::methods::get_range), item_id)] =
+        (localRange == r_exp);
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::id<dims> offset = item.get_offset();
@@ -125,27 +127,37 @@ class kernel_item {
     for (size_t i = 0; i < dims; ++i) {
       get_range_dim_res &= localRange.get(i) == r_exp.get(i);
     }
-    out[to_integral(getter::methods::get_range_dim)] = get_range_dim_res;
+    out[sycl::id<2>(to_integral(getter::methods::get_range_dim), item_id)] =
+        get_range_dim_res;
 
     size_t index = compute_linear_id(item);
     size_t item_linear_id = item.get_linear_id();
-    out[to_integral(getter::methods::get_linear_id)] = (item_linear_id == index);
+    out[sycl::id<2>(to_integral(getter::methods::get_linear_id), item_id)] =
+        (item_linear_id == index);
   }
 };
 
 template <size_t dims>
-void test_item(sycl::range<dims> dataRange) {
-  const int nSize = dataRange.size();
-  const int nErrorSize = getter::method_cnt;
+void test_item() {
+  constexpr size_t nRangeSize = 8;
+  auto nDataRange = util::get_cts_object::range<dims>::get(
+      nRangeSize, nRangeSize, nRangeSize);
+  constexpr size_t nSize = (dims == 3)   ? nRangeSize * nRangeSize * nRangeSize
+                           : (dims == 2) ? nRangeSize * nRangeSize
+                                         : nRangeSize;
+  constexpr size_t nErrorSize = getter::method_cnt;
 
   /* allocate and clear host buffers */
-  std::vector<int> dataOut(nErrorSize, true);
-  std::vector<int> dataOutDeprecated(nSize);
+  std::array<std::array<bool, nSize>, nErrorSize> dataOut;
+  std::for_each(dataOut.begin(), dataOut.end(),
+                [](std::array<bool, nSize>& arr) { arr.fill(false); });
 
+  std::vector<int> dataOutDeprecated(nSize);
   {
-    sycl::buffer<int, 1> bufOut(dataOut.data(), {nErrorSize});
+    sycl::buffer<bool, 2> bufOut(dataOut.data()->data(),
+                                 sycl::range<2>(nErrorSize, nSize));
     sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
-                                             dataRange);
+                                             nDataRange);
 
     auto cmdQueue = sycl_cts::util::get_cts_object::queue();
 
@@ -154,8 +166,8 @@ void test_item(sycl::range<dims> dataRange) {
       auto accOutDeprecated =
           bufOutDeprecated.template get_access<sycl::access_mode::write>(cgh);
 
-      auto kern = kernel_item<dims>(accOut, accOutDeprecated, dataRange);
-      cgh.parallel_for(dataRange, kern);
+      auto kern = kernel_item<dims>(accOut, accOutDeprecated, nDataRange);
+      cgh.parallel_for(nDataRange, kern);
     });
 
     cmdQueue.wait_and_throw();
@@ -164,8 +176,10 @@ void test_item(sycl::range<dims> dataRange) {
   // check api call results
   for (int i = 0; i < nErrorSize; i++) {
     INFO("Dimensions: " << std::to_string(dims));
-    INFO("Check " << getter::method_name(static_cast<getter::methods>(i)) << " result");
-    CHECK(dataOut[i] != 0);
+    INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
+                  << " result");
+    CHECK(std::all_of(dataOut[i].cbegin(), dataOut[i].cend(),
+                      [](bool val) { return val; }));
   }
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
@@ -177,19 +191,10 @@ void test_item(sycl::range<dims> dataRange) {
   STATIC_CHECK_FALSE(std::is_default_constructible_v<sycl::item<3>>);
 }
 
-TEST_CASE("sycl::item<1> api", "[item]") {
-  sycl::range<1> dataRange(64);
-  test_item<1>(dataRange);
-}
+TEST_CASE("sycl::item<1> api", "[item]") { test_item<1>(); }
 
-TEST_CASE("sycl::item<2> api", "[item]") {
-  sycl::range<2> dataRange(8, 16);
-  test_item<2>(dataRange);
-}
+TEST_CASE("sycl::item<2> api", "[item]") { test_item<2>(); }
 
-TEST_CASE("sycl::item<3> api", "[item]") {
-  sycl::range<3> dataRange(4, 8, 16);
-  test_item<3>(dataRange);
-}
+TEST_CASE("sycl::item<3> api", "[item]") { test_item<3>(); }
 
 }  // namespace item_api_test
