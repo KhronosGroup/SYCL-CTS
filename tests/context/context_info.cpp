@@ -38,8 +38,6 @@ TEST_CASE("context info", "[context]") {
         ctx.get_info<sycl::info::context::atomic_memory_order_capabilities>();
     CHECK(check_contains(capabilities, sycl::memory_order::relaxed));
   }
-// Issue link https://github.com/intel/llvm/issues/8323
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   {  // check get_info for info::context::atomic_fence_order_capabilities
     check_get_info_param<sycl::info::context::atomic_fence_order_capabilities,
                          std::vector<sycl::memory_order>>(ctx);
@@ -50,12 +48,6 @@ TEST_CASE("context info", "[context]") {
     CHECK(check_contains(capabilities, sycl::memory_order::release));
     CHECK(check_contains(capabilities, sycl::memory_order::acq_rel));
   }
-#else
-  WARN(
-      "Implementation does not support "
-      "sycl::info::context::atomic_fence_order_capabilities "
-      "Skipping the test case.");
-#endif
   {  // check get_info for info::context::atomic_memory_scope_capabilities
     check_get_info_param<sycl::info::context::atomic_memory_scope_capabilities,
                          std::vector<sycl::memory_scope>>(ctx);
@@ -63,8 +55,6 @@ TEST_CASE("context info", "[context]") {
         ctx.get_info<sycl::info::context::atomic_memory_scope_capabilities>();
     CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
   }
-// Issue link https://github.com/intel/llvm/issues/8323
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   {  // check get_info for info::context::atomic_fence_scope_capabilities
     check_get_info_param<sycl::info::context::atomic_fence_scope_capabilities,
                          std::vector<sycl::memory_scope>>(ctx);
@@ -72,10 +62,4 @@ TEST_CASE("context info", "[context]") {
         ctx.get_info<sycl::info::context::atomic_fence_scope_capabilities>();
     CHECK(check_contains(capabilities, sycl::memory_scope::work_group));
   }
-#else
-  WARN(
-      "Implementation does not support "
-      "sycl::info::context::atomic_fence_scope_capabilities "
-      "Skipping the test case.");
-#endif
 }

@@ -88,9 +88,9 @@ void run_test(util::logger& log, const std::string& type_name) {
               dev_global<T, sizeOfArray>[i] == value_ref_zero_init;
 
           // Check that array element contains correct type
-          result_acc[integral(indx::same_type_const)] =
-              std::is_same<decltype(const_dev_global<T, sizeOfArray>[i]),
-                           typename device_global<T>::element_type&>::value;
+          result_acc[integral(indx::same_type_const)] = std::is_same<
+              decltype(const_dev_global<T, sizeOfArray>[i]),
+              const typename device_global<T>::element_type&>::value;
           result_acc[integral(indx::same_type_non_const)] =
               std::is_same<decltype(dev_global<T, sizeOfArray>[i]),
                            typename device_global<T>::element_type&>::value;

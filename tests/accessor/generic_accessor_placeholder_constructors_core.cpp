@@ -16,26 +16,29 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//  Provides generic sycl::accessor placeholder constructors test for generic
+//  types
+//
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "../common/disabled_for_test_case.h"
-#include "../common/type_coverage.h"
 
-// fixme: re-enable when sycl::marray is implemented in hipSYCL
-#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
-#include "function_objects.h"
+// FIXME: re-enable when sycl::accessor is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#include "accessor_common.h"
+#include "generic_accessor_placeholder_constructors.h"
 #endif
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("function objects void specializations scalar core", "[function_objects]")({
-  const auto types = named_type_pack<TYPES>::generate(TYPE_NAMES);
-  for_all_combinations<check_scalar_return_type>(get_op_types(), types, types);
+#include "../common/disabled_for_test_case.h"
+
+namespace generic_accessor_placeholder_constructors_core {
+
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+("Generic sycl::accessor placeholder constructors. core types", "[accessor]")({
+  using namespace generic_accessor_placeholder_constructors;
+  const auto types = get_conformance_type_pack();
+  for_all_types_vectors_marray<run_generic_placeholder_constructors_test>(
+      types);
 });
 
-DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("function objects void specializations vector core", "[function_objects]")({
-  const auto types_vector =
-      named_type_pack<TYPES_VECTOR>::generate(TYPE_NAMES_VECTOR);
-  for_all_combinations<check_vector_return_type>(get_op_types(), types_vector);
-});
+}  // namespace generic_accessor_placeholder_constructors_core

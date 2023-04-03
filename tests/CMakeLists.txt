@@ -20,6 +20,7 @@ function(get_std_type OUT_LIST)
   set(STD_TYPE_LIST "")
 
   list(APPEND STD_TYPE_LIST
+    "bool"
     "char"
     "int"
     "float"

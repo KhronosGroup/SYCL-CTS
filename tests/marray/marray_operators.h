@@ -224,6 +224,52 @@ class run_binary_sequence_scalar {
   }
 };
 
+template <typename InitSeqForRhs, std::size_t seq_el_num>
+inline constexpr bool init_seq_contains_too_big_values_for_shift_op(
+    std::size_t max_shift_wo_undef_behavior) {
+  return (std::is_same_v<InitSeqForRhs, seq_inc> ||
+          std::is_same_v<InitSeqForRhs, seq_dec<seq_el_num>>)&&seq_el_num >
+         max_shift_wo_undef_behavior;
+}
+
+/**
+  @brief The function checks that for particular test case there is no
+  undefined behavior for left or right shift operation. In case of shift
+  operation too large value of right hand side argument can lead to undefined
+  behavior. For initialization sequences: seq_inc, seq_dec the right hand side
+  argument can take values up to 64. So we should exclude test cases for such
+  big shift values. Left shift operation by 8 bits is guaranteed legal for our
+  tests because maximum value after shift operation will be 64 * 2^8 = 2^14 (64
+  is maximum value in initialization sequence) that can be stored inside int
+  type (which should be at least 16 bits width) and inside wider types. It is
+  also valid for shift operation with small integral types (such as char)
+  because of its integral promotions to int before the operation execution. For
+  right shift operation with right hand side argument is greater or equal to
+  the number of bits in the promoted left operand, the behavior is undefined.
+  So right shift operation by N bits with N is less than sizeof(int) - 1 is
+  guaranteed legal for type int, wider types and for small integral types
+  because of its integral promotions to int. */
+template <typename OpT, typename InitSeqForRhs, std::size_t seq_el_num>
+inline constexpr bool test_case_is_invalid_for_shift_op() {
+  constexpr int max_left_shift_wo_undef_behavior = 8;
+  constexpr int max_right_shift_wo_undef_behavior = sizeof(int) - 1;
+  if constexpr (std::is_same_v<OpT, op_sl> || std::is_same_v<OpT, op_assign_sl>)
+    return init_seq_contains_too_big_values_for_shift_op<InitSeqForRhs,
+                                                         seq_el_num>(
+        max_left_shift_wo_undef_behavior);
+  if constexpr (std::is_same_v<OpT, op_sr> || std::is_same_v<OpT, op_assign_sr>)
+    return init_seq_contains_too_big_values_for_shift_op<InitSeqForRhs,
+                                                         seq_el_num>(
+        max_right_shift_wo_undef_behavior);
+  return false;
+}
+
+template <typename OpT>
+inline constexpr bool is_shift_op() {
+  return std::is_same_v<OpT, op_sl> || std::is_same_v<OpT, op_sr> ||
+         std::is_same_v<OpT, op_assign_sl> || std::is_same_v<OpT, op_assign_sr>;
+}
+
 template <typename DataT, typename NumElementsT, typename OpT, typename ScalarT,
           typename SequenceT>
 class run_binary_scalar_sequence {
@@ -232,6 +278,12 @@ class run_binary_scalar_sequence {
  public:
   void operator()(const std::string& constant_name,
                   const std::string& function_name) {
+    if constexpr (is_shift_op<OpT>() &&
+                  test_case_is_invalid_for_shift_op<OpT, SequenceT,
+                                                    NumElementsT::value>()) {
+      return;
+    }
+
     INFO("for lhs (scalar) \"" << constant_name << "\": ");
     INFO("for rhs (sequence) \"" << function_name << "\": ");
 
@@ -261,6 +313,12 @@ class run_binary_sequence_sequence {
  public:
   void operator()(const std::string& function_name_1,
                   const std::string& function_name_2) {
+    if constexpr (is_shift_op<OpT>() &&
+                  test_case_is_invalid_for_shift_op<OpT, SequenceT2,
+                                                    NumElementsT::value>()) {
+      return;
+    }
+
     INFO("for lhs (sequence) \"" << function_name_1 << "\": ");
     INFO("for rhs (sequence) \"" << function_name_2 << "\": ");
 
@@ -353,6 +411,12 @@ class run_binary_assignment_sequence_sequence {
  public:
   void operator()(const std::string& function_name_1,
                   const std::string& function_name_2) {
+    if constexpr (is_shift_op<OpT>() &&
+                  test_case_is_invalid_for_shift_op<OpT, SequenceT2,
+                                                    NumElementsT::value>()) {
+      return;
+    }
+
     INFO("for lhs (sequence) \"" << function_name_1 << "\": ");
     INFO("for rhs (sequence) \"" << function_name_2 << "\": ");
 
@@ -443,11 +507,10 @@ class check_marray_operators_for_type {
                                                             "post --");
     for_all_combinations<run_unary_post, DataT>(num_elements,
                                                 unary_post_operators);
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
-        "ComputeCPP and DPCPP do not compile for logical AND (&&) and local OR "
+        "ComputeCPP does not compile for logical AND (&&) and logical "
+        "OR "
         "(||). Skipping the test case.");
 #endif
 
@@ -459,17 +522,13 @@ class check_marray_operators_for_type {
     //  'const cl::sycl::marray<bool, 1>'
     // && and || for any? type 'static_assert failed due to
     //  requirement 'num_elements<bool>() == 2UL'
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
                         ,
                         op_land, op_lor
 #endif
                         >::generate("+", "-", "*", "/", "%", "|", "&", "^",
                                     "<<", ">>"
-// Link to issue https://github.com/intel/llvm/issues/8331
-#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
                                     ,
                                     "&&", "||"
 #endif

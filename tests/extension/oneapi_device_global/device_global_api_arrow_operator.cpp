@@ -79,7 +79,7 @@ void run_test(util::logger& log, const std::string& type_name) {
             (const_dev_global<T>->a == value_ref_zero_init->a &&
              const_dev_global<T>->b == value_ref_zero_init->b &&
              const_dev_global<T>->c == value_ref_zero_init->c);
-        result_acc[integral(indx::correct_def_val_non_const)] &=
+        result_acc[integral(indx::correct_def_val_non_const)] =
             (dev_global<T>->a == value_ref_zero_init->a &&
              dev_global<T>->b == value_ref_zero_init->b &&
              dev_global<T>->c == value_ref_zero_init->c);
