@@ -216,7 +216,7 @@ class test_range {
 // We don't use an `empty kernel` to avoid smart compiler
 // optimizing the submission away
 // This test:
-//    - Doesn't check that all the work-item have be submited
+//    - Doesn't check that all the work-items have be submitted
 //    - It's technically UB (concurrent write)
 void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
   int *a = sycl::malloc_shared<int>(1, q);
