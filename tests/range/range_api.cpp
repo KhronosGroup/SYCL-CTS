@@ -219,7 +219,7 @@ class test_range {
 //    - Doesn't check that all the work-item have be submited
 //    - It's technicaly UB (concurent write)
 void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
-  int *a = sycl::malloc_shared<int>(q, 1);
+  int *a = sycl::malloc_shared<int>(1, q);
   a[0] = 0;
   q.parallel_for(sycl::range<1>(N), [=](auto i) { a[0] = 1; }).wait_and_throw();
   CHECK_VALUE_SCALAR(log, a[0], 1);
