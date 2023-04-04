@@ -214,7 +214,7 @@ class test_range {
 
 // This tests is only here to check if one can submit a large kernel.
 // We don't use an `empty kernel` to avoid smart compiler
-// optimizing the submision away
+// optimizing the submission away
 // This test:
 //    - Doesn't check that all the work-item have be submited
 //    - It's technically UB (concurrent write)
