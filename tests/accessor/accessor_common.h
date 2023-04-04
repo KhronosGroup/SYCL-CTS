@@ -485,7 +485,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     res_acc[0] = value_operations::are_equal(acc_ref, other_data);
   }
   if constexpr (AccessMode != sycl::access_mode::read) {
-    DataT acc_ref(testing_acc);
+    DataT& acc_ref = testing_acc;
     value_operations::assign(acc_ref, changed_val);
   }
 }
