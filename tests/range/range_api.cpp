@@ -282,7 +282,7 @@ class TEST_NAME : public util::test_base {
                                     my_queue);
 
         // Prime number bigger than UINT32_MAX
-        test_launch_kernel_1d_range(4294967311L, my_queue);
+        test_launch_kernel_1d_range(4294967311ull, my_queue);
 
         // Most GPU hardware have limitation to 32bits * 1024 for their native
         // API so let's try more than that
