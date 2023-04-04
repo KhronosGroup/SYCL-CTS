@@ -35,11 +35,11 @@ SYCLObjT get_sycl_object() {
   static sycl::buffer<int> host_buf{{1}};
 
   if constexpr (std::is_same_v<SYCLObjT, sycl::buffer<int>>) {
-    return { sycl::range{1} };
+    return {sycl::range{1}};
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::accessor<int>>) {
-    return { buf };
+    return {buf};
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::host_accessor<int>>) {
-    return { host_buf };
+    return {host_buf};
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::context>) {
     return {};
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::event>) {
