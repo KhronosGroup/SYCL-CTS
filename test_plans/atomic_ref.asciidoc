@@ -15,7 +15,7 @@ All of the tests described below are performed on the default device that is sel
 
 == Type coverage
 
-All of the tests described below are performed using each of the
+All of the interface tests described are performed using each of the
 following types as the `ReferencedType`.
 
 In Regular mode:
@@ -41,13 +41,9 @@ Additionaly run same tests for `ReferencedType*`.
 
 Note: using T as `ReferencedType` or `ReferencedType*`.
 
+Stress tests are performed for `int` as `ReferencedType`.
+
 == Tests
-
-All non static tests run on following cases:
-
-* `single_task` with referenced value is accessor element - should be skipped for `address_space::local_space`
-* `parallel_for` with nd_range parameter and referenced value local_accessor element - should be skipped for 
-`address_space::global_space`
 
 Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported
 values tests are skiped.
@@ -57,6 +53,12 @@ To check if the special values for `DefaultScope` parameter are supported should
 `info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
+
+All non static tests run on following cases:
+
+* `single_task` with referenced value is accessor element - should be skipped for `address_space::local_space`
+* `parallel_for` with nd_range parameter and referenced value local_accessor element - should be skipped for
+`address_space::global_space`
 
 ==== Members
 
@@ -506,3 +508,136 @@ Check if it computes the maximum of `operand` and the value of the object refere
 and assigns the result to the value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(maximum value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
+
+=== Stress tests
+
+==== Atomicity for device scope
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::device`
+* `memory_scope::system`
+
+And the following values as `space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::generic_space`
+
+Create `int` variable `val` and initialize it with `0`.
+Create `sycl::accessor acc` for `val` with `target` = `device`, `access_mode` = `read_write`.
+Call `parallel_for` with range<1> parameter
+Create `sycl::atomic_ref<int, order, scope, space> a_r` for `acc[0]`.
+Call `a_r.fetch_add(2)`.
+After kernel is executed check that `val` = `range.size() * 2`.
+
+==== Atomicity for work_group_scope
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+And the following values as `space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::generic_space`
+
+Create `nd_range<1> nd_range`.
+Create `int` array variable `vals` with size of `nd_range.get_group_range()` and initialize it with `0`.
+Create `sycl::accessor acc` for `vals` with `target` = `device`, `access_mode` = `read_write`.
+Call `parallel_for` with `nd_range` parameter.
+Create `sycl::atomic_ref<int, order, scope, space> a_r` from `acc[group_id]`.
+Call `a_r.fetch_sub(2)`.
+After kernel is executed check that each of `vals` = `- local_range.size() * 2`.
+
+==== Aquire and release
+
+For the following values as `order` parameter:
+
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+And the following values as `space` template parameter:
+
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+Create `const int` variable `changed_val`.
+Create `nd_range<1> nd_range` with `local_range` = `2`.
+Create `sycl::local_accessor<int> local_acc` and `sycl::local_accessor<bool> flag`.
+Call `parallel_for` with `nd_range` parameter.
+Create `sycl::atomic_ref<bool, order, scope, space> a_r` from `flag`.
+If `item.global_id()` is even, perform some long operation, change `local_acc[0]` to `changed_val` and call `flag.store(true)`.
+If `item.global_id()` is odd, in while loop condition call `flag.load()` and if it's true check that `local_acc[0]` = `changed_val`.
+
+==== Ordering
+
+For the following values as `order` parameter:
+
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+And the following values as `space` template parameter:
+
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+Create `nd_range<1> nd_range ` with `local_range` = `info::device::max_work_group_size`.
+Create `sycl::local_accessor<int> local_acc` and `sycl::local_accessor<bool> arr_acc` with size of `local_range`.
+Call `parallel_for` with `nd_range` parameter.
+Create `sycl::atomic_ref<bool, order, scope, space> a_r` from `local_acc[0]`.
+Assign `true` to `arr_acc[item.local_id]`, then call `a_r.store(item.local_id, memory_order::relaxed)`,
+then check that `arr_acc[a_r.load()]` = `true`.
+
+
+==== Atomicity with respect to atomic operations in host code
+
+This check is skipped if device doesn't support `usm_shared_memory`.
+
+For the following values as `order` parameter:
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+For the following values as `scope` parameter:
+
+* `memory_scope::device`
+* `memory_scope::system`
+
+And the following values as `space` template parameter:
+
+* `access::address_space::global_space`
+* `access::address_space::generic_space`
+
+Create `shared_usm` `int` pointer and initialize its value with `0`.
+Create `std::atomic` for usm pointer.
+Call `parallel_for` with `range<1>` parameter
+Create `sycl::atomic_ref<int, order, scope, space> a_r` for usm pointer.
+Call `a_r.fetch_add(2)`.
+On host code call `fetch_add(2)` for `std::atomic_ref`.
+Call `wait()` on kernel execution and after that check that value of usm pointer = (range.size() + 1) * 2.
