@@ -107,7 +107,7 @@ def gen_checks(type_str, size):
         type_str, kernel_name,
         'API test for sycl::vec<' + type_str + ', ' + str(size) + '>',
         test_string)
-    string+= vector_element_type_template.substitute(
+    string += vector_element_type_template.substitute(
         type=type_str,
         size=size,
         swizIndexes=', '.join(Data.swizzle_elem_list_dict[size][::-1]))
