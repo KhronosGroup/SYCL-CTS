@@ -217,7 +217,7 @@ class test_range {
 // optimizing the submision away
 // This test:
 //    - Doesn't check that all the work-item have be submited
-//    - It's technicaly UB (concurent write)
+//    - It's technically UB (concurrent write)
 void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
   int *a = sycl::malloc_shared<int>(1, q);
   a[0] = 0;
