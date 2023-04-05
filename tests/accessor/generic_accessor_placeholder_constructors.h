@@ -139,8 +139,8 @@ void test_placeholder_accessors_exception(const std::string& type_name,
     auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
-    check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(r, get_acc_functor);
+    check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -151,8 +151,8 @@ void test_placeholder_accessors_exception(const std::string& type_name,
     auto get_acc_functor = [r](sycl::buffer<DataT, Dimension>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, r);
     };
-    check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(r, get_acc_functor);
+    check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
+        r, get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -165,8 +165,8 @@ void test_placeholder_accessors_exception(const std::string& type_name,
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, r,
                                                                   offset);
     };
-    check_placeholder_accessor_exception<AccType, DataT, Dimension, AccessMode,
-                                         Target>(r, get_acc_functor);
+    check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
+        r, get_acc_functor);
   }
 }
 

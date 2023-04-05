@@ -30,12 +30,6 @@ using namespace sycl_cts;
 
 /** Return a named value pack of all defined aspects. */
 static auto get_aspect_pack() {
-// FIXME: remove when https://github.com/intel/llvm/issues/8324 is fixed
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  WARN(
-      "DPCPP does not define sycl::aspect::emulated."
-      "Skipping test cases for this aspect.");
-#endif
   static const auto types =
       value_pack<sycl::aspect, sycl::aspect::cpu, sycl::aspect::gpu,
                  sycl::aspect::accelerator, sycl::aspect::custom,
@@ -48,12 +42,8 @@ static auto get_aspect_pack() {
                  sycl::aspect::usm_atomic_host_allocations,
                  sycl::aspect::usm_shared_allocations,
                  sycl::aspect::usm_atomic_shared_allocations,
-                 sycl::aspect::usm_system_allocations
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
-                 ,
-                 sycl::aspect::emulated
-#endif
-                 >::generate_named();
+                 sycl::aspect::usm_system_allocations,
+                 sycl::aspect::emulated>::generate_named();
   return types;
 }
 
