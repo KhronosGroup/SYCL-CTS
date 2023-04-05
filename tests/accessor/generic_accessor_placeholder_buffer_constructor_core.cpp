@@ -16,7 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides generic sycl::accessor placeholder constructor test for double type
+//  Provides generic sycl::accessor placeholder buffer constructor test for
+//  generic types
 //
 *******************************************************************************/
 
@@ -26,29 +27,19 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_common.h"
-#include "generic_accessor_placeholder_constructors.h"
+#include "generic_accessor_placeholder_buffer_constructor.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
-namespace generic_accessor_placeholder_constructors_fp64 {
+namespace generic_accessor_placeholder_buffer_constructor_core {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor placeholder constructors. fp64 type", "[accessor]")({
-  using namespace generic_accessor_placeholder_constructors;
-
-  auto queue = sycl_cts::util::get_cts_object::queue();
-  if (queue.get_device().has(sycl::aspect::fp64)) {
-#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_vectors_marray<run_generic_placeholder_constructors_test, double>(
-        "double");
-#else
-    run_generic_placeholder_constructors_test<double>{}("double");
-#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-  } else {
-    WARN("Device does not support double precision floating point operations");
-    return;
-  }
+("Generic sycl::accessor placeholder constructors. core types", "[accessor]")({
+  using namespace generic_accessor_placeholder_buffer_constructor;
+  const auto types = get_conformance_type_pack();
+  for_all_types_vectors_marray<run_generic_placeholder_buffer_constructor_test>(
+      types);
 });
 
-}  // namespace generic_accessor_placeholder_constructors_fp64
+}  // namespace generic_accessor_placeholder_buffer_constructor_core

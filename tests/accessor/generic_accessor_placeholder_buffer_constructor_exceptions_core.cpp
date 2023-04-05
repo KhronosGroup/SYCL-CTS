@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides generic sycl::accessor placeholder constructors test for generic
-//  types
+//  Provides generic sycl::accessor placeholder buffer constructor exceptions
+//  test for generic types
 //
 *******************************************************************************/
 
@@ -27,19 +27,20 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_common.h"
-#include "generic_accessor_placeholder_constructors.h"
+#include "generic_accessor_placeholder_buffer_constructor_exceptions.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
-namespace generic_accessor_placeholder_constructors_core {
+namespace generic_accessor_placeholder_buffer_constructor_exceptions_core {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor placeholder constructors. core types", "[accessor]")({
-  using namespace generic_accessor_placeholder_constructors;
+("Generic sycl::accessor placeholder buffer constructor exceptions. core types",
+ "[accessor]")({
+  using namespace generic_accessor_placeholder_buffer_constructor_exceptions;
   const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_generic_placeholder_constructors_test>(
-      types);
+  for_all_types_vectors_marray<
+      run_generic_placeholder_buffer_constructor_exceptions_test>(types);
 });
 
-}  // namespace generic_accessor_placeholder_constructors_core
+}  // namespace generic_accessor_placeholder_buffer_constructor_exceptions_core

@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides generic sycl::accessor placeholder constructor test for sycl::half
-//  type
+//  Provides generic sycl::accessor placeholder buffer constructor test for
+//  double type
 //
 *******************************************************************************/
 
@@ -27,29 +27,30 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_common.h"
-#include "generic_accessor_placeholder_constructors.h"
+#include "generic_accessor_placeholder_buffer_constructor.h"
 #endif
 
 #include "../common/disabled_for_test_case.h"
 
-namespace generic_accessor_placeholder_constructors_fp16 {
+namespace generic_accessor_placeholder_buffer_constructor_fp64 {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor placeholder constructors. fp16 type", "[accessor]")({
-  using namespace generic_accessor_placeholder_constructors;
+("Generic sycl::accessor placeholder buffer constructor. fp64 type",
+ "[accessor]")({
+  using namespace generic_accessor_placeholder_buffer_constructor;
 
   auto queue = sycl_cts::util::get_cts_object::queue();
-  if (queue.get_device().has(sycl::aspect::fp16)) {
+  if (queue.get_device().has(sycl::aspect::fp64)) {
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-    for_type_vectors_marray<run_generic_placeholder_constructors_test,
-                            sycl::half>("sycl::half");
+    for_type_vectors_marray<run_generic_placeholder_buffer_constructor_test,
+                            double>("double");
 #else
-    run_generic_placeholder_constructors_test<sycl::half>{}("sycl::half");
+    run_generic_placeholder_buffer_constructor_test<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
   } else {
-    WARN("Device does not support half precision floating point operations");
+    WARN("Device does not support double precision floating point operations");
     return;
   }
 });
 
-}  // namespace generic_accessor_placeholder_constructors_fp16
+}  // namespace generic_accessor_placeholder_buffer_constructor_fp64
