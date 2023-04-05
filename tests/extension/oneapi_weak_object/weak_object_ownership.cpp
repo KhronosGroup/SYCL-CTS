@@ -109,11 +109,10 @@ class test_weak_object_ownership {
     auto w1 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
     auto w2 = sycl::ext::oneapi::weak_object<SYCLObjT>(sycl_object);
 
-    bool result = owner_less(w1, w2) == false && owner_less(w2, w1) == false &&
-                  owner_less(w1, sycl_object) == false &&
-                  owner_less(sycl_object, w1) == false &&
-                  owner_less(w2, sycl_object) == false &&
-                  owner_less(sycl_object, w2) == false;
+    bool result = !owner_less(w1, w2) && !owner_less(w2, w1) &&
+                  !owner_less(w1, sycl_object) &&
+                  !owner_less(sycl_object, w1) &&
+                  !owner_less(w2, sycl_object) && !owner_less(sycl_object, w2);
 
     INFO(
         "Verify that owner_less compares equivalent for two weak objects that "

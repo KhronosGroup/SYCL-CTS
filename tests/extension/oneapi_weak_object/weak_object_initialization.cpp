@@ -25,7 +25,7 @@ using namespace weak_object_common;
 
 template <typename Optional, typename SYCLObjT>
 void check_weak_object(sycl::ext::oneapi::weak_object<SYCLObjT> w,
-                        const Optional& object, const std::string& init_type) {
+                       const Optional& object, const std::string& init_type) {
   auto ret = w.try_lock();
   {
     INFO("Check using object_type = SyclObject " + init_type);
@@ -36,7 +36,7 @@ void check_weak_object(sycl::ext::oneapi::weak_object<SYCLObjT> w,
     {
       INFO("Check that try_lock returns same type as SYCL object");
       CHECK(std::is_same_v<std::remove_reference_t<decltype(ret.value())>,
-                            SYCLObjT>);
+                           SYCLObjT>);
     }
     {
       INFO("Check that lock returns same type as SYCL object");
@@ -61,9 +61,8 @@ void check_weak_object(sycl::ext::oneapi::weak_object<SYCLObjT> w,
         "Implementation has to throw a sycl::exception with "
         "sycl::errc::invalid when empty weak_object tries to return "
         "underlying SYCL object");
-    CHECK_THROWS_MATCHES(
-        action(), sycl::exception,
-        sycl_cts::util::equals_exception(sycl::errc::invalid));
+    CHECK_THROWS_MATCHES(action(), sycl::exception,
+                         sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 }
 
