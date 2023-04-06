@@ -220,10 +220,12 @@ class test_range {
 // This test:
 //    - Doesn't check that all the work-items have be submitted
 //    - It's technically UB (concurrent write)
-void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
+void test_launch_kernel_1d_range(unsigned long long int N, sycl::queue q) {
   int *a = sycl::malloc_shared<int>(1, q);
   a[0] = 0;
-  q.parallel_for(sycl::range<1>(N), [=](auto i) { a[0] = 1; }).wait_and_throw();
+  q.parallel_for(sycl::range<1>(static_cast<size_t>(N)), [=](auto i) {
+     a[0] = 1;
+   }).wait_and_throw();
   CHECK_VALUE_SCALAR(log, a[0], 1);
   sycl::free(a, q);
 }
@@ -284,13 +286,17 @@ class TEST_NAME : public util::test_base {
         test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
                                     my_queue);
 
-        // Prime number bigger than UINT32_MAX
-        test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
+        if (sizeof(size_t) > 4) {
+          // Prime number bigger than UINT32_MAX
+          test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
 
-        // Most GPU hardware have limitation to 32bits * 1024 for their native
-        // API so lets try more
-        test_launch_kernel_1d_range(
-            std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
+          // Most GPU hardware have limitation to 32bits * 1024 for their native
+          // API so lets try more
+          test_launch_kernel_1d_range(
+              std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
+        } else {
+          WARM("Some parameters not tested because size_t is 32bits");
+        }
 #endif
       }
     }
