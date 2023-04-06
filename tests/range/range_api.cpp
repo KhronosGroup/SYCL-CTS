@@ -212,6 +212,8 @@ class test_range {
   }
 };
 
+// The tests are using unnamed lambda
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
 // This tests is only here to check if one can submit a large kernel.
 // We don't use an `empty kernel` to avoid smart compiler
 // optimizing the submission away
@@ -225,6 +227,7 @@ void test_launch_kernel_1d_range(size_t N, sycl::queue q) {
   CHECK_VALUE_SCALAR(log, a[0], 1);
   sycl::free(a, q);
 }
+#endif
 
 /** test sycl::range::get(int index) return size_t
  */
@@ -282,12 +285,12 @@ class TEST_NAME : public util::test_base {
                                     my_queue);
 
         // Prime number bigger than UINT32_MAX
-        test_launch_kernel_1d_range(4'294'967'311ull, my_queue);
+        test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
 
         // Most GPU hardware have limitation to 32bits * 1024 for their native
-        // API so let's try more than that
+        // API so lets try more
         test_launch_kernel_1d_range(
-            std::numeric_limits<uint32_t>::max() * 2024L, my_queue);
+            std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
 #endif
       }
     }
