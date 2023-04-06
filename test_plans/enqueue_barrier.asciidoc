@@ -36,20 +36,22 @@ to define actions execution order.
 
 Test description:
 
-* Create queue
+* Create a queue
 * Allocate device memory containing two bool values (completion flags of 
   actions which will be submitted after barrier)
 * Initialize flags to false
 * Define two kernels performing some actions in long loop that check flags
-  after loop termination, each flag should be equal to false
-* Loops in different kernels should perform different number of iterations to
+  after loop termination, each flag should be equal to false, let it be kernels
+  A and B
+* Loops in kernels A and B should perform different number of iterations to
   check that actions submitted after barrier submission await the termination
-  of both previously submitted kernels
-* Submit previously defined kernels
+  of both submitted kernels A and B
+* Define two kernels that should set the completion flags to true, let it be
+  kernels C and D
+* Submit kernels A and B
 * Submit barrier using command group handler
-* Submit two kernels that should set the completion flags to true
-* Check that flags were equal to false during the execution of two first
-  kernels
+* Submit kernels C and D
+* Check that flags were equal to false during the execution of kernels A and B
 
 ==== `void ext_oneapi_barrier( const std::vector<event> &waitList )`
 
@@ -65,18 +67,19 @@ Test description:
   actions which will be submitted after barrier)
 * Initialize flags to false
 * Define two kernels performing some actions in long loop that check flags
-  after loop termination, each flag should be equal to false
-* Loops in different kernels should perform different number of iterations to
+  after loop termination, each flag should be equal to false, let it be kernels
+  A and B
+* Loops in kernels A and B should perform different number of iterations to
   check that actions submitted after barrier submission await the termination
-  of both previously submitted kernels
-* Submit previously defined kernels to the first and the second queues, save
+  of both submitted kernels A and B
+* Define two kernels that should set the completion flags to true, let it be
+  kernels C and D
+* Submit kernel A to the first queue and kernel B to the second queue, save
   corresponding events
 * Submit barrier with previously obtained events to the third queue using
   command group handler
-* Submit two kernels to the third queue, kernels should set the completion
-  flags to true
-* Check that flags were equal to false during the execution of two first
-  kernels
+* Submit kernels C and D to the third queue
+* Check that flags were equal to false during the execution of kernels A and B
 
 === Extended `sycl::queue` class member functions
 
