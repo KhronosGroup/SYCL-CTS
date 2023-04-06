@@ -12,8 +12,9 @@ https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_o
 === Device coverage
 
 All of the tests described below are performed only on the default device that
-is selected on the CTS command line. Tests require USM support, so tests are
-skipped if the device doesn't support USM.
+is selected on the CTS command line. Tests require USM support with allocation
+type `device`, so tests are skipped if the device doesn't support USM with such
+allocation type.
 
 === Feature test macro
 
@@ -76,8 +77,8 @@ Test description:
   kernels C and D
 * Submit kernel A to the first queue and kernel B to the second queue, save
   corresponding events
-* Submit barrier with previously obtained events to the third queue using
-  command group handler
+* Submit barrier with vector of previously obtained events to the third queue
+  using command group handler
 * Submit kernels C and D to the third queue
 * Check that flags were equal to false during the execution of kernels A and B
 
