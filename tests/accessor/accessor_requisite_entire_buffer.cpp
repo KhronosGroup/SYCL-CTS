@@ -36,6 +36,11 @@ DISABLED_FOR_TEST_CASE(ComputeCpp)
  "[accessor]")({
   auto q = sycl_cts::util::get_cts_object::queue();
 
+  if (!q.get_device().has(sycl::aspect::usm_shared_allocations))
+    SKIP(
+        "test is skipped because device doesn't "
+        "support usm_shared_allocations");
+
   constexpr size_t buffer_size = 10;
   constexpr size_t offset_size = 7;
   int data[buffer_size];
