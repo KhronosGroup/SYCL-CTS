@@ -325,7 +325,7 @@ void atomic_ref_compare_exchange_test<ExchangeType, T, MemoryOrderT,
   }
   {
     INFO(test_description +
-         "\nError, \"expected\" argument value is not upadted after "
+         "\nError, \"expected\" argument value is not updated after "
          "compare_exchange call with uneq values");
     CHECK(result[1]);
   }
@@ -337,7 +337,7 @@ void atomic_ref_compare_exchange_test<ExchangeType, T, MemoryOrderT,
   }
   {
     INFO(test_description +
-         "\nError, \"expected\" argument value is not upadted after "
+         "\nError, \"expected\" argument value is not updated after "
          "compare_exchange_overloaded call with uneq values");
     CHECK(result[3]);
   }

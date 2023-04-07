@@ -49,4 +49,17 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
   for_all_types<atomic_ref::tests::constructors::run_test>(type_pack);
 });
 
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref constructors. double type", "[atomic_ref]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64) or
+      !queue.get_device().has(sycl::aspect::atomic64)) {
+    SKIP(
+        "Device does not support fp64 or atomic64 operations. "
+        "Skipping the test case for double type.");
+  }
+  const auto type_pack_fp64 = get_cts_types::get_fp64_type();
+  for_all_types<atomic_ref::tests::constructors::run_test>(type_pack_fp64);
+});
+
 }  // namespace atomic_ref::tests::constructors::core::atomic64
