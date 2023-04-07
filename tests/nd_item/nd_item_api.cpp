@@ -76,22 +76,22 @@ struct getter {
 template <int dimensions>
 class kernel_nd_item {
  protected:
-  using t_readAccess = sycl::accessor<int, dimensions, sycl::access_mode::read,
-                                      sycl::target::device>;
-  using t_errorAccess =
+  using in_accessor_t = sycl::accessor<int, dimensions, sycl::access_mode::read,
+                                       sycl::target::device>;
+  using out_accessor_t =
       sycl::accessor<bool, 2, sycl::access_mode::write, sycl::target::device>;
-  using t_writeAccess =
+  using out_dep_accessor_t =
       sycl::accessor<int, dimensions, sycl::access_mode::write,
                      sycl::target::device>;
 
-  t_readAccess m_globalID;
-  t_readAccess m_localID;
-  t_errorAccess m_out;
-  t_writeAccess m_out_deprecated;
+  in_accessor_t m_globalID;
+  in_accessor_t m_localID;
+  out_accessor_t m_out;
+  out_dep_accessor_t m_out_deprecated;
 
  public:
-  kernel_nd_item(t_readAccess inG_, t_readAccess inL_, t_errorAccess out_,
-                 t_writeAccess out_deprecated_)
+  kernel_nd_item(in_accessor_t inG_, in_accessor_t inL_, out_accessor_t out_,
+                 out_dep_accessor_t out_deprecated_)
       : m_globalID(inG_),
         m_localID(inL_),
         m_out(out_),
@@ -242,13 +242,13 @@ void test_item() {
       dims == 3   ? globalSize[0] * globalSize[1] * globalSize[2]
       : dims == 2 ? globalSize[0] * globalSize[1]
                   : globalSize[0];
-  constexpr int nErrorSize = getter::method_cnt;
+  constexpr int nMethodsCount = getter::method_cnt;
 
   /* allocate and set host buffers */
   std::vector<int> globalIDs(nSize);
   std::vector<int> localIDs(nSize);
   populate(globalIDs.data(), localIDs.data(), localSize, globalSize);
-  std::array<std::array<bool, nCurrentSize>, nErrorSize> dataOut;
+  std::array<std::array<bool, nCurrentSize>, nMethodsCount> dataOut;
   std::vector<int> dataOutDeprecated(nSize);
   std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
 
@@ -258,13 +258,13 @@ void test_item() {
         globalSize[0], globalSize[1], globalSize[2]);
     auto localRange = util::get_cts_object::range<dims>::get(
         localSize[0], localSize[1], localSize[2]);
-    sycl::range<2> errorRange(nErrorSize, nCurrentSize);
+    sycl::range<2> resRange(nMethodsCount, nCurrentSize);
     sycl::nd_range<dims> dataRange(globalRange, localRange);
 
     {
       sycl::buffer<int, dims> bufGlob(globalIDs.data(), globalRange);
       sycl::buffer<int, dims> bufLoc(localIDs.data(), globalRange);
-      sycl::buffer<bool, 2> bufOut(dataOut.data()->data(), errorRange);
+      sycl::buffer<bool, 2> bufOut(dataOut.data()->data(), resRange);
       sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
                                                globalRange);
 
@@ -280,7 +280,7 @@ void test_item() {
     }
 
     // check api call results
-    for (int i = 0; i < nErrorSize; i++) {
+    for (int i = 0; i < nMethodsCount; i++) {
       INFO("Dimensions: " << std::to_string(dims));
       INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
                     << " result");

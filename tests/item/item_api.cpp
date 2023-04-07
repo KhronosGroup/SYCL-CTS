@@ -145,17 +145,17 @@ void test_item() {
   constexpr size_t nSize = (dims == 3)   ? nRangeSize * nRangeSize * nRangeSize
                            : (dims == 2) ? nRangeSize * nRangeSize
                                          : nRangeSize;
-  constexpr size_t nErrorSize = getter::method_cnt;
+  constexpr size_t nMethodsCount = getter::method_cnt;
 
   /* allocate and clear host buffers */
-  std::array<std::array<bool, nSize>, nErrorSize> dataOut;
+  std::array<std::array<bool, nSize>, nMethodsCount> dataOut;
   std::for_each(dataOut.begin(), dataOut.end(),
                 [](std::array<bool, nSize>& arr) { arr.fill(false); });
 
   std::vector<int> dataOutDeprecated(nSize);
   {
     sycl::buffer<bool, 2> bufOut(dataOut.data()->data(),
-                                 sycl::range<2>(nErrorSize, nSize));
+                                 sycl::range<2>(nMethodsCount, nSize));
     sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
                                              nDataRange);
 
@@ -174,7 +174,7 @@ void test_item() {
   }
 
   // check api call results
-  for (int i = 0; i < nErrorSize; i++) {
+  for (int i = 0; i < nMethodsCount; i++) {
     INFO("Dimensions: " << std::to_string(dims));
     INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
                   << " result");
