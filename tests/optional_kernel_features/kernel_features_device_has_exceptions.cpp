@@ -57,23 +57,16 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() { USE_FEATURE(FeatureTypeT); };
-    const auto lambda_item_arg = [](sycl::item<1>) {
-      USE_FEATURE(FeatureTypeT);
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) {
-      USE_FEATURE(FeatureTypeT);
-    };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::type_used>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
     using FunctorT = non_decorated_call_use_feature<FeatureTypeT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
@@ -107,31 +100,23 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() {
-      use_feature_function_non_decorated<FeatureTypeT>();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>) {
-      use_feature_function_non_decorated<FeatureTypeT>();
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) {
-      use_feature_function_non_decorated<FeatureTypeT>();
-    };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::non_decorated>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
-    using FunctorT = non_decorated_call_non_decorated_function<FeatureTypeT>;
+    using FunctorT =
+        non_decorated_call_non_decorated_function_with_accessor<FeatureTypeT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
-    RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        NO_ATTRIBUTE, kname,
-                        use_feature_function_non_decorated<FeatureTypeT>());
+    RUN_SUBMISSION_CALL(
+        is_exception_expected, expected_errc, queue, NO_ATTRIBUTE, kname,
+        use_feature_function_non_decorated_with_accessor<FeatureTypeT>(acc));
   }
 });
 
@@ -165,19 +150,9 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>) {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::external_decorated>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
@@ -185,14 +160,15 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
         non_decorated_call_decorated_external_function<FeatureTypeT,
                                                        FeatureAspectT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
     RUN_SUBMISSION_CALL(
         is_exception_expected, expected_errc, queue, NO_ATTRIBUTE, kname,
-        use_feature_function_external_decorated<FeatureTypeT,
-                                                FeatureAspectT>());
+        use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>(
+            acc));
   }
 });
 #endif
@@ -222,33 +198,22 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() [[sycl::device_has(FeatureAspectT)]] {
-      dummy_function_non_decorated();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>)
-                                     [[sycl::device_has(FeatureAspectT)]] {
-                                       dummy_function_non_decorated();
-                                     };
-    const auto lambda_group_arg = [](sycl::group<1>)
-                                      [[sycl::device_has(FeatureAspectT)]] {
-                                        dummy_function_non_decorated();
-                                      };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::dummy_non_decorated>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
     using FunctorT = decorated_call_non_decorated_dummy<FeatureAspectT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
                         [[sycl::device_has(FeatureAspectT)]], kname,
-                        dummy_function_non_decorated());
+                        dummy_function_non_decorated(acc));
   }
 });
 
@@ -277,31 +242,22 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() {
-      dummy_function_decorated<FeatureAspectT>();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>) {
-      dummy_function_decorated<FeatureAspectT>();
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) {
-      dummy_function_decorated<FeatureAspectT>();
-    };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::dummy_decorated>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
     using FunctorT = non_decorated_call_decorated_dummy<FeatureAspectT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
     RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
                         NO_ATTRIBUTE, kname,
-                        dummy_function_decorated<FeatureAspectT>());
+                        dummy_function_decorated<FeatureAspectT>(acc));
   }
 });
 
@@ -331,32 +287,23 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() {
-      use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>) {
-      use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) {
-      use_feature_function_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::decorated>(
+        is_exception_expected, expected_errc, queue);
   }
 
   {
     using FunctorT =
         non_decorated_call_decorated_function<FeatureTypeT, FeatureAspectT>;
 
-    run_functor<FunctorT>(is_exception_expected, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
+                                        queue);
   }
 
   {
     RUN_SUBMISSION_CALL(
         is_exception_expected, expected_errc, queue, NO_ATTRIBUTE, kname,
-        use_feature_function_decorated<FeatureTypeT, FeatureAspectT>());
+        use_feature_function_decorated<FeatureTypeT, FeatureAspectT>(acc));
   }
 });
 
@@ -386,28 +333,17 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   }
 
   {
-    const auto lambda_no_arg = []() [[sycl::device_has(AnotherFeatureAspect)]] {
-      USE_FEATURE(FeatureTypeT);
-    };
-    const auto lambda_item_arg =
-        [](sycl::item<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
-          USE_FEATURE(FeatureTypeT);
-        };
-    const auto lambda_group_arg =
-        [](sycl::group<1>) [[sycl::device_has(AnotherFeatureAspect)]] {
-          USE_FEATURE(FeatureTypeT);
-        };
-
-    run_separate_lambda<kname>(other_feature_exception_expect, expected_errc,
-                               queue, lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
+                                      call_attribute_type::type_used_with_attr>(
+        other_feature_exception_expect, expected_errc, queue);
   }
 
   {
     using FunctorT =
         decorated_call_use_feature<FeatureTypeT, AnotherFeatureAspect>;
 
-    run_functor<FunctorT>(other_feature_exception_expect, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(other_feature_exception_expect,
+                                        expected_errc, queue);
   }
 
   {
@@ -450,36 +386,26 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   }
 
   {
-    const auto lambda_no_arg = []() [[sycl::device_has(AnotherFeatureAspect)]] {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_item_arg = [](sycl::item<1>) [[sycl::device_has(
-                                     AnotherFeatureAspect)]] {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-    const auto lambda_group_arg = [](sycl::group<1>) [[sycl::device_has(
-                                      AnotherFeatureAspect)]] {
-      use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>();
-    };
-
-    run_separate_lambda<kname>(other_feature_exception_expect, expected_errc,
-                               queue, lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_with_accessor<
+        kname, FeatureTypeT, FeatureAspectT,
+        call_attribute_type::external_decorated_with_attr>(
+        other_feature_exception_expect, expected_errc, queue);
   }
 
   {
     using FunctorT = decorated_call_decorated_external_function<
         FeatureTypeT, AnotherFeatureAspect, FeatureAspectT>;
 
-    run_functor<FunctorT>(other_feature_exception_expect, expected_errc, queue);
+    run_functor_with_accessor<FunctorT>(other_feature_exception_expect,
+                                        expected_errc, queue);
   }
 
   {
     RUN_SUBMISSION_CALL(
         other_feature_exception_expect, expected_errc, queue,
         [[sycl::device_has(AnotherFeatureAspect)]], kname,
-        use_feature_function_external_decorated<FeatureTypeT,
-                                                FeatureAspectT>());
+        use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>(
+            acc));
   }
 });
 #endif
