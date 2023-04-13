@@ -295,7 +295,7 @@ class TEST_NAME : public util::test_base {
           test_launch_kernel_1d_range(
               std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
         } else {
-          WARM("Some parameters not tested because size_t is 32bits");
+          WARN("Some parameters not tested because size_t is 32bits");
         }
 #endif
       }
