@@ -286,7 +286,7 @@ class TEST_NAME : public util::test_base {
         test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
                                     my_queue);
 
-        if (sizeof(size_t) > 4) {
+        if constexpr (sizeof(size_t) > 4) {
           // Prime number bigger than UINT32_MAX
           test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
 
