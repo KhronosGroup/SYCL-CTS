@@ -565,10 +565,13 @@ vals.fill(0);
 sycl::buffer buf{vals.data(), {GROUP_RANGE}};
 q.submit([&](sycl::handler &cgh) {
   sycl::accessor acc{buf, cgh};
+  sycl::local_accessor<TYPE> lacc{{1}, cgh}
   cgh.parallel_for(sycl::nd_range(GROUP_RANGE * LOCAL_SIZE, LOCAL_SIZE),
                     [=](auto item) {
-     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{acc[item.group_id()]};
-     a_r.fetch_sub(2);
+     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{lacc[0]};
+     if (a_r.fetch_sub(2) == -(LOCAL_SIZE*2)) {
+        acc[item.group_id()] = a_r.load();
+     }
   });
 });
 ----
@@ -599,39 +602,42 @@ These `ORDER` values which are supported by the device (according to `info::devi
 
 These `SPACE` values:
 
-* `access::address_space::global_space`
+* `access::address_space::local_space`
 * `access::address_space::generic_space`
 
 ==== Aquire and release
 
-This test uses a `parallel_for` with `nd_range` parameter to atomically update scalar value and release other changes that were made in one thread,
-and atomically load this scalar value and aquire these other changes in another thread within local group.
+This test uses a `parallel_for` with `nd_range` parameter to atomically update shared scalars in two threads within local group.
 
 [source,c++]
 ----
 const TYPE val chaged_val = 42;
-sycl::nd_range nd_range(GLOBAL_RANGE, 2);
+sycl::range group_range(GLOBAL_RANGE/ 2);
 std::array<bool, GLOBAL_RANGE / 2> res;
 vals.fill(false);
 sycl::buffer buf{res.data(), {GLOBAL_RANGE/2}};
 q.submit([&](sycl::handler &cgh) {
   sycl::accessor res_acc{buf, cgh};
-  sycl::local_accessor<TYPE> local_acc{cgh};
-  sycl::local_accessor<bool> flag{cgh};
-  cgh.parallel_for(nd_range, [=](auto item) {
-     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{flag[0]};
-     if (item.global_id() % 2 == 0) {
-        /* long loop */
-        local_acc[0] = changed_val;
-        a_r.store(true);
-     } else {
-        while(flag.load()) {
-          res_acc[item.group_id()] = (local_acc[0] == changed_val);
-          break;
+  sycl::local_accessor<TYPE> x{cgh};
+  sycl::local_accessor<TYPE> y{cgh};
+  cgh.parallel_for_work_group(group_range, sycl::range(2),  [=](auto group) {
+    TYPE A = 0;
+    TYPE B = 0;
+    group.parallel_for_work_item([&](auto item) {
+      sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refA{A};
+      sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refB{B};
+      if (item.get_local_id() == 0) {
+          x[0] = refA.load();
+          refB.store(1);
+        } else {
+          y[0] = refB.load();
+          refA.store(1);
         }
-     }
+     });
+     res_acc[group.get_id()] = !(x[0] == 1 && y[0] == 1);
+    });
   });
-});
+
 ----
 
 Verify that all elements of res is `true` after the loop completes.
@@ -680,8 +686,8 @@ q.submit([&](sycl::handler &cgh) {
   cgh.parallel_for(nd_range, [=](auto item) {
      sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{local_acc[0]};
      arr_acc[item.local_id()] = true;
-     a_r.store(item.local_id(), memory_order::relaxed);
-     res_acc[item.global_id()] = (arr_acc[a_r.load()] == true);
+     a_r.store(item.local_id(), ORDER1);
+     res_acc[item.global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
   });
 });
 ----
@@ -705,7 +711,14 @@ These `SCOPE` values which are supported by the device (according to `info::devi
 
 These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
 
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
 * `memory_order::seq_cst`
+
+These `ORDER1` and `ORDER2` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `ORDER1` is `memory_order::release` and `ORDER2` is `memory_order::acquire`
+* `ORDER1` and `ORDER2` are both `memory_order::seq_cst`
 
 These `SPACE` values:
 
@@ -714,6 +727,8 @@ These `SPACE` values:
 
 ==== Atomicity with respect to atomic operations in host code
 
+This check is skipped if device doesn't support `aspect::usm_atomic_shared_allocations`.
+
 This check is skipped if sizeof(pointer) == 8 and device doesn't support `aspect::atomic64`.
 
 This test uses a simple-form `parallel_for` to atomically update a single scalar value from all work-items and simultainiously update it on host:
@@ -721,28 +736,23 @@ This test uses a simple-form `parallel_for` to atomically update a single scalar
 [source,c++]
 ----
 
-int* val_p = new int[SIZE+2];
-for (int i=0; i < SIZE+2; i++)
-  val_p[i] = i;
-std::atomic a{val_p};
+TYPE *pval = sycl::malloc_shared<TYPE>(1, q);
+*pval = 0;
+std::atomic_ref a_host{*pval};
 auto event = q.submit([&](sycl::handler &cgh) {
   cgh.parallel_for({SIZE}, [=](auto i) {
-     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{val_p};
-     a_r++;
+     sycl::atomic_ref<TYPE, ORDER, sycl::memory_scope::system, SPACE> a_dev{*pval};
+     a_dev++;
   });
 });
-a++;
+for (int i = 0; i < COUNT; i++)
+  a_host++;
 event.wait();
 ----
 
-Verify that `*val_p == SIZE+1` because val_p should move exactly `SIZE+1` times after `event.wait()`.
+Verify that `*pval == SIZE+COUNT`.
 
 This test is repeated for all combinations of supported values listed below:
-
-These `SCOPE` values which are supported by the device (according to `info::device::atomic_memory_scope_capabilities`):
-
-* `memory_scope::device`
-* `memory_scope::system`
 
 These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
 
@@ -754,3 +764,5 @@ These `SPACE` values:
 
 * `access::address_space::global_space`
 * `access::address_space::generic_space`
+
+Run the same test as above with `malloc_host` instead of `malloc_shared` if device supports `aspect::usm_atomic_host_allocations`.
