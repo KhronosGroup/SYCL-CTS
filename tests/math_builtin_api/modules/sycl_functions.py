@@ -131,9 +131,6 @@ def create_common_signatures():
     f_clamp_3 = funsig("sycl", "genfloatd", "clamp", ["genfloatd", "double", "double"])
     sig_list.append(f_clamp_3)
 
-    f_clamp_4 = funsig("sycl", "genfloath", "clamp", ["genfloath", "sycl::half", "sycl::half"])
-    sig_list.append(f_clamp_4)
-
     f_degrees = funsig("sycl", "genfloat", "degrees", ["genfloat"], "3")
     sig_list.append(f_degrees)
 
@@ -146,9 +143,6 @@ def create_common_signatures():
     f_max_3 = funsig("sycl", "genfloatd", "max", ["genfloatd", "double"])
     sig_list.append(f_max_3)
 
-    f_max_4 = funsig("sycl", "genfloath", "max", ["genfloath", "sycl::half"])
-    sig_list.append(f_max_4)
-
     f_min = funsig("sycl", "genfloat", "min", ["genfloat", "genfloat"])
     sig_list.append(f_min)
 
@@ -158,9 +152,6 @@ def create_common_signatures():
     f_min_3 = funsig("sycl", "genfloatd", "min", ["genfloatd", "double"])
     sig_list.append(f_min_3)
 
-    f_min_4 = funsig("sycl", "genfloath", "min", ["genfloath", "sycl::half"])
-    sig_list.append(f_min_4)
-
     f_mix = funsig("sycl", "genfloat", "mix", ["genfloat", "genfloat", "genfloat"], "1")
     sig_list.append(f_mix)
 
@@ -169,9 +160,6 @@ def create_common_signatures():
 
     f_mix_3 = funsig("sycl", "genfloatd", "mix", ["genfloatd", "genfloatd", "double"], "1")
     sig_list.append(f_mix_3)
-
-    f_mix_4 = funsig("sycl", "genfloath", "mix", ["genfloath", "genfloath", "sycl::half"], "1")
-    sig_list.append(f_mix_4)
 
     f_radians = funsig("sycl", "genfloat", "radians", ["genfloat"], "3")
     sig_list.append(f_radians)
@@ -185,9 +173,6 @@ def create_common_signatures():
     f_step_3 = funsig("sycl", "genfloatd", "step", ["double", "genfloatd"])
     sig_list.append(f_step_3)
 
-    f_step_4 = funsig("sycl", "genfloath", "step", ["sycl::half", "genfloath"])
-    sig_list.append(f_step_4)
-
     f_smoothstep = funsig("sycl", "genfloat", "smoothstep", ["genfloat", "genfloat", "genfloat"])
     sig_list.append(f_smoothstep)
 
@@ -196,10 +181,6 @@ def create_common_signatures():
 
     f_smoothstep_3 = funsig("sycl", "genfloatd", "smoothstep", ["double", "double", "genfloatd"])
     sig_list.append(f_smoothstep_3)
-
-    f_smoothstep_4 = funsig("sycl", "genfloath", "smoothstep", ["sycl::half", "sycl::half", "genfloath"])
-    sig_list.append(f_smoothstep_4)
-
     f_sign = funsig("sycl", "genfloat", "sign", ["genfloat"])
     sig_list.append(f_sign)
 
