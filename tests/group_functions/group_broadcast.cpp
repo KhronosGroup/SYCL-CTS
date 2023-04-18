@@ -20,16 +20,9 @@
 
 #include "group_broadcast.h"
 
-// FIXME: DPCPP does not implement group_broadcast for sycl::vec
-// Link to issue https://github.com/intel/llvm/issues/8349
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-using BroadcastTypes =
-    concatenation<FundamentalTypes, std::tuple<bool, sycl::marray<float, 5>,
-                                               sycl::marray<short int, 7>,
-                                               util::custom_type>>::type;
 // FIXME: ComputeCpp does not implement group_broadcast for sycl::vec,
 //        sycl::marray, unsigned long long int, and long long int
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
 #ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
 using BroadcastTypes =
     std::tuple<size_t, float, char, signed char, unsigned char, short int,
@@ -48,12 +41,7 @@ TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
                         BroadcastTypes) {
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8349
-    WARN(
-        "DPCPP does not implement group_broadcast for vec types. "
-        "Skipping those test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement group_broadcast for vec, marray, "
         "unsigned long long int, and long long int types. Skipping those test "
@@ -82,12 +70,7 @@ TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
                         "[group_func][type_list][dim]", BroadcastTypes) {
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8349
-    WARN(
-        "DPCPP does not implement group_broadcast for vec types. "
-        "Skipping those test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement group_broadcast for vec, marray, "
         "unsigned long long int, and long long int types. Skipping those test "
