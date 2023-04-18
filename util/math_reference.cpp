@@ -575,6 +575,8 @@ sycl::double3 cross(sycl::double3 p0, sycl::double3 p1) {
   return cross_t(p0, p1);
 }
 
+// FIXME: hipSYCL does not support marray
+#ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL
 template <typename T, size_t N>
 sycl::marray<T, N> cross_t(sycl::marray<T, N> a, sycl::marray<T, N> b) {
   sycl::marray<T, N> res;
@@ -601,6 +603,7 @@ sycl::mdouble4 cross(sycl::mdouble4 p0, sycl::mdouble4 p1) {
 sycl::mdouble3 cross(sycl::mdouble3 p0, sycl::mdouble3 p1) {
   return cross_t(p0, p1);
 }
+#endif  // SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 sycl::half fast_dot(float p0) { return std::pow(p0, 2); }
 sycl::half fast_dot(sycl::float2 p0) {
