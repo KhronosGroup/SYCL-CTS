@@ -113,26 +113,30 @@ def generate_value(base_type, dim):
             val += str(random.randint(0, 18446744073709551615)) + "LLU" + ","
     return val[:-1]
 
-def generate_multi_ptr(var_name, var_type, memory):
+def generate_multi_ptr(var_name, var_type, memory, decorated):
     decl = ""
     if memory == "global":
         source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space> " + var_name + "(acc);\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::global_space," + decorated + "> "
+        decl += var_name + "(acc);\n"
     if memory == "local":
         source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space> " + var_name + "(acc);\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::local_space," + decorated + "> "
+        decl += var_name + "(acc);\n"
     if memory == "private":
         source_name = "multiPtrSourceData"
         decl = var_type.name + " " + source_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
-        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space> " + var_name + "(&" + source_name + ");\n"
+        decl += "sycl::multi_ptr<" + var_type.name + ", sycl::access::address_space::private_space," + decorated + "> "
+        decl += var_name + " = sycl::address_space_cast<sycl::access::address_space::private_space," + decorated + ">(&"
+        decl += source_name + ");\n"
     return decl
 
 def generate_variable(var_name, var_type, var_index):
     return var_type.name + " " + var_name + "(" + generate_value(var_type.base_type, var_type.dim) + ");\n"
 
-def generate_arguments(sig, memory):
+def generate_arguments(sig, memory, decorated):
     arg_src = ""
     arg_names = []
     arg_index = 0
@@ -149,7 +153,7 @@ def generate_arguments(sig, memory):
 
         current_arg = ""
         if is_pointer:
-            current_arg = generate_multi_ptr(arg_name, arg, memory)
+            current_arg = generate_multi_ptr(arg_name, arg, memory, decorated )
         else:
             current_arg = generate_variable(arg_name, arg, arg_index)
 
@@ -214,10 +218,10 @@ def generate_reference_ptr(types, sig, arg_names, arg_src):
         arg_type=sig.arg_types[-1].name)
     return fc
 
-def generate_test_case(test_id, types, sig, memory, check):
+def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
     testCaseSource = test_case_templates_check[memory] if check else test_case_templates[memory]
     testCaseId = str(test_id)
-    (arg_names, arg_src) = generate_arguments(sig, memory)
+    (arg_names, arg_src) = generate_arguments(sig, memory, decorated)
     testCaseSource = testCaseSource.replace("$REFERENCE", generate_reference(sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$PTR_REF", generate_reference_ptr(types, sig, arg_names, arg_src))
     testCaseSource = testCaseSource.replace("$TEST_ID", testCaseId)
@@ -256,13 +260,21 @@ def generate_test_case(test_id, types, sig, memory, check):
 def generate_test_cases(test_id, types, sig_list, check):
     random.seed(0)
     test_source = ""
+    decorated_yes = "sycl::access::decorated::yes"
+    decorated_no = "sycl::access::decorated::no"
     for sig in sig_list:
         if sig.pntr_indx:#If the signature contains a pointer argument.
-            test_source += generate_test_case(test_id, types, sig, "private", check)
+            test_source += generate_test_case(test_id, types, sig, "private", check, decorated_no)
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "local", check)
+            test_source += generate_test_case(test_id, types, sig, "private", check, decorated_yes)
             test_id += 1
-            test_source += generate_test_case(test_id, types, sig, "global", check)
+            test_source += generate_test_case(test_id, types, sig, "local", check, decorated_no)
+            test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "local", check, decorated_yes)
+            test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "global", check, decorated_no)
+            test_id += 1
+            test_source += generate_test_case(test_id, types, sig, "global", check, decorated_yes)
             test_id += 1
         else:
             if check:
