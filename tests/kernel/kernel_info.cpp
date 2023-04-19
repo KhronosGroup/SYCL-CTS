@@ -132,7 +132,18 @@ TEST_CASE("Test kernel info", "[kernel]") {
       range3Ret,
       "sycl::kernel::get_info<sycl::info::kernel_device_specific::compile_work_"
       "group_size>(dev)");
+  {
+    INFO(
+        "work-group size is not applicable, compile_work_group_size should "
+        "return {0,0,0}.");
+    CHECK(range3Ret == sycl::range<3>(0, 0, 0));
+  }
 
+  auto workGroupSizeRet =
+      kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(dev);
+  check_return_type<size_t>(workGroupSizeRet,
+                            "sycl::kernel::get_info<sycl::info::kernel_device_"
+                            "specific::work_group_size>(dev)");
   auto sizeTRet = kernel.get_info<
       sycl::info::kernel_device_specific::preferred_work_group_size_multiple>(
       dev);
@@ -140,6 +151,12 @@ TEST_CASE("Test kernel info", "[kernel]") {
       sizeTRet,
       "sycl::kernel::get_info<sycl::info::kernel_device_specific::preferred_"
       "work_group_size_multiple>(dev)");
+  {
+    INFO(
+        "The value returned by preferred_work_group_size_multiple must be less "
+        "than or equal to that returned by work_group_size.");
+    CHECK(sizeTRet <= workGroupSizeRet);
+  }
 
   auto privateMemSizeRet =
       kernel.get_info<sycl::info::kernel_device_specific::private_mem_size>(
@@ -148,18 +165,21 @@ TEST_CASE("Test kernel info", "[kernel]") {
                             "sycl::kernel::get_info<sycl::info::kernel_"
                             "device_specific::private_mem_size>(dev)");
 
-  auto workGroupSizeRet =
-      kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(dev);
-  check_return_type<size_t>(workGroupSizeRet,
-                            "sycl::kernel::get_info<sycl::info::kernel_device_"
-                            "specific::work_group_size>(dev)");
-
   auto maxNumSubGroupsRet =
       kernel.get_info<sycl::info::kernel_device_specific::max_num_sub_groups>(
           dev);
   check_return_type<uint32_t>(maxNumSubGroupsRet,
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::max_num_sub_groups>(dev)");
+  {
+    INFO(
+        "maximum number of sub-groups for this kernel can't be greater than "
+        "the maximum number of sub-groups in a work-group for any kernel "
+        "executed on the device, and the minimum value is 1.");
+    CHECK(maxNumSubGroupsRet <=
+          dev.get_info<sycl::info::device::max_num_sub_groups>());
+    CHECK(maxNumSubGroupsRet >= 1);
+  }
 
   auto compileNumSubGroupsRet =
       kernel
@@ -168,6 +188,12 @@ TEST_CASE("Test kernel info", "[kernel]") {
   check_return_type<uint32_t>(compileNumSubGroupsRet,
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::compile_num_sub_groups>(dev)");
+  {
+    INFO(
+        "The number of sub-groups is not specified by the kernel and should be "
+        "0");
+    CHECK(compileNumSubGroupsRet == 0);
+  }
 
   auto maxSubGroupSizeRet =
       kernel.get_info<sycl::info::kernel_device_specific::max_sub_group_size>(
@@ -175,6 +201,15 @@ TEST_CASE("Test kernel info", "[kernel]") {
   check_return_type<uint32_t>(maxSubGroupSizeRet,
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::max_sub_group_size>(dev)");
+  {
+    auto sub_group_sizes = dev.get_info<sycl::info::device::sub_group_sizes>();
+    uint32_t max =
+        *std::max_element(sub_group_sizes.begin(), sub_group_sizes.end());
+    INFO(
+        "maximum sub-group size for this kernel can't be greater than max of "
+        "sub-group sizes supported by the device");
+    CHECK(maxSubGroupSizeRet <= max);
+  }
 
   auto compileSubGroupSizeRet =
       kernel
@@ -183,6 +218,10 @@ TEST_CASE("Test kernel info", "[kernel]") {
   check_return_type<uint32_t>(compileSubGroupSizeRet,
                               "sycl::kernel::get_info<sycl::info::kernel_"
                               "device_specific::compile_sub_group_size>(dev)");
+  {
+    INFO("The sub-group size is not specified by the kernel and should be 0");
+    CHECK(compileSubGroupSizeRet == 0);
+  }
 
 // FIXME: Reenable when struct information descriptors are implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
