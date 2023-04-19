@@ -635,6 +635,7 @@ q.submit([&](sycl::handler &cgh) {
         y = refB.load();
         refA.store(1);
       }
+    sycl::group_barrier(item.get_group());
       if (item.get_local_id() == 0)
         res_acc[item.get_group__id()] = !(x == 1 && y == 1);
     });
