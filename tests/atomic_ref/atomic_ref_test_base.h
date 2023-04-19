@@ -22,8 +22,8 @@
 #ifndef SYCL_CTS_ATOMIC_REF_TEST_BASE_H
 #define SYCL_CTS_ATOMIC_REF_TEST_BASE_H
 
-#include "atomic_ref_common.h"
 #include "../common/once_per_unit.h"
+#include "atomic_ref_common.h"
 
 namespace atomic_ref::tests::api {
 using namespace atomic_ref::tests::common;
@@ -141,9 +141,7 @@ class atomic_ref_test {
  public:
   using sptr = std::shared_ptr<atomic_ref_test>;
 
-  atomic_ref_test() : queue(once_per_unit::get_queue()) {
-    reset_host_values();
-  }
+  atomic_ref_test() : queue(once_per_unit::get_queue()) { reset_host_values(); }
   virtual ~atomic_ref_test() = default;
 
   void operator()(const std::string& type_name, const std::string& memory_order,

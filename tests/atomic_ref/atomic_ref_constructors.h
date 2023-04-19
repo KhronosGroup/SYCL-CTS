@@ -22,9 +22,9 @@
 #ifndef SYCL_CTS_ATOMIC_REF_CONSTRUCTORS_H
 #define SYCL_CTS_ATOMIC_REF_CONSTRUCTORS_H
 
+#include "../common/once_per_unit.h"
 #include "atomic_ref_common.h"
 #include <type_traits>
-#include "../common/once_per_unit.h"
 
 namespace atomic_ref::tests::constructors {
 using namespace atomic_ref::tests::common;

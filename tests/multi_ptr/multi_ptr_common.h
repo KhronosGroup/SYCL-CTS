@@ -10,9 +10,9 @@
 #define SYCL_CTS_TEST_MULTI_PTR_MULTI_PTR_COMMON_H
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "../common/type_coverage.h"
 #include "../common/type_list.h"
-#include "../common/once_per_unit.h"
 
 namespace multi_ptr_common {
 

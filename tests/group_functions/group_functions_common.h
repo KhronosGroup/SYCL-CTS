@@ -20,8 +20,8 @@
 
 #include "../common/common.h"
 #include "../common/get_group_range.h"
-#include "type_coverage.h"
 #include "../common/once_per_unit.h"
+#include "type_coverage.h"
 
 #include <catch2/catch_template_test_macros.hpp>
 

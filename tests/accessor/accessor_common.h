@@ -25,9 +25,9 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
 #include "../common/value_operations.h"
-#include "../common/once_per_unit.h"
 
 // FIXME: re-enable when marrray is implemented in hipsycl
 #ifndef SYCL_CTS_COMPILING_WITH_HIPSYCL

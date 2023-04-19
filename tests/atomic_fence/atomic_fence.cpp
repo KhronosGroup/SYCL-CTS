@@ -23,9 +23,9 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
-#include "../common/once_per_unit.h"
 
 namespace atomic_fence_test {
 

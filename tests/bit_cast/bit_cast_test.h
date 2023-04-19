@@ -22,8 +22,8 @@
 #ifndef SYCL_CTS_BIT_CAST_TEST_H
 #define SYCL_CTS_BIT_CAST_TEST_H
 
-#include "bit_cast_helper_functions.h"
 #include "../common/once_per_unit.h"
+#include "bit_cast_helper_functions.h"
 #include <cstring>
 
 namespace bit_cast::tests {
