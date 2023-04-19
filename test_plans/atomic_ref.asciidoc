@@ -688,10 +688,10 @@ q.submit([&](sycl::handler &cgh) {
   cgh.parallel_for(nd_range, [=](auto item) {
     arr_acc[item.get_local_id()] = false;
     sycl::group_barrier(item.get_group());
-    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{local_acc};
-    arr_acc[item.local_id()] = true;
-    a_r.store(item.local_id(), ORDER1);
-    res_acc[item.global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
+    sycl::atomic_ref<TYPE, memory_order::relaxed, SCOPE, SPACE> a_r{local_acc};
+    arr_acc[item.get_local_id()] = true;
+    a_r.store(item.get_local_id(), ORDER1);
+    res_acc[item.get_global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
   });
 });
 ----
@@ -713,12 +713,6 @@ These `SCOPE` values which are supported by the device (according to `info::devi
 * `memory_scope::system`
 * `memory_scope::work_group`
 
-These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
-
-* `memory_order::relaxed`
-* `memory_order::acq_rel`
-* `memory_order::seq_cst`
-
 These `ORDER1` and `ORDER2` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
 
 * `ORDER1` is `memory_order::release` and `ORDER2` is `memory_order::acquire`
@@ -733,7 +727,7 @@ These `SPACE` values:
 
 This check is skipped if device doesn't support `aspect::usm_atomic_shared_allocations`.
 
-This check is skipped if sizeof(pointer) == 8 and device doesn't support `aspect::atomic64`.
+This check is skipped if device doesn't support `memory_scope::system` in `info::device::atomic_memory_scope_capabilities`.
 
 This test uses a simple-form `parallel_for` to atomically update a single scalar value from all work-items and simultainiously update it on host:
 
