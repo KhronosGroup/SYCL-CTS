@@ -612,29 +612,31 @@ This test uses a `parallel_for` with `nd_range` parameter to atomically update s
 [source,c++]
 ----
 const TYPE val chaged_val = 42;
-sycl::range group_range(GLOBAL_RANGE/ 2);
+sycl::nd_range nd_range(GLOBAL_RANGE, 2);
 std::array<bool, GLOBAL_RANGE / 2> res;
-vals.fill(false);
+res.fill(false);
 sycl::buffer buf{res.data(), {GLOBAL_RANGE/2}};
 q.submit([&](sycl::handler &cgh) {
   sycl::accessor res_acc{buf, cgh};
-  sycl::local_accessor<TYPE> x{cgh};
-  sycl::local_accessor<TYPE> y{cgh};
-  cgh.parallel_for_work_group(group_range, sycl::range(2),  [=](auto group) {
-    TYPE A = 0;
-    TYPE B = 0;
-    group.parallel_for_work_item([&](auto item) {
-      sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refA{A};
-      sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refB{B};
-      if (item.get_local_id() == 0) {
-          x[0] = refA.load();
-          refB.store(1);
-        } else {
-          y[0] = refB.load();
-          refA.store(1);
-        }
-     });
-     res_acc[group.get_id()] = !(x[0] == 1 && y[0] == 1);
+  sycl::local_accessor<TYPE, 0> x{cgh};
+  sycl::local_accessor<TYPE, 0> y{cgh};
+  sycl::local_accessor<TYPE, 0> A{cgh};
+  sycl::local_accessor<TYPE, 0> B{cgh};
+  cgh.parallel_for(nd_range, sycl::range(2), [=](auto item) {
+    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refA{A};
+    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refB{B};
+    refA.store(0);
+    refB.store(0);
+    sycl::group_barrier(item.get_group());
+    if (item.get_local_id() == 0) {
+        x = refA.load();
+        refB.store(1);
+      } else {
+        y = refB.load();
+        refA.store(1);
+      }
+      if (item.get_local_id() == 0)
+        res_acc[item.get_group__id()] = !(x == 1 && y == 1);
     });
   });
 
@@ -677,17 +679,19 @@ and then aquire all changes from it in another thread within local group.
 size_t local_range = q.get_info<sycl::info::device::max_work_group_size>();
 sycl::nd_range nd_range(GLOBAL_RANGE, local_range);
 std::array<bool, GLOBAL_RANGE> res;
-vals.fill(false);
+res.fill(false);
 sycl::buffer buf{res.data(), {GLOBAL_RANGE}};
 q.submit([&](sycl::handler &cgh) {
   sycl::accessor res_acc{buf, cgh};
-  sycl::local_accessor<TYPE> local_acc{cgh};
+  sycl::local_accessor<TYPE, 0> local_acc{cgh};
   sycl::local_accessor<bool> arr_acc{{local_range}, cgh};
   cgh.parallel_for(nd_range, [=](auto item) {
-     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{local_acc[0]};
-     arr_acc[item.local_id()] = true;
-     a_r.store(item.local_id(), ORDER1);
-     res_acc[item.global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
+    arr_acc[item.get_local_id()] = false;
+    sycl::group_barrier(item.get_group());
+    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{local_acc};
+    arr_acc[item.local_id()] = true;
+    a_r.store(item.local_id(), ORDER1);
+    res_acc[item.global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
   });
 });
 ----
