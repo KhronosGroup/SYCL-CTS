@@ -126,7 +126,7 @@ class run_api_tests {
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name,
                   const std::string &target_name) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
     auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 

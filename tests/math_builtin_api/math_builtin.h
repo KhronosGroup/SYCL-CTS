@@ -32,11 +32,6 @@
 template <int T>
 class kernel;
 
-inline sycl::queue makeQueueOnce() {
-  static sycl::queue q = sycl_cts::util::get_cts_object::queue();
-  return q;
-}
-
 template <typename returnT, typename ArgT> struct privatePtrCheck {
   returnT res;
   ArgT resArg;

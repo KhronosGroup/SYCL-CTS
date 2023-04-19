@@ -12,6 +12,7 @@
 #include "../common/common.h"
 #include "../common/type_coverage.h"
 #include "../common/type_list.h"
+#include "../common/once_per_unit.h"
 
 namespace multi_ptr_common {
 

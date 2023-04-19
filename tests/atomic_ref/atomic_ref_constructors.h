@@ -24,6 +24,7 @@
 
 #include "atomic_ref_common.h"
 #include <type_traits>
+#include "../common/once_per_unit.h"
 
 namespace atomic_ref::tests::constructors {
 using namespace atomic_ref::tests::common;
@@ -44,7 +45,7 @@ class run_constructor_tests {
                   const std::string &memory_order_name,
                   const std::string &memory_scope_name,
                   const std::string &address_space_name) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     if (memory_order_and_scope_are_not_supported(queue, MemoryOrder,
                                                  MemoryScope)) {
       return;

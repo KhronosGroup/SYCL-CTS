@@ -70,7 +70,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: hipSYCL and DPCPP cannot handle cases of different types
     // Link to issue https://github.com/intel/llvm/issues/8341
@@ -114,7 +114,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: hipSYCL and DPCPP cannot handle cases of different types
     // Link to issue https://github.com/intel/llvm/issues/8341
@@ -140,7 +140,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   WARN("ComputeCpp cannot handle half type. Skipping the test.");
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
     for_all_combinations<invoke_scan_over_group>(Dims, HalfType{}, queue);
   } else {
@@ -173,7 +173,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16)) {
     // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
     // Link to issue https://github.com/intel/llvm/issues/8341

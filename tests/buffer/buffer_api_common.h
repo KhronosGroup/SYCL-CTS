@@ -24,6 +24,7 @@
 
 #include "../common/common.h"
 #include "../common/get_group_range.h"
+#include "../common/once_per_unit.h"
 
 namespace buffer_api_common {
 using namespace sycl_cts;
@@ -274,7 +275,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     CHECK(ret_size_depr == size * sizeof(T));
 #endif
 
-    auto q = util::get_cts_object::queue();
+    auto q = once_per_unit::get_queue();
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler &cgh) {
@@ -482,7 +483,7 @@ class check_buffer_linearization {
   void operator()(util::logger &log) {
     constexpr int g_size = 4;  // global range size
     constexpr int l_size = 2;  // local range size
-    auto q = util::get_cts_object::queue();
+    auto q = once_per_unit::get_queue();
 
     // global ranges
     sycl::range<1> g_range1d = sycl_cts::util::work_group_range<1>(q, g_size);
@@ -525,7 +526,7 @@ class check_buffer_linearization {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
     INFO("testing: linearization in " + std::to_string(dims) + " dimensions.");
-    auto q = util::get_cts_object::queue();
+    auto q = once_per_unit::get_queue();
 
     sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
     q.submit([&](sycl::handler &cgh) {

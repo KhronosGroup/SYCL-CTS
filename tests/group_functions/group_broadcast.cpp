@@ -37,7 +37,7 @@ using BroadcastTypes = CustomTypes;
 
 TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
                         BroadcastTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -67,7 +67,7 @@ TEMPLATE_LIST_TEST_CASE("Group broadcast", "[group_func][type_list][dim]",
 
 TEMPLATE_LIST_TEST_CASE("Sub-group broadcast and select",
                         "[group_func][type_list][dim]", BroadcastTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
