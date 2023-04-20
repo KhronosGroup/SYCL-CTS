@@ -195,8 +195,12 @@ void broadcast_sub_group(sycl::queue& queue) {
           if (sub_group.get_local_linear_id() == 0) res_acc[3] = local_var;
 
           // return the sub-group size
-          if (sub_group.get_local_linear_id() == 0)
-            res_acc[4] = sub_group.get_local_linear_range();
+          if (sub_group.get_local_linear_id() == 0){
+            if (std::is_same<T, bool>::value)
+              res_acc[4] = sub_group.get_local_linear_range() % 2;
+            else
+              res_acc[4] = sub_group.get_local_linear_range();
+          }
         }
       });
     });
