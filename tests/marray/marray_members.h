@@ -137,9 +137,11 @@ class run_marray_members_test {
     {
       STATIC_CHECK(std::is_same_v<typename marray_t::value_type, DataT>);
       STATIC_CHECK(std::is_same_v<typename marray_t::reference, DataT&>);
-      STATIC_CHECK(std::is_same_v<typename marray_t::const_reference, const DataT&>);
+      STATIC_CHECK(
+          std::is_same_v<typename marray_t::const_reference, const DataT&>);
       STATIC_CHECK(std::is_same_v<typename marray_t::iterator, DataT*>);
-      STATIC_CHECK(std::is_same_v<typename marray_t::const_iterator , const DataT*>);
+      STATIC_CHECK(
+          std::is_same_v<typename marray_t::const_iterator, const DataT*>);
     }
   }
 };
