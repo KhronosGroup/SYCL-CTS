@@ -63,7 +63,7 @@ class run_constructor_tests {
       if constexpr (AddressSpace != sycl::access::address_space::global_space) {
         std::array res{false, false, false};
         {
-          sycl::buffer result_buf(res.data(), sycl::range(2));
+          sycl::buffer result_buf(res.data(), sycl::range(res.size()));
 
           queue
               .submit([&](sycl::handler &cgh) {
@@ -106,7 +106,7 @@ class run_constructor_tests {
         std::array res{false, false, false};
         {
           sycl::buffer data_buf(&value, sycl::range(1));
-          sycl::buffer result_buf(res.data(), sycl::range(2));
+          sycl::buffer result_buf(res.data(), sycl::range(res.size()));
 
           queue
               .submit([&](sycl::handler &cgh) {

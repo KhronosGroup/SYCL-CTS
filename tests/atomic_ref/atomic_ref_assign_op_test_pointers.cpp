@@ -36,8 +36,8 @@ namespace atomic_ref::tests::api::core {
 // with an unnamed type are implemented in computecpp, re-enable for hipsycl
 // when sycl::info::device::atomic_memory_order_capabilities and
 // sycl::info::device::atomic_memory_scope_capabilities are implemented in
-// hipsycl, re-enable for dpcpp when atomic_ref<T*>::operator=() is implemented
-DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp, hipSYCL)
+// hipsycl
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
 ("sycl::atomic_rer::operator=() test. pointers types", "[atomic_ref]")({
   const auto type_pack =
       atomic_ref::tests::common::get_conformance_pointers_type_pack();
