@@ -10,6 +10,7 @@
 #define __SYCLCTS_TESTS_COMMON_ONCE_PER_UNIT_H
 
 #include "../common/get_cts_object.h"
+#include "../../util/logger.h"
 
 namespace detail {
 /**

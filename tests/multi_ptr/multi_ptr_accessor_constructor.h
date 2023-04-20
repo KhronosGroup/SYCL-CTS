@@ -12,6 +12,7 @@
 #include "../common/get_cts_object.h"
 #include "../common/get_cts_string.h"
 #include "../common/type_list.h"
+#include "../common/once_per_unit.h"
 
 namespace multi_ptr_accessor_constructors {
 template <typename T, sycl::access::address_space Space,
