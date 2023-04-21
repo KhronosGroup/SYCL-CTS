@@ -26,8 +26,8 @@
 #include "../../util/named_requirement_verification/legacy_random_access_iterator.h"
 #include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
-#include "catch2/catch_test_macros.hpp"
 #include "../common/once_per_unit.h"
+#include "catch2/catch_test_macros.hpp"
 
 namespace accessor_iterator_requirement {
 
