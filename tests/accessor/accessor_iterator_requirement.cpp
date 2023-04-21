@@ -27,6 +27,7 @@
 #include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
 #include "catch2/catch_test_macros.hpp"
+#include "../common/once_per_unit.h"
 
 namespace accessor_iterator_requirement {
 
