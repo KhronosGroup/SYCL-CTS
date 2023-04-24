@@ -521,8 +521,8 @@ class check_marray_operators_for_type {
     // <=, >=, <, > are ambiguous for 'const double' and
     // 'const sycl::marray<double, 1>'
 #if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                        , op_less, op_grater,
-                        op_less_eq, op_grater_eq
+                        ,
+                        op_less, op_grater, op_less_eq, op_grater_eq
 #endif
     // && and || are not defined for floating-point types
     // && and || are ambiguous for 'const bool' and
@@ -536,8 +536,8 @@ class check_marray_operators_for_type {
                         >::generate("+", "-", "*", "/", "%", "|", "&", "^",
                                     "<<", ">>", "==", "!="
 #if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                                    , "<", ">",
-                                    "<=", ">=", "&&", "||"
+                                    ,
+                                    "<", ">", "<=", ">=", "&&", "||"
 #endif
         );
 
