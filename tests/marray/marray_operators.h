@@ -516,13 +516,12 @@ class check_marray_operators_for_type {
 
     static const auto binary_operators =
         named_type_pack<op_add, op_sub, op_mul, op_div, op_mod, op_bor, op_band,
-                        op_bxor, op_sl, op_sr, op_eq, op_not_eq, op_less,
-                        op_grater
-    // <= and >= are not being compiled in computecpp for double type
-    // <= and >= are ambiguous for 'const double' and
+                        op_bxor, op_sl, op_sr, op_eq, op_not_eq
+    // <=, >=, <, > are not being compiled in computecpp for double type
+    // <=, >=, <, > are ambiguous for 'const double' and
     // 'const sycl::marray<double, 1>'
 #if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                        ,
+                        , op_less, op_grater,
                         op_less_eq, op_grater_eq
 #endif
     // && and || are not defined for floating-point types
@@ -535,9 +534,9 @@ class check_marray_operators_for_type {
                         op_land, op_lor
 #endif
                         >::generate("+", "-", "*", "/", "%", "|", "&", "^",
-                                    "<<", ">>", "==", "!=", "<", ">"
+                                    "<<", ">>", "==", "!="
 #if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-                                    ,
+                                    , "<", ">",
                                     "<=", ">=", "&&", "||"
 #endif
         );
