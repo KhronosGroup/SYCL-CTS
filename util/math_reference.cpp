@@ -346,7 +346,16 @@ T mul_hi_signed(T a, T b) {
   lo >>= shft;
   hi += lo + (cross1 >> shft) + (cross2 >> shft);
 
-  return (a >> msb) ^ (b >> msb) ? static_cast<T>(~hi) : hi;
+  T result = hi;
+  if ((a >> msb) ^ (b >> msb)) {
+    result = static_cast<T>(~hi);
+    // Check overflow to see if we need to carry
+    if (0 == static_cast<T>(a * b)) {
+      result += 1;
+    }
+  }
+
+  return result;
 }
 
 unsigned char mul_hi(unsigned char a, unsigned char b) {
