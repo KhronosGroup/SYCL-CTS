@@ -23,11 +23,24 @@
 
 #include "group_reduce.h"
 
-TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
-                       "[group_func][fp16][fp64][dim]", ((int D), D), 1, 2, 3) {
+// FIXME: ComputeCpp has no half
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+using ReduceTypes = unnamed_type_pack<>;
+#else
+using ReduceTypes = unnamed_type_pack<double, sycl::half>;
+#endif
+
+// 2-dim Cartesian product of type lists
+using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
+
+TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
+                        "[group_func][fp16][fp64][dim]", prod2) {
   auto queue = sycl_cts::util::get_cts_object::queue();
-  // check dimensions to only print warning once
-  if constexpr (D == 1) {
+  using T = std::tuple_element_t<0, TestType>;
+  using U = std::tuple_element_t<1, TestType>;
+
+  // check types to only print warning once
+  if constexpr (std::is_same_v<T, double> && std::is_same_v<U, double>) {
     // FIXME: hipSYCL omission
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
     WARN(
@@ -58,8 +71,13 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
 #else
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
-    init_joint_reduce_group<D, sycl::half, double>(queue);
-    init_joint_reduce_group<D, double, sycl::half>(queue);
+    // Get binary operators from T
+    const auto Operators = get_op_types<T>();
+    const auto RetType = unnamed_type_pack<T>();
+    const auto ReducedType = unnamed_type_pack<U>();
+    // check all work group dimensions
+    for_all_combinations<invoke_init_joint_reduce_group>(
+        Dims, RetType, ReducedType, Operators, queue);
   } else {
     WARN(
         "Device does not support half and double precision floating point "
@@ -68,11 +86,14 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
 #endif
 }
 
-TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
-                       "[group_func][fp16][fp64][dim]", ((int D), D), 1, 2, 3) {
+TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
+                        "[group_func][fp16][fp64][dim]", prod2) {
   auto queue = sycl_cts::util::get_cts_object::queue();
-  // check dimensions to only print warning once
-  if constexpr (D == 1) {
+  using T = std::tuple_element_t<0, TestType>;
+  using U = std::tuple_element_t<1, TestType>;
+
+  // check types to only print warning once
+  if constexpr (std::is_same_v<T, double> && std::is_same_v<U, double>) {
 #if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
     // Link to issue https://github.com/intel/llvm/issues/8341
     WARN(
@@ -97,8 +118,13 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
 #else
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
-    init_reduce_over_group<D, sycl::half, double>(queue);
-    init_reduce_over_group<D, double, sycl::half>(queue);
+    // Get binary operators from T
+    const auto Operators = get_op_types<T>();
+    const auto RetType = unnamed_type_pack<T>();
+    const auto ReducedType = unnamed_type_pack<U>();
+    // check all work group dimensions
+    for_all_combinations<invoke_init_reduce_over_group>(
+        Dims, RetType, ReducedType, Operators, queue);
   } else {
     WARN(
         "Device does not support half and double precision floating point "

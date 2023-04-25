@@ -23,7 +23,8 @@
 // FIXME: ComputeCpp does not implement group_broadcast for sycl::vec,
 //        sycl::marray, unsigned long long int, and long long int
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+
 using BroadcastTypes =
     std::tuple<size_t, float, char, signed char, unsigned char, short int,
                unsigned short int, int, unsigned int, long int,
