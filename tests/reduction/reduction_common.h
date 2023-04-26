@@ -2,6 +2,20 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides common code for reduction tests
 //
 *******************************************************************************/
@@ -28,6 +42,13 @@ constexpr int init_value_without_property_case{99};
 static sycl::range<1> range{number_iterations};
 static sycl::nd_range<1> nd_range{range, range};
 
+enum class test_case_type {
+  each_work_item = 1,
+  each_even_work_item = 2,
+  no_one_work_item = 3,
+  each_work_item_twice = 4,
+};
+
 const auto scalar_types =
     named_type_pack<char, signed char, unsigned char, short int,
                     unsigned short int, int, unsigned int, long int,
@@ -47,13 +68,37 @@ const auto scalar_types =
  *  @param value_for_initialization The value for initializing output variable
  *  @retval Expected value after test execution
  */
-template <typename VariableT, typename FunctorT, typename BufferT>
+template <test_case_type TestCaseT, typename VariableT, typename FunctorT,
+          typename BufferT>
 VariableT get_expected_value(FunctorT functor, BufferT& buffer,
                              VariableT value_for_initialization) {
   VariableT expected_value{value_for_initialization};
   sycl::host_accessor buf_accessor{buffer};
-  return std::accumulate(buf_accessor.begin(), buf_accessor.end(),
-                         value_for_initialization, functor);
+  if constexpr (TestCaseT == test_case_type::each_work_item) {
+    return std::accumulate(buf_accessor.begin(), buf_accessor.end(),
+                           value_for_initialization, functor);
+  } else if constexpr (TestCaseT == test_case_type::each_even_work_item) {
+    int counter = 1;
+    auto it = buf_accessor.begin();
+    while (it != buf_accessor.end()) {
+      if (0 == (counter & 1)) {
+        expected_value = functor(expected_value, *it);
+      }
+      ++it;
+      ++counter;
+    }
+    return expected_value;
+  } else if constexpr (TestCaseT == test_case_type::no_one_work_item) {
+    return expected_value;
+  } else if constexpr (TestCaseT == test_case_type::each_work_item_twice) {
+    auto it = buf_accessor.begin();
+    while (it != buf_accessor.end()) {
+      expected_value = functor(expected_value, *it);
+      expected_value = functor(expected_value, *it);
+      ++it;
+    }
+    return expected_value;
+  }
 }
 
 /** @brief This function contained common cases from two get_init_value*

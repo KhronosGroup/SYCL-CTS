@@ -2,6 +2,20 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides tests for several reductions in one kernel.
 //
 *******************************************************************************/
@@ -241,10 +255,12 @@ void run_test_for_two_reductions(RangeT range, sycl::queue& queue) {
   using functor_2 = sycl::maximum<int>;
 
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
-  int expected_value_for_ptr_to_variable{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_1(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_1>())};
-  int expected_value_for_buffer{reduction_common::get_expected_value(
+  int expected_value_for_buffer{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_2>())};
 
@@ -288,15 +304,18 @@ void run_test_for_three_reductions(RangeT range, sycl::queue& queue) {
   using functor_3 = sycl::maximum<int>;
 
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
-  int expected_value_for_ptr_to_variable{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_1(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_1, reduction_common::with_property>())};
-  int expected_value_for_buffer{reduction_common::get_expected_value(
+  int expected_value_for_buffer{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_2, reduction_common::with_property>())};
-  int expected_value_for_span{reduction_common::get_expected_value(
+  int expected_value_for_span{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_3(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_3>())};
 
@@ -355,18 +374,22 @@ void run_test_for_four_reductions(RangeT range, sycl::queue& queue) {
   using functor_4 = sycl::bit_or<int>;
 
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
-  int expected_value_for_buffer{reduction_common::get_expected_value(
+  int expected_value_for_buffer{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_1(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_1>())};
-  int expected_value_for_span{reduction_common::get_expected_value(
+  int expected_value_for_span{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_2, reduction_common::with_property>())};
-  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_3(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_3, reduction_common::with_property>())};
-  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_4(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_4, reduction_common::with_property>())};
@@ -435,21 +458,26 @@ void run_test_for_five_reductions(RangeT range, sycl::queue& queue) {
   using functor_5 = reduction_common::op_without_identity<int>;
 
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
-  int expected_value_for_buffer{reduction_common::get_expected_value(
+  int expected_value_for_buffer{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_1(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_1>())};
-  int expected_value_for_span_1{reduction_common::get_expected_value(
+  int expected_value_for_span_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_2>())};
-  int expected_value_for_span_2{reduction_common::get_expected_value(
+  int expected_value_for_span_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_3(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_3, reduction_common::with_property>())};
-  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_4(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_4, reduction_common::with_property>())};
-  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_5(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_5>())};
 
@@ -531,24 +559,30 @@ void run_test_for_six_reductions(RangeT range, sycl::queue& queue) {
   constexpr int num_lambdas = 2;
 
   sycl::buffer<int> initial_buf{reduction_common::get_buffer<int>()};
-  int expected_value_for_buffer_1{reduction_common::get_expected_value(
+  int expected_value_for_buffer_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_1(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_1, reduction_common::with_property>())};
-  int expected_value_for_buffer_2{reduction_common::get_expected_value(
+  int expected_value_for_buffer_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_2(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_2>())};
-  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_3(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_3>())};
-  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value(
+  int expected_value_for_ptr_to_variable_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_4(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_4, reduction_common::with_property>())};
-  int expected_value_for_span_1{reduction_common::get_expected_value(
+  int expected_value_for_span_1{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_5(), initial_buf,
       reduction_common::get_init_value_for_expected_value<int, functor_5>())};
-  int expected_value_for_span_2{reduction_common::get_expected_value(
+  int expected_value_for_span_2{reduction_common::get_expected_value<
+      reduction_common::test_case_type::each_work_item>(
       functor_6(), initial_buf,
       reduction_common::get_init_value_for_expected_value<
           int, functor_6, reduction_common::with_property>())};
