@@ -44,6 +44,7 @@ struct getter {
     group_id,
     range,
     number_of_groups,
+    sub_group,
     nd_range,
     linear_id,
     methods_count
@@ -63,6 +64,8 @@ struct getter {
         return "range";
       case methods::number_of_groups:
         return "number_of_groups";
+      case methods::sub_group:
+        return "sub_group";
       case methods::nd_range:
         return "nd_range,";
       case methods::linear_id:
@@ -86,27 +89,44 @@ class kernel_nd_item {
 
   in_accessor_t m_globalID;
   in_accessor_t m_localID;
-  out_accessor_t m_out;
-  out_dep_accessor_t m_out_deprecated;
+  out_accessor_t m_api_acc;
+  out_accessor_t m_type_acc;
+  out_dep_accessor_t m_api_acc_deprecated;
 
  public:
-  kernel_nd_item(in_accessor_t inG_, in_accessor_t inL_, out_accessor_t out_,
-                 out_dep_accessor_t out_deprecated_)
+  kernel_nd_item(in_accessor_t inG_, in_accessor_t inL_,
+                 out_accessor_t api_acc_, out_accessor_t type_acc_,
+                 out_dep_accessor_t api_acc_deprecated_)
       : m_globalID(inG_),
         m_localID(inL_),
-        m_out(out_),
-        m_out_deprecated(out_deprecated_) {}
+        m_api_acc(api_acc_),
+        m_type_acc(type_acc_),
+        m_api_acc_deprecated(api_acc_deprecated_) {}
 
   void operator()(sycl::nd_item<dimensions> myitem) const {
+    size_t item_id = myitem.get_global_linear_id();
+
+    // results
     bool global_id_res = true;
     bool local_id_res = true;
     bool group_id_res = true;
     bool range_res = true;
     bool number_of_groups_res = true;
+    bool sub_group_res = true;
     bool nd_range_res = true;
     bool offset_res = true;
     bool linear_id_res = true;
-    size_t item_id = myitem.get_global_linear_id();
+
+    // accessors ids
+    sycl::id<2> i_global_id(to_integral(getter::methods::global_id), item_id);
+    sycl::id<2> i_local_id(to_integral(getter::methods::local_id), item_id);
+    sycl::id<2> i_group_id(to_integral(getter::methods::group_id), item_id);
+    sycl::id<2> i_range(to_integral(getter::methods::range), item_id);
+    sycl::id<2> i_number_of_groups(
+        to_integral(getter::methods::number_of_groups), item_id);
+    sycl::id<2> i_sub_group(to_integral(getter::methods::sub_group), item_id);
+    sycl::id<2> i_nd_range(to_integral(getter::methods::nd_range), item_id);
+    sycl::id<2> i_linear_id(to_integral(getter::methods::linear_id), item_id);
 
     /* test global ID */
     sycl::id<dimensions> global_id = myitem.get_global_id();
@@ -121,9 +141,9 @@ class kernel_nd_item {
     }
 
     /* test group ID */
-    sycl::group<dimensions> group_id = myitem.get_group();
+    sycl::group<dimensions> group = myitem.get_group();
     for (int i = 0; i < dimensions; ++i) {
-      group_id_res &= myitem.get_group(i) == group_id.get_id(i);
+      group_id_res &= myitem.get_group(i) == group.get_id(i);
     }
 
     /* test range */
@@ -145,7 +165,7 @@ class kernel_nd_item {
 
     for (int i = 0; i < dimensions; ++i) {
       size_t ratio = global_id.get(i) / localRange.get(i);
-      range_res &= group_id.get_id(i) == ratio;
+      range_res &= group.get_id(i) == ratio;
     }
 
     /* test number of groups */
@@ -158,6 +178,9 @@ class kernel_nd_item {
       size_t ratio = globalRange.get(i) / localRange.get(i);
       number_of_groups_res &= ratio == num_groups.get(i);
     }
+
+    /* test sub_group */
+    auto subGroup = myitem.get_sub_group();
 
     /* test NDrange */
     sycl::nd_range<dimensions> NDRange = myitem.get_nd_range();
@@ -177,34 +200,52 @@ class kernel_nd_item {
     for (int i = 0; i < dimensions; ++i) {
       deprecated_all_correct &= offset.get(i) == ndOffset.get(i);
     }
-    m_out_deprecated[global_id] = deprecated_all_correct;
+    m_api_acc_deprecated[global_id] = deprecated_all_correct;
 #endif
 
     /* test linear_id */
     size_t glid = myitem.get_global_linear_id();
     size_t llid = myitem.get_local_linear_id();
     size_t grlid = myitem.get_group_linear_id();
-    size_t groupIndex = getIndex(group_id.get_id(), myitem.get_group_range());
+    size_t groupIndex = getIndex(group.get_id(), myitem.get_group_range());
 
     linear_id_res &= glid == globalIndex;
     linear_id_res &= llid == localIndex;
     linear_id_res &= grlid == groupIndex;
 
     /* write back whether all checks were successful */
-    m_out[sycl::id<2>(to_integral(getter::methods::global_id), item_id)] =
-        global_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::local_id), item_id)] =
-        local_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::group_id), item_id)] =
-        group_id_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::range), item_id)] =
-        range_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::number_of_groups),
-                      item_id)] = number_of_groups_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::nd_range), item_id)] =
-        nd_range_res;
-    m_out[sycl::id<2>(to_integral(getter::methods::linear_id), item_id)] =
-        linear_id_res;
+    m_api_acc[i_global_id] = global_id_res;
+    m_api_acc[i_local_id] = local_id_res;
+    m_api_acc[i_group_id] = group_id_res;
+    m_api_acc[i_range] = range_res;
+    m_api_acc[i_number_of_groups] = number_of_groups_res;
+    m_api_acc[i_sub_group] = sub_group_res;
+    m_api_acc[i_nd_range] = nd_range_res;
+    m_api_acc[i_linear_id] = linear_id_res;
+
+    m_type_acc[i_global_id] =
+        std::is_same_v<sycl::id<dimensions>, decltype(global_id)> &&
+        std::is_same_v<size_t, decltype(myitem.get_global_id(0))>;
+    m_type_acc[i_local_id] =
+        std::is_same_v<sycl::id<dimensions>, decltype(local_id)> &&
+        std::is_same_v<size_t, decltype(myitem.get_local_id(0))>;
+    m_type_acc[i_group_id] =
+        std::is_same_v<sycl::group<dimensions>, decltype(group)> &&
+        std::is_same_v<size_t, decltype(myitem.get_group(0))>;
+    m_type_acc[i_range] =
+        std::is_same_v<sycl::range<dimensions>, decltype(globalRange)> &&
+        std::is_same_v<size_t, decltype(myitem.get_global_range(0))> &&
+        std::is_same_v<sycl::range<dimensions>, decltype(localRange)> &&
+        std::is_same_v<size_t, decltype(myitem.get_local_range(0))>;
+    m_type_acc[i_number_of_groups] =
+        std::is_same_v<sycl::id<dimensions>, decltype(num_groups)>;
+    m_type_acc[i_sub_group] =
+        std::is_same_v<sycl::sub_group, decltype(subGroup)>;
+    m_type_acc[i_nd_range] =
+        std::is_same_v<sycl::nd_range<dimensions>, decltype(NDRange)>;
+    m_type_acc[i_linear_id] = std::is_same_v<size_t, decltype(glid)> &&
+                              std::is_same_v<size_t, decltype(llid)> &&
+                              std::is_same_v<size_t, decltype(grlid)>;
   }
 };
 
@@ -248,9 +289,10 @@ void test_item() {
   std::vector<int> globalIDs(nSize);
   std::vector<int> localIDs(nSize);
   populate(globalIDs.data(), localIDs.data(), localSize, globalSize);
-  std::array<std::array<bool, nCurrentSize>, nMethodsCount> dataOut;
-  std::vector<int> dataOutDeprecated(nSize);
-  std::fill(dataOutDeprecated.begin(), dataOutDeprecated.end(), 0);
+  std::array<std::array<bool, nCurrentSize>, nMethodsCount> apiData;
+  std::array<std::array<bool, nCurrentSize>, nMethodsCount> typeData;
+  std::vector<int> apiDataDeprecated(nSize);
+  std::fill(apiDataDeprecated.begin(), apiDataDeprecated.end(), 0);
 
   {
     /* create ranges*/
@@ -264,32 +306,44 @@ void test_item() {
     {
       sycl::buffer<int, dims> bufGlob(globalIDs.data(), globalRange);
       sycl::buffer<int, dims> bufLoc(localIDs.data(), globalRange);
-      sycl::buffer<bool, 2> bufOut(dataOut.data()->data(), resRange);
-      sycl::buffer<int, dims> bufOutDeprecated(dataOutDeprecated.data(),
+      sycl::buffer<bool, 2> bufApi(apiData.data()->data(), resRange);
+      sycl::buffer<bool, 2> bufType(typeData.data()->data(), resRange);
+      sycl::buffer<int, dims> bufApiDeprecated(apiDataDeprecated.data(),
                                                globalRange);
 
       queue.submit([&](sycl::handler &cgh) {
         kernel_nd_item<dims> kernel_(
             bufGlob.template get_access<sycl::access_mode::read>(cgh),
             bufLoc.template get_access<sycl::access_mode::read>(cgh),
-            bufOut.template get_access<sycl::access_mode::write>(cgh),
-            bufOutDeprecated.template get_access<sycl::access_mode::write>(
+            bufApi.template get_access<sycl::access_mode::write>(cgh),
+            bufType.template get_access<sycl::access_mode::write>(cgh),
+            bufApiDeprecated.template get_access<sycl::access_mode::write>(
                 cgh));
         cgh.parallel_for<kernel_nd_item<dims>>(dataRange, kernel_);
       });
     }
 
-    // check api call results
+    // check results
     for (int i = 0; i < nMethodsCount; i++) {
       INFO("Dimensions: " << std::to_string(dims));
-      INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
-                    << " result");
-      CHECK(std::all_of(dataOut[i].cbegin(), dataOut[i].cend(),
-                        [](bool val) { return val; }));
+      // API
+      {
+        INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
+                      << " call result");
+        CHECK(std::all_of(apiData[i].cbegin(), apiData[i].cend(),
+                          [](bool val) { return val; }));
+      }
+      // Type
+      {
+        INFO("Check " << getter::method_name(static_cast<getter::methods>(i))
+                      << " return type");
+        CHECK(std::all_of(typeData[i].cbegin(), typeData[i].cend(),
+                          [](bool val) { return val; }));
+      }
     }
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-    CHECK(std::all_of(dataOutDeprecated.begin(),
-                      dataOutDeprecated.begin() + globalRange.size(),
+    CHECK(std::all_of(apiDataDeprecated.begin(),
+                      apiDataDeprecated.begin() + globalRange.size(),
                       [](int val) { return val; }));
 #endif
 
