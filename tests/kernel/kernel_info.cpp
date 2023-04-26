@@ -64,7 +64,7 @@ TEST_CASE("Test kernel info", "[kernel]") {
         "case of sycl::info::kernel::num_args descriptor usage with user "
         "defined kernel which resides in a kernel bundle that was constructed "
         "without using interoperability function.");
-    CHECK_THROWS_MATCHES(incorrect_num_args_usage, sycl::exception,
+    CHECK_THROWS_MATCHES(incorrect_num_args_usage(), sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 
@@ -88,7 +88,7 @@ TEST_CASE("Test kernel info", "[kernel]") {
         "case of sycl::info::kernel_device_specific::global_work_size "
         "descriptor usage with user defined kernel and device which type "
         "is not custom.");
-    CHECK_THROWS_MATCHES(incorrect_global_work_size_usage, sycl::exception,
+    CHECK_THROWS_MATCHES(incorrect_global_work_size_usage(), sycl::exception,
                          sycl_cts::util::equals_exception(sycl::errc::invalid));
   }
 

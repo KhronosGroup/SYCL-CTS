@@ -34,14 +34,11 @@ namespace atomic_ref::tests::static_members::core::atomic64 {
 // implemented in computecpp
 DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("sycl::atomic_ref static members. atomic64 types", "[atomic_ref]")({
-  auto queue = sycl_cts::util::get_cts_object::queue();
-  if (!queue.get_device().has(sycl::aspect::atomic64)) {
-    SKIP(
-        "Device does not support atomic64 operations. "
-        "Skipping the test case.");
-  }
   const auto type_pack = atomic_ref::tests::common::get_atomic64_types();
   for_all_types<atomic_ref::tests::static_members::run_test>(type_pack);
+
+  const auto type_pack_fp64 = get_cts_types::get_fp64_type();
+  for_all_types<atomic_ref::tests::static_members::run_test>(type_pack_fp64);
 });
 
 }  // namespace atomic_ref::tests::static_members::core::atomic64

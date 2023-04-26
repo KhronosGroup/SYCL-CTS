@@ -51,4 +51,18 @@ DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
       type_pack);
 });
 
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref fetch_add()/fetch_sub() test. double type", "[atomic_ref]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  if (!queue.get_device().has(sycl::aspect::fp64) or
+      !queue.get_device().has(sycl::aspect::atomic64)) {
+    SKIP(
+        "Device does not support fp64 or atomic64 operations. "
+        "Skipping the test case for double type.");
+  }
+  const auto type_pack_fp64 = get_cts_types::get_fp64_type();
+  for_all_types<atomic_ref::tests::api::run_fetch_add_sub_all_types_test>(
+      type_pack_fp64);
+});
+
 }  // namespace atomic_ref::tests::api::core::atomic64

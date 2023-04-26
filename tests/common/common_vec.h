@@ -380,7 +380,7 @@ template <typename vecType, int N>
 bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   // size()
   size_t count = inputVec.size();
-  if (count != N) {
+  if (count != N || !noexcept(inputVec.size())) {
     return false;
   }
   count = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).size();
@@ -389,7 +389,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_count()
-  // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_TEST_DEPRECATED_FEATURES
   size_t count_depr = inputVec.get_count();
   if (count_depr != N) {
     return false;
@@ -399,11 +399,11 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (count_depr != N) {
     return false;
   }
-
+#endif
   // byte_size()
   size_t size = inputVec.byte_size();
   size_t M = (N == 3) ? 4 : N;
-  if (size != sizeof(vecType) * M) {
+  if (size != sizeof(vecType) * M || !noexcept(inputVec.byte_size())) {
     return false;
   }
   size = vector_swizzle_check<vecType, N>::get_swizzle(inputVec).byte_size();
@@ -412,7 +412,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_size()
-  // TODO: mark this check as testing deprecated functionality
+#if SYCL_CTS_TEST_DEPRECATED_FEATURES
   size_t size_depr = inputVec.get_size();
   if (size_depr != sizeof(vecType) * M) {
     return false;
@@ -422,6 +422,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   if (size_depr != sizeof(vecType) * M) {
     return false;
   }
+#endif
   return true;
 }
 
