@@ -50,8 +50,7 @@ struct storage {
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("local_accessor common reference semantics (host)", "[local_accessor]")({
 // Issue link https://github.com/intel/llvm/issues/8332
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "Implementation does not define std::hash for accessor. "
       "Affected test cases set to fail.");
