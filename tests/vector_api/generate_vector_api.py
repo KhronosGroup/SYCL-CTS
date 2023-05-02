@@ -56,14 +56,9 @@ vector_api_template = Template("""
             sizeof(${type}) * (${size} == 3 ? 4 : ${size})) {
           resAcc[0] = false;
         }
-// FIXME: re-enable type conversion for bool when bool -> other types
-// https://github.com/intel/llvm/issues/8543
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-        if constexpr (!std::is_same_v<${type}, bool>)
-#endif
-          if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
-            resAcc[0] = false;
-          }
+        if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
+        resAcc[0] = false;
+        }
 """)
 
 lo_hi_odd_even_template = Template("""
