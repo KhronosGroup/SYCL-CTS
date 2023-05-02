@@ -40,11 +40,6 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
     WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
 #endif
   }
 
@@ -53,8 +48,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
   return;
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
   // Link to issue https://github.com/intel/llvm/issues/8341
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp16) &&
@@ -73,12 +67,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
                        "[group_func][fp16][fp64][dim]", ((int D), D), 1, 2, 3) {
   // check dimensions to only print warning once
   if constexpr (D == 1) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
@@ -91,8 +80,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
   return;
   // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
   // Link to issue https://github.com/intel/llvm/issues/8341
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp16) &&
