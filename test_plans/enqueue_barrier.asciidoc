@@ -99,7 +99,7 @@ be equal to `sycl::event` for both member functions.
 Check that waiting on returned `event` waits for the previously submitted
 kernels to complete.
 
-Checking with one queue:
+==== Checking with one queue
 
 * Create a queue
 * Allocate two USM buffers in host memory BufA and BufB
@@ -110,7 +110,7 @@ Checking with one queue:
 * Wait on E from host code
 * Check the BufA and BufB contain the results of kernels A and B
 
-Checking with three queues:
+==== Checking with three queues
 
 * Create 3 queues
 * Allocate two USM buffers in host memory BufA and BufB
