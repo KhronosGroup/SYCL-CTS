@@ -12,9 +12,8 @@ https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_o
 === Device coverage
 
 All of the tests described below are performed only on the default device that
-is selected on the CTS command line. Tests require USM support with allocation
-type `device`, so tests are skipped if the device doesn't support USM with such
-allocation type.
+is selected on the CTS command line. Tests require USM support, so tests are
+skipped if the device doesn't support USM.
 
 === Feature test macro
 
@@ -94,3 +93,31 @@ These member functions should be checked the same as the corresponding member
 functions of the `sycl::handler` class according to the algorithm description
 in the previous section. In addition return type should be checked which should
 be equal to `sycl::event` for both member functions.
+
+=== Returned `sycl::event`
+
+Check that waiting on returned `event` waits for the previously submitted
+kernels to complete.
+
+Checking with one queue:
+
+* Create a queue
+* Allocate two USM buffers in host memory BufA and BufB
+* Define kernel A which writes a result in USM buffer BufA
+* Define kernel B which writes a result in USM buffer BufB
+* Submit kernels A and B to the queue
+* Call `queue::ext_oneapi_submit_barrier`, which returns event E
+* Wait on E from host code
+* Check the BufA and BufB contain the results of kernels A and B
+
+Checking with three queues:
+
+* Create 3 queues
+* Allocate two USM buffers in host memory BufA and BufB
+* Define kernel A which writes a result in USM buffer BufA
+* Define kernel B which writes a result in USM buffer BufB
+* Submit kernel A to the first queue and kernel B to the second queue
+* Call `queue::ext_oneapi_submit_barrier` for the third queue, which returns
+  event E
+* Wait on E from host code
+* Check the BufA and BufB contain the results of kernels A and B
