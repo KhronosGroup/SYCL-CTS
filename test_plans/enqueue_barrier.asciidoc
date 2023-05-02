@@ -106,7 +106,7 @@ Checking with one queue:
 * Define kernel A which writes a result in USM buffer BufA
 * Define kernel B which writes a result in USM buffer BufB
 * Submit kernels A and B to the queue
-* Call `queue::ext_oneapi_submit_barrier`, which returns event E
+* Call `queue::ext_oneapi_submit_barrier()`, which returns event E
 * Wait on E from host code
 * Check the BufA and BufB contain the results of kernels A and B
 
@@ -116,8 +116,9 @@ Checking with three queues:
 * Allocate two USM buffers in host memory BufA and BufB
 * Define kernel A which writes a result in USM buffer BufA
 * Define kernel B which writes a result in USM buffer BufB
-* Submit kernel A to the first queue and kernel B to the second queue
-* Call `queue::ext_oneapi_submit_barrier` for the third queue, which returns
-  event E
+* Submit kernel A to the first queue and kernel B to the second queue, save
+  appropriate eventA and eventB
+* Call `queue::ext_oneapi_submit_barrier( {eventA, eventB} )` for the third
+  queue, which returns event E
 * Wait on E from host code
 * Check the BufA and BufB contain the results of kernels A and B
