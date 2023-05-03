@@ -173,6 +173,11 @@ void check_function(sycl_cts::util::logger &log, funT fun,
   if (!verify(log, kernelResult, ref, accuracy, comment))
     FAIL(log,
          "tests case: " + std::to_string(N) + ". Correctness check failed.");
+
+  // host check
+  auto hostRes = fun();
+  INFO("tests case: " + std::to_string(N) + ". Correctness check failed on host.");
+  CHECK(verify(log, hostRes, ref, accuracy, comment));
 }
 
 template <int N, typename returnT, typename funT, typename argT>
@@ -211,6 +216,17 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
   if (!verify(log, kernelResultArg, ptrRef, accuracy, comment))
     FAIL(log, "tests case: " + std::to_string(N) +
                   ". Correctness check for ptr failed.");
+
+  // host check
+  privatePtrCheck<returnT, argT> hostRes = fun();
+  {
+    INFO("tests case: " + std::to_string(N) + ". Correctness check failed on host.");
+    CHECK(verify(log, hostRes.res, ref, accuracy, comment));
+  }
+  {
+    INFO("tests case: " + std::to_string(N) + ". Correctness check for ptr failed on host.");
+    CHECK(verify(log, hostRes.resArg, ptrRef, accuracy, comment));
+  }
 }
 
 template <int N, typename returnT, typename funT, typename argT>
