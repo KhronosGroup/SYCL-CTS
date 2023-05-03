@@ -315,8 +315,7 @@ struct test_inequality {
  compiler-specific exception. */
 template <typename T>
 bool hash_inequality_helper(const T& t0, const T& t1) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<
                     T, sycl::host_accessor<int, 1,
                                            sycl::access::mode::read_write>> ||
