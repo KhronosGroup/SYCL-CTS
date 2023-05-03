@@ -22,8 +22,8 @@
 #ifndef CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
 #define CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
 
-#include "../../util/math_reference.h"
 #include "../../util/accuracy.h"
+#include "../../util/math_reference.h"
 #include "../../util/sycl_exceptions.h"
 #include "../common/once_per_unit.h"
 #include <cfloat>
@@ -37,30 +37,45 @@ inline sycl::queue makeQueueOnce() {
   return q;
 }
 
-template <typename returnT, typename ArgT> struct privatePtrCheck {
+template <typename returnT, typename ArgT>
+struct privatePtrCheck {
   returnT res;
   ArgT resArg;
   privatePtrCheck(returnT res_t, ArgT resArg_t)
       : res(res_t), resArg(resArg_t) {}
 };
 
-template <typename T> struct base;
-template <> struct base<float> { using type = std::uint32_t; };
-template <> struct base<double> { using type = std::uint64_t; };
-template <> struct base<sycl::half> { using type = std::uint16_t; };
+template <typename T>
+struct base;
+template <>
+struct base<float> {
+  using type = std::uint32_t;
+};
+template <>
+struct base<double> {
+  using type = std::uint64_t;
+};
+template <>
+struct base<sycl::half> {
+  using type = std::uint16_t;
+};
 
-template <typename T> std::string printable(T value) {
-  const auto representation =
-      sycl::bit_cast<typename base<T>::type>(value);
+template <typename T>
+std::string printable(T value) {
+  const auto representation = sycl::bit_cast<typename base<T>::type>(value);
   std::ostringstream out;
   out.precision(64);
   out << value << " [" << std::hex << representation << "]";
   return out.str();
 }
 
-template <typename T> T min_t() { return std::numeric_limits<T>::min(); }
+template <typename T>
+T min_t() {
+  return std::numeric_limits<T>::min();
+}
 
-template <> inline sycl::half min_t<sycl::half>() {
+template <>
+inline sycl::half min_t<sycl::half>() {
   return static_cast<sycl::half>(powf(2.0f, -14.0f));
 }
 
@@ -77,30 +92,29 @@ verify(sycl_cts::util::logger &log, T value, sycl_cts::resultRef<T> r,
   const T reference = r.res;
 
   if (!r.undefined.empty())
-    return true; // result is undefined according to spec
+    return true;  // result is undefined according to spec
   if (std::isnan(value) && std::isnan(reference))
-    return true; // NaN can have any nancode within
+    return true;  // NaN can have any nancode within
   if (value == reference)
-    return true; // bitwise equal numeric or infinity value
+    return true;  // bitwise equal numeric or infinity value
 
   if (!std::isnan(value) && !std::isnan(reference) && !std::isinf(value) &&
       !std::isinf(reference)) {
     if (accuracy < 0)
-      return true; // Implementation-defined or infinite ULP according to spec
+      return true;  // Implementation-defined or infinite ULP according to spec
 
     if ((std::fabs(value) < min_t<T>()) && (std::fabs(reference) < min_t<T>()))
-      return true; // Subnormal numbers are the lower border for comparison
+      return true;  // Subnormal numbers are the lower border for comparison
 
     const auto ulpsExpected = static_cast<unsigned int>(accuracy);
     const T difference = static_cast<T>(std::fabs(value - reference));
     const T differenceExpected = ulpsExpected * get_ulp_std(reference);
 
-    if (difference <= differenceExpected)
-      return true;
+    if (difference <= differenceExpected) return true;
   }
 
-  log.note("value: " + printable(value) + ", reference: " +
-           printable(reference));
+  log.note("value: " + printable(value) +
+           ", reference: " + printable(reference));
   std::string msg = "Expected accuracy in ULP: " + std::to_string(accuracy);
   if (!comment.empty()) msg += ", " + comment;
   log.note(msg);
@@ -113,8 +127,8 @@ typename std::enable_if_t<std::is_integral_v<T>, bool> verify(
     const std::string &) {
   bool result = value == r.res || !r.undefined.empty();
   if (!result)
-    log.note("value: " + std::to_string(value) + ", reference: " +
-             std::to_string(r.res));
+    log.note("value: " + std::to_string(value) +
+             ", reference: " + std::to_string(r.res));
   return result;
 }
 
@@ -154,12 +168,11 @@ void check_function(sycl_cts::util::logger &log, funT fun,
                     const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   try {
     sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     testQueue.submit([&](sycl::handler &h) {
-      auto resultPtr =
-          buffer.template get_access<sycl::access_mode::write>(h);
+      auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
       h.single_task<kernel<N>>(
           [=]() { value_operations::assign(resultPtr[0], fun()); });
     });
@@ -176,7 +189,8 @@ void check_function(sycl_cts::util::logger &log, funT fun,
 
   // host check
   auto hostRes = fun();
-  INFO("tests case: " + std::to_string(N) + ". Correctness check failed on host.");
+  INFO("tests case: " + std::to_string(N) +
+       ". Correctness check failed on host.");
   CHECK(verify(log, hostRes, ref, accuracy, comment));
 }
 
@@ -188,13 +202,12 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
   sycl::range<1> ndRng(1);
   returnT kernelResult;
   argT kernelResultArg;
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   try {
     sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     sycl::buffer<argT, 1> bufferArg(&kernelResultArg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
-      auto resultPtr =
-          buffer.template get_access<sycl::access_mode::write>(h);
+      auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
       auto resultPtrArg =
           bufferArg.template get_access<sycl::access_mode::write>(h);
       h.single_task<kernel<N>>([=]() {
@@ -220,11 +233,13 @@ void check_function_multi_ptr_private(sycl_cts::util::logger &log, funT fun,
   // host check
   privatePtrCheck<returnT, argT> hostRes = fun();
   {
-    INFO("tests case: " + std::to_string(N) + ". Correctness check failed on host.");
+    INFO("tests case: " + std::to_string(N) +
+         ". Correctness check failed on host.");
     CHECK(verify(log, hostRes.res, ref, accuracy, comment));
   }
   {
-    INFO("tests case: " + std::to_string(N) + ". Correctness check for ptr failed on host.");
+    INFO("tests case: " + std::to_string(N) +
+         ". Correctness check for ptr failed on host.");
     CHECK(verify(log, hostRes.resArg, ptrRef, accuracy, comment));
   }
 }
@@ -236,15 +251,14 @@ void check_function_multi_ptr_global(sycl_cts::util::logger &log, funT fun,
                                      const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   try {
     sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
-      auto resultPtr =
-          buffer.template get_access<sycl::access_mode::write>(h);
+      auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
       sycl::accessor<argT, 1, sycl::access_mode::read_write,
-                         sycl::target::device>
+                     sycl::target::device>
           globalAccessor(ptrBuffer, h);
       h.single_task<kernel<N>>([=]() { resultPtr[0] = fun(globalAccessor); });
     });
@@ -270,17 +284,17 @@ void check_function_multi_ptr_local(sycl_cts::util::logger &log, funT fun,
                                     const std::string &comment = {}) {
   sycl::range<1> ndRng(1);
   returnT kernelResult;
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   try {
     sycl::buffer<returnT, 1> buffer(&kernelResult, ndRng);
     sycl::buffer<argT, 1> bufferArg(&arg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
-      auto resultPtr =
-          buffer.template get_access<sycl::access_mode::write>(h);
+      auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
       auto resultPtrArg =
           bufferArg.template get_access<sycl::access_mode::write>(h);
       sycl::accessor<argT, 1, sycl::access_mode::read_write,
-                         sycl::target::local> localAccessor(1, h);
+                     sycl::target::local>
+          localAccessor(1, h);
       h.single_task<kernel<N>>(
           [arg, localAccessor, resultPtr, resultPtrArg, fun]() {
             localAccessor[0] = arg;
@@ -307,14 +321,12 @@ template <int T, typename returnT, typename funT>
 void test_function(funT fun) {
   sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   {
     sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
-        h.single_task<kernel<T>>([=](){
-          resultPtr[0] = fun();
-        });
+      h.single_task<kernel<T>>([=]() { resultPtr[0] = fun(); });
     });
   }
   testQueue.wait_and_throw();
@@ -325,16 +337,16 @@ template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_global(funT fun, argT arg) {
   sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   {
     sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     sycl::buffer<argT, 1> ptrBuffer(&arg, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access_mode::read_write, sycl::target::device> globalAccessor(ptrBuffer, h);
-        h.single_task<kernel<T>>([=](){
-          resultPtr[0] = fun(globalAccessor);
-        });
+      sycl::accessor<argT, 1, sycl::access_mode::read_write,
+                     sycl::target::device>
+          globalAccessor(ptrBuffer, h);
+      h.single_task<kernel<T>>([=]() { resultPtr[0] = fun(globalAccessor); });
     });
   }
   testQueue.wait_and_throw();
@@ -345,20 +357,22 @@ template <int T, typename returnT, typename funT, typename argT>
 void test_function_multi_ptr_local(funT fun, argT arg) {
   sycl::range<1> ndRng(1);
   returnT *kernelResult = new returnT[1];
-  auto&& testQueue = once_per_unit::get_queue();
+  auto &&testQueue = once_per_unit::get_queue();
   {
     sycl::buffer<returnT, 1> buffer(kernelResult, ndRng);
     testQueue.submit([&](sycl::handler &h) {
       auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access_mode::read_write, sycl::target::local> localAccessor(1, h);
-        h.single_task<kernel<T>>([arg, localAccessor, resultPtr, fun](){
-          localAccessor[0] = arg;
-          resultPtr[0] = fun(localAccessor);
-        });
+      sycl::accessor<argT, 1, sycl::access_mode::read_write,
+                     sycl::target::local>
+          localAccessor(1, h);
+      h.single_task<kernel<T>>([arg, localAccessor, resultPtr, fun]() {
+        localAccessor[0] = arg;
+        resultPtr[0] = fun(localAccessor);
+      });
     });
   }
   testQueue.wait_and_throw();
   delete[] kernelResult;
 }
 
-#endif // CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
+#endif  // CL_SYCL_CTS_MATH_BUILTIN_API_MATH_BUILTIN_H
