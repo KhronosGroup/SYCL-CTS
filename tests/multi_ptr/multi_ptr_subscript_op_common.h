@@ -58,9 +58,7 @@ class run_subscript_op_tests {
     arr_t ret_arr_neg = multi_ptr_common::init_array<T, array_size>::value;
     arr_t exp_arr = multi_ptr_common::init_array<T, array_size>::value;
 
-    for (size_t i = 0; i < array_size; ++i) {
-      exp_arr[i] = i;
-    }
+    std::iota(exp_arr.begin(), exp_arr.end(), 0);
 
     {
       sycl::buffer<bool> ret_type_buffer(&ret_type_check, {1});
@@ -105,7 +103,7 @@ class run_subscript_op_tests {
             value_operations::assign(exp_arr_neg_acc, exp_arr);
 
             // pointer to the end of the array
-            T *arr_end = const_cast<T *>(&exp_arr_neg_acc[array_size - 1]);
+            T *arr_end = &exp_arr_neg_acc[array_size - 1];
             multi_ptr_t multi_ptr_negative =
                 sycl::address_space_cast<space, decorated>(arr_end);
 
