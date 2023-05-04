@@ -20,8 +20,6 @@
 
 #include "group_reduce.h"
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
-
 // FIXME: ComputeCpp does not implement reduce for unsigned long long int and
 //        long long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
@@ -43,6 +41,7 @@ using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
 // hipSYCL has no implementation over sub-groups
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
                         "[group_func][type_list][dim]", ReduceTypes) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // check types to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
     // FIXME: hipSYCL omission
@@ -79,6 +78,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
 // hipSYCL has problems with 16-bit types for Ptr
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
                         "[group_func][type_list][dim]", prod2) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
@@ -126,6 +126,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
                         "[group_func][type_list][dim]", ReduceTypes) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // check types to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -154,6 +155,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
                         "[group_func][type_list][dim]", prod2) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
