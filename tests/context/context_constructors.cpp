@@ -118,27 +118,6 @@ class TEST_NAME : public util::test_base {
         check_context_after_ctor(context, deviceList, log);
       }
 
-      /** check (platform) constructor
-       */
-      {
-        auto platform = util::get_cts_object::platform(cts_selector);
-        auto deviceList = platform.get_devices();
-        sycl::context context(platform);
-
-        check_context_after_ctor(context, deviceList, log);
-      }
-
-      /** check (platform, async_handler) constructor
-       */
-      {
-        cts_async_handler asyncHandler;
-        auto platform = util::get_cts_object::platform(cts_selector);
-        auto deviceList = platform.get_devices();
-        sycl::context context(platform, asyncHandler);
-
-        check_context_after_ctor(context, deviceList, log);
-      }
-
       /** check copy constructor
        */
       {

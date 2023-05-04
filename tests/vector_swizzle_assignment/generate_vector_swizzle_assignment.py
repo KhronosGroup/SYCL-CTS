@@ -89,7 +89,7 @@ def gen_ordered_values(index_string, type_str):
     ordered_val_list = [None] * len(index_string)
     val = 0
     for index in index_string:
-        ordered_val_list[index_positions_dict[index]] = 'static_cast<bool>(' + str(val) + ' % 2)' if type_str == 'bool' else str(val)
+        ordered_val_list[index_positions_dict[index]] = '(' + str(val) + ' % 2 == 0)' if type_str == 'bool' else str(val)
         val += 1
     return ordered_val_list
 

@@ -37,7 +37,6 @@ using ScanTypes = unnamed_type_pack<float, char, int>;
 using ScanTypes = Types;
 #endif
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 // FIXME: known_identity is not impemented yet for hipSYCL.
@@ -60,6 +59,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -96,6 +96,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -123,6 +124,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "Skipping the test.");
 #endif
 
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault
@@ -156,6 +158,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "Skipping the test.");
 #endif
 
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault

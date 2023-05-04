@@ -14,9 +14,7 @@
 #include "accessor_common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_default_values.h"
 
@@ -27,7 +25,7 @@ using namespace accessor_tests_common;
 namespace accessor_default_values_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Accessors constructor default values test core types.", "[accessor]")({
   const auto types = get_conformance_type_pack();
   for_all_types_vectors_marray<run_tests>(types);
