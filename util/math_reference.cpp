@@ -310,6 +310,15 @@ T mul_hi_unsigned(T x, T y) {
   return hi;
 }
 
+/**
+ * @brief Function to get high sizeof(T)*8 bits of the product of two signed T
+ *
+ * @tparam T signed type T
+ * @param a The first number of multiply
+ * @param b The second number of multiply
+ * @return T High sizeof(T)*8 bits of the sizeof(T*2)*8 bits result of the
+ * multiplication
+ */
 template <typename T>
 T mul_hi_signed(T a, T b) {
   // All shifts are half the size of T in bits
@@ -336,6 +345,7 @@ T mul_hi_signed(T a, T b) {
   r = static_cast<U>(a_pos) & mask;
   s = static_cast<U>(b_pos) & mask;
 
+  // calc half products
   lo = r * s;
   hi = p * q;
   cross1 = (p * s);
@@ -347,9 +357,10 @@ T mul_hi_signed(T a, T b) {
   hi += lo + (cross1 >> shft) + (cross2 >> shft);
 
   T result = hi;
+  // if result is negative
   if ((a >> msb) ^ (b >> msb)) {
     result = static_cast<T>(~hi);
-    // Check overflow to see if we need to carry
+    // check that the low half is zero to see if we need to carry
     if (0 == static_cast<T>(a * b)) {
       result += 1;
     }
