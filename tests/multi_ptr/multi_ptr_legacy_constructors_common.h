@@ -56,7 +56,9 @@ class pointer_ctors {
                      sycl::target::local>
           localAccessor(size, handler);
 
-      handler.single_task<class kernel0<T, U>>([=] {
+      handler.parallel_for<class kernel0<T, U>>(
+          sycl::nd_range<1>(sycl::range<1>(1), sycl::range<1>(1)),
+          [=](auto item) {
         data_t privateData[1];
 
         /** check default constructors

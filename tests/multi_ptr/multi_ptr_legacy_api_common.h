@@ -610,8 +610,10 @@ class pointer_apis {
                        sycl::target::local>
             localAccessor(size, handler);
 
-        handler.single_task<class kernel0<T, U>>(
-              [resAcc, globalAccessor, constantAccessor, localAccessor]() {
+        handler.parallel_for<class kernel0<T, U>>(
+            sycl::nd_range<1>(sycl::range<1>(1), sycl::range<1>(1)),
+            [resAcc, globalAccessor, constantAccessor,
+             localAccessor](auto item) {
           check_helper<T, U> checker;
 
           data_t privateData[size];
