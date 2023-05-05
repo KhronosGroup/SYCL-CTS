@@ -12,7 +12,7 @@
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
+// Issue link https://github.com/intel/llvm/issues/8876
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 

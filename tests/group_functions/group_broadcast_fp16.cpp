@@ -20,10 +20,9 @@
 
 #include "group_broadcast.h"
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
-
 TEMPLATE_TEST_CASE_SIG("Group broadcast", "[group_func][fp16][dim]",
                        ((int D), D), 1, 2, 3) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // check dimension to only print warning once
   if constexpr (D == 1) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -50,6 +49,7 @@ TEMPLATE_TEST_CASE_SIG("Group broadcast", "[group_func][fp16][dim]",
 
 TEMPLATE_TEST_CASE_SIG("Sub-group broadcast and select",
                        "[group_func][fp16][dim]", ((int D), D), 1, 2, 3) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
   // check dimension to only print warning once
   if constexpr (D == 1) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
