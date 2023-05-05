@@ -59,121 +59,130 @@ class pointer_ctors {
       handler.parallel_for<class kernel0<T, U>>(
           sycl::nd_range<1>(sycl::range<1>(1), sycl::range<1>(1)),
           [=](auto item) {
-        data_t privateData[1];
+            data_t privateData[1];
 
-        /** check default constructors
-         */
-        {
-          multiPtrGlobal globalMultiPtr;
-          multiPtrConstant constantMultiPtr;
-          multiPtrLocal localMultiPtr;
-          multiPtrPrivate privateMultiPtr;
+            /** check default constructors
+             */
+            {
+              multiPtrGlobal globalMultiPtr;
+              multiPtrConstant constantMultiPtr;
+              multiPtrLocal localMultiPtr;
+              multiPtrPrivate privateMultiPtr;
 
-          silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
-                           privateMultiPtr);
-        }
+              silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
+                               privateMultiPtr);
+            }
 
-        /** check (elementType *) constructors
-         */
-        {
-          global_ptr_legacy<U> globalPtr(static_cast<U *>(&globalAccessor[0]));
-          constant_ptr_legacy<U> constantPtr(constantAccessor.get_pointer());
-          local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
+            /** check (elementType *) constructors
+             */
+            {
+              global_ptr_legacy<U> globalPtr(
+                  static_cast<U *>(&globalAccessor[0]));
+              constant_ptr_legacy<U> constantPtr(
+                  constantAccessor.get_pointer());
+              local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
+              private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
 
-          multiPtrGlobal globalMultiPtr(globalPtr);
-          multiPtrConstant constantMultiPtr(constantPtr);
-          multiPtrLocal localMultiPtr(localPtr);
-          multiPtrPrivate privateMultiPtr(privatePtr);
+              multiPtrGlobal globalMultiPtr(globalPtr);
+              multiPtrConstant constantMultiPtr(constantPtr);
+              multiPtrLocal localMultiPtr(localPtr);
+              multiPtrPrivate privateMultiPtr(privatePtr);
 
-          silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
-                           privateMultiPtr);
-        }
+              silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
+                               privateMultiPtr);
+            }
 
-        /** check (pointer) constructors
-         */
-        {
-          global_ptr_legacy<U> globalPtr(static_cast<U *>(&globalAccessor[0]));
-          constant_ptr_legacy<U> constantPtr(constantAccessor.get_pointer());
-          local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
-          private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
+            /** check (pointer) constructors
+             */
+            {
+              global_ptr_legacy<U> globalPtr(
+                  static_cast<U *>(&globalAccessor[0]));
+              constant_ptr_legacy<U> constantPtr(
+                  constantAccessor.get_pointer());
+              local_ptr_legacy<U> localPtr(static_cast<U *>(&localAccessor[0]));
+              private_ptr_legacy<U> privatePtr(static_cast<U *>(privateData));
 
-          multiPtrGlobal globalMultiPtr(globalPtr.get());
-          multiPtrConstant constantMultiPtr(constantPtr.get());
-          multiPtrLocal localMultiPtr(localPtr.get());
-          multiPtrPrivate privateMultiPtr(privatePtr.get());
+              multiPtrGlobal globalMultiPtr(globalPtr.get());
+              multiPtrConstant constantMultiPtr(constantPtr.get());
+              multiPtrLocal localMultiPtr(localPtr.get());
+              multiPtrPrivate privateMultiPtr(privatePtr.get());
 
-          silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
-                           privateMultiPtr);
-        }
+              silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
+                               privateMultiPtr);
+            }
 
-        /** check (std::nullptr_t) constructors
-         */
-        {
-          multiPtrGlobal globalMultiPtr(nullptr);
-          multiPtrConstant constantMultiPtr(nullptr);
-          multiPtrLocal localMultiPtr(nullptr);
-          multiPtrPrivate privateMultiPtr(nullptr);
+            /** check (std::nullptr_t) constructors
+             */
+            {
+              multiPtrGlobal globalMultiPtr(nullptr);
+              multiPtrConstant constantMultiPtr(nullptr);
+              multiPtrLocal localMultiPtr(nullptr);
+              multiPtrPrivate privateMultiPtr(nullptr);
 
-          silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
-                           privateMultiPtr);
-        }
+              silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr,
+                               privateMultiPtr);
+            }
 
-        /** check (accessor) constructors
-         */
-        {
-          multiPtrGlobal globalMultiPtr(globalAccessor);
-          multiPtrConstant constantMultiPtr(constantAccessor);
-          multiPtrLocal localMultiPtr(localAccessor);
+            /** check (accessor) constructors
+             */
+            {
+              multiPtrGlobal globalMultiPtr(globalAccessor);
+              multiPtrConstant constantMultiPtr(constantAccessor);
+              multiPtrLocal localMultiPtr(localAccessor);
 
-          silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr);
-        }
+              silence_warnings(globalMultiPtr, constantMultiPtr, localMultiPtr);
+            }
 
-        /** check copy constructors
-         */
-        {
-          global_ptr_legacy<U> globalPtrA(static_cast<U *>(&globalAccessor[0]));
-          constant_ptr_legacy<U> constantPtrA(constantAccessor.get_pointer());
-          local_ptr_legacy<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
+            /** check copy constructors
+             */
+            {
+              global_ptr_legacy<U> globalPtrA(
+                  static_cast<U *>(&globalAccessor[0]));
+              constant_ptr_legacy<U> constantPtrA(
+                  constantAccessor.get_pointer());
+              local_ptr_legacy<U> localPtrA(
+                  static_cast<U *>(&localAccessor[0]));
+              private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
 
-          multiPtrGlobal globalMultiPtrA(globalPtrA);
-          multiPtrConstant constantMultiPtrA(constantPtrA);
-          multiPtrLocal localMultiPtrA(localPtrA);
-          multiPtrPrivate privateMultiPtrA(privatePtrA);
+              multiPtrGlobal globalMultiPtrA(globalPtrA);
+              multiPtrConstant constantMultiPtrA(constantPtrA);
+              multiPtrLocal localMultiPtrA(localPtrA);
+              multiPtrPrivate privateMultiPtrA(privatePtrA);
 
-          multiPtrGlobal globalMultiPtrB(globalMultiPtrA);
-          multiPtrConstant constantMultiPtrB(constantMultiPtrA);
-          multiPtrLocal localMultiPtrB(localMultiPtrA);
-          multiPtrPrivate privateMultiPtrB(privateMultiPtrA);
+              multiPtrGlobal globalMultiPtrB(globalMultiPtrA);
+              multiPtrConstant constantMultiPtrB(constantMultiPtrA);
+              multiPtrLocal localMultiPtrB(localMultiPtrA);
+              multiPtrPrivate privateMultiPtrB(privateMultiPtrA);
 
-          silence_warnings(globalMultiPtrB, constantMultiPtrB, localMultiPtrB,
-                           privateMultiPtrB);
-        }
+              silence_warnings(globalMultiPtrB, constantMultiPtrB,
+                               localMultiPtrB, privateMultiPtrB);
+            }
 
-        /** check move constructors
-         */
-        {
-          global_ptr_legacy<U> globalPtrA(static_cast<U *>(&globalAccessor[0]));
-          constant_ptr_legacy<U> constantPtrA(constantAccessor.get_pointer());
-          local_ptr_legacy<U> localPtrA(static_cast<U *>(&localAccessor[0]));
-          private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
+            /** check move constructors
+             */
+            {
+              global_ptr_legacy<U> globalPtrA(
+                  static_cast<U *>(&globalAccessor[0]));
+              constant_ptr_legacy<U> constantPtrA(
+                  constantAccessor.get_pointer());
+              local_ptr_legacy<U> localPtrA(
+                  static_cast<U *>(&localAccessor[0]));
+              private_ptr_legacy<U> privatePtrA(static_cast<U *>(privateData));
 
-          multiPtrGlobal globalMultiPtrA(globalPtrA);
-          multiPtrConstant constantMultiPtrA(constantPtrA);
-          multiPtrLocal localMultiPtrA(localPtrA);
-          multiPtrPrivate privateMultiPtrA(privatePtrA);
+              multiPtrGlobal globalMultiPtrA(globalPtrA);
+              multiPtrConstant constantMultiPtrA(constantPtrA);
+              multiPtrLocal localMultiPtrA(localPtrA);
+              multiPtrPrivate privateMultiPtrA(privatePtrA);
 
-          multiPtrGlobal globalMultiPtrB = std::move(globalMultiPtrA);
-          multiPtrConstant constantMultiPtrB = std::move(constantMultiPtrA);
-          multiPtrLocal localMultiPtrB = std::move(localMultiPtrA);
-          multiPtrPrivate privateMultiPtrB = std::move(privateMultiPtrA);
+              multiPtrGlobal globalMultiPtrB = std::move(globalMultiPtrA);
+              multiPtrConstant constantMultiPtrB = std::move(constantMultiPtrA);
+              multiPtrLocal localMultiPtrB = std::move(localMultiPtrA);
+              multiPtrPrivate privateMultiPtrB = std::move(privateMultiPtrA);
 
-          silence_warnings(globalMultiPtrB, constantMultiPtrB, localMultiPtrB,
-                           privateMultiPtrB);
-        }
-
-      });
+              silence_warnings(globalMultiPtrB, constantMultiPtrB,
+                               localMultiPtrB, privateMultiPtrB);
+            }
+          });
     });
   }
 };

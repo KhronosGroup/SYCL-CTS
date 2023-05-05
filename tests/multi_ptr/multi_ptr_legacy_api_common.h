@@ -614,396 +614,395 @@ class pointer_apis {
             sycl::nd_range<1>(sycl::range<1>(1), sycl::range<1>(1)),
             [resAcc, globalAccessor, constantAccessor,
              localAccessor](auto item) {
-          check_helper<T, U> checker;
+              check_helper<T, U> checker;
 
-          data_t privateData[size];
-          data_t *localData = const_cast<data_t*>(&localAccessor[0]);
+              data_t privateData[size];
+              data_t *localData = const_cast<data_t *>(&localAccessor[0]);
 
-          for (int i = 0; i < size; ++i) {
-            privateData[i] = reference_t::value(i);
-            localData[i] = reference_t::value(i);
-          }
+              for (int i = 0; i < size; ++i) {
+                privateData[i] = reference_t::value(i);
+                localData[i] = reference_t::value(i);
+              }
 
-          // Reference pointer values to check against
-          const auto expectedConstantPtr =
-              const_cast<U *>(static_cast<const U *>(&constantAccessor[0]));
-          const auto expectedGlobalPtr = static_cast<U *>(&globalAccessor[0]);
-          const auto expectedLocalPtr = static_cast<U *>(&localAccessor[0]);
-          const auto expectedPrivatePtr = static_cast<U *>(privateData);
+              // Reference pointer values to check against
+              const auto expectedConstantPtr =
+                  const_cast<U *>(static_cast<const U *>(&constantAccessor[0]));
+              const auto expectedGlobalPtr =
+                  static_cast<U *>(&globalAccessor[0]);
+              const auto expectedLocalPtr = static_cast<U *>(&localAccessor[0]);
+              const auto expectedPrivatePtr = static_cast<U *>(privateData);
 
-          /** check multi_ptr aliases
-           */
-          {
-            static_assert(
-              std::is_same<multiPtrGlobal, global_ptr_legacy<U>>::value,
-              "Invalid global_ptr type");
-            static_assert(
-              std::is_same<multiPtrConstant, constant_ptr_legacy<U>>::value,
-              "Invalid constant_ptr type");
-            static_assert(
-              std::is_same<multiPtrLocal, local_ptr_legacy<U>>::value,
-              "Invalid local_ptr type");
-            static_assert(
-              std::is_same<multiPtrPrivate, private_ptr_legacy<U>>::value,
-              "Invalid private_ptr type");
-          }
+              /** check multi_ptr aliases
+               */
+              {
+                static_assert(
+                    std::is_same<multiPtrGlobal, global_ptr_legacy<U>>::value,
+                    "Invalid global_ptr type");
+                static_assert(std::is_same<multiPtrConstant,
+                                           constant_ptr_legacy<U>>::value,
+                              "Invalid constant_ptr type");
+                static_assert(
+                    std::is_same<multiPtrLocal, local_ptr_legacy<U>>::value,
+                    "Invalid local_ptr type");
+                static_assert(
+                    std::is_same<multiPtrPrivate, private_ptr_legacy<U>>::value,
+                    "Invalid private_ptr type");
+              }
 
-          /** check member types
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+              /** check member types
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            checker.member_types(globalMultiPtr);
-            checker.member_types(constantMultiPtr);
-            checker.member_types(localMultiPtr);
-            checker.member_types(privateMultiPtr);
-          }
+                checker.member_types(globalMultiPtr);
+                checker.member_types(constantMultiPtr);
+                checker.member_types(localMultiPtr);
+                checker.member_types(privateMultiPtr);
+              }
 
-          /** check address_space member
-           */
-          {
-            // construct a set of multi_ptr
-            sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
-            sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
-            sycl::local_ptr<U> localPtr(expectedLocalPtr);
-            sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
+              /** check address_space member
+               */
+              {
+                // construct a set of multi_ptr
+                sycl::global_ptr<U> globalPtr(expectedGlobalPtr);
+                sycl::constant_ptr<U> constantPtr(expectedConstantPtr);
+                sycl::local_ptr<U> localPtr(expectedLocalPtr);
+                sycl::private_ptr<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            checker.address_space_member(globalMultiPtr);
-            checker.address_space_member(constantMultiPtr);
-            checker.address_space_member(localMultiPtr);
-            checker.address_space_member(privateMultiPtr);
-          }
+                checker.address_space_member(globalMultiPtr);
+                checker.address_space_member(constantMultiPtr);
+                checker.address_space_member(localMultiPtr);
+                checker.address_space_member(privateMultiPtr);
+              }
 
-          /** check copy assignment operators
-           */
-          {
-            // construct two sets of multi_ptr
-            global_ptr_legacy<U> globalPtrA(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtrA(expectedConstantPtr);
-            local_ptr_legacy<U> localPtrA(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtrA(expectedPrivatePtr);
+              /** check copy assignment operators
+               */
+              {
+                // construct two sets of multi_ptr
+                global_ptr_legacy<U> globalPtrA(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtrA(expectedConstantPtr);
+                local_ptr_legacy<U> localPtrA(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtrA(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtrA(globalPtrA);
-            multiPtrConstant constantMultiPtrA(constantPtrA);
-            multiPtrLocal localMultiPtrA(localPtrA);
-            multiPtrPrivate privateMultiPtrA(privatePtrA);
+                multiPtrGlobal globalMultiPtrA(globalPtrA);
+                multiPtrConstant constantMultiPtrA(constantPtrA);
+                multiPtrLocal localMultiPtrA(localPtrA);
+                multiPtrPrivate privateMultiPtrA(privatePtrA);
 
-            multiPtrGlobal globalMultiPtrB;
-            multiPtrConstant constantMultiPtrB;
-            multiPtrLocal localMultiPtrB;
-            multiPtrPrivate privateMultiPtrB;
+                multiPtrGlobal globalMultiPtrB;
+                multiPtrConstant constantMultiPtrB;
+                multiPtrLocal localMultiPtrB;
+                multiPtrPrivate privateMultiPtrB;
 
-            // check copy assignment operators
-            globalMultiPtrB = globalMultiPtrA;
-            constantMultiPtrB = constantMultiPtrA;
-            localMultiPtrB = localMultiPtrA;
-            privateMultiPtrB = privateMultiPtrA;
+                // check copy assignment operators
+                globalMultiPtrB = globalMultiPtrA;
+                constantMultiPtrB = constantMultiPtrA;
+                localMultiPtrB = localMultiPtrA;
+                privateMultiPtrB = privateMultiPtrA;
 
-            bool result = true;
-            result &= globalMultiPtrB == expectedGlobalPtr;
-            result &= constantMultiPtrB == expectedConstantPtr;
-            result &= localMultiPtrB == expectedLocalPtr;
-            result &= privateMultiPtrB == expectedPrivatePtr;
+                bool result = true;
+                result &= globalMultiPtrB == expectedGlobalPtr;
+                result &= constantMultiPtrB == expectedConstantPtr;
+                result &= localMultiPtrB == expectedLocalPtr;
+                result &= privateMultiPtrB == expectedPrivatePtr;
 
-            result &= reference_t::is_data_equal(globalMultiPtrB);
-            result &= reference_t::is_data_equal(constantMultiPtrB);
-            result &= reference_t::is_data_equal(localMultiPtrB);
-            result &= reference_t::is_data_equal(privateMultiPtrB);
+                result &= reference_t::is_data_equal(globalMultiPtrB);
+                result &= reference_t::is_data_equal(constantMultiPtrB);
+                result &= reference_t::is_data_equal(localMultiPtrB);
+                result &= reference_t::is_data_equal(privateMultiPtrB);
 
-            resAcc[to_integral(check_id::copy_assignment)] = result;
-          }
+                resAcc[to_integral(check_id::copy_assignment)] = result;
+              }
 
-          /** check move assignment operators
-           */
-          {
-            // construct two sets of multi_ptr
-            global_ptr_legacy<U> globalPtrA(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtrA(expectedConstantPtr);
-            local_ptr_legacy<U> localPtrA(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtrA(expectedPrivatePtr);
+              /** check move assignment operators
+               */
+              {
+                // construct two sets of multi_ptr
+                global_ptr_legacy<U> globalPtrA(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtrA(expectedConstantPtr);
+                local_ptr_legacy<U> localPtrA(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtrA(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtrA(globalPtrA);
-            multiPtrConstant constantMultiPtrA(constantPtrA);
-            multiPtrLocal localMultiPtrA(localPtrA);
-            multiPtrPrivate privateMultiPtrA(privatePtrA);
+                multiPtrGlobal globalMultiPtrA(globalPtrA);
+                multiPtrConstant constantMultiPtrA(constantPtrA);
+                multiPtrLocal localMultiPtrA(localPtrA);
+                multiPtrPrivate privateMultiPtrA(privatePtrA);
 
-            multiPtrGlobal globalMultiPtrB;
-            multiPtrConstant constantMultiPtrB;
-            multiPtrLocal localMultiPtrB;
-            multiPtrPrivate privateMultiPtrB;
+                multiPtrGlobal globalMultiPtrB;
+                multiPtrConstant constantMultiPtrB;
+                multiPtrLocal localMultiPtrB;
+                multiPtrPrivate privateMultiPtrB;
 
-            // check move assignment operators
-            globalMultiPtrB = std::move(globalMultiPtrA);
-            constantMultiPtrB = std::move(constantMultiPtrA);
-            localMultiPtrB = std::move(localMultiPtrA);
-            privateMultiPtrB = std::move(privateMultiPtrA);
+                // check move assignment operators
+                globalMultiPtrB = std::move(globalMultiPtrA);
+                constantMultiPtrB = std::move(constantMultiPtrA);
+                localMultiPtrB = std::move(localMultiPtrA);
+                privateMultiPtrB = std::move(privateMultiPtrA);
 
-            bool result = true;
-            result &= globalMultiPtrB == expectedGlobalPtr;
-            result &= constantMultiPtrB == expectedConstantPtr;
-            result &= localMultiPtrB == expectedLocalPtr;
-            result &= privateMultiPtrB == expectedPrivatePtr;
+                bool result = true;
+                result &= globalMultiPtrB == expectedGlobalPtr;
+                result &= constantMultiPtrB == expectedConstantPtr;
+                result &= localMultiPtrB == expectedLocalPtr;
+                result &= privateMultiPtrB == expectedPrivatePtr;
 
-            result &= reference_t::is_data_equal(globalMultiPtrB);
-            result &= reference_t::is_data_equal(constantMultiPtrB);
-            result &= reference_t::is_data_equal(localMultiPtrB);
-            result &= reference_t::is_data_equal(privateMultiPtrB);
+                result &= reference_t::is_data_equal(globalMultiPtrB);
+                result &= reference_t::is_data_equal(constantMultiPtrB);
+                result &= reference_t::is_data_equal(localMultiPtrB);
+                result &= reference_t::is_data_equal(privateMultiPtrB);
 
-            resAcc[to_integral(check_id::move_assignment)] = result;
-          }
+                resAcc[to_integral(check_id::move_assignment)] = result;
+              }
 
-          /** check assigning to multi_ptr
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+              /** check assigning to multi_ptr
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            bool result = true;
-            result &= globalMultiPtr == expectedGlobalPtr;
-            result &= constantMultiPtr == expectedConstantPtr;
-            result &= localMultiPtr == expectedLocalPtr;
-            result &= privateMultiPtr == expectedPrivatePtr;
+                bool result = true;
+                result &= globalMultiPtr == expectedGlobalPtr;
+                result &= constantMultiPtr == expectedConstantPtr;
+                result &= localMultiPtr == expectedLocalPtr;
+                result &= privateMultiPtr == expectedPrivatePtr;
 
-            result &= reference_t::is_data_equal(globalMultiPtr);
-            result &= reference_t::is_data_equal(constantMultiPtr);
-            result &= reference_t::is_data_equal(localMultiPtr);
-            result &= reference_t::is_data_equal(privateMultiPtr);
+                result &= reference_t::is_data_equal(globalMultiPtr);
+                result &= reference_t::is_data_equal(constantMultiPtr);
+                result &= reference_t::is_data_equal(localMultiPtr);
+                result &= reference_t::is_data_equal(privateMultiPtr);
 
-            resAcc[to_integral(check_id::pointer_assignment)] = result;
-          }
+                resAcc[to_integral(check_id::pointer_assignment)] = result;
+              }
 
-          /** check get() methods
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+              /** check get() methods
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            auto gPtr = globalMultiPtr.get();
-            auto cPtr = constantMultiPtr.get();
-            auto lPtr = localMultiPtr.get();
-            auto pPtr = privateMultiPtr.get();
+                auto gPtr = globalMultiPtr.get();
+                auto cPtr = constantMultiPtr.get();
+                auto lPtr = localMultiPtr.get();
+                auto pPtr = privateMultiPtr.get();
 
-            ASSERT_RETURN_TYPE(typename global_ptr_legacy<U>::pointer_t,
-                               gPtr, "sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename constant_ptr_legacy<U>::pointer_t,
-                               cPtr, "sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename local_ptr_legacy<U>::pointer_t, lPtr,
-                               "sycl::multi_ptr::get()");
-            ASSERT_RETURN_TYPE(typename private_ptr_legacy<U>::pointer_t,
-                               pPtr, "sycl::multi_ptr::get()");
+                ASSERT_RETURN_TYPE(typename global_ptr_legacy<U>::pointer_t,
+                                   gPtr, "sycl::multi_ptr::get()");
+                ASSERT_RETURN_TYPE(typename constant_ptr_legacy<U>::pointer_t,
+                                   cPtr, "sycl::multi_ptr::get()");
+                ASSERT_RETURN_TYPE(typename local_ptr_legacy<U>::pointer_t,
+                                   lPtr, "sycl::multi_ptr::get()");
+                ASSERT_RETURN_TYPE(typename private_ptr_legacy<U>::pointer_t,
+                                   pPtr, "sycl::multi_ptr::get()");
 
-            bool result = true;
-            result &= gPtr == expectedGlobalPtr;
-            result &= cPtr == expectedConstantPtr;
-            result &= lPtr == expectedLocalPtr;
-            result &= pPtr == expectedPrivatePtr;
+                bool result = true;
+                result &= gPtr == expectedGlobalPtr;
+                result &= cPtr == expectedConstantPtr;
+                result &= lPtr == expectedLocalPtr;
+                result &= pPtr == expectedPrivatePtr;
 
-            result &= reference_t::is_data_equal(gPtr);
-            result &= reference_t::is_data_equal(cPtr);
-            result &= reference_t::is_data_equal(lPtr);
-            result &= reference_t::is_data_equal(pPtr);
+                result &= reference_t::is_data_equal(gPtr);
+                result &= reference_t::is_data_equal(cPtr);
+                result &= reference_t::is_data_equal(lPtr);
+                result &= reference_t::is_data_equal(pPtr);
 
-            resAcc[to_integral(check_id::get_method)] = result;
-          }
+                resAcc[to_integral(check_id::get_method)] = result;
+              }
 
-          /** check prefetch() method
-           */
-          {
-            // construct a global multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            multiPtrGlobal globalMultiPtr(globalPtr);
+              /** check prefetch() method
+               */
+              {
+                // construct a global multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
 
-            resAcc[to_integral(check_id::prefetch_method)] =
-                checker.prefetch_operation(globalMultiPtr);
-          }
+                resAcc[to_integral(check_id::prefetch_method)] =
+                    checker.prefetch_operation(globalMultiPtr);
+              }
 
-          /** check implicit conversion to a raw pointer
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+              /** check implicit conversion to a raw pointer
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            U *gPtr = globalMultiPtr;
-            U *cPtr = constantMultiPtr;
-            U *lPtr = localMultiPtr;
-            U *pPtr = privateMultiPtr;
+                U *gPtr = globalMultiPtr;
+                U *cPtr = constantMultiPtr;
+                U *lPtr = localMultiPtr;
+                U *pPtr = privateMultiPtr;
 
-            bool result = true;
-            result &= gPtr == expectedGlobalPtr;
-            result &= cPtr == expectedConstantPtr;
-            result &= lPtr == expectedLocalPtr;
-            result &= pPtr == expectedPrivatePtr;
+                bool result = true;
+                result &= gPtr == expectedGlobalPtr;
+                result &= cPtr == expectedConstantPtr;
+                result &= lPtr == expectedLocalPtr;
+                result &= pPtr == expectedPrivatePtr;
 
-            result &= reference_t::is_data_equal(gPtr);
-            result &= reference_t::is_data_equal(cPtr);
-            result &= reference_t::is_data_equal(lPtr);
-            result &= reference_t::is_data_equal(pPtr);
+                result &= reference_t::is_data_equal(gPtr);
+                result &= reference_t::is_data_equal(cPtr);
+                result &= reference_t::is_data_equal(lPtr);
+                result &= reference_t::is_data_equal(pPtr);
 
-            resAcc[to_integral(check_id::raw_pointer_conversion)] = result;
-          }
+                resAcc[to_integral(check_id::raw_pointer_conversion)] = result;
+              }
 
-          /** check multi_ptr conversion methods
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+              /** check multi_ptr conversion methods
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            checker.conversion_operators(globalMultiPtr, constantMultiPtr,
-                                         localMultiPtr, privateMultiPtr);
-            checker.const_conversion_operators(globalMultiPtr, constantMultiPtr,
-                                               localMultiPtr, privateMultiPtr);
-          }
-
-          /** check operator[int]() methods
-           *  check operator*() methods
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
-
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
-
-            resAcc[to_integral(check_id::access_operators)] =
-                checker.access_operators(globalMultiPtr, constantMultiPtr,
-                                         localMultiPtr, privateMultiPtr);
-          }
-
-          /** check operator->() methods
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
-
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
-
-            checker.arrow_operators(globalMultiPtr, constantMultiPtr,
-                                    localMultiPtr, privateMultiPtr);
-          }
-
-          /** check arithmetic operators
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
-
-            multiPtrGlobal globalMultiPtr(globalPtr);
-            multiPtrConstant constantMultiPtr(constantPtr);
-            multiPtrLocal localMultiPtr(localPtr);
-            multiPtrPrivate privateMultiPtr(privatePtr);
-
-            resAcc[to_integral(check_id::arithmetic_operators)] =
-                checker.arithmetic_operators(globalMultiPtr, constantMultiPtr,
+                checker.conversion_operators(globalMultiPtr, constantMultiPtr,
                                              localMultiPtr, privateMultiPtr);
-          }
+                checker.const_conversion_operators(
+                    globalMultiPtr, constantMultiPtr, localMultiPtr,
+                    privateMultiPtr);
+              }
 
-          /** check make_ptr function
-           */
-          {
-            using namespace sycl::access;
+              /** check operator[int]() methods
+               *  check operator*() methods
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            multiPtrGlobal globalMultiPtr =
-                sycl::make_ptr<U, address_space::global_space,
-                               decorated::legacy>(
-                    expectedGlobalPtr);
-            multiPtrConstant constantMultiPtr =
-                sycl::make_ptr<U, address_space::constant_space,
-                               decorated::legacy>(
-                    expectedConstantPtr);
-            multiPtrLocal localMultiPtr =
-                sycl::make_ptr<U, address_space::local_space,
-                               decorated::legacy>(
-                    expectedLocalPtr);
-            multiPtrPrivate privateMultiPtr =
-                sycl::make_ptr<U, address_space::private_space,
-                               decorated::legacy>(
-                    expectedPrivatePtr);
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-            bool result = true;
+                resAcc[to_integral(check_id::access_operators)] =
+                    checker.access_operators(globalMultiPtr, constantMultiPtr,
+                                             localMultiPtr, privateMultiPtr);
+              }
 
-            result &= reference_t::is_data_equal(globalMultiPtr);
-            result &= reference_t::is_data_equal(constantMultiPtr);
-            result &= reference_t::is_data_equal(localMultiPtr);
-            result &= reference_t::is_data_equal(privateMultiPtr);
+              /** check operator->() methods
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
 
-            resAcc[to_integral(check_id::make_ptr_method)] = result;
-          }
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
 
-          /** check relation functions
-           */
-          {
-            // construct a set of multi_ptr
-            global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
-            constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
-            local_ptr_legacy<U> localPtr(expectedLocalPtr);
-            private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+                checker.arrow_operators(globalMultiPtr, constantMultiPtr,
+                                        localMultiPtr, privateMultiPtr);
+              }
 
-            checker.relational_operators(globalPtr);
-            checker.relational_operators(constantPtr);
-            checker.relational_operators(localPtr);
-            checker.relational_operators(privatePtr);
-          }
-        });
+              /** check arithmetic operators
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+
+                multiPtrGlobal globalMultiPtr(globalPtr);
+                multiPtrConstant constantMultiPtr(constantPtr);
+                multiPtrLocal localMultiPtr(localPtr);
+                multiPtrPrivate privateMultiPtr(privatePtr);
+
+                resAcc[to_integral(check_id::arithmetic_operators)] =
+                    checker.arithmetic_operators(
+                        globalMultiPtr, constantMultiPtr, localMultiPtr,
+                        privateMultiPtr);
+              }
+
+              /** check make_ptr function
+               */
+              {
+                using namespace sycl::access;
+
+                multiPtrGlobal globalMultiPtr =
+                    sycl::make_ptr<U, address_space::global_space,
+                                   decorated::legacy>(expectedGlobalPtr);
+                multiPtrConstant constantMultiPtr =
+                    sycl::make_ptr<U, address_space::constant_space,
+                                   decorated::legacy>(expectedConstantPtr);
+                multiPtrLocal localMultiPtr =
+                    sycl::make_ptr<U, address_space::local_space,
+                                   decorated::legacy>(expectedLocalPtr);
+                multiPtrPrivate privateMultiPtr =
+                    sycl::make_ptr<U, address_space::private_space,
+                                   decorated::legacy>(expectedPrivatePtr);
+
+                bool result = true;
+
+                result &= reference_t::is_data_equal(globalMultiPtr);
+                result &= reference_t::is_data_equal(constantMultiPtr);
+                result &= reference_t::is_data_equal(localMultiPtr);
+                result &= reference_t::is_data_equal(privateMultiPtr);
+
+                resAcc[to_integral(check_id::make_ptr_method)] = result;
+              }
+
+              /** check relation functions
+               */
+              {
+                // construct a set of multi_ptr
+                global_ptr_legacy<U> globalPtr(expectedGlobalPtr);
+                constant_ptr_legacy<U> constantPtr(expectedConstantPtr);
+                local_ptr_legacy<U> localPtr(expectedLocalPtr);
+                private_ptr_legacy<U> privatePtr(expectedPrivatePtr);
+
+                checker.relational_operators(globalPtr);
+                checker.relational_operators(constantPtr);
+                checker.relational_operators(localPtr);
+                checker.relational_operators(privatePtr);
+              }
+            });
       });
     } //end of buffer scope
 
