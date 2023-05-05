@@ -1243,12 +1243,12 @@ subscript_operator_test_template = Template("""
     }
 
     // operator[] type check
-    if(!std::is_same_v<decltype(subscriptVec2[0]), ${type}&>) {
+    if constexpr (!std::is_same_v<decltype(subscriptVec2[0]), ${type}&>) {
       resAcc[0] = false;
     }
 
     // const operator[] type check
-    if(!std::is_same_v<decltype(subscriptVec1[0]), const ${type}&>) {
+    if constexpr (!std::is_same_v<decltype(subscriptVec1[0]), const ${type}&>) {
       resAcc[0] = false;
     }
 
