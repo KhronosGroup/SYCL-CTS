@@ -79,48 +79,100 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 {  // target::device
   sycl::buffer<int> buffer_0{sycl::range<1>{1}};
   sycl::buffer<int> buffer_1{sycl::range<1>{1}};
-  sycl_cts::util::get_cts_object::queue().submit([&](sycl::handler& cgh) {
-    auto accessor_0 = buffer_0.get_access<sycl::access_mode::read_write,
-                                          sycl::target::device>(cgh);
-    auto accessor_1 = buffer_1.get_access<sycl::access_mode::read_write,
-                                          sycl::target::device>(cgh);
-    common_reference_semantics::check_host<storage<1>>(
-        accessor_0, accessor_1,
-        "accessor<int, 1, access_mode::read_write, target::device>");
-  });
+  sycl_cts::util::get_cts_object::queue()
+      .submit([&](sycl::handler& cgh) {
+        auto accessor_0 = buffer_0.get_access<sycl::access_mode::read_write,
+                                              sycl::target::device>(cgh);
+        auto accessor_1 = buffer_1.get_access<sycl::access_mode::read_write,
+                                              sycl::target::device>(cgh);
+        common_reference_semantics::check_host<storage<1>>(
+            accessor_0, accessor_1,
+            "accessor<int, 1, access_mode::read_write, target::device>");
+      })
+      .wait_and_throw();
 }
 });
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("generic accessor common reference semantics, mutation (host)", "[accessor]")({
-  constexpr int new_val = 2;
+  sycl::queue queue = sycl_cts::util::get_cts_object::queue();
+  int result = 0;
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   int val = 1;
+  int new_val = 2;
+#else
+  constexpr int val = 1;
+  constexpr int new_val = 2;
+#endif
   sycl::buffer<int> buffer{&val, sycl::range<1>{1}};
-  sycl::accessor<int, 1, sycl::access_mode::read_write, sycl::target::host_task>
-      t0{buffer};
 
   SECTION("mutation to copy") {
-    sycl::accessor<int, 1, sycl::access_mode::read_write,
-                   sycl::target::host_task>
-        t1(t0);
-    t1[0] = new_val;
-    CHECK(new_val == t0[0]);
+    {
+      sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1, sycl::access_mode::read_write,
+                           sycl::target::host_task>
+                t0{buffer, cgh};
+            cgh.host_task([=] {
+              t0[0] = val;
+              sycl::accessor<int, 1, sycl::access_mode::read_write,
+                             sycl::target::host_task>
+                  t1(t0);
+              t1[0] = new_val;
+              acc_result[0] = t0[0];
+            });
+          })
+          .wait_and_throw();
+    }
+    CHECK(new_val == result);
   }
 
   SECTION("mutation to original") {
-    sycl::accessor<int, 1, sycl::access_mode::read_write,
-                   sycl::target::host_task>
-        t1(t0);
-    t0[0] = new_val;
-    CHECK(new_val == t1[0]);
+    {
+      sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1, sycl::access_mode::read_write,
+                           sycl::target::host_task>
+                t0{buffer, cgh};
+            cgh.host_task([=] {
+              t0[0] = val;
+              sycl::accessor<int, 1, sycl::access_mode::read_write,
+                             sycl::target::host_task>
+                  t1(t0);
+              t0[0] = new_val;
+              acc_result[0] = t1[0];
+            });
+          })
+          .wait_and_throw();
+    }
+    CHECK(new_val == result);
   }
 
   SECTION("mutation to original, const copy") {
-    const sycl::accessor<int, 1, sycl::access_mode::read_write,
-                         sycl::target::host_task>
-        t1(t0);
-    t0[0] = new_val;
-    CHECK(new_val == t1[0]);
+    {
+      sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1, sycl::access_mode::read_write,
+                           sycl::target::host_task>
+                t0{buffer, cgh};
+            cgh.host_task([=] {
+              t0[0] = val;
+              const sycl::accessor<int, 1, sycl::access_mode::read_write,
+                                   sycl::target::host_task>
+                  t1(t0);
+              t0[0] = new_val;
+              acc_result[0] = t1[0];
+            });
+          })
+          .wait_and_throw();
+    }
+    CHECK(new_val == result);
   }
 });
 
@@ -160,16 +212,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   SECTION("mutation to copy") {
     {
       sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
-      queue.submit([&](sycl::handler& cgh) {
-        auto acc_result = buffer_result.get_access(cgh);
-        sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<0>>([=] {
-          t0[0] = val;
-          sycl::accessor<int, 1> t1(t0);
-          t1[0] = new_val;
-          acc_result[0] = t0[0];
-        });
-      });
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
+            cgh.single_task<kernel_name_generic<0>>([=] {
+              t0[0] = val;
+              sycl::accessor<int, 1> t1(t0);
+              t1[0] = new_val;
+              acc_result[0] = t0[0];
+            });
+          })
+          .wait_and_throw();
     }
     CHECK(new_val == result);
   }
@@ -177,16 +231,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   SECTION("mutation to original") {
     {
       sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
-      queue.submit([&](sycl::handler& cgh) {
-        auto acc_result = buffer_result.get_access(cgh);
-        sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<1>>([=] {
-          t0[0] = val;
-          sycl::accessor<int, 1> t1(t0);
-          t0[0] = new_val;
-          acc_result[0] = t1[0];
-        });
-      });
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
+            cgh.single_task<kernel_name_generic<1>>([=] {
+              t0[0] = val;
+              sycl::accessor<int, 1> t1(t0);
+              t0[0] = new_val;
+              acc_result[0] = t1[0];
+            });
+          })
+          .wait_and_throw();
     }
     CHECK(new_val == result);
   }
@@ -194,16 +250,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   SECTION("mutation to original, const copy") {
     {
       sycl::buffer<int> buffer_result{&result, sycl::range<1>{1}};
-      queue.submit([&](sycl::handler& cgh) {
-        auto acc_result = buffer_result.get_access(cgh);
-        sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
-        cgh.single_task<kernel_name_generic<2>>([=] {
-          t0[0] = val;
-          const sycl::accessor<int, 1> t1(t0);
-          t0[0] = new_val;
-          acc_result[0] = t1[0];
-        });
-      });
+      queue
+          .submit([&](sycl::handler& cgh) {
+            auto acc_result = buffer_result.get_access(cgh);
+            sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
+            cgh.single_task<kernel_name_generic<2>>([=] {
+              t0[0] = val;
+              const sycl::accessor<int, 1> t1(t0);
+              t0[0] = new_val;
+              acc_result[0] = t1[0];
+            });
+          })
+          .wait_and_throw();
     }
     CHECK(new_val == result);
   }
