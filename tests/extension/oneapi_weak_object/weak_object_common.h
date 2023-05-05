@@ -41,7 +41,7 @@ SYCLObjT get_sycl_object() {
   } else if constexpr (std::is_same_v<SYCLObjT, sycl::host_accessor<int>>) {
     return {host_buf};
   } else {
-    return {};
+    return SYCLObjT{};
   }
 }
 }  // namespace weak_object_common

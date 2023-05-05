@@ -143,9 +143,9 @@ TEST_CASE("weak_object init", "[weak_object]") {
 #if !defined SYCL_EXT_ONEAPI_WEAK_OBJECT
   SKIP("SYCL_EXT_ONEAPI_WEAK_OBJECT is not defined");
 #else
-  test_weak_object_init<sycl::accessor<int> >("accessor");
-  test_weak_object_init<sycl::host_accessor<int> >("host_accessor");
-  test_weak_object_init<sycl::buffer<int> >("buffer");
+  test_weak_object_init<sycl::accessor<int>>("accessor");
+  test_weak_object_init<sycl::host_accessor<int>>("host_accessor");
+  test_weak_object_init<sycl::buffer<int>>("buffer");
   test_weak_object_init<sycl::queue>("queue");
   test_weak_object_init<sycl::context>("context");
   test_weak_object_init<sycl::event>("event");
