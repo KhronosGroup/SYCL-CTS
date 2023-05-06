@@ -62,7 +62,6 @@ Check that:
 * `std::is_convertible_v<bfloat16, float> == true`
 * `std::is_convertible_v<bfloat16, sycl::half> == true`
 * `std::is_convertible_v<bfloat16, bool> == true`
-* `std::is_convertible_v<bfloat16, > == true`
 * `std::is_convertible_v<float, bfloat16> == true`
 * `std::is_convertible_v<sycl::half, bfloat16> == true`
 
