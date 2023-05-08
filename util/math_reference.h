@@ -24,8 +24,8 @@
 
 #include <sycl/sycl.hpp>
 
+#include "./../oclmath/reference_math.h"
 #include "./math_helper.h"
-
 #include <cmath>
 
 // FIXME: hipSYCL does not support marray
@@ -1366,7 +1366,11 @@ sycl_cts::resultRef<sycl::marray<T, N>> powr(sycl::marray<T, N> a,
 using std::remainder;
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(remainder)
 
-using std::remquo;
+template <typename T>
+T remquo(T x, T y, int *quo) {
+  return reference_remquol(x, y, quo);
+}
+
 template <typename T, int N>
 sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
                        sycl::vec<int, N> *c) {
