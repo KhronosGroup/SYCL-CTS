@@ -13,9 +13,7 @@
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_default_values.h"
 
@@ -26,7 +24,7 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_fp16 {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Accessors constructor default values test fp16 types.", "[accessor]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
