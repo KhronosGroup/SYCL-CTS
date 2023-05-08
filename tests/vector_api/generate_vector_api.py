@@ -57,7 +57,7 @@ vector_api_template = Template("""
           resAcc[0] = false;
         }
         if (!check_convert_as_all_types<${type}, ${size}>(inputVec)) {
-        resAcc[0] = false;
+          resAcc[0] = false;
         }
 """)
 
