@@ -446,7 +446,10 @@ MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(mad_sat)
 /* maximum value */
 template <typename T>
 sycl_cts::resultRef<T> max(T a, T b) {
-  if (std::isfinite(a) && std::isfinite(b)) return (a < b) ? b : a;
+  if constexpr (std::is_integral_v<T>)
+    return (a < b) ? b : a;
+  else if (std::isfinite(a) && std::isfinite(b))
+    return (a < b) ? b : a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 template <typename T, int N>
@@ -477,7 +480,10 @@ sycl_cts::resultRef<sycl::marray<T, N>> max(sycl::marray<T, N> a, T b) {
 /* minimum value */
 template <typename T>
 sycl_cts::resultRef<T> min(T a, T b) {
-  if (std::isfinite(a) && std::isfinite(b)) return (b < a) ? b : a;
+  if constexpr (std::is_integral_v<T>)
+    return (b < a) ? b : a;
+  else if (std::isfinite(a) && std::isfinite(b))
+    return (b < a) ? b : a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 template <typename T, int N>
