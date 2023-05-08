@@ -71,24 +71,24 @@ struct section_name_prototype {
  *        data types and access modes
  */
 template <typename VerifierT>
-void run_verification(
-    std::function<void(sycl::access_mode, sycl::access_mode, std::string)>
-        make_section_name) {
+void run_verification(std::function<std::string(sycl::access_mode,
+                                                sycl::access_mode, std::string)>
+                          make_section_name) {
   // From read-only accessor to read-only accessor
   {
     constexpr auto access_mode = sycl::access_mode::read;
 
     SECTION(
         make_section_name(access_mode, access_mode, "from 'T' to 'const T'")) {
-      using SrcDataT = DataT;
-      using DstDataT = const DataT;
+      using SrcDataT = typename VerifierT::DataType;
+      using DstDataT = const typename VerifierT::DataType;
       VerifierT{}
           .template run_check<SrcDataT, access_mode, DstDataT, access_mode>();
     }
     SECTION(
         make_section_name(access_mode, access_mode, "from 'const T' to 'T'")) {
-      using SrcDataT = const DataT;
-      using DstDataT = DataT;
+      using SrcDataT = const typename VerifierT::DataType;
+      using DstDataT = typename VerifierT::DataType;
       VerifierT{}
           .template run_check<SrcDataT, access_mode, DstDataT, access_mode>();
     }
@@ -100,16 +100,8 @@ void run_verification(
 
     SECTION(make_section_name(src_access_mode, dst_access_mode,
                               "from 'T' to 'const T'")) {
-      using SrcDataT = DataT;
-      using DstDataT = const DataT;
-      VerifierT{}
-          .template run_check<SrcDataT, src_access_mode, DstDataT,
-                              dst_access_mode>();
-    }
-    SECTION(make_section_name(src_access_mode, dst_access_mode,
-                              "from 'const T' to 'T'")) {
-      using SrcDataT = const DataT;
-      using DstDataT = DataT;
+      using SrcDataT = typename VerifierT::DataType;
+      using DstDataT = const typename VerifierT::DataType;
       VerifierT{}
           .template run_check<SrcDataT, src_access_mode, DstDataT,
                               dst_access_mode>();
@@ -125,6 +117,7 @@ class check_conversion_generic {
   // TODO: refactor into `check_conversion<AccessorT, ...>` with separate
   // specialization for local accessor once `accessor_tests_common` refactoring
   // is done
+
   static constexpr auto AccType = accessor_type::generic_accessor;
   static constexpr sycl::target Target = TargetT::value;
   static constexpr int Dimension = DimensionT::value;
@@ -133,6 +126,9 @@ class check_conversion_generic {
   static_assert((Target == sycl::target::host_task) ||
                     (Target == sycl::target::device),
                 "Unsupported target");
+
+ public:
+  using DataType = DataT;
 
   template <typename SrcDataT, sycl::access_mode SrcAccessMode,
             typename DstDataT, sycl::access_mode DstAccessMode>
@@ -179,7 +175,6 @@ class check_conversion_generic {
     }
   }
 
- public:
   void operator()(const std::string& type_name,
                   const std::string& target_name) const {
     const auto make_section_name = [&](sycl::access_mode SrcAccessMode,
@@ -273,6 +268,9 @@ class check_conversion_host {
 
   static_assert(!std::is_const_v<DataT>, "No need to pass const type here");
 
+ public:
+  using DataType = DataT;
+
   template <typename SrcDataT, sycl::access_mode SrcAccessMode,
             typename DstDataT, sycl::access_mode DstAccessMode>
   void run_check() const {
@@ -316,8 +314,6 @@ class check_conversion_host {
           r, get_acc_functor, modify_acc_functor);
     }
   }
-
- public:
   void operator()(const std::string& type_name) const {
     const auto make_section_name = [&](sycl::access_mode SrcAccessMode,
                                        sycl::access_mode DstAccessMode,
