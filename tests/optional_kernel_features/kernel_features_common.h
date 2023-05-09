@@ -165,7 +165,7 @@ class non_decorated_call_non_decorated_function {
 };
 
 /**
- * @brief Not decorated functor that invokes not decorated function that use
+ * @brief Non-decorated functor that invokes non-decorated function that uses
  * feature defined in FeatureTypeT
  */
 template <typename FeatureTypeT>
@@ -338,32 +338,32 @@ const auto get_lambda_with_no_arg(const sycl::accessor<bool, 1> &acc) {
   static constexpr sycl::aspect AnotherFeatureAspect =
       get_another_aspect<FeatureAspectT>();
   if constexpr (CallType == call_attribute_type::external_decorated) {
-    return [=]() {
+    return [=] {
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>(
           acc);
     };
   } else if constexpr (CallType ==
                        call_attribute_type::external_decorated_with_attr) {
-    return [acc]() [[sycl::device_has(AnotherFeatureAspect)]] {
+    return [acc] [[sycl::device_has(AnotherFeatureAspect)]] {
       use_feature_function_external_decorated<FeatureTypeT, FeatureAspectT>(
           acc);
     };
   } else if constexpr (CallType == call_attribute_type::non_decorated) {
-    return [=]() {
+    return [=] {
       use_feature_function_non_decorated_with_accessor<FeatureTypeT>(acc);
     };
   } else if constexpr (CallType == call_attribute_type::decorated) {
-    return [=]() {
+    return [=] {
       use_feature_function_decorated<FeatureTypeT, FeatureAspectT>(acc);
     };
   } else if constexpr (CallType == call_attribute_type::dummy_decorated) {
     return [=] { dummy_function_decorated<FeatureAspectT>(acc); };
   } else if constexpr (CallType == call_attribute_type::dummy_non_decorated) {
-    return [=]() { dummy_function_non_decorated(acc); };
+    return [=] { dummy_function_non_decorated(acc); };
   } else if constexpr (CallType == call_attribute_type::type_used) {
-    return [acc]() { USE_FEATURE(FeatureTypeT); };
+    return [acc] { USE_FEATURE(FeatureTypeT); };
   } else if constexpr (CallType == call_attribute_type::type_used_with_attr) {
-    return [=]() [[sycl::device_has(AnotherFeatureAspect)]] {
+    return [=] [[sycl::device_has(AnotherFeatureAspect)]] {
       USE_FEATURE(FeatureTypeT);
     };
   }
