@@ -1378,7 +1378,7 @@ void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
 
 template <typename AccT, typename T = int>
 bool test_begin_end_device(AccT& accessor, T exp_first = {}, T exp_last = {},
-                           bool check_value) {
+                           bool check_value = true) {
   auto it_begin = accessor.begin();
   bool res = std::is_same_v<decltype(it_begin), typename AccT::iterator>;
   auto it_end = accessor.end();
