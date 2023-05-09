@@ -229,7 +229,6 @@ class run_api_tests {
                     res_acc[sycl::id<2>(
                         to_integral(check::subscript_size_t_result), item_id)] =
                         value_operations::are_equal(ref_2, changed_val);
-
                   }
                   test_local_accessor_ptr(acc, expected_val, res_acc, item_id);
                   res_acc[sycl::id<2>(to_integral(check::iterator_access),
