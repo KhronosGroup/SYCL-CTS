@@ -1204,9 +1204,6 @@ non_fp_arithmetic_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
-// FIXME: re-enable when operator% for sycl::vec is fully implemented
-// link to issue: https://github.com/intel/llvm/issues/8881
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
   resVec = testVec1.${swizzle} % testVec2;
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
@@ -1227,7 +1224,6 @@ non_fp_arithmetic_test_template = Template("""
   if (!check_vector_values_div(resVec, resArr)) {
     resAcc[0] = false;
   }
-#endif
 
 """)
 
@@ -1293,11 +1289,7 @@ assign_dataT_operator_test_template = Template("""
     if (!check_vector_values(testVec, resArr)) {
       resAcc[0] = false;
     }
-// FIXME: re-enable when operator=(const DataT&) for swizzle_vec is implemented
-// link to issue: https://github.com/intel/llvm/issues/8877
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
     testVec.${swizzle} = val;
-#endif
   }
 """)
 
