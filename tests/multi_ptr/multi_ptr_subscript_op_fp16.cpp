@@ -30,7 +30,8 @@ TEST_CASE("multi_ptr operator[](std::ptrdiff_t). fp16 type ", "[multi_ptr]") {
         "Skipping the test case.");
     return;
   }
-  multi_ptr_subscript_op::check_multi_ptr_subscript_op<sycl::half>{}("sycl::half");
+  multi_ptr_subscript_op::check_multi_ptr_subscript_op<sycl::half>{}(
+      "sycl::half");
 }
 
 }  // namespace multi_ptr_subscript_op_fp16
