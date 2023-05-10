@@ -18,33 +18,43 @@
 //
 *******************************************************************************/
 
+#include "../common/disabled_for_test_case.h"
 #include "atomic_ref_stress_common.h"
 #include <catch2/catch_test_macros.hpp>
 
 namespace atomic_ref_stress_test_core {
 
-TEST_CASE("sycl::atomic_ref atomicity for device scope. core types",
-          "[atomic_ref_stress]") {
+// FIXME: re-enable for computecpp when
+// sycl::access::address_space::generic_space and possibility of a SYCL kernel
+// with an unnamed type are implemented in computecpp, re-enable for hipsycl
+// when sycl::info::device::atomic_memory_order_capabilities and
+// sycl::info::device::atomic_memory_scope_capabilities are implemented in
+// hipsycl
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref atomicity for device scope. core types",
+ "[atomic_ref_stress]")({
   const auto type_pack = named_type_pack<int, float>::generate("int", "float");
   for_all_types<atomic_ref_stress_test::run_atomicity_device_scope>(type_pack);
-}
+});
 
-TEST_CASE("sycl::atomic_ref atomicity for work_group scope. core types",
-          "[atomic_ref_stress]") {
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref atomicity for work_group scope. core types",
+ "[atomic_ref_stress]")({
   const auto type_pack = named_type_pack<int, float>::generate("int", "float");
   for_all_types<atomic_ref_stress_test::run_atomicity_work_group_scope>(
       type_pack);
-}
+});
 
-TEST_CASE("sycl::atomic_ref aquire and release. core types",
-          "[atomic_ref_stress]") {
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref aquire and release. core types", "[atomic_ref_stress]")({
   const auto type_pack = named_type_pack<int, float>::generate("int", "float");
   for_all_types<atomic_ref_stress_test::run_aquire_release>(type_pack);
-}
+});
 
-TEST_CASE("sycl::atomic_ref ordering. core types", "[atomic_ref_stress]") {
+DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
+("sycl::atomic_ref ordering. core types", "[atomic_ref_stress]")({
   const auto type_pack = named_type_pack<int, float>::generate("int", "float");
   for_all_types<atomic_ref_stress_test::run_ordering>(type_pack);
-}
+});
 
 }  // namespace atomic_ref_stress_test_core
