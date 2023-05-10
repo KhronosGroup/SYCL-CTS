@@ -206,7 +206,7 @@ class TEST_NAME : public util::test_base {
         CHECK_FALSE(hasExt);
 
         auto supported = dev.get_info<sycl::info::device::extensions>();
-        for (auto& ext : supported) {
+        for (auto &ext : supported) {
           CHECK(dev.has_extension(ext));
         }
 
