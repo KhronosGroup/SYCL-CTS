@@ -196,6 +196,24 @@ class TEST_NAME : public util::test_base {
         check_return_type<std::vector<sycl::device>>(
             log, devs, "device::get_devices(info::device_type::all)");
       }
+
+      /** Check has_extension(const std::string& extension)
+       */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+      {
+        auto dev = util::get_cts_object::device(cts_selector);
+        auto hasExt = dev.has_extension("Nonexistent ext");
+        CHECK_FALSE(hasExt);
+
+        auto supported = dev.get_info<sycl::info::device::extensions>();
+        for (auto& ext : supported) {
+          CHECK(dev.has_extension(ext));
+        }
+
+        check_return_type<bool>(log, hasExt,
+                                "device::has_extension(const std::string&)");
+      }
+#endif
     }
   }
 };
