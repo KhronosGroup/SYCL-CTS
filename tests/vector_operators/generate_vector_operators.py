@@ -1228,7 +1228,6 @@ non_fp_arithmetic_test_template = Template("""
 """)
 
 subscript_operator_test_template = Template("""
-  // subscript operator value
   {
     ${type} data[] = { ${data} };
     const sycl::vec<${type}, ${size}> subscriptVec1(${data});
@@ -1239,6 +1238,17 @@ subscript_operator_test_template = Template("""
       subscriptVec2[i] = data[i];
     }
 
+    // operator[] type check
+    if constexpr (!std::is_same_v<decltype(subscriptVec2[0]), ${type}&>) {
+      resAcc[0] = false;
+    }
+
+    // const operator[] type check
+    if constexpr (!std::is_same_v<decltype(subscriptVec1[0]), const ${type}&>) {
+      resAcc[0] = false;
+    }
+
+    // check subscript operator value
     for (int i = 0; i < ${size}; ++i) {
       if (subscriptVec1[i] != data[i] || subscriptVec2[i] != data[i]
 // FIXME: re-enable when subscript operator for swizzle vec is implemented
@@ -1253,6 +1263,26 @@ subscript_operator_test_template = Template("""
       }
     }
   }
+""")
+
+vector_t_operator_test_template = Template("""
+#ifdef __SYCL_DEVICE_ONLY__
+  // check operator vector_t() const
+  {
+    ${type} val = ${val};
+    const sycl::vec<${type}, 1> testVec(val);
+    sycl::vec<${type}, ${size}>::vector_t data = testVec;
+
+// FIXME: re-enable when vec(vector_t) constructor is implemented
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+    const sycl::vec<${type}, 1> testVec2(data);
+
+    if (!(testVec == testVec2)) {
+      resAcc[0] = false;
+    }
+#endif
+  }
+#endif  // __SYCL_DEVICE_ONLY__
 """)
 
 dataT_operator_test_template = Template("""
@@ -1307,6 +1337,11 @@ def generate_all_type_test(type_str, size):
     if size == 1:
         test_string += dataT_operator_test_template.substitute(
           type=type_str,
+          swizzle=get_swizzle(size),
+          val=Data.value_default_dict[type_str])
+        test_string += vector_t_operator_test_template.substitute(
+          type=type_str,
+          size=str(size),
           swizzle=get_swizzle(size),
           val=Data.value_default_dict[type_str])
     test_string += assign_dataT_operator_test_template.substitute(

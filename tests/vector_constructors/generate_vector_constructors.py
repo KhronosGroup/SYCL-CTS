@@ -192,6 +192,7 @@ def generate_constructor_tests(type_str, input_file, output_file):
         test_str += generate_explicit(type_str, size)
         test_str += generate_vec(type_str, size)
         test_str += generate_mixed(type_str, size)
+        test_str += generate_opencl(type_str, size)
         test_func_str += wrap_with_test_func(TEST_NAME, type_str,
                                              test_str, str(size))
         test_str = ''
