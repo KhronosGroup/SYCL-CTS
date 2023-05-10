@@ -22,7 +22,7 @@
 #define SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 
 // Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
+#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) ||    \
       defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
       defined(SYCL_CTS_COMPILING_WITH_DPCPP))
 
@@ -34,12 +34,11 @@ struct default_sampled_image {
   using type = sycl::sampled_image<1>;
 
   static type get() {
-    return {
-        nullptr, sycl::image_format::r32b32g32a32_sint,
-        sycl::image_sampler{sycl::addressing_mode::mirrored_repeat,
-                            sycl::coordinate_normalization_mode::normalized,
-                            sycl::filtering_mode::nearest},
-        sycl::range<1>{1}};
+    return {nullptr, sycl::image_format::r32b32g32a32_sint,
+            sycl::image_sampler{sycl::addressing_mode::mirrored_repeat,
+                                sycl::coordinate_normalization_mode::normalized,
+                                sycl::filtering_mode::nearest},
+            sycl::range<1>{1}};
   }
 
   template <sycl::image_target ImageTarget>

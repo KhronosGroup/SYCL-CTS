@@ -44,20 +44,22 @@ TEST_CASE("sampled_image_accessor common reference semantics (host_task)",
           "[sampled_image_accessor]") {
   auto sampled_image_0 = default_sampled_image::get();
   auto sampled_image_1 = default_sampled_image::get();
-  sycl_cts::util::get_cts_object::queue().submit([&](sycl::handler& cgh) {
-    auto sampled_image_accessor_0 =
-        default_sampled_image::get_acc<sycl::image_target::host_task>(
-            sampled_image_0, cgh);
-    auto sampled_image_accessor_1 =
-        default_sampled_image::get_acc<sycl::image_target::host_task>(
-            sampled_image_1, cgh);
-    cgh.host_task([=] {
-      auto sampled_image_accessor_0_copy = sampled_image_accessor_0;
-      common_reference_semantics::check_host<storage_sampled>(
-          sampled_image_accessor_0_copy, sampled_image_accessor_1,
-          "sampled_image_accessor<int4, 1, image_target::host_task>");
-    });
-  }).wait_and_throw();
+  sycl_cts::util::get_cts_object::queue()
+      .submit([&](sycl::handler& cgh) {
+        auto sampled_image_accessor_0 =
+            default_sampled_image::get_acc<sycl::image_target::host_task>(
+                sampled_image_0, cgh);
+        auto sampled_image_accessor_1 =
+            default_sampled_image::get_acc<sycl::image_target::host_task>(
+                sampled_image_1, cgh);
+        cgh.host_task([=] {
+          auto sampled_image_accessor_0_copy = sampled_image_accessor_0;
+          common_reference_semantics::check_host<storage_sampled>(
+              sampled_image_accessor_0_copy, sampled_image_accessor_1,
+              "sampled_image_accessor<int4, 1, image_target::host_task>");
+        });
+      })
+      .wait_and_throw();
 }
 
 TEST_CASE("sampled_image_accessor common reference semantics (kernel)",
@@ -95,24 +97,26 @@ TEST_CASE("unsampled_image_accessor common reference semantics (host_task)",
           "[unsampled_image_accessor]") {
   auto unsampled_image_0 = default_unsampled_image::get();
   auto unsampled_image_1 = default_unsampled_image::get();
-  sycl_cts::util::get_cts_object::queue().submit([&](sycl::handler& cgh) {
-    auto unsampled_image_accessor_0 =
-        default_unsampled_image::get_acc<sycl::access_mode::read,
-                                         sycl::image_target::host_task>(
-            unsampled_image_0, cgh);
+  sycl_cts::util::get_cts_object::queue()
+      .submit([&](sycl::handler& cgh) {
+        auto unsampled_image_accessor_0 =
+            default_unsampled_image::get_acc<sycl::access_mode::read,
+                                             sycl::image_target::host_task>(
+                unsampled_image_0, cgh);
 
-    auto unsampled_image_accessor_1 =
-        default_unsampled_image::get_acc<sycl::access_mode::read,
-                                         sycl::image_target::host_task>(
-            unsampled_image_1, cgh);
-    cgh.host_task([=] {
-      auto unsampled_image_accessor_0_copy = unsampled_image_accessor_0;
-      common_reference_semantics::check_host<storage_unsampled>(
-          unsampled_image_accessor_0_copy, unsampled_image_accessor_1,
-          "unsampled_image_accessor<int4, 1, access_mode::read, "
-          "image_target::host_task>");
-    });
-  }).wait_and_throw();
+        auto unsampled_image_accessor_1 =
+            default_unsampled_image::get_acc<sycl::access_mode::read,
+                                             sycl::image_target::host_task>(
+                unsampled_image_1, cgh);
+        cgh.host_task([=] {
+          auto unsampled_image_accessor_0_copy = unsampled_image_accessor_0;
+          common_reference_semantics::check_host<storage_unsampled>(
+              unsampled_image_accessor_0_copy, unsampled_image_accessor_1,
+              "unsampled_image_accessor<int4, 1, access_mode::read, "
+              "image_target::host_task>");
+        });
+      })
+      .wait_and_throw();
 }
 
 TEST_CASE("unsampled_image_accessor common reference semantics (kernel)",
