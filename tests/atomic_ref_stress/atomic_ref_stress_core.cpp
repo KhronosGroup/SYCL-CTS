@@ -19,7 +19,10 @@
 *******************************************************************************/
 
 #include "../common/disabled_for_test_case.h"
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "atomic_ref_stress_common.h"
+#endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
+        // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include <catch2/catch_test_macros.hpp>
 
 namespace atomic_ref_stress_test_core {
