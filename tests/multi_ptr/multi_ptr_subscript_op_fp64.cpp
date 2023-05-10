@@ -22,9 +22,7 @@
 
 namespace multi_ptr_subscript_op_fp64 {
 
-TEST_CASE("multi_ptr operator[]. fp64 type", "[multi_ptr]") {
-  using namespace multi_ptr_subscript_op;
-
+TEST_CASE("multi_ptr operator[](std::ptrdiff_t). fp64 type", "[multi_ptr]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp64)) {
     WARN(
@@ -32,7 +30,7 @@ TEST_CASE("multi_ptr operator[]. fp64 type", "[multi_ptr]") {
         "Skipping the test case.");
     return;
   }
-  check_multi_ptr_subscript_op<double>{}("double");
+  multi_ptr_subscript_op::check_multi_ptr_subscript_op<double>{}("double");
 }
 
 }  // namespace multi_ptr_subscript_op_fp64

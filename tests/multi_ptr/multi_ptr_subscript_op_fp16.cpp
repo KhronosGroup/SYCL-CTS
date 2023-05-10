@@ -22,9 +22,7 @@
 
 namespace multi_ptr_subscript_op_fp16 {
 
-TEST_CASE("multi_ptr operator[]. fp16 type ", "[multi_ptr]") {
-  using namespace multi_ptr_subscript_op;
-
+TEST_CASE("multi_ptr operator[](std::ptrdiff_t). fp16 type ", "[multi_ptr]") {
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (!queue.get_device().has(sycl::aspect::fp16)) {
     WARN(
@@ -32,7 +30,7 @@ TEST_CASE("multi_ptr operator[]. fp16 type ", "[multi_ptr]") {
         "Skipping the test case.");
     return;
   }
-  check_multi_ptr_subscript_op<sycl::half>{}("sycl::half");
+  multi_ptr_subscript_op::check_multi_ptr_subscript_op<sycl::half>{}("sycl::half");
 }
 
 }  // namespace multi_ptr_subscript_op_fp16
