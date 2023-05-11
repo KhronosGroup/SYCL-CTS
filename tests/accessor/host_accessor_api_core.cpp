@@ -9,9 +9,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-// Issue links https://github.com/intel/llvm/issues/8298
-// https://github.com/intel/llvm/issues/8302
-// PR link https://github.com/intel/llvm/pull/8069
+// Issue link https://github.com/intel/llvm/issues/8302
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"

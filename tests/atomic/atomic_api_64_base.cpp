@@ -43,7 +43,7 @@ class check_base_atomics {
       sycl::accessor<T, 1, sycl::access_mode::atomic, target> acc)
       : m_acc(acc) {}
 
-  void operator()() const {
+  void operator()(sycl::nd_item<1> item) const {
     static constexpr auto addressSpace = target_map<target>::addressSpace;
     sycl::memory_order order = sycl::memory_order::relaxed;
     sycl::atomic<T, addressSpace> a = m_acc[0];
