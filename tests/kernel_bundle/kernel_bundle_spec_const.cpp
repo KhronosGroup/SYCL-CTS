@@ -74,6 +74,16 @@ TEST_CASE(
   CHECK(inputBundle.has_specialization_constant<SpecName>());
   CHECK(!inputBundle.has_specialization_constant<OtherSpecName>());
 
+  {
+    INFO("Check get_specialization_constant() return type");
+    CHECK(std::is_same_v<
+          std::remove_reference_t<decltype(SpecName)>::value_type,
+          decltype(inputBundle.get_specialization_constant<SpecName>())>);
+    CHECK(std::is_same_v<
+          std::remove_reference_t<decltype(OtherSpecName)>::value_type,
+          decltype(inputBundle.get_specialization_constant<OtherSpecName>())>);
+  }
+
   CHECK(inputBundle.get_specialization_constant<SpecName>() == new_value);
 
   auto objectBundle = sycl::compile(inputBundle);
