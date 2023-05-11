@@ -707,7 +707,8 @@ void check_common_constructor(const sycl::range<Dimension>& r,
  * @param r Range for accessors buffer
  * @param get_accessor_functor Functor for accessor creation
  */
-template <typename DataT, int Dimension, typename GetAccFunctorT, typename OpT>
+template <typename DataT, sycl::target Target, int Dimension,
+          typename GetAccFunctorT, typename OpT>
 void run_placeholder_accessor_exception(const sycl::range<Dimension>& r,
                                         GetAccFunctorT get_accessor_functor,
                                         OpT memory_operation,
@@ -724,7 +725,8 @@ void run_placeholder_accessor_exception(const sycl::range<Dimension>& r,
       queue
           .submit([&](sycl::handler& cgh) {
             auto acc = get_accessor_functor(data_buf);
-            sycl::accessor<T, Dimension> other_acc(other_buf, cgh);
+            sycl::accessor<T, Dimension, sycl::access_mode::read_write, Target>
+                other_acc(other_buf, cgh);
             memory_operation(acc, cgh, other_acc);
           })
           .wait_and_throw();
@@ -757,43 +759,50 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
                                           GetAccFunctorT get_accessor_functor) {
   if constexpr (Target == sycl::target::host_task) {
     auto host_task = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.host_task([=] { auto copy_acc = acc; });
+      cgh.host_task(
+          [=] { acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()]; });
     };
-    run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                              host_task, "host_task");
+    run_placeholder_accessor_exception<DataT, Target>(r, get_accessor_functor,
+                                                      host_task, "host_task");
   } else {
     auto single_task = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.single_task([=] { auto copy_acc = acc; });
+      cgh.single_task(
+          [=] { acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()]; });
     };
-    run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                              single_task, "single_task");
+    run_placeholder_accessor_exception<DataT, Target>(
+        r, get_accessor_functor, single_task, "single_task");
 
     auto parallel_for_range = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for(r, [=](auto item) { auto copy_acc = acc; });
+      cgh.parallel_for(r, [=](auto item) {
+        acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()];
+      });
     };
-    run_placeholder_accessor_exception<DataT>(
+    run_placeholder_accessor_exception<DataT, Target>(
         r, get_accessor_functor, parallel_for_range, "parallel_for with range");
 
     auto parallel_for_nd_range = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for(sycl::nd_range<Dimension>(r, r),
-                       [=](auto nd_item) { auto copy_acc = acc; });
+      cgh.parallel_for(sycl::nd_range<Dimension>(r, r), [=](auto nd_item) {
+        acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()];
+      });
     };
-    run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                              parallel_for_nd_range,
-                                              "parallel_for with nd_range");
+    run_placeholder_accessor_exception<DataT, Target>(
+        r, get_accessor_functor, parallel_for_nd_range,
+        "parallel_for with nd_range");
 
     auto parallel_for_work_group = [&](auto& acc, auto& cgh, auto& acc2) {
-      cgh.parallel_for_work_group(r, [=](auto group) { auto copy_acc = acc; });
+      cgh.parallel_for_work_group(r, [=](auto group) {
+        acc2[sycl::id<Dimension>()] = acc[sycl::id<Dimension>()];
+      });
     };
-    run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                              parallel_for_work_group,
-                                              "parallel_for_work_group");
+    run_placeholder_accessor_exception<DataT, Target>(
+        r, get_accessor_functor, parallel_for_work_group,
+        "parallel_for_work_group");
 
     auto update_host = [&](auto& acc, auto& cgh, auto& acc2) {
       cgh.update_host(acc);
     };
-    run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                              update_host, "update_host");
+    run_placeholder_accessor_exception<DataT, Target>(
+        r, get_accessor_functor, update_host, "update_host");
 
     if constexpr (AccessMode != sycl::access_mode::write) {
       auto copy_to_shared = [&](auto& acc, auto& cgh, auto& acc2) {
@@ -801,7 +810,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         std::shared_ptr<T> dest(new T);
         cgh.copy(acc, dest);
       };
-      run_placeholder_accessor_exception<DataT>(
+      run_placeholder_accessor_exception<DataT, Target>(
           r, get_accessor_functor, copy_to_shared, "copy to std::shared_ptr");
 
       auto copy_to_pointer = [&](auto& acc, auto& cgh, auto& acc2) {
@@ -810,13 +819,13 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         T* dest = &val;
         cgh.copy(acc, dest);
       };
-      run_placeholder_accessor_exception<DataT>(
+      run_placeholder_accessor_exception<DataT, Target>(
           r, get_accessor_functor, copy_to_pointer, "copy to pointer");
 
       auto copy_to_acc = [&](auto& acc, auto& cgh, auto& acc2) {
         cgh.copy(acc, acc2);
       };
-      run_placeholder_accessor_exception<DataT>(
+      run_placeholder_accessor_exception<DataT, Target>(
           r, get_accessor_functor, copy_to_acc, "copy to new accessor");
     }
 
@@ -826,7 +835,7 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         std::shared_ptr<T> src(new T);
         cgh.copy(src, acc);
       };
-      run_placeholder_accessor_exception<DataT>(
+      run_placeholder_accessor_exception<DataT, Target>(
           r, get_accessor_functor, copy_shared, "copy std::shared_ptr");
 
       auto copy_pointer = [&](auto& acc, auto& cgh, auto& acc2) {
@@ -835,22 +844,22 @@ void check_placeholder_accessor_exception(const sycl::range<Dimension>& r,
         T* src = &val;
         cgh.copy(src, acc);
       };
-      run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                                copy_shared, "copy pointer");
+      run_placeholder_accessor_exception<DataT, Target>(
+          r, get_accessor_functor, copy_shared, "copy pointer");
 
       auto copy_acc = [&](auto& acc, auto& cgh, auto& acc2) {
         cgh.copy(acc2, acc);
       };
-      run_placeholder_accessor_exception<DataT>(r, get_accessor_functor,
-                                                copy_acc, "copy new accessor");
+      run_placeholder_accessor_exception<DataT, Target>(
+          r, get_accessor_functor, copy_acc, "copy new accessor");
 
       auto fill = [&](auto& acc, auto& cgh, auto& acc2) {
         using T = std::remove_const_t<DataT>;
         T val = T(changed_val);
         cgh.fill(acc, val);
       };
-      run_placeholder_accessor_exception<DataT>(r, get_accessor_functor, fill,
-                                                "fill");
+      run_placeholder_accessor_exception<DataT, Target>(r, get_accessor_functor,
+                                                        fill, "fill");
     }
   }
 }
