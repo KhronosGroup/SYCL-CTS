@@ -39,7 +39,8 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
       check_api_call("single_task<kernel_test_class>()", queue,
                      [&](handler &cgh, accessor_t acc) {
                        cgh.single_task<k_name>([=]() {
-                         for (size_t i = 0; i < constants.defaultRange[0]; ++i) {
+                         for (size_t i = 0; i < constants.defaultRange[0];
+                              ++i) {
                            acc[i] = i;
                          }
                        });
@@ -102,13 +103,14 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
 
     {
       using k_name = kernel_test_class5;
-      check_api_call(
-          "parallel_for(nd_range, kernel);", queue,
-          [&](handler &cgh, accessor_t acc) {
-            cgh.parallel_for<k_name>(constants.ndRange, [=](sycl::nd_item<1> ndItem) {
-              acc[ndItem.get_global_id()] = ndItem.get_global_id(0);
-            });
-          });
+      check_api_call("parallel_for(nd_range, kernel);", queue,
+                     [&](handler &cgh, accessor_t acc) {
+                       cgh.parallel_for<k_name>(constants.ndRange,
+                                                [=](sycl::nd_item<1> ndItem) {
+                                                  acc[ndItem.get_global_id()] =
+                                                      ndItem.get_global_id(0);
+                                                });
+                     });
     }
   }
 }

@@ -26,16 +26,22 @@ constexpr size_t defaultNumModified = 128;
 constexpr sycl::specialization_id<int> SpecName(5);
 
 struct TestConstants {
-const sycl::range<1> defaultRange;
-const sycl::id<1> offset;
-const sycl::range<1> offsetRange;
+  const sycl::range<1> defaultRange;
+  const sycl::id<1> offset;
+  const sycl::range<1> offsetRange;
 
-const sycl::nd_range<1> ndRange;
-const sycl::nd_range<1> offsetNdRange;
-const sycl::range<1> numWorkGroups;
-const sycl::range<1> workGroupSize;
-TestConstants () : defaultRange(defaultNumModified), offset(28), offsetRange(defaultRange[0] - offset[0]), ndRange(defaultRange, defaultRange),
-offsetNdRange(offsetRange, offsetRange, offset), numWorkGroups(1), workGroupSize(defaultRange) {}
+  const sycl::nd_range<1> ndRange;
+  const sycl::nd_range<1> offsetNdRange;
+  const sycl::range<1> numWorkGroups;
+  const sycl::range<1> workGroupSize;
+  TestConstants()
+      : defaultRange(defaultNumModified),
+        offset(28),
+        offsetRange(defaultRange[0] - offset[0]),
+        ndRange(defaultRange, defaultRange),
+        offsetNdRange(offsetRange, offsetRange, offset),
+        numWorkGroups(1),
+        workGroupSize(defaultRange) {}
 };
 
 struct use_offset {
@@ -44,15 +50,12 @@ struct use_offset {
 };
 
 class CustomNdItem {
-    sycl::nd_item<1> item;
-  public:
-    CustomNdItem(const sycl::nd_item<1>& rt_item) : item(rt_item) {}
-    sycl::id<1> get_global_id() {
-      return item.get_global_id();
-    }
-    size_t get_global_id(int dim) {
-      return item.get_global_id(dim);
-    }
+  sycl::nd_item<1> item;
+
+ public:
+  CustomNdItem(const sycl::nd_item<1> &rt_item) : item(rt_item) {}
+  sycl::id<1> get_global_id() { return item.get_global_id(); }
+  size_t get_global_id(int dim) { return item.get_global_id(dim); }
 };
 
 class kernel_test_class0;
@@ -101,7 +104,9 @@ struct parallel_for_range_auto_functor {
   parallel_for_range_auto_functor(accessor_t acc) : acc(acc) {}
 
   template <typename ItemT>
-  void operator()(ItemT item) const { acc[item] = item[0]; }
+  void operator()(ItemT item) const {
+    acc[item] = item[0];
+  }
 
   accessor_t acc;
 };
@@ -117,10 +122,13 @@ struct parallel_for_range_size_t_functor {
 
 template <int useOffset>
 struct parallel_for_range_item_functor_with_kernel_handler {
-  parallel_for_range_item_functor_with_kernel_handler(accessor_t acc) : acc(acc) {}
+  parallel_for_range_item_functor_with_kernel_handler(accessor_t acc)
+      : acc(acc) {}
 
-  void operator()(sycl::item<1> item, sycl::kernel_handler kh) const { kh.get_specialization_constant<SpecName>();
-  acc[item] = item[0]; }
+  void operator()(sycl::item<1> item, sycl::kernel_handler kh) const {
+    kh.get_specialization_constant<SpecName>();
+    acc[item] = item[0];
+  }
 
   accessor_t acc;
 };
@@ -157,7 +165,8 @@ struct parallel_for_nd_range_custom_nd_item_functor {
 };
 
 struct parallel_for_nd_range_nd_item_functor_with_kernel_handler {
-  parallel_for_nd_range_nd_item_functor_with_kernel_handler(accessor_t acc) : acc(acc) {}
+  parallel_for_nd_range_nd_item_functor_with_kernel_handler(accessor_t acc)
+      : acc(acc) {}
 
   void operator()(sycl::nd_item<1> ndItem, sycl::kernel_handler kh) const {
     kh.get_specialization_constant<SpecName>();
@@ -194,7 +203,8 @@ struct parallel_for_work_group_dynamic_functor {
  * dynamic (runtime-defined) work group size and with kernel handler.
  */
 struct parallel_for_work_group_dynamic_with_kern_handler_functor {
-  parallel_for_work_group_dynamic_with_kern_handler_functor(accessor_t acc) : acc(acc) {}
+  parallel_for_work_group_dynamic_with_kern_handler_functor(accessor_t acc)
+      : acc(acc) {}
 
   void operator()(sycl::group<1> group, sycl::kernel_handler kh) const {
     kh.get_specialization_constant<SpecName>();
@@ -233,7 +243,9 @@ struct parallel_for_work_group_fixed_functor {
  * fixed work group size and with kernel handler.
  */
 struct parallel_for_work_group_fixed_with_kern_handler_functor {
-  explicit parallel_for_work_group_fixed_with_kern_handler_functor(accessor_t acc) : acc(acc) {}
+  explicit parallel_for_work_group_fixed_with_kern_handler_functor(
+      accessor_t acc)
+      : acc(acc) {}
 
   void operator()(sycl::group<1> group, sycl::kernel_handler kh) const {
     kh.get_specialization_constant<SpecName>();

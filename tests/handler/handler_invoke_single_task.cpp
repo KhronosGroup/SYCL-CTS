@@ -21,12 +21,12 @@
 #include "handler_invoke_api.hpp"
 
 TEST_CASE("handler.", "[handler]") {
-    using handler = sycl::handler;
+  using handler = sycl::handler;
 
-    TestConstants constants;
+  TestConstants constants;
 
-    auto queue = sycl_cts::util::get_cts_object::queue();
-    auto deviceList = queue.get_context().get_devices();
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto deviceList = queue.get_context().get_devices();
 
   check_api_call("single_task(lambda)", queue,
                  [&](handler &cgh, accessor_t acc) {
@@ -48,9 +48,10 @@ TEST_CASE("handler.", "[handler]") {
                      f();
                    });
                  });
-  check_api_call("single_task(functor), no kernel name", queue,
-                 [&](handler &cgh, accessor_t acc) {
-                   cgh.single_task(single_task_functor(acc, constants.defaultRange[0]));
-                 });
+  check_api_call(
+      "single_task(functor), no kernel name", queue,
+      [&](handler &cgh, accessor_t acc) {
+        cgh.single_task(single_task_functor(acc, constants.defaultRange[0]));
+      });
 #endif
 }
