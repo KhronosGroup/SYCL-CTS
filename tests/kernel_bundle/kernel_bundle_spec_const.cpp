@@ -49,7 +49,7 @@ TEST_CASE(
 
   using KernelName = class simple_kernel;
 
-  queue.submit([&](sycl::handler &cgh) {
+  queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<KernelName>([=](sycl::kernel_handler h) {
       // just to establish `kernel_handler::get_specialization_constant()` call
       // usage of spec constants is checked in spec_constants tests

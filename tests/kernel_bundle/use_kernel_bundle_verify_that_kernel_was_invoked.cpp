@@ -35,14 +35,14 @@ struct kernel;
  *  @param log sycl_cts::util::logger class object
  *  @param ctx Context that will used for sycl::queue
  */
-void invoke_kernel_and_verify_invocation(util::logger &log,
-                                         const sycl::context &ctx) {
+void invoke_kernel_and_verify_invocation(util::logger& log,
+                                         const sycl::context& ctx) {
   sycl::queue queue(ctx, ctx.get_devices()[0]);
   bool flags[] = {false, false};
 
   {
     sycl::buffer<bool> flag_buffer{flags, sycl::range<1>{2}};
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto kernel_bundle{
           sycl::get_kernel_bundle<kernel, sycl::bundle_state::input>(ctx)};
 
@@ -84,13 +84,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     sycl::device dev = util::get_cts_object::device();
     sycl::context ctx(dev.get_platform().get_devices());
 
