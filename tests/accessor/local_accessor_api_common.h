@@ -29,20 +29,51 @@ using namespace sycl_cts;
 using namespace accessor_tests_common;
 
 enum class check : size_t {
-  subscript_id_type = 0U,
-  subscript_size_t_type,
-  iterator_access,
-  // only for non const
-  subscript_id_result,
-  subscript_size_t_result,
+  iterator_access = 0U,
   get_multi_ptr_no_type,
-  get_multi_ptr_no_result,
   get_multi_ptr_yes_type,
-  get_multi_ptr_yes_result,
   get_pointer_type,
+  subscript_id_type,      // only for non-zero dim accessor
+  subscript_size_t_type,  // only for non-zero dim accessor
+  // only for non const
+  subscript_id_result,        // only for non-zero dim accessor
+  subscript_size_t_result,    // only for non-zero dim accessor
+  operator_assign_lv_result,  // only for zero dim accessor
+  operator_assign_rv_result,  // only for zero dim accessor
+  get_multi_ptr_no_result,
+  get_multi_ptr_yes_result,
   get_pointer_result,
   nChecks  // should be the latest one
 };
+const std::string info_strings[to_integral(check::nChecks)]{
+    "result for iterator_access",
+    "return type for get_multi_ptr<sycl::access::decorated::no>()",
+    "return type for get_multi_ptr<sycl::access::decorated::yes>()",
+    "return type for get_pointer()",
+    "return type for operator[](id<Dimensions> index)",
+    "return type for operator[]](size_t index)",
+    "result for operator[](id<Dimensions> index)",
+    "result for operator[]](size_t index)",
+    "result for operator=(const T& value)",
+    "result for operator=(T&& value)",
+    "result for get_multi_ptr<sycl::access::decorated::no>()",
+    "result for get_multi_ptr<sycl::access::decorated::yes>()",
+    "result for get_pointer()"};
+
+bool is_check_for_dim(check check_value, int dim) {
+  if (0 == dim) {
+    if (check_value == check::subscript_id_type ||
+        check_value == check::subscript_size_t_type ||
+        check_value == check::subscript_id_result ||
+        check_value == check::subscript_size_t_result) {
+      return false;
+    }
+  } else if (check_value == check::operator_assign_lv_result ||
+             check_value == check::operator_assign_rv_result) {
+    return false;
+  }
+  return true;
+}
 
 template <typename T, typename AccT>
 void test_local_accessor_types() {
@@ -73,8 +104,6 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
       std::is_same_v<
           decltype(acc_multi_ptr_no),
           typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_result), item_id)] =
-      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
@@ -82,15 +111,21 @@ void test_local_accessor_ptr(AccT &accessor, T expected_data, AccRes &res_acc,
       std::is_same_v<
           decltype(acc_multi_ptr_yes),
           typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_yes_result), item_id)] =
-      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
 
   auto acc_pointer = accessor.get_pointer();
   res_acc[sycl::id<2>(to_integral(check::get_pointer_type), item_id)] =
       std::is_same_v<decltype(acc_pointer),
                      std::add_pointer_t<typename AccT::value_type>>;
-  res_acc[sycl::id<2>(to_integral(check::get_pointer_result), item_id)] =
-      value_operations::are_equal(*acc_pointer, expected_data);
+  if constexpr (!std::is_const_v<typename AccT::value_type>) {
+    res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_no_result), item_id)] =
+        value_operations::are_equal(*acc_multi_ptr_no, expected_data);
+    res_acc[sycl::id<2>(to_integral(check::get_multi_ptr_yes_result),
+                        item_id)] =
+        value_operations::are_equal(*(acc_multi_ptr_yes.get_raw()),
+                                    expected_data);
+    res_acc[sycl::id<2>(to_integral(check::get_pointer_result), item_id)] =
+        value_operations::are_equal(*acc_pointer, expected_data);
+  }
 }
 
 template <typename AccT, int dims, int range_dims>
@@ -194,46 +229,40 @@ class run_api_tests {
                     res_acc[sycl::id<2>(
                         to_integral(check::subscript_size_t_result), item_id)] =
                         value_operations::are_equal(ref_2, changed_val);
-
-                    test_local_accessor_ptr(acc, expected_val, res_acc,
-                                            item_id);
-                    res_acc[sycl::id<2>(to_integral(check::iterator_access),
-                                        item_id)] &=
-                        test_begin_end_device(acc, expected_val, changed_val,
-                                              false);
                   }
+                  test_local_accessor_ptr(acc, expected_val, res_acc, item_id);
+                  res_acc[sycl::id<2>(to_integral(check::iterator_access),
+                                      item_id)] =
+                      test_begin_end_device(acc, expected_val, changed_val,
+                                            !std::is_const_v<T>);
                 });
               })
               .wait_and_throw();
         }
 
-        std::string info_strings[to_integral(check::nChecks)]{
-            "return type for operator[](id<Dimensions> index)",
-            "return type for operator[]](size_t index)",
-            "result for operator[](id<Dimensions> index)",
-            "result for operator[]](size_t index)",
-            "return type for get_multi_ptr<sycl::access::decorated::no>()",
-            "result for get_multi_ptr<sycl::access::decorated::no>()",
-            "return type for get_multi_ptr<sycl::access::decorated::yes>()",
-            "result for get_multi_ptr<sycl::access::decorated::yes>()",
-            "return type for get_pointer()",
-            "result for get_pointer()"};
-
         constexpr size_t N = to_integral(
             (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
         for (size_t i = 0; i < N; i++) {
-          INFO(info_strings[i]);
-          CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
-                            [](bool v) { return v; }));
+          if (is_check_for_dim(static_cast<check>(i), dims)) {
+            INFO(info_strings[i]);
+            CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
+                              [](bool v) { return v; }));
+          }
         }
       }
     } else {
       SECTION(get_section_name<dims>(
           type_name, "Check api for zero-dimension local_accessor")) {
-        bool res;
+        // res as array of arrays just for unification of check with non-zero
+        // dim accessors
+        std::array<std::array<bool, 1>, to_integral(check::nChecks)> res;
+        std::for_each(res.begin(), res.end(),
+                      [](std::array<bool, 1> &arr) { arr.fill(false); });
         {
           auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
-          sycl::buffer res_buf(&res, sycl::range(1));
+          sycl::buffer<bool, 2> res_buf(
+              res.data()->data(),
+              sycl::range<2>(to_integral(check::nChecks), 1));
           queue
               .submit([&](sycl::handler &cgh) {
                 AccT acc(cgh);
@@ -245,6 +274,7 @@ class run_api_tests {
                 sycl::accessor res_acc(res_buf, cgh);
                 cgh.parallel_for<kname>(
                     sycl::nd_range(r, r), [=](sycl::nd_item<1> item) {
+                      size_t item_id = item.get_global_linear_id();
                       typename AccT::reference dref = acc;
                       if constexpr (!std::is_const_v<T>) {
                         typename AccT::value_type v_data =
@@ -253,9 +283,10 @@ class run_api_tests {
                         // check method const AccT::operator=(const T& data)
                         // const
                         acc = v_data;
-                        test_accessor_ptr_device(acc, expected_val, res_acc);
-
-                        res_acc[0] &= value_operations::are_equal(dref, v_data);
+                        res_acc[sycl::id<2>(
+                            to_integral(check::operator_assign_lv_result),
+                            item_id)] =
+                            value_operations::are_equal(dref, v_data);
 
                         // check method const AccT::operator=(T&& data) const
                         acc = value_operations::init<typename AccT::value_type>(
@@ -263,13 +294,30 @@ class run_api_tests {
                         v_data =
                             value_operations::init<typename AccT::value_type>(
                                 changed_val);
-                        res_acc[0] &= value_operations::are_equal(dref, v_data);
+                        res_acc[sycl::id<2>(
+                            to_integral(check::operator_assign_rv_result),
+                            item_id)] =
+                            value_operations::are_equal(dref, v_data);
                       }
+                      test_local_accessor_ptr(acc, changed_val, res_acc,
+                                              item_id);
+                      res_acc[sycl::id<2>(to_integral(check::iterator_access),
+                                          item_id)] =
+                          test_begin_end_device(acc, expected_val, changed_val,
+                                                !std::is_const_v<T>);
                     });
               })
               .wait_and_throw();
         }
-        CHECK(res);
+        constexpr size_t N = to_integral(
+            (std::is_const_v<T>) ? check::subscript_id_result : check::nChecks);
+        for (size_t i = 0; i < N; i++) {
+          if (is_check_for_dim(static_cast<check>(i), dims)) {
+            INFO(info_strings[i]);
+            CHECK(std::all_of(res[i].cbegin(), res[i].cend(),
+                              [](bool v) { return v; }));
+          }
+        }
       }
     }
     SECTION(
