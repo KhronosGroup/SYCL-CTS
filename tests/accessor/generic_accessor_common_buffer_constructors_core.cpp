@@ -38,9 +38,7 @@ namespace generic_accessor_common_buffer_constructors_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Generic sycl::accessor buffer constructors. core types", "[accessor]")({
   using namespace generic_accessor_common_buffer_constructors;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_generic_common_buffer_constructors_test>(
-      types);
+  common_run_tests<run_generic_common_buffer_constructors_test>();
 });
 
 }  // namespace generic_accessor_common_buffer_constructors_core
