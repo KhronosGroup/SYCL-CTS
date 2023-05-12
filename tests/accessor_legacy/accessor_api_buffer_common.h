@@ -350,18 +350,22 @@ class check_buffer_accessor_api_methods {
         buffer, &accessRange, &accessOffset, nullptr);
 
     queue.submit([&](sycl::handler &cgh) {
-      cgh.require(acc);
       check_methods(log, accessRange, accessOffset, acc, accessedSize,
           accessedCount, typeName, is_zero_dim<dims>{});
-      cgh.single_task<kernelName>(dummy_functor<kernelName>{});
+      if (accessedSize != 0) {
+        cgh.require(acc);
+        cgh.single_task<kernelName>(dummy_functor<kernelName>{});
+      }
     });
 
-    // Pointer verification requires scope out of command group
-    check_get_pointer(log, typeName, accessOffset, queue,
-                      [&](sycl::handler& cgh) -> acc_t {
-        cgh.require(acc);
-        return acc;
-    });
+    if (accessedSize != 0) {
+      // Pointer verification requires scope out of command group
+      check_get_pointer(log, typeName, accessOffset, queue,
+                        [&](sycl::handler &cgh) -> acc_t {
+                          cgh.require(acc);
+                          return acc;
+                        });
+    }
   }
 
   /**
