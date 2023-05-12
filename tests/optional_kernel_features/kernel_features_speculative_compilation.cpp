@@ -25,16 +25,14 @@ class empty_functor {
 template <size_t N>
 class sub_group_decorated_functor {
  public:
-  [[sycl::reqd_sub_group_size(N)]] void operator()() const {}
-  [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::item<1>) const {}
+  [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::nd_item<1>) const {}
   [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::group<1>) const {}
 };
 
 template <size_t N>
 class work_group_decorated_functor {
  public:
-  [[sycl::reqd_work_group_size(N)]] void operator()() const {}
-  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::item<1>) const {}
+  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::nd_item<1>) const {}
   [[sycl::reqd_work_group_size(N)]] void operator()(sycl::group<1>) const {}
 };
 
@@ -167,53 +165,53 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 
   if (max_wg_size >= testing_wg_size[0]) {
     {
-      const auto separate_lambda_no_arg =
-          []() [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
       const auto separate_lambda_item_arg = [](sycl::item<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[0])]]{};
 
-      run_separate_lambda<kernel_speculative<5>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
-          separate_lambda_item_arg, separate_lambda_group_arg);
+      run_separate_lambda_nd_range<kernel_speculative<5>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
+          separate_lambda_group_arg);
     }
 
     {
       using FunctorT = work_group_decorated_functor<testing_wg_size[0]>;
-      run_functor<FunctorT>(is_exception_expected, errc_expected, queue);
+      run_functor_nd_range<FunctorT>(is_exception_expected, errc_expected,
+                                     queue);
     }
 
     {
-      RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(testing_wg_size[0])]],
-                          kernel_speculative<5>, NO_KERNEL_BODY);
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          is_exception_expected, errc_expected, queue,
+          [[sycl::reqd_work_group_size(testing_wg_size[0])]],
+          kernel_speculative<5>, NO_KERNEL_BODY);
     }
   }
 
   if (max_wg_size >= testing_wg_size[1]) {
     {
-      const auto separate_lambda_no_arg =
-          []() [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
       const auto separate_lambda_item_arg = [](sycl::item<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_work_group_size(testing_wg_size[1])]]{};
 
-      run_separate_lambda<kernel_speculative<6>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
-          separate_lambda_item_arg, separate_lambda_group_arg);
+      run_separate_lambda_nd_range<kernel_speculative<6>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
+          separate_lambda_group_arg);
     }
 
     {
       using FunctorT = work_group_decorated_functor<testing_wg_size[1]>;
-      run_functor<FunctorT>(is_exception_expected, errc_expected, queue);
+      run_functor_nd_range<FunctorT>(is_exception_expected, errc_expected,
+                                     queue);
     }
 
     {
-      RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_work_group_size(testing_wg_size[1])]],
-                          kernel_speculative<6>, NO_KERNEL_BODY);
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          is_exception_expected, errc_expected, queue,
+          [[sycl::reqd_work_group_size(testing_wg_size[1])]],
+          kernel_speculative<6>, NO_KERNEL_BODY);
     }
   }
 
@@ -225,27 +223,27 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
       std::find(sg_sizes_vec.begin(), sg_sizes_vec.end(), testing_sg_size[0]);
   if (find_res != sg_sizes_vec.end()) {
     {
-      const auto separate_lambda_no_arg =
-          []() [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
       const auto separate_lambda_item_arg =
           [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[0])]]{};
 
-      run_separate_lambda<kernel_speculative<7>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
-          separate_lambda_item_arg, separate_lambda_group_arg);
+      run_separate_lambda_nd_range<kernel_speculative<7>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
+          separate_lambda_group_arg);
     }
 
     {
       using FunctorT = sub_group_decorated_functor<testing_sg_size[0]>;
-      run_functor<FunctorT>(is_exception_expected, errc_expected, queue);
+      run_functor_nd_range<FunctorT>(is_exception_expected, errc_expected,
+                                     queue);
     }
 
     {
-      RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(testing_sg_size[0])]],
-                          kernel_speculative<7>, NO_KERNEL_BODY);
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          is_exception_expected, errc_expected, queue,
+          [[sycl::reqd_sub_group_size(testing_sg_size[0])]],
+          kernel_speculative<7>, NO_KERNEL_BODY);
     }
   }
 
@@ -253,27 +251,27 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
       std::find(sg_sizes_vec.begin(), sg_sizes_vec.end(), testing_sg_size[1]);
   if (find_res != sg_sizes_vec.end()) {
     {
-      const auto separate_lambda_no_arg =
-          []() [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
       const auto separate_lambda_item_arg =
           [](sycl::item<1>) [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
       const auto separate_lambda_group_arg = [](sycl::group<1>)
           [[sycl::reqd_sub_group_size(testing_sg_size[1])]]{};
 
-      run_separate_lambda<kernel_speculative<8>>(
-          is_exception_expected, errc_expected, queue, separate_lambda_no_arg,
-          separate_lambda_item_arg, separate_lambda_group_arg);
+      run_separate_lambda_nd_range<kernel_speculative<8>>(
+          is_exception_expected, errc_expected, queue, separate_lambda_item_arg,
+          separate_lambda_group_arg);
     }
 
     {
       using FunctorT = sub_group_decorated_functor<testing_sg_size[1]>;
-      run_functor<FunctorT>(is_exception_expected, errc_expected, queue);
+      run_functor_nd_range<FunctorT>(is_exception_expected, errc_expected,
+                                     queue);
     }
 
     {
-      RUN_SUBMISSION_CALL(is_exception_expected, errc_expected, queue,
-                          [[sycl::reqd_sub_group_size(testing_sg_size[1])]],
-                          kernel_speculative<8>, NO_KERNEL_BODY);
+      RUN_SUBMISSION_CALL_ND_RANGE(
+          is_exception_expected, errc_expected, queue,
+          [[sycl::reqd_sub_group_size(testing_sg_size[1])]],
+          kernel_speculative<8>, NO_KERNEL_BODY);
     }
   }
 });
