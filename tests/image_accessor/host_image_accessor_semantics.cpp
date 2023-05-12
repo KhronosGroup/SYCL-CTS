@@ -102,20 +102,20 @@ TEST_CASE("host_unsampled_image_accessor common reference semantics, mutation",
     t0.write(0, val);
     sycl::host_unsampled_image_accessor<data_type, 1> t1(t0);
     t1.write(0, new_val);
-    CHECK(new_val == t0.read(0));
+    CHECK(value_operations::are_equal(new_val, t0.read(0)));
   }
 
   SECTION("mutation to original") {
     t0.write(0, val);
     sycl::host_unsampled_image_accessor<data_type, 1> t1(t0);
     t0.write(0, new_val);
-    CHECK(new_val == t1.read(0));
+    CHECK(value_operations::are_equal(new_val, t1.read(0)));
   }
 
   SECTION("mutation to original, const copy") {
     t0.write(0, val);
     const sycl::host_unsampled_image_accessor<data_type, 1> t1(t0);
     t0.write(0, new_val);
-    CHECK(new_val == t1.read(0));
+    CHECK(value_operations::are_equal(new_val, t1.read(0)));
   }
 }
