@@ -187,8 +187,7 @@ class test_exception_for_host_acc {
     SECTION(section_name) {
       auto construct_acc =
           [&great_range](sycl::buffer<DataT, Dimension> data_buf) {
-            sycl::host_accessor<DataT, Dimension>(data_buf, great_range,
-                                                  sycl::read_only);
+            sycl::host_accessor(data_buf, great_range, sycl::read_only);
           };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
@@ -215,8 +214,7 @@ class test_exception_for_host_acc {
     SECTION(section_name) {
       auto construct_acc = [&default_range,
                             id](sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::host_accessor<DataT, Dimension>(data_buf, default_range, id,
-                                              sycl::read_only);
+        sycl::host_accessor(data_buf, default_range, id, sycl::read_only);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
@@ -263,7 +261,7 @@ class test_exception_for_generic_acc {
       auto construct_acc = [&great_range, tag](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::accessor<DataT, Dimension>(data_buf, great_range, tag);
+        sycl::accessor(data_buf, great_range, tag);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
@@ -297,7 +295,7 @@ class test_exception_for_generic_acc {
       auto construct_acc = [&default_range, id, tag](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::accessor<DataT, Dimension>(data_buf, default_range, id, tag);
+        sycl::accessor(data_buf, default_range, id, tag);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }
@@ -329,7 +327,7 @@ class test_exception_for_generic_acc {
       auto construct_acc = [&great_range, tag](
                                sycl::handler& cgh,
                                sycl::buffer<DataT, Dimension> data_buf) {
-        sycl::accessor<DataT, Dimension>(data_buf, cgh, great_range, tag);
+        sycl::accessor(data_buf, cgh, great_range, tag);
       };
       check_exception<AccType, DataT, Dimension>(construct_acc);
     }

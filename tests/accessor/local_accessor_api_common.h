@@ -60,7 +60,7 @@ const std::string info_strings[to_integral(check::nChecks)]{
     "result for get_multi_ptr<sycl::access::decorated::yes>()",
     "result for get_pointer()"};
 
-bool is_check_for_dim(check check_value, int dim) {
+inline bool is_check_for_dim(check check_value, int dim) {
   if (0 == dim) {
     if (check_value == check::subscript_id_type ||
         check_value == check::subscript_size_t_type ||
