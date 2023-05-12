@@ -9,9 +9,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__) && \
-    !defined(__SYCL_COMPILER_VERSION)
+#if !defined(__HIPSYCL__) && !defined(__COMPUTECPP__)
+
 #include "accessor_common.h"
 #include "accessor_implicit_conversions.h"
 
@@ -26,7 +25,7 @@ using namespace accessor_implicit_conversions;
 
 namespace accessor_implicit_conversions_fp16 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor implicit conversion. fp16 type",
  "[accessor][generic_accessor][conversion][fp16]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -63,7 +62,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::local_accessor implicit conversion. fp16 type",
  "[accessor][local_accessor][conversion][fp16]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -80,7 +79,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("The sycl::host_accessor implicit conversion. fp16 type",
  "[accessor][host_accessor][conversion][fp16]")({
   auto queue = sycl_cts::util::get_cts_object::queue();

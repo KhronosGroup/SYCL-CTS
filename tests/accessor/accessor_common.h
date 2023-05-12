@@ -368,8 +368,11 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf);
+          sycl::accessor res_acc(res_buf, cgh);
           auto acc = get_accessor_functor();
+          if (acc.is_placeholder()) {
+            cgh.require(acc);
+          }
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               check_empty_accessor_constructor_post_conditions(acc, res_acc);
@@ -485,7 +488,7 @@ void read_write_zero_dim_acc(AccT testing_acc, ResultAccT res_acc) {
     res_acc[0] = value_operations::are_equal(acc_ref, other_data);
   }
   if constexpr (AccessMode != sycl::access_mode::read) {
-    DataT acc_ref(testing_acc);
+    DataT& acc_ref = testing_acc;
     value_operations::assign(acc_ref, changed_val);
   }
 }
@@ -523,10 +526,14 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf);
+          sycl::accessor res_acc(res_buf, cgh);
 
           auto acc = get_accessor_functor(data_buf, cgh);
-
+          if constexpr (AccType == accessor_type::generic_accessor) {
+            if (acc.is_placeholder()) {
+              cgh.require(acc);
+            }
+          }
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
               // We are free either to create new accessor instance or to
@@ -897,7 +904,7 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor,
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf);
+          sycl::accessor res_acc(res_buf, cgh);
 
           auto acc = get_accessor_functor(data_buf, cgh);
 
