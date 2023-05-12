@@ -37,7 +37,8 @@ inline sycl::queue makeQueueOnce() {
   return q;
 }
 
-template <typename returnT, typename ArgT> struct privatePtrCheck {
+template <typename returnT, typename ArgT>
+struct privatePtrCheck {
   returnT res;
   ArgT resArg;
   privatePtrCheck(returnT res_t, ArgT resArg_t)

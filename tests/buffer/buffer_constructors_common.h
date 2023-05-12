@@ -151,7 +151,7 @@ class buffer_ctors {
         sycl::buffer<T, dims> buf2(cont2);
         {
           once_per_unit::get_queue()
-              .submit([&](sycl::handler &cgh) {
+              .submit([&](sycl::handler& cgh) {
                 auto acc1 =
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =
@@ -181,7 +181,7 @@ class buffer_ctors {
                                                             logging_alloc);
         {
           once_per_unit::get_queue()
-              .submit([&](sycl::handler &cgh) {
+              .submit([&](sycl::handler& cgh) {
                 auto acc1 =
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =
