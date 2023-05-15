@@ -24,8 +24,8 @@
 
 #include <sycl/sycl.hpp>
 
+#include "./../oclmath/reference_math.h"
 #include "./math_helper.h"
-
 #include <cmath>
 
 // FIXME: hipSYCL does not support marray
@@ -446,7 +446,10 @@ MAKE_VEC_AND_MARRAY_VERSIONS_3ARGS(mad_sat)
 /* maximum value */
 template <typename T>
 sycl_cts::resultRef<T> max(T a, T b) {
-  if (std::isfinite(a) && std::isfinite(b)) return (a < b) ? b : a;
+  if constexpr (std::is_integral_v<T>)
+    return (a < b) ? b : a;
+  else if (std::isfinite(a) && std::isfinite(b))
+    return (a < b) ? b : a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 template <typename T, int N>
@@ -477,7 +480,10 @@ sycl_cts::resultRef<sycl::marray<T, N>> max(sycl::marray<T, N> a, T b) {
 /* minimum value */
 template <typename T>
 sycl_cts::resultRef<T> min(T a, T b) {
-  if (std::isfinite(a) && std::isfinite(b)) return (b < a) ? b : a;
+  if constexpr (std::is_integral_v<T>)
+    return (b < a) ? b : a;
+  else if (std::isfinite(a) && std::isfinite(b))
+    return (b < a) ? b : a;
   return sycl_cts::resultRef<T>(T(), true);
 }
 template <typename T, int N>
@@ -1360,7 +1366,11 @@ sycl_cts::resultRef<sycl::marray<T, N>> powr(sycl::marray<T, N> a,
 using std::remainder;
 MAKE_VEC_AND_MARRAY_VERSIONS_2ARGS(remainder)
 
-using std::remquo;
+template <typename T>
+T remquo(T x, T y, int *quo) {
+  return reference_remquol(x, y, quo);
+}
+
 template <typename T, int N>
 sycl::vec<T, N> remquo(sycl::vec<T, N> a, sycl::vec<T, N> b,
                        sycl::vec<int, N> *c) {

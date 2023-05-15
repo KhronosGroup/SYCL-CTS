@@ -21,7 +21,9 @@ BinPackParameters: true
 BinPackArguments: true
 ColumnLimit:     80
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-DerivePointerAlignment: true
+# Do not adapt pointer and reference alignment to the current style.
+# Just use PointerAlignment parameter unconditionally for consistency.
+DerivePointerAlignment: false
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
 IndentWrappedFunctionNames: false
@@ -40,7 +42,7 @@ PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Left
 SpacesBeforeTrailingComments: 2
 Cpp11BracedListStyle: true
-Standard:        Auto
+Standard:        c++17
 IndentWidth:     2
 TabWidth:        8
 UseTab:          Never
@@ -59,5 +61,3 @@ ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 SpaceBeforeParens: ControlStatements
 DisableFormat:   false
 SortIncludes:   true
-...
-
