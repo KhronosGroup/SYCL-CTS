@@ -29,16 +29,14 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc1(buffer1, cgh);
   cgh.single_task([=] {
     // long loop
-    for (int i = SIZE; i >= 0; i--)
-      acc1[i] = i;
+    for (int i = SIZE; i >= 0; i--) acc1[i] = i;
   });
 });
 queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc2(buffer2, cgh);
   cgh.single_task([=] {
     // long loop
-    for (int i = SIZE; i >= 0; i--)
-      acc2[i] = i;
+    for (int i = SIZE; i >= 0; i--) acc2[i] = i;
   });
 });
 queue.submit([&](handler& cgh) {
@@ -46,11 +44,10 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc2(buffer2, cgh);
   sycl::accessor<int, 1> res_acc1(res_buffer1, cgh);
   sycl::accessor<int, 1> res_acc2(res_buffer2, cgh);
-  cgh.parallel_for(sycl::range<1>(SIZE),
-                   [=](id<1> index) {
-                     res_acc1[index] = acc1[index];
-                     res_acc2[index] = acc2[index];
-                  });
+  cgh.parallel_for(sycl::range<1>(SIZE), [=](id<1> index) {
+    res_acc1[index] = acc1[index];
+    res_acc2[index] = acc2[index];
+  });
 });
 ----
 
@@ -70,14 +67,13 @@ Create buffer on array, and two non-overlapping sub-buffers
 ----
 buffer<int, 1> sub_buf1(buffer, 0, 5);
 buffer<int, 1> sub_buf2(buffer, 10, 5);
-int *pflag = sycl::malloc_device<int>(1, queue);
+int* pflag = sycl::malloc_device<int>(1, queue);
 queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc1(sub_buf1, cgh);
   cgh.single_task([=] {
     sycl::atomic_ref<int> rflag(*pflag);
     // long loop
-    for (int i = SIZE; i >= 0; i--)
-      acc1[i] = i;
+    for (int i = SIZE; i >= 0; i--) acc1[i] = i;
     rflag = 1;
   });
 });
@@ -85,8 +81,7 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc2(sub_buf2, cgh);
   cgh.single_task([=] {
     sycl::atomic_ref<int> rflag(*pflag);
-    for (int i = SIZE; i >= 0; i--)
-      acc2[i] = i;
+    for (int i = SIZE; i >= 0; i--) acc2[i] = i;
     rflag = 2;
   });
 });
@@ -95,7 +90,7 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> res_acc(res_buffer, cgh);
   sycl::accessor<int, 1> flag_res_acc(flag_res_buffer, cgh);
   copy(acc1, res_acc);
-  cgh.parallel_for(SIZE, [=] (auto item) {
+  cgh.parallel_for(SIZE, [=](auto item) {
     res_acc[item.get_id()] = acc[item.get_id()];
     flag_res_acc[item.get_id()] = *pflag;
   });
@@ -115,12 +110,13 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc(buffer, cgh);
   cgh.single_task([=] {
     // long loop
-    for (int i = SIZE; i >= 0; i--)
-      acc[i] = i;
+    for (int i = SIZE; i >= 0; i--) acc[i] = i;
     *pflag = 42;
   });
 });
 sycl::host_accessor<int, 1> host_acc(buffer);
-----
+-- --
 
-Check that immediately after host_acc creation *pflag is equal to expected value, that means that host_accessor acts as barrier.
+   Check that immediately after host_acc creation *pflag is equal to expected
+       value,
+    that means that host_accessor acts as barrier.
