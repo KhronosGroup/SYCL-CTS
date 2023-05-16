@@ -71,7 +71,8 @@ TEST_CASE("sampled_image_accessor common reference semantics (kernel)",
       [&](sycl::handler& cgh) {
         return sampled_image.get_access<data_type>(cgh);
       },
-      "sampled_image_accessor<int4, 1, image_target::device>");
+      "sampled_image_accessor<int4, 1, image_target::device>",
+      {sycl::aspect::image});
 }
 
 struct storage_unsampled {
@@ -131,5 +132,6 @@ TEST_CASE("unsampled_image_accessor common reference semantics (kernel)",
             cgh);
       },
       "unsampled_image_accessor<int4, 1, access_mode::read, "
-      "image_target::device>");
+      "image_target::device>",
+      {sycl::aspect::image});
 }
