@@ -284,6 +284,12 @@ class TEST_NAME : public util::test_base {
 
       myQueue.wait_and_throw();
     }
+
+    // Check sycl::half limits specialization
+    {
+      INFO("Check that std::numeric_limits is specialized for sycl::half type");
+      CHECK(std::numeric_limits<sycl::half>::is_specialized);
+    }
   }
 };
 

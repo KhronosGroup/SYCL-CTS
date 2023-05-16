@@ -15,7 +15,7 @@ All of the tests described below are performed on the default device that is sel
 
 == Type coverage
 
-All of the tests described below are performed using each of the
+All of the interface tests described are performed using each of the
 following types as the `ReferencedType`.
 
 In Regular mode:
@@ -43,12 +43,6 @@ Note: using T as `ReferencedType` or `ReferencedType*`.
 
 == Tests
 
-All non static tests run on following cases:
-
-* `single_task` with referenced value is accessor element - should be skipped for `address_space::local_space`
-* `parallel_for` with nd_range parameter and referenced value local_accessor element - should be skipped for 
-`address_space::global_space`
-
 Note: all tests run with different values of `DefaultOrder` and `DefaultScope` template parameters, for unsupported
 values tests are skiped.
 To check if the special values of `DefaultOrder` parameters are supported should use
@@ -57,6 +51,12 @@ To check if the special values for `DefaultScope` parameter are supported should
 `info::device::atomic_memory_scope_capabilities`.
 
 === SYCL2020 interface
+
+All non static tests run on following cases:
+
+* `single_task` with referenced value is accessor element - should be skipped for `address_space::local_space`
+* `parallel_for` with nd_range parameter and referenced value local_accessor element - should be skipped for
+`address_space::global_space`
 
 ==== Members
 
@@ -506,3 +506,265 @@ Check if it computes the maximum of `operand` and the value of the object refere
 and assigns the result to the value of the referenced object.
 If `T` is `Floating` check that new value of the referenced object is equal to `(maximum value + operand) +- epsilon`.
 Check if it returns the original value of the referenced object. Check returned value type.
+
+=== Stress tests
+
+==== Atomicity for device scope
+
+This test uses a simple-form `parallel_for` to atomically update a single scalar value from all work-items:
+
+[source,c++]
+----
+TYPE val{};
+sycl::buffer buf{&val, {1}};
+q.submit([&](sycl::handler &cgh) {
+  sycl::accessor acc{buf, cgh};
+  cgh.parallel_for({SIZE}, [=](auto i) {
+     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{acc[0]};
+     a_r.fetch_add(2);
+  });
+});
+----
+
+Verify that `val == SIZE*2` after the loop completes.
+(The result must be accurate within some small error range when `TYPE` is a floating point type.)
+
+This test is repeated for all combinations of supported values listed below:
+
+These `TYPE` types:
+
+* `int`
+* `float`
+* `long long` (if `sizeof(long long) == 8` then only if the device has `aspect::atomic64`)
+* `double` (only if the device has `aspect::fp64` and if `sizeof(double) == 8` only if the device has `aspect::atomic64`)
+
+These `SCOPE` values which are supported by the device (according to `info::device::atomic_memory_scope_capabilities`):
+
+* `memory_scope::device`
+* `memory_scope::system`
+
+These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+These `SPACE` values:
+
+* `access::address_space::global_space`
+* `access::address_space::generic_space`
+
+==== Atomicity for work_group_scope
+
+This test uses a `parallel_for` with `nd_range` parameter to atomically update array, each element from all work-items in one work-group:
+
+[source,c++]
+----
+std::array<TYPE, GROUP_RANGE> vals;
+vals.fill(0);
+sycl::buffer buf{vals.data(), {GROUP_RANGE}};
+q.submit([&](sycl::handler &cgh) {
+  sycl::accessor acc{buf, cgh};
+  sycl::local_accessor<TYPE> lacc{{1}, cgh}
+  cgh.parallel_for(sycl::nd_range(GROUP_RANGE * LOCAL_SIZE, LOCAL_SIZE),
+                    [=](auto item) {
+     sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> a_r{lacc[0]};
+     if (a_r.fetch_sub(2) == -(LOCAL_SIZE*2)) {
+        acc[item.group_id()] = a_r.load();
+     }
+  });
+});
+----
+
+Verify that `val[i] == -LOCAL_SIZE*2` after the loop completes.
+(The result must be accurate within some small error range when `TYPE` is a floating point type.)
+
+This test is repeated for all combinations of supported values listed below:
+
+These `TYPE` types:
+
+* `int`
+* `float`
+* `long long` (if `sizeof(long long) == 8` then only if the device has `aspect::atomic64`)
+* `double` (only if the device has `aspect::fp64` and if `sizeof(double) == 8` only if the device has `aspect::atomic64`)
+
+These `SCOPE` values which are supported by the device (according to `info::device::atomic_memory_scope_capabilities`):
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+These `SPACE` values:
+
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+==== Aquire and release
+
+This test uses a `parallel_for` with `nd_range` parameter to atomically update shared scalars in two threads within local group.
+
+[source,c++]
+----
+const TYPE val chaged_val = 42;
+sycl::nd_range nd_range(GLOBAL_RANGE, 2);
+std::array<bool, GLOBAL_RANGE / 2> res;
+res.fill(false);
+sycl::buffer buf{res.data(), {GLOBAL_RANGE/2}};
+q.submit([&](sycl::handler &cgh) {
+  sycl::accessor res_acc{buf, cgh};
+  sycl::local_accessor<TYPE, 0> x{cgh};
+  sycl::local_accessor<TYPE, 0> y{cgh};
+  sycl::local_accessor<TYPE, 0> A{cgh};
+  sycl::local_accessor<TYPE, 0> B{cgh};
+  cgh.parallel_for(nd_range, sycl::range(2), [=](auto item) {
+    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refA{A};
+    sycl::atomic_ref<TYPE, ORDER, SCOPE, SPACE> refB{B};
+    refA.store(0);
+    refB.store(0);
+    sycl::group_barrier(item.get_group());
+    if (item.get_local_id() == 0) {
+        x = refA.load();
+        refB.store(1);
+      } else {
+        y = refB.load();
+        refA.store(1);
+      }
+    sycl::group_barrier(item.get_group());
+      if (item.get_local_id() == 0)
+        res_acc[item.get_group__id()] = !(x == 1 && y == 1);
+    });
+  });
+
+----
+
+Verify that all elements of res is `true` after the loop completes.
+
+This test is repeated for all combinations of supported values listed below:
+
+These `TYPE` types:
+
+* `int`
+* `float`
+* `long long` (if `sizeof(long long) == 8` then only if the device has `aspect::atomic64`)
+* `double` (only if the device has `aspect::fp64` and if `sizeof(double) == 8` only if the device has `aspect::atomic64`)
+
+These `SCOPE` values which are supported by the device (according to `info::device::atomic_memory_scope_capabilities`):
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+These `SPACE` values:
+
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+==== Ordering
+
+This test uses a `parallel_for` with `nd_range` parameter to atomically read scalar in one thread,
+and then aquire all changes from it in another thread within local group.
+
+[source,c++]
+----
+size_t local_range = q.get_info<sycl::info::device::max_work_group_size>();
+sycl::nd_range nd_range(GLOBAL_RANGE, local_range);
+std::array<bool, GLOBAL_RANGE> res;
+res.fill(false);
+sycl::buffer buf{res.data(), {GLOBAL_RANGE}};
+q.submit([&](sycl::handler &cgh) {
+  sycl::accessor res_acc{buf, cgh};
+  sycl::local_accessor<TYPE, 0> local_acc{cgh};
+  sycl::local_accessor<bool> arr_acc{{local_range}, cgh};
+  cgh.parallel_for(nd_range, [=](auto item) {
+    arr_acc[item.get_local_id()] = false;
+    sycl::group_barrier(item.get_group());
+    sycl::atomic_ref<TYPE, memory_order::relaxed, SCOPE, SPACE> a_r{local_acc};
+    arr_acc[item.get_local_id()] = true;
+    a_r.store(item.get_local_id(), ORDER1);
+    res_acc[item.get_global_id()] = (arr_acc[a_r.load(ORDER2)] == true);
+  });
+});
+----
+
+Verify that all elements of res is `true` after the loop completes.
+
+This test is repeated for all combinations of supported values listed below:
+
+These `TYPE` types:
+
+* `int`
+* `float`
+* `long long` (if `sizeof(long long) == 8` then only if the device has `aspect::atomic64`)
+* `double` (only if the device has `aspect::fp64` and if `sizeof(double) == 8` only if the device has `aspect::atomic64`)
+
+These `SCOPE` values which are supported by the device (according to `info::device::atomic_memory_scope_capabilities`):
+
+* `memory_scope::device`
+* `memory_scope::system`
+* `memory_scope::work_group`
+
+These `ORDER1` and `ORDER2` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `ORDER1` is `memory_order::release` and `ORDER2` is `memory_order::acquire`
+* `ORDER1` and `ORDER2` are both `memory_order::seq_cst`
+
+These `SPACE` values:
+
+* `access::address_space::local_space`
+* `access::address_space::generic_space`
+
+==== Atomicity with respect to atomic operations in host code
+
+This check should use `#ifdef __cpp_lib_atomic_ref` so it can be skipped
+if std::atomic_ref is not supported.
+
+This check is skipped if device doesn't support `aspect::usm_atomic_shared_allocations`.
+
+This check is skipped if device doesn't support `memory_scope::system` in `info::device::atomic_memory_scope_capabilities`.
+
+This test uses a simple-form `parallel_for` to atomically update a single scalar value from all work-items and simultainiously update it on host:
+
+[source,c++]
+----
+
+TYPE *pval = sycl::malloc_shared<TYPE>(1, q);
+*pval = 0;
+std::atomic_ref a_host{*pval};
+auto event = q.submit([&](sycl::handler &cgh) {
+  cgh.parallel_for({SIZE}, [=](auto i) {
+     sycl::atomic_ref<TYPE, ORDER, sycl::memory_scope::system, SPACE> a_dev{*pval};
+     a_dev++;
+  });
+});
+for (int i = 0; i < COUNT; i++)
+  a_host++;
+event.wait();
+----
+
+Verify that `*pval == SIZE+COUNT`.
+
+This test is repeated for all combinations of supported values listed below:
+
+These `ORDER` values which are supported by the device (according to `info::device::atomic_memory_order_capabilities`):
+
+* `memory_order::relaxed`
+* `memory_order::acq_rel`
+* `memory_order::seq_cst`
+
+These `SPACE` values:
+
+* `access::address_space::global_space`
+* `access::address_space::generic_space`
+
+Run the same test as above with `malloc_host` instead of `malloc_shared` if device supports `aspect::usm_atomic_host_allocations`.
