@@ -91,14 +91,12 @@ constexpr bool without_combine{false};
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range(AccessorT accessor) {
-  if constexpr (UseCombineFlagT) {
-    return
-        [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
-  } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto &reducer) {
+    if constexpr (UseCombineFlagT)
+      reducer.combine(accessor[idx]);
+    else
       apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
-    };
-  }
+  };
 }
 
 /** @brief Construct lambda for interacting each even work item with reducer
@@ -116,21 +114,15 @@ auto get_lambda_with_range(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_even_item(AccessorT accessor) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      size_t num = idx;
-      if (num & 1) {
+  return [=](sycl::id<1> idx, auto &reducer) {
+    size_t num = idx;
+    if (num & 1) {
+      if constexpr (UseCombineFlagT)
         reducer.combine(accessor[idx]);
-      }
-    };
-  } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
-      size_t num = idx;
-      if ((num & 1)) {
+      else
         apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
-      }
-    };
-  }
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting no one work item with reducer while
@@ -166,16 +158,14 @@ auto get_lambda_with_range_no_one_item(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_item_twice(AccessorT accessor) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto &reducer) {
+    if constexpr (UseCombineFlagT) {
       reducer.combine(accessor[idx]).combine(accessor[idx]);
-    };
-  } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
+    } else {
       apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
       apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
-    };
-  }
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting with reducer while
@@ -193,16 +183,13 @@ auto get_lambda_with_range_item_twice(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    if constexpr (UseCombineFlagT)
       reducer.combine(accessor[nd_item.get_global_id()]);
-    };
-  } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    else
       apply_chosen_functor<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()]);
-    };
-  }
+  };
 }
 
 /** @brief Construct lambda for interacting each even work item with reducer
@@ -221,22 +208,16 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_even_item(AccessorT accessor,
                                         size_t number_elements = 0) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      size_t num = nd_item.get_global_id();
-      if (num & 1) {
+  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    size_t num = nd_item.get_global_id();
+    if (num & 1) {
+      if constexpr (UseCombineFlagT)
         reducer.combine(accessor[nd_item.get_global_id()]);
-      }
-    };
-  } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
-      size_t num = nd_item.get_global_id();
-      if (num & 1) {
+      else
         apply_chosen_functor<VariableT, FunctorT>(
             reducer, accessor[nd_item.get_global_id()]);
-      }
-    };
-  }
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting no one work item with reducer while
@@ -274,19 +255,17 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_item_twice(AccessorT accessor,
                                          size_t number_elements = 0) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    if constexpr (UseCombineFlagT) {
       reducer.combine(accessor[nd_item.get_global_id()])
           .combine(accessor[nd_item.get_global_id()]);
-    };
-  } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    } else {
       apply_chosen_functor<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()]);
       apply_chosen_functor<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()]);
-    };
-  }
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting with reducer in

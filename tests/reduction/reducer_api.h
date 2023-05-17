@@ -73,7 +73,8 @@ struct check_reducer_subscript {
                 auto& res_combine = reducer.combine(val);
                 acc_results[i++] =
                     std::is_same_v<decltype(res_combine), decltype(reducer)>;
-                // OperatorT is sycl::plus, so checking the result of += method
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
                 auto& res_plus = reducer += val;
                 acc_results[i++] =
                     std::is_same_v<decltype(res_plus), decltype(reducer)>;
@@ -117,7 +118,8 @@ struct check_reducer_subscript {
                 auto& res_combine = reducer.combine(val);
                 acc_results[i++] =
                     std::is_same_v<decltype(res_combine), decltype(reducer)>;
-                // OperatorT is sycl::plus, so checking the result of += method
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
                 auto& res_plus = reducer += val;
                 acc_results[i++] =
                     std::is_same_v<decltype(res_plus), decltype(reducer)>;
@@ -174,7 +176,8 @@ struct check_reducer_subscript {
                 acc_results[i++] = std::is_same_v<
                     std::remove_reference_t<decltype(res_combine)>,
                     decltype(reducer[0])>;
-                // OperatorT is sycl::plus, so checking the result of += method
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
                 auto& res_plus = reducer[0] += val;
                 acc_results[i++] =
                     std::is_same_v<std::remove_reference_t<decltype(res_plus)>,

@@ -50,14 +50,23 @@ enum class test_case_type {
 };
 
 const auto scalar_types =
-    named_type_pack<char, signed char, unsigned char, short int,
-                    unsigned short int, int, unsigned int, long int,
-                    unsigned long int, float, long long int,
-                    unsigned long long int>::generate(
+    named_type_pack<int, float
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                    ,
+                    char, signed char, unsigned char, short int,
+                    unsigned short int, unsigned int, long int,
+                    unsigned long int, long long int,
+                    unsigned long long int
+#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                    >::generate("int", "float"
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+          ,
          "char", "signed char", "unsigned char", "short int",
-         "unsigned short int", "int", "unsigned int", "long int",
-         "unsigned long int", "float", "long long int",
-         "unsigned long long int");
+         "unsigned short int", "unsigned int", "long int",
+         "unsigned long int", "long long int",
+         "unsigned long long int"
+#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+         );
 
 /** @brief Returns expected value for testing
  *  @tparam VariableT The type of the variable with which the test runs
@@ -79,23 +88,19 @@ VariableT get_expected_value(FunctorT functor, BufferT& buffer,
                            value_for_initialization, functor);
   } else if constexpr (TestCaseT == test_case_type::each_even_work_item) {
     int counter = 1;
-    auto it = buf_accessor.begin();
-    while (it != buf_accessor.end()) {
+    for (auto& buf_element : buf_accessor) {
       if (0 == (counter & 1)) {
-        expected_value = functor(expected_value, *it);
+        expected_value = functor(expected_value, buf_element);
       }
-      ++it;
       ++counter;
     }
     return expected_value;
   } else if constexpr (TestCaseT == test_case_type::no_one_work_item) {
     return expected_value;
   } else if constexpr (TestCaseT == test_case_type::each_work_item_twice) {
-    auto it = buf_accessor.begin();
-    while (it != buf_accessor.end()) {
-      expected_value = functor(expected_value, *it);
-      expected_value = functor(expected_value, *it);
-      ++it;
+    for (auto& buf_element : buf_accessor) {
+      expected_value = functor(expected_value, buf_element);
+      expected_value = functor(expected_value, buf_element);
     }
     return expected_value;
   }
