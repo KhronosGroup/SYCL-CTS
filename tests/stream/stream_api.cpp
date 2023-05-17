@@ -21,6 +21,7 @@
 
 #define SYCL_SIMPLE_SWIZZLES
 
+#include "../common/type_coverage.h"
 #include "../stream/stream_api_common.h"
 
 #define TEST_NAME stream_api_core
@@ -40,6 +41,9 @@ class test_kernel_3;
 
 template <int dims>
 class test_kernel_4;
+
+template <typename multi_ptr_t>
+class test_kernel_ptr;
 
 /**
  * Function that create a sycl::stream object and streams nd_item.
@@ -111,6 +115,61 @@ void check_group_h_item_dims(sycl::range<dims> &range1,
 
   testQueue.wait_and_throw();
 }
+
+/**
+ * Functor that create a sycl::stream object and streams pointers.
+ */
+template <typename multi_ptr_t>
+class check_multi_ptr {
+  static constexpr sycl::access::address_space space =
+      multi_ptr_t::address_space;
+  static constexpr sycl::access::decorated decorated =
+      multi_ptr_t::is_decorated ? sycl::access::decorated::yes
+                                : sycl::access::decorated::no;
+
+ public:
+  void operator()() {
+    int value = 42;
+    auto testQueue = util::get_cts_object::queue();
+    {
+      sycl::buffer<int> val_buffer(&value, sycl::range(1));
+      testQueue.submit([&](sycl::handler &cgh) {
+        sycl::stream os(2048, 80, cgh);
+
+        using kernel_name = test_kernel_ptr<multi_ptr_t>;
+        if constexpr (space == sycl::access::address_space::local_space) {
+          sycl::local_accessor<int> acc_for_multi_ptr{sycl::range(1), cgh};
+          cgh.parallel_for<kernel_name>(
+              sycl::nd_range({1}, {1}), [=](sycl::nd_item<1> item) {
+                value_operations::assign(acc_for_multi_ptr, value);
+                sycl::group_barrier(item.get_group());
+                const multi_ptr_t multi_ptr(acc_for_multi_ptr);
+                check_type(os, multi_ptr);
+              });
+        } else if constexpr (space ==
+                             sycl::access::address_space::private_space) {
+          cgh.single_task<kernel_name>([=] {
+            int priv_val = value;
+            sycl::multi_ptr<int, sycl::access::address_space::private_space,
+                            decorated>
+                priv_val_mptr = sycl::address_space_cast<
+                    sycl::access::address_space::private_space, decorated>(
+                    &priv_val);
+            check_type(os, priv_val_mptr);
+          });
+        } else {
+          auto acc_for_multi_ptr =
+              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          cgh.single_task<kernel_name>([=] {
+            const multi_ptr_t multi_ptr(acc_for_multi_ptr);
+            check_type(os, multi_ptr);
+          });
+        }
+      });
+      testQueue.wait_and_throw();
+    }
+  }
+};
 
 /** test sycl::stream interface
  */
@@ -224,8 +283,14 @@ class TEST_NAME : public util::test_base {
             check_type(os, aPtr);
             const int *aConstPtr = &a;
             check_type(os, aConstPtr);
-            auto multiPtr = sycl::private_ptr<int>(aPtr);
-            check_type(os, multiPtr);
+
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+            // multi_ptr deorated::legacy
+            check_type(os, sycl::global_ptr<int>{});
+            check_type(os, sycl::private_ptr<int>{});
+            check_type(os, sycl::constant_ptr<int>{});
+            check_type(os, sycl::local_ptr<int>{});
+#endif
 
             /** check stream operator for sycl types
              */
@@ -310,6 +375,15 @@ class TEST_NAME : public util::test_base {
         sycl::range<3> r31(4, 2, 1);
         sycl::range<3> r32(1, 1, 1);
         check_group_h_item_dims(r31, r32);
+      }
+
+      // check stream operator for sycl::multi_ptr
+      {
+        for_all_types<check_multi_ptr>(
+            type_pack<sycl::raw_global_ptr<int>, sycl::raw_private_ptr<int>,
+                      sycl::raw_local_ptr<int>, sycl::decorated_global_ptr<int>,
+                      sycl::decorated_private_ptr<int>,
+                      sycl::decorated_local_ptr<int>>{});
       }
     }
   }
