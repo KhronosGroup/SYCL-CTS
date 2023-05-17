@@ -49,9 +49,9 @@ class test_kernel_ptr;
  * Function that create a sycl::stream object and streams nd_item.
  */
 template <int dims>
-void check_nd_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range2) {
+void check_nd_item_dims(sycl::range<dims>& range1, sycl::range<dims>& range2) {
   auto testQueue = util::get_cts_object::queue();
-  testQueue.submit([&](sycl::handler &cgh) {
+  testQueue.submit([&](sycl::handler& cgh) {
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for<class test_kernel_2<dims>>(
@@ -72,9 +72,9 @@ void check_nd_item_dims(sycl::range<dims> &range1, sycl::range<dims> &range2) {
  * Function that create a sycl::stream object and streams item.
  */
 template <int dims>
-void check_item_dims(sycl::range<dims> &range) {
+void check_item_dims(sycl::range<dims>& range) {
   auto testQueue = util::get_cts_object::queue();
-  testQueue.submit([&](sycl::handler &cgh) {
+  testQueue.submit([&](sycl::handler& cgh) {
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for<class test_kernel_3<dims>>(range,
@@ -93,10 +93,10 @@ void check_item_dims(sycl::range<dims> &range) {
  * Function that create a sycl::stream object and streams group and h_item.
  */
 template <int dims>
-void check_group_h_item_dims(sycl::range<dims> &range1,
-                             sycl::range<dims> &range2) {
+void check_group_h_item_dims(sycl::range<dims>& range1,
+                             sycl::range<dims>& range2) {
   auto testQueue = util::get_cts_object::queue();
-  testQueue.submit([&](sycl::handler &cgh) {
+  testQueue.submit([&](sycl::handler& cgh) {
     sycl::stream os(2048, 80, cgh);
 
     cgh.parallel_for_work_group<class test_kernel_4<dims>>(
@@ -133,7 +133,7 @@ class check_multi_ptr {
     auto testQueue = util::get_cts_object::queue();
     {
       sycl::buffer<int> val_buffer(&value, sycl::range(1));
-      testQueue.submit([&](sycl::handler &cgh) {
+      testQueue.submit([&](sycl::handler& cgh) {
         sycl::stream os(2048, 80, cgh);
 
         using kernel_name = test_kernel_ptr<multi_ptr_t>;
@@ -177,13 +177,13 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     {
       /** check sycl::stream_manipulator
        */
@@ -205,7 +205,7 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](sycl::handler &cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           sycl::stream os(2048, 80, cgh);
 
           /** check get_size()
@@ -254,14 +254,14 @@ class TEST_NAME : public util::test_base {
        */
       {
         auto testQueue = util::get_cts_object::queue();
-        testQueue.submit([&](sycl::handler &cgh) {
+        testQueue.submit([&](sycl::handler& cgh) {
           sycl::stream os(2048, 80, cgh);
 
           cgh.single_task<class test_kernel_1>([=]() {
             /** check stream operator for basic types
              */
             check_type(os, "hello world!");
-            check_type(os, const_cast<char *>("hello world!"));
+            check_type(os, const_cast<char*>("hello world!"));
             check_all_vec_dims(os, char('c'));
             check_all_vec_dims(os, static_cast<signed char>('c'));
             check_all_vec_dims(os, static_cast<unsigned char>('c'));
@@ -279,9 +279,9 @@ class TEST_NAME : public util::test_base {
 
             // check stream operator for pointers
             int a = 5;
-            int *aPtr = &a;
+            int* aPtr = &a;
             check_type(os, aPtr);
-            const int *aConstPtr = &a;
+            const int* aConstPtr = &a;
             check_type(os, aConstPtr);
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
