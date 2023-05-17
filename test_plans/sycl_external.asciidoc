@@ -1,0 +1,66 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for SYCL_EXTERNAL macro
+
+This is a test plan for SYCL_EXTERNAL macro as described in Section 5.10. of the SYCL 2020 specification.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are not backend-specific and are performed for any SYCL backend.
+
+=== Device coverage
+
+All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
+
+== Tests
+
+All of the tests should use `#ifdef SYCL_EXTERNAL` so they can be skipped if feature is not supported.
+
+All test cases a function is declared with SYCL_EXTERNAL in translation unit with test case and defined in some translation unit, where the function is also declared with SYCL_EXTERNAL.
+This function is called in test case from both host and device code. From device code it's called from both single_task and parallel_for (for 1 item).
+Function has accessor as a parameter and is used to assign value to it. For call from host host_accessor is used.
+
+=== Simple case
+
+Function declared as `SYCL_EXTERNAL void function(AccessotType acc);`.
+
+=== Same translation unit
+
+Function defined as `SYCL_EXTERNAL void function(AccessotType acc) {...}`.
+
+=== Keyword extern
+
+Function declared as `SYCL_EXTERNAL extern void function(AccessotType acc);`.
+
+=== Before attribute.
+
+Function declared as
+[source,c++]
+----
+template <sycl::aspect aspect>
+SYCL_EXTERNAL [[sycl::device_has(aspect)]] void function(AccessotType acc);
+----
+and called with aspect that is supported by current device.
+
+=== After attribute.
+
+Function declared as
+[source,c++]
+----
+template <sycl::aspect aspect>
+[[sycl::device_has(aspect)]] SYCL_EXTERNAL void function(AccessotType acc);
+----
+and called with aspect that is supported by current device.
+
+=== Between attributes.
+
+Function declared as
+[source,c++]
+----
+template <sycl::aspect aspect1, sycl::aspect aspect2>
+[[sycl::device_has(aspect1)]] SYCL_EXTERNAL [[sycl::device_has(aspect2)]] void function(AccessotType acc);
+----
+and called with aspect1 and aspect2 that are supported by current device.
