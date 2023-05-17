@@ -40,7 +40,7 @@ class kernel;
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_value_ptr(RangeT& range_param, sycl::queue& queue) {
   check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> input_buf{range};
@@ -73,7 +73,7 @@ void run_test_for_value_ptr(RangeT &range_param, sycl::queue &queue) {
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_buffer(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_buffer(RangeT& range_param, sycl::queue& queue) {
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -101,7 +101,7 @@ void run_test_for_buffer(RangeT &range_param, sycl::queue &queue) {
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_span(RangeT& range_param, sycl::queue& queue) {
   check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> input_buf{range};
@@ -146,8 +146,8 @@ void run_test_for_span(RangeT &range_param, sycl::queue &queue) {
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_value_ptr_property_list(RangeT &range_param,
-                                          sycl::queue &queue) {
+void run_test_for_value_ptr_property_list(RangeT& range_param,
+                                          sycl::queue& queue) {
   check_usm_shared_aspect(queue);
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
@@ -182,8 +182,8 @@ void run_test_for_value_ptr_property_list(RangeT &range_param,
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_buffer_property_list(RangeT &range_param,
-                                       sycl::queue &queue) {
+void run_test_for_buffer_property_list(RangeT& range_param,
+                                       sycl::queue& queue) {
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
   VariableT identity_value(identity);
@@ -212,7 +212,7 @@ void run_test_for_buffer_property_list(RangeT &range_param,
 
 template <typename VariableT, reduction_common::test_case_type TestCaseT,
           typename RangeT>
-void run_test_for_span_property_list(RangeT &range_param, sycl::queue &queue) {
+void run_test_for_span_property_list(RangeT& range_param, sycl::queue& queue) {
   check_usm_shared_aspect(queue);
   sycl::buffer<VariableT> input_buf{range};
   fill_buffer<VariableT>(input_buf);
@@ -293,7 +293,7 @@ struct run_test_for_type {
 
 template <typename VariableT>
 struct run_test_for_type_even_item {
-  void operator()(sycl::queue &queue, const std::string &type_name) {
+  void operator()(sycl::queue& queue, const std::string& type_name) {
     run_test_for_value_ptr<
         VariableT, reduction_common::test_case_type::each_even_work_item>(
         range, queue);
@@ -336,7 +336,7 @@ struct run_test_for_type_even_item {
 
 template <typename VariableT>
 struct run_test_for_type_no_one_item {
-  void operator()(sycl::queue &queue, const std::string &type_name) {
+  void operator()(sycl::queue& queue, const std::string& type_name) {
     run_test_for_value_ptr<VariableT,
                            reduction_common::test_case_type::no_one_work_item>(
         range, queue);
@@ -379,7 +379,7 @@ struct run_test_for_type_no_one_item {
 
 template <typename VariableT>
 struct run_test_for_type_item_twice {
-  void operator()(sycl::queue &queue, const std::string &type_name) {
+  void operator()(sycl::queue& queue, const std::string& type_name) {
     run_test_for_value_ptr<
         VariableT, reduction_common::test_case_type::each_work_item_twice>(
         range, queue);

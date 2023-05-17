@@ -140,8 +140,8 @@ auto get_reduction_for_span(SpanT &span, FunctorT functor) {
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           reduction_common::test_case_type TestCaseT, typename FunctorT,
           typename RangeT>
-void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
-                            sycl::queue &queue, const std::string &type_name) {
+void run_test_for_value_ptr(FunctorT& functor, RangeT& range,
+                            sycl::queue& queue, const std::string& type_name) {
   reduction_common::check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> initial_buf{
@@ -192,8 +192,8 @@ void run_test_for_value_ptr(FunctorT &functor, RangeT &range,
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           reduction_common::test_case_type TestCaseT, typename FunctorT,
           typename RangeT>
-void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
-                         const std::string &type_name) {
+void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue& queue,
+                         const std::string& type_name) {
   sycl::buffer<VariableT> initial_buf{
       reduction_common::get_buffer<VariableT>()};
   VariableT expected_value{reduction_common::get_expected_value<TestCaseT>(
@@ -241,8 +241,8 @@ void run_test_for_buffer(FunctorT functor, RangeT range, sycl::queue &queue,
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           reduction_common::test_case_type TestCaseT, typename FunctorT,
           typename RangeT>
-void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
-                       const std::string &type_name) {
+void run_test_for_span(FunctorT functor, RangeT range, sycl::queue& queue,
+                       const std::string& type_name) {
   reduction_common::check_usm_shared_aspect(queue);
 
   sycl::buffer<VariableT> initial_buf{
@@ -298,9 +298,9 @@ void run_test_for_span(FunctorT functor, RangeT range, sycl::queue &queue,
 template <typename VariableT, bool UseCombineFlagT, bool UsePropertyFlag,
           reduction_common::test_case_type TestCaseT, typename FunctorT,
           typename RangeT>
-void run_test_for_all_reductions_types(FunctorT functor, RangeT &range,
-                                       sycl::queue &queue,
-                                       const std::string &type_name) {
+void run_test_for_all_reductions_types(FunctorT functor, RangeT& range,
+                                       sycl::queue& queue,
+                                       const std::string& type_name) {
   if constexpr (is_sycl_floating_point<VariableT>::value &&
                 (std::is_same<FunctorT, sycl::bit_and<VariableT>>::value ||
                  std::is_same<FunctorT, sycl::bit_or<VariableT>>::value ||
@@ -388,8 +388,8 @@ struct run_tests_for_all_functors {
 template <typename VariableT, typename UsePropertyFlagT>
 struct run_tests_for_all_functors_even_item {
   template <typename RangeT>
-  void operator()(RangeT &range, sycl::queue &queue,
-                  const std::string &type_name) {
+  void operator()(RangeT& range, sycl::queue& queue,
+                  const std::string& type_name) {
     constexpr reduction_common::test_case_type TestCaseT =
         reduction_common::test_case_type::each_even_work_item;
     constexpr bool use_lambda_without_combine{
@@ -450,8 +450,8 @@ struct run_tests_for_all_functors_even_item {
 template <typename VariableT, typename UsePropertyFlagT>
 struct run_tests_for_all_functors_no_one_item {
   template <typename RangeT>
-  void operator()(RangeT &range, sycl::queue &queue,
-                  const std::string &type_name) {
+  void operator()(RangeT& range, sycl::queue& queue,
+                  const std::string& type_name) {
     constexpr reduction_common::test_case_type TestCaseT =
         reduction_common::test_case_type::no_one_work_item;
     constexpr bool use_lambda_without_combine{
@@ -512,8 +512,8 @@ struct run_tests_for_all_functors_no_one_item {
 template <typename VariableT, typename UsePropertyFlagT>
 struct run_tests_for_all_functors_item_twice {
   template <typename RangeT>
-  void operator()(RangeT &range, sycl::queue &queue,
-                  const std::string &type_name) {
+  void operator()(RangeT& range, sycl::queue& queue,
+                  const std::string& type_name) {
     constexpr reduction_common::test_case_type TestCaseT =
         reduction_common::test_case_type::each_work_item_twice;
     constexpr bool use_lambda_without_combine{

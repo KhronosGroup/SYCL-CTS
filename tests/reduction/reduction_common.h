@@ -55,18 +55,17 @@ const auto scalar_types =
                     ,
                     char, signed char, unsigned char, short int,
                     unsigned short int, unsigned int, long int,
-                    unsigned long int, long long int,
-                    unsigned long long int
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                    unsigned long int, long long int, unsigned long long int
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
                     >::generate("int", "float"
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-          ,
-         "char", "signed char", "unsigned char", "short int",
-         "unsigned short int", "unsigned int", "long int",
-         "unsigned long int", "long long int",
-         "unsigned long long int"
-#endif // SYCL_CTS_ENABLE_FULL_CONFORMANCE
-         );
+                                ,
+                                "char", "signed char", "unsigned char",
+                                "short int", "unsigned short int",
+                                "unsigned int", "long int", "unsigned long int",
+                                "long long int", "unsigned long long int"
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+    );
 
 /** @brief Returns expected value for testing
  *  @tparam VariableT The type of the variable with which the test runs

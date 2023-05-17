@@ -91,7 +91,7 @@ constexpr bool without_combine{false};
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range(AccessorT accessor) {
-  return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto& reducer) {
     if constexpr (UseCombineFlagT)
       reducer.combine(accessor[idx]);
     else
@@ -114,7 +114,7 @@ auto get_lambda_with_range(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_even_item(AccessorT accessor) {
-  return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto& reducer) {
     size_t num = idx;
     if (num & 1) {
       if constexpr (UseCombineFlagT)
@@ -140,7 +140,7 @@ auto get_lambda_with_range_even_item(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_no_one_item(AccessorT accessor) {
-  return [=](sycl::id<1> idx, auto &reducer) {};
+  return [=](sycl::id<1> idx, auto& reducer) {};
 }
 
 /** @brief Construct lambda for interacting each work item twice with reducer
@@ -158,7 +158,7 @@ auto get_lambda_with_range_no_one_item(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_item_twice(AccessorT accessor) {
-  return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto& reducer) {
     if constexpr (UseCombineFlagT) {
       reducer.combine(accessor[idx]).combine(accessor[idx]);
     } else {
@@ -183,7 +183,7 @@ auto get_lambda_with_range_item_twice(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
-  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
     if constexpr (UseCombineFlagT)
       reducer.combine(accessor[nd_item.get_global_id()]);
     else
@@ -208,7 +208,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_even_item(AccessorT accessor,
                                         size_t number_elements = 0) {
-  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
     size_t num = nd_item.get_global_id();
     if (num & 1) {
       if constexpr (UseCombineFlagT)
@@ -236,7 +236,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_no_one_item(AccessorT accessor,
                                           size_t number_elements = 0) {
-  return [=](sycl::nd_item<1> nd_item, auto &reducer) {};
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {};
 }
 
 /** @brief Construct lambda for interacting each work item twice with reducer
@@ -255,7 +255,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_item_twice(AccessorT accessor,
                                          size_t number_elements = 0) {
-  return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
     if constexpr (UseCombineFlagT) {
       reducer.combine(accessor[nd_item.get_global_id()])
           .combine(accessor[nd_item.get_global_id()]);
@@ -370,7 +370,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
 auto get_lambda_with_range_for_span_even_item(AccessorT accessor,
                                               size_t number_elements) {
   if constexpr (UseCombineFlagT) {
-    return [=](sycl::id<1> idx, auto &reducer) {
+    return [=](sycl::id<1> idx, auto& reducer) {
       size_t num = idx;
       if (num & 1) {
         for (size_t i = 0; i < number_elements; i++) {
@@ -379,7 +379,7 @@ auto get_lambda_with_range_for_span_even_item(AccessorT accessor,
       }
     };
   } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
+    return [=](sycl::id<1> idx, auto& reducer) {
       size_t num = idx;
       if (num & 1) {
         apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
@@ -405,7 +405,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range_for_span_no_one_item(AccessorT accessor,
                                                 size_t number_elements) {
-  return [=](sycl::id<1> idx, auto &reducer) {};
+  return [=](sycl::id<1> idx, auto& reducer) {};
 }
 
 /** @brief Construct lambda for interacting each item twice with reducer while
@@ -425,13 +425,13 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
 auto get_lambda_with_range_for_span_item_twice(AccessorT accessor,
                                                size_t number_elements) {
   if constexpr (UseCombineFlagT) {
-    return [=](sycl::id<1> idx, auto &reducer) {
+    return [=](sycl::id<1> idx, auto& reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i].combine(accessor[idx]).combine(accessor[idx]);
       }
     };
   } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
+    return [=](sycl::id<1> idx, auto& reducer) {
       apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
                                                      number_elements);
       apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
@@ -487,7 +487,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
 auto get_lambda_with_nd_range_for_span_even_item(AccessorT accessor,
                                                  size_t number_elements) {
   if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
       size_t num = nd_item.get_global_id();
       if (num & 1) {
         for (size_t i = 0; i < number_elements; i++) {
@@ -496,7 +496,7 @@ auto get_lambda_with_nd_range_for_span_even_item(AccessorT accessor,
       }
     };
   } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
       size_t num = nd_item.get_global_id();
       if (num & 1) {
         apply_chosen_functor_span<VariableT, FunctorT>(
@@ -522,7 +522,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range_for_span_no_one_item(AccessorT accessor,
                                                    size_t number_elements) {
-  return [=](sycl::nd_item<1> nd_item, auto &reducer) {};
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {};
 }
 
 /** @brief Construct lambda for interacting each item twice with reducer while
@@ -542,7 +542,7 @@ template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
 auto get_lambda_with_nd_range_for_span_item_twice(AccessorT accessor,
                                                   size_t number_elements) {
   if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
       for (size_t i = 0; i < number_elements; i++) {
         reducer[i]
             .combine(accessor[nd_item.get_global_id()])
@@ -550,7 +550,7 @@ auto get_lambda_with_nd_range_for_span_item_twice(AccessorT accessor,
       }
     };
   } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
       apply_chosen_functor_span<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()], number_elements);
       apply_chosen_functor_span<VariableT, FunctorT>(
