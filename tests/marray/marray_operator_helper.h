@@ -108,6 +108,12 @@ OPERATOR_BINARY(sr, >>);
 
 OPERATOR_BINARY_RELATIONAL(land, &&);
 OPERATOR_BINARY_RELATIONAL(lor, ||);
+OPERATOR_BINARY_RELATIONAL(eq, ==);
+OPERATOR_BINARY_RELATIONAL(not_eq, !=);
+OPERATOR_BINARY_RELATIONAL(less, <);
+OPERATOR_BINARY_RELATIONAL(grater, >);
+OPERATOR_BINARY_RELATIONAL(less_eq, <=);
+OPERATOR_BINARY_RELATIONAL(grater_eq, >=);
 
 #define OPERATOR_BINARY_ASSIGN(id, op)                                  \
   struct op_assign_##id {                                               \

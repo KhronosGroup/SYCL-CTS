@@ -100,11 +100,12 @@ q.submit([&](handler &cgh) {
 
 === API tests
 
-General checks for all of created `weak_object`. First initialize `ret` using `try_lock()`, then:
+General checks for all of created `weak_object` called `w`. First initialize `ret` using `try_lock()`, then:
 
 * If the weak_object was constructed with an underlying SYCL object `SyclObj`, check that:
-** `ret.value() == SYCLObj`
-** `std::is_same_v<decltype(ret.value(), SYCLObjT)>`
+** `std::is_same_v<decltype(w)::object_type, SYCLObjT>`.
+** `ret.value() == SYCLObj`.
+** `std::is_same_v<decltype(ret.value()), SYCLObjT>`
 ** Call `lock` and verify that the value it returns compares equal to `SyclObj`.
 ** Call `reset`, and then verify that `expired()` returns `false`.
 

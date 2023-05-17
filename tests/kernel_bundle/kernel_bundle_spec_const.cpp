@@ -49,7 +49,7 @@ TEST_CASE(
 
   using KernelName = class simple_kernel;
 
-  queue.submit([&](sycl::handler &cgh) {
+  queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<KernelName>([=](sycl::kernel_handler h) {
       // just to establish `kernel_handler::get_specialization_constant()` call
       // usage of spec constants is checked in spec_constants tests
@@ -73,6 +73,16 @@ TEST_CASE(
   CHECK_NOTHROW(inputBundle.native_specialization_constant());
   CHECK(inputBundle.has_specialization_constant<SpecName>());
   CHECK(!inputBundle.has_specialization_constant<OtherSpecName>());
+
+  {
+    INFO("Check get_specialization_constant() return type");
+    CHECK(std::is_same_v<
+          std::remove_reference_t<decltype(SpecName)>::value_type,
+          decltype(inputBundle.get_specialization_constant<SpecName>())>);
+    CHECK(std::is_same_v<
+          std::remove_reference_t<decltype(OtherSpecName)>::value_type,
+          decltype(inputBundle.get_specialization_constant<OtherSpecName>())>);
+  }
 
   CHECK(inputBundle.get_specialization_constant<SpecName>() == new_value);
 
