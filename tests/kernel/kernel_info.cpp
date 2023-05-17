@@ -109,6 +109,10 @@ TEST_CASE("Test kernel info", "[kernel]") {
         range3Ret,
         "sycl::kernel::get_info<sycl::info::kernel_device_specific::global_"
         "work_size>(dev) for built_in_kernel");
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+    check_get_info_param<sycl::info::kernel::num_args, uint32_t>(
+        built_in_kernel);
+#endif
   }
 
   if (dev.get_info<sycl::info::device::device_type>() ==
@@ -225,7 +229,6 @@ TEST_CASE("Test kernel info", "[kernel]") {
 
 // FIXME: Reenable when struct information descriptors are implemented
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  check_get_info_param<sycl::info::kernel::num_args, uint32_t>(kernel);
   check_get_info_param<sycl::info::kernel::attributes, std::string>(kernel);
 #endif
 

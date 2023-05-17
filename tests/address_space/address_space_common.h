@@ -175,7 +175,7 @@ class check_types {
             constantBuff, cgh);
         sycl::accessor<T, 1, read_write, sycl::target::local> localAcc(r, cgh);
 
-        cgh.single_task<kernel_name>([=]() {
+        cgh.parallel_for<kernel_name>(sycl::nd_range<1>(r, r), [=](auto item) {
           bool pass = true;
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];

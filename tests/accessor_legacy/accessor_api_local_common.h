@@ -133,7 +133,9 @@ class check_local_accessor_api_methods {
             buffer_accessor_get_pointer_kernel<
                 kernelName, dims, mode, target, acc_placeholder::local>;
 
-        h.parallel_for<kernel_name>(kernelRange, verifier);
+        h.parallel_for<kernel_name>(
+            sycl::nd_range<data_dim<dims>::value>(kernelRange, kernelRange),
+            verifier);
       });
     }
 
@@ -205,10 +207,10 @@ class check_local_accessor_api_reads_and_writes {
               kernelName, dims, mode, target, acc_placeholder::local>;
 
         handler.parallel_for<kernel_name>(
-            range,
-            buffer_accessor_api_rw<
-                T, dims, mode, target, errorTarget, acc_placeholder::local>(
-                    size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
+            sycl::nd_range<data_dim<dims>::value>(range, range),
+            buffer_accessor_api_rw<T, dims, mode, target, errorTarget,
+                                   acc_placeholder::local>(
+                size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
       });
     }
 
