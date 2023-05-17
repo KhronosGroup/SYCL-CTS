@@ -58,8 +58,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_joint_scan_group_same_type>(Dims, ScanTypes{},
                                                           queue);
@@ -89,8 +88,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   for_all_combinations<invoke_init_joint_scan_group_same_type>(
       Dims, ScanTypes{}, queue);
@@ -148,8 +146,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   //        clang-8: error: spirv-ll-tool command failed due to signal
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: ComputeCpp cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   for_all_combinations<invoke_init_scan_over_group_same_type>(Dims, ScanTypes{},
                                                               queue);

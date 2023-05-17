@@ -64,8 +64,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   // FIXME: ComputeCpp does not implement joint scan and half type
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -103,8 +102,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   // FIXME: ComputeCpp does not implement joint scan and half type
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -137,8 +135,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   // FIXME: ComputeCpp has no half
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else

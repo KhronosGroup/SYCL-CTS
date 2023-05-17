@@ -66,8 +66,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
+    // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
     for_all_combinations<invoke_joint_scan_group_same_type>(Dims, DoubleType{},
                                                             queue);
@@ -103,8 +102,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
+    // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
     for_all_combinations<invoke_init_joint_scan_group_same_type>(
         Dims, DoubleType{}, queue);
@@ -170,8 +168,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #else
   auto queue = sycl_cts::util::get_cts_object::queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
+    // FIXME: and ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     for_all_combinations<invoke_init_scan_over_group_same_type>(
         Dims, DoubleType{}, queue);

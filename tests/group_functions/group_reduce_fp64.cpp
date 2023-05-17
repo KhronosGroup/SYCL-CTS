@@ -109,8 +109,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
 #endif
@@ -187,8 +186,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
+    // FIXME: ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     if constexpr (std::is_same_v<T, U>)
 #endif

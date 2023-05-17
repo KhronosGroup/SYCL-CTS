@@ -45,8 +45,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
   // FIXME: ComputeCpp has no half
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: ComputeCpp cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
@@ -78,8 +77,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
   // FIXME: ComputeCpp has no half
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: ComputeCpp cannot handle cases of different types
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
