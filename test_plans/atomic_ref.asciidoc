@@ -726,6 +726,9 @@ These `SPACE` values:
 
 ==== Atomicity with respect to atomic operations in host code
 
+This check should use `#ifdef __cpp_lib_atomic_ref` so it can be skipped
+if std::atomic_ref is not supported.
+
 This check is skipped if device doesn't support `aspect::usm_atomic_shared_allocations`.
 
 This check is skipped if device doesn't support `memory_scope::system` in `info::device::atomic_memory_scope_capabilities`.
