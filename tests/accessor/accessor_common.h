@@ -991,16 +991,15 @@ void test_accessor_ptr_device(AccT& accessor, T expected_data,
   res_acc[0] = std::is_same_v<
       decltype(acc_multi_ptr_no),
       typename AccT::template accessor_ptr<sycl::access::decorated::no>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data);
+  res_acc[0] &= value_operations::are_equal(*acc_multi_ptr_no, expected_data);
 
   auto acc_multi_ptr_yes =
       accessor.template get_multi_ptr<sycl::access::decorated::yes>();
   res_acc[0] &= std::is_same_v<
       decltype(acc_multi_ptr_yes),
       typename AccT::template accessor_ptr<sycl::access::decorated::yes>>;
-  res_acc[0] &=
-      value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data);
+  res_acc[0] &= value_operations::are_equal(*(acc_multi_ptr_yes.get_raw()),
+                                            expected_data);
 
   auto acc_pointer = accessor.get_pointer();
   res_acc[0] &= std::is_same_v<decltype(acc_pointer),
@@ -1380,7 +1379,7 @@ void test_begin_end_host(AccT& accessor, T exp_first = {}, T exp_last = {},
 
 template <typename AccT, typename T = int>
 bool test_begin_end_device(AccT& accessor, T exp_first = {}, T exp_last = {},
-                           bool empty = true) {
+                           bool check_value = true) {
   auto it_begin = accessor.begin();
   bool res = std::is_same_v<decltype(it_begin), typename AccT::iterator>;
   auto it_end = accessor.end();
@@ -1406,7 +1405,7 @@ bool test_begin_end_device(AccT& accessor, T exp_first = {}, T exp_last = {},
   res &=
       std::is_same_v<decltype(it_crend), typename AccT::const_reverse_iterator>;
 
-  if (!empty) {
+  if (check_value) {
     res &= value_operations::are_equal(*it_begin, exp_first);
     res &= value_operations::are_equal(*(--it_end), exp_last);
     res &= value_operations::are_equal(*it_cbegin, exp_first);
