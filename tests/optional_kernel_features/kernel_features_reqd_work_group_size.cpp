@@ -33,9 +33,8 @@ using namespace kernel_features_common;
 template <size_t N>
 class Functor {
  public:
-  [[sycl::reqd_work_group_size(N)]] void operator()() const {}
-  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::item<1>) const {}
-  [[sycl::reqd_work_group_size(N)]] void operator()(sycl::group<1>) const {}
+  [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::nd_item<1>) const {}
+  [[sycl::reqd_sub_group_size(N)]] void operator()(sycl::group<1>) const {}
 };
 
 template <size_t N>
@@ -55,21 +54,23 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    const auto lambda_no_arg = []() [[sycl::reqd_work_group_size(N)]] {};
-    const auto lambda_item_arg = [](sycl::item<1>)
-                                     [[sycl::reqd_work_group_size(N)]] {};
+    const auto lambda_nd_item_arg = [](sycl::nd_item<1>)
+                                        [[sycl::reqd_work_group_size(N)]] {};
     const auto lambda_group_arg = [](sycl::group<1>)
                                       [[sycl::reqd_work_group_size(N)]] {};
 
-    run_separate_lambda<kname>(is_exception_expected, expected_errc, queue,
-                               lambda_no_arg, lambda_item_arg,
-                               lambda_group_arg);
+    run_separate_lambda_nd_range<kname>(is_exception_expected, expected_errc,
+                                        queue, lambda_nd_item_arg,
+                                        lambda_group_arg);
   }
-  { run_functor<Functor<N>>(is_exception_expected, expected_errc, queue); }
   {
-    RUN_SUBMISSION_CALL(is_exception_expected, expected_errc, queue,
-                        [[sycl::reqd_work_group_size(N)]], kname,
-                        NO_KERNEL_BODY);
+    run_functor_nd_range<Functor<N>>(is_exception_expected, expected_errc,
+                                     queue);
+  }
+  {
+    RUN_SUBMISSION_CALL_ND_RANGE(is_exception_expected, expected_errc, queue,
+                                 [[sycl::reqd_work_group_size(N)]], kname,
+                                 NO_KERNEL_BODY);
   }
 });
 

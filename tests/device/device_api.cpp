@@ -33,14 +33,14 @@ class TEST_NAME : public util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** returns true if the device supports a particular partition property
    */
   static bool supports_partition_property(
-      const sycl::device &dev, sycl::info::partition_property partitionProp) {
+      const sycl::device& dev, sycl::info::partition_property partitionProp) {
     auto supported = dev.get_info<sycl::info::device::partition_properties>();
     for (sycl::info::partition_property prop : supported) {
       if (prop == partitionProp) {
@@ -53,7 +53,7 @@ class TEST_NAME : public util::test_base {
   /** returns true if the device supports a particular affinity domain
    */
   static bool supports_affinity_domain(
-      const sycl::device &dev, sycl::info::partition_property partitionProp,
+      const sycl::device& dev, sycl::info::partition_property partitionProp,
       sycl::info::partition_affinity_domain domain) {
     if (partitionProp !=
         sycl::info::partition_property::partition_by_affinity_domain) {
@@ -71,7 +71,7 @@ class TEST_NAME : public util::test_base {
 
   /** execute this test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     {
       /** check get_platform() member function
        */
@@ -196,6 +196,24 @@ class TEST_NAME : public util::test_base {
         check_return_type<std::vector<sycl::device>>(
             log, devs, "device::get_devices(info::device_type::all)");
       }
+
+      /** Check has_extension(const std::string& extension)
+       */
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
+      {
+        auto dev = util::get_cts_object::device(cts_selector);
+        auto hasExt = dev.has_extension("Nonexistent ext");
+        CHECK_FALSE(hasExt);
+
+        auto supported = dev.get_info<sycl::info::device::extensions>();
+        for (auto& ext : supported) {
+          CHECK(dev.has_extension(ext));
+        }
+
+        check_return_type<bool>(log, hasExt,
+                                "device::has_extension(const std::string&)");
+      }
+#endif
     }
   }
 };

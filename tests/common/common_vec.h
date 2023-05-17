@@ -511,8 +511,8 @@ template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
 
-// FIXME: re-enable type conversion to bool when vecType -> bool is implemented
-// https://github.com/intel/llvm/issues/8543
+// FIXME: re-enable when as() for bool is implemented
+// https://github.com/intel/llvm/issues/9251
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   result += check_convert_as_all_dims<vecType, N, bool>(inputVec);
 #endif

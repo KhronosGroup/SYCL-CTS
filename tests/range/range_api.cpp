@@ -212,6 +212,23 @@ class test_range {
   }
 };
 
+// The tests are using unnamed lambda
+#if !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+// This tests is only here to check if one can submit a large kernel.
+// We don't use an `empty kernel` to avoid smart compiler
+// optimizing the submission away
+// This test:
+//    - Doesn't check that all the work-items have be submitted
+//    - It's technically UB (concurrent write)
+void test_launch_kernel_1d_range(std::size_t N, sycl::queue q) {
+  int* a = sycl::malloc_shared<int>(1, q);
+  a[0] = 0;
+  q.parallel_for(N, [=](auto i) { a[0] = 1; }).wait_and_throw();
+  CHECK_VALUE_SCALAR(log, a[0], 1);
+  sycl::free(a, q);
+}
+#endif
+
 /** test sycl::range::get(int index) return size_t
  */
 class TEST_NAME : public util::test_base {
@@ -254,6 +271,31 @@ class TEST_NAME : public util::test_base {
         test2d(log, range_2d_g, range_2d_l, my_queue);
         test_range<3> test3d;
         test3d(log, range_3d_g, range_3d_l, my_queue);
+#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
+        WARN(
+            "ComputeCpp does not implement unary minus operation. "
+            "Skipping the test for this operation.");
+#endif
+
+// The tests are using unnamed lambda
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE && \
+    !defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+        // 32 bits, it's trivial. Sanity test.
+        test_launch_kernel_1d_range(std::numeric_limits<uint32_t>::max(),
+                                    my_queue);
+
+        if constexpr (sizeof(size_t) > 4) {
+          // Prime number bigger than UINT32_MAX
+          test_launch_kernel_1d_range(4'294'967'311ULL, my_queue);
+
+          // Most GPU hardware have limitation to 32bits * 1024 for their native
+          // API so lets try more
+          test_launch_kernel_1d_range(
+              std::numeric_limits<uint32_t>::max() * 2024ULL, my_queue);
+        } else {
+          WARN("Some parameters not tested because size_t is 32bits");
+        }
+#endif
       }
     }
   }
