@@ -1,7 +1,7 @@
 :sectnums:
 :xrefstyle: short
 
-= Test plan for device image
+= Test plan for SYCL_EXTERNAL macro
 
 This is a test plan for SYCL_EXTERNAL macro as described in Section 5.10. of the SYCL 2020 specification.
 
@@ -16,6 +16,8 @@ All the tests described below are not backend-specific and are performed for any
 All tests construct a test device for which conformance is assessed. All the tests described below are performed once for that test device.
 
 == Tests
+
+All of the tests should use `#ifdef SYCL_EXTERNAL` so they can be skipped if feature is not supported.
 
 All test cases a function is declared with SYCL_EXTERNAL in translation unit with test case and defined in some translation unit, where the function is also declared with SYCL_EXTERNAL.
 This function is called in test case from both host and device code. From device code it's called from both single_task and parallel_for (for 1 item).
