@@ -119,7 +119,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
               t0[0] = val;
               sycl::accessor<int, 1, sycl::access_mode::read_write,
                              sycl::target::host_task>
-                  t1(t0);
+                  t1{t0};
               t1[0] = new_val;
               acc_result[0] = t0[0];
             });
@@ -142,7 +142,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
               t0[0] = val;
               sycl::accessor<int, 1, sycl::access_mode::read_write,
                              sycl::target::host_task>
-                  t1(t0);
+                  t1{t0};
               t0[0] = new_val;
               acc_result[0] = t1[0];
             });
@@ -165,7 +165,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
               t0[0] = val;
               const sycl::accessor<int, 1, sycl::access_mode::read_write,
                                    sycl::target::host_task>
-                  t1(t0);
+                  t1{t0};
               t0[0] = new_val;
               acc_result[0] = t1[0];
             });
@@ -218,7 +218,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
             sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
             cgh.single_task<kernel_name_generic<0>>([=] {
               t0[0] = val;
-              sycl::accessor<int, 1> t1(t0);
+              sycl::accessor<int, 1> t1{t0};
               t1[0] = new_val;
               acc_result[0] = t0[0];
             });
@@ -237,7 +237,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
             sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
             cgh.single_task<kernel_name_generic<1>>([=] {
               t0[0] = val;
-              sycl::accessor<int, 1> t1(t0);
+              sycl::accessor<int, 1> t1{t0};
               t0[0] = new_val;
               acc_result[0] = t1[0];
             });
@@ -256,7 +256,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
             sycl::accessor<int, 1> t0 = buffer.get_access(cgh);
             cgh.single_task<kernel_name_generic<2>>([=] {
               t0[0] = val;
-              const sycl::accessor<int, 1> t1(t0);
+              const sycl::accessor<int, 1> t1{t0};
               t0[0] = new_val;
               acc_result[0] = t1[0];
             });
