@@ -96,12 +96,12 @@ class check_atomics {
     std::memset(&data, 0xFF, sizeof(T));
 
     sycl::buffer<T, 1> buf(&data, sycl::range<1>(1));
-
+    sycl::nd_range<1> nd_range(sycl::range<1>(1), sycl::range<1>(1));
     testQueue.submit([&](sycl::handler &cgh) {
       using functor = check_atomics_functor<T, target>;
       auto acc = target_map<target>::get_accessor(buf, cgh);
       auto f = functor(acc);
-      cgh.single_task<functor>(f);
+      cgh.parallel_for<functor>(nd_range, f);
     });
   }
 };
