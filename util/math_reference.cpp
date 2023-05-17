@@ -323,7 +323,7 @@ template <typename T>
 T mul_hi_signed(T a, T b) {
   // All shifts are half the size of T in bits
   size_t shft = sizeof(T) * 4;
-  typedef typename std::make_unsigned<T>::type U;
+  using U = std::make_unsigned_t<T>;
   // hi and lo are the upper and lower parts of the result
   // p, q, r and s are the masked and shifted parts of a
   // b, splitting a and b each into two Ts
@@ -334,22 +334,19 @@ T mul_hi_signed(T a, T b) {
   U mask = -1;
   mask >>= shft;
 
-  size_t msb = sizeof(T) * 8 - 1;
+  U a_pos = std::abs(a);
+  U b_pos = std::abs(b);
 
-  // a and b rendered positive
-  auto a_pos = (a & (1ull << msb)) ? (~a + 1) : a;
-  auto b_pos = (b & (1ull << msb)) ? (~b + 1) : b;
+  p = a_pos >> shft;
+  q = b_pos >> shft;
+  r = a_pos & mask;
+  s = b_pos & mask;
 
-  p = static_cast<U>(a_pos) >> shft;
-  q = static_cast<U>(b_pos) >> shft;
-  r = static_cast<U>(a_pos) & mask;
-  s = static_cast<U>(b_pos) & mask;
-
-  // calc half products
+  // Compute half products
   lo = r * s;
   hi = p * q;
-  cross1 = (p * s);
-  cross2 = (q * r);
+  cross1 = p * s;
+  cross2 = q * r;
 
   lo >>= shft;
   lo += (cross1 & mask) + (cross2 & mask);
@@ -358,10 +355,11 @@ T mul_hi_signed(T a, T b) {
 
   T result = hi;
   // if result is negative
-  if ((a >> msb) ^ (b >> msb)) {
-    result = static_cast<T>(~hi);
+  if ((a < 0) != (b < 0)) {
+    result = ~result;
     // check that the low half is zero to see if we need to carry
-    if (0 == static_cast<T>(a * b)) {
+    T lo_half = a * b;
+    if (0 == lo_half) {
       result += 1;
     }
   }
