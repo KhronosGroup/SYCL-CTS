@@ -89,11 +89,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
@@ -114,10 +109,8 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
 #endif
   {
@@ -172,12 +165,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
 
   // check types to only print warning once
   if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
         "long long int. Skipping the test cases.");
@@ -198,10 +186,8 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     if constexpr (std::is_same_v<T, U>)
 #endif
     {
