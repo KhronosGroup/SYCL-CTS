@@ -97,25 +97,41 @@ inline std::string get_section_name(const std::string& type_name,
  * @brief Factory function for getting type_pack with fp64 type
  */
 inline auto get_atomic64_types() {
-  static const auto types =
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
-      named_type_pack<long long, unsigned long long>::generate(
-          "long long", "unsigned long long");
+  if constexpr (sizeof(long) == 32) {
+    static const auto types =
+        named_type_pack<long long, unsigned long long>::generate(
+            "long long", "unsigned long long");
+    return types;
+  } else {
+    static const auto types =
+        named_type_pack<long, unsigned long, long long,
+                        unsigned long long>::generate("long", "unsigned long",
+                                                      "long long",
+                                                      "unsigned long long");
+    return types;
+  }
 #else
-      named_type_pack<long long>::generate("long long");
+  return named_type_pack<long long>::generate("long long");
 #endif
-  return types;
 }
 
 /**
  * @brief Factory function for getting type_pack with all generic types
  */
 inline auto get_full_conformance_type_pack() {
-  static const auto types =
-      named_type_pack<int, unsigned int, long int, unsigned long int,
-                      float>::generate("int", "unsigned int", "long int",
-                                       "unsigned long int", "float");
-  return types;
+  if constexpr (sizeof(long) > 32) {
+    static const auto types =
+        named_type_pack<int, unsigned int, float>::generate(
+            "int", "unsigned int", "float");
+    return types;
+  } else {
+    static const auto types =
+        named_type_pack<int, unsigned int, long int, unsigned long int,
+                        float>::generate("int", "unsigned int", "long int",
+                                         "unsigned long int", "float");
+    return types;
+  }
 }
 
 /**
