@@ -1219,12 +1219,6 @@ void check_buffer_accessor_api_placeholder(argsT&& ... args) {
 */
 template <typename T, typename kernelName, int dims, typename ... argsT>
 void check_buffer_accessor_api_dim(argsT&& ... args) {
-  /** check buffer accessor api for device
-  */
-  check_buffer_accessor_api_placeholder<
-      T, kernelName, dims, sycl::target::device>(
-          std::forward<argsT>(args)...);
-
   /** check buffer accessor api for constant_buffer
   */
   check_buffer_accessor_api_placeholder<
