@@ -23,6 +23,7 @@
 #define __SYCLCTS_TESTS_BUFFER_CONSTRUCTORS_COMMON_H
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 
 namespace buffer_constructors_common {
 using namespace sycl_cts;
@@ -69,7 +70,7 @@ template <typename T, int dims, typename allocT> class BufferCheck;
 template <typename T, int dims, typename allocT>
 bool check_data(sycl::buffer<T, dims, allocT> buf,
                 sycl::range<dims> r) {
-  auto q = util::get_cts_object::queue();
+  auto q = once_per_unit::get_queue();
   int error = 0;
   {
     sycl::buffer<int, 1> err_buf(&error, sycl::range<1>(1));
@@ -149,8 +150,8 @@ class buffer_ctors {
         sycl::buffer<T, dims> buf1(cont1, propList);
         sycl::buffer<T, dims> buf2(cont2);
         {
-          util::get_cts_object::queue()
-              .submit([&](sycl::handler &cgh) {
+          once_per_unit::get_queue()
+              .submit([&](sycl::handler& cgh) {
                 auto acc1 =
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =
@@ -179,8 +180,8 @@ class buffer_ctors {
         sycl::buffer<T, dims, decltype(logging_alloc)> buf2(cont2,
                                                             logging_alloc);
         {
-          util::get_cts_object::queue()
-              .submit([&](sycl::handler &cgh) {
+          once_per_unit::get_queue()
+              .submit([&](sycl::handler& cgh) {
                 auto acc1 =
                     buf1.template get_access<sycl::access_mode::write>(cgh);
                 auto acc2 =

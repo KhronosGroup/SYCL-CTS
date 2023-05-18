@@ -56,7 +56,7 @@ using host_accessor =
 template <accessor_tests_common::accessor_type AccType, typename DataT,
           int Dimension, typename GetAccFunctorT>
 void check_exception(GetAccFunctorT construct_acc) {
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
   {
