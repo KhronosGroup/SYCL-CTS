@@ -285,7 +285,7 @@ class TEST_NAME : public util::test_base {
             check_type(os, aConstPtr);
 
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-            // multi_ptr deorated::legacy
+            // multi_ptr decorated::legacy
             check_type(os, sycl::global_ptr<int>{});
             check_type(os, sycl::private_ptr<int>{});
             check_type(os, sycl::constant_ptr<int>{});
