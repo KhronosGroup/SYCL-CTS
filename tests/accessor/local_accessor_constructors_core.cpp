@@ -9,9 +9,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8858
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 #include "accessor_common.h"
 #include "local_accessor_constructors.h"
 #endif
@@ -21,7 +20,7 @@
 
 namespace local_accessor_constructors_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::local_accessor constructors. core types", "[accessor]")({
   using namespace local_accessor_constructors;
   const auto types = get_conformance_type_pack();

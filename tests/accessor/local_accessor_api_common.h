@@ -60,7 +60,7 @@ const std::string info_strings[to_integral(check::nChecks)]{
     "result for get_multi_ptr<sycl::access::decorated::yes>()",
     "result for get_pointer()"};
 
-bool is_check_for_dim(check check_value, int dim) {
+inline bool is_check_for_dim(check check_value, int dim) {
   if (0 == dim) {
     if (check_value == check::subscript_id_type ||
         check_value == check::subscript_size_t_type ||
@@ -257,7 +257,7 @@ class run_api_tests {
         // dim accessors
         std::array<std::array<bool, 1>, to_integral(check::nChecks)> res;
         std::for_each(res.begin(), res.end(),
-                      [](std::array<bool, 1> &arr) { arr.fill(false); });
+                      [](std::array<bool, 1>& arr) { arr.fill(false); });
         {
           auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
           sycl::buffer<bool, 2> res_buf(
@@ -303,7 +303,7 @@ class run_api_tests {
                                               item_id);
                       res_acc[sycl::id<2>(to_integral(check::iterator_access),
                                           item_id)] =
-                          test_begin_end_device(acc, expected_val, changed_val,
+                          test_begin_end_device(acc, changed_val, changed_val,
                                                 !std::is_const_v<T>);
                     });
               })

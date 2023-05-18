@@ -59,25 +59,28 @@ void test_zero_dimension_buffer_constructor(const std::string& type_name) {
 
 template <typename DataT, int Dimension>
 void test_common_constructors(const std::string& type_name) {
-  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  const auto offset = sycl::id<Dimension>();
-
+  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
   auto section_name =
       get_section_name<Dimension>(type_name, "From sycl::range constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [r](sycl::buffer<DataT, Dimension>& data_buf,
-                               sycl::handler& cgh) {
-      return sycl::local_accessor<DataT, Dimension>(r, cgh);
+    auto get_acc_functor = [](sycl::buffer<DataT, buf_dims>& data_buf,
+                              sycl::handler& cgh) {
+      if constexpr (0 != Dimension) {
+        const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
+        return sycl::local_accessor<DataT, Dimension>(r, cgh);
+      } else {
+        return sycl::local_accessor<DataT, Dimension>(cgh);
+      }
     };
     if constexpr (std::is_const_v<DataT>) {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read, sycl::target::device>(
-          r, get_acc_functor);
+          get_acc_functor);
     } else {
       check_common_constructor<AccType, DataT, Dimension,
                                sycl::access_mode::read_write,
-                               sycl::target::device>(r, get_acc_functor);
+                               sycl::target::device>(get_acc_functor);
     }
   }
 }
@@ -88,7 +91,9 @@ class run_tests_constructors {
 
  public:
   void operator()(const std::string& type_name) {
-    test_zero_dimension_buffer_constructor<T>(type_name);
+    if constexpr (0 == Dimension) {
+      test_zero_dimension_buffer_constructor<T>(type_name);
+    }
     test_default_constructor<T, Dimension>(type_name);
     test_common_constructors<T, Dimension>(type_name);
   }
@@ -100,7 +105,7 @@ class run_local_constructors_test {
   void operator()(const std::string& type_name) {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
 
     // To handle cases when class was called from functions
     // like for_all_types_vectors_marray or for_all_device_copyable_std_containers.

@@ -34,7 +34,7 @@
 
 namespace generic_accessor_placeholder_zero_length_buffer_constructor_fp16 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("Generic sycl::accessor placeholder zero-length buffer constructor. fp16 type",
  "[accessor]")({
   using namespace generic_accessor_placeholder_zero_length_buffer_constructor;

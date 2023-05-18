@@ -9,16 +9,14 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::host_accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8302
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "accessor_common.h"
 #include "host_accessor_api_common.h"
 #endif
 
 namespace host_accessor_api_core {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::host_accessor api. core types", "[accessor]")({
   using namespace host_accessor_api_common;
   const auto types = get_conformance_type_pack();

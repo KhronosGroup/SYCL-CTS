@@ -36,21 +36,22 @@ template <typename DataT, int Dimension, sycl::access_mode AccessMode,
 void test_common_buffer_constructors(const std::string& type_name,
                                      const std::string& access_mode_name,
                                      const std::string& target_name) {
-  const auto r = util::get_cts_object::range<Dimension>::get(1, 1, 1);
-  const auto offset = util::get_cts_object::id<Dimension>::get(0, 0, 0);
-  const auto r_zero = util::get_cts_object::range<Dimension>::get(0, 0, 0);
+  constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
+  auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
+  const auto offset = util::get_cts_object::id<buf_dims>::get(0, 0, 0);
+  const auto r_zero = util::get_cts_object::range<buf_dims>::get(0, 0, 0);
 
   auto section_name = get_section_name<Dimension>(
       type_name, access_mode_name, target_name, "From buffer constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf,
+    auto get_acc_functor = [](sycl::buffer<DataT, buf_dims>& data_buf,
                               sycl::handler& cgh) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
                                                                   cgh);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 
   section_name =
@@ -58,7 +59,7 @@ void test_common_buffer_constructors(const std::string& type_name,
                                   "From zero-length buffer constructor");
 
   SECTION(section_name) {
-    auto get_acc_functor = [](sycl::buffer<DataT, Dimension>& data_buf,
+    auto get_acc_functor = [](sycl::buffer<DataT, buf_dims>& data_buf,
                               sycl::handler& cgh) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
                                                                   cgh);
@@ -67,61 +68,64 @@ void test_common_buffer_constructors(const std::string& type_name,
                                          Target>(get_acc_functor);
   }
 
-  section_name =
-      get_section_name<Dimension>(type_name, access_mode_name, target_name,
-                                  "From buffer and range constructor");
+  if constexpr (0 != Dimension) {
+    section_name =
+        get_section_name<Dimension>(type_name, access_mode_name, target_name,
+                                    "From buffer and range constructor");
 
-  SECTION(section_name) {
-    auto get_acc_functor = [r](sycl::buffer<DataT, Dimension>& data_buf,
-                               sycl::handler& cgh) {
-      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
-                                                                  r);
-    };
-    check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
-  }
+    SECTION(section_name) {
+      auto get_acc_functor = [r](sycl::buffer<DataT, buf_dims>& data_buf,
+                                 sycl::handler& cgh) {
+        return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf,
+                                                                    cgh, r);
+      };
+      check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
+          get_acc_functor);
+    }
 
-  section_name = get_section_name<Dimension>(
-      type_name, access_mode_name, target_name,
-      "From zero-length buffer and range constructor");
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "From zero-length buffer and range constructor");
 
-  SECTION(section_name) {
-    auto get_acc_functor = [r_zero](sycl::buffer<DataT, Dimension>& data_buf,
-                                    sycl::handler& cgh) {
-      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
-                                                                  r_zero);
-    };
-    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor);
-  }
+    SECTION(section_name) {
+      auto get_acc_functor = [r_zero](sycl::buffer<DataT, buf_dims>& data_buf,
+                                      sycl::handler& cgh) {
+        return sycl::accessor<DataT, Dimension, AccessMode, Target>(
+            data_buf, cgh, r_zero);
+      };
+      check_zero_length_buffer_constructor<AccType, DataT, Dimension,
+                                           AccessMode, Target>(get_acc_functor);
+    }
 
-  section_name =
-      get_section_name<Dimension>(type_name, access_mode_name, target_name,
-                                  "From buffer, range and offset constructor");
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "From buffer, range and offset constructor");
 
-  SECTION(section_name) {
-    auto get_acc_functor = [r, offset](sycl::buffer<DataT, Dimension>& data_buf,
-                                       sycl::handler& cgh) {
-      return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf, cgh,
-                                                                  r, offset);
-    };
-    check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
-  }
+    SECTION(section_name) {
+      auto get_acc_functor = [r, offset](
+                                 sycl::buffer<DataT, buf_dims>& data_buf,
+                                 sycl::handler& cgh) {
+        return sycl::accessor<DataT, Dimension, AccessMode, Target>(
+            data_buf, cgh, r, offset);
+      };
+      check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
+          get_acc_functor);
+    }
 
-  section_name = get_section_name<Dimension>(
-      type_name, access_mode_name, target_name,
-      "From zero-length buffer, range and offset constructor");
+    section_name = get_section_name<Dimension>(
+        type_name, access_mode_name, target_name,
+        "From zero-length buffer, range and offset constructor");
 
-  SECTION(section_name) {
-    auto get_acc_functor = [r_zero, offset](
-                               sycl::buffer<DataT, Dimension>& data_buf,
-                               sycl::handler& cgh) {
-      return sycl::accessor<DataT, Dimension, AccessMode, Target>(
-          data_buf, cgh, r_zero, offset);
-    };
-    check_zero_length_buffer_constructor<AccType, DataT, Dimension, AccessMode,
-                                         Target>(get_acc_functor);
+    SECTION(section_name) {
+      auto get_acc_functor = [r_zero, offset](
+                                 sycl::buffer<DataT, buf_dims>& data_buf,
+                                 sycl::handler& cgh) {
+        return sycl::accessor<DataT, Dimension, AccessMode, Target>(
+            data_buf, cgh, r_zero, offset);
+      };
+      check_zero_length_buffer_constructor<AccType, DataT, Dimension,
+                                           AccessMode, Target>(get_acc_functor);
+    }
   }
 }
 
@@ -145,7 +149,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -171,7 +175,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, r, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -200,7 +204,7 @@ void test_common_buffer_constructors_tag_t_deduction(
       return sycl::accessor(data_buf, cgh, r, offset, tag);
     };
     check_common_constructor<AccType, DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 
   section_name = get_section_name<Dimension>(
@@ -231,9 +235,11 @@ class run_tests_common_buffer_constructors {
                   const std::string& target_name) {
     test_common_buffer_constructors<T, Dimension, AccessMode, Target>(
         type_name, access_mode_name, target_name);
-    test_common_buffer_constructors_tag_t_deduction<T, Dimension, AccessMode,
-                                                    Target>(
-        type_name, access_mode_name, target_name);
+    if constexpr (0 != Dimension) {
+      test_common_buffer_constructors_tag_t_deduction<T, Dimension, AccessMode,
+                                                      Target>(
+          type_name, access_mode_name, target_name);
+    }
   }
 };
 
@@ -244,7 +250,7 @@ class run_generic_common_buffer_constructors_test {
     // Type packs instances have to be const, otherwise for_all_combination will
     // not compile
     const auto access_modes = get_access_modes();
-    const auto dimensions = get_dimensions();
+    const auto dimensions = get_all_dimensions();
     const auto targets = get_targets();
 
     // To handle cases when class was called from functions
