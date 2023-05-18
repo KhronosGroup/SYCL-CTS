@@ -89,7 +89,6 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc(buffer, cgh);
   sycl::accessor<int, 1> res_acc(res_buffer, cgh);
   sycl::accessor<int, 1> flag_res_acc(flag_res_buffer, cgh);
-  copy(acc1, res_acc);
   cgh.parallel_for(SIZE, [=](auto item) {
     res_acc[item.get_id()] = acc[item.get_id()];
     flag_res_acc[item.get_id()] = *pflag;
@@ -115,8 +114,7 @@ queue.submit([&](handler& cgh) {
   });
 });
 sycl::host_accessor<int, 1> host_acc(buffer);
--- --
+----
 
-   Check that immediately after host_acc creation *pflag is equal to expected
-       value,
-    that means that host_accessor acts as barrier.
+Check that immediately after host_acc creation *pflag is equal to expected value,
+that means that host_accessor acts as barrier.
