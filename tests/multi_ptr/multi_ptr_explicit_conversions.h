@@ -133,7 +133,7 @@ class run_explicit_convert_tests {
   void operator()(const std::string &type_name,
                   const std::string &target_address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     auto r = sycl::range(1);
 
     SECTION(sycl_cts::section_name(

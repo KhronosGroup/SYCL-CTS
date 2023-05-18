@@ -209,8 +209,7 @@ struct test_equality {
 template <typename T>
 bool hash_equality_helper(const T& t0, const T& t1) {
 // FIXME: enable when std::hash specializations for local_accessor and
-// host_accessor are implemented link to issue
-// https://github.com/intel/llvm/issues/8332
+// host_accessor are implemented
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<
                     T, sycl::host_accessor<int, 1,

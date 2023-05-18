@@ -9,8 +9,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 // FIXME: re-enable when sycl::local_accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8299
-// PR link https://github.com/intel/llvm/pull/8249
+// Issue link https://github.com/intel/llvm/issues/8302
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
     !SYCL_CTS_COMPILING_WITH_DPCPP
 #include "accessor_common.h"
