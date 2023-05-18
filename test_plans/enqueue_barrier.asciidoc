@@ -1,0 +1,124 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl oneapi extension: `enqueue_barrier`.
+
+This is a test plan for the extended APIs of `sycl:handler` and `sycl::queue`
+classes described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_enqueue_barrier.asciidoc[sycl_ext_oneapi_enqueue_barrier.asciidoc]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line. Tests require USM support, so tests are
+skipped if the device doesn't support USM.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_ENQUEUE_BARRIER` so they
+can be skipped if feature is not supported.
+
+== Tests
+
+=== Extended `sycl::handler` class member functions
+
+* `void ext_oneapi_barrier()`
+* `void ext_oneapi_barrier( const std::vector<event> &waitList )`
+
+==== `void ext_oneapi_barrier()`
+
+Checking that actions submitted to a queue after barrier submission aren't
+executed until all previously submitted commands to the same queue to enter the
+`info::event_command_status::complete` state. Device memory allocation is used
+to define actions execution order.
+
+Test description:
+
+* Create a queue
+* Allocate device memory containing two bool values (completion flags of 
+  actions which will be submitted after barrier)
+* Initialize flags to false
+* Define two kernels performing some actions in long loop that check flags
+  after loop termination, each flag should be equal to false, let it be kernels
+  A and B
+* Loops in kernels A and B should perform different number of iterations to
+  check that actions submitted after barrier submission await the termination
+  of both submitted kernels A and B
+* Define two kernels that should set the completion flags to true, let it be
+  kernels C and D
+* Submit kernels A and B
+* Submit barrier using command group handler
+* Submit kernels C and D
+* Check that flags were equal to false during the execution of kernels A and B
+
+==== `void ext_oneapi_barrier( const std::vector<event> &waitList )`
+
+Checking that actions submitted to a queue after barrier submission aren't
+executed until all events in `waitList` have entered the
+`info::event_command_status::complete` state. Device memory allocation is used
+to define actions execution order.
+
+Test description:
+
+* Create 3 queues
+* Allocate device memory containing two bool values (completion flags of 
+  actions which will be submitted after barrier)
+* Initialize flags to false
+* Define two kernels performing some actions in long loop that check flags
+  after loop termination, each flag should be equal to false, let it be kernels
+  A and B
+* Loops in kernels A and B should perform different number of iterations to
+  check that actions submitted after barrier submission await the termination
+  of both submitted kernels A and B
+* Define two kernels that should set the completion flags to true, let it be
+  kernels C and D
+* Submit kernel A to the first queue and kernel B to the second queue, save
+  corresponding events
+* Submit barrier with vector of previously obtained events to the third queue
+  using command group handler
+* Submit kernels C and D to the third queue
+* Check that flags were equal to false during the execution of kernels A and B
+
+=== Extended `sycl::queue` class member functions
+
+The `sycl_ext_oneapi_enqueue_barrier` extension defines the following member
+functions for the `sycl::queue` class:
+
+* `event ext_oneapi_submit_barrier()`
+* `event ext_oneapi_submit_barrier( const std::vector<event> &waitList )`
+
+These member functions should be checked the same as the corresponding member
+functions of the `sycl::handler` class according to the algorithm description
+in the previous section. In addition return type should be checked which should
+be equal to `sycl::event` for both member functions.
+
+=== Returned `sycl::event`
+
+Check that waiting on returned `event` waits for the previously submitted
+kernels to complete.
+
+==== Checking with one queue
+
+* Create a queue
+* Allocate two USM buffers in host memory BufA and BufB
+* Define kernel A which writes a result in USM buffer BufA
+* Define kernel B which writes a result in USM buffer BufB
+* Submit kernels A and B to the queue
+* Call `queue::ext_oneapi_submit_barrier()`, which returns event E
+* Wait on E from host code
+* Check the BufA and BufB contain the results of kernels A and B
+
+==== Checking with three queues
+
+* Create 3 queues
+* Allocate two USM buffers in host memory BufA and BufB
+* Define kernel A which writes a result in USM buffer BufA
+* Define kernel B which writes a result in USM buffer BufB
+* Submit kernel A to the first queue and kernel B to the second queue, save
+  appropriate eventA and eventB
+* Call `queue::ext_oneapi_submit_barrier( {eventA, eventB} )` for the third
+  queue, which returns event E
+* Wait on E from host code
+* Check the BufA and BufB contain the results of kernels A and B
