@@ -23,6 +23,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
 #include "../common/type_coverage.h"
 
@@ -193,7 +194,7 @@ class run_atomic_fence {
                                    " and scope = " + memory_scope_name +
                                    " and test_type = " + test_type_name)
                 .create()) {
-      auto queue = sycl_cts::util::get_cts_object::queue();
+      auto queue = once_per_unit::get_queue();
       if (!check_memory_order_scope_capabilities(queue, MemoryOrder,
                                                  MemoryScope, memory_order_name,
                                                  memory_scope_name)) {

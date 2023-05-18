@@ -54,7 +54,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -84,7 +84,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
 
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: ComputeCpp does not implement joint scan
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
@@ -110,7 +110,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "Skipping the test.");
 #endif
 
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault
@@ -139,7 +139,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "Skipping the test.");
 #endif
 
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: Codeplay ComputeCpp - CE 2.11.0
   //        Device Compiler - clang version 8.0.0  (based on LLVM 8.0.0svn)
   //        clang-8: error: unable to execute command: Segmentation fault

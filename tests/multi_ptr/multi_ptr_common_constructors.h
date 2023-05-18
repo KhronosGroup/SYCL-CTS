@@ -25,6 +25,7 @@
 
 #include "../common/common.h"
 #include "../common/get_cts_string.h"
+#include "../common/once_per_unit.h"
 #include "../common/type_list.h"
 
 namespace multi_ptr_common_constructors {
@@ -79,7 +80,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   bool same_type[types_size]{};
   bool same_value[values_size]{};
   T ref_value{user_def_types::get_init_value_helper<T>(0)};
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
 
   using GlobalAccType = sycl::accessor<T, 1, sycl::access_mode::read>;
   using LocalAccType = sycl::local_accessor<T, 1>;

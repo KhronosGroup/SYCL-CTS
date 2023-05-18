@@ -151,7 +151,7 @@ class run_multi_ptr_arithmetic_op_test {
   void operator()(const std::string &type_name,
                   const std::string &address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
 
     for (size_t i = 0; i < m_array_size; ++i) {
       m_arr[i] = i;
