@@ -69,7 +69,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // here DoubleHalfTypes can be used as only half+double combinations are
@@ -107,7 +107,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     for_all_combinations_with_two<invoke_init_joint_scan_group, double,
@@ -139,7 +139,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // here DoubleHalfTypes can be used as only half+double combinations are

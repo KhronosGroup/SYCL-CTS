@@ -40,7 +40,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group shift",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
 
   shift_sub_group<1, TestType>(queue);
   shift_sub_group<2, TestType>(queue);

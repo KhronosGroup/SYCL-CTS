@@ -49,7 +49,7 @@ struct check_reducer_subscript {
         usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, AccumulatorT>(
             queue, 1);
 
-    constexpr size_t result_count = 3;
+    constexpr size_t result_count = 5;
     std::vector<int> results(result_count, 0);
     {
       sycl::buffer<int> buf_results(results.data(),
@@ -69,6 +69,15 @@ struct check_reducer_subscript {
                 acc_results[i++] =
                     std::is_same_v<OperatorT, typename red_t::binary_operation>;
                 acc_results[i++] = 0 == red_t::dimensions;
+                AccumulatorT val{1};
+                auto& res_combine = reducer.combine(val);
+                acc_results[i++] =
+                    std::is_same_v<decltype(res_combine), decltype(reducer)>;
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
+                auto& res_plus = reducer += val;
+                acc_results[i++] =
+                    std::is_same_v<decltype(res_plus), decltype(reducer)>;
               }
 
               assert(i == result_count);
@@ -85,7 +94,7 @@ struct check_reducer_subscript {
     AccumulatorT red_output;
     sycl::buffer<AccumulatorT> buf_output{&red_output, sycl::range<1>{1}};
 
-    constexpr size_t result_count = 3;
+    constexpr size_t result_count = 5;
     std::vector<int> results(result_count, 0);
     {
       sycl::buffer<int> buf_results(results.data(),
@@ -105,6 +114,15 @@ struct check_reducer_subscript {
                 acc_results[i++] =
                     std::is_same_v<OperatorT, typename red_t::binary_operation>;
                 acc_results[i++] = 0 == red_t::dimensions;
+                AccumulatorT val{1};
+                auto& res_combine = reducer.combine(val);
+                acc_results[i++] =
+                    std::is_same_v<decltype(res_combine), decltype(reducer)>;
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
+                auto& res_plus = reducer += val;
+                acc_results[i++] =
+                    std::is_same_v<decltype(res_plus), decltype(reducer)>;
               }
 
               assert(i == result_count);
@@ -122,7 +140,7 @@ struct check_reducer_subscript {
         usm_helper::allocate_usm_memory<sycl::usm::alloc::shared, AccumulatorT>(
             queue, 1);
 
-    constexpr size_t result_count = 6;
+    constexpr size_t result_count = 8;
     std::vector<int> results(result_count, 0);
     {
       sycl::buffer<int> buf_results(results.data(),
@@ -153,6 +171,17 @@ struct check_reducer_subscript {
                 acc_results[i++] =
                     std::is_same_v<OperatorT, typename red_t::binary_operation>;
                 acc_results[i++] = 0 == red_t::dimensions;
+                AccumulatorT val{1};
+                auto& res_combine = reducer[0].combine(val);
+                acc_results[i++] = std::is_same_v<
+                    std::remove_reference_t<decltype(res_combine)>,
+                    decltype(reducer[0])>;
+                // OperatorT is sycl::plus, so checking the result of += member
+                // function
+                auto& res_plus = reducer[0] += val;
+                acc_results[i++] =
+                    std::is_same_v<std::remove_reference_t<decltype(res_plus)>,
+                                   decltype(reducer[0])>;
               }
 
               assert(i == result_count);

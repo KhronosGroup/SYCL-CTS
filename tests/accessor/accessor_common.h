@@ -25,6 +25,7 @@
 
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "../common/section_name_builder.h"
 #include "../common/value_operations.h"
 
@@ -361,7 +362,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
           sycl::access_mode AccessMode = sycl::access_mode::read_write,
           sycl::target Target = sycl::target::device, typename GetAccFunctorT>
 void check_def_constructor(GetAccFunctorT get_accessor_functor) {
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   sycl::range<1> r(1);
   const size_t conditions_checks_size = 8;
   bool conditions_check[conditions_checks_size];
@@ -407,7 +408,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
 //       https://github.com/KhronosGroup/SYCL-Docs/issues/408
 #if !SYCL_CTS_COMPILING_WITH_DPCPP
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   sycl::range<dim_buf> r = util::get_cts_object::range<dim_buf>::get(0, 0, 0);
   sycl::buffer<DataT, dim_buf> data_buf(r);
   const size_t conditions_checks_size = 8;
@@ -516,7 +517,7 @@ template <accessor_type AccType, typename DataT, sycl::access_mode AccessMode,
           typename... ModifyAccFunctorsT>
 void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
                                 ModifyAccFunctorsT... modify_accessor) {
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   sycl::range<1> r(1);
   DataT some_data = value_operations::init<DataT>(expected_val);
 
@@ -635,7 +636,7 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
                               ModifyAccFunctorsT... modify_accessor) {
   constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
   auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   bool compare_res = false;
   DataT some_data = value_operations::init<DataT>(expected_val);
 
@@ -732,7 +733,7 @@ void run_placeholder_accessor_exception(GetAccFunctorT get_accessor_functor,
                                         std::string op_name) {
   constexpr int buf_dims = (0 == Dimension) ? 1 : Dimension;
   auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   using T = std::remove_const_t<DataT>;
   T other_data = value_operations::init<T>(changed_val);
@@ -938,7 +939,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_no_init_prop(GetAccFunctorT get_accessor_functor) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   bool compare_res = false;
   DataT some_data = value_operations::init<DataT>(expected_val);
 
@@ -989,7 +990,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_no_init_prop_exception(GetAccFunctorT construct_acc) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   {
     sycl::buffer<DataT, dim_buf> data_buf(&some_data, r);
@@ -1125,7 +1126,7 @@ template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
 void check_has_property_member_func(GetAccFunctorT construct_acc) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   bool compare_res = false;
   DataT some_data = value_operations::init<DataT>(expected_val);
   sycl::buffer<DataT, dim_buf> data_buf(&some_data, r);
@@ -1155,7 +1156,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_has_property_member_without_no_init(GetAccFunctorT construct_acc) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   bool compare_res = false;
   DataT some_data = value_operations::init<DataT>(expected_val);
   sycl::buffer<DataT, dim_buf> data_buf(&some_data, r);
@@ -1185,7 +1186,7 @@ template <accessor_type AccType, typename DataT, int Dimension, typename PropT,
 void check_get_property_member_func(GetAccFunctorT construct_acc) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   sycl::buffer<DataT, dim_buf> data_buf(&some_data, r);
 
@@ -1218,7 +1219,7 @@ template <accessor_type AccType, typename DataT, int Dimension,
 void check_get_property_member_without_no_init(GetAccFunctorT construct_acc) {
   constexpr int dim_buf = (0 == Dimension) ? 1 : Dimension;
   const auto r = util::get_cts_object::range<dim_buf>::get(1, 1, 1);
-  auto queue = util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   DataT some_data = value_operations::init<DataT>(expected_val);
   sycl::buffer<DataT, dim_buf> data_buf(&some_data, r);
 
@@ -1316,7 +1317,7 @@ void check_linearization() {
   sycl::buffer<T, dims> data_buf(data, range);
 
   if constexpr (AccType != accessor_type::host_accessor) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     auto r = util::get_cts_object::range<dims>::get(1, 1, 1);
     bool res = true;
     {

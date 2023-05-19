@@ -148,7 +148,7 @@ class run_api_tests {
  public:
   void operator()(const std::string &type_name) {
     using kname = kernel_api<T, DimensionTypeT>;
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
 
     SECTION(

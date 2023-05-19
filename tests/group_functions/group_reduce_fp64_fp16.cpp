@@ -25,7 +25,7 @@
 
 TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
                        "[group_func][fp16][fp64][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check dimensions to only print warning once
   if constexpr (D == 1) {
     // FIXME: hipSYCL omission
@@ -63,7 +63,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group joint reduce functions with init",
 
 TEMPLATE_TEST_CASE_SIG("Group and sub-group reduce functions with init",
                        "[group_func][fp16][fp64][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check dimensions to only print warning once
   if constexpr (D == 1) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
