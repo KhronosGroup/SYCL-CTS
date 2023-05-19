@@ -55,7 +55,16 @@ static void run_ctors_test_for_kind(util::logger& log) {
     }
   }
 
-  // TODO: Case for (context, device, property_list) ctor will be added here
+  // Check (context, device, property_list) constructor
+  {
+    AllocatorT allctr(ctx, dev, pl);
+    PtrType ptr(allctr.allocate(count), DeleterT{allctr});
+    if (!check_ptr_kind(ptr, ctx, kind)) {
+      FAIL(log,
+           "Constructor (context, device)" +
+               std::string(usm_helper::get_allocation_description<kind>()));
+    }
+  }
 
   /** Check (queue) constructor
    */
@@ -69,7 +78,16 @@ static void run_ctors_test_for_kind(util::logger& log) {
     }
   }
 
-  // TODO: Case for (queue, property_list) ctor will be added here
+  // Check (queue, property_list) constructor
+  {
+    AllocatorT allctr(queue, pl);
+    PtrType ptr(allctr.allocate(count), DeleterT{allctr});
+    if (!check_ptr_kind(ptr, ctx, kind)) {
+      FAIL(log,
+           "Constructor (context, device)" +
+               std::string(usm_helper::get_allocation_description<kind>()));
+    }
+  }
 
   /** Check copy constructor
    */

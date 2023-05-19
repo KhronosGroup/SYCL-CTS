@@ -26,6 +26,7 @@
 #include "../../util/named_requirement_verification/legacy_random_access_iterator.h"
 #include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_object.h"
+#include "../common/once_per_unit.h"
 #include "catch2/catch_test_macros.hpp"
 
 namespace accessor_iterator_requirement {
@@ -59,7 +60,7 @@ inline auto fill_errors(std::tuple<ConstructAcc, GetIterator> ftuple) {
   using AccT = sycl::accessor<int, 1, sycl::access::mode::read_write>;
   using LocAccT = sycl::local_accessor<int, 1>;
 
-  auto q = util::get_cts_object::queue();
+  auto q = once_per_unit::get_queue();
 
   constexpr size_t size_of_res_array =
       legacy_random_access_iterator_requirement::count_of_possible_errors;

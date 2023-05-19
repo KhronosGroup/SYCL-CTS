@@ -59,7 +59,7 @@ class run_prefetch_test {
     static_assert(!std::is_same_v<T, void>,
                   "Data type shouldn't be is same to void type");
 
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     SECTION(sycl_cts::section_name("Check multi_ptr::prefetch()")
                 .with("T", type_name)

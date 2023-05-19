@@ -22,6 +22,7 @@
 #ifndef SYCL_CTS_BIT_CAST_TEST_H
 #define SYCL_CTS_BIT_CAST_TEST_H
 
+#include "../common/once_per_unit.h"
 #include "bit_cast_helper_functions.h"
 #include <cstring>
 
@@ -42,7 +43,7 @@ class bit_cast_test {
  public:
   void operator()(const std::string& to_type_name,
                   const std::string& from_type_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     if constexpr (is_invalid_test_case)
       return;
     else {
