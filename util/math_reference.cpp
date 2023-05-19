@@ -310,11 +310,20 @@ T mul_hi_unsigned(T x, T y) {
   return hi;
 }
 
+/**
+ * @brief Function to get high sizeof(T)*8 bits of the product of two signed T
+
+   @tparam T signed type of operand
+   @param a The first operand of multiply
+   @param b The second operand of multiply
+   @return T with high sizeof(T)*8 bits of the sizeof(T)*2*8 bits result of the
+   multiplication
+ */
 template <typename T>
 T mul_hi_signed(T a, T b) {
   // All shifts are half the size of T in bits
   size_t shft = sizeof(T) * 4;
-  typedef typename std::make_unsigned<T>::type U;
+  using U = std::make_unsigned_t<T>;
   // hi and lo are the upper and lower parts of the result
   // p, q, r and s are the masked and shifted parts of a
   // b, splitting a and b each into two Ts
@@ -325,28 +334,37 @@ T mul_hi_signed(T a, T b) {
   U mask = -1;
   mask >>= shft;
 
-  size_t msb = sizeof(T) * 8 - 1;
+  U a_pos = std::abs(a);
+  U b_pos = std::abs(b);
 
-  // a and b rendered positive
-  auto a_pos = (a & (1ull << msb)) ? (~a + 1) : a;
-  auto b_pos = (b & (1ull << msb)) ? (~b + 1) : b;
+  p = a_pos >> shft;
+  q = b_pos >> shft;
+  r = a_pos & mask;
+  s = b_pos & mask;
 
-  p = static_cast<U>(a_pos) >> shft;
-  q = static_cast<U>(b_pos) >> shft;
-  r = static_cast<U>(a_pos) & mask;
-  s = static_cast<U>(b_pos) & mask;
-
+  // Compute half products
   lo = r * s;
   hi = p * q;
-  cross1 = (p * s);
-  cross2 = (q * r);
+  cross1 = p * s;
+  cross2 = q * r;
 
   lo >>= shft;
   lo += (cross1 & mask) + (cross2 & mask);
   lo >>= shft;
   hi += lo + (cross1 >> shft) + (cross2 >> shft);
 
-  return (a >> msb) ^ (b >> msb) ? static_cast<T>(~hi) : hi;
+  T result = hi;
+  // if result is negative
+  if ((a < 0) != (b < 0)) {
+    result = ~result;
+    // check that the low half is zero to see if we need to carry
+    T lo_half = a * b;
+    if (0 == lo_half) {
+      result += 1;
+    }
+  }
+
+  return result;
 }
 
 unsigned char mul_hi(unsigned char a, unsigned char b) {
