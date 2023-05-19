@@ -312,12 +312,12 @@ T mul_hi_unsigned(T x, T y) {
 
 /**
  * @brief Function to get high sizeof(T)*8 bits of the product of two signed T
- *
- * @tparam T signed type T
- * @param a The first number of multiply
- * @param b The second number of multiply
- * @return T High sizeof(T)*8 bits of the sizeof(T*2)*8 bits result of the
- * multiplication
+
+   @tparam T signed type of operand
+   @param a The first operand of multiply
+   @param b The second operand of multiply
+   @return T with high sizeof(T)*8 bits of the sizeof(T)*2*8 bits result of the
+   multiplication
  */
 template <typename T>
 T mul_hi_signed(T a, T b) {
