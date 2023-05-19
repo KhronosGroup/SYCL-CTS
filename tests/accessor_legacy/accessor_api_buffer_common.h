@@ -204,7 +204,7 @@ class check_buffer_accessor_api_methods {
     {
       error_buffer_t errorBuffer(errors.get(), sycl::range<1>(2));
 
-      queue.submit([&](sycl::handler &cgh) {
+      queue.submit([&](sycl::handler& cgh) {
         auto accessor = makeAccessor(cgh);
         auto errorAccessor = make_accessor<int, 1, errorMode, errorTarget,
                                            acc_placeholder::error>(
@@ -1217,8 +1217,8 @@ void check_buffer_accessor_api_placeholder(argsT&& ... args) {
 
 /** tests buffer accessors with different dimensions
 */
-template <typename T, typename kernelName, int dims, typename ... argsT>
-void check_buffer_accessor_api_dim(argsT&& ... args) {
+template <typename T, typename kernelName, int dims, typename... argsT>
+void check_buffer_accessor_api_dim(argsT&&... args) {
   /** check buffer accessor api for constant_buffer
   */
   check_buffer_accessor_api_placeholder<
