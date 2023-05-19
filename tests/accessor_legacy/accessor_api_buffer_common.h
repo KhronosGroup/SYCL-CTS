@@ -361,7 +361,7 @@ class check_buffer_accessor_api_methods {
     if (accessedSize != 0) {
       // Pointer verification requires scope out of command group
       check_get_pointer(log, typeName, accessOffset, queue,
-                        [&](sycl::handler &cgh) -> acc_t {
+                        [&](sycl::handler& cgh) -> acc_t {
                           cgh.require(acc);
                           return acc;
                         });
