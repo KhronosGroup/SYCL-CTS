@@ -87,13 +87,14 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc2(sub_buf2, cgh);
   sycl::accessor<bool, 1> res_acc(res_buffer, cgh);
   cgh.single_task([=] {
-    res_acc[0] = *pflag == 1;
+    sycl::atomic_ref<int> rflag(*pflag);
+    res_acc[0] = (rflag.load() == 1);
     for (int i = acc2.size(); i >= 0; i--) acc2[i] = i;
   });
 });
 ----
 
-Check that *pflag was equal to 1, that means that requisites for second command with overlapping sub-buffer were satisfied before it started to execute.
+Check that `res_buffer` is equal to `true`, which means that requisites for second command with overlapping sub-buffer were satisfied before it started to execute.
 
 === Host accessor as a barrier
 
