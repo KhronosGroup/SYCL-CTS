@@ -40,11 +40,9 @@ using namespace accessor_utility;
 ////////////////////////////////////////////////////////////////////////////////
 
 /** tests buffer accessors methods
-*/
-template <typename T, typename kernelName, int dims,
-          sycl::access_mode mode,
-          sycl::target target,
-          sycl::access::placeholder placeholder>
+ */
+template <typename T, typename kernelName, int dims, sycl::access_mode mode,
+          sycl::target target, sycl::access::placeholder placeholder>
 class check_buffer_accessor_api_methods {
  public:
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
@@ -52,8 +50,8 @@ class check_buffer_accessor_api_methods {
   size_t count;
   size_t size;
 
-  void operator()(util::logger &log, sycl::queue &queue,
-                  const sycl_range_t<dims> &range,
+  void operator()(util::logger& log, sycl::queue& queue,
+                  const sycl_range_t<dims>& range,
                   const std::string& typeName) {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
@@ -70,22 +68,22 @@ class check_buffer_accessor_api_methods {
     auto accessOffset = sycl_id_t<dims>{};
     accessOffset[0] = accessRange[0] / 2;
 
-    check_all_methods(log, queue, accessRange, accessOffset,
-                      buffer, accessedSize, accessedCount,
-                      typeName, acc_type_tag::get<target, placeholder>());
+    check_all_methods(log, queue, accessRange, accessOffset, buffer,
+                      accessedSize, accessedCount, typeName,
+                      acc_type_tag::get<target, placeholder>());
   }
 
  private:
   template <typename expectedT, typename returnT>
   void check_acc_return_type(sycl_cts::util::logger& log, returnT returnVal,
-                            const std::string& functionName,
-                            const std::string& typeName) const {
-    accessor_utility::check_acc_return_type<
-        expectedT, T, dims, mode, target, placeholder>(
-            log, returnVal, functionName, typeName);
+                             const std::string& functionName,
+                             const std::string& typeName) const {
+    accessor_utility::check_acc_return_type<expectedT, T, dims, mode, target,
+                                            placeholder>(
+        log, returnVal, functionName, typeName);
   }
 
-  void check_common_methods(util::logger &log, const acc_t &accessor,
+  void check_common_methods(util::logger& log, const acc_t& accessor,
                             const size_t accessedSize,
                             const size_t accessedCount,
                             const std::string& typeName) const {
@@ -95,9 +93,9 @@ class check_buffer_accessor_api_methods {
       auto isPlaceholder = accessor.is_placeholder();
       check_acc_return_type<bool>(log, isPlaceholder, "is_placeholder()",
                                   typeName);
-      if (isPlaceholder !=
-          (placeholder == sycl::access::placeholder::true_t)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+      if (isPlaceholder != (placeholder == sycl::access::placeholder::true_t)) {
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "accessor does not properly report placeholder status");
       }
     }
@@ -105,11 +103,10 @@ class check_buffer_accessor_api_methods {
       /** check size() method
        */
       auto accessorCount = accessor.size();
-      check_acc_return_type<size_t>(log, accessorCount, "size()",
-                                    typeName);
+      check_acc_return_type<size_t>(log, accessorCount, "size()", typeName);
       if (accessorCount != accessedCount) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-            "accessor does not return the correct count");
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName, "accessor does not return the correct count");
       }
     }
     {
@@ -130,8 +127,8 @@ class check_buffer_accessor_api_methods {
       auto accessorSize = accessor.get_size();
       check_acc_return_type<size_t>(log, accessorSize, "get_size()", typeName);
       if (accessorSize != accessedSize) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-            "accessor does not return the correct size");
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName, "accessor does not return the correct size");
       }
     }
     if constexpr (target == sycl::access::target::constant_buffer ||
@@ -148,9 +145,9 @@ class check_buffer_accessor_api_methods {
   /**
    *  @brief check get_pointer() value for host accessor
    */
-  void check_get_pointer(util::logger &log, const std::string& typeName,
-                         const sycl_id_t<dims> &accessOffset,
-                         const acc_t &accessor) const {
+  void check_get_pointer(util::logger& log, const std::string& typeName,
+                         const sycl_id_t<dims>& accessOffset,
+                         const acc_t& accessor) const {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
         "check_buffer_accessor_api_methods::get_pointer::host", typeName, log);
@@ -164,10 +161,9 @@ class check_buffer_accessor_api_methods {
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer);
 
-      auto verifier =
-            buffer_accessor_get_pointer<T, dims, mode, target, errorTarget,
-                                        placeholder>(accessor, errorAccessor,
-                                                     accessOffset);
+      auto verifier = buffer_accessor_get_pointer<T, dims, mode, target,
+                                                  errorTarget, placeholder>(
+          accessor, errorAccessor, accessOffset);
 
       /** check buffer accessor pointer access
        */
@@ -176,12 +172,12 @@ class check_buffer_accessor_api_methods {
 
     using error_code_t = buffer_accessor_api_pointer_error_code;
     if (errors.get()[error_code_t::pointer_read_access] != 0) {
-      fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-          "accessor did not read from the correct pointer");
+      fail_for_accessor<T, dims, mode, target, placeholder>(
+          log, typeName, "accessor did not read from the correct pointer");
     }
     if (errors.get()[error_code_t::pointer_write_access] != 0) {
-      fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-          "accessor did not write to the correct pointer");
+      fail_for_accessor<T, dims, mode, target, placeholder>(
+          log, typeName, "accessor did not write to the correct pointer");
     }
   }
   /**
@@ -190,13 +186,13 @@ class check_buffer_accessor_api_methods {
    *                     accessor at command group scope
    */
   template <typename accLambdaT>
-  void check_get_pointer(util::logger &log, const std::string& typeName,
-                         const sycl_id_t<dims> &accessOffset,
-                         sycl::queue& queue,
-                         accLambdaT makeAccessor) const {
+  void check_get_pointer(util::logger& log, const std::string& typeName,
+                         const sycl_id_t<dims>& accessOffset,
+                         sycl::queue& queue, accLambdaT makeAccessor) const {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
     log_accessor<T, dims, mode, target, placeholder>(
-        "check_buffer_accessor_api_methods::get_pointer::device", typeName, log);
+        "check_buffer_accessor_api_methods::get_pointer::device", typeName,
+        log);
 #endif  // SYCL_CTS_ENABLE_VERBOSE_LOG
     static constexpr auto errorTarget = sycl::target::device;
 
@@ -206,17 +202,16 @@ class check_buffer_accessor_api_methods {
 
       queue.submit([&](sycl::handler& cgh) {
         auto accessor = makeAccessor(cgh);
-        auto errorAccessor = make_accessor<int, 1, errorMode, errorTarget,
-                                           acc_placeholder::error>(
-            errorBuffer, cgh);
+        auto errorAccessor =
+            make_accessor<int, 1, errorMode, errorTarget,
+                          acc_placeholder::error>(errorBuffer, cgh);
 
-        auto verifier =
-            buffer_accessor_get_pointer<T, dims, mode, target, errorTarget,
-                                        placeholder>(accessor, errorAccessor,
-                                                     accessOffset);
+        auto verifier = buffer_accessor_get_pointer<T, dims, mode, target,
+                                                    errorTarget, placeholder>(
+            accessor, errorAccessor, accessOffset);
         using kernel_name =
-            buffer_accessor_get_pointer_kernel<
-                kernelName, dims, mode, target, placeholder>;
+            buffer_accessor_get_pointer_kernel<kernelName, dims, mode, target,
+                                               placeholder>;
 
         cgh.single_task<kernel_name>(verifier);
       });
@@ -224,19 +219,19 @@ class check_buffer_accessor_api_methods {
 
     using error_code_t = buffer_accessor_api_pointer_error_code;
     if (errors.get()[error_code_t::pointer_read_access] != 0) {
-      fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-          "accessor did not read from the correct pointer");
+      fail_for_accessor<T, dims, mode, target, placeholder>(
+          log, typeName, "accessor did not read from the correct pointer");
     }
     if (errors.get()[error_code_t::pointer_write_access] != 0) {
-      fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-          "accessor did not write to the correct pointer");
+      fail_for_accessor<T, dims, mode, target, placeholder>(
+          log, typeName, "accessor did not write to the correct pointer");
     }
   }
 
-  void check_range_offset(util::logger &log,
-                          const sycl_range_t<dims> &accessRange,
-                          const sycl_id_t<dims> &accessOffset,
-                          const acc_t &accessor,
+  void check_range_offset(util::logger& log,
+                          const sycl_range_t<dims>& accessRange,
+                          const sycl_id_t<dims>& accessOffset,
+                          const acc_t& accessor,
                           const std::string& typeName) const {
     {
       /** check get_range() method
@@ -245,8 +240,8 @@ class check_buffer_accessor_api_methods {
       check_acc_return_type<sycl_range_t<dims>>(log, accessor.get_range(),
                                                 "get_range()", typeName);
       if (accessorRange != accessRange) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-            "accessor does not return the correct range");
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName, "accessor does not return the correct range");
       }
     }
     {
@@ -256,8 +251,8 @@ class check_buffer_accessor_api_methods {
       check_acc_return_type<sycl_id_t<dims>>(log, accessor.get_offset(),
                                              "get_offset()", typeName);
       if (accessorOffset != accessOffset) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-            "accessor does not return the correct offset");
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName, "accessor does not return the correct offset");
       }
     }
   }
@@ -269,11 +264,10 @@ class check_buffer_accessor_api_methods {
    * @param accessOffset The offset used on construction
    * @param accessor Accessor under test
    */
-  void check_methods(util::logger &log, const sycl_range_t<dims> &accessRange,
-                     const sycl_id_t<dims> &accessOffset, const acc_t &accessor,
+  void check_methods(util::logger& log, const sycl_range_t<dims>& accessRange,
+                     const sycl_id_t<dims>& accessOffset, const acc_t& accessor,
                      const size_t accessedSize, const size_t accessedCount,
-                     const std::string& typeName,
-                     generic_dim_tag) const {
+                     const std::string& typeName, generic_dim_tag) const {
     check_common_methods(log, accessor, accessedSize, accessedCount, typeName);
     check_range_offset(log, accessRange, accessOffset, accessor, typeName);
   }
@@ -283,13 +277,11 @@ class check_buffer_accessor_api_methods {
    * @param log The logger object
    * @param accessor Accessor under test
    */
-  void check_methods(util::logger &log,
-                     const sycl_range_t<dims> & /*accessRange*/,
-                     const sycl_id_t<dims> & /*accessOffset*/,
-                     const acc_t &accessor,
-                     const size_t accessedSize,
-                     const size_t accessedCount,
-                     const std::string& typeName,
+  void check_methods(util::logger& log,
+                     const sycl_range_t<dims>& /*accessRange*/,
+                     const sycl_id_t<dims>& /*accessOffset*/,
+                     const acc_t& accessor, const size_t accessedSize,
+                     const size_t accessedCount, const std::string& typeName,
                      zero_dim_tag) const {
     check_common_methods(log, accessor, accessedSize, accessedCount, typeName);
     // Zero-dim accessors do not provide get_range() and get_offset()
@@ -303,11 +295,10 @@ class check_buffer_accessor_api_methods {
    * @param accessOffset The offset of the accessor
    * @param buffer SYCL buffer used for constructing the accessor
    */
-  void check_all_methods(util::logger &log, sycl::queue &queue,
-                         const sycl_range_t<dims> &accessRange,
-                         const sycl_id_t<dims> &accessOffset,
-                         buffer_t<T, dims> &buffer,
-                         const size_t accessedSize,
+  void check_all_methods(util::logger& log, sycl::queue& queue,
+                         const sycl_range_t<dims>& accessRange,
+                         const sycl_id_t<dims>& accessOffset,
+                         buffer_t<T, dims>& buffer, const size_t accessedSize,
                          const size_t accessedCount,
                          const std::string& typeName,
                          acc_type_tag::generic) const {
@@ -315,13 +306,13 @@ class check_buffer_accessor_api_methods {
                   "Unexpected placeholder");
     auto make_accessor = [&](sycl::handler& cgh) -> acc_t {
       return make_accessor_generic<dims, mode, target, placeholder>(
-            buffer, &accessRange, &accessOffset, &cgh);
+          buffer, &accessRange, &accessOffset, &cgh);
     };
 
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto acc = make_accessor(cgh);
       check_methods(log, accessRange, accessOffset, acc, accessedSize,
-          accessedCount, typeName, is_zero_dim<dims>{});
+                    accessedCount, typeName, is_zero_dim<dims>{});
       cgh.single_task<dummy_functor<kernelName>>(dummy_functor<kernelName>{});
     });
     // Pointer verification requires scope out of command group
@@ -336,11 +327,10 @@ class check_buffer_accessor_api_methods {
    * @param accessOffset The offset of the accessor
    * @param buffer SYCL buffer used for constructing the accessor
    */
-  void check_all_methods(util::logger &log, sycl::queue &queue,
-                         const sycl_range_t<dims> &accessRange,
-                         const sycl_id_t<dims> &accessOffset,
-                         buffer_t<T, dims> &buffer,
-                         const size_t accessedSize,
+  void check_all_methods(util::logger& log, sycl::queue& queue,
+                         const sycl_range_t<dims>& accessRange,
+                         const sycl_id_t<dims>& accessOffset,
+                         buffer_t<T, dims>& buffer, const size_t accessedSize,
                          const size_t accessedCount,
                          const std::string& typeName,
                          acc_type_tag::placeholder) const {
@@ -349,9 +339,9 @@ class check_buffer_accessor_api_methods {
     auto acc = make_accessor_generic<dims, mode, target, placeholder>(
         buffer, &accessRange, &accessOffset, nullptr);
 
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       check_methods(log, accessRange, accessOffset, acc, accessedSize,
-          accessedCount, typeName, is_zero_dim<dims>{});
+                    accessedCount, typeName, is_zero_dim<dims>{});
       if (accessedSize != 0) {
         cgh.require(acc);
         cgh.single_task<kernelName>(dummy_functor<kernelName>{});
@@ -375,28 +365,25 @@ class check_buffer_accessor_api_methods {
    * @param accessOffset The offset of the accessor
    * @param buffer SYCL buffer used for constructing the accessor
    */
-  void check_all_methods(util::logger &log, sycl::queue & /*queue*/,
-                         const sycl_range_t<dims> &accessRange,
-                         const sycl_id_t<dims> &accessOffset,
-                         buffer_t<T, dims> &buffer, const size_t accessedSize,
-                         size_t accessedCount,
-                         const std::string& typeName,
+  void check_all_methods(util::logger& log, sycl::queue& /*queue*/,
+                         const sycl_range_t<dims>& accessRange,
+                         const sycl_id_t<dims>& accessOffset,
+                         buffer_t<T, dims>& buffer, const size_t accessedSize,
+                         size_t accessedCount, const std::string& typeName,
                          acc_type_tag::host) const {
     auto acc = make_accessor_generic<dims, mode, target, placeholder>(
         buffer, &accessRange, &accessOffset, nullptr);
 
-    check_methods(log, accessRange, accessOffset, acc,accessedSize,
-        accessedCount, typeName, is_zero_dim<dims>{});
+    check_methods(log, accessRange, accessOffset, acc, accessedSize,
+                  accessedCount, typeName, is_zero_dim<dims>{});
 
     // Pointer verification differs for host and device accessors
     check_get_pointer(log, typeName, accessOffset, acc);
   }
 };
 
-template <typename T, typename kernelName, int dims,
-          sycl::access_mode mode,
-          sycl::target target,
-          sycl::access::placeholder placeholder>
+template <typename T, typename kernelName, int dims, sycl::access_mode mode,
+          sycl::target target, sycl::access::placeholder placeholder>
 class check_buffer_accessor_api {
   using acc_t = sycl::accessor<T, dims, mode, target, placeholder>;
 
@@ -405,8 +392,8 @@ class check_buffer_accessor_api {
   size_t size;
 
   /** tests buffer accessors reads
-  */
-  void operator()(util::logger &log, sycl::queue &queue,
+   */
+  void operator()(util::logger& log, sycl::queue& queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::read_only) {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
@@ -431,16 +418,19 @@ class check_buffer_accessor_api {
     using error_code_t = buffer_accessor_api_subscripts_error_code;
     if (dims == 0) {
       if (errors.get()[error_code_t::zero_dim_access] != 0) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator dataT&() did not read from the correct index");
       }
     } else {
       if (errors.get()[error_code_t::multi_dim_read_id] != 0) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[id<N>] did not read from the correct index");
       }
       if (errors.get()[error_code_t::multi_dim_read_size_t] != 0) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[size_t][size_t][size_t] did not read from the correct "
             "index");
       }
@@ -459,34 +449,32 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_read_only(sycl::queue &queue,
-                                     buffer_t<T, dims> &bufIdSyntax,
-                                     buffer_t<T, dims> &bufMultiDimSyntax,
-                                     error_buffer_t &errorBuffer,
+  void check_command_group_read_only(sycl::queue& queue,
+                                     buffer_t<T, dims>& bufIdSyntax,
+                                     buffer_t<T, dims>& bufMultiDimSyntax,
+                                     error_buffer_t& errorBuffer,
                                      sycl_range_t<dims> range,
                                      acc_type_tag::generic) {
     static_assert(placeholder == sycl::access::placeholder::false_t,
                   "Unexpected placeholder");
-    queue.submit([&](sycl::handler &handler) {
-      auto accIdSyntax =
-          make_accessor<T, dims, mode, target, placeholder>(bufIdSyntax,
-                                                            handler);
+    queue.submit([&](sycl::handler& handler) {
+      auto accIdSyntax = make_accessor<T, dims, mode, target, placeholder>(
+          bufIdSyntax, handler);
       auto accMultiDimSyntax =
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
-      static constexpr auto errorTarget =
-          sycl::target::device;
+      static constexpr auto errorTarget = sycl::target::device;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
 
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
 
       handler.parallel_for<kernel_name>(
           range,
-          buffer_accessor_api_r<T, dims, mode, target, errorTarget, placeholder>(
+          buffer_accessor_api_r<T, dims, mode, target, errorTarget,
+                                placeholder>(
               size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
     });
   }
@@ -500,10 +488,10 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_read_only(sycl::queue & /*queue*/,
-                                     buffer_t<T, dims> &bufIdSyntax,
-                                     buffer_t<T, dims> &bufMultiDimSyntax,
-                                     error_buffer_t &errorBuffer,
+  void check_command_group_read_only(sycl::queue& /*queue*/,
+                                     buffer_t<T, dims>& bufIdSyntax,
+                                     buffer_t<T, dims>& bufMultiDimSyntax,
+                                     error_buffer_t& errorBuffer,
                                      sycl_range_t<dims> range,
                                      acc_type_tag::host) {
     static_assert(placeholder == sycl::access::placeholder::false_t,
@@ -519,7 +507,7 @@ class check_buffer_accessor_api {
             errorBuffer);
 
     /** check buffer accessor subscript operators for reads
-    */
+     */
     auto idList = create_id_list<data_dim<dims>::value>(range);
     for (auto id : idList) {
       buffer_accessor_api_r<T, dims, mode, target, errorTarget, placeholder>(
@@ -538,27 +526,25 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_read_only(sycl::queue &queue,
-                                     buffer_t<T, dims> &bufIdSyntax,
-                                     buffer_t<T, dims> &bufMultiDimSyntax,
-                                     error_buffer_t &errorBuffer,
+  void check_command_group_read_only(sycl::queue& queue,
+                                     buffer_t<T, dims>& bufIdSyntax,
+                                     buffer_t<T, dims>& bufMultiDimSyntax,
+                                     error_buffer_t& errorBuffer,
                                      sycl_range_t<dims> range,
                                      acc_type_tag::placeholder) {
     static_assert(placeholder == sycl::access::placeholder::true_t,
                   "Unexpected placeholder");
-    auto a1 =
+    auto a1 = sycl::accessor<T, dims, mode, target,
+                             sycl::access::placeholder::true_t>(bufIdSyntax);
+    auto a2 =
         sycl::accessor<T, dims, mode, target,
-                           sycl::access::placeholder::true_t>(bufIdSyntax);
-    auto a2 = sycl::accessor<T, dims, mode, target,
-                                 sycl::access::placeholder::true_t>(
-        bufMultiDimSyntax);
+                       sycl::access::placeholder::true_t>(bufMultiDimSyntax);
 
-    queue.submit([&](sycl::handler &h) {
+    queue.submit([&](sycl::handler& h) {
       h.require(a1);
       h.require(a2);
 
-      static constexpr auto errorTarget =
-          sycl::target::device;
+      static constexpr auto errorTarget = sycl::target::device;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -569,9 +555,8 @@ class check_buffer_accessor_api {
       auto reader = buffer_accessor_api_r<T, dims, mode, target, errorTarget,
                                           placeholder>{accSize, a1, a2,
                                                        errorAccessor, range};
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
 
       h.parallel_for<kernel_name>(range, reader);
     });
@@ -579,8 +564,8 @@ class check_buffer_accessor_api {
 
  public:
   /** tests buffer accessors writes
-  */
-  void operator()(util::logger &log, sycl::queue &queue,
+   */
+  void operator()(util::logger& log, sycl::queue& queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::write_only) {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
@@ -604,7 +589,8 @@ class check_buffer_accessor_api {
       const auto expected =
           buffer_accessor_expected_value<T, dims>::expected_write();
       if (!check_elems_equal(dataIdSyntax.get()[0], expected)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator dataT&() did not write to the correct index");
       }
     } else {
@@ -612,12 +598,14 @@ class check_buffer_accessor_api {
       const auto offset = buffer_accessor_expected_value<T, dims>::write_offset;
 
       if (!check_linear_index(log, dataIdSyntax.get(), count, mul, offset)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[id<N>] did not assign to the correct index");
       }
       if (!check_linear_index(log, dataMultiDimSyntax.get(), count, mul,
                               offset)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[size_t][size_t][size_t] did not assign to the correct "
             "index");
       }
@@ -635,23 +623,22 @@ class check_buffer_accessor_api {
    *        accessor by using the multidimensional subscript operators
    * @param range The range of the data buffers
    */
-  void check_command_group_writes(sycl::queue &queue,
-                                  buffer_t<T, dims> &bufIdSyntax,
-                                  buffer_t<T, dims> &bufMultiDimSyntax,
+  void check_command_group_writes(sycl::queue& queue,
+                                  buffer_t<T, dims>& bufIdSyntax,
+                                  buffer_t<T, dims>& bufMultiDimSyntax,
                                   sycl_range_t<dims> range,
                                   acc_type_tag::generic) {
-    queue.submit([&](sycl::handler &handler) {
+    queue.submit([&](sycl::handler& handler) {
       auto accIdSyntax = make_accessor<T, dims, mode, target, placeholder>(
           bufIdSyntax, handler);
       auto accMultiDimSyntax =
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
 
       /** check buffer accessor subscript operators for writes
-      */
+       */
       handler.parallel_for<kernel_name>(
           range, buffer_accessor_api_w<T, dims, mode, target, placeholder>(
                      size, accIdSyntax, accMultiDimSyntax, range));
@@ -666,9 +653,9 @@ class check_buffer_accessor_api {
    *        accessor by using the multidimensional subscript operators
    * @param range The range of the data buffers
    */
-  void check_command_group_writes(sycl::queue & /*queue*/,
-                                  buffer_t<T, dims> &bufIdSyntax,
-                                  buffer_t<T, dims> &bufMultiDimSyntax,
+  void check_command_group_writes(sycl::queue& /*queue*/,
+                                  buffer_t<T, dims>& bufIdSyntax,
+                                  buffer_t<T, dims>& bufMultiDimSyntax,
                                   sycl_range_t<dims> range,
                                   acc_type_tag::host) {
     auto accIdSyntax =
@@ -677,7 +664,7 @@ class check_buffer_accessor_api {
         make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax);
 
     /** check buffer accessor subscript operators for writes
-    */
+     */
     auto idList = create_id_list<data_dim<dims>::value>(range);
     for (auto id : idList) {
       buffer_accessor_api_w<T, dims, mode, target, placeholder>(
@@ -694,27 +681,24 @@ class check_buffer_accessor_api {
    *        accessor by using the multidimensional subscript operators
    * @param range The range of the data buffers
    */
-  void check_command_group_writes(sycl::queue &queue,
-                                  buffer_t<T, dims> &bufIdSyntax,
-                                  buffer_t<T, dims> &bufMultiDimSyntax,
+  void check_command_group_writes(sycl::queue& queue,
+                                  buffer_t<T, dims>& bufIdSyntax,
+                                  buffer_t<T, dims>& bufMultiDimSyntax,
                                   sycl_range_t<dims> range,
                                   acc_type_tag::placeholder) {
-    auto a1 =
+    auto a1 = sycl::accessor<T, dims, mode, target,
+                             sycl::access::placeholder::true_t>(bufIdSyntax);
+    auto a2 =
         sycl::accessor<T, dims, mode, target,
-                           sycl::access::placeholder::true_t>(bufIdSyntax);
-    auto a2 = sycl::accessor<T, dims, mode, target,
-                                 sycl::access::placeholder::true_t>(
-        bufMultiDimSyntax);
+                       sycl::access::placeholder::true_t>(bufMultiDimSyntax);
 
-    queue.submit([&](sycl::handler &h) {
+    queue.submit([&](sycl::handler& h) {
       h.require(a1);
       h.require(a2);
-      auto writer =
-          buffer_accessor_api_w<T, dims, mode, target, placeholder>{
-              size, a1, a2, range};
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      auto writer = buffer_accessor_api_w<T, dims, mode, target, placeholder>{
+          size, a1, a2, range};
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
 
       h.parallel_for<kernel_name>(range, writer);
     });
@@ -722,8 +706,8 @@ class check_buffer_accessor_api {
 
  public:
   /** tests buffer accessors reads and writes
-  */
-  void operator()(util::logger &log, sycl::queue &queue,
+   */
+  void operator()(util::logger& log, sycl::queue& queue,
                   sycl_range_t<dims> range, const std::string& typeName,
                   acc_mode_tag::generic) {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
@@ -756,23 +740,27 @@ class check_buffer_accessor_api {
     if (dims == 0) {
       if ((mode != sycl::access_mode::discard_read_write) &&
           (errors.get()[error_code_t::zero_dim_access] != 0)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator dataT&() did not read from the correct index");
       }
       const auto expected =
           buffer_accessor_expected_value<T, dims>::expected_write();
       if (!check_elems_equal(dataIdSyntax.get()[0], expected)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator dataT&() did not write to the correct index");
       }
     } else {
       if (mode != sycl::access_mode::discard_read_write) {
         if (errors.get()[error_code_t::multi_dim_read_id] != 0) {
-          fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
-            "operator[id<N>] did not read from the correct index");
+          fail_for_accessor<T, dims, mode, target, placeholder>(
+              log, typeName,
+              "operator[id<N>] did not read from the correct index");
         }
         if (errors.get()[error_code_t::multi_dim_read_size_t] != 0) {
-          fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+          fail_for_accessor<T, dims, mode, target, placeholder>(
+              log, typeName,
               "operator[size_t][size_t][size_t] did not read from the "
               "correct index");
         }
@@ -781,12 +769,14 @@ class check_buffer_accessor_api {
       const auto offset = buffer_accessor_expected_value<T, dims>::write_offset;
 
       if (!check_linear_index(log, dataIdSyntax.get(), count, mul, offset)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[id<N>] did not assign to the correct index");
       }
       if (!check_linear_index(log, dataMultiDimSyntax.get(), count, mul,
                               offset)) {
-        fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+        fail_for_accessor<T, dims, mode, target, placeholder>(
+            log, typeName,
             "operator[size_t][size_t][size_t] did not write to the correct "
             "index");
       }
@@ -797,7 +787,8 @@ class check_buffer_accessor_api {
               "operator[id<N>] did not write to the correct index" + typeName);
         }
         if (errors.get()[error_code_t::multi_dim_write_size_t] != 0) {
-          fail_for_accessor<T, dims, mode, target, placeholder>(log, typeName,
+          fail_for_accessor<T, dims, mode, target, placeholder>(
+              log, typeName,
               "operator[size_t][size_t][size_t] did not write to the correct "
               "index");
         }
@@ -818,35 +809,33 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_reads_writes(sycl::queue &queue,
-                                        buffer_t<T, dims> &bufIdSyntax,
-                                        buffer_t<T, dims> &bufMultiDimSyntax,
-                                        error_buffer_t &errorBuffer,
+  void check_command_group_reads_writes(sycl::queue& queue,
+                                        buffer_t<T, dims>& bufIdSyntax,
+                                        buffer_t<T, dims>& bufMultiDimSyntax,
+                                        error_buffer_t& errorBuffer,
                                         sycl_range_t<dims> range,
                                         acc_type_tag::generic) {
     static_assert(placeholder == sycl::access::placeholder::false_t,
                   "Unexpected placeholder");
-    queue.submit([&](sycl::handler &handler) {
-      auto accIdSyntax =
-          make_accessor<T, dims, mode, target, placeholder>(bufIdSyntax,
-                                                            handler);
+    queue.submit([&](sycl::handler& handler) {
+      auto accIdSyntax = make_accessor<T, dims, mode, target, placeholder>(
+          bufIdSyntax, handler);
       auto accMultiDimSyntax =
           make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax,
                                                             handler);
-      static constexpr auto errorTarget =
-          sycl::target::device;
+      static constexpr auto errorTarget = sycl::target::device;
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
               errorBuffer, handler);
 
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
       /** check buffer accessor subscript operators for reads and writes
-      */
+       */
       handler.parallel_for<kernel_name>(
           range,
-          buffer_accessor_api_rw<T, dims, mode, target, errorTarget, placeholder>(
+          buffer_accessor_api_rw<T, dims, mode, target, errorTarget,
+                                 placeholder>(
               size, accIdSyntax, accMultiDimSyntax, errorAccessor, range));
     });
   }
@@ -862,10 +851,10 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_reads_writes(sycl::queue & /*queue*/,
-                                        buffer_t<T, dims> &bufIdSyntax,
-                                        buffer_t<T, dims> &bufMultiDimSyntax,
-                                        error_buffer_t &errorBuffer,
+  void check_command_group_reads_writes(sycl::queue& /*queue*/,
+                                        buffer_t<T, dims>& bufIdSyntax,
+                                        buffer_t<T, dims>& bufMultiDimSyntax,
+                                        error_buffer_t& errorBuffer,
                                         sycl_range_t<dims> range,
                                         acc_type_tag::host) {
     static_assert(placeholder == sycl::access::placeholder::false_t,
@@ -874,14 +863,13 @@ class check_buffer_accessor_api {
         make_accessor<T, dims, mode, target, placeholder>(bufIdSyntax);
     auto accMultiDimSyntax =
         make_accessor<T, dims, mode, target, placeholder>(bufMultiDimSyntax);
-    static constexpr auto errorTarget =
-          sycl::target::host_buffer;
+    static constexpr auto errorTarget = sycl::target::host_buffer;
     auto errorAccessor =
         make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
             errorBuffer);
 
     /** check buffer accessor subscript operators for reads and writes
-    */
+     */
     auto idList = create_id_list<data_dim<dims>::value>(range);
     for (auto id : idList) {
       buffer_accessor_api_rw<T, dims, mode, target, errorTarget, placeholder>(
@@ -900,26 +888,24 @@ class check_buffer_accessor_api {
    * @param errorBuffer Buffer where errors will be stored
    * @param range The range of the data buffers
    */
-  void check_command_group_reads_writes(sycl::queue &queue,
-                                        buffer_t<T, dims> &bufIdSyntax,
-                                        buffer_t<T, dims> &bufMultiDimSyntax,
-                                        error_buffer_t &errorBuffer,
+  void check_command_group_reads_writes(sycl::queue& queue,
+                                        buffer_t<T, dims>& bufIdSyntax,
+                                        buffer_t<T, dims>& bufMultiDimSyntax,
+                                        error_buffer_t& errorBuffer,
                                         sycl_range_t<dims> range,
                                         acc_type_tag::placeholder) {
     static_assert(placeholder == sycl::access::placeholder::true_t,
                   "Unexpected placeholder");
-    auto a1 =
+    auto a1 = sycl::accessor<T, dims, mode, target,
+                             sycl::access::placeholder::true_t>(bufIdSyntax);
+    auto a2 =
         sycl::accessor<T, dims, mode, target,
-                           sycl::access::placeholder::true_t>(bufIdSyntax);
-    auto a2 = sycl::accessor<T, dims, mode, target,
-                                 sycl::access::placeholder::true_t>(
-        bufMultiDimSyntax);
+                       sycl::access::placeholder::true_t>(bufMultiDimSyntax);
 
-    queue.submit([&](sycl::handler &h) {
+    queue.submit([&](sycl::handler& h) {
       h.require(a1);
       h.require(a2);
-      static constexpr auto errorTarget =
-          sycl::target::device;
+      static constexpr auto errorTarget = sycl::target::device;
 
       auto errorAccessor =
           make_accessor<int, 1, errorMode, errorTarget, acc_placeholder::error>(
@@ -931,9 +917,8 @@ class check_buffer_accessor_api {
                                                   errorTarget, placeholder>{
           accSize, a1, a2, errorAccessor, range};
 
-      using kernel_name =
-          buffer_accessor_api_kernel<
-              kernelName, dims, mode, target, placeholder>;
+      using kernel_name = buffer_accessor_api_kernel<kernelName, dims, mode,
+                                                     target, placeholder>;
 
       h.parallel_for<kernel_name>(range, reader_writer);
     });
@@ -945,15 +930,12 @@ class check_buffer_accessor_api {
 ////////////////////////////////////////////////////////////////////////////////
 
 /** tests buffer accessors with different modes
-*/
-template <typename T, typename kernelName, int dims,
-          sycl::access_mode mode,
-          sycl::target target,
-          sycl::access::placeholder placeholder>
-void check_buffer_accessor_api_mode(util::logger &log,
-                                    const std::string& typeName,
-                                    size_t count, size_t size,
-                                    sycl::queue &queue,
+ */
+template <typename T, typename kernelName, int dims, sycl::access_mode mode,
+          sycl::target target, sycl::access::placeholder placeholder>
+void check_buffer_accessor_api_mode(util::logger& log,
+                                    const std::string& typeName, size_t count,
+                                    size_t size, sycl::queue& queue,
                                     sycl_range_t<dims> range) {
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
   log_accessor<T, dims, mode, target, placeholder>("", typeName, log);
@@ -961,8 +943,7 @@ void check_buffer_accessor_api_mode(util::logger &log,
 
   /** check buffer accessor members
    */
-  check_accessor_members<T, dims, mode, target, placeholder>(
-      log, typeName);
+  check_accessor_members<T, dims, mode, target, placeholder>(log, typeName);
 
   /** check buffer accessor methods
    */
@@ -976,8 +957,8 @@ void check_buffer_accessor_api_mode(util::logger &log,
   using verifier_api =
       check_buffer_accessor_api<T, kernelName, dims, mode, target, placeholder>;
 
-  verifier_api{count, size}(
-      log, queue, range, typeName, acc_mode_tag::get<mode>());
+  verifier_api{count, size}(log, queue, range, typeName,
+                            acc_mode_tag::get<mode>());
 }
 
 /**
@@ -996,56 +977,46 @@ using atomic64_path_t = sycl_cts::util::extensions::tag::atomic64;
  */
 template <>
 struct check_buffer_accessor_api_target<generic_path_t> {
-
   /**
    *  @brief Check global buffer accessor api for different modes except atomic
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
-            sycl::access::placeholder placeholder, typename ... argsT>
-  static void run(acc_target_tag::generic, argsT&& ... args) {
-
+  template <typename T, typename kernelName, int dims, sycl::target target,
+            sycl::access::placeholder placeholder, typename... argsT>
+  static void run(acc_target_tag::generic, argsT&&... args) {
     {
       constexpr auto mode = sycl::access_mode::read;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::discard_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::discard_read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
   }
 
   /**
    *  @brief Check global buffer accessor api for all modes except atomic64 ones
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
+  template <typename T, typename kernelName, int dims, sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
-            typename ... argsT>
-  static void run(acc_target_tag::atomic<accTagT>, argsT&& ... args) {
-
+            typename... argsT>
+  static void run(acc_target_tag::atomic<accTagT>, argsT&&... args) {
     // Run all except atomic checks
     run<T, kernelName, dims, target, placeholder>(accTagT{},
                                                   std::forward<argsT>(args)...);
@@ -1054,8 +1025,7 @@ struct check_buffer_accessor_api_target<generic_path_t> {
     {
       constexpr auto mode = sycl::access_mode::atomic;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
   }
 
@@ -1063,12 +1033,11 @@ struct check_buffer_accessor_api_target<generic_path_t> {
    *  @brief Switch off global buffer accessor api check of atomic64 modes for
    *         generic code path
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
+  template <typename T, typename kernelName, int dims, sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
-            typename ... argsT>
-  static void run(acc_target_tag::atomic64<accTagT>,
-                  util::logger &log, const std::string& typeName, argsT&& ...) {
+            typename... argsT>
+  static void run(acc_target_tag::atomic64<accTagT>, util::logger& log,
+                  const std::string& typeName, argsT&&...) {
     // Do not run atomic64 checks
 #if SYCL_CTS_ENABLE_VERBOSE_LOG
     constexpr auto mode = sycl::access_mode::atomic;
@@ -1083,11 +1052,9 @@ struct check_buffer_accessor_api_target<generic_path_t> {
   /**
    *  @brief Check constant buffer accessor api for read
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
-            sycl::access::placeholder placeholder, typename ... argsT>
-  static void run(acc_target_tag::constant, argsT&& ... args) {
-
+  template <typename T, typename kernelName, int dims, sycl::target target,
+            sycl::access::placeholder placeholder, typename... argsT>
+  static void run(acc_target_tag::constant, argsT&&... args) {
     check_buffer_accessor_api_mode<T, kernelName, dims, sycl::access_mode::read,
                                    target, placeholder>(
         std::forward<argsT>(args)...);
@@ -1096,40 +1063,33 @@ struct check_buffer_accessor_api_target<generic_path_t> {
   /**
    *  @brief Check host buffer accessor api for different modes
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
-            sycl::access::placeholder placeholder, typename ... argsT>
-  static void run(acc_target_tag::host, argsT&& ... args) {
-
+  template <typename T, typename kernelName, int dims, sycl::target target,
+            sycl::access::placeholder placeholder, typename... argsT>
+  static void run(acc_target_tag::host, argsT&&... args) {
     {
       constexpr auto mode = sycl::access_mode::read;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::discard_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
     {
       constexpr auto mode = sycl::access_mode::discard_read_write;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
   }
 };
@@ -1143,28 +1103,24 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
   /**
    *  @brief Switch off accessor api check of any modes except the atomic64 ones
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
-            sycl::access::placeholder placeholder,
-            typename ... argsT>
-  static void run(acc_target_tag::generic, argsT&& ...) {
+  template <typename T, typename kernelName, int dims, sycl::target target,
+            sycl::access::placeholder placeholder, typename... argsT>
+  static void run(acc_target_tag::generic, argsT&&...) {
     // Run atomic64 checks only
   }
 
   /**
    *  @brief Run accessor verification for atomic64 modes only
    */
-  template <typename T, typename kernelName, int dims,
-            sycl::target target,
+  template <typename T, typename kernelName, int dims, sycl::target target,
             sycl::access::placeholder placeholder, typename accTagT,
-            typename ... argsT>
-  static void run(acc_target_tag::atomic64<accTagT>, argsT&& ... args) {
+            typename... argsT>
+  static void run(acc_target_tag::atomic64<accTagT>, argsT&&... args) {
     // Run atomic64 checks only
     {
       constexpr auto mode = sycl::access_mode::atomic;
       check_buffer_accessor_api_mode<T, kernelName, dims, mode, target,
-                                     placeholder>(
-          std::forward<argsT>(args)...);
+                                     placeholder>(std::forward<argsT>(args)...);
     }
   }
 };
@@ -1172,13 +1128,9 @@ struct check_buffer_accessor_api_target<atomic64_path_t> {
 /** @brief Tests buffer accessors with different targets for all types
  *         which do not require atomic64 extension
  */
-template <typename T, typename kernelName, int dims,
-          sycl::target target,
-          sycl::access::placeholder placeholder,
-          typename ... argsT>
-void check_buffer_accessor_api_target_wrapper(generic_path_t,
-                                              argsT&& ... args) {
-
+template <typename T, typename kernelName, int dims, sycl::target target,
+          sycl::access::placeholder placeholder, typename... argsT>
+void check_buffer_accessor_api_target_wrapper(generic_path_t, argsT&&... args) {
   using verifier = check_buffer_accessor_api_target<generic_path_t>;
 
   verifier::run<T, kernelName, dims, target, placeholder>(
@@ -1187,13 +1139,10 @@ void check_buffer_accessor_api_target_wrapper(generic_path_t,
 /** @brief Tests buffer accessors with different targets for all types
  *         which do require atomic64 extension
  */
-template <typename T, typename kernelName, int dims,
-          sycl::target target,
-          sycl::access::placeholder placeholder,
-          typename ... argsT>
+template <typename T, typename kernelName, int dims, sycl::target target,
+          sycl::access::placeholder placeholder, typename... argsT>
 void check_buffer_accessor_api_target_wrapper(atomic64_path_t,
-                                              argsT&& ... args) {
-
+                                              argsT&&... args) {
   using verifier = check_buffer_accessor_api_target<atomic64_path_t>;
 
   verifier::run<T, kernelName, dims, target, placeholder>(
@@ -1201,74 +1150,72 @@ void check_buffer_accessor_api_target_wrapper(atomic64_path_t,
 }
 
 /** tests buffer accessors with different placeholder values
-*/
-template <typename T, typename kernelName, int dims,
-          sycl::target target,
-          typename ... argsT>
-void check_buffer_accessor_api_placeholder(argsT&& ... args) {
+ */
+template <typename T, typename kernelName, int dims, sycl::target target,
+          typename... argsT>
+void check_buffer_accessor_api_placeholder(argsT&&... args) {
   check_buffer_accessor_api_target_wrapper<T, kernelName, dims, target,
-                                   sycl::access::placeholder::false_t>(
+                                           sycl::access::placeholder::false_t>(
       std::forward<argsT>(args)...);
 
   check_buffer_accessor_api_target_wrapper<T, kernelName, dims, target,
-                                   sycl::access::placeholder::true_t>(
+                                           sycl::access::placeholder::true_t>(
       std::forward<argsT>(args)...);
 }
 
 /** tests buffer accessors with different dimensions
-*/
+ */
 template <typename T, typename kernelName, int dims, typename... argsT>
 void check_buffer_accessor_api_dim(argsT&&... args) {
   /** check buffer accessor api for constant_buffer
-  */
-  check_buffer_accessor_api_placeholder<
-      T, kernelName, dims, sycl::target::constant_buffer>(
-          std::forward<argsT>(args)...);
+   */
+  check_buffer_accessor_api_placeholder<T, kernelName, dims,
+                                        sycl::target::constant_buffer>(
+      std::forward<argsT>(args)...);
 
   /** check buffer accessor api for host_buffer
-  */
+   */
   check_buffer_accessor_api_target_wrapper<T, kernelName, dims,
-                                   sycl::target::host_buffer,
-                                   sycl::access::placeholder::false_t>(
+                                           sycl::target::host_buffer,
+                                           sycl::access::placeholder::false_t>(
       std::forward<argsT>(args)...);
 }
 
 /** tests buffer accessors with different types
-*/
+ */
 template <typename T, typename extensionTagT, typename kernelName>
 class check_buffer_accessor_api_type {
   static constexpr auto count = 8;
   static constexpr auto size = count * sizeof(T);
 
  public:
-  void operator()(util::logger &log, sycl::queue &queue,
+  void operator()(util::logger& log, sycl::queue& queue,
                   const std::string& typeName) {
-
     static const extensionTagT extensionTag;
 
     /** check buffer accessor api for 0 dimension
      */
     sycl::range<1> range0d(count);
-    check_buffer_accessor_api_dim<T, kernelName, 0>(extensionTag, log, typeName,
-                                                    count, size, queue, range0d);
+    check_buffer_accessor_api_dim<T, kernelName, 0>(
+        extensionTag, log, typeName, count, size, queue, range0d);
 
     /** check buffer accessor api for 1 dimension
      */
     sycl::range<1> range1d(range0d);
-    check_buffer_accessor_api_dim<T, kernelName, 1>(extensionTag, log, typeName,
-                                                    count, size, queue, range1d);
+    check_buffer_accessor_api_dim<T, kernelName, 1>(
+        extensionTag, log, typeName, count, size, queue, range1d);
 
     /** check buffer accessor api for 2 dimension
      */
     sycl::range<2> range2d(count / 4, 4);
-    check_buffer_accessor_api_dim<T, kernelName, 2>(extensionTag, log, typeName,
-                                                    count, size, queue, range2d);
+    check_buffer_accessor_api_dim<T, kernelName, 2>(
+        extensionTag, log, typeName, count, size, queue, range2d);
 
     /** check buffer accessor api for 3 dimension
      */
     sycl::range<3> range3d(count / 8, 4, 2);
-    check_buffer_accessor_api_dim<T, kernelName, 3>(extensionTag, log, typeName,
-                                                    count, size, queue, range3d);
+    check_buffer_accessor_api_dim<T, kernelName, 3>(
+        extensionTag, log, typeName, count, size, queue, range3d);
   }
 };
 }  // namespace
