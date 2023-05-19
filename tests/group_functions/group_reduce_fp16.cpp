@@ -160,7 +160,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    // FIXME:ComputeCpp cannot handle cases of different types
+    // FIXME: ComputeCpp cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     if constexpr (std::is_same_v<T, U>)
 #endif
