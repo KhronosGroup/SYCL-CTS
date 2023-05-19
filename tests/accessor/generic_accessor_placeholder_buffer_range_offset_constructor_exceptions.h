@@ -51,7 +51,7 @@ void test_placeholder_buffer_range_offset_accessors_exception(
                                                                   offset);
     };
     check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
-        r, get_acc_functor);
+        get_acc_functor);
   }
 }
 

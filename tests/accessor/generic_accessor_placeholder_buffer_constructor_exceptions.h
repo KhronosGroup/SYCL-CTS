@@ -48,8 +48,8 @@ void test_placeholder_buffer_accessors_exception(
     auto get_acc_functor = [](sycl::buffer<DataT, buf_dims>& data_buf) {
       return sycl::accessor<DataT, Dimension, AccessMode, Target>(data_buf);
     };
-    check_placeholder_accessor_exception<DataT, buf_dims, AccessMode, Target>(
-        r, get_acc_functor);
+    check_placeholder_accessor_exception<DataT, Dimension, AccessMode, Target>(
+        get_acc_functor);
   }
 }
 
