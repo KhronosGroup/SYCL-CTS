@@ -2,6 +2,20 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides common code for interaction with lambdas
 //
 *******************************************************************************/
@@ -77,14 +91,81 @@ constexpr bool without_combine{false};
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_range(AccessorT accessor) {
-  if constexpr (UseCombineFlagT) {
-    return
-        [=](sycl::id<1> idx, auto &reducer) { reducer.combine(accessor[idx]); };
-  } else {
-    return [=](sycl::id<1> idx, auto &reducer) {
+  return [=](sycl::id<1> idx, auto& reducer) {
+    if constexpr (UseCombineFlagT)
+      reducer.combine(accessor[idx]);
+    else
       apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
-    };
-  }
+  };
+}
+
+/** @brief Construct lambda for interacting each even work item with reducer
+ * while sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
+ *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_even_item(AccessorT accessor) {
+  return [=](sycl::id<1> idx, auto& reducer) {
+    size_t num = idx;
+    if (num & 1) {
+      if constexpr (UseCombineFlagT)
+        reducer.combine(accessor[idx]);
+      else
+        apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
+    }
+  };
+}
+
+/** @brief Construct lambda for interacting no one work item with reducer while
+ *         sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
+ *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_no_one_item(AccessorT accessor) {
+  return [=](sycl::id<1> idx, auto& reducer) {};
+}
+
+/** @brief Construct lambda for interacting each work item twice with reducer
+ * while sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch between
+ *          calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_item_twice(AccessorT accessor) {
+  return [=](sycl::id<1> idx, auto& reducer) {
+    if constexpr (UseCombineFlagT) {
+      reducer.combine(accessor[idx]).combine(accessor[idx]);
+    } else {
+      apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
+      apply_chosen_functor<VariableT, FunctorT>(reducer, accessor[idx]);
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting with reducer while
@@ -102,16 +183,89 @@ auto get_lambda_with_range(AccessorT accessor) {
 template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
           typename AccessorT>
 auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
-  if constexpr (UseCombineFlagT) {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+    if constexpr (UseCombineFlagT)
       reducer.combine(accessor[nd_item.get_global_id()]);
-    };
-  } else {
-    return [=](sycl::nd_item<1> nd_item, auto &reducer) {
+    else
       apply_chosen_functor<VariableT, FunctorT>(
           reducer, accessor[nd_item.get_global_id()]);
-    };
-  }
+  };
+}
+
+/** @brief Construct lambda for interacting each even work item with reducer
+ * while sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_even_item(AccessorT accessor,
+                                        size_t number_elements = 0) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+    size_t num = nd_item.get_global_id();
+    if (num & 1) {
+      if constexpr (UseCombineFlagT)
+        reducer.combine(accessor[nd_item.get_global_id()]);
+      else
+        apply_chosen_functor<VariableT, FunctorT>(
+            reducer, accessor[nd_item.get_global_id()]);
+    }
+  };
+}
+
+/** @brief Construct lambda for interacting no one work item with reducer while
+ *         sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_no_one_item(AccessorT accessor,
+                                          size_t number_elements = 0) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {};
+}
+
+/** @brief Construct lambda for interacting each work item twice with reducer
+ * while sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_item_twice(AccessorT accessor,
+                                         size_t number_elements = 0) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+    if constexpr (UseCombineFlagT) {
+      reducer.combine(accessor[nd_item.get_global_id()])
+          .combine(accessor[nd_item.get_global_id()]);
+    } else {
+      apply_chosen_functor<VariableT, FunctorT>(
+          reducer, accessor[nd_item.get_global_id()]);
+      apply_chosen_functor<VariableT, FunctorT>(
+          reducer, accessor[nd_item.get_global_id()]);
+    }
+  };
 }
 
 /** @brief Construct lambda for interacting with reducer in
@@ -128,14 +282,44 @@ auto get_lambda_with_nd_range(AccessorT accessor, size_t number_elements = 0) {
  *  @retval Lambda with chosen operator
  */
 template <typename VariableT, typename RangeT, bool UseCombineFlagT,
-          typename FunctorT = void, typename AccessorT>
+          typename FunctorT = void, reduction_common::test_case_type TestCaseT,
+          typename AccessorT>
 auto get_lambda(AccessorT accessor) {
-  if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
-    return get_lambda_with_range<VariableT, FunctorT, UseCombineFlagT>(
-        accessor);
-  } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
-    return get_lambda_with_nd_range<VariableT, FunctorT, UseCombineFlagT>(
-        accessor);
+  if constexpr (TestCaseT == reduction_common::test_case_type::each_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range<VariableT, FunctorT, UseCombineFlagT>(
+          accessor);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range<VariableT, FunctorT, UseCombineFlagT>(
+          accessor);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::each_even_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_even_item<VariableT, FunctorT,
+                                             UseCombineFlagT>(accessor);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_even_item<VariableT, FunctorT,
+                                                UseCombineFlagT>(accessor);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::no_one_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_no_one_item<VariableT, FunctorT,
+                                               UseCombineFlagT>(accessor);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_no_one_item<VariableT, FunctorT,
+                                                  UseCombineFlagT>(accessor);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::each_work_item_twice) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_item_twice<VariableT, FunctorT,
+                                              UseCombineFlagT>(accessor);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_item_twice<VariableT, FunctorT,
+                                                 UseCombineFlagT>(accessor);
+    }
   }
 }
 
@@ -163,6 +347,93 @@ auto get_lambda_with_range_for_span(AccessorT accessor,
     };
   } else {
     return [=](sycl::id<1> idx, auto &reducer) {
+      apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
+                                                     number_elements);
+    };
+  }
+}
+
+/** @brief Construct lambda for interacting each even item with reducer while
+ *         sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_for_span_even_item(AccessorT accessor,
+                                              size_t number_elements) {
+  if constexpr (UseCombineFlagT) {
+    return [=](sycl::id<1> idx, auto& reducer) {
+      size_t num = idx;
+      if (num & 1) {
+        for (size_t i = 0; i < number_elements; i++) {
+          reducer[i].combine(accessor[idx]);
+        }
+      }
+    };
+  } else {
+    return [=](sycl::id<1> idx, auto& reducer) {
+      size_t num = idx;
+      if (num & 1) {
+        apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
+                                                       number_elements);
+      }
+    };
+  }
+}
+
+/** @brief Construct lambda for interacting no one item with reducer while
+ *         sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_for_span_no_one_item(AccessorT accessor,
+                                                size_t number_elements) {
+  return [=](sycl::id<1> idx, auto& reducer) {};
+}
+
+/** @brief Construct lambda for interacting each item twice with reducer while
+ *         sycl::handler.parallel_for uses sycl::range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_range_for_span_item_twice(AccessorT accessor,
+                                               size_t number_elements) {
+  if constexpr (UseCombineFlagT) {
+    return [=](sycl::id<1> idx, auto& reducer) {
+      for (size_t i = 0; i < number_elements; i++) {
+        reducer[i].combine(accessor[idx]).combine(accessor[idx]);
+      }
+    };
+  } else {
+    return [=](sycl::id<1> idx, auto& reducer) {
+      apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
+                                                     number_elements);
       apply_chosen_functor_span<VariableT, FunctorT>(reducer, accessor[idx],
                                                      number_elements);
     };
@@ -199,6 +470,95 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
   }
 }
 
+/** @brief Construct lambda for interacting each even item with reducer while
+ *         sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_for_span_even_item(AccessorT accessor,
+                                                 size_t number_elements) {
+  if constexpr (UseCombineFlagT) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+      size_t num = nd_item.get_global_id();
+      if (num & 1) {
+        for (size_t i = 0; i < number_elements; i++) {
+          reducer[i].combine(accessor[nd_item.get_global_id()]);
+        }
+      }
+    };
+  } else {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+      size_t num = nd_item.get_global_id();
+      if (num & 1) {
+        apply_chosen_functor_span<VariableT, FunctorT>(
+            reducer, accessor[nd_item.get_global_id()], number_elements);
+      }
+    };
+  }
+}
+
+/** @brief Construct lambda for interacting no one item with reducer while
+ *         sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_for_span_no_one_item(AccessorT accessor,
+                                                   size_t number_elements) {
+  return [=](sycl::nd_item<1> nd_item, auto& reducer) {};
+}
+
+/** @brief Construct lambda for interacting each item twice with reducer while
+ *         sycl::handler.parallel_for uses sycl::nd_range
+ *  @tparam VariableT Variable type from type coverage
+ *  @tparam FunctorT The type of the functor with which the test runs
+ *  @tparam UseCombineFlagT std::integral_constant type that lets switch
+ *          between calling .combine() function or operator +, *, ^=, etc.
+ *  @tparam AccessorT buffer accessor type
+ *  @param accessor Accessor to the buffer
+ *  @param number_elements Number elements in sycl::span, used only when
+ *         constructing reducer with span
+ *  @retval Lambda with chosen operator
+ */
+template <typename VariableT, typename FunctorT, bool UseCombineFlagT,
+          typename AccessorT>
+auto get_lambda_with_nd_range_for_span_item_twice(AccessorT accessor,
+                                                  size_t number_elements) {
+  if constexpr (UseCombineFlagT) {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+      for (size_t i = 0; i < number_elements; i++) {
+        reducer[i]
+            .combine(accessor[nd_item.get_global_id()])
+            .combine(accessor[nd_item.get_global_id()]);
+      }
+    };
+  } else {
+    return [=](sycl::nd_item<1> nd_item, auto& reducer) {
+      apply_chosen_functor_span<VariableT, FunctorT>(
+          reducer, accessor[nd_item.get_global_id()], number_elements);
+      apply_chosen_functor_span<VariableT, FunctorT>(
+          reducer, accessor[nd_item.get_global_id()], number_elements);
+    };
+  }
+}
+
 /** @brief Construct lambda for interacting with reducer in
  *         sycl::handler.parallel_for with using sycl::span
  *  @tparam VariableT Variable type from type coverage
@@ -213,15 +573,52 @@ auto get_lambda_with_nd_range_for_span(AccessorT accessor,
  *  @retval Lambda with chosen operator
  */
 template <typename VariableT, typename RangeT, bool UseCombineFlagT,
-          typename FunctorT = void, typename AccessorT>
+          typename FunctorT = void, reduction_common::test_case_type TestCaseT,
+          typename AccessorT>
 auto get_lambda_for_span(AccessorT accessor, size_t number_elements) {
-  if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
-    return get_lambda_with_range_for_span<VariableT, FunctorT, UseCombineFlagT>(
-        accessor, number_elements);
-  } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
-    return get_lambda_with_nd_range_for_span<VariableT, FunctorT,
-                                             UseCombineFlagT>(accessor,
-                                                              number_elements);
+  if constexpr (TestCaseT == reduction_common::test_case_type::each_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_for_span<VariableT, FunctorT,
+                                            UseCombineFlagT>(accessor,
+                                                             number_elements);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_for_span<VariableT, FunctorT,
+                                               UseCombineFlagT>(
+          accessor, number_elements);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::each_even_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_for_span_even_item<VariableT, FunctorT,
+                                                      UseCombineFlagT>(
+          accessor, number_elements);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_for_span_even_item<VariableT, FunctorT,
+                                                         UseCombineFlagT>(
+          accessor, number_elements);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::no_one_work_item) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_for_span_no_one_item<VariableT, FunctorT,
+                                                        UseCombineFlagT>(
+          accessor, number_elements);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_for_span_no_one_item<VariableT, FunctorT,
+                                                           UseCombineFlagT>(
+          accessor, number_elements);
+    }
+  } else if constexpr (TestCaseT ==
+                       reduction_common::test_case_type::each_work_item_twice) {
+    if constexpr (std::is_same_v<RangeT, sycl::range<1>>) {
+      return get_lambda_with_range_for_span_item_twice<VariableT, FunctorT,
+                                                       UseCombineFlagT>(
+          accessor, number_elements);
+    } else if constexpr (std::is_same_v<RangeT, sycl::nd_range<1>>) {
+      return get_lambda_with_nd_range_for_span_item_twice<VariableT, FunctorT,
+                                                          UseCombineFlagT>(
+          accessor, number_elements);
+    }
   }
 }
 

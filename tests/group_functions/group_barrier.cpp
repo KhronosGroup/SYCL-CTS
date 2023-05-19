@@ -28,7 +28,7 @@ class test_fence;
 
 TEMPLATE_TEST_CASE_SIG("Group barriers", "[group_func][dim]", ((int D), D), 1,
                        2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
 
   // FIXME: hipSYCL has not implemented
   //  atomic_fence_scope_capabilities query

@@ -11,6 +11,7 @@
 
 #include "../../util/kernel_names.h"
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 
 #include <array>
 #include <string>
@@ -155,7 +156,7 @@ class check_types {
         AddrSpace<address_space::local_space>().get_value(),
         AddrSpace<address_space::private_space>().get_value()};
 
-    auto q = util::get_cts_object::queue();
+    auto q = once_per_unit::get_queue();
 
     {
       auto r = sycl::range<1>(1);

@@ -59,7 +59,7 @@ class run_common_assign_tests {
   void operator()(const std::string &type_name,
                   const std::string &address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     sycl::range r(1);
     std::array<bool, 3> res;

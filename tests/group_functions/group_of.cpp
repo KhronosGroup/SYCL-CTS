@@ -25,7 +25,7 @@ using WideTypes = std::tuple<int32_t, uint32_t, int64_t, uint64_t, float>;
 
 TEMPLATE_LIST_TEST_CASE("Group and sub_group joint of bool functions",
                         "[group_func][type_list][dim]", WideTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, float>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -52,7 +52,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub_group joint of bool functions",
 TEMPLATE_LIST_TEST_CASE(
     "Group and sub_group of bool functions with predicate functions",
     "[group_func][type_list][dim]", WideTypes) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check type to only print warning once
   if constexpr (std::is_same_v<TestType, float>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -82,7 +82,7 @@ TEMPLATE_LIST_TEST_CASE(
 
 TEMPLATE_TEST_CASE_SIG("Group and sub_group of bool functions",
                        "[group_func][dim]", ((int D), D), 1, 2, 3) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // check dimension to only print warning once
   if constexpr (D == 1) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)

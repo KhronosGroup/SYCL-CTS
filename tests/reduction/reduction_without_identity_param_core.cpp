@@ -2,10 +2,25 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides tests for interaction reductions with scalar and bool variables
 //  types without identity param.
 //
 *******************************************************************************/
+
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
@@ -30,11 +45,13 @@ using namespace reduction_common;
 template <typename UsePropertyFlagT, typename RangeT>
 void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT::value>(
+                                    UsePropertyFlagT::value,
+                                    test_case_type::each_work_item>(
       sycl::logical_and<bool>(), range, queue, "bool");
 
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
-                                    UsePropertyFlagT::value>(
+                                    UsePropertyFlagT::value,
+                                    test_case_type::each_work_item>(
       sycl::logical_or<bool>(), range, queue, "bool");
 }
 
@@ -62,18 +79,19 @@ void run_all_core_tests(RangeT& range, sycl::queue& queue) {
         !sycl::has_known_identity_v<op_without_identity<int>(), int>,
         "op_without_identity<int>() should not have a known identity.");
 
-    run_test_for_all_reductions_types<custom_type,
-                                      reduction_get_lambda::with_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<
+        custom_type, reduction_get_lambda::with_combine,
+        UsePropertyFlagT::value, test_case_type::each_work_item>(
         sycl::plus<custom_type>(), range, queue,
         "reduction_common::custom_type");
-    run_test_for_all_reductions_types<custom_type,
-                                      reduction_get_lambda::without_combine,
-                                      UsePropertyFlagT::value>(
+    run_test_for_all_reductions_types<
+        custom_type, reduction_get_lambda::without_combine,
+        UsePropertyFlagT::value, test_case_type::each_work_item>(
         sycl::plus<custom_type>(), range, queue,
         "reduction_common::custom_type");
     run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
-                                      UsePropertyFlagT::value>(
+                                      UsePropertyFlagT::value,
+                                      test_case_type::each_work_item>(
         op_without_identity<int>(), range, queue, "int with custom functor");
   }
 

@@ -58,25 +58,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for InPtr and OutPtr. "
-      "Skipping the test.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
   WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
 
   // FIXME: ComputeCpp does not implement joint scan and half type
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP) ||   \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // here DoubleHalfTypes can be used as only half+double combinations are
@@ -103,25 +96,18 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for T, *InPtr and "
-      "*OutPtr. Skipping the test.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
   WARN("ComputeCpp cannot handle half type. Skipping the test.");
 #endif
 
   // FIXME: ComputeCpp does not implement joint scan and half type
-  // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
+  // FIXME: hipSYCL cannot handle cases of different types
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP) ||   \
     defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     for_all_combinations_with_two<invoke_init_joint_scan_group, double,
@@ -141,12 +127,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][fp16][fp64][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for T and V. Skipping the "
-      "test.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp cannot handle cases of different types for T and V. Skipping "
       "the test.");
@@ -154,13 +135,11 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #endif
 
   // FIXME: ComputeCpp has no half
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp16) &&
       queue.get_device().has(sycl::aspect::fp64)) {
     // here DoubleHalfTypes can be used as only half+double combinations are

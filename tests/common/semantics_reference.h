@@ -474,7 +474,17 @@ struct kernel_name;
  The function \p init_func takes a sycl::handler and returns an instance of
  type \p T. */
 template <typename storage, typename T, typename InitFunc>
-void check_kernel(InitFunc init_func, const std::string& type_name) {
+void check_kernel(InitFunc init_func, const std::string& type_name,
+                  const std::vector<sycl::aspect>& requirements = {}) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  for (const sycl::aspect& req : requirements) {
+    if (!queue.get_device().has(req)) {
+      WARN("Device does not support " +
+           Catch::StringMaker<sycl::aspect>::convert(req));
+      return;
+    }
+  }
+
   INFO("checking reference semantics in kernel function for type \""
        << type_name << "\"");
   std::size_t result_count = test_traits::result_count +
@@ -484,7 +494,6 @@ void check_kernel(InitFunc init_func, const std::string& type_name) {
   {
     sycl::buffer<int> buffer(results.data(), sycl::range<1>{result_count});
 
-    auto queue = sycl_cts::util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
       auto accessor = buffer.template get_access<sycl::access_mode::write>(cgh);
       T t = init_func(cgh);

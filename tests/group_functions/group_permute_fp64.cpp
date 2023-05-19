@@ -35,7 +35,7 @@ TEMPLATE_TEST_CASE_SIG("Group and sub-group permute", "[group_func][fp64][dim]",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
 
   if (queue.get_device().has(sycl::aspect::fp64)) {
     permute_sub_group<D, double>(queue);
