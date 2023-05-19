@@ -29,24 +29,13 @@ struct storage {
       : size(stream.size()),
         max_statement_size(stream.get_max_statement_size()) {}
 
-  // Enable when https://github.com/intel/llvm/issues/8326
-  // been solved
   bool check(const sycl::stream& stream) const {
-    return
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
-        stream.size() == size &&
-        stream.get_max_statement_size() == max_statement_size &&
-#endif
-        true;
+    return (stream.size() == size &&
+            stream.get_max_statement_size() == max_statement_size);
   }
 };
 
 TEST_CASE("stream common reference semantics (host)", "[stream]") {
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  WARN(
-      "DPCPP does not implement all member functions of stream. "
-      "Copy and move are tested with reduced quality.");
-#endif
   auto queue = sycl_cts::util::get_cts_object::queue();
   queue.submit([&](sycl::handler& cgh) {
     sycl::stream stream{0, 0, cgh};
@@ -55,11 +44,6 @@ TEST_CASE("stream common reference semantics (host)", "[stream]") {
 }
 
 TEST_CASE("stream common reference semantics (kernel)", "[stream]") {
-#ifdef SYCL_CTS_COMPILING_WITH_DPCPP
-  WARN(
-      "DPCPP does not implement all member functions of stream. "
-      "Copy and move are tested with reduced quality.");
-#endif
   common_reference_semantics::check_kernel<storage, sycl::stream>(
       [&](sycl::handler& cgh) {
         return sycl::stream{0, 0, cgh};
