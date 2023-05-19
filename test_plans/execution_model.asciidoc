@@ -57,46 +57,38 @@ Check that all elements in result buffer are equal to expected values which mean
 
 Same as previous tests but each command is run on different queue with diffrent context.
 
-=== Requirements on overlapping vs non-overlapping sub-buffer
+=== Requirements on overlapping sub-buffers
 
 This check is skipped if device doesn't support `aspect::usm_atomic_device_allocations`.
 
-Create buffer on array, and two non-overlapping sub-buffers
+Create buffer on array, and two overlapping sub-buffers
 
 [source,c++]
 ----
 buffer<int, 1> sub_buf1(buffer, 0, 5);
-buffer<int, 1> sub_buf2(buffer, 10, 5);
+buffer<int, 1> sub_buf2(buffer, 3, 10);
 int* pflag = sycl::malloc_device<int>(1, queue);
+// assign pflag value to 0
 queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc1(sub_buf1, cgh);
   cgh.single_task([=] {
     sycl::atomic_ref<int> rflag(*pflag);
     // long loop
-    for (int i = SIZE; i >= 0; i--) acc1[i] = i;
+    for (int i = acc1.size(); i >= 0; i--) acc1[i] = i;
     rflag = 1;
   });
 });
 queue.submit([&](handler& cgh) {
   sycl::accessor<int, 1> acc2(sub_buf2, cgh);
+  sycl::accessor<bool, 1> res_acc(res_buffer, cgh);
   cgh.single_task([=] {
-    sycl::atomic_ref<int> rflag(*pflag);
-    for (int i = SIZE; i >= 0; i--) acc2[i] = i;
-    rflag = 2;
-  });
-});
-queue.submit([&](handler& cgh) {
-  sycl::accessor<int, 1> acc(buffer, cgh);
-  sycl::accessor<int, 1> res_acc(res_buffer, cgh);
-  sycl::accessor<int, 1> flag_res_acc(flag_res_buffer, cgh);
-  cgh.parallel_for(SIZE, [=](auto item) {
-    res_acc[item.get_id()] = acc[item.get_id()];
-    flag_res_acc[item.get_id()] = *pflag;
+    res_acc[0] = *pflag == 1;
+    for (int i = acc2.size(); i >= 0; i--) acc2[i] = i;
   });
 });
 ----
 
-Check that *pflag was equal to 1 for all work items, that means first two commands executes independently, and check that all elements in result buffer are equal to expected values which means that requisites for third command were satisfied before it started to execute.
+Check that *pflag was equal to 1, that means that requisites for second command with overlapping sub-buffer were satisfied before it started to execute.
 
 === Host accessor as a barrier
 
