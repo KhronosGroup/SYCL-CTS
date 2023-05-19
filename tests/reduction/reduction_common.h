@@ -2,6 +2,20 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
+//  Copyright (c) 2023 The Khronos Group Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 //  Provides common code for reduction tests
 //
 *******************************************************************************/
@@ -28,15 +42,30 @@ constexpr int init_value_without_property_case{99};
 static sycl::range<1> range{number_iterations};
 static sycl::nd_range<1> nd_range{range, range};
 
+enum class test_case_type {
+  each_work_item = 1,
+  each_even_work_item = 2,
+  no_one_work_item = 3,
+  each_work_item_twice = 4,
+};
+
 const auto scalar_types =
-    named_type_pack<char, signed char, unsigned char, short int,
-                    unsigned short int, int, unsigned int, long int,
-                    unsigned long int, float, long long int,
-                    unsigned long long int>::generate(
-         "char", "signed char", "unsigned char", "short int",
-         "unsigned short int", "int", "unsigned int", "long int",
-         "unsigned long int", "float", "long long int",
-         "unsigned long long int");
+    named_type_pack<int, float
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                    ,
+                    char, signed char, unsigned char, short int,
+                    unsigned short int, unsigned int, long int,
+                    unsigned long int, long long int, unsigned long long int
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                    >::generate("int", "float"
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                                ,
+                                "char", "signed char", "unsigned char",
+                                "short int", "unsigned short int",
+                                "unsigned int", "long int", "unsigned long int",
+                                "long long int", "unsigned long long int"
+#endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
+    );
 
 /** @brief Returns expected value for testing
  *  @tparam VariableT The type of the variable with which the test runs
@@ -47,13 +76,33 @@ const auto scalar_types =
  *  @param value_for_initialization The value for initializing output variable
  *  @retval Expected value after test execution
  */
-template <typename VariableT, typename FunctorT, typename BufferT>
+template <test_case_type TestCaseT, typename VariableT, typename FunctorT,
+          typename BufferT>
 VariableT get_expected_value(FunctorT functor, BufferT& buffer,
                              VariableT value_for_initialization) {
   VariableT expected_value{value_for_initialization};
   sycl::host_accessor buf_accessor{buffer};
-  return std::accumulate(buf_accessor.begin(), buf_accessor.end(),
-                         value_for_initialization, functor);
+  if constexpr (TestCaseT == test_case_type::each_work_item) {
+    return std::accumulate(buf_accessor.begin(), buf_accessor.end(),
+                           value_for_initialization, functor);
+  } else if constexpr (TestCaseT == test_case_type::each_even_work_item) {
+    int counter = 1;
+    for (auto& buf_element : buf_accessor) {
+      if (0 == (counter & 1)) {
+        expected_value = functor(expected_value, buf_element);
+      }
+      ++counter;
+    }
+    return expected_value;
+  } else if constexpr (TestCaseT == test_case_type::no_one_work_item) {
+    return expected_value;
+  } else if constexpr (TestCaseT == test_case_type::each_work_item_twice) {
+    for (auto& buf_element : buf_accessor) {
+      expected_value = functor(expected_value, buf_element);
+      expected_value = functor(expected_value, buf_element);
+    }
+    return expected_value;
+  }
 }
 
 /** @brief This function contained common cases from two get_init_value*

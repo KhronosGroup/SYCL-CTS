@@ -16,8 +16,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for interaction reductions with scalar and bool variables
-//  types without identity param.
+//  Provides tests for interaction between each work item and reductions twice
+//  with scalar and bool variables types without identity param.
 //
 *******************************************************************************/
 
@@ -29,7 +29,7 @@
 #if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 #include "reduction_without_identity_param_common.h"
 
-namespace reduction_without_identity_param_core {
+namespace reduction_without_identity_param_item_twice_core {
 
 using namespace reduction_without_identity_param_common;
 using namespace reduction_common;
@@ -46,12 +46,12 @@ template <typename UsePropertyFlagT, typename RangeT>
 void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT::value,
-                                    test_case_type::each_work_item>(
+                                    test_case_type::each_work_item_twice>(
       sycl::logical_and<bool>(), range, queue, "bool");
 
   run_test_for_all_reductions_types<bool, reduction_get_lambda::with_combine,
                                     UsePropertyFlagT::value,
-                                    test_case_type::each_work_item>(
+                                    test_case_type::each_work_item_twice>(
       sycl::logical_or<bool>(), range, queue, "bool");
 }
 
@@ -66,8 +66,8 @@ void run_test_for_bool_variable(RangeT& range, sycl::queue& queue) {
  */
 template <typename UsePropertyFlagT, typename RangeT>
 void run_all_core_tests(RangeT& range, sycl::queue& queue) {
-  for_all_types<run_tests_for_all_functors, UsePropertyFlagT>(scalar_types,
-                                                              range, queue);
+  for_all_types<run_tests_for_all_functors_item_twice, UsePropertyFlagT>(
+      scalar_types, range, queue);
 
   // sycl::property::reduction::initialize_to_identity cannot be used with
   // reductions that have neither a specified nor known identity.
@@ -81,17 +81,17 @@ void run_all_core_tests(RangeT& range, sycl::queue& queue) {
 
     run_test_for_all_reductions_types<
         custom_type, reduction_get_lambda::with_combine,
-        UsePropertyFlagT::value, test_case_type::each_work_item>(
+        UsePropertyFlagT::value, test_case_type::each_work_item_twice>(
         sycl::plus<custom_type>(), range, queue,
         "reduction_common::custom_type");
     run_test_for_all_reductions_types<
         custom_type, reduction_get_lambda::without_combine,
-        UsePropertyFlagT::value, test_case_type::each_work_item>(
+        UsePropertyFlagT::value, test_case_type::each_work_item_twice>(
         sycl::plus<custom_type>(), range, queue,
         "reduction_common::custom_type");
     run_test_for_all_reductions_types<int, reduction_get_lambda::with_combine,
                                       UsePropertyFlagT::value,
-                                      test_case_type::each_work_item>(
+                                      test_case_type::each_work_item_twice>(
         op_without_identity<int>(), range, queue, "int with custom functor");
   }
 
@@ -109,21 +109,21 @@ void run_tests_for_identity_type(sycl::queue& queue) {
   run_all_core_tests<UsePropertyFlagT>(range, queue);
   run_all_core_tests<UsePropertyFlagT>(nd_range, queue);
 }
-}  // namespace reduction_without_identity_param_core
+}  // namespace reduction_without_identity_param_item_twice_core
 
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL &&
         // !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
-namespace reduction_without_identity_param_core {
+namespace reduction_without_identity_param_item_twice_core {
 
 // FIXME: re-enable when compilation failure for reduction with custom type is
 // fixed and sycl::reduction is implemented in hipSYCL and ComputeCpp
 DISABLED_FOR_TEST_CASE(ComputeCpp, hipSYCL)
-("reduction_without_identity_param_core", "[reduction]")({
+("reduction_without_identity_param_item_twice_core", "[reduction]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
 
   run_tests_for_identity_type<run_test_without_property>(queue);
   run_tests_for_identity_type<run_test_with_property>(queue);
 });
 
-}  // namespace reduction_without_identity_param_core
+}  // namespace reduction_without_identity_param_item_twice_core
