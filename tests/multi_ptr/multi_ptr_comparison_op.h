@@ -214,7 +214,7 @@ class run_multi_ptr_comparison_op_test {
   void operator()(const std::string &type_name,
                   const std::string &address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     SECTION(
         sycl_cts::section_name(
             "Check multi_ptr operator==(const multi_ptr&, const multi_ptr&)")

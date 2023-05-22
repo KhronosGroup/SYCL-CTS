@@ -126,7 +126,7 @@ class run_api_tests {
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name,
                   const std::string &target_name) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
     auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 
@@ -249,7 +249,7 @@ class run_api_tests {
                 cgh.single_task<kname>([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
                   res_acc[0] &= test_begin_end_device(acc, expected_val,
-                                                      expected_val, false);
+                                                      expected_val, true);
                   if constexpr (0 < dims) {
                     auto &acc_ref1 = acc[sycl::id<dims>()];
                     auto &acc_ref2 =
@@ -356,7 +356,7 @@ class run_api_tests {
                     test_accessor_ptr_device(acc, T(), res_acc);
                     res_acc[0] &= test_begin_end_device(
                         acc, value_operations::init<T>(0),
-                        value_operations::init<T>(buff_size - 1), false);
+                        value_operations::init<T>(buff_size - 1), true);
                     auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
                     auto &acc_ref2 = acc[sycl::id<dims>()];

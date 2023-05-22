@@ -43,7 +43,7 @@ class run_local_accessor_cnstr_tests {
  public:
   void operator()(const std::string &type_name,
                   const std::string &address_space_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     auto r = sycl_cts::util::get_cts_object::range<dims>::get(1, 1, 1);
     SECTION(sycl_cts::section_name("Check multi_ptr(local_accessor<T, dims>)")
                 .with("T", type_name)

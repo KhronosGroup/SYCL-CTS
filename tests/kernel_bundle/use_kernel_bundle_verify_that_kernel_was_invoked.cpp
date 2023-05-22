@@ -35,14 +35,14 @@ struct kernel;
  *  @param log sycl_cts::util::logger class object
  *  @param ctx Context that will used for sycl::queue
  */
-void invoke_kernel_and_verify_invocation(util::logger &log,
-                                         const sycl::context &ctx) {
+void invoke_kernel_and_verify_invocation(util::logger& log,
+                                         const sycl::context& ctx) {
   sycl::queue queue(ctx, ctx.get_devices()[0]);
-  bool flag = false;
+  bool flags[] = {false, false};
 
   {
-    sycl::buffer<bool> flag_buffer{&flag, sycl::range<1>{1}};
-    queue.submit([&](sycl::handler &cgh) {
+    sycl::buffer<bool> flag_buffer{flags, sycl::range<1>{2}};
+    queue.submit([&](sycl::handler& cgh) {
       auto kernel_bundle{
           sycl::get_kernel_bundle<kernel, sycl::bundle_state::input>(ctx)};
 
@@ -59,13 +59,24 @@ void invoke_kernel_and_verify_invocation(util::logger &log,
       cgh.single_task<kernel>([=](sycl::kernel_handler h) {
         accessor_to_flag[0] = h.get_specialization_constant<spec_const>() ==
                               expected_spec_const_non_value;
+        accessor_to_flag[1] = std::is_same_v<
+            typename std::remove_reference_t<decltype(spec_const)>::value_type,
+            decltype(h.get_specialization_constant<spec_const>())>;
       });
     });
   }
-  if (!flag) {
-    FAIL(log,
-         "The specialization constant value not equal to expected "
-         "specialization constant value");
+
+  {
+    INFO(
+        "The specialization constant value not equal to expected "
+        "specialization constant value");
+    CHECK(flags[0]);
+  }
+  {
+    INFO(
+        "Check kernel_handler::get_specialization_constant() "
+        "return type");
+    CHECK(flags[1]);
   }
 }
 
@@ -73,13 +84,13 @@ class TEST_NAME : public sycl_cts::util::test_base {
  public:
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     sycl::device dev = util::get_cts_object::device();
     sycl::context ctx(dev.get_platform().get_devices());
 

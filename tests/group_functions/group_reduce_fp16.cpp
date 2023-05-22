@@ -42,7 +42,7 @@ using prod2 = product<std::tuple, HalfExtendedTypes, HalfExtendedTypes>::type;
 // hipSYCL has no implementation over sub-groups
 TEST_CASE("Group and sub-group joint reduce functions",
           "[group_func][fp16][dim]") {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: hipSYCL omission
 #if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
   WARN(
@@ -72,7 +72,7 @@ TEST_CASE("Group and sub-group joint reduce functions",
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
                         "[group_func][type_list][fp16][dim]", prod2) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
@@ -92,11 +92,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
     WARN("ComputeCpp cannot handle half type. Skipping the test.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
 #endif
   }
 
@@ -104,10 +99,8 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
 #endif
   {
@@ -130,7 +123,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 }
 
 TEST_CASE("Group and sub-group reduce functions", "[group_func][fp16][dim]") {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   // FIXME: ComputeCpp has no half
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
   WARN("ComputeCpp cannot handle half type. Skipping the test.");
@@ -149,18 +142,13 @@ TEST_CASE("Group and sub-group reduce functions", "[group_func][fp16][dim]") {
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
                         "[group_func][type_list][fp16][dim]", prod2) {
-  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto queue = once_per_unit::get_queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
   // check types to only print warning once
   if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
         "long long int. Skipping the test cases.");
@@ -176,10 +164,8 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
   return;
 #else
   if (queue.get_device().has(sycl::aspect::fp16)) {
-    // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     if constexpr (std::is_same_v<T, U>)
 #endif
     {
