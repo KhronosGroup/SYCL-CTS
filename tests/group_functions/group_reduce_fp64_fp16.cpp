@@ -23,12 +23,7 @@
 
 #include "group_reduce.h"
 
-// FIXME: ComputeCpp has no half
-#ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-using ReduceTypes = unnamed_type_pack<>;
-#else
 using ReduceTypes = unnamed_type_pack<double, sycl::half>;
-#endif
 
 // 2-dim Cartesian product of type lists
 using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
