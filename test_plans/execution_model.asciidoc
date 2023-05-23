@@ -88,7 +88,7 @@ queue.submit([&](handler& cgh) {
   sycl::accessor<bool, 1> res_acc(res_buffer, cgh);
   cgh.single_task([=] {
     sycl::atomic_ref<int> rflag(*pflag);
-    res_acc[0] = (rflag.load() == 1);
+    res_acc[0] = (rflag == 1);
     for (int i = acc2.size(); i >= 0; i--) acc2[i] = i;
   });
 });
