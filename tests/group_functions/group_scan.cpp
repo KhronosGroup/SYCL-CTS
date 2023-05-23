@@ -25,7 +25,7 @@
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
 // long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
 using ScanTypes =
     unnamed_type_pack<size_t, float, char, signed char, unsigned char,
                       short int, unsigned short int, int, unsigned int,
