@@ -14,28 +14,28 @@ is selected on the CTS command line.
 
 === Types coverage
 
-All of the tests described below are performed using each of the following `typename T` which satisfies the requriments of a device copyable type defined https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec::device.copyable[here]:
+All of the tests described below are performed using `typename T` which satisfies the https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec::device.copyable[requriments] of a device copyable type:
 
-* `int`
-* `float`
-* `std::array<int, 0>`
-* `std::array<int, N>`
-* `std::optional<int>`
-* `std::pair<int, float>`
-* `std::tuple<>`
-* `std::tuple<int, float>`
-* `std::variant<>`
-* `std::variant<int, float>`
-* `std::basic_string_view<const char*>`
-* `sycl::span<int, 1>`
+* The application defines the trait `is_device_copyable_v<T>` to `true`;
+* Type `T` has at least one eligible copy constructor, move constructor, copy assignment operator, or move assignment operator;
+* Each eligible copy constructor, move constructor, copy assignment operator, and move assignment operator is public;
+* When doing an inter-device transfer of an object of type `T`, the effect of each eligible copy constructor, move constructor, copy assignment operator, and move assignment operator is the same as a bitwise copy of the object;
+* Type `T` has a public non-deleted destructor;
+* The destructor has no effect when executed on the device.
 
-In addition, if the device has `aspect::fp64`, the following type is tested:
+Define a new class of type `T` with public default constructor, destructor, copy constructor and several public members:
+```
+class T {
+  public:
+    T() = default;
+    ~T() = defautl;
+    T(T& t) : a(t.a), b(t.b), c(t.c) {}
 
-* `double`
-
-In addition, if the device has `aspect::fp16`, the following type is tested:
-
-* `sycl::half`
+    int a;
+    float b;
+    char c;
+};
+```
 
 == Tests
 
@@ -65,19 +65,20 @@ In addition, if the device has `aspect::fp16`, the following type is tested:
 
 === Specialization for user defined class
 
-Define a class that satisfies the requirements of a device copyable type name it `UDT`. Add a specialization for this class: +
-    `template<> +
-     struct is_device_copyable<UDT> : std::true_type {}` +
+Add a specialization for `T`:
 
-* Verify that `is_device_copyable<UDT>::value == true`
-* Create an instance of `UDT` class and try to access its members in device code. For example: +
+`template<> +
+struct is_device_copyable<T> : std::true_type {}` +
+
+* Verify that `is_device_copyable<T>::value == true`
+* Create an instance of `T` class and try to access its members in device code. For example: +
 ```
     queue.submit([&](sycl::handler& cgh) {
     cgh.single_task<kernel_name>([=] {
-            UDT udt;
+            T udt;
             udt.a = 2;
-            udt.b = 3;
-            udt.c = udt.a + udt.b;
+            udt.b = 3.f;
+            udt.c = `c`;
         });
     });
 ```
