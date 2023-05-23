@@ -46,7 +46,7 @@ template <typename multi_ptr_t>
 class test_kernel_ptr;
 
 /**
- * Function that create a sycl::stream object and streams nd_item.
+ * Function that creates a sycl::stream object and streams nd_item.
  */
 template <int dims>
 void check_nd_item_dims(sycl::range<dims>& range1, sycl::range<dims>& range2) {
@@ -69,7 +69,7 @@ void check_nd_item_dims(sycl::range<dims>& range1, sycl::range<dims>& range2) {
 }
 
 /**
- * Function that create a sycl::stream object and streams item.
+ * Function that creates a sycl::stream object and streams item.
  */
 template <int dims>
 void check_item_dims(sycl::range<dims>& range) {
@@ -90,7 +90,7 @@ void check_item_dims(sycl::range<dims>& range) {
 }
 
 /**
- * Function that create a sycl::stream object and streams group and h_item.
+ * Function that creates a sycl::stream object and streams group and h_item.
  */
 template <int dims>
 void check_group_h_item_dims(sycl::range<dims>& range1,
@@ -117,7 +117,7 @@ void check_group_h_item_dims(sycl::range<dims>& range1,
 }
 
 /**
- * Functor that create a sycl::stream object and streams pointers.
+ * Functor that creates a sycl::stream object and streams pointers.
  */
 template <typename multi_ptr_t>
 class check_multi_ptr {
