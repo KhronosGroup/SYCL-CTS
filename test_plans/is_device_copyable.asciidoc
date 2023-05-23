@@ -58,7 +58,7 @@ class T {
 
     * Publicly and unambiguously derived from a specialization of integral_constant, known as its base characteristic. Verify that +
     `std::is_base_of_v<std::integral_constant<bool, true>, is_device_copyable<T>> == true` or
-    `std::is_base_of_v<std::integral_constant<bool, false, is_device_copyable<T>> == true`.
+    `std::is_base_of_v<std::integral_constant<bool, false>, is_device_copyable<T>> == true`.
 
     * The member names of the base characteristic (`std::integral_constant`) are not hidden and are unambiguously available. Verify that:
 
