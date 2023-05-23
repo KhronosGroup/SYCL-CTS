@@ -1,0 +1,83 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for is_device_copyable
+
+This is a test plan for `is_device_copyable` type trait described in https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#_is_device_copyable_type_trait[SYCL 2020 sections 4.12.3. is_device_copyable type trait]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Types coverage
+
+All of the tests described below are performed using each of the following `typename T` which satisfies the requriments of a device copyable type defined https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec::device.copyable[here]:
+
+* `int`
+* `float`
+* `std::array<int, 0>`
+* `std::array<int, N>`
+* `std::optional<int>`
+* `std::pair<int, float>`
+* `std::tuple<>`
+* `std::tuple<int, float>`
+* `std::variant<>`
+* `std::variant<int, float>`
+* `std::basic_string_view<const char*>`
+* `sycl::span<int, 1>`
+
+In addition, if the device has `aspect::fp64`, the following type is tested:
+
+* `double`
+
+In addition, if the device has `aspect::fp16`, the following type is tested:
+
+* `sycl::half`
+
+== Tests
+
+=== Cpp17UnaryTrait requirements.
+
+`is_device_copyable` must meet the https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[Cpp17UnaryTrait] requirements:
+
+    * DefaultConstructible and CopyConstructible. Verify that:
+
+        ** `std::is_default_constructible_v<is_device_copyable<T>> == true`
+        ** `std::is_copy_constructible_v<is_device_copyable<T>> == true`
+
+    * Takes one template type parameter (additional template parameters are optional and allowed). Verify that: `std::is_constructible_v<is_device_copyable<T>> == true`
+
+    * Publicly and unambiguously derived from a specialization of integral_constant, known as its base characteristic. Verify that:
+
+        ** `std::is_base_of_v<std::true_type, is_device_copyable<T>> == true` if `T` is device copyable
+        ** `std::is_base_of_v<std::false_type, is_device_copyable<T>> == true` otherwise. To check that use `std::vector<T>` which is not device copyable instead of `T`
+
+    * The member names of the base characteristic (`std::integral_constant`) are not hidden and are unambiguously available. Verify that:
+
+        ** `std::integral_constant<bool, true>::value_type` and `is_device_copyable<T>::value_type` are the same type
+
+        ** `std::integral_constant<bool, true>::type` and `is_device_copyable<T>::type` are the same type
+        ** Operators `std::integral_constant<bool, true>::value_type() and `is_device_copyable<T>::value_type()` have the same return type
+        ** `std::integral_constant<bool, true>::operator()` returns true
+
+=== Specialization for user defined class
+
+Define a class that satisfies the requirements of a device copyable type name it `UDT`. Add a specialization for this class: +
+    `template<> +
+     struct is_device_copyable<UDT> : std::true_type {}` +
+
+* Verify that `is_device_copyable<UDT>::value == true`
+* Create an instance of `UDT` class and try to access its members in device code. For example: +
+```
+    queue.submit([&](sycl::handler& cgh) {
+    cgh.single_task<kernel_name>([=] {
+            UDT udt;
+            udt.a = 2;
+            udt.b = 3;
+            udt.c = udt.a + udt.b;
+        });
+    });
+```
