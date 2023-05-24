@@ -23,12 +23,17 @@
 
 #include "../common/common.h"
 
+#include "../common/disabled_for_test_case.h"
+#include "catch2/catch_test_macros.hpp"
+
 namespace handler_exceptions {
 
 using AccT =
     sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
 
-TEST_CASE("handler require() exception", "[handler]") {
+// FIXME: re-enable when sycl::errc is implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("handler require() exception", "[handler]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
   auto action = [&]() {
     AccT empty_acc;
@@ -38,5 +43,5 @@ TEST_CASE("handler require() exception", "[handler]") {
 
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
-}
+});
 }  // namespace handler_exceptions
