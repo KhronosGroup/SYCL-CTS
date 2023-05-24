@@ -82,7 +82,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
   T ref_value{user_def_types::get_init_value_helper<T>(0)};
   auto queue = once_per_unit::get_queue();
 
-  using GlobalAccType = sycl::accessor<T, 1, sycl::access_mode::read>;
+  using GlobalAccType = sycl::accessor<T, 1, sycl::access_mode::read_write>;
   using LocalAccType = sycl::local_accessor<T, 1>;
   using PrivateAccType =
       sycl::multi_ptr<T, sycl::access::address_space::private_space, Decorated>;
@@ -110,7 +110,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
     // Check multi_ptr(const multi_ptr&)
     {
-      m_ptr_t other(ref_acc);
+      const m_ptr_t other(ref_acc);
       m_ptr_t mptr(other);
 
       same_type_acc[type_i++] =
@@ -158,7 +158,7 @@ void run_tests(sycl_cts::util::logger &log, const std::string &type_name) {
 
     queue.submit([&](sycl::handler &cgh) {
       using kname = kernel_common_constructors<T, Space, Decorated>;
-      auto ref_acc = ref_buf.template get_access<sycl::access_mode::read>(cgh);
+      auto ref_acc = ref_buf.template get_access(cgh);
       auto same_type_acc =
           same_type_buf.template get_access<sycl::access_mode::write>(cgh);
       auto same_value_acc =

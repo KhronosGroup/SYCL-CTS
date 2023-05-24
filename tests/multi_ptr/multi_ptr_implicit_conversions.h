@@ -155,9 +155,7 @@ class run_implicit_convert_tests {
             test_device_code(priv_val_mptr);
           });
         } else {
-          auto expected_val_acc =
-              expected_val_buffer.template get_access<sycl::access_mode::read>(
-                  cgh);
+          auto expected_val_acc = expected_val_buffer.template get_access(cgh);
           cgh.single_task<kname>([=] { test_device_code(expected_val_acc); });
         }
       });

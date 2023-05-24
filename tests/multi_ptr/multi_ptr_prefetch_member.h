@@ -73,8 +73,7 @@ class run_prefetch_test {
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          auto acc_for_mptr = val_buffer.template get_access(cgh);
           cgh.single_task<kernel_prefetch_member<T, IsDecoratedT>>([=] {
             const multi_ptr_t mptr(acc_for_mptr);
 

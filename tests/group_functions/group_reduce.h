@@ -143,7 +143,8 @@ void joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
       sycl::buffer<bool, 1> res_sycl(res, sycl::range<1>(test_matrix));
 
       queue.submit([&](sycl::handler& cgh) {
-        auto v_acc = v_sycl.template get_access<sycl::access::mode::read>(cgh);
+        auto v_acc =
+            v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
         auto res_acc = res_sycl.get_access<sycl::access::mode::read_write>(cgh);
 
         sycl::nd_range<D> executionRange(work_group_range, work_group_range);
@@ -245,7 +246,8 @@ void init_joint_reduce_group(sycl::queue& queue, const std::string& op_name) {
       sycl::buffer<bool, 1> res_sycl(res, sycl::range<1>(test_matrix));
 
       queue.submit([&](sycl::handler& cgh) {
-        auto v_acc = v_sycl.template get_access<sycl::access::mode::read>(cgh);
+        auto v_acc =
+            v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
         auto res_acc = res_sycl.get_access<sycl::access::mode::read_write>(cgh);
 
         sycl::nd_range<D> executionRange(work_group_range, work_group_range);
