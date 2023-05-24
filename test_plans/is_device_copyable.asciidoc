@@ -1,0 +1,78 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for is_device_copyable
+
+This is a test plan for `is_device_copyable` type trait described in https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#_is_device_copyable_type_trait[SYCL 2020 sections 4.12.3. is_device_copyable type trait]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Types coverage
+
+All of the tests described below are performed using `typename T` which satisfies the https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec::device.copyable[requriments] of a device copyable type:
+
+* The application defines the trait `is_device_copyable_v<T>` to `true`;
+* Type `T` has at least one eligible copy constructor, move constructor, copy assignment operator, or move assignment operator;
+* Each eligible copy constructor, move constructor, copy assignment operator, and move assignment operator is public;
+* When doing an inter-device transfer of an object of type `T`, the effect of each eligible copy constructor, move constructor, copy assignment operator, and move assignment operator is the same as a bitwise copy of the object;
+* Type `T` has a public non-deleted destructor;
+* The destructor has no effect when executed on the device.
+
+Define a new class of type `T` with public default constructor, destructor, copy constructor, copy assignment operator and several public members:
+```
+class T {
+  public:
+    T() = default;
+    ~T() = default;
+
+    T(int, float, char);
+    T(const T&);
+    T& operator=(const T&);
+    bool operator==(const T&, const T&);
+
+    int a;
+    float b;
+    char c;
+};
+```
+== Tests
+
+=== Cpp17UnaryTrait requirements.
+
+`is_device_copyable` must meet the https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[Cpp17UnaryTrait] requirements:
+
+    * DefaultConstructible and CopyConstructible. Verify that:
+
+        ** `std::is_default_constructible_v<is_device_copyable<T>> == true`;
+        ** `std::is_copy_constructible_v<is_device_copyable<T>> == true`.
+
+    * Takes one template type parameter (additional template parameters are optional and allowed). Verify that: `std::is_constructible_v<is_device_copyable<T>> == true`.
+
+    * Publicly and unambiguously derived from a specialization of integral_constant, known as its base characteristic. Verify that +
+    `std::is_base_of_v<std::integral_constant<bool, true>, is_device_copyable<T>> == true`.
+
+    * The member names of the base characteristic (`std::integral_constant<bool, true>`) are not hidden and are unambiguously available. Verify that:
+
+        ** `std::integral_constant<bool, true>::value_type` and `is_device_copyable<T>::value_type` are the same type;
+        ** `std::integral_constant<bool, true>::type` and `is_device_copyable<T>::type` are the same type;
+        ** Operators `std::integral_constant<bool, true>::value_type() and `is_device_copyable<T>::value_type()` have the same return type;
+        ** `std::integral_constant<bool, true>::operator()` and `is_device_copyable<T>::operator()` return the same value.
+
+=== Specialization for user defined class
+
+Add a specialization for `T`:
+
+`template<> +
+struct is_device_copyable<T> : std::true_type {}` +
+
+* Verify that `is_device_copyable<T>::value == true`;
+
+* Check data transmission:
+
+    ** Create an object of type `T` on the host and pass it to the kernel via a buffer. Validate in the kernel that the object has the expected value.
+    ** Create an object of type `T` in the kernel and return it to the host via a buffer. Validate on the host that the object has the expected value.
