@@ -31,13 +31,13 @@ using namespace sycl_cts;
 class TEST_NAME : public util::test_base {
   /** return information about this test
    */
-  void get_info(test_base::info &out) const override {
+  void get_info(test_base::info& out) const override {
     set_test_info(out, TOSTRING(TEST_NAME), TEST_FILE);
   }
 
-  void check_context_after_ctor(sycl::context &context,
-                                sycl::device &expectedDevice,
-                                util::logger &log) {
+  void check_context_after_ctor(sycl::context& context,
+                                sycl::device& expectedDevice,
+                                util::logger& log) {
     if (context.get_devices().size() != 1) {
       FAIL(log, "context was not constructed correctly (get_devices size)");
     }
@@ -47,14 +47,14 @@ class TEST_NAME : public util::test_base {
     }
   }
 
-  void check_context_after_ctor(sycl::context &context,
-                                std::vector<sycl::device> &expectedDevices,
-                                util::logger &log) {
+  void check_context_after_ctor(sycl::context& context,
+                                std::vector<sycl::device>& expectedDevices,
+                                util::logger& log) {
     if (context.get_devices().size() != expectedDevices.size()) {
       FAIL(log, "context was not constructed correctly (get_devices size)");
     }
 
-    for (auto &device : context.get_devices()) {
+    for (auto& device : context.get_devices()) {
       if (std::find(expectedDevices.begin(), expectedDevices.end(), device) ==
           expectedDevices.end()) {
         FAIL(log,
@@ -66,56 +66,77 @@ class TEST_NAME : public util::test_base {
 
   /** execute the test
    */
-  void run(util::logger &log) override {
+  void run(util::logger& log) override {
     cts_async_handler asyncHandler;
-
+    sycl::property_list property_list{};
     {
-      /** check default constructor and destructor
+      /** check default constructor, destructor
+       *  and (const property_list&) constructor
        */
-      { sycl::context context; }
+      {
+        sycl::context context;
+        sycl::context context_prop(property_list);
+      }
 
-      /** check (async_handler) constructor
+      /** check (async_handler) and
+       *  (async_handler, const property_list&) constructors
        */
-      { sycl::context context(asyncHandler); }
+      {
+        sycl::context context(asyncHandler);
+        sycl::context context_prop(asyncHandler, property_list);
+      }
 
-      /** check (device) constructor
+      /** check (const device&) and
+       *  (const device&, const property_list&) constructors
        */
       {
         auto device = util::get_cts_object::device(cts_selector);
         sycl::context context(device);
+        sycl::context context_prop(device, property_list);
 
         check_context_after_ctor(context, device, log);
+        check_context_after_ctor(context_prop, device, log);
       }
 
-      /** check (device, async_handler) constructor
+      /** check (const device&, async_handler) and
+       *  (const device&, async_handler, const property_list&) constructors
        */
       {
         cts_async_handler asyncHandler;
         auto device = util::get_cts_object::device(cts_selector);
         sycl::context context(device, asyncHandler);
+        sycl::context context_prop(device, asyncHandler, property_list);
 
         check_context_after_ctor(context, device, log);
+        check_context_after_ctor(context_prop, device, log);
       }
 
-      /** check (std::vector<device>) constructor
+      /** check (const std::vector<device>&) and
+       *  (const std::vector<device>&, const property_list&) constructors
        */
       {
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList);
+        sycl::context context_prop(deviceList, property_list);
 
         check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
       }
 
-      /** check (std::vector<device>, async_handler) constructor
+      /** check (const std::vector<device>&, async_handler) and
+       *  (const std::vector<device>&, async_handler, const property_list&)
+       *  constructors
        */
       {
         cts_async_handler asyncHandler;
         auto platform = util::get_cts_object::platform(cts_selector);
         auto deviceList = platform.get_devices();
         sycl::context context(deviceList, asyncHandler);
+        sycl::context context_prop(deviceList, asyncHandler, property_list);
 
         check_context_after_ctor(context, deviceList, log);
+        check_context_after_ctor(context_prop, deviceList, log);
       }
 
       /** check copy constructor
