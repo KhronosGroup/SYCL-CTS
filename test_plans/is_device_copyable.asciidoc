@@ -29,19 +29,16 @@ class T {
   public:
     T() = default;
     ~T() = default;
-    T(T& t) : a(t.a), b(t.b), c(t.c) {}
 
-    T& operator=(const T& t) {
-        a = t.a;
-        b = t.b;
-        c = t.c;
-    }
+    /* -- common interface members -- */
 
     int a;
     float b;
     char c;
 };
 ```
+
+Given that `is_device_copyable<T>::value` can be either `true` or `false`, `integral_constant_t` will be used instead of `std::integral_constant<bool, true>` and `std::integral_constant<bool, false>`.
 
 == Tests
 
@@ -51,22 +48,20 @@ class T {
 
     * DefaultConstructible and CopyConstructible. Verify that:
 
-        ** `std::is_default_constructible_v<is_device_copyable<T>> == true`
-        ** `std::is_copy_constructible_v<is_device_copyable<T>> == true`
+        ** `std::is_default_constructible_v<is_device_copyable<T>> == true`;
+        ** `std::is_copy_constructible_v<is_device_copyable<T>> == true`.
 
-    * Takes one template type parameter (additional template parameters are optional and allowed). Verify that: `std::is_constructible_v<is_device_copyable<T>> == true`
+    * Takes one template type parameter (additional template parameters are optional and allowed). Verify that: `std::is_constructible_v<is_device_copyable<T>> == true`.
 
     * Publicly and unambiguously derived from a specialization of integral_constant, known as its base characteristic. Verify that +
-    `std::is_base_of_v<std::integral_constant<bool, true>, is_device_copyable<T>> == true` or
-    `std::is_base_of_v<std::integral_constant<bool, false>, is_device_copyable<T>> == true`.
+    `std::is_base_of_v<integral_constant_t, is_device_copyable<T>> == true`.
 
-    * The member names of the base characteristic (`std::integral_constant`) are not hidden and are unambiguously available. Verify that:
+    * The member names of the base characteristic (`integral_constant_t`) are not hidden and are unambiguously available. Verify that:
 
-        ** `std::integral_constant<bool, true>::value_type` and `is_device_copyable<T>::value_type` are the same type
-
-        ** `std::integral_constant<bool, true>::type` and `is_device_copyable<T>::type` are the same type
-        ** Operators `std::integral_constant<bool, true>::value_type() and `is_device_copyable<T>::value_type()` have the same return type
-        ** `std::integral_constant<bool, true>::operator()` returns true
+        ** `integral_constant_t::value_type` and `is_device_copyable<T>::value_type` are the same type;
+        ** `std::integral_constant<bool, true>::type` and `is_device_copyable<T>::type` are the same type;
+        ** Operators `integral_constant_t::value_type() and `is_device_copyable<T>::value_type()` have the same return type;
+        ** `integral_constant_t::operator()` and `is_device_copyable<T>::operator()` return the same value.
 
 === Specialization for user defined class
 
@@ -75,7 +70,12 @@ Add a specialization for `T`:
 `template<> +
 struct is_device_copyable<T> : std::true_type {}` +
 
-* Verify that `is_device_copyable<T>::value == true`
-* Create an instance of class `T` on the host and pass an accessor to it in device code;
-* Create an instance of class `T` on device, initialize its values and assign it to host's instance via accessor;
-* Verify that new values of the object on the host are the same with initialized on device.
+* Verify that `is_device_copyable<T>::value == true`;
+
+* Check data transmission:
+
+    ** Initialize a constant instance of class `T` as a reference;
+    ** Create an instance of class `T` on the host by assigning values from the reference object;
+    ** Create an instance of class `T` on the device by assigning values from the reference object;
+    ** Get access to the device object using `accessor` to check data-to-host copying;
+    ** Verify that the object of type `T` in the kernel has the same value that was initialized on the host.
