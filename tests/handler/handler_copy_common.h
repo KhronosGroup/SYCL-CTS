@@ -26,6 +26,7 @@
 #include <regex>
 #include <sstream>
 
+#include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 
 namespace handler_copy_common {
@@ -296,6 +297,27 @@ using range_helper = range_id_helper<sycl::range, dims, 1>;
 template <int dims>
 using id_helper = range_id_helper<sycl::id, dims, 0>;
 
+template <int dim>
+sycl::range<3> default_large_range() {
+  return range_helper<3>::cast(range_helper<dim>::make(5, 7, 9));
+}
+
+template <int dim_large, int dim_small, bool transposed_copy = false>
+sycl::range<3> transform_large_range_into_small(sycl::range<3> largeBufRange) {
+  sycl::range<3> smallBufRange = sycl::range<3>(1, 1, 1);
+
+  // Condense large range into small range so that both
+  // have the same size (= same number of items).
+  for (int d = 0; d < dim_large; ++d) {
+    if (transposed_copy) {
+      smallBufRange[std::min(d, dim_small - 1)] *=
+          largeBufRange[dim_large - d - 1];
+    } else {
+      smallBufRange[std::min(d, dim_small - 1)] *= largeBufRange[d];
+    }
+  }
+  return smallBufRange;
+}
 /**
  * @brief The copy_test_context encapsulates all host and device data required
  * for testing, and provides utility functions for verifying the result
@@ -622,23 +644,14 @@ class copy_test_context {
    * transposed_copy is set, in which case the destination will be transposed.
    */
   void setup_ranges() {
-    constexpr auto dim_large = dim_src > dim_dst ? dim_src : dim_dst;
-    constexpr auto dim_small = dim_src <= dim_dst ? dim_src : dim_dst;
+    constexpr auto dim_large = std::max(dim_src, dim_dst);
+    constexpr auto dim_small = std::min(dim_src, dim_dst);
 
-    auto largeBufRange =
-        range_helper<3>::cast(range_helper<dim_large>::make(5, 7, 9));
-    auto smallBufRange = sycl::range<3>(1, 1, 1);
+    auto largeBufRange = default_large_range<dim_large>();
+    auto smallBufRange =
+        transform_large_range_into_small<dim_large, dim_small, transposed_copy>(
+            largeBufRange);
 
-    // Condense large range into small range so that both
-    // have the same size (= same number of items).
-    for (int d = 0; d < dim_large; ++d) {
-      if (transposed_copy) {
-        smallBufRange[std::min(d, dim_small - 1)] *=
-            largeBufRange[dim_large - d - 1];
-      } else {
-        smallBufRange[std::min(d, dim_small - 1)] *= largeBufRange[d];
-      }
-    }
     assert(smallBufRange.size() == largeBufRange.size());
 
     auto largeCopyRange = largeBufRange;
@@ -819,6 +832,26 @@ static void test_write_acc_copy_functions(log_helper lh,
             "accessor<$dataT, $dim_dst, $mode_dst, $target>)"));
   }
   {
+    if constexpr (mode_src == mode_t::read) {
+      // Check copy(accessor, accessor) with constant_buffer target
+      copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(
+          queue);
+      ctx.verify_d2d_copy(
+          [&](sycl::handler& cgh) {
+            auto r =
+                ctx.getSrcBuf()
+                    .template get_access<mode_src, target_t::constant_buffer>(
+                        cgh, ctx.getSrcCopyRange(), ctx.getSrcCopyOffset());
+            auto w = ctx.getDstBuf().template get_access<mode_dst, target>(
+                cgh, ctx.getDstCopyRange(), ctx.getDstCopyOffset());
+            cgh.copy(r, w);
+          },
+          lh.set_line(__LINE__).set_op(
+              "copy(accessor<$dataT, $dim_src, $mode_src, constant_buffer>, "
+              "accessor<$dataT, $dim_dst, $mode_dst, $target>)"));
+    };
+  }
+  {
     // Check fill(accessor, dataT)
     const auto pattern = type_helper<dataT>::make(117);
     copy_test_context<dataT, dim_src, dim_dst, strided, transposed> ctx(queue);
@@ -933,6 +966,111 @@ static void test_all_variants(log_helper lh, sycl::queue& queue) {
   test_all_dimensions<dataT, false, true>(lh, queue);
   test_all_dimensions<dataT, true, true>(lh, queue);
 }
+
+/**
+ * @brief Class provides a test that checks if exception is thrown on explicit
+ * memory operation copy(acc, acc) in case of destination accessor range less
+ * than source accessor range
+ */
+template <typename DataT, typename DimSrcT, typename DimDstT, typename ModeSrcT,
+          typename ModeDstT>
+class CheckCopyAccToAccException {
+  static constexpr int dim_src = DimSrcT::value;
+  static constexpr int dim_dst = DimDstT::value;
+  static constexpr mode_t mode_src = ModeSrcT::value;
+  static constexpr mode_t mode_dst = ModeDstT::value;
+
+  sycl::range<dim_src> src_copy_range = range_helper<dim_src>::make(0, 0, 0);
+  sycl::range<dim_dst> dst_copy_range = range_helper<dim_dst>::make(0, 0, 0);
+
+  void make_ranges() {
+    constexpr auto dim_large = std::max(dim_src, dim_dst);
+    constexpr auto dim_small = std::min(dim_src, dim_dst);
+
+    auto large_range = default_large_range<dim_large>();
+    auto small_range =
+        transform_large_range_into_small<dim_large, dim_small>(large_range);
+
+    if (dim_src > dim_dst) {
+      src_copy_range = range_helper<dim_src>::cast(large_range);
+      // Creating destination range less than source range to force exception on
+      // explicit memory operation copy(acc, acc)
+      dst_copy_range =
+          range_helper<dim_dst>::cast(small_range - sycl::range<3>(1, 1, 1));
+    } else {
+      src_copy_range = range_helper<dim_src>::cast(small_range);
+      // Creating destination range less than source range to force exception on
+      // explicit memory operation copy(acc, acc)
+      dst_copy_range =
+          range_helper<dim_dst>::cast(large_range - sycl::range<3>(1, 1, 1));
+    }
+  }
+
+  std::string description(const std::string& type_name,
+                          const std::string& mode_src_name,
+                          const std::string& mode_dst_name,
+                          std::string&& src_target_name) {
+    std::stringstream ss;
+    ss << "Check that exception with error code \"errc::invalid\" is thrown on "
+          "explicit memory operation copy(src_acc, dst_acc) in case of dst_acc "
+          "with incorrect range size (T: "
+       << type_name << " dim src: " << dim_src << "dim dist: " << dim_dst
+       << " acc mode src: " << mode_src_name
+       << "acc mode dst: " << mode_dst_name
+       << " source target: " << src_target_name << ")";
+    return ss.str();
+  }
+
+ public:
+  CheckCopyAccToAccException() { make_ranges(); }
+  void operator()(sycl::queue& q, const std::string& type_name,
+                  const std::string&, const std::string&,
+                  const std::string& mode_src_name,
+                  const std::string& mode_dst_name) {
+    std::shared_ptr<DataT> src_buf_mem(new DataT[src_copy_range.size()],
+                                       std::default_delete<DataT[]>());
+    std::shared_ptr<DataT> dst_buf_mem(new DataT[dst_copy_range.size()],
+                                       std::default_delete<DataT[]>());
+
+    sycl::buffer<DataT, dim_src> src_buf(src_buf_mem, src_copy_range);
+    sycl::buffer<DataT, dim_dst> dst_buf(dst_buf_mem, dst_copy_range);
+
+    {
+      auto check_exception_with_invalid_dst_range = [&] {
+        q.submit([&](sycl::handler& cgh) {
+          auto src_acc =
+              src_buf.template get_access<mode_src, target_t::device>(cgh);
+          auto dst_acc =
+              dst_buf.template get_access<mode_dst, target_t::device>(cgh);
+          cgh.copy(src_acc, dst_acc);
+        });
+      };
+      INFO(description(type_name, mode_src_name, mode_dst_name, "device"));
+      CHECK_THROWS_MATCHES(
+          check_exception_with_invalid_dst_range(), sycl::exception,
+          sycl_cts::util::equals_exception(sycl::errc::invalid));
+    }
+
+    if constexpr (mode_src == mode_t::read) {
+      auto check_exception_with_invalid_dst_range_constant_buffer = [&] {
+        q.submit([&](sycl::handler& cgh) {
+          auto src_acc =
+              src_buf.template get_access<mode_src, target_t::constant_buffer>(
+                  cgh);
+          auto dst_acc =
+              dst_buf.template get_access<mode_dst, target_t::device>(cgh);
+          cgh.copy(src_acc, dst_acc);
+        });
+      };
+      INFO(description(type_name, mode_src_name, mode_dst_name,
+                       "constant_buffer"));
+      CHECK_THROWS_MATCHES(
+          check_exception_with_invalid_dst_range_constant_buffer(),
+          sycl::exception,
+          sycl_cts::util::equals_exception(sycl::errc::invalid));
+    }
+  }
+};
 
 }  // namespace handler_copy_common
 #endif  // __SYCLCTS_TESTS_HANDLER_COPY_COMMON_H
