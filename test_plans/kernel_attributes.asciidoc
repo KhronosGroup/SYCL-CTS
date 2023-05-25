@@ -1,0 +1,53 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for behavior for optional kernel features
+
+This is a test plan for optional kernel features described in
+https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:kernel.attributes[5.8.1. Kernel attributes]
+and not checked in optional kernel features tests.
+
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line if not stated otherwise.
+
+== Tests
+
+All tests should use following methods of kernels submission unless stated otherwise:
+
+* parallel_for_work_group
+* parallel_for
+
+Kernel should be defined:
+
+* through lambda in submission call
+* through a separate functor
+* through a separate lambda
+
+=== Call for work_group_size_hint
+
+For `size = 4`:
+
+For following dimensions `D = 1, 2, 3`:
+
+For kernel invocation with `work_group_size = size, size/2, size * 2`:
+
+* Create kernel with attribute `[[sycl::work_group_size_hint(W...)]]` where `W...` is `size` repeated for each tested dimension.
+Kernel should write a value to acessor to a buffer<int, D>.
+* Submit kernel to device.
+* Check that kernel is executed without any exception and have expected result.
+
+=== Call for vec_type_hint
+
+In addition to parallel_for_work_group and parallel_for this test should use single_task for kernel invocation.
+
+This test case should use `#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS` to skip check id deprecated features are not tested.
+
+* Create kernel with attribute `[[sycl::vec_type_hint(<sycl::vec<T, N>>)]]` where `N = 1, 2, 3, 4, 8 or 16` and `T = int, float`.
+Kernel should write a value to acessor to a buffer<sycl::vec<T, N>, 1>.
+* Submit kernel to device.
+* Check that kernel is executed without any exception and have expected result.

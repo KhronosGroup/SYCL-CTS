@@ -124,21 +124,3 @@ The first kernel is submitted unconditionally to the device.
 Each of the remaining kernels is submitted to the device only if it supports the kernel's feature / work-group size / sub-group size.
 
 Check that no exception is thrown.
-
-=== Call for work_group_size_hint
-
-For following dimensions `D = 1, 2, 3`:
-
-* Create kernel with attribute `[[sycl::work_group_size_hint(W...)]]` where `W...` is `size = 16` repeated for each tested dimension.
-Kernel should write a value to acessor to a buffer<int, D>.
-* Submit kernel to device.
-* Check that kernel is executed without any exception and have expected result.
-
-=== Call for vec_type_hint
-
-This test case should use `#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS` to skip check id deprecated features are not tested.
-
-* Create kernel with attribute `[[sycl::vec_type_hint(<sycl::vec<T, N>>)]]` where `N = 1, 2, 3, 4, 8 or 16` and `T = int, float`.
-Kernel should write a value to acessor to a buffer<sycl::vec<T, N>, 1>.
-* Submit kernel to device.
-* Check that kernel is executed without any exception and have expected result.
