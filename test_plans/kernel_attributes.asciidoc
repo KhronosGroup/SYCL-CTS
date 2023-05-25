@@ -1,9 +1,9 @@
 :sectnums:
 :xrefstyle: short
 
-= Test plan for behavior for optional kernel features
+= Test plan for behavior of kernel attributes
 
-This is a test plan for optional kernel features described in
+This is a test plan for kernel attributes described in
 https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#sec:kernel.attributes[5.8.1. Kernel attributes]
 and not checked in optional kernel features tests.
 
