@@ -205,7 +205,7 @@ void common_run_tests() {
   for_all_types_vectors_marray<action, actionArgsT...>(types);
 #else
   for_all_types<action, actionArgsT...>(types);
-  for_type_vectors_marray<action, int, actionArgsT...>("int");
+  for_type_vectors_marray_reduced<action, int, actionArgsT...>("int");
 #endif
 }
 
