@@ -59,7 +59,7 @@ Same as previous tests but each command is run on different queue with diffrent 
 
 === Requirements on overlapping sub-buffers
 
-This check is skipped if device doesn't support `aspect::usm_atomic_device_allocations`.
+This check is skipped if device doesn't support `aspect::usm_device_allocations`.
 
 Create buffer on array, and two overlapping sub-buffers
 
