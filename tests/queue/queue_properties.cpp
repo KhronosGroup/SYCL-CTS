@@ -104,9 +104,12 @@ void check_enable_profiling_prop(sycl::queue& queue) {
       "enable_profiling>()");
 }
 
-void check_props(sycl::queue& queue) {
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+void check_props(sycl::queue &queue) {
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   check_enable_profiling_prop(queue);
   check_in_order_prop(queue);
+#endif
 }
 
 void check_in_order_throws(sycl::queue& queue) {
