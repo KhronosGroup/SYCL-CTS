@@ -104,30 +104,33 @@ void check_enable_profiling_prop(sycl::queue& queue) {
       "enable_profiling>()");
 }
 
-// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
-void check_props(sycl::queue &queue) {
-#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+void check_props(sycl::queue& queue) {
   check_enable_profiling_prop(queue);
   check_in_order_prop(queue);
-#endif
 }
 
 void check_in_order_throws(sycl::queue& queue) {
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   auto action = [&] {
     auto get_prop =
         queue.template get_property<sycl::property::queue::enable_profiling>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
+#endif
 }
 
 void check_enable_profiling_throws(sycl::queue& queue) {
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
   auto action = [&] {
     auto get_prop =
         queue.template get_property<sycl::property::queue::in_order>();
   };
   CHECK_THROWS_MATCHES(action(), sycl::exception,
                        sycl_cts::util::equals_exception(sycl::errc::invalid));
+#endif
 }
 
 TEST_CASE("check property::queue::enable_profiling", "[queue]") {
