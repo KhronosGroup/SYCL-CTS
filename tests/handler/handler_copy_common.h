@@ -831,6 +831,7 @@ static void test_write_acc_copy_functions(log_helper lh,
             "copy(accessor<$dataT, $dim_src, $mode_src, $target>, "
             "accessor<$dataT, $dim_dst, $mode_dst, $target>)"));
   }
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS  
   {
     if constexpr (mode_src == mode_t::read) {
       // Check copy(accessor, accessor) with constant_buffer target
@@ -851,6 +852,7 @@ static void test_write_acc_copy_functions(log_helper lh,
               "accessor<$dataT, $dim_dst, $mode_dst, $target>)"));
     };
   }
+#endif
   {
     // Check fill(accessor, dataT)
     const auto pattern = type_helper<dataT>::make(117);
@@ -1051,6 +1053,7 @@ class CheckCopyAccToAccException {
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
 
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     if constexpr (mode_src == mode_t::read) {
       auto check_exception_with_invalid_dst_range_constant_buffer = [&] {
         q.submit([&](sycl::handler& cgh) {
@@ -1069,6 +1072,7 @@ class CheckCopyAccToAccException {
           sycl::exception,
           sycl_cts::util::equals_exception(sycl::errc::invalid));
     }
+#endif
   }
 };
 
