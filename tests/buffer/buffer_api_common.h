@@ -81,12 +81,10 @@ inline void precalculate<3>(sycl::range<3>& rangeIn, sycl::range<3>& rangeOut,
 template <typename prop, typename buffer_t>
 void check_throw_matches(buffer_t& buf, const char* prop_name) {
 #if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-  auto action = [&] {
-    auto no_prop = buf.template get_property<prop>();
-  };
+  auto action = [&] { auto no_prop = buf.template get_property<prop>(); };
   INFO("Check that get_property() throws errc::invalid " << prop_name);
   CHECK_THROWS_MATCHES(action(), sycl::exception,
-      sycl_cts::util::equals_exception(sycl::errc::invalid));
+                       sycl_cts::util::equals_exception(sycl::errc::invalid));
 #endif
 }
 
