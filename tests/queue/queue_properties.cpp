@@ -21,6 +21,7 @@
 
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
+#include "../../../util/sycl_exceptions.h"
 
 #define TEST_NAME queue_properties
 
@@ -108,6 +109,20 @@ void check_props(sycl::queue &queue) {
   check_in_order_prop(queue);
 }
 
+void check_in_order_throws(sycl::queue &queue) {
+  auto action = [&] {
+    auto get_prop = queue.template get_property<sycl::property::queue::enable_profiling>();
+  };
+  CHECK_THROWS_MATCHES(action(), sycl::exception, sycl_cts::util::equals_exception(sycl::errc::invalid));
+}
+
+void check_enable_profiling_throws(sycl::queue &queue) {
+  auto action = [&] {
+    auto get_prop = queue.template get_property<sycl::property::queue::in_order>();
+  };
+  CHECK_THROWS_MATCHES(action(), sycl::exception, sycl_cts::util::equals_exception(sycl::errc::invalid));
+}
+
 TEST_CASE("check property::queue::enable_profiling", "[queue]") {
   auto device = util::get_cts_object::device();
   if (!device.has(sycl::aspect::queue_profiling))
@@ -116,6 +131,7 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
   sycl::queue queue(
       device, sycl::property_list{sycl::property::queue::enable_profiling()});
   check_enable_profiling_prop(queue);
+  check_enable_profiling_throws(queue);
 }
 
 TEST_CASE("check property::queue::in_order", "[queue]") {
@@ -126,36 +142,43 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
   SECTION("with constructor (propList)") {
     sycl::queue queue(sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (asyncHandler, propList)") {
     sycl::queue queue(asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (deviceSelector, propList)") {
     sycl::queue queue(cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
     sycl::queue queue(cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclDevice, propList)") {
     sycl::queue queue(device,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclDevice, asyncHandler, propList)") {
     sycl::queue queue(device, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclContext, deviceSelector, propList)") {
     sycl::queue queue(context, cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION(
       "with constructor (syclContext, deviceSelector, asyncHandler, "
@@ -163,17 +186,20 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
     sycl::queue queue(context, cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclContext, syclDevice, propList)") {
     sycl::queue queue(context, device,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION(
       "with constructor (syclContext, syclDevice, asyncHandler, propList)") {
     sycl::queue queue(context, device, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
 }
 

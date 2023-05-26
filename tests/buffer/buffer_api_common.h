@@ -25,6 +25,7 @@
 #include "../common/common.h"
 #include "../common/get_group_range.h"
 #include "../common/once_per_unit.h"
+#include "../../../util/sycl_exceptions.h"
 
 namespace buffer_api_common {
 using namespace sycl_cts;
@@ -74,6 +75,44 @@ inline void precalculate<3>(sycl::range<3> &rangeIn,
   rangeIn = sycl::range<3>(elementsIn, elementsIn, elementsIn);
   rangeOut = sycl::range<3>(elementsOut, elementsIn, elementsIn);
   elementsCount = (elementsOut * elementsIn * elementsIn);
+}
+
+template <typename prop, typename buffer_t>
+void check_throw_matches(buffer_t& buf, const char* prop_name) {
+  auto action = [&] {
+    auto no_prop = buf.template get_property<prop>();
+  };
+  INFO("Check that get_property() throws errc::invalid " << prop_name);
+  CHECK_THROWS_MATCHES(action(), sycl::exception,
+      sycl_cts::util::equals_exception(sycl::errc::invalid));
+}
+
+template <typename buffer_t>
+void check_get_prop_throws(buffer_t& buf) {
+  const bool use_host_ptr = buf.template has_property<sycl::property::buffer::use_host_ptr>();
+  const bool use_mutex = buf.template has_property<sycl::property::buffer::use_mutex>();
+  const bool context_bound = buf.template has_property<sycl::property::buffer::context_bound>();
+
+  if (use_host_ptr) {
+    if (use_mutex) {
+      check_throw_matches<sycl::property::buffer::context_bound>(buf, "context_bound");
+    } else if (context_bound) {
+      check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+    } else {
+      check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+      check_throw_matches<sycl::property::buffer::context_bound>(buf, "context_bound");
+    }
+  } else if (use_mutex) {
+    if (context_bound) {
+      check_throw_matches<sycl::property::buffer::use_host_ptr>(buf, "use_host_ptr");
+    } else {
+      check_throw_matches<sycl::property::buffer::use_host_ptr>(buf, "use_host_ptr");
+      check_throw_matches<sycl::property::buffer::context_bound>(buf, "context_bound");
+    }
+  } else if (context_bound) {
+    check_throw_matches<sycl::property::buffer::use_host_ptr>(buf, "use_host_ptr");
+    check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+  }
 }
 
 /*!
@@ -410,6 +449,29 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
       check_return_type<sycl::context>(
           log, contentBoundProperty.get_context(),
           "sycl::property::buffer::context_bound::get_context()");
+
+      /* Check that get_property() throws an exception with the errc::invalid
+       * error code if buffer was not constructed with use_host_ptr property
+       */
+      {
+        sycl::buffer<T, dims> buf_host_ptr(data.get(), r, {sycl::property::buffer::use_host_ptr()});
+        sycl::buffer<T, dims> buf_mutex(data.get(), r, {sycl::property::buffer::use_mutex(mutex)});
+        sycl::buffer<T, dims> buf_context(data.get(), r, {sycl::property::buffer::context_bound(context)});
+
+        sycl::buffer<T, dims> buf_host_ptr_mutex(data.get(), r, {sycl::property::buffer::use_host_ptr(),
+            sycl::property::buffer::use_mutex(mutex)});
+        sycl::buffer<T, dims> buf_host_ptr_context(data.get(), r, {sycl::property::buffer::use_host_ptr(),
+            sycl::property::buffer::context_bound(context)});
+        sycl::buffer<T, dims> buf_mutex_context(data.get(), r, {sycl::property::buffer::use_mutex(mutex),
+            sycl::property::buffer::context_bound(context)});
+
+        check_get_prop_throws(buf_host_ptr);
+        check_get_prop_throws(buf_mutex);
+        check_get_prop_throws(buf_context);
+        check_get_prop_throws(buf_host_ptr_mutex);
+        check_get_prop_throws(buf_host_ptr_context);
+        check_get_prop_throws(buf_mutex_context);
+      }
     }
 
     q.wait_and_throw();
