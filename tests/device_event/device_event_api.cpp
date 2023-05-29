@@ -73,6 +73,9 @@ class TEST_NAME : public util::test_base {
           cgh.parallel_for<class device_event_wait>(
               sycl::nd_range<1>(range, range),
               [=](sycl::nd_item<1> ndItem) {
+// FIXME: re-enable when sycl::access::decorated and get_multi_ptr is
+// implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
                 // Run asynchronous copy for full buffer
                 sycl::device_event deviceEvent = ndItem.async_work_group_copy(
                     localAcc
@@ -82,7 +85,7 @@ class TEST_NAME : public util::test_base {
                     bufferSize);
 
                 deviceEvent.wait();
-
+#endif
                 // Check sample was updated
                 if (localAcc[sampleIndex] != referenceValue) {
                   errorAcc[0] = true;

@@ -34,6 +34,8 @@ TEST_NAME = 'LOAD_STORE'
 
 load_store_test_template = Template(
     """
+// FIXME: re-enable when sycl::access::decorated is implemented
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
     {
         ${type} inputData${type_as_str}${size}[${size}] = {${in_order_vals}};
         ${type} outputData${type_as_str}${size}[${size}] = {${val}};
@@ -84,6 +86,7 @@ load_store_test_template = Template(
 
         testQueue.wait_and_throw();
     }
+#endif
       """)
 
 
