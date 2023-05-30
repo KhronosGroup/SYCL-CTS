@@ -41,7 +41,7 @@ void test_accessor_methods(const AccT &accessor,
     CHECK(acc_isPlaceholder == expected_isPlaceholder);
   }
 
-#if SYCL_CTS_TEST_DEPRECATED_FEATURES
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {
     INFO("check get_size() method");
     auto acc_get_size = accessor.get_size();
