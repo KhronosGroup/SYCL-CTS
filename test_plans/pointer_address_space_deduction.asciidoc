@@ -1,0 +1,47 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan of address space deduction for C++ pointer type variables in kernel function
+
+This is a test plan of address space deduction for C++ pointers described in
+section https://registry.khronos.org/SYCL/specs/sycl-2020/html/sycl-2020.html#_address_space_deduction[5.9. Address-space deduction]
+of the specification.
+
+== Testing scope
+
+Test plan describes checking correctness of the raw C++ pointers memory region
+deducing in case of its using inside kernel function.
+
+=== Device coverage
+
+Test described below are performed only on the default device that is selected
+on the CTS command line.
+
+== Tests
+
+=== Checking the address space deducing for function argument of pointer type
+
+* Define a function that takes a pointer value and the corresponding expected
+  content of pointed memory
+* The function should check that a content of the pointed memory is equal to
+  the expected value
+* Define a kernel that creates variables in the global, local and private
+  memory with known values
+* In the kernel code create `multi_ptr` objects with the corresponding address
+  space and pointing to the variables created earlier
+* Call the function from the kernel with appropriate arguments and check the
+  results of the function execution
+
+=== Checking the address space deducing for function return value of pointer type
+
+* Define a function that takes a pointer value and returns a pointer offset by 
+  one from the initial value
+* Define a kernel that creates two elements array in the global, local and
+  private memory with known values
+* In the kernel code create `multi_ptr` objects with the corresponding address
+  space and pointing to the arrays created earlier
+* Call the function from the kernel with appropriate arguments and save the
+  results in raw C++ pointers
+* Check a content of memory pointed by raw pointers
+
+Address space deducing for reference types should be tested in a similar way.
