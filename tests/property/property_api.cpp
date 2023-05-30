@@ -75,9 +75,7 @@ TEST_CASE("property api", "[property]") {
     const auto objects = named_type_pack<sycl::buffer<int>>::generate("buffer");
     for_all_combinations<check_property_object>(properties, objects);
   }
-// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
+#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
   {
     const auto properties = named_type_pack<
         sycl::property::image::use_host_ptr, sycl::property::image::use_mutex,
@@ -85,8 +83,9 @@ TEST_CASE("property api", "[property]") {
                                                         "image::use_mutex",
                                                         "image::context_bound");
     const auto objects =
-        named_type_pack<sycl::sampled_image, sycl::unsampled_image>::generate(
-            "sampled_image", "unsampled_image");
+        named_type_pack<sycl::sampled_image<>,
+                        sycl::unsampled_image<>>::generate("sampled_image",
+                                                           "unsampled_image");
     for_all_combinations<check_property_object>(properties, objects);
   }
 #else
@@ -96,9 +95,7 @@ TEST_CASE("property api", "[property]") {
       "Skipping the test case.");
 #endif
   {
-// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "Implementation does not define sycl::unsampled_image_accessor and "
         "sycl::host_unsampled_image_accessor "
@@ -110,17 +107,14 @@ TEST_CASE("property api", "[property]") {
     // provide any template argument for the types that require it
     const auto objects =
         named_type_pack<sycl::accessor<int>, sycl::host_accessor<int>
-// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
+#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
                         ,
-                        sycl::unsampled_image_accessor,
-                        sycl::host_unsampled_image_accessor
+                        sycl::unsampled_image_accessor<
+                            sycl::int4, 1, sycl::access_mode::read_write>,
+                        sycl::host_unsampled_image_accessor<sycl::int4, 1>
 #endif
                         >::generate("accessor", "host_accessor"
-// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if !(defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
+#if !(defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
                                     ,
                                     "unsampled_image_accessor",
                                     "host_unsampled_image_accessor"
