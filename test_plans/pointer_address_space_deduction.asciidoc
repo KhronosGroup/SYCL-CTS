@@ -44,4 +44,6 @@ on the CTS command line.
   results in raw C++ pointers
 * Check a content of memory pointed by raw pointers
 
+=== Address space deducing for reference types
+
 Address space deducing for reference types should be tested in a similar way.
