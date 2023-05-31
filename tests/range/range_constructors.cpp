@@ -25,6 +25,9 @@
 
 namespace range_constructors {
 
+template <int dim>
+class kernel;
+
 enum class semantic_by_value_codes : size_t {
   ctor_size = 0,
   ctor_copy = 1,
@@ -211,7 +214,7 @@ TEST_CASE(
       queue.submit([&](sycl::handler& cgh) {
         sycl::accessor res_acc(res_buf, cgh);
         sycl::accessor res_equality_acc(res_equality_buf, cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<1>>([=] {
           check_by_value_semantics<1>(res_acc);
           check_equality<1>(res_equality_acc);
         });
@@ -234,7 +237,7 @@ TEST_CASE(
       queue.submit([&](sycl::handler& cgh) {
         sycl::accessor res_acc(res_buf, cgh);
         sycl::accessor res_equality_acc(res_equality_buf, cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<2>>([=] {
           check_by_value_semantics<2>(res_acc);
           check_equality<2>(res_equality_acc);
         });
@@ -257,9 +260,9 @@ TEST_CASE(
       queue.submit([&](sycl::handler& cgh) {
         sycl::accessor res_acc(res_buf, cgh);
         sycl::accessor res_equality_acc(res_equality_buf, cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<3>>([=] {
           check_by_value_semantics<3>(res_acc);
-          check_equality<2>(res_equality_acc);
+          check_equality<3>(res_equality_acc);
         });
       });
     }
@@ -303,7 +306,7 @@ TEST_CASE("sycl::range constructors. copy by value semantics on host",
     }
   }
   SECTION("Checking for dim 3 on host") {
-    check_by_value_semantics<2>(result);
+    check_by_value_semantics<3>(result);
     for (int i = 0; i < error_count; ++i) {
       INFO(get_error_string(i));
       CHECK(result[i]);
