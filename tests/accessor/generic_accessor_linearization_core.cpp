@@ -37,8 +37,7 @@ namespace generic_accessor_linearization_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor linearization test. core types", "[accessor]")({
   using namespace generic_accessor_linearization;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_generic_linearization_for_type>(types);
+  common_run_tests<run_generic_linearization_for_type>();
 });
 
 }  // namespace generic_accessor_linearization_core

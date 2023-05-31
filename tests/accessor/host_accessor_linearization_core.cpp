@@ -34,8 +34,7 @@ namespace host_accessor_liniarization_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::host_accessor linearization. core types", "[accessor]")({
   using namespace host_accessor_linearization;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_host_linearization_for_type>(types);
+  common_run_tests<run_host_linearization_for_type>();
 });
 
 }  // namespace host_accessor_liniarization_core

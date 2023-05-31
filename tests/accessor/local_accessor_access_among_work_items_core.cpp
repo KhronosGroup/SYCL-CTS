@@ -25,10 +25,7 @@ namespace local_accessor_access_among_work_items_core {
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::local_accessor access among work items. core types", "[accessor]")({
-  const auto types = get_conformance_type_pack();
-
-  for_all_types_vectors_marray<
-      run_local_accessor_access_among_work_items_tests>(types);
+  common_run_tests<run_local_accessor_access_among_work_items_tests>();
 });
 
 }  // namespace local_accessor_access_among_work_items_core

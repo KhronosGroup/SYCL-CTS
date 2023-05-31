@@ -19,8 +19,7 @@ namespace local_accessor_api_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::local_accessor api. core types", "[accessor]")({
   using namespace local_accessor_api_common;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_local_api_for_type>(types);
+  common_run_tests<run_local_api_for_type>();
 });
 
 }  // namespace local_accessor_api_core
