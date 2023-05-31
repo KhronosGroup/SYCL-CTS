@@ -77,10 +77,11 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
           res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
       auto res_acc2 =
           res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-      cgh.parallel_for<kernel<3>>(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
-        res_acc1[index] = acc1[index];
-        res_acc2[index] = acc2[index];
-      });
+      cgh.parallel_for<kernel<3>>(sycl::range<1>(buffer_size),
+                                  [=](sycl::id<1> index) {
+                                    res_acc1[index] = acc1[index];
+                                    res_acc2[index] = acc2[index];
+                                  });
     });
     queue.wait_and_throw();
   }
@@ -140,10 +141,11 @@ TEST_CASE(
             res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
         auto res_acc2 =
             res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.parallel_for<kernel<6>>(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
-          res_acc1[index] = acc1[index];
-          res_acc2[index] = acc2[index];
-        });
+        cgh.parallel_for<kernel<6>>(sycl::range<1>(buffer_size),
+                                    [=](sycl::id<1> index) {
+                                      res_acc1[index] = acc1[index];
+                                      res_acc2[index] = acc2[index];
+                                    });
       });
     }
 
@@ -156,7 +158,7 @@ TEST_CASE(
 }
 
 DISABLED_FOR_TEST_CASE(hipSYCL)
-("Requirements on overlapping sub-buffers", "[invoke]") ({
+("Requirements on overlapping sub-buffers", "[invoke]")({
   auto device = sycl_cts::util::get_cts_object::device();
   auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -179,8 +181,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       int* pflag = sycl::malloc_device<int>(1, queue);
       // assign pflag value to 0
       queue
-          .submit(
-              [&](sycl::handler& cgh) { cgh.single_task<kernel<7>>([=] { *pflag = 0; }); })
+          .submit([&](sycl::handler& cgh) {
+            cgh.single_task<kernel<7>>([=] { *pflag = 0; });
+          })
           .wait();
       queue.submit([&](sycl::handler& cgh) {
         auto acc1 =
