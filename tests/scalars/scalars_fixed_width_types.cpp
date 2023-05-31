@@ -60,7 +60,7 @@ TEST_CASE("Fixed width types size equality", "[scalars]") {
         res_acc[0] = sizeof(int8_t) == 1;
         res_acc[1] = sizeof(int16_t) == 2;
         res_acc[2] = sizeof(int32_t) == 4;
-        res_acc[3] = sizeof(int64_t) == 1;
+        res_acc[3] = sizeof(int64_t) == 8;
         res_acc[4] = sizeof(uint8_t) == 1;
         res_acc[5] = sizeof(uint16_t) == 2;
         res_acc[6] = sizeof(uint32_t) == 4;
