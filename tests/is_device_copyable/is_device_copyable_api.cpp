@@ -133,8 +133,8 @@ TEST_CASE("is_device_copyable specialization for user defined class",
                           temp_obj.b == expected_val<float>() &&
                           temp_obj.c == expected_val<char>();
 
-        dev_data_acc[0] = user_def_type(expected_val<int>(), expected_val<float>(),
-                                        expected_val<char>());
+        dev_data_acc[0] = user_def_type(
+            expected_val<int>(), expected_val<float>(), expected_val<char>());
       });
     });
     queue.wait_and_throw();
@@ -158,4 +158,4 @@ TEST_CASE("is_device_copyable specialization for user defined class",
 TEST_CASE("Skip tests", "[is_device_copyable]") {
   SKIP("SYCL_DEVICE_COPYABLE is not defined!");
 }
-#endif // SYCL_DEVICE_COPYABLE
+#endif  // SYCL_DEVICE_COPYABLE
