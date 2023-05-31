@@ -119,22 +119,22 @@ TEST_CASE("is_device_copyable specialization for user defined class",
     sycl::buffer<user_def_type, 1> dev_data_buf(&device_object, {1});
 
     queue.submit([&](sycl::handler& cgh) {
-      sycl::accessor<bool, 0, sycl::access_mode::read_write> host_res_acc(
-          host_res_buf, cgh);
-      sycl::accessor<user_def_type, 0, sycl::access_mode::read_write>
-          host_data_acc(host_data_buf, cgh);
-      sycl::accessor<user_def_type, 0, sycl::access_mode::read_write>
-          dev_data_acc(dev_data_buf, cgh);
+      auto host_res_acc =
+          host_res_buf.template get_access<sycl::access_mode::read_write>(cgh);
+      auto host_data_acc =
+          host_data_buf.template get_access<sycl::access_mode::read_write>(cgh);
+      auto dev_data_acc =
+          dev_data_buf.template get_access<sycl::access_mode::read_write>(cgh);
 
       cgh.single_task<kernel_name>([=] {
-        const user_def_type& temp_obj =
-            host_data_acc;  // to access class members
-        host_res_acc = temp_obj.a == expected_val<int>() &&
-                       temp_obj.b == expected_val<float>() &&
-                       temp_obj.c == expected_val<char>();
+        // to access class members
+        const user_def_type& temp_obj = host_data_acc[0];
+        host_res_acc[0] = temp_obj.a == expected_val<int>() &&
+                          temp_obj.b == expected_val<float>() &&
+                          temp_obj.c == expected_val<char>();
 
-        dev_data_acc = user_def_type(expected_val<int>(), expected_val<float>(),
-                                     expected_val<char>());
+        dev_data_acc[0] = user_def_type(expected_val<int>(), expected_val<float>(),
+                                        expected_val<char>());
       });
     });
     queue.wait_and_throw();
