@@ -21,6 +21,7 @@
 #include "../common/common.h"
 #include "../common/type_list.h"
 
+#if SYCL_DEVICE_COPYABLE == 1
 class kernel_name;
 
 /** @brief User defined class, must satisfy the
@@ -100,7 +101,6 @@ TEST_CASE("is_device_copyable UnaryTrait requirements",
 
 TEST_CASE("is_device_copyable specialization for user defined class",
           "[is_device_copyable]") {
-#if SYCL_DEVICE_COPYABLE == 1
   INFO(
       "User defined type must be device copyable after specialization for "
       "sycl::is_device_copyable<T>");
@@ -152,8 +152,10 @@ TEST_CASE("is_device_copyable specialization for user defined class",
     INFO("Check that device object has expected values on the host");
     CHECK(device_object == reference_object);
   }
+}
 
 #else
+TEST_CASE("Skip tests", "[is_device_copyable]") {
   SKIP("SYCL_DEVICE_COPYABLE is not defined!");
-#endif
 }
+#endif // SYCL_DEVICE_COPYABLE
