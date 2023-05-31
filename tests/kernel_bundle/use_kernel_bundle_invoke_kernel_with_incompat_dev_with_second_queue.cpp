@@ -29,6 +29,7 @@ using namespace sycl_cts::tests::use_kernel_bundle;
 template <typename KernelDescriptorT>
 struct run_verification {
   std::string kernel_name;
+  util::logger* log;
 
   void check_exception(sycl::queue& primary_queue,
                        sycl::queue& secondary_queue) {
@@ -50,14 +51,14 @@ struct run_verification {
           secondary_queue);
     } catch (const sycl::exception& e) {
       if (e.code() != sycl::errc::kernel_not_supported) {
-        FAIL(log, unexpected_exception_msg);
+        FAIL(*log, unexpected_exception_msg);
         throw;
       }
       ex_was_thrown = true;
     }
 
     if (!ex_was_thrown) {
-      FAIL(log, "Exception was not thrown for kernel name: " + kernel_name);
+      FAIL(*log, "Exception was not thrown for kernel name: " + kernel_name);
     }
   }
   /** @brief Call sycl::handler::use_kernel_bundle with user-defined kernel for
@@ -71,6 +72,7 @@ struct run_verification {
   void operator()(util::logger &log, const sycl::context &ctx,
                   const std::string &kernel_name) {
     this->kernel_name = kernel_name;
+    this->log = &log;
 
     auto restrictions{KernelDescriptorT::get_restrictions()};
     std::vector<sycl::device> compatible_devs;
