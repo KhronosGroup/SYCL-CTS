@@ -152,10 +152,10 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {2,
-                              4,
-                              2,
-                              2,
+    convertType vals[size] = {static_cast<convertType>(2),
+                              static_cast<convertType>(4),
+                              static_cast<convertType>(2),
+                              static_cast<convertType>(2),
                               static_cast<convertType>(-2),
                               static_cast<convertType>(-4),
                               static_cast<convertType>(-2),
@@ -177,10 +177,10 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {2,
-                              3,
-                              1,
-                              2,
+    convertType vals[size] = {static_cast<convertType>(2),
+                              static_cast<convertType>(3),
+                              static_cast<convertType>(1),
+                              static_cast<convertType>(2),
                               static_cast<convertType>(-2),
                               static_cast<convertType>(-3),
                               static_cast<convertType>(-1),
@@ -202,10 +202,10 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {3,
-                              4,
-                              2,
-                              3,
+    convertType vals[size] = {static_cast<convertType>(3),
+                              static_cast<convertType>(4),
+                              static_cast<convertType>(2),
+                              static_cast<convertType>(3),
                               static_cast<convertType>(-2),
                               static_cast<convertType>(-3),
                               static_cast<convertType>(-1),
@@ -227,10 +227,10 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {2,
-                              3,
-                              1,
-                              2,
+    convertType vals[size] = {static_cast<convertType>(2),
+                              static_cast<convertType>(3),
+                              static_cast<convertType>(1),
+                              static_cast<convertType>(2),
                               static_cast<convertType>(-3),
                               static_cast<convertType>(-4),
                               static_cast<convertType>(-2),
@@ -511,11 +511,7 @@ template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
 
-// FIXME: re-enable when as() for bool is implemented
-// https://github.com/intel/llvm/issues/9251
-#ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   result += check_convert_as_all_dims<vecType, N, bool>(inputVec);
-#endif
   result += check_convert_as_all_dims<vecType, N, char>(inputVec);
   result += check_convert_as_all_dims<vecType, N, signed char>(inputVec);
   result += check_convert_as_all_dims<vecType, N, unsigned char>(inputVec);
