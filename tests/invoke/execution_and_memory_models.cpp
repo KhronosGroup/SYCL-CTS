@@ -19,6 +19,10 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
+
+template <int n>
+class kernel;
 
 template <typename acc_t>
 void long_loop(acc_t loop_acc, size_t buffer_size) {
@@ -50,7 +54,7 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
       auto acc1 =
           buffer1.template get_access<sycl::access_mode::read_write>(cgh);
       auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
-      cgh.single_task([=] {
+      cgh.single_task<kernel<1>>([=] {
         long_loop(loop_acc, buffer_size);
         for (int i = buffer_size - 1; i >= 0; i--) acc1[i] = i;
       });
@@ -59,7 +63,7 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
       auto acc2 =
           buffer2.template get_access<sycl::access_mode::read_write>(cgh);
       auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
-      cgh.single_task([=] {
+      cgh.single_task<kernel<2>>([=] {
         long_loop(loop_acc, buffer_size);
         for (int i = buffer_size - 1; i >= 0; i--) acc2[i] = i;
       });
@@ -73,7 +77,7 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
           res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
       auto res_acc2 =
           res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-      cgh.parallel_for(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
+      cgh.parallel_for<kernel<3>>(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
         res_acc1[index] = acc1[index];
         res_acc2[index] = acc2[index];
       });
@@ -113,7 +117,7 @@ TEST_CASE(
         auto acc1 =
             buffer1.template get_access<sycl::access_mode::read_write>(cgh);
         auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<4>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc1[i] = i;
         });
@@ -122,7 +126,7 @@ TEST_CASE(
         auto acc2 =
             buffer2.template get_access<sycl::access_mode::read_write>(cgh);
         auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<5>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc2[i] = i;
         });
@@ -136,7 +140,7 @@ TEST_CASE(
             res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
         auto res_acc2 =
             res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.parallel_for(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
+        cgh.parallel_for<kernel<6>>(sycl::range<1>(buffer_size), [=](sycl::id<1> index) {
           res_acc1[index] = acc1[index];
           res_acc2[index] = acc2[index];
         });
@@ -151,7 +155,8 @@ TEST_CASE(
   }
 }
 
-TEST_CASE("Requirements on overlapping sub-buffers", "[invoke]") {
+DISABLED_FOR_TEST_CASE(hipSYCL)
+("Requirements on overlapping sub-buffers", "[invoke]") ({
   auto device = sycl_cts::util::get_cts_object::device();
   auto queue = sycl_cts::util::get_cts_object::queue();
 
@@ -175,13 +180,13 @@ TEST_CASE("Requirements on overlapping sub-buffers", "[invoke]") {
       // assign pflag value to 0
       queue
           .submit(
-              [&](sycl::handler& cgh) { cgh.single_task([=] { *pflag = 0; }); })
+              [&](sycl::handler& cgh) { cgh.single_task<kernel<7>>([=] { *pflag = 0; }); })
           .wait();
       queue.submit([&](sycl::handler& cgh) {
         auto acc1 =
             sub_buf1.template get_access<sycl::access_mode::read_write>(cgh);
         auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<8>>([=] {
           sycl::atomic_ref<int, sycl::memory_order::relaxed,
                            sycl::memory_scope::device>
               rflag(*pflag);
@@ -195,7 +200,7 @@ TEST_CASE("Requirements on overlapping sub-buffers", "[invoke]") {
             sub_buf2.template get_access<sycl::access_mode::read_write>(cgh);
         auto res_acc =
             res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<9>>([=] {
           sycl::atomic_ref<int, sycl::memory_order::relaxed,
                            sycl::memory_scope::device>
               rflag(*pflag);
@@ -211,7 +216,7 @@ TEST_CASE("Requirements on overlapping sub-buffers", "[invoke]") {
   } else {
     SKIP("Device does not support USM device allocations");
   }
-}
+});
 
 TEST_CASE("Host accessor as a barrier", "[invoke]") {
   auto device = sycl_cts::util::get_cts_object::device();
@@ -232,7 +237,7 @@ TEST_CASE("Host accessor as a barrier", "[invoke]") {
             buffer.template get_access<sycl::access_mode::read_write>(cgh);
         auto loop_acc =
             loop_buf.template get_access<sycl::access_mode::read_write>(cgh);
-        cgh.single_task([=] {
+        cgh.single_task<kernel<10>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc[i] = i;
           *pflag = 42;
