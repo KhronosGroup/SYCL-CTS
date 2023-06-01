@@ -103,6 +103,8 @@ class check_multi_ptr_deduction {
   }
 };
 
+// FIXME: re-enable when deduction guide for read is implemented
+// Issue link https://github.com/intel/llvm/issues/9692
 DISABLED_FOR_TEST_CASE(DPCPP)
 ("multi_ptr deduction guides", "[test_multi_ptr]")({
   for_all_types<check_multi_ptr_deduction>(deduction::vector_types);
