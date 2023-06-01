@@ -35,7 +35,7 @@ using AccT =
 DISABLED_FOR_TEST_CASE(ComputeCpp)
 ("handler require() exception", "[handler]")({
   auto queue = sycl_cts::util::get_cts_object::queue();
-  auto action = [&]() {
+  auto action = [&] {
     AccT empty_acc;
     queue.submit([&](sycl::handler& cgh) { cgh.require(empty_acc); })
         .wait_and_throw();
