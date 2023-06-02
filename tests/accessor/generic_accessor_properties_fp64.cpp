@@ -34,7 +34,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_generic_properties_tests, double>("double");
 #else
-  run_generic_properties_tests<sycl::half>{}("double");
+  run_generic_properties_tests<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 
