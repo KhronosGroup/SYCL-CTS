@@ -338,9 +338,10 @@ void api_tests<dims>::operator()() {
     INFO("Dimensions: " << std::to_string(dims));
     // API
     {
-      INFO("Check " << method_name << " and " << method_name_dim << " API call");
+      INFO("Check " << method_name << " and " << method_name_dim
+                    << " API call");
       CHECK(std::all_of(&resDataDim0[i], &resDataDim0[i] + offsetsTotal,
-                         [](bool val) { return val; }));
+                        [](bool val) { return val; }));
     }
     // Type
     {
