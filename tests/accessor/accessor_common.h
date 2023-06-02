@@ -197,6 +197,18 @@ inline auto get_conformance_type_pack() {
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 }
 
+template <template <typename, typename...> class action,
+          typename... actionArgsT>
+void common_run_tests() {
+  const auto types = get_conformance_type_pack();
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  for_all_types_vectors_marray<action, actionArgsT...>(types);
+#else
+  for_all_types<action, actionArgsT...>(types);
+  for_type_vectors_marray_reduced<action, int, actionArgsT...>("int");
+#endif
+}
+
 /**
  * @brief Factory function for getting type_pack with access modes values
  */

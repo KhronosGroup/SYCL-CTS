@@ -496,6 +496,50 @@ void for_type_vectors_marray(argsT &&...args) {
         std::forward<argsT>(args)...);
   }
 }
+
+/**
+ * @brief Run action for type, reduced number of vectors and marrays of this
+ * type
+ * @tparam action Functor template for action to run
+ * @tparam T Type to instantiate functor template with
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ * @tparam argsT Deduced parameter pack for arguments to forward into the call
+ * @param args Arguments to forward into the call
+ */
+template <template <typename, typename...> class action, typename T,
+          typename... actionArgsT, typename... argsT>
+void for_type_vectors_marray_reduced(argsT&&... args) {
+  constexpr std::size_t small_marray_size = 2;
+  constexpr std::size_t medium_marray_size = 5;
+  constexpr std::size_t large_marray_size = 10;
+  if constexpr (std::is_same<T, bool>::value) {
+    for_all_types<action, actionArgsT...>(
+        type_pack<T, typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+                  typename sycl::template marray<T, large_marray_size>>{},
+        std::forward<argsT>(args)...);
+  } else {
+    for_all_types<action, actionArgsT...>(
+        // Provides all possible sizes (according to SYCL-2020 rev.5) for
+        // sycl::vec
+        type_pack<T,
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                  typename sycl::template vec<T, 1>,
+                  typename sycl::template vec<T, 2>,
+#endif
+                  typename sycl::template vec<T, 3>,
+                  typename sycl::template vec<T, 4>,
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+                  typename sycl::template vec<T, 8>,
+                  typename sycl::template vec<T, 16>,
+                  // Provide different sizes for sycl::marray
+                  typename sycl::template marray<T, small_marray_size>,
+                  typename sycl::template marray<T, medium_marray_size>,
+#endif
+                  typename sycl::template marray<T, large_marray_size>>{},
+        std::forward<argsT>(args)...);
+  }
+}
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 
 // FIXME: re-enable when marrray is implemented in hipsycl
