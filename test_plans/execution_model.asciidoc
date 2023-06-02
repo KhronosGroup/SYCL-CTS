@@ -1,0 +1,118 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for execution model
+
+This is a test plan for SYCL command groups and execution order and SYCL application memory model as described in Section 3.7.1 and Section 3.8.1 of the SYCL 2020 specification.
+
+== Testing scope
+
+=== Backend coverage
+
+All the tests described below are performed for any SYCL implementation.
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+== Tests
+
+=== Execution order of three command groups submitted to the same queue
+
+Create 2 buffers for large arrays. Submit 2 commands that have some long loops and then fill these buffers with expected values via accessors in loop.
+Submit command that copy content of these buffers to result buffer.
+
+[source,c++]
+----
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc1(buffer1, cgh);
+  cgh.single_task([=] {
+    // <long loop>
+    for (int i = SIZE; i >= 0; i--) acc1[i] = i;
+  });
+});
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc2(buffer2, cgh);
+  cgh.single_task([=] {
+    // <long loop>
+    for (int i = SIZE; i >= 0; i--) acc2[i] = i;
+  });
+});
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc1(buffer1, cgh);
+  sycl::accessor<int, 1> acc2(buffer2, cgh);
+  sycl::accessor<int, 1> res_acc1(res_buffer1, cgh);
+  sycl::accessor<int, 1> res_acc2(res_buffer2, cgh);
+  cgh.parallel_for(sycl::range<1>(SIZE), [=](id<1> index) {
+    res_acc1[index] = acc1[index];
+    res_acc2[index] = acc2[index];
+  });
+});
+----
+
+Check that all elements in result buffer are equal to expected values which means that requisites for third command were satisfied before it started to execute.
+
+=== Execution order of three command groups submitted to the different queues
+
+Same as previous tests but each command is run on different queue with diffrent context.
+
+=== Requirements on overlapping sub-buffers
+
+This check is skipped if device doesn't support `aspect::usm_device_allocations`.
+
+Create buffer on array, and two overlapping sub-buffers
+
+[source,c++]
+----
+buffer<int, 1> sub_buf1(buffer, 0, 5);
+buffer<int, 1> sub_buf2(buffer, 3, 10);
+int* pflag = sycl::malloc_device<int>(1, queue);
+// assign pflag value to 0
+queue.submit([&](handler& cgh) {
+  cgh.single_task([=] {
+    *pflag = 0;
+  });
+}).wait();
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc1(sub_buf1, cgh);
+  cgh.single_task([=] {
+    sycl::atomic_ref<int> rflag(*pflag);
+    for (int i = acc1.size(); i >= 0; i--) acc1[i] = i;
+    // <another long loop>
+    rflag = 1;
+  });
+});
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc2(sub_buf2, cgh);
+  sycl::accessor<bool, 1> res_acc(res_buffer, cgh);
+  cgh.single_task([=] {
+    sycl::atomic_ref<int> rflag(*pflag);
+    res_acc[0] = (rflag == 1);
+    for (int i = acc2.size(); i >= 0; i--) acc2[i] = i;
+  });
+});
+----
+
+Check that `res_buffer` is equal to `true`, which means that requisites for second command with overlapping sub-buffer were satisfied before it started to execute.
+
+=== Host accessor as a barrier
+
+This check is skipped if device doesn't support `aspect::usm_atomic_shared_allocations`.
+
+[source,c++]
+----
+int *pflag = sycl::malloc_shared<int>(1, queue);
+queue.submit([&](handler& cgh) {
+  sycl::accessor<int, 1> acc(buffer, cgh);
+  cgh.single_task([=] {
+    // <long loop>
+    for (int i = SIZE; i >= 0; i--) acc[i] = i;
+    *pflag = 42;
+  });
+});
+sycl::host_accessor<int, 1> host_acc(buffer);
+----
+
+Check that immediately after host_acc creation *pflag is equal to expected value,
+that means that host_accessor acts as barrier.
