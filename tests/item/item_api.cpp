@@ -290,12 +290,12 @@ void test_item() {
 }
 
 DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<1> api", "[item]") ({ test_item<1>(); });
+("sycl::item<1> api", "[item]")({ test_item<1>(); });
 
 DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<2> api", "[item]") ({ test_item<2>(); });
+("sycl::item<2> api", "[item]")({ test_item<2>(); });
 
 DISABLED_FOR_TEST_CASE(ComputeCpp)
-("sycl::item<3> api", "[item]") ({ test_item<3>(); });
+("sycl::item<3> api", "[item]")({ test_item<3>(); });
 
 }  // namespace item_api_test
