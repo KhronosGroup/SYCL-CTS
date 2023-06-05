@@ -22,8 +22,7 @@ namespace host_accessor_properties_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::host_accessor properties. core types", "[accessor]")({
   using namespace host_accessor_properties;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_host_properties_tests>(types);
+  common_run_tests<run_host_properties_tests>();
 });
 
 }  // namespace host_accessor_properties_core
