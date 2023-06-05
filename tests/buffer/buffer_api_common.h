@@ -22,9 +22,9 @@
 #ifndef __SYCLCTS_TESTS_BUFFER_API_COMMON_H
 #define __SYCLCTS_TESTS_BUFFER_API_COMMON_H
 
+#include "../../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/get_group_range.h"
-#include "../common/once_per_unit.h"
 
 namespace buffer_api_common {
 using namespace sycl_cts;
@@ -45,35 +45,83 @@ class empty_kernel {
 @brief used to calculate the ranges based on the dimensionality of the buffer
 */
 template <size_t dims>
-inline void precalculate(sycl::range<dims> &rangeIn,
-                         sycl::range<dims> &rangeOut, size_t &elementsCount,
+inline void precalculate(sycl::range<dims>& rangeIn,
+                         sycl::range<dims>& rangeOut, size_t& elementsCount,
                          size_t elementsIn, size_t elementsOut);
 
 template <>
-inline void precalculate<1>(sycl::range<1> &rangeIn,
-                            sycl::range<1> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<1>(sycl::range<1>& rangeIn, sycl::range<1>& rangeOut,
+                            size_t& elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<1>(elementsIn);
   rangeOut = sycl::range<1>(elementsOut);
   elementsCount = elementsOut;
 }
 
 template <>
-inline void precalculate<2>(sycl::range<2> &rangeIn,
-                            sycl::range<2> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<2>(sycl::range<2>& rangeIn, sycl::range<2>& rangeOut,
+                            size_t& elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<2>(elementsIn, elementsIn);
   rangeOut = sycl::range<2>(elementsOut, elementsIn);
   elementsCount = (elementsOut * elementsIn);
 }
 
 template <>
-inline void precalculate<3>(sycl::range<3> &rangeIn,
-                            sycl::range<3> &rangeOut, size_t &elementsCount,
-                            size_t elementsIn, size_t elementsOut) {
+inline void precalculate<3>(sycl::range<3>& rangeIn, sycl::range<3>& rangeOut,
+                            size_t& elementsCount, size_t elementsIn,
+                            size_t elementsOut) {
   rangeIn = sycl::range<3>(elementsIn, elementsIn, elementsIn);
   rangeOut = sycl::range<3>(elementsOut, elementsIn, elementsIn);
   elementsCount = (elementsOut * elementsIn * elementsIn);
+}
+
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+template <typename prop, typename buffer_t>
+void check_throw_matches(buffer_t& buf, const char* prop_name) {
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  auto action = [&] { auto no_prop = buf.template get_property<prop>(); };
+  INFO("Check that get_property() throws errc::invalid " << prop_name);
+  CHECK_THROWS_MATCHES(action(), sycl::exception,
+                       sycl_cts::util::equals_exception(sycl::errc::invalid));
+#endif
+}
+
+template <typename buffer_t>
+void check_get_prop_throws(buffer_t& buf) {
+  const bool use_host_ptr =
+      buf.template has_property<sycl::property::buffer::use_host_ptr>();
+  const bool use_mutex =
+      buf.template has_property<sycl::property::buffer::use_mutex>();
+  const bool context_bound =
+      buf.template has_property<sycl::property::buffer::context_bound>();
+
+  if (use_host_ptr) {
+    if (use_mutex) {
+      check_throw_matches<sycl::property::buffer::context_bound>(
+          buf, "context_bound");
+    } else if (context_bound) {
+      check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+    } else {
+      check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+      check_throw_matches<sycl::property::buffer::context_bound>(
+          buf, "context_bound");
+    }
+  } else if (use_mutex) {
+    if (context_bound) {
+      check_throw_matches<sycl::property::buffer::use_host_ptr>(buf,
+                                                                "use_host_ptr");
+    } else {
+      check_throw_matches<sycl::property::buffer::use_host_ptr>(buf,
+                                                                "use_host_ptr");
+      check_throw_matches<sycl::property::buffer::context_bound>(
+          buf, "context_bound");
+    }
+  } else if (context_bound) {
+    check_throw_matches<sycl::property::buffer::use_host_ptr>(buf,
+                                                              "use_host_ptr");
+    check_throw_matches<sycl::property::buffer::use_mutex>(buf, "use_mutex");
+  }
 }
 
 /*!
@@ -205,8 +253,7 @@ class kernel_buffer_accessor_type;
  * Generic buffer API test function
  */
 template <typename T, int size, int dims, typename alloc>
-void test_buffer(util::logger &log, sycl::range<dims> &r,
-                 sycl::id<dims> &i) {
+void test_buffer(util::logger& log, sycl::range<dims>& r, sycl::id<dims>& i) {
   {
     std::unique_ptr<T[]> data(new T[size]);
     std::fill(data.get(), (data.get() + size), 0);
@@ -220,19 +267,14 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* check the buffer returns a range */
     auto ret_range = buf.get_range();
     check_return_type<sycl::range<dims>>(log, ret_range,
-                                             "sycl::buffer::get_range()");
+                                         "sycl::buffer::get_range()");
 
     /* Check alias types */
     {
+      { check_type_existence<typename sycl::buffer<T, dims>::value_type>(); }
+      { check_type_existence<typename sycl::buffer<T, dims>::reference>(); }
       {
-        check_type_existence<typename sycl::buffer<T, dims>::value_type>();
-      }
-      {
-        check_type_existence<typename sycl::buffer<T, dims>::reference>();
-      }
-      {
-        check_type_existence<
-            typename sycl::buffer<T, dims>::const_reference>();
+        check_type_existence<typename sycl::buffer<T, dims>::const_reference>();
       }
       {
         check_type_existence<typename sycl::buffer<
@@ -275,10 +317,10 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     CHECK(ret_size_depr == size * sizeof(T));
 #endif
 
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler &cgh) {
+    q.submit([&](sycl::handler& cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read_write,
                                                 sycl::target::device>;
@@ -290,7 +332,7 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     });
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler &cgh) {
+    q.submit([&](sycl::handler& cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read,
                                                 sycl::target::constant_buffer>;
@@ -307,15 +349,14 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
       auto acc = buf.template get_access<sycl::access_mode::read_write>();
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::host_buffer>>(
+      check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                       sycl::target::host_buffer>>(
           log, acc, "sycl::buffer::get_access<read_write, host_buffer>()");
     }
 #endif
 
     /* check the buffer returns the correct type of accessor */
-    q.submit([&](sycl::handler &cgh) {
+    q.submit([&](sycl::handler& cgh) {
       using kname = kernel_buffer_accessor_type<T, size, dims, alloc,
                                                 sycl::access_mode::read_write,
                                                 sycl::target::device>;
@@ -332,11 +373,10 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
     /* check the buffer returns the correct type of accessor */
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     {
-      auto acc = buf.template get_access<sycl::access_mode::read_write>(
-          r, offset);
-      check_return_type<
-          sycl::accessor<T, dims, sycl::access_mode::read_write,
-                             sycl::target::host_buffer>>(
+      auto acc =
+          buf.template get_access<sycl::access_mode::read_write>(r, offset);
+      check_return_type<sycl::accessor<T, dims, sycl::access_mode::read_write,
+                                       sycl::target::host_buffer>>(
           log, acc,
           "sycl::buffer::get_access<read_write, host_buffer>(range<>, "
           "id<>)");
@@ -387,11 +427,20 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
                               "has_property<use_mutex>()");
       CHECK(hasUseMutexProperty);
 
-      auto hasContentBoundProperty = buf.template has_property<
-          sycl::property::buffer::context_bound>();
+      auto hasContentBoundProperty =
+          buf.template has_property<sycl::property::buffer::context_bound>();
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
       CHECK(hasContentBoundProperty);
+
+      sycl::buffer<T, dims> buf_host_ptr(
+          data.get(), r, {sycl::property::buffer::use_host_ptr()});
+      auto hasUseHostPtrProperty =
+          buf_host_ptr
+              .template has_property<sycl::property::buffer::use_host_ptr>();
+      check_return_type<bool>(log, hasUseHostPtrProperty,
+                              "has_property<use_host_ptr>()");
+      CHECK(hasUseHostPtrProperty);
 
       /* check get_property() */
 
@@ -403,13 +452,45 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
           log, useMutexProperty.get_mutex_ptr(),
           "sycl::property::buffer::use_mutex::get_mutex_ptr()");
 
-      auto contentBoundProperty = buf.template get_property<
-          sycl::property::buffer::context_bound>();
+      auto contentBoundProperty =
+          buf.template get_property<sycl::property::buffer::context_bound>();
       check_return_type<sycl::property::buffer::context_bound>(
           log, contentBoundProperty, "get_property<context_bound>()");
       check_return_type<sycl::context>(
           log, contentBoundProperty.get_context(),
           "sycl::property::buffer::context_bound::get_context()");
+
+      /* Check that get_property() throws an exception with the errc::invalid
+       * error code if buffer was not constructed with use_host_ptr property
+       */
+      {
+        sycl::buffer<T, dims> buf_host_ptr(
+            data.get(), r, {sycl::property::buffer::use_host_ptr()});
+        sycl::buffer<T, dims> buf_mutex(
+            data.get(), r, {sycl::property::buffer::use_mutex(mutex)});
+        sycl::buffer<T, dims> buf_context(
+            data.get(), r, {sycl::property::buffer::context_bound(context)});
+
+        sycl::buffer<T, dims> buf_host_ptr_mutex(
+            data.get(), r,
+            {sycl::property::buffer::use_host_ptr(),
+             sycl::property::buffer::use_mutex(mutex)});
+        sycl::buffer<T, dims> buf_host_ptr_context(
+            data.get(), r,
+            {sycl::property::buffer::use_host_ptr(),
+             sycl::property::buffer::context_bound(context)});
+        sycl::buffer<T, dims> buf_mutex_context(
+            data.get(), r,
+            {sycl::property::buffer::use_mutex(mutex),
+             sycl::property::buffer::context_bound(context)});
+
+        check_get_prop_throws(buf_host_ptr);
+        check_get_prop_throws(buf_mutex);
+        check_get_prop_throws(buf_context);
+        check_get_prop_throws(buf_host_ptr_mutex);
+        check_get_prop_throws(buf_host_ptr_context);
+        check_get_prop_throws(buf_mutex_context);
+      }
     }
 
     q.wait_and_throw();
@@ -417,13 +498,13 @@ void test_buffer(util::logger &log, sycl::range<dims> &r,
 }
 
 /**
-* @brief Tests reinterpreting a buffer
-* @tparam T Underlying data type of the input buffer
-* @tparam numDims Number of input dimensions
-* @param log Logger object
-*/
+ * @brief Tests reinterpreting a buffer
+ * @tparam T Underlying data type of the input buffer
+ * @tparam numDims Number of input dimensions
+ * @param log Logger object
+ */
 template <typename T, int numDims>
-void test_type_reinterpret(util::logger &log) {
+void test_type_reinterpret(util::logger& log) {
   static constexpr size_t inputElemsPerDim = 4;
   static constexpr size_t numElems = [](size_t elemsPerDim) {
     for (int i = 1; i < numDims; ++i) elemsPerDim *= elemsPerDim;
@@ -442,12 +523,13 @@ void test_type_reinterpret(util::logger &log) {
 
   // Check reinterpreting without a range to the same dimension
   test_buffer_reinterpret_no_range<T, ReinterpretT, numDims, numDims>::check(
-      reinterpret_cast<T *>(reinterpretInputData), inputElemsPerDim,
-      log);
+      reinterpret_cast<T*>(reinterpretInputData), inputElemsPerDim, log);
 }
 
-template <typename T> class check_buffer_api_for_type {
-  template <typename alloc> void check_with_alloc(util::logger &log) {
+template <typename T>
+class check_buffer_api_for_type {
+  template <typename alloc>
+  void check_with_alloc(util::logger& log) {
     const int size = 8;
     sycl::range<1> range1d(size);
     sycl::range<2> range2d(size, size);
@@ -467,8 +549,8 @@ template <typename T> class check_buffer_api_for_type {
     test_type_reinterpret<T, 3>(log);
   }
 
-public:
-  void operator()(util::logger &log, const std::string &typeName) {
+ public:
+  void operator()(util::logger& log, const std::string& typeName) {
     INFO("testing: " + type_name_string<T>::get(typeName));
     check_with_alloc<sycl::buffer_allocator<T>>(log);
     check_with_alloc<std::allocator<T>>(log);
@@ -480,10 +562,10 @@ public:
  */
 class check_buffer_linearization {
  public:
-  void operator()(util::logger &log) {
+  void operator()(util::logger& log) {
     constexpr int g_size = 4;  // global range size
     constexpr int l_size = 2;  // local range size
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     // global ranges
     sycl::range<1> g_range1d = sycl_cts::util::work_group_range<1>(q, g_size);
@@ -522,14 +604,14 @@ class check_buffer_linearization {
    * Buffer linearization test
    */
   template <int dims, typename alloc>
-  void test_buffer_linearization(util::logger &log, sycl::nd_range<dims> &r) {
+  void test_buffer_linearization(util::logger& log, sycl::nd_range<dims>& r) {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
     INFO("testing: linearization in " + std::to_string(dims) + " dimensions.");
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
-    q.submit([&](sycl::handler &cgh) {
+    q.submit([&](sycl::handler& cgh) {
       auto acc = buf.get_access(cgh, sycl::write_only, sycl::no_init);
       cgh.parallel_for<write_id<dims, alloc>>(r, [=](sycl::nd_item<dims> i) {
         // clang-format off

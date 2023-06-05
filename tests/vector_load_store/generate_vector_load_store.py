@@ -33,7 +33,11 @@ from common_python_vec import (Data, append_fp_postfix, make_func_call,
 TEST_NAME = 'LOAD_STORE'
 
 load_store_test_template = Template(
-    """        ${type} inputData${type_as_str}${size}[${size}] = {${in_order_vals}};
+    """
+// FIXME: re-enable when sycl::access::decorated is implemented
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+    {
+        ${type} inputData${type_as_str}${size}[${size}] = {${in_order_vals}};
         ${type} outputData${type_as_str}${size}[${size}] = {${val}};
         ${type} swizzleInputData${type_as_str}${size}[${size}] = {${reverse_order_vals}};
         ${type} swizzleOutputData${type_as_str}${size}[${size}] = {${val}};
@@ -55,9 +59,9 @@ load_store_test_template = Template(
               testVec${type_as_str}${size}.load(0, inPtr${type_as_str}${size});
               testVec${type_as_str}${size}.store(0, outPtr${type_as_str}${size});
 
-              auto multiPtrIn${type_as_str}${size} = inPtr${type_as_str}${size}.get_pointer();
+              auto multiPtrIn${type_as_str}${size} = inPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               sycl::global_ptr<const ${type}> constMultiPtrIn${type_as_str}${size} = multiPtrIn${type_as_str}${size};
-              auto multiPtrOut${type_as_str}${size} = outPtr${type_as_str}${size}.get_pointer();
+              auto multiPtrOut${type_as_str}${size} = outPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               testVec${type_as_str}${size}.load(0, multiPtrIn${type_as_str}${size});
               testVec${type_as_str}${size}.load(0, constMultiPtrIn${type_as_str}${size});
               testVec${type_as_str}${size}.store(0, multiPtrOut${type_as_str}${size});
@@ -67,9 +71,9 @@ load_store_test_template = Template(
               swizzledVec.load(0, swizzleInPtr${type_as_str}${size});
               swizzledVec.store(0, swizzleOutPtr${type_as_str}${size});
 
-              auto multiPtrInSwizzle${type_as_str}${size} = swizzleInPtr${type_as_str}${size}.get_pointer();
+              auto multiPtrInSwizzle${type_as_str}${size} = swizzleInPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               sycl::global_ptr<const ${type}> constMultiPtrInSwizzle${type_as_str}${size} = multiPtrInSwizzle${type_as_str}${size};
-              auto multiPtrOutSwizzle${type_as_str}${size} = swizzleOutPtr${type_as_str}${size}.get_pointer();
+              auto multiPtrOutSwizzle${type_as_str}${size} = swizzleOutPtr${type_as_str}${size}.get_multi_ptr<${decorated}>();
               swizzledVec.load(0, multiPtrInSwizzle${type_as_str}${size});
               swizzledVec.load(0, constMultiPtrInSwizzle${type_as_str}${size});
               swizzledVec.store(0, multiPtrOutSwizzle${type_as_str}${size});
@@ -81,11 +85,19 @@ load_store_test_template = Template(
         check_array_equality<${type}, ${size}>(log, swizzleInputData${type_as_str}${size}, swizzleOutputData${type_as_str}${size});
 
         testQueue.wait_and_throw();
+    }
+#endif
       """)
 
 
-def gen_kernel_name(type_str, size):
-    return 'KERNEL_load_store_' + remove_namespaces_whitespaces(type_str) + str(size)
+def gen_kernel_name(type_str, size, decorated):
+    return 'KERNEL_load_store_' + remove_namespaces_whitespaces(type_str) + str(size) + decorated
+
+def wrap_with_deprecated(test_string):
+    string = '#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS \n'
+    string += test_string
+    string += '#endif \n'
+    return string
 
 
 def gen_load_store_test(type_str, size):
@@ -99,8 +111,33 @@ def gen_load_store_test(type_str, size):
             append_fp_postfix(type_str, Data.vals_list_dict[size])),
         reverse_order_vals=', '.join(
             append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
-        kernelName=gen_kernel_name(type_str, size),
-        swizVals=', '.join(Data.swizzle_elem_list_dict[size]))
+        kernelName=gen_kernel_name(type_str, size, 'yes'),
+        swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
+        decorated='sycl::access::decorated::yes')
+    test_string += load_store_test_template.substitute(
+        type=type_str,
+        type_as_str=no_whitespace_type_str,
+        size=size,
+        val=Data.value_default_dict[type_str],
+        in_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+        reverse_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+        kernelName=gen_kernel_name(type_str, size, 'no'),
+        swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
+        decorated='sycl::access::decorated::no')
+    test_string += wrap_with_deprecated(load_store_test_template.substitute(
+        type=type_str,
+        type_as_str=no_whitespace_type_str,
+        size=size,
+        val=Data.value_default_dict[type_str],
+        in_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size])),
+        reverse_order_vals=', '.join(
+            append_fp_postfix(type_str, Data.vals_list_dict[size][::-1])),
+        kernelName=gen_kernel_name(type_str, size, 'legacy'),
+        swizVals=', '.join(Data.swizzle_elem_list_dict[size]),
+        decorated='sycl::access::decorated::legacy'))
     return wrap_with_test_func(TEST_NAME, type_str,
                                wrap_with_extension_checks(
                                    type_str, test_string), str(size))

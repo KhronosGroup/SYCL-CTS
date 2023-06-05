@@ -19,6 +19,7 @@
 //
 *******************************************************************************/
 
+#include "../../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/disabled_for_test_case.h"
 
@@ -32,7 +33,7 @@ class kernel3;
 
 using namespace sycl_cts;
 
-void check_in_order_prop(const sycl::queue &queue) {
+void check_in_order_prop(const sycl::queue& queue) {
   CHECK(queue.is_in_order());
 
   REQUIRE(queue.has_property<sycl::property::queue::in_order>());
@@ -44,13 +45,13 @@ void check_in_order_prop(const sycl::queue &queue) {
       "in_order>()");
 }
 
-void check_in_order_functionality(sycl::queue &queue) {
+void check_in_order_functionality(sycl::queue& queue) {
   if (!queue.get_device().has(sycl::aspect::usm_device_allocations))
     SKIP(
         "test for in_order functionality is skipped because device doesn't "
         "support usm_device_allocations");
 
-  bool *data_changed = sycl::malloc_device<bool>(1, queue);
+  bool* data_changed = sycl::malloc_device<bool>(1, queue);
   constexpr size_t buffer_size = 10;
   int loop_array[buffer_size];
   bool result = false;
@@ -60,12 +61,12 @@ void check_in_order_functionality(sycl::queue &queue) {
     // to garantee that data_changed initialized as false before two tested
     // commands are submitted
     queue
-        .submit([&](sycl::handler &cgh) {
+        .submit([&](sycl::handler& cgh) {
           cgh.single_task<kernel1>([=] { *data_changed = false; });
         })
         .wait_and_throw();
 
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto res_acc = res_buf.get_access<sycl::access_mode::write>(cgh);
       auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
 
@@ -79,7 +80,7 @@ void check_in_order_functionality(sycl::queue &queue) {
       });
     });
 
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       cgh.single_task<kernel3>([=] { *data_changed = true; });
     });
     queue.wait_and_throw();
@@ -87,13 +88,13 @@ void check_in_order_functionality(sycl::queue &queue) {
   CHECK(result);
 }
 
-void check_in_order(sycl::queue &queue) {
+void check_in_order(sycl::queue& queue) {
   check_in_order_prop(queue);
 
   check_in_order_functionality(queue);
 }
 
-void check_enable_profiling_prop(sycl::queue &queue) {
+void check_enable_profiling_prop(sycl::queue& queue) {
   CHECK(queue.has_property<sycl::property::queue::enable_profiling>());
 
   auto prop = queue.get_property<sycl::property::queue::enable_profiling>();
@@ -103,9 +104,33 @@ void check_enable_profiling_prop(sycl::queue &queue) {
       "enable_profiling>()");
 }
 
-void check_props(sycl::queue &queue) {
+void check_props(sycl::queue& queue) {
   check_enable_profiling_prop(queue);
   check_in_order_prop(queue);
+}
+
+void check_in_order_throws(sycl::queue& queue) {
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  auto action = [&] {
+    auto get_prop =
+        queue.template get_property<sycl::property::queue::enable_profiling>();
+  };
+  CHECK_THROWS_MATCHES(action(), sycl::exception,
+                       sycl_cts::util::equals_exception(sycl::errc::invalid));
+#endif
+}
+
+void check_enable_profiling_throws(sycl::queue& queue) {
+// Enable when SYCL_CTS_SUPPORT_HAS_ERRC_ENUM is defined for ComputeCPP
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+  auto action = [&] {
+    auto get_prop =
+        queue.template get_property<sycl::property::queue::in_order>();
+  };
+  CHECK_THROWS_MATCHES(action(), sycl::exception,
+                       sycl_cts::util::equals_exception(sycl::errc::invalid));
+#endif
 }
 
 TEST_CASE("check property::queue::enable_profiling", "[queue]") {
@@ -116,6 +141,7 @@ TEST_CASE("check property::queue::enable_profiling", "[queue]") {
   sycl::queue queue(
       device, sycl::property_list{sycl::property::queue::enable_profiling()});
   check_enable_profiling_prop(queue);
+  check_enable_profiling_throws(queue);
 }
 
 TEST_CASE("check property::queue::in_order", "[queue]") {
@@ -126,36 +152,43 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
   SECTION("with constructor (propList)") {
     sycl::queue queue(sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (asyncHandler, propList)") {
     sycl::queue queue(asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (deviceSelector, propList)") {
     sycl::queue queue(cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (deviceSelector, asyncHandler, propList)") {
     sycl::queue queue(cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclDevice, propList)") {
     sycl::queue queue(device,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclDevice, asyncHandler, propList)") {
     sycl::queue queue(device, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclContext, deviceSelector, propList)") {
     sycl::queue queue(context, cts_selector,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION(
       "with constructor (syclContext, deviceSelector, asyncHandler, "
@@ -163,17 +196,20 @@ TEST_CASE("check property::queue::in_order", "[queue]") {
     sycl::queue queue(context, cts_selector, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION("with constructor (syclContext, syclDevice, propList)") {
     sycl::queue queue(context, device,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
   SECTION(
       "with constructor (syclContext, syclDevice, asyncHandler, propList)") {
     sycl::queue queue(context, device, asyncHandler,
                       sycl::property_list{sycl::property::queue::in_order()});
     check_in_order(queue);
+    check_in_order_throws(queue);
   }
 }
 

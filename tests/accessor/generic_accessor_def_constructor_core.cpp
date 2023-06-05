@@ -35,8 +35,7 @@ namespace generic_accessor_def_constructor_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor def constructors. core types", "[accessor]")({
   using namespace generic_accessor_def_constructor;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_generic_def_constructor_test>(types);
+  common_run_tests<run_generic_def_constructor_test>();
 });
 
 }  // namespace generic_accessor_def_constructor_core

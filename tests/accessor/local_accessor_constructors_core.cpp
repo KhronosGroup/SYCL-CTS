@@ -24,7 +24,6 @@ namespace local_accessor_constructors_core {
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 ("sycl::local_accessor constructors. core types", "[accessor]")({
   using namespace local_accessor_constructors;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<run_local_constructors_test>(types);
+  common_run_tests<run_local_constructors_test>();
 });
 }  // namespace local_accessor_constructors_core

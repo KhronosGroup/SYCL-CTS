@@ -83,7 +83,7 @@ void check_scan(sycl::queue& queue, size_t size,
     queue
         .submit([&](sycl::handler& cgh) {
           auto v_acc =
-              v_sycl.template get_access<sycl::access::mode::read>(cgh);
+              v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
           auto res_e_acc =
               res_e_sycl.template get_access<sycl::access::mode::read_write>(
                   cgh);
