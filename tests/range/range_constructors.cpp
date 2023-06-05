@@ -38,7 +38,7 @@ enum class semantic_by_value_codes : size_t {
 
 constexpr size_t error_count = to_integral(semantic_by_value_codes::code_count);
 constexpr size_t equality_error_count =
-    to_integral(common_by_value_semantics::current_check::SIZE);
+    to_integral(common_by_value_semantics::current_check::size);
 
 static constexpr size_t sizes[] = {16, 8, 4};
 

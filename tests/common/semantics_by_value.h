@@ -45,10 +45,10 @@ enum class current_check : size_t {
   equal_other_symmetry,
   not_equal_other,
   not_equal_other_symmetry,
-  SIZE  // This should be last
+  size  // This should be last
 };
 
-static const std::array<std::string, to_integral(current_check::SIZE)>
+static const std::array<std::string, to_integral(current_check::size)>
     error_strings = {
         "not equality-comparable (operator== reflexivity failed)",
         "not equality-comparable (operator!= reflexivity failed)",
@@ -105,7 +105,7 @@ void check_equality(const T& a, const T& other, ResultArr& result) {
 template <typename T>
 void check_on_host(sycl_cts::util::logger& log, const T& a,
                    const std::string& testName) {
-  bool result[to_integral(current_check::SIZE)];
+  bool result[to_integral(current_check::size)];
   check_equality(a, result);
   for (int i = 0; i < to_integral(current_check::equal_other); ++i) {
     if (!result[i]) {
@@ -121,9 +121,9 @@ void check_on_host(sycl_cts::util::logger& log, const T& a,
 template <typename T>
 void check_on_host(sycl_cts::util::logger& log, const T& a, const T& other,
                    const std::string& testName) {
-  bool result[to_integral(current_check::SIZE)];
+  bool result[to_integral(current_check::size)];
   check_equality(a, other, result);
-  for (int i = 0; i < to_integral(current_check::SIZE); ++i) {
+  for (int i = 0; i < to_integral(current_check::size); ++i) {
     if (!result[i]) {
       FAIL(testName << " is " << get_error_string(i));
     }
@@ -135,7 +135,7 @@ void check_on_host(sycl_cts::util::logger& log, const T& a, const T& other,
  */
 template <typename T>
 class on_device_checker {
-  using success_array_t = std::array<bool, to_integral(current_check::SIZE)>;
+  using success_array_t = std::array<bool, to_integral(current_check::size)>;
 
  public:
   template <typename kernelT>
