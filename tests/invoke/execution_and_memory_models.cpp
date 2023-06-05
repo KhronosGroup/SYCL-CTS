@@ -25,7 +25,7 @@ template <int n>
 class kernel;
 
 template <typename acc_t>
-void long_loop(acc_t loop_acc, size_t buffer_size) {
+void long_loop(acc_t& loop_acc, size_t buffer_size) {
   for (int i = 0; i < 1000000; i++) {
     int s = sycl::sqrt(float(i));
     loop_acc[s % buffer_size] = i;
@@ -42,41 +42,34 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
   std::array<int, buffer_size> res1;
   std::array<int, buffer_size> res2;
 
-  int loop_array[buffer_size];
   {
     sycl::buffer<int, 1> buffer1(data1.data(), sycl::range(buffer_size));
     sycl::buffer<int, 1> buffer2(data2.data(), sycl::range(buffer_size));
     sycl::buffer<int, 1> res_buffer1(res1.data(), sycl::range(buffer_size));
     sycl::buffer<int, 1> res_buffer2(res2.data(), sycl::range(buffer_size));
-    sycl::buffer<int, 1> loop_buf(loop_array, sycl::range(buffer_size));
+    sycl::buffer<int, 1> loop_buf(sycl::range<1>{buffer_size});
 
     queue.submit([&](sycl::handler& cgh) {
-      auto acc1 =
-          buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-      auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+      auto acc1 = sycl::accessor(buffer1, cgh, sycl::write_only);
+      auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
       cgh.single_task<kernel<1>>([=] {
         long_loop(loop_acc, buffer_size);
         for (int i = buffer_size - 1; i >= 0; i--) acc1[i] = i;
       });
     });
     queue.submit([&](sycl::handler& cgh) {
-      auto acc2 =
-          buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-      auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+      auto acc2 = sycl::accessor(buffer2, cgh, sycl::write_only);
+      auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
       cgh.single_task<kernel<2>>([=] {
         long_loop(loop_acc, buffer_size);
         for (int i = buffer_size - 1; i >= 0; i--) acc2[i] = i;
       });
     });
     queue.submit([&](sycl::handler& cgh) {
-      auto acc1 =
-          buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-      auto acc2 =
-          buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-      auto res_acc1 =
-          res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-      auto res_acc2 =
-          res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
+      auto acc1 = sycl::accessor(buffer1, cgh, sycl::read_only);
+      auto acc2 = sycl::accessor(buffer2, cgh, sycl::read_only);
+      auto res_acc1 = sycl::accessor(res_buffer1, cgh, sycl::write_only);
+      auto res_acc2 = sycl::accessor(res_buffer2, cgh, sycl::write_only);
       cgh.parallel_for<kernel<3>>(sycl::range<1>(buffer_size),
                                   [=](sycl::id<1> index) {
                                     res_acc1[index] = acc1[index];
@@ -86,6 +79,10 @@ TEST_CASE("Execution order of three command groups submitted to the same queue",
     queue.wait_and_throw();
   }
 
+  // requisites for third command were satisfied before it started to execute
+  INFO(
+      "Check that all elements in result "
+      "buffer are equal to expected values");
   CHECK(data1 == res1);
   CHECK(data2 == res2);
 }
@@ -106,41 +103,34 @@ TEST_CASE(
     std::array<int, buffer_size> res1;
     std::array<int, buffer_size> res2;
 
-    int loop_array[buffer_size];
     {
       sycl::buffer<int, 1> buffer1(data1.data(), sycl::range(buffer_size));
       sycl::buffer<int, 1> buffer2(data2.data(), sycl::range(buffer_size));
       sycl::buffer<int, 1> res_buffer1(res1.data(), sycl::range(buffer_size));
       sycl::buffer<int, 1> res_buffer2(res2.data(), sycl::range(buffer_size));
-      sycl::buffer<int, 1> loop_buf(loop_array, sycl::range(buffer_size));
+      sycl::buffer<int, 1> loop_buf(sycl::range<1>{buffer_size});
 
       q0.submit([&](sycl::handler& cgh) {
-        auto acc1 =
-            buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-        auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+        auto acc1 = sycl::accessor(buffer1, cgh, sycl::write_only);
+        auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
         cgh.single_task<kernel<4>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc1[i] = i;
         });
       });
       q1.submit([&](sycl::handler& cgh) {
-        auto acc2 =
-            buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-        auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+        auto acc2 = sycl::accessor(buffer2, cgh, sycl::write_only);
+        auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
         cgh.single_task<kernel<5>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc2[i] = i;
         });
       });
       q2.submit([&](sycl::handler& cgh) {
-        auto acc1 =
-            buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-        auto acc2 =
-            buffer2.template get_access<sycl::access_mode::read_write>(cgh);
-        auto res_acc1 =
-            res_buffer1.template get_access<sycl::access_mode::read_write>(cgh);
-        auto res_acc2 =
-            res_buffer2.template get_access<sycl::access_mode::read_write>(cgh);
+        auto acc1 = sycl::accessor(buffer1, cgh, sycl::read_only);
+        auto acc2 = sycl::accessor(buffer2, cgh, sycl::read_only);
+        auto res_acc1 = sycl::accessor(res_buffer1, cgh, sycl::write_only);
+        auto res_acc2 = sycl::accessor(res_buffer2, cgh, sycl::write_only);
         cgh.parallel_for<kernel<6>>(sycl::range<1>(buffer_size),
                                     [=](sycl::id<1> index) {
                                       res_acc1[index] = acc1[index];
@@ -149,6 +139,9 @@ TEST_CASE(
       });
     }
 
+    INFO(
+        "Check that all elements in result buffer are equal to expected values "
+        "after runing on different queues");
     CHECK(data1 == res1);
     CHECK(data2 == res2);
 
@@ -168,15 +161,14 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
     const size_t buffer_size = mem_base_addr_align * 3;
 
     bool res = false;
-    int data[buffer_size];
-    int loop_array[buffer_size];
+
     {
-      sycl::buffer<bool, 1> res_buffer(&res, sycl::range<1>(1));
-      sycl::buffer<int, 1> buffer(data, sycl::range<1>(buffer_size));
+      sycl::buffer<bool, 1> res_buffer(&res, sycl::range<1>{1});
+      sycl::buffer<int, 1> buffer(sycl::range<1>{buffer_size});
       sycl::buffer<int, 1> sub_buf1(buffer, 0, mem_base_addr_align * 2);
       sycl::buffer<int, 1> sub_buf2(buffer, mem_base_addr_align,
                                     mem_base_addr_align * 2);
-      sycl::buffer<int, 1> loop_buf(loop_array, sycl::range(buffer_size));
+      sycl::buffer<int, 1> loop_buf(sycl::range<1>{buffer_size});
 
       int* pflag = sycl::malloc_device<int>(1, queue);
       // assign pflag value to 0
@@ -186,9 +178,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
           })
           .wait();
       queue.submit([&](sycl::handler& cgh) {
-        auto acc1 =
-            sub_buf1.template get_access<sycl::access_mode::read_write>(cgh);
-        auto loop_acc = loop_buf.get_access<sycl::access_mode::read_write>(cgh);
+        auto acc1 = sycl::accessor(sub_buf1, cgh, sycl::write_only);
+        auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
         cgh.single_task<kernel<8>>([=] {
           sycl::atomic_ref<int, sycl::memory_order::relaxed,
                            sycl::memory_scope::device>
@@ -199,10 +190,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
         });
       });
       queue.submit([&](sycl::handler& cgh) {
-        auto acc2 =
-            sub_buf2.template get_access<sycl::access_mode::read_write>(cgh);
-        auto res_acc =
-            res_buffer.template get_access<sycl::access_mode::read_write>(cgh);
+        auto acc2 = sycl::accessor(sub_buf2, cgh, sycl::write_only);
+        auto res_acc = sycl::accessor(res_buffer, cgh, sycl::write_only);
         cgh.single_task<kernel<9>>([=] {
           sycl::atomic_ref<int, sycl::memory_order::relaxed,
                            sycl::memory_scope::device>
@@ -214,6 +203,9 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       queue.wait_and_throw();
     }
 
+    INFO(
+        "Check that requisites for second command with overlapping sub-buffer "
+        "were satisfied before it started to execute");
     CHECK(res);
 
   } else {
@@ -227,19 +219,15 @@ TEST_CASE("Host accessor as a barrier", "[invoke]") {
 
   if (device.has(sycl::aspect::usm_atomic_shared_allocations)) {
     const size_t buffer_size = 12;
-    int data[buffer_size];
-    int loop_array[buffer_size];
 
     {
-      sycl::buffer<int, 1> buffer(data, sycl::range<1>(buffer_size));
-      sycl::buffer<int, 1> loop_buf(loop_array, sycl::range<1>(buffer_size));
+      sycl::buffer<int, 1> buffer(sycl::range<1>{buffer_size});
+      sycl::buffer<int, 1> loop_buf(sycl::range<1>{buffer_size});
       int* pflag = sycl::malloc_shared<int>(1, queue);
 
       queue.submit([&](sycl::handler& cgh) {
-        auto acc =
-            buffer.template get_access<sycl::access_mode::read_write>(cgh);
-        auto loop_acc =
-            loop_buf.template get_access<sycl::access_mode::read_write>(cgh);
+        auto acc = sycl::accessor(buffer, cgh, sycl::write_only);
+        auto loop_acc = sycl::accessor(loop_buf, cgh, sycl::write_only);
         cgh.single_task<kernel<10>>([=] {
           long_loop(loop_acc, buffer_size);
           for (int i = buffer_size - 1; i >= 0; i--) acc[i] = i;
@@ -247,6 +235,10 @@ TEST_CASE("Host accessor as a barrier", "[invoke]") {
         });
       });
       sycl::host_accessor<int, 1> host_acc(buffer);
+
+      INFO(
+          "Check that *pflag is equal to expected value, after host_acc "
+          "creation");  // that means that host_accessor acts as barrier
       CHECK(*pflag == 42);
     }
   } else {
