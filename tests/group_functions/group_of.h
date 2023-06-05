@@ -61,7 +61,8 @@ void joint_of_group(sycl::queue& queue) {
                                      sycl::range<1>(test_matrix * test_cases));
 
       queue.submit([&](sycl::handler& cgh) {
-        auto v_acc = v_sycl.template get_access<sycl::access::mode::read>(cgh);
+        auto v_acc =
+            v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
         auto res_acc = res_sycl.get_access<sycl::access::mode::read_write>(cgh);
 
         sycl::nd_range<D> executionRange(work_group_range, work_group_range);

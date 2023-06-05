@@ -71,8 +71,7 @@ class run_common_assign_tests {
         using kname = kernel_common_assignment_ops<T, AddrSpaceT, IsDecorated>;
         auto res_acc =
             res_buf.template get_access<sycl::access_mode::write>(cgh);
-        auto val_acc =
-            val_buffer.template get_access<sycl::access_mode::read>(cgh);
+        auto val_acc = val_buffer.template get_access(cgh);
         if constexpr (space == sycl::access::address_space::global_space ||
                       space == sycl::access::address_space::generic_space) {
           cgh.single_task<kname>([=] {
