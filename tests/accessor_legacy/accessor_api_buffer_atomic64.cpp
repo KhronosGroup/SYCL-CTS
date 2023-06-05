@@ -9,6 +9,7 @@
 #define TEST_NAME accessor_api_buffer_atomic64
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "accessor_api_buffer_common.h"
 #include "accessor_types_core.h"
 
@@ -30,7 +31,7 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
     {
-      auto queue = util::get_cts_object::queue();
+      auto queue = once_per_unit::get_queue();
 
       using extension_tag = sycl_cts::util::extensions::tag::atomic64;
 

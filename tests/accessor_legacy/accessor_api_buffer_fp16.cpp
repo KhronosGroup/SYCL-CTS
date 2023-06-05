@@ -22,6 +22,7 @@
 #define TEST_NAME accessor_api_buffer_fp16
 
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 #include "accessor_api_buffer_common.h"
 #include "accessor_types_fp16.h"
 
@@ -43,7 +44,7 @@ class TEST_NAME : public util::test_base {
   */
   void run(util::logger &log) override {
     {
-      auto queue = util::get_cts_object::queue();
+      auto queue = once_per_unit::get_queue();
 
       check_all_types_fp16<check_buffer_accessor_api_type>::run(queue, log);
 

@@ -25,7 +25,6 @@
 #include "../../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "../common/get_group_range.h"
-#include "../common/once_per_unit.h"
 
 namespace buffer_api_common {
 using namespace sycl_cts;
@@ -318,7 +317,7 @@ void test_buffer(util::logger& log, sycl::range<dims>& r, sycl::id<dims>& i) {
     CHECK(ret_size_depr == size * sizeof(T));
 #endif
 
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     /* check the buffer returns the correct type of accessor */
     q.submit([&](sycl::handler& cgh) {
@@ -433,6 +432,15 @@ void test_buffer(util::logger& log, sycl::range<dims>& r, sycl::id<dims>& i) {
       check_return_type<bool>(log, hasContentBoundProperty,
                               "has_property<context_bound>()");
       CHECK(hasContentBoundProperty);
+
+      sycl::buffer<T, dims> buf_host_ptr(
+          data.get(), r, {sycl::property::buffer::use_host_ptr()});
+      auto hasUseHostPtrProperty =
+          buf_host_ptr
+              .template has_property<sycl::property::buffer::use_host_ptr>();
+      check_return_type<bool>(log, hasUseHostPtrProperty,
+                              "has_property<use_host_ptr>()");
+      CHECK(hasUseHostPtrProperty);
 
       /* check get_property() */
 
@@ -557,7 +565,7 @@ class check_buffer_linearization {
   void operator()(util::logger& log) {
     constexpr int g_size = 4;  // global range size
     constexpr int l_size = 2;  // local range size
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     // global ranges
     sycl::range<1> g_range1d = sycl_cts::util::work_group_range<1>(q, g_size);
@@ -600,7 +608,7 @@ class check_buffer_linearization {
     static_assert(dims >= 1 && dims < 4,
                   "Linearization test requires dims to be one of {1;2;3}.");
     INFO("testing: linearization in " + std::to_string(dims) + " dimensions.");
-    auto q = once_per_unit::get_queue();
+    auto q = util::get_cts_object::queue();
 
     sycl::buffer<size_t, dims, alloc> buf(r.get_global_range());
     q.submit([&](sycl::handler& cgh) {
