@@ -71,7 +71,7 @@ class TEST_NAME : public util::test_base {
     sycl::property_list property_list{};
     {
       /** check default constructor, destructor
-       *  and (const property_list&) constructor
+          and (const property_list&) constructor
        */
       {
         sycl::context context;
@@ -79,7 +79,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (async_handler) and
-       *  (async_handler, const property_list&) constructors
+          (async_handler, const property_list&) constructors
        */
       {
         sycl::context context(asyncHandler);
@@ -87,7 +87,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (const device&) and
-       *  (const device&, const property_list&) constructors
+          (const device&, const property_list&) constructors
        */
       {
         auto device = util::get_cts_object::device(cts_selector);
@@ -99,7 +99,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (const device&, async_handler) and
-       *  (const device&, async_handler, const property_list&) constructors
+          (const device&, async_handler, const property_list&) constructors
        */
       {
         cts_async_handler asyncHandler;
@@ -112,7 +112,7 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (const std::vector<device>&) and
-       *  (const std::vector<device>&, const property_list&) constructors
+          (const std::vector<device>&, const property_list&) constructors
        */
       {
         auto platform = util::get_cts_object::platform(cts_selector);
@@ -125,8 +125,8 @@ class TEST_NAME : public util::test_base {
       }
 
       /** check (const std::vector<device>&, async_handler) and
-       *  (const std::vector<device>&, async_handler, const property_list&)
-       *  constructors
+          (const std::vector<device>&, async_handler, const property_list&)
+          constructors
        */
       {
         cts_async_handler asyncHandler;
