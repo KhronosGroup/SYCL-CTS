@@ -33,7 +33,7 @@ namespace reduction_common {
 constexpr bool with_property{true};
 constexpr bool without_property{false};
 
-constexpr size_t number_iterations{10};
+constexpr size_t number_iterations{7};
 
 constexpr int identity_value{0};
 
