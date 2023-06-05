@@ -62,7 +62,8 @@ auto joint_exclusive_scan_helper(Group group, T* v_begin, T* v_end,
 template <int D, typename T, typename U, typename Group, bool with_init,
           typename I = U, typename OpT>
 void check_scan(sycl::queue& queue, size_t size,
-                sycl::nd_range<D> executionRange, OpT op) {
+                sycl::nd_range<D> executionRange, OpT op,
+                const std::string& op_name) {
   std::vector<T> v(size);
   std::iota(v.begin(), v.end(), T(1));
   std::vector<U> res_e(size, U(-1));
@@ -140,13 +141,15 @@ void check_scan(sycl::queue& queue, size_t size,
   std::inclusive_scan(v.begin(), v.end(), reference_i.begin(), op, init_value);
   for (int i = 0; i < size; i++) {
     {
-      INFO("Check joint_exclusive_scan for element " + std::to_string(i));
+      INFO("Check joint_exclusive_scan for element " + std::to_string(i) +
+           " (Operator: " + op_name + ")");
       INFO("Result: " + std::to_string(res_e[i]));
       INFO("Expected: " + std::to_string(reference_e[i]));
       CHECK(res_e[i] == reference_e[i]);
     }
     {
-      INFO("Check joint_inclusive_scan for element " + std::to_string(i));
+      INFO("Check joint_inclusive_scan for element " + std::to_string(i) +
+           " (Operator: " + op_name + ")");
       INFO("Result: " + std::to_string(res_i[i]));
       INFO("Expected: " + std::to_string(reference_i[i]));
       CHECK(res_i[i] == reference_i[i]);
@@ -159,61 +162,53 @@ void check_scan(sycl::queue& queue, size_t size,
  * @tparam D Dimension to use for group instance
  * @tparam T Type pointed by InPtr
  * @tparam U Type pointed by OutPtr
+ * @tparam OperatorT Type of binary operation
  */
-template <int D, typename T, typename U>
-void joint_scan_group(sycl::queue& queue) {
-  INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range =
-      sycl_cts::util::work_group_range<D>(queue, test_size);
+template <typename DimensionT, typename T, typename U, typename OperatorT>
+struct joint_scan_group {
+  static constexpr int D = DimensionT::value;
 
-  size_t work_group_size = work_group_range.size();
+  void operator()(sycl::queue& queue, const std::string& op_name) {
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      U, OperatorT>) {
+      INFO(" with type " + type_name<T>());
 
-  sycl::nd_range<D> executionRange(work_group_range, work_group_range);
+      sycl::range<D> work_group_range =
+          sycl_cts::util::work_group_range<D>(queue, test_size);
 
-  const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
-  for (size_t size : sizes) {
-    SECTION("Check joint scan for group with sycl::plus and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::group<D>, false>(queue, size, executionRange,
-                                                 sycl::plus<U>());
-    }
+      size_t work_group_size = work_group_range.size();
 
-    SECTION("Check joint scan for group with sycl::maximum and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::group<D>, false>(queue, size, executionRange,
-                                                 sycl::maximum<U>());
-    }
+      sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
-    SECTION("Check joint scan for sub_group with sycl::plus and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::sub_group, false>(queue, size, executionRange,
-                                                  sycl::plus<U>());
-    }
+      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      for (size_t size : sizes) {
+        check_scan<D, T, U, sycl::group<D>, false>(queue, size, executionRange,
+                                                   OperatorT(), op_name);
 
-    SECTION(
-        "Check joint scan for sub_group with sycl::maximum and input size " +
-        std::to_string(size)) {
-      check_scan<D, T, U, sycl::sub_group, false>(queue, size, executionRange,
-                                                  sycl::maximum<U>());
+        check_scan<D, T, U, sycl::sub_group, false>(queue, size, executionRange,
+                                                    OperatorT(), op_name);
+      }
     }
   }
-}
+};
 
 template <typename DimensionT, typename T, typename U>
 class invoke_joint_scan_group {
-  static constexpr int D = DimensionT::value;
-
  public:
-  void operator()(sycl::queue& queue) { joint_scan_group<D, T, U>(queue); }
+  void operator()(sycl::queue& queue) {
+    const auto operators = get_op_types<U>();
+    for_all_combinations<joint_scan_group, DimensionT, T, U>(operators, queue);
+  }
 };
 
 // FIXME: Helper for implementations that cannot handle cases of different types
 template <typename DimensionT, typename T>
 class invoke_joint_scan_group_same_type {
-  static constexpr int D = DimensionT::value;
-
  public:
-  void operator()(sycl::queue& queue) { joint_scan_group<D, T, T>(queue); }
+  void operator()(sycl::queue& queue) {
+    const auto operators = get_op_types<T>();
+    for_all_combinations<joint_scan_group, DimensionT, T, T>(operators, queue);
+  }
 };
 
 template <int D, typename T, typename U, typename I>
@@ -225,63 +220,54 @@ class init_joint_scan_group_kernel;
  * @tparam T Type pointed by InPtr
  * @tparam U Type pointed by OutPtr
  * @tparam I Type used for init value
+ * @tparam OperatorT Type of binary operation
  */
-template <int D, typename T, typename U, typename I>
-void init_joint_scan_group(sycl::queue& queue) {
-  INFO(" with type " + type_name<T>());
-  sycl::range<D> work_group_range =
-      sycl_cts::util::work_group_range<D>(queue, test_size);
-  sycl::nd_range<D> executionRange(work_group_range, work_group_range);
+template <typename DimensionT, typename T, typename U, typename I,
+          typename OperatorT>
+struct init_joint_scan_group {
+  static constexpr int D = DimensionT::value;
 
-  size_t work_group_size = work_group_range.size();
+  void operator()(sycl::queue& queue, const std::string& op_name) {
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      I, OperatorT>) {
+      INFO(" with type " + type_name<T>());
 
-  const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
-  for (size_t size : sizes) {
-    SECTION("Check joint scan for group with sycl::plus and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::group<D>, true, I>(queue, size, executionRange,
-                                                   sycl::plus<I>());
-    }
+      sycl::range<D> work_group_range =
+          sycl_cts::util::work_group_range<D>(queue, test_size);
+      sycl::nd_range<D> executionRange(work_group_range, work_group_range);
 
-    SECTION("Check joint scan for group with sycl::maximum and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::group<D>, true, I>(queue, size, executionRange,
-                                                   sycl::maximum<I>());
-    }
+      size_t work_group_size = work_group_range.size();
 
-    SECTION("Check joint scan for sub_group with sycl::plus and input size " +
-            std::to_string(size)) {
-      check_scan<D, T, U, sycl::sub_group, true, I>(queue, size, executionRange,
-                                                    sycl::plus<I>());
-    }
+      const size_t sizes[3] = {5, work_group_size / 2, 3 * work_group_size};
+      for (size_t size : sizes) {
+        check_scan<D, T, U, sycl::group<D>, true, I>(
+            queue, size, executionRange, OperatorT(), op_name);
 
-    SECTION(
-        "Check joint scan for sub_group with sycl::maximum and input size " +
-        std::to_string(size)) {
-      check_scan<D, T, U, sycl::sub_group, true, I>(queue, size, executionRange,
-                                                    sycl::maximum<I>());
+        check_scan<D, T, U, sycl::sub_group, true, I>(
+            queue, size, executionRange, OperatorT(), op_name);
+      }
     }
   }
-}
+};
 
 template <typename DimensionT, typename T, typename U, typename I>
 class invoke_init_joint_scan_group {
-  static constexpr int D = DimensionT::value;
-
  public:
   void operator()(sycl::queue& queue) {
-    init_joint_scan_group<D, T, U, I>(queue);
+    const auto operators = get_op_types<I>();
+    for_all_combinations<init_joint_scan_group, DimensionT, T, U, I>(operators,
+                                                                     queue);
   }
 };
 
 // FIXME: Helper for implementations that cannot handle cases of different types
 template <typename DimensionT, typename T>
 class invoke_init_joint_scan_group_same_type {
-  static constexpr int D = DimensionT::value;
-
  public:
   void operator()(sycl::queue& queue) {
-    init_joint_scan_group<D, T, T, T>(queue);
+    const auto operators = get_op_types<T>();
+    for_all_combinations<init_joint_scan_group, DimensionT, T, T, T>(operators,
+                                                                     queue);
   }
 };
 
@@ -307,7 +293,8 @@ auto exclusive_scan_over_group_helper(Group group, U x, OpT op) {
 
 template <int D, typename T, typename Group, bool with_init, typename U = T,
           typename OpT>
-void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
+void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op,
+                           const std::string& op_name) {
   auto range_size = range.size();
   std::vector<U> v(range_size);
   std::iota(v.begin(), v.end(), T(1));
@@ -378,7 +365,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
     int shift = i - local_id[i];
     auto startIter = v.begin() + shift;
     {
-      INFO("Check exclusive_scan_over_group for element " + std::to_string(i));
+      INFO("Check exclusive_scan_over_group for element " + std::to_string(i) +
+           " (Operator: " + op_name + ")");
       std::vector<T> reference(i + 1, T(-1));
       std::exclusive_scan(startIter, v.begin() + i + 1, reference.begin(),
                           init_value, op);
@@ -387,7 +375,8 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
       CHECK(res_e[i] == reference[i - shift]);
     }
     {
-      INFO("Check inclusive_scan_over_group for element " + std::to_string(i));
+      INFO("Check inclusive_scan_over_group for element " + std::to_string(i) +
+           " (Operator: " + op_name + ")");
       std::vector<T> reference(i + 1, T(-1));
       std::inclusive_scan(startIter, v.begin() + i + 1, reference.begin(), op,
                           init_value);
@@ -402,41 +391,37 @@ void check_scan_over_group(sycl::queue& queue, sycl::range<D> range, OpT op) {
  * @brief Provides test for scans over group values
  * @tparam D Dimension to use for group instance
  * @tparam T Type used for value
+ * @tparam OperatorT Type of binary operation
  */
-template <int D, typename T>
-void scan_over_group(sycl::queue& queue) {
-  INFO(" with type " + type_name<T>());
+template <typename DimensionT, typename T, typename OperatorT>
+struct scan_over_group {
+  static constexpr int D = DimensionT::value;
 
-  sycl::range<D> work_group_range =
-      sycl_cts::util::work_group_range<D>(queue, test_size);
-  size_t work_group_size = work_group_range.size();
+  void operator()(sycl::queue& queue, const std::string& op_name) {
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      T, OperatorT>) {
+      INFO(" with type " + type_name<T>());
 
-  SECTION("Check scan_over_group for group with sycl::plus") {
-    check_scan_over_group<D, T, sycl::group<D>, false>(queue, work_group_range,
-                                                       sycl::plus<T>());
-  }
-  SECTION("Check scan_over_group for group with sycl::maximum") {
-    check_scan_over_group<D, T, sycl::group<D>, false>(queue, work_group_range,
-                                                       sycl::maximum<T>());
-  }
+      sycl::range<D> work_group_range =
+          sycl_cts::util::work_group_range<D>(queue, test_size);
+      size_t work_group_size = work_group_range.size();
 
-  SECTION("Check scan_over_group for sub_group with sycl::plus") {
-    check_scan_over_group<D, T, sycl::sub_group, false>(queue, work_group_range,
-                                                        sycl::plus<T>());
-  }
+      check_scan_over_group<D, T, sycl::group<D>, false>(
+          queue, work_group_range, OperatorT(), op_name);
 
-  SECTION("Check scan_over_group for sub_group with sycl::maximum") {
-    check_scan_over_group<D, T, sycl::sub_group, false>(queue, work_group_range,
-                                                        sycl::maximum<T>());
+      check_scan_over_group<D, T, sycl::sub_group, false>(
+          queue, work_group_range, OperatorT(), op_name);
+    }
   }
-}
+};
 
 template <typename DimensionT, typename T>
 class invoke_scan_over_group {
-  static constexpr int D = DimensionT::value;
-
  public:
-  void operator()(sycl::queue& queue) { scan_over_group<D, T>(queue); }
+  void operator()(sycl::queue& queue) {
+    const auto operators = get_op_types<T>();
+    for_all_combinations<scan_over_group, DimensionT, T>(operators, queue);
+  }
 };
 
 template <int D, typename T, typename U>
@@ -449,47 +434,46 @@ class init_scan_over_group_kernel;
  * @tparam D Dimension to use for group instance
  * @tparam T Type used for init value and result
  * @tparam U Type used for group values
+ * @tparam OperatorT Type of binary operation
  */
-template <int D, typename T, typename U>
-void init_scan_over_group(sycl::queue& queue) {
-  INFO(" with types " + type_name<T>() + " and " + type_name<U>());
+template <typename DimensionT, typename T, typename U, typename OperatorT>
+struct init_scan_over_group {
+  static constexpr int D = DimensionT::value;
 
-  sycl::range<D> work_group_range =
-      sycl_cts::util::work_group_range<D>(queue, test_size);
+  void operator()(sycl::queue& queue, const std::string& op_name) {
+    if constexpr (type_traits::group_algorithms::is_legal_operator_v<
+                      T, OperatorT>) {
+      INFO(" with types " + type_name<T>() + " and " + type_name<U>());
 
-  SECTION("Check scan_over_group for group with sycl::plus") {
-    check_scan_over_group<D, T, sycl::group<D>, true, U>(
-        queue, work_group_range, sycl::plus<T>());
-  }
-  SECTION("Check scan_over_group for group with sycl::maximum") {
-    check_scan_over_group<D, T, sycl::group<D>, true, U>(
-        queue, work_group_range, sycl::maximum<T>());
-  }
+      sycl::range<D> work_group_range =
+          sycl_cts::util::work_group_range<D>(queue, test_size);
 
-  SECTION("Check scan_over_group for sub_group with sycl::plus") {
-    check_scan_over_group<D, T, sycl::sub_group, true, U>(
-        queue, work_group_range, sycl::plus<T>());
-  }
+      check_scan_over_group<D, T, sycl::group<D>, true, U>(
+          queue, work_group_range, OperatorT(), op_name);
 
-  SECTION("Check scan_over_group for sub_group with sycl::maximum") {
-    check_scan_over_group<D, T, sycl::sub_group, true, U>(
-        queue, work_group_range, sycl::maximum<T>());
+      check_scan_over_group<D, T, sycl::sub_group, true, U>(
+          queue, work_group_range, OperatorT(), op_name);
+    }
   }
-}
+};
 
 template <typename DimensionT, typename T, typename U>
 class invoke_init_scan_over_group {
-  static constexpr int D = DimensionT::value;
-
  public:
-  void operator()(sycl::queue& queue) { init_scan_over_group<D, T, U>(queue); }
+  void operator()(sycl::queue& queue) {
+    const auto operators = get_op_types<T>();
+    for_all_combinations<init_scan_over_group, DimensionT, T, U>(operators,
+                                                                 queue);
+  }
 };
 
 // FIXME: Helper for implementations that cannot handle cases of different types
 template <typename DimensionT, typename T>
 class invoke_init_scan_over_group_same_type {
-  static constexpr int D = DimensionT::value;
-
  public:
-  void operator()(sycl::queue& queue) { init_scan_over_group<D, T, T>(queue); }
+  void operator()(sycl::queue& queue) {
+    const auto operators = get_op_types<T>();
+    for_all_combinations<init_scan_over_group, DimensionT, T, T>(operators,
+                                                                 queue);
+  }
 };

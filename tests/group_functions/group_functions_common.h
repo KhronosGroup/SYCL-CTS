@@ -216,3 +216,23 @@ using ExtendedTypes = concatenation<
 #endif
 
 using CustomTypes = concatenation<ExtendedTypes, util::custom_type>::type;
+
+template <typename T>
+inline auto get_op_types() {
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  static const auto types =
+      named_type_pack<sycl::plus<T>, sycl::multiplies<T>, sycl::bit_and<T>,
+                      sycl::bit_or<T>, sycl::bit_xor<T>, sycl::logical_and<T>,
+                      sycl::logical_or<T>, sycl::minimum<T>,
+                      sycl::maximum<T>>::generate("plus", "multiplies",
+                                                  "bit_and", "bit_or",
+                                                  "bit_xor", "logical_and",
+                                                  "logical_or", "minimum",
+                                                  "maximum");
+#else
+  static const auto types =
+      named_type_pack<sycl::plus<T>, sycl::maximum<T>>::generate("plus",
+                                                                 "maximum");
+#endif
+  return types;
+}
