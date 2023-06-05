@@ -33,6 +33,14 @@ template <typename T, sycl::target target,
 class check_atomic_constructors {
   sycl::accessor<T, 1, sycl::access_mode::read_write, target> m_acc;
 
+  sycl::multi_ptr<T, addressSpace, sycl::access::decorated::legacy>
+  get_pointer() const {
+    if constexpr (target == sycl::target::device)
+      return m_acc.template get_multi_ptr<sycl::access::decorated::legacy>();
+    else
+      return m_acc.get_pointer();
+  }
+
  public:
   check_atomic_constructors(
       sycl::accessor<T, 1, sycl::access_mode::read_write, target> acc)
@@ -41,12 +49,12 @@ class check_atomic_constructors {
   void operator()() const {
     /** Check atomic constructor
      */
-    sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
+    sycl::atomic<T, addressSpace> a(get_pointer());
   }
   void operator()(sycl::nd_item<1> item) const {
     /** Check atomic constructor
      */
-    sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
+    sycl::atomic<T, addressSpace> a(get_pointer());
   }
 };
 

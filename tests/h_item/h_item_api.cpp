@@ -135,22 +135,21 @@ struct getter {
   static const char* method_name(methods_1d method) {
     switch (method) {
       case methods_1d::get_global_range:
-        return "get_global_range(int) != get_global_range()[int]";
+        return "get_global_range(int)";
       case methods_1d::get_global_id:
-        return "get_global_id(int) != get_global_id()[int]";
+        return "get_global_id(int)";
       case methods_1d::get_local_range:
-        return "get_local_range(int) != get_local_range()[int]";
+        return "get_local_range(int)";
       case methods_1d::get_local_id:
-        return "get_local_id(int) != get_local_id()[int]";
+        return "get_local_id(int)";
       case methods_1d::get_logical_local_range:
-        return "get_logical_local_range(int) != get_logical_local_range()[int]";
+        return "get_logical_local_range(int)";
       case methods_1d::get_logical_local_id:
-        return "get_logical_local_id(int) != get_logical_local_id()[int]";
+        return "get_logical_local_id(int)";
       case methods_1d::get_physical_local_range:
-        return "get_physical_local_range(int) != "
-               "get_physical_local_range()[int]";
+        return "get_physical_local_range(int)";
       case methods_1d::get_physical_local_id:
-        return "get_physical_local_id(int) != get_physical_local_id()[int]";
+        return "get_physical_local_id(int)";
       case methods_1d::methods_count:
         return "Invalid enum value";
     }
@@ -216,6 +215,12 @@ class api_tests {
   static void run_nd_checks(const sycl::h_item<dims>& item, work_item_ids& ids,
                             resAcc_t resAcc, const size_t offset);
 
+  /** @brief Provides device-side checks for API return types
+   */
+  template <typename resAcc_t>
+  static void run_type_checks(const sycl::h_item<dims>& item, resAcc_t resAcc,
+                              const size_t offset);
+
   /** @brief Counts unique id values and validates value ranges
    */
   template <typename id_descriptor_t>
@@ -261,6 +266,7 @@ void api_tests<dims>::operator()() {
   std::vector<int> resDataDim1(methodsCount_1d * offsetsTotal, false);
   std::vector<int> resDataDim2(methodsCount_1d * offsetsTotal, false);
   std::vector<int> resData_nd(methodsCount_nd * offsetsTotal, false);
+  std::vector<int> resType(methodsCount_1d * offsetsTotal, false);
 
   {
     sycl::range<1> offsetsRange(offsetsTotal);
@@ -274,6 +280,8 @@ void api_tests<dims>::operator()() {
                                     {methodsCount_1d * offsetsTotal});
     sycl::buffer<int, 1> resBuf_nd(resData_nd.data(),
                                    {methodsCount_nd * offsetsTotal});
+    sycl::buffer<int, 1> resBufType(resType.data(),
+                                    {methodsCount_1d * offsetsTotal});
 
     queue.submit([&](sycl::handler& cgh) {
       auto id_acc = idsBuf.template get_access<sycl::access_mode::write>(cgh);
@@ -286,6 +294,8 @@ void api_tests<dims>::operator()() {
           resBufDim2.template get_access<sycl::access_mode::write>(cgh);
       auto resAcc_nd =
           resBuf_nd.template get_access<sycl::access_mode::write>(cgh);
+      auto resAccType =
+          resBufType.template get_access<sycl::access_mode::write>(cgh);
 
       cgh.parallel_for_work_group<kernel_common<dims>>(
           kernelGroupRange, kernelPhysicalLocalRange,
@@ -312,20 +322,37 @@ void api_tests<dims>::operator()() {
                   if constexpr (dims >= 3) {
                     run_1d_checks<2>(item, resAccDim2, offset);
                   }
+
+                  run_type_checks(item, resAccType, offset);
                 });
           });
     });
   }
 
-  // Check api 1d call results
+  // Check 1d results
   for (int i = 0; i < methodsCount_1d; i++) {
+    const auto method_name =
+        getter::method_name(static_cast<getter::methods_1d>(i));
+    const auto method_name_dim =
+        std::string(method_name, std::strlen(method_name) - 4) + ")[int]";
     INFO("Dimensions: " << std::to_string(dims));
-    INFO(getter::method_name(static_cast<getter::methods_1d>(i)));
-    CHECK(std::all_of(&resDataDim0[i], &resDataDim0[i] + offsetsTotal,
-                      [](bool val) { return val; }));
+    // API
+    {
+      INFO("Check " << method_name << " and " << method_name_dim
+                    << " API call");
+      CHECK(std::all_of(&resDataDim0[i], &resDataDim0[i] + offsetsTotal,
+                        [](bool val) { return val; }));
+    }
+    // Type
+    {
+      INFO("Check " << method_name << " and " << method_name_dim
+                    << " return type");
+      CHECK(std::all_of(&resType[i], &resType[i] + offsetsTotal,
+                        [](bool val) { return val; }));
+    }
   }
 
-  // // Check api nd call results
+  // Check api nd call results
   for (int i = 0; i < methodsCount_nd; i++) {
     INFO("Dimensions: " << std::to_string(dims));
     INFO(getter::method_name(static_cast<getter::methods_nd>(i)));
@@ -405,38 +432,37 @@ template <int dims>
 template <int currentDim, typename resAcc_t>
 void api_tests<dims>::run_1d_checks(const sycl::h_item<dims>& item,
                                     resAcc_t resAcc, const size_t offset) {
+  using methods = getter::methods_1d;
   const auto method_cnt = getter::method_cnt_1d;
 
-  resAcc[to_integral(getter::methods_1d::get_global_range) * method_cnt +
-         offset] = (item.get_global_range(currentDim) ==
-                    item.get_global_range()[currentDim]);
+  resAcc[to_integral(methods::get_global_range) * method_cnt + offset] =
+      (item.get_global_range(currentDim) ==
+       item.get_global_range()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_global_id) * method_cnt + offset] =
+  resAcc[to_integral(methods::get_global_id) * method_cnt + offset] =
       (item.get_global_id(currentDim) == item.get_global_id()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_local_range) * method_cnt +
-         offset] =
+  resAcc[to_integral(methods::get_local_range) * method_cnt + offset] =
       (item.get_local_range(currentDim) == item.get_local_range()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_local_id) * method_cnt + offset] =
+  resAcc[to_integral(methods::get_local_id) * method_cnt + offset] =
       (item.get_local_id(currentDim) == item.get_local_id()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_logical_local_range) * method_cnt +
-         offset] = (item.get_logical_local_range(currentDim) ==
-                    item.get_logical_local_range()[currentDim]);
+  resAcc[to_integral(methods::get_logical_local_range) * method_cnt + offset] =
+      (item.get_logical_local_range(currentDim) ==
+       item.get_logical_local_range()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_logical_local_id) * method_cnt +
-         offset] = (item.get_logical_local_id(currentDim) ==
-                    item.get_logical_local_id()[currentDim]);
+  resAcc[to_integral(methods::get_logical_local_id) * method_cnt + offset] =
+      (item.get_logical_local_id(currentDim) ==
+       item.get_logical_local_id()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_physical_local_range) *
-             method_cnt +
-         offset] = (item.get_physical_local_range(currentDim) ==
-                    item.get_physical_local_range()[currentDim]);
+  resAcc[to_integral(methods::get_physical_local_range) * method_cnt + offset] =
+      (item.get_physical_local_range(currentDim) ==
+       item.get_physical_local_range()[currentDim]);
 
-  resAcc[to_integral(getter::methods_1d::get_physical_local_id) * method_cnt +
-         offset] = (item.get_physical_local_id(currentDim) ==
-                    item.get_physical_local_id()[currentDim]);
+  resAcc[to_integral(methods::get_physical_local_id) * method_cnt + offset] =
+      (item.get_physical_local_id(currentDim) ==
+       item.get_physical_local_id()[currentDim]);
 }
 
 template <int dims>
@@ -495,6 +521,48 @@ void api_tests<dims>::run_nd_checks(const sycl::h_item<dims>& item,
          offset] = (logicalLocalItem.get_id() == logicalLocalId);
   resAcc[to_integral(getter::methods_nd::physical_local_id) * method_cnt +
          offset] = (physicalLocalItem.get_id() == physicalLocalId);
+}
+
+template <int dims>
+template <typename resAcc_t>
+void api_tests<dims>::run_type_checks(const sycl::h_item<dims>& item,
+                                      resAcc_t resAcc, const size_t offset) {
+  using methods = getter::methods_1d;
+  const auto method_cnt = getter::method_cnt_1d;
+
+  resAcc[to_integral(methods::get_global_range) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_global_range(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_global_range()), sycl::range<dims>>;
+
+  resAcc[to_integral(methods::get_global_id) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_global_id(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_global_id()), sycl::id<dims>>;
+
+  resAcc[to_integral(methods::get_local_range) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_local_range(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_local_range()), sycl::range<dims>>;
+
+  resAcc[to_integral(methods::get_local_id) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_local_id(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_local_id()), sycl::id<dims>>;
+
+  resAcc[to_integral(methods::get_logical_local_range) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_logical_local_range(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_logical_local_range()),
+                     sycl::range<dims>>;
+
+  resAcc[to_integral(methods::get_logical_local_id) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_logical_local_id(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_logical_local_id()), sycl::id<dims>>;
+
+  resAcc[to_integral(methods::get_physical_local_range) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_physical_local_range(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_physical_local_range()),
+                     sycl::range<dims>>;
+
+  resAcc[to_integral(methods::get_physical_local_id) * method_cnt + offset] =
+      std::is_same_v<decltype(item.get_physical_local_id(dims)), size_t> &&
+      std::is_same_v<decltype(item.get_physical_local_id()), sycl::id<dims>>;
 }
 
 TEST_CASE("h_item_1d API", "[h_item]") { api_tests<1>{}(); }
