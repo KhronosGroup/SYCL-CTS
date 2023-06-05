@@ -144,7 +144,6 @@ class kernel_item {
     type_acc[get_range] =
         std::is_same_v<sycl::range<dims>, decltype(localRange)>;
 
-
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
     sycl::id<dims> offset = item.get_offset();
     api_acc_deprecated[item] = (offset == offset_exp) &&

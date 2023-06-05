@@ -126,7 +126,7 @@ class TEST_NAME : public util::test_base {
                                copied, item);
 
                 if constexpr (numDims == 1) {
-                  // Check deafult Dimension and offset
+                  // Check default Dimension and offset
                   sycl::item copied_def(item);
                   successAcc[to_integral(current_check::copy_constructor_def)] =
                       std::is_same_v<sycl::item<1, true>, decltype(copied_def)>;
@@ -156,9 +156,9 @@ class TEST_NAME : public util::test_base {
                   success[static_cast<size_t>(current_check::copy_constructor)],
                   true, numDims);
       CHECK_VALUE(
-                  log,
-                  success[static_cast<size_t>(current_check::copy_constructor_def)],
-                  true, numDims);
+          log,
+          success[static_cast<size_t>(current_check::copy_constructor_def)],
+          true, numDims);
       CHECK_VALUE(log,
                   success[static_cast<size_t>(current_check::move_constructor)],
                   true, numDims);
