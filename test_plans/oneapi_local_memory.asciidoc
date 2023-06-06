@@ -1,0 +1,103 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl extension oneapi local memory
+
+This is a test plan for the extension enabling the declaration of local memory
+objects at the kernel functor scope described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_local_memory.asciidoc[sycl_ext_oneapi_local_memory.asciidoc]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_LOCAL_MEMORY` so they can
+be skipped if feature is not supported.
+
+=== Type coverage
+
+Let `T` is the type of an object to be allocated within local memory space.
+
+Test is performed using the following types as `T`:
+
+In regular mode:
+
+* `int`
+* `float`
+* custom trivially destructible type
+
+In full conformance mode:
+
+* `bool`
+* `char`
+* `signed char`
+* `unsigned char`
+* `short`
+* `unsigned short`
+* `int`
+* `unsigned int`
+* `long`
+* `unsigned long`
+* `long long`
+* `unsigned long long`
+* `float`
+* `double`
+* custom trivially destructible type
+
+== Tests
+
+Extension introduces the following functions:
+
+* `template <typename T, typename Group, typename... Args>
+   multi_ptr<T, Group::address_space>
+   group_local_memory(Group g, Args&&... args);` _(1)_
+
+* `template <typename T, typename Group>
+   multi_ptr<T, Group::address_space>
+   group_local_memory_for_overwrite(Group g);` _(2)_
+
+We should check that the allocating memory is actually available for all
+work-items in the work-group and the allocated objects are being created
+correctly.
+
+=== Test description
+
+==== Check initial value of allocated object and the type of returned value
+
+Define and submit a work-group data parallel SYCL kernel with work group size
+1.
+
+For the `group_local_memory(Group g, Args&&... args)` in kernel scope do the
+following:
+
+* Allocate local memory for an object of type `T`
+* Pass the initial value to the allocated object constructor through the `args`
+  parameter pack
+* Check the type of allocating function return value
+* Check that returned value is equal to the predefined initial value
+
+For the `group_local_memory_for_overwrite(Group g)` in kernel scope do the
+following:
+
+* Allocate local memory for an object of type `T`
+* Check the type of allocating function return value
+
+==== Check availability of local memory by all work-items in the work-group
+
+Define and submit a work-group data parallel SYCL kernel with work group size
+n.
+
+In kernel scope do the following:
+
+* Allocate local memory for an `array[n]` of objects of type `T`
+* Assign the value `val` which is defined as `nd_item.get_local_linear_id()`
+  to the `array[(n - 1) - val]` (where n is work group size)
+* Use group barrier to synchronize all work-items
+* Check the value `array[val]` is equal to `(n - 1) - val` for each work-item
+
+Perform that test for allocating function _(1)_ and _(2)_
