@@ -23,7 +23,7 @@ be skipped if feature is not supported.
 
 Let `T` is the type of an object to be allocated within local memory space.
 
-Test is performed using the following types as `T`:
+Tests are performed using the following types as `T`:
 
 In regular mode:
 
@@ -100,4 +100,4 @@ In kernel scope do the following:
 * Use group barrier to synchronize all work-items
 * Check the value `array[val]` is equal to `(n - 1) - val` for each work-item
 
-Perform that test for allocating function _(1)_ and _(2)_
+Perform that test for allocating function _(1)_ and _(2)_.
