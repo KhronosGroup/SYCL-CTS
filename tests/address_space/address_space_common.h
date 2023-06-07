@@ -171,7 +171,7 @@ class check_types {
 
         auto resAcc = resBuff.get_access<read_write>(cgh);
         auto initAcc = initBuff.template get_access<read_only>(cgh);
-        auto globalAcc = globalBuff.template get_access<read_only>(cgh);
+        auto globalAcc = globalBuff.template get_access<read_write>(cgh);
         sycl::accessor<T, 1, read_only, sycl::target::constant_buffer> constAcc(
             constantBuff, cgh);
         sycl::accessor<T, 1, read_write, sycl::target::local> localAcc(r, cgh);
@@ -180,17 +180,25 @@ class check_types {
           bool pass = true;
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];
-
+// FIXME: re-enable when sycl::access::decorated is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
           pass &= test_duplication(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           pass &= test_return_type_deduction(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           pass &= test_initialization(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           resAcc[0] = pass;
+#endif
         });
       });
     }

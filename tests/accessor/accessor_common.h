@@ -198,6 +198,24 @@ inline auto get_conformance_type_pack() {
 }
 
 /**
+ * @brief Function helps run every test for all types in full conformabce mode
+ *        or for reduce types in regular mode
+ * @tparam action Functor template for test to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ */
+template <template <typename, typename...> class action,
+          typename... actionArgsT>
+void common_run_tests() {
+  const auto types = get_conformance_type_pack();
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
+  for_all_types_vectors_marray<action, actionArgsT...>(types);
+#else
+  for_all_types<action, actionArgsT...>(types);
+  for_type_vectors_marray_reduced<action, int, actionArgsT...>("int");
+#endif
+}
+
+/**
  * @brief Factory function for getting type_pack with access modes values
  */
 inline auto get_access_modes() {

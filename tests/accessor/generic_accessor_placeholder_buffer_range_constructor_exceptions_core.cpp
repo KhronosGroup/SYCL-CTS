@@ -39,9 +39,8 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
  "types",
  "[accessor]")({
   using namespace generic_accessor_placeholder_buffer_range_constructor_exceptions;
-  const auto types = get_conformance_type_pack();
-  for_all_types_vectors_marray<
-      run_generic_placeholder_buffer_range_constructor_exceptions_test>(types);
+  common_run_tests<
+      run_generic_placeholder_buffer_range_constructor_exceptions_test>();
 });
 
 }  // namespace

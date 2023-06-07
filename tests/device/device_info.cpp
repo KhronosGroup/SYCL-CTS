@@ -87,60 +87,58 @@ TEST_CASE("device info", "[device]") {
     auto dev = sycl_cts::util::get_cts_object::device(cts_selector);
     check_get_info_param<sycl::info::device::device_type,
                          sycl::info::device_type>(dev);
-    check_get_info_param<sycl::info::device::vendor_id, sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::max_compute_units, sycl::cl_uint>(
-        dev);
+    check_get_info_param<sycl::info::device::vendor_id, uint32_t>(dev);
+    check_get_info_param<sycl::info::device::max_compute_units, uint32_t>(dev);
     check_get_info_param<sycl::info::device::max_work_item_dimensions,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::max_work_item_sizes<1>,
-                         sycl::id<1>>(dev);
+                         sycl::range<1>>(dev);
     check_get_info_param<sycl::info::device::max_work_item_sizes<2>,
-                         sycl::id<2>>(dev);
+                         sycl::range<2>>(dev);
     check_get_info_param<sycl::info::device::max_work_item_sizes<3>,
-                         sycl::id<3>>(dev);
+                         sycl::range<3>>(dev);
     check_get_info_param<sycl::info::device::max_work_group_size, size_t>(dev);
     check_get_info_param<sycl::info::device::max_num_sub_groups, uint32_t>(dev);
     CHECK((dev.get_info<sycl::info::device::max_num_sub_groups>() != 0));
     check_get_info_param<sycl::info::device::sub_group_sizes,
                          std::vector<size_t>>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_char,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_short,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_int,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_long,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_float,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_double,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::preferred_vector_width_half,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_char,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_short,
-                         sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::native_vector_width_int,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
+    check_get_info_param<sycl::info::device::native_vector_width_int, uint32_t>(
+        dev);
     check_get_info_param<sycl::info::device::native_vector_width_long,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_float,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_double,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::native_vector_width_half,
-                         sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::max_clock_frequency,
-                         sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::address_bits, sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::max_mem_alloc_size,
-                         sycl::cl_ulong>(dev);
+                         uint32_t>(dev);
+    check_get_info_param<sycl::info::device::max_clock_frequency, uint32_t>(
+        dev);
+    check_get_info_param<sycl::info::device::address_bits, uint32_t>(dev);
+    check_get_info_param<sycl::info::device::max_mem_alloc_size, uint64_t>(dev);
     check_get_info_param<sycl::info::device::image_support, bool>(dev);
-    check_get_info_param<sycl::info::device::max_read_image_args,
-                         sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::max_write_image_args,
-                         sycl::cl_uint>(dev);
+    check_get_info_param<sycl::info::device::max_read_image_args, uint32_t>(
+        dev);
+    check_get_info_param<sycl::info::device::max_write_image_args, uint32_t>(
+        dev);
     check_get_info_param<sycl::info::device::image2d_max_height, size_t>(dev);
     check_get_info_param<sycl::info::device::image2d_max_width, size_t>(dev);
     check_get_info_param<sycl::info::device::image3d_max_height, size_t>(dev);
@@ -149,10 +147,10 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::image_max_buffer_size, size_t>(
         dev);
     check_get_info_param<sycl::info::device::image_max_array_size, size_t>(dev);
-    check_get_info_param<sycl::info::device::max_samplers, sycl::cl_uint>(dev);
+    check_get_info_param<sycl::info::device::max_samplers, uint32_t>(dev);
     check_get_info_param<sycl::info::device::max_parameter_size, size_t>(dev);
-    check_get_info_param<sycl::info::device::mem_base_addr_align,
-                         sycl::cl_uint>(dev);
+    check_get_info_param<sycl::info::device::mem_base_addr_align, uint32_t>(
+        dev);
     check_get_info_param<sycl::info::device::half_fp_config,
                          std::vector<sycl::info::fp_config>>(dev);
     check_get_info_param<sycl::info::device::single_fp_config,
@@ -162,19 +160,16 @@ TEST_CASE("device info", "[device]") {
     check_get_info_param<sycl::info::device::global_mem_cache_type,
                          sycl::info::global_mem_cache_type>(dev);
     check_get_info_param<sycl::info::device::global_mem_cache_line_size,
-                         sycl::cl_uint>(dev);
-    check_get_info_param<sycl::info::device::global_mem_cache_size,
-                         sycl::cl_ulong>(dev);
-    check_get_info_param<sycl::info::device::global_mem_size, sycl::cl_ulong>(
+                         uint32_t>(dev);
+    check_get_info_param<sycl::info::device::global_mem_cache_size, uint64_t>(
         dev);
+    check_get_info_param<sycl::info::device::global_mem_size, uint64_t>(dev);
     check_get_info_param<sycl::info::device::max_constant_buffer_size,
-                         sycl::cl_ulong>(dev);
-    check_get_info_param<sycl::info::device::max_constant_args, sycl::cl_uint>(
-        dev);
+                         uint64_t>(dev);
+    check_get_info_param<sycl::info::device::max_constant_args, uint32_t>(dev);
     check_get_info_param<sycl::info::device::local_mem_type,
                          sycl::info::local_mem_type>(dev);
-    check_get_info_param<sycl::info::device::local_mem_size, sycl::cl_ulong>(
-        dev);
+    check_get_info_param<sycl::info::device::local_mem_size, uint64_t>(dev);
     check_get_info_param<sycl::info::device::error_correction_support, bool>(
         dev);
     check_get_info_param<sycl::info::device::host_unified_memory, bool>(dev);
@@ -252,7 +247,7 @@ TEST_CASE("device info", "[device]") {
           sub_device_partition_equal[0]);
     }
     check_get_info_param<sycl::info::device::partition_max_sub_devices,
-                         sycl::cl_uint>(dev);
+                         uint32_t>(dev);
     check_get_info_param<sycl::info::device::partition_properties,
                          std::vector<sycl::info::partition_property>>(dev);
     check_get_info_param<sycl::info::device::partition_affinity_domains,
