@@ -67,5 +67,4 @@ TEST_CASE("sycl::join kernel bundles with different contexts", "[sycl::join]") {
   check_for_state<sycl::bundle_state::input>(first_ctx, second_ctx);
   check_for_state<sycl::bundle_state::object>(first_ctx, second_ctx);
   check_for_state<sycl::bundle_state::executable>(first_ctx, second_ctx);
-
 }
