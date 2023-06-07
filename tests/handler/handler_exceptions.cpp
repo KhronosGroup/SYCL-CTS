@@ -2,7 +2,8 @@
 //
 //  SYCL 2020 Conformance Test Suite
 //
-//  Copyright (c) 2023 The Khronos Group Inc.
+//  Copyright (c) 2017-2022 Codeplay Software LTD. All Rights Reserved.
+//  Copyright (c) 2022-2023 The Khronos Group Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,28 +17,31 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Provides tests for generic accessor linearization with generic types
-//
 *******************************************************************************/
 
+#include "../../util/sycl_exceptions.h"
+
 #include "../common/common.h"
-
-// FIXME: re-enable when sycl::accessor is implemented
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
-
-#include "accessor_common.h"
-#include "generic_accessor_linearization.h"
-#endif
 
 #include "../common/disabled_for_test_case.h"
 #include "catch2/catch_test_macros.hpp"
 
-namespace generic_accessor_linearization_core {
+namespace handler_exceptions {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
-("Generic sycl::accessor linearization test. core types", "[accessor]")({
-  using namespace generic_accessor_linearization;
-  common_run_tests<run_generic_linearization_for_type>();
+using AccT =
+    sycl::accessor<int, 1, sycl::access_mode::write, sycl::target::device>;
+
+// FIXME: re-enable when sycl::errc is implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("handler require() exception", "[handler]")({
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  auto action = [&] {
+    AccT empty_acc;
+    queue.submit([&](sycl::handler& cgh) { cgh.require(empty_acc); })
+        .wait_and_throw();
+  };
+
+  CHECK_THROWS_MATCHES(action(), sycl::exception,
+                       sycl_cts::util::equals_exception(sycl::errc::invalid));
 });
-
-}  // namespace generic_accessor_linearization_core
+}  // namespace handler_exceptions

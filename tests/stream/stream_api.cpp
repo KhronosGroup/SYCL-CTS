@@ -159,7 +159,8 @@ class check_multi_ptr {
           });
         } else {
           auto acc_for_multi_ptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+              val_buffer.template get_access<sycl::access_mode::read_write>(
+                  cgh);
           cgh.single_task<kernel_name>([=] {
             const multi_ptr_t multi_ptr(acc_for_multi_ptr);
             check_type(os, multi_ptr);

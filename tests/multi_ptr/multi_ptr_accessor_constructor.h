@@ -63,7 +63,8 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
   bool same_value = false;
 
   // default value
-  T init_value = user_def_types::get_init_value_helper<T>(10);
+  T init_value =
+      user_def_types::get_init_value_helper<std::remove_const_t<T>>(10);
 
   auto queue = once_per_unit::get_queue();
 
@@ -113,7 +114,8 @@ void run_tests(sycl_cts::util::logger& log, const std::string& type_name) {
 template <typename T, sycl::access::address_space Space, int dimension>
 void run_tests_for_dimension(sycl_cts::util::logger& log,
                              const std::string& type_name) {
-  run_tests<T, Space, dimension, sycl::access::mode::read>(log, type_name);
+  run_tests<const T, Space, dimension, sycl::access::mode::read>(log,
+                                                                 type_name);
   run_tests<T, Space, dimension, sycl::access::mode::write>(log, type_name);
   run_tests<T, Space, dimension, sycl::access::mode::read_write>(log,
                                                                  type_name);

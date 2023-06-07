@@ -250,7 +250,7 @@ def generate_test_case(test_id, types, sig, memory, check, decorated = ""):
         testCaseSource = testCaseSource.replace("$DATA", sourcePtrDataName)
         accessorType = ""
         if memory == "local":
-            accessorType = "sycl::accessor<" + pointerType.name + ", 1, sycl::access_mode::read_write, sycl::target::local>"
+            accessorType = "sycl::local_accessor<" + pointerType.name + ", 1>"
         if memory == "global":
             accessorType = "sycl::accessor<" + pointerType.name + ", 1, sycl::access_mode::read_write, sycl::target::device>"
         testCaseSource = testCaseSource.replace("$ACCESSOR", accessorType)

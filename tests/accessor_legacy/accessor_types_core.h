@@ -66,33 +66,13 @@ public:
 #else
     // Extended type coverage
 
-    const auto vector_types =
-        named_type_pack<bool,
-                        char, signed char, unsigned char,
-                        short, unsigned short,
-                        int, unsigned int,
-                        long, unsigned long,
-                        long long, unsigned long long,
-                        float, sycl::cl_float,
-                        sycl::byte,
-                        sycl::cl_bool,
-                        sycl::cl_char, sycl::cl_uchar,
-                        sycl::cl_short, sycl::cl_ushort,
-                        sycl::cl_int, sycl::cl_uint,
-                        sycl::cl_long, sycl::cl_ulong>::generate(
-                        "bool",
-                        "char", "signed char", "unsigned char",
-                        "short", "unsigned short",
-                        "int", "unsigned int",
-                        "long", "unsigned long",
-                        "long long", "unsigned long long",
-                        "float", "sycl::cl_float",
-                        "sycl::byte",
-                        "sycl::cl_bool",
-                        "sycl::cl_char", "sycl::cl_uchar",
-                        "sycl::cl_short", "sycl::cl_ushort",
-                        "sycl::cl_int", "sycl::cl_uint",
-                        "sycl::cl_long", "sycl::cl_ulong");
+    const auto vector_types = named_type_pack<
+        bool, char, signed char, unsigned char, short, unsigned short, int,
+        unsigned int, long, unsigned long, long long, unsigned long long, float,
+        sycl::byte>::generate("bool", "char", "signed char", "unsigned char",
+                              "short", "unsigned short", "int", "unsigned int",
+                              "long", "unsigned long", "long long",
+                              "unsigned long long", "float", "sycl::byte");
     const auto scalar_types =
         named_type_pack<std::size_t,
                         accessor_utility::user_struct,

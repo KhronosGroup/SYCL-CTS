@@ -292,11 +292,10 @@ void check_function_multi_ptr_local(sycl_cts::util::logger& log, funT fun,
       auto resultPtr = buffer.template get_access<sycl::access_mode::write>(h);
       auto resultPtrArg =
           bufferArg.template get_access<sycl::access_mode::write>(h);
-      sycl::accessor<argT, 1, sycl::access_mode::read_write,
-                     sycl::target::local>
-          localAccessor(1, h);
-      h.single_task<kernel<N>>(
-          [arg, localAccessor, resultPtr, resultPtrArg, fun]() {
+      sycl::local_accessor<argT, 1> localAccessor(1, h);
+      h.parallel_for<kernel<N>>(
+          sycl::nd_range<1>{ndRng, ndRng},
+          [arg, localAccessor, resultPtr, resultPtrArg, fun](sycl::nd_item<1>) {
             localAccessor[0] = arg;
             resultPtr[0] = fun(localAccessor);
             resultPtrArg[0] = localAccessor[0];
