@@ -49,9 +49,8 @@ TEST_CASE("sycl::join kernel bundles with different contexts", "[sycl::join]") {
   using namespace sycl_cts::tests::kernel_bundle;
 
   const std::vector<sycl::device> devices{sycl::device::get_devices()};
-  {
-    INFO("Requires at least two devices");
-    REQUIRE(devices.size() > 1);
+  if (devices.size() < 2){
+    SKIP("Requires at least two devices");
   }
 
   sycl::context first_ctx(devices[0]);
