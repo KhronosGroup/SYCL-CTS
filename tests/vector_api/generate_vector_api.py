@@ -33,13 +33,9 @@ TEST_NAME = 'API'
 
 vector_element_type_template = Template("""
     CHECK(std::is_same_v<typename sycl::vec<${type}, ${size}>::element_type, ${type}>);
-// FIXME: re-enable when element_type for swizzle_vec is implemented
-// link to issue: https://github.com/intel/llvm/issues/8879
-#if !SYCL_CTS_COMPILING_WITH_DPCPP
     sycl::vec<${type}, ${size}> vec;
     CHECK(std::is_same_v<typename decltype(
         vec.template swizzle<${swizIndexes}>())::element_type, ${type}>);
-#endif
 """)
 
 vector_api_template = Template("""
