@@ -389,8 +389,10 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
         .submit([&](sycl::handler& cgh) {
           sycl::accessor res_acc(res_buf, cgh);
           auto acc = get_accessor_functor();
-          if (acc.is_placeholder()) {
-            cgh.require(acc);
+          if constexpr (AccType == accessor_type::generic_accessor) {
+            if (acc.is_placeholder()) {
+              cgh.require(acc);
+            }
           }
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
