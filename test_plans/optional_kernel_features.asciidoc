@@ -66,15 +66,21 @@ Submit kernel to the device and check the result:
 
 For following sizes:
 
-* 16
+* 4
 * 4294967295
+
+For following dimensions D:
+
+* 1
+* 2
+* 3
 
 Do the following:
 
-* Get device's max work group size using info::device::max_work_group_size.
-* Create kernel with attribute [[sycl::reqd_work_group_size(W)]] where W is tested size.
+* Get device's max work group size using info::device::max_work_group_size and info::device::max_work_item_sizes<D>.
+* Create kernel with attribute [[sycl::reqd_work_group_size(W...)]] where W... is tested size repeated for each tested dimension.
 * Submit kernels to device.
-* Check that, if W > max work group size, synchronous `errc::kernel_not_supported` is thrown,
+* Check that, if W*...*W > max_work_group_size or W > max_work_item_sizes<D> for any dimension, synchronous `errc::kernel_not_supported` is thrown,
   and that otherwise kernel is executed without any exception.
 
 === Runtime exception if kernel is decorated with [[sycl::reqd_work_group_size(W)]] and uses mismatched nd_range

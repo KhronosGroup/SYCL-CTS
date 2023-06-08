@@ -33,6 +33,14 @@ template <typename T, sycl::target target,
 class check_atomic_constructors {
   sycl::accessor<T, 1, sycl::access_mode::read_write, target> m_acc;
 
+  sycl::multi_ptr<T, addressSpace, sycl::access::decorated::legacy>
+  get_pointer() const {
+    if constexpr (target == sycl::target::device)
+      return m_acc.template get_multi_ptr<sycl::access::decorated::legacy>();
+    else
+      return m_acc.get_pointer();
+  }
+
  public:
   check_atomic_constructors(
       sycl::accessor<T, 1, sycl::access_mode::read_write, target> acc)
@@ -41,7 +49,12 @@ class check_atomic_constructors {
   void operator()() const {
     /** Check atomic constructor
      */
-    sycl::atomic<T, addressSpace> a(m_acc.get_pointer());
+    sycl::atomic<T, addressSpace> a(get_pointer());
+  }
+  void operator()(sycl::nd_item<1> item) const {
+    /** Check atomic constructor
+     */
+    sycl::atomic<T, addressSpace> a(get_pointer());
   }
 };
 
@@ -76,7 +89,7 @@ class check_atomics<T, sycl::target::local> {
  public:
   void operator()(sycl_cts::util::logger &log, sycl::queue &testQueue) {
     auto testDevice = testQueue.get_device();
-
+    sycl::nd_range<1> nd_range(sycl::range<1>(1), sycl::range<1>(1));
     /** Check atomic constructors
      */
     testQueue.submit([&](sycl::handler &cgh) {
@@ -85,7 +98,7 @@ class check_atomics<T, sycl::target::local> {
                                     sycl::access::address_space::local_space>;
       sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::local>
           acc(sycl::range<1>(1), cgh);
-      cgh.single_task<functor>(functor(acc));
+      cgh.parallel_for<functor>(nd_range, functor(acc));
     });
   }
 };

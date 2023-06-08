@@ -20,12 +20,10 @@
 
 #include "group_reduce.h"
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
-
 // FIXME: ComputeCpp does not implement reduce for unsigned long long int and
 //        long long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
 using ReduceTypes =
     unnamed_type_pack<size_t, float, char, signed char, unsigned char,
                       short int, unsigned short int, int, unsigned int,
@@ -43,6 +41,7 @@ using prod2 = product<std::tuple, ReduceTypes, ReduceTypes>::type;
 // hipSYCL has no implementation over sub-groups
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
                         "[group_func][type_list][dim]", ReduceTypes) {
+  auto queue = once_per_unit::get_queue();
   // check types to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
     // FIXME: hipSYCL omission
@@ -69,16 +68,17 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // check all work group dimensions
-  joint_reduce_group<1, TestType>(queue);
-  joint_reduce_group<2, TestType>(queue);
-  joint_reduce_group<3, TestType>(queue);
+  // Get binary operators from TestType
+  const auto Operators = get_op_types<TestType>();
+  const auto Type = unnamed_type_pack<TestType>();
+  for_all_combinations<invoke_joint_reduce_group>(Dims, Type, Operators, queue);
 #endif
 }
 
 // hipSYCL has problems with 16-bit types for Ptr
 TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
                         "[group_func][type_list][dim]", prod2) {
+  auto queue = once_per_unit::get_queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
@@ -90,11 +90,6 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
         "hipSYCL has no implementation of T joint_reduce(sub_group g, Ptr "
         "first, Ptr last, T init, "
         "BinaryOperation binary_op) over sub-groups. Skipping the test case.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
@@ -115,23 +110,25 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group joint reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
 #endif
   {
+    // Get binary operators from T
+    const auto Operators = get_op_types<T>();
+    const auto RetType = unnamed_type_pack<T>();
+    const auto ReducedType = unnamed_type_pack<U>();
     // check all work group dimensions
-    init_joint_reduce_group<1, T, U>(queue);
-    init_joint_reduce_group<2, T, U>(queue);
-    init_joint_reduce_group<3, T, U>(queue);
+    for_all_combinations<invoke_init_joint_reduce_group>(
+        Dims, RetType, ReducedType, Operators, queue);
   }
 #endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
                         "[group_func][type_list][dim]", ReduceTypes) {
+  auto queue = once_per_unit::get_queue();
   // check types to only print warning once
   if constexpr (std::is_same_v<TestType, char>) {
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
@@ -151,26 +148,22 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // check all work group dimensions
-  reduce_over_group<1, TestType>(queue);
-  reduce_over_group<2, TestType>(queue);
-  reduce_over_group<3, TestType>(queue);
+  // Get binary operators from TestType
+  const auto Operators = get_op_types<TestType>();
+  const auto Type = unnamed_type_pack<TestType>();
+  for_all_combinations<invoke_reduce_over_group>(Dims, Type, Operators, queue);
 #endif
 }
 
 TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
                         "[group_func][type_list][dim]", prod2) {
+  auto queue = once_per_unit::get_queue();
   using T = std::tuple_element_t<0, TestType>;
   using U = std::tuple_element_t<1, TestType>;
 
   // check types to only print warning once
   if constexpr (std::is_same_v<T, char> && std::is_same_v<U, char>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp does not implement reduce for unsigned long long int and "
         "long long int. Skipping the test cases.");
@@ -190,17 +183,18 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
-  // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-  // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+  // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<T, U>)
 #endif
   {
+    // Get binary operators from T
+    const auto Operators = get_op_types<T>();
+    const auto RetType = unnamed_type_pack<T>();
+    const auto ReducedType = unnamed_type_pack<U>();
     // check all work group dimensions
-    init_reduce_over_group<1, T, U>(queue);
-    init_reduce_over_group<2, T, U>(queue);
-    init_reduce_over_group<3, T, U>(queue);
+    for_all_combinations<invoke_init_reduce_over_group>(
+        Dims, RetType, ReducedType, Operators, queue);
   }
 #endif
 }

@@ -49,7 +49,7 @@ class run_test {
    * @param type_name Current data type string representation
    */
   void operator()(const std::string& type_name) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
 
     auto section_name = get_section_name<Dimension>(
         type_name,

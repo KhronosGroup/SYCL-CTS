@@ -58,7 +58,7 @@ class run_convert_assignment_operators_tests {
                   const std::string &src_address_space_name,
                   const std::string &src_is_decorated_name,
                   const std::string &dst_is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     auto r = sycl::range(1);
     SECTION(
@@ -80,13 +80,11 @@ class run_convert_assignment_operators_tests {
                                                 SrcIsDecorated, DstIsDecorated>;
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          auto acc_for_mptr = val_buffer.template get_access(cgh);
 
           if constexpr (src_space ==
                         sycl::access::address_space::global_space) {
-            auto val_acc =
-                val_buffer.template get_access<sycl::access_mode::read>(cgh);
+            auto val_acc = val_buffer.template get_access(cgh);
             cgh.single_task<kname>([=] {
               const src_multi_ptr_t mptr_in(acc_for_mptr);
               dst_multi_ptr_t mptr_out;
@@ -157,8 +155,7 @@ class run_convert_assignment_operators_tests {
 
           if constexpr (src_space ==
                         sycl::access::address_space::global_space) {
-            auto val_acc =
-                val_buffer.template get_access<sycl::access_mode::read>(cgh);
+            auto val_acc = val_buffer.template get_access(cgh);
             cgh.single_task<kname>([=] {
               const src_multi_ptr_t mptr_in(val_acc);
               dst_multi_ptr_t mptr_out;

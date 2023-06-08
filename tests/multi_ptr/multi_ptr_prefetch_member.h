@@ -59,7 +59,7 @@ class run_prefetch_test {
     static_assert(!std::is_same_v<T, void>,
                   "Data type shouldn't be is same to void type");
 
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     SECTION(sycl_cts::section_name("Check multi_ptr::prefetch()")
                 .with("T", type_name)
@@ -73,8 +73,7 @@ class run_prefetch_test {
         queue.submit([&](sycl::handler &cgh) {
           auto res_acc =
               res_buf.template get_access<sycl::access_mode::write>(cgh);
-          auto acc_for_mptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          auto acc_for_mptr = val_buffer.template get_access(cgh);
           cgh.single_task<kernel_prefetch_member<T, IsDecoratedT>>([=] {
             const multi_ptr_t mptr(acc_for_mptr);
 

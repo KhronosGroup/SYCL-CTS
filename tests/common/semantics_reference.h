@@ -209,10 +209,8 @@ struct test_equality {
 template <typename T>
 bool hash_equality_helper(const T& t0, const T& t1) {
 // FIXME: enable when std::hash specializations for local_accessor and
-// host_accessor are implemented link to issue
-// https://github.com/intel/llvm/issues/8332
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+// host_accessor are implemented
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<
                     T, sycl::host_accessor<int, 1,
                                            sycl::access::mode::read_write>> ||
@@ -317,8 +315,7 @@ struct test_inequality {
  compiler-specific exception. */
 template <typename T>
 bool hash_inequality_helper(const T& t0, const T& t1) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   if constexpr (std::is_same_v<
                     T, sycl::host_accessor<int, 1,
                                            sycl::access::mode::read_write>> ||
@@ -477,7 +474,17 @@ struct kernel_name;
  The function \p init_func takes a sycl::handler and returns an instance of
  type \p T. */
 template <typename storage, typename T, typename InitFunc>
-void check_kernel(InitFunc init_func, const std::string& type_name) {
+void check_kernel(InitFunc init_func, const std::string& type_name,
+                  const std::vector<sycl::aspect>& requirements = {}) {
+  auto queue = sycl_cts::util::get_cts_object::queue();
+  for (const sycl::aspect& req : requirements) {
+    if (!queue.get_device().has(req)) {
+      WARN("Device does not support " +
+           Catch::StringMaker<sycl::aspect>::convert(req));
+      return;
+    }
+  }
+
   INFO("checking reference semantics in kernel function for type \""
        << type_name << "\"");
   std::size_t result_count = test_traits::result_count +
@@ -487,7 +494,6 @@ void check_kernel(InitFunc init_func, const std::string& type_name) {
   {
     sycl::buffer<int> buffer(results.data(), sycl::range<1>{result_count});
 
-    auto queue = sycl_cts::util::get_cts_object::queue();
     queue.submit([&](sycl::handler& cgh) {
       auto accessor = buffer.template get_access<sycl::access_mode::write>(cgh);
       T t = init_func(cgh);

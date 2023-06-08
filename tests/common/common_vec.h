@@ -389,7 +389,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_count()
-#if SYCL_CTS_TEST_DEPRECATED_FEATURES
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   size_t count_depr = inputVec.get_count();
   if (count_depr != N) {
     return false;
@@ -412,7 +412,7 @@ bool check_vector_size_byte_size(sycl::vec<vecType, N> inputVec) {
   }
 
   // get_size()
-#if SYCL_CTS_TEST_DEPRECATED_FEATURES
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   size_t size_depr = inputVec.get_size();
   if (size_depr != sizeof(vecType) * M) {
     return false;
@@ -511,8 +511,8 @@ template <typename vecType, int N>
 bool check_convert_as_all_types(sycl::vec<vecType, N> inputVec) {
   bool result = true;
 
-// FIXME: re-enable type conversion to bool when vecType -> bool is implemented
-// https://github.com/intel/llvm/issues/8543
+// FIXME: re-enable when as() for bool is implemented
+// https://github.com/intel/llvm/issues/9251
 #ifndef SYCL_CTS_COMPILING_WITH_DPCPP
   result += check_convert_as_all_dims<vecType, N, bool>(inputVec);
 #endif

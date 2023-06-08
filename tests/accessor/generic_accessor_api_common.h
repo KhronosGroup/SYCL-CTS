@@ -41,7 +41,7 @@ void test_accessor_methods(const AccT &accessor,
     CHECK(acc_isPlaceholder == expected_isPlaceholder);
   }
 
-#if SYCL_CTS_TEST_DEPRECATED_FEATURES
+#if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   {
     INFO("check get_size() method");
     auto acc_get_size = accessor.get_size();
@@ -67,14 +67,14 @@ void test_accessor_ptr_host(AccT &accessor, T expected_data) {
         std::is_same_v<
             decltype(acc_multi_ptr_no),
             typename AccT::template accessor_ptr<sycl::access::decorated::no>>);
-    CHECK(value_operations::are_equal(*acc_multi_ptr_no.get(), expected_data));
+    CHECK(value_operations::are_equal(*acc_multi_ptr_no, expected_data));
 
     auto acc_multi_ptr_yes =
         accessor.template get_multi_ptr<sycl::access::decorated::yes>();
     STATIC_CHECK(std::is_same_v<decltype(acc_multi_ptr_yes),
                                 typename AccT::template accessor_ptr<
                                     sycl::access::decorated::yes>>);
-    CHECK(value_operations::are_equal(*acc_multi_ptr_yes.get(), expected_data));
+    CHECK(value_operations::are_equal(*acc_multi_ptr_yes, expected_data));
   }
 
   {
@@ -126,7 +126,7 @@ class run_api_tests {
   void operator()(const std::string &type_name,
                   const std::string &access_mode_name,
                   const std::string &target_name) {
-    auto queue = util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     constexpr int buf_dims = (0 == dims) ? 1 : dims;
     auto r = util::get_cts_object::range<buf_dims>::get(1, 1, 1);
 
@@ -249,7 +249,7 @@ class run_api_tests {
                 cgh.single_task<kname>([acc, res_acc]() {
                   test_accessor_ptr_device(acc, expected_val, res_acc);
                   res_acc[0] &= test_begin_end_device(acc, expected_val,
-                                                      expected_val, false);
+                                                      expected_val, true);
                   if constexpr (0 < dims) {
                     auto &acc_ref1 = acc[sycl::id<dims>()];
                     auto &acc_ref2 =
@@ -356,7 +356,7 @@ class run_api_tests {
                     test_accessor_ptr_device(acc, T(), res_acc);
                     res_acc[0] &= test_begin_end_device(
                         acc, value_operations::init<T>(0),
-                        value_operations::init<T>(buff_size - 1), false);
+                        value_operations::init<T>(buff_size - 1), true);
                     auto &acc_ref1 =
                         get_subscript_overload<T, AccT, dims>(acc, index);
                     auto &acc_ref2 = acc[sycl::id<dims>()];

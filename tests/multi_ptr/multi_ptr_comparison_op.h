@@ -164,8 +164,7 @@ class run_multi_ptr_comparison_op_test {
       queue.submit([&](sycl::handler &cgh) {
         using kname =
             kernel_comparison_op<T, AddrSpaceT, IsDecoratedT, KernelName>;
-        auto array_acc =
-            array_buffer.template get_access<sycl::access_mode::read>(cgh);
+        auto array_acc = array_buffer.template get_access(cgh);
         auto test_result_acc =
             test_result_buffer.template get_access<sycl::access_mode::write>(
                 cgh);
@@ -214,7 +213,7 @@ class run_multi_ptr_comparison_op_test {
   void operator()(const std::string &type_name,
                   const std::string &address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     SECTION(
         sycl_cts::section_name(
             "Check multi_ptr operator==(const multi_ptr&, const multi_ptr&)")

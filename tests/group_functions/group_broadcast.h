@@ -194,9 +194,13 @@ void broadcast_sub_group(sycl::queue& queue) {
           local_var = sycl::select_from_group(sub_group, local_var, last_item);
           if (sub_group.get_local_linear_id() == 0) res_acc[3] = local_var;
 
-          // return the sub-group size
-          if (sub_group.get_local_linear_id() == 0)
-            res_acc[4] = sub_group.get_local_linear_range();
+          // Return the sub-group size when possible or just its parity
+          if (sub_group.get_local_linear_id() == 0) {
+            if constexpr (std::is_same_v<T, bool>)
+              res_acc[4] = sub_group.get_local_linear_range() % 2;
+            else
+              res_acc[4] = sub_group.get_local_linear_range();
+          }
         }
       });
     });

@@ -90,7 +90,7 @@ class run_access_members_tests {
   void operator()(const std::string &type_name,
                   const std::string &address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     constexpr int val_to_init = 42;
     T value = user_def_types::get_init_value_helper<T>(val_to_init);
 
@@ -165,8 +165,7 @@ class run_access_members_tests {
             test_device_code(priv_val_mptr);
           });
         } else {
-          auto acc_for_multi_ptr =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          auto acc_for_multi_ptr = val_buffer.template get_access(cgh);
           cgh.single_task<kname>([=] { test_device_code(acc_for_multi_ptr); });
         }
       });

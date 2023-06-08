@@ -83,7 +83,7 @@ void check_scan(sycl::queue& queue, size_t size,
     queue
         .submit([&](sycl::handler& cgh) {
           auto v_acc =
-              v_sycl.template get_access<sycl::access::mode::read>(cgh);
+              v_sycl.template get_access<sycl::access::mode::read_write>(cgh);
           auto res_e_acc =
               res_e_sycl.template get_access<sycl::access::mode::read_write>(
                   cgh);
@@ -240,26 +240,26 @@ void init_joint_scan_group(sycl::queue& queue) {
     SECTION("Check joint scan for group with sycl::plus and input size " +
             std::to_string(size)) {
       check_scan<D, T, U, sycl::group<D>, true, I>(queue, size, executionRange,
-                                                   sycl::plus<U>());
+                                                   sycl::plus<I>());
     }
 
     SECTION("Check joint scan for group with sycl::maximum and input size " +
             std::to_string(size)) {
       check_scan<D, T, U, sycl::group<D>, true, I>(queue, size, executionRange,
-                                                   sycl::maximum<U>());
+                                                   sycl::maximum<I>());
     }
 
     SECTION("Check joint scan for sub_group with sycl::plus and input size " +
             std::to_string(size)) {
       check_scan<D, T, U, sycl::sub_group, true, I>(queue, size, executionRange,
-                                                    sycl::plus<U>());
+                                                    sycl::plus<I>());
     }
 
     SECTION(
         "Check joint scan for sub_group with sycl::maximum and input size " +
         std::to_string(size)) {
       check_scan<D, T, U, sycl::sub_group, true, I>(queue, size, executionRange,
-                                                    sycl::maximum<U>());
+                                                    sycl::maximum<I>());
     }
   }
 }

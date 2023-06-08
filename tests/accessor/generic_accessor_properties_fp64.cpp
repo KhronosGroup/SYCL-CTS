@@ -9,9 +9,8 @@
 #include "../common/common.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8298
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+
 #include "accessor_common.h"
 #include "generic_accessor_properties.h"
 #endif
@@ -21,7 +20,7 @@
 
 namespace generic_accessor_properties_fp64 {
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor properties test. fp64 type", "[accessor]")({
   using namespace generic_accessor_properties;
   auto queue = sycl_cts::util::get_cts_object::queue();
@@ -35,7 +34,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
 #if SYCL_CTS_ENABLE_FULL_CONFORMANCE
   for_type_vectors_marray<run_generic_properties_tests, double>("double");
 #else
-  run_generic_properties_tests<sycl::half>{}("double");
+  run_generic_properties_tests<double>{}("double");
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 });
 

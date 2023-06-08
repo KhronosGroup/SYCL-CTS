@@ -77,8 +77,7 @@ class run_explicit_convert_tests {
             res_buf.template get_access<sycl::access_mode::write>(cgh);
         if constexpr (target_space ==
                       sycl::access::address_space::global_space) {
-          auto val_acc =
-              val_buffer.template get_access<sycl::access_mode::read>(cgh);
+          auto val_acc = val_buffer.template get_access(cgh);
           cgh.single_task<kname>([=] {
             input_multi_ptr_t<T> mptr_in(val_acc);
             auto mptr_out =
@@ -133,7 +132,7 @@ class run_explicit_convert_tests {
   void operator()(const std::string &type_name,
                   const std::string &target_address_space_name,
                   const std::string &is_decorated_name) {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     auto r = sycl::range(1);
 
     SECTION(sycl_cts::section_name(

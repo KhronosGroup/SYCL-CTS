@@ -16,11 +16,11 @@
 //    1) sycl::get_kernel_bundle<BundleState>(context)
 //    2) sycl::get_kernel_bundle<BundleState>(context, devices)
 //    3) sycl::get_kernel_bundle<BundleState>(context, devices, selector)
+//    4) sycl::get_kernel_bundle<BundleState>(context, selector)
 //  Do not contain any built-in kernel.
 //  This test verifies that these overloads:
-//    1) sycl::get_kernel_bundle<BundleState>(context, selector)
-//    2) sycl::get_kernel_bundle<BundleState>(context, kernelIds)
-//    3) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
+//    1) sycl::get_kernel_bundle<BundleState>(context, kernelIds)
+//    2) sycl::get_kernel_bundle<BundleState>(context, devices, kernelIds)
 //  Contain built-in kernels (if built-in kernel_ids were provided) and contain
 //  built-in kernels + user-defined kernels (if built-in kernel_ids +
 //  user-defined kernel_ids were provided).
@@ -109,7 +109,6 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   // verify that obtained kernel bundle does not contain built-in kernels
   {
     auto k_bundle = sycl::get_kernel_bundle<BundleState>(context);
-    bool k_bundle_has_built_in_kernel = true;
 
     has_kernel<BundleState> has_kb_verifier(k_bundle);
     if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
@@ -125,11 +124,11 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, built_in_kernel_ids);
-    bool k_bundle_has_built_in_kernel = true;
 
     has_kernel<BundleState> has_kb_verifier(k_bundle);
-    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
-                    has_kb_verifier)) {
+    if (!std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                     has_kb_verifier) &&
+        !built_in_kernel_ids.empty()) {
       FAIL(log,
            "Obtained kernel bundle does not have one or more built-in kernels");
     }
@@ -142,11 +141,11 @@ void run_tests(util::logger &log, sycl::queue &queue) {
               std::back_inserter(all_available_kernels));
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, all_available_kernels);
-    bool k_bundle_has_built_in_kernel = true;
 
     has_kernel<BundleState> has_kb_verifier(k_bundle);
-    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
-                    has_kb_verifier)) {
+    if (!std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                     has_kb_verifier) &&
+        !built_in_kernel_ids.empty()) {
       FAIL(log,
            "Obtained kernel bundle does not have one or more built-in kernels");
     }
@@ -180,10 +179,10 @@ void run_tests(util::logger &log, sycl::queue &queue) {
   {
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, built_in_kernel_ids);
-    bool k_bundle_has_built_in_kernel = true;
     has_kernel<BundleState> has_kb_verifier(k_bundle);
-    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
-                    has_kb_verifier)) {
+    if (!std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                     has_kb_verifier) &&
+        !built_in_kernel_ids.empty()) {
       FAIL(log,
            "Obtained kernel bundle does not have one or more built-in kernels");
     }
@@ -195,10 +194,10 @@ void run_tests(util::logger &log, sycl::queue &queue) {
               std::back_inserter(all_available_kernels));
     auto k_bundle =
         sycl::get_kernel_bundle<BundleState>(context, all_available_kernels);
-    bool k_bundle_has_built_in_kernel = true;
     has_kernel<BundleState> has_kb_verifier(k_bundle);
-    if (std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
-                    has_kb_verifier)) {
+    if (!std::any_of(built_in_kernel_ids.cbegin(), built_in_kernel_ids.cend(),
+                     has_kb_verifier) &&
+        !built_in_kernel_ids.empty()) {
       FAIL(log,
            "Obtained kernel bundle does not have one or more built-in kernels");
     }

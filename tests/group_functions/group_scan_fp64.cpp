@@ -27,7 +27,7 @@
 // FIXME: ComputeCpp does not implement scan for unsigned long long int and long
 // long int
 #ifdef SYCL_CTS_COMPILING_WITH_COMPUTECPP
-#ifdef SYCL_CTS_ENABLE_FULL_CONFORMANCE
+#if SYCL_CTS_ENABLE_FULL_CONFORMANCE
 using ScanTypes =
     unnamed_type_pack<size_t, float, char, signed char, unsigned char,
                       short int, unsigned short int, int, unsigned int,
@@ -42,7 +42,6 @@ using ScanTypes = Types;
 using DoubleType = unnamed_type_pack<double>;
 using DoubleExtendedTypes = concatenation<ScanTypes, double>::type;
 
-static auto queue = sycl_cts::util::get_cts_object::queue();
 static const auto Dims = integer_pack<1, 2, 3>::generate_unnamed();
 #endif  // !SYCL_CTS_COMPILING_WITH_HIPSYCL
 // FIXME: known_identity is not impemented yet for hipSYCL.
@@ -57,11 +56,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan cannot process "
       "over several sub-groups simultaneously. Using one sub-group only.");
   WARN("hipSYCL does not support sycl::known_identity_v yet.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for InPtr and OutPtr. "
-      "Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
@@ -70,11 +64,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // FIXME: hipSYCL cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
     for_all_combinations<invoke_joint_scan_group_same_type>(Dims, DoubleType{},
                                                             queue);
 #else
@@ -99,11 +92,6 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
       "hipSYCL joint_exclusive_scan and joint_inclusive_scan with init values "
       "cannot process over several sub-groups simultaneously. Using one "
       "sub-group only.");
-#elif defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for T, *InPtr and "
-      "*OutPtr. Skipping such test cases.");
 #elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN("ComputeCpp does not implement joint scan. Skipping the test.");
 #endif
@@ -112,11 +100,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: hipSYCL and DPCPP cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
-    defined(SYCL_CTS_COMPILING_WITH_DPCPP)
+    // FIXME: hipSYCL cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_HIPSYCL)
     for_all_combinations<invoke_init_joint_scan_group_same_type>(
         Dims, DoubleType{}, queue);
 #else
@@ -146,6 +133,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
     for_all_combinations<invoke_scan_over_group>(Dims, DoubleType{}, queue);
   } else {
@@ -159,12 +147,7 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 DISABLED_FOR_TEST_CASE(hipSYCL)
 ("Group and sub-group scan functions with init",
  "[group_func][type_list][fp64][dim]")({
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-  // Link to issue https://github.com/intel/llvm/issues/8341
-  WARN(
-      "DPCPP cannot handle cases of different types for T and V. Skipping such "
-      "test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   WARN(
       "ComputeCpp does not implement scan for unsigned long long int and "
       "long long int. Skipping the test cases.");
@@ -183,11 +166,10 @@ DISABLED_FOR_TEST_CASE(hipSYCL)
 #if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
   return;
 #else
+  auto queue = once_per_unit::get_queue();
   if (queue.get_device().has(sycl::aspect::fp64)) {
-    // FIXME: DPCPP and ComputeCpp cannot handle cases of different types
-    // Link to issue https://github.com/intel/llvm/issues/8341
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP) || \
-    defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+    // FIXME: ComputeCpp cannot handle cases of different types
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     for_all_combinations<invoke_init_scan_over_group_same_type>(
         Dims, DoubleType{}, queue);
 #else

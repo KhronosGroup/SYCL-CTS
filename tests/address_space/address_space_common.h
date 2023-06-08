@@ -11,6 +11,7 @@
 
 #include "../../util/kernel_names.h"
 #include "../common/common.h"
+#include "../common/once_per_unit.h"
 
 #include <array>
 #include <string>
@@ -155,7 +156,7 @@ class check_types {
         AddrSpace<address_space::local_space>().get_value(),
         AddrSpace<address_space::private_space>().get_value()};
 
-    auto q = util::get_cts_object::queue();
+    auto q = once_per_unit::get_queue();
 
     {
       auto r = sycl::range<1>(1);
@@ -170,26 +171,34 @@ class check_types {
 
         auto resAcc = resBuff.get_access<read_write>(cgh);
         auto initAcc = initBuff.template get_access<read_only>(cgh);
-        auto globalAcc = globalBuff.template get_access<read_only>(cgh);
+        auto globalAcc = globalBuff.template get_access<read_write>(cgh);
         sycl::accessor<T, 1, read_only, sycl::target::constant_buffer> constAcc(
             constantBuff, cgh);
         sycl::accessor<T, 1, read_write, sycl::target::local> localAcc(r, cgh);
 
-        cgh.single_task<kernel_name>([=]() {
+        cgh.parallel_for<kernel_name>(sycl::nd_range<1>(r, r), [=](auto item) {
           bool pass = true;
           localAcc[0] = initAcc[2];
           T priv = initAcc[3];
-
+// FIXME: re-enable when sycl::access::decorated is implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
           pass &= test_duplication(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           pass &= test_return_type_deduction(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           pass &= test_initialization(
-              globalAcc.get_pointer(), localAcc.get_pointer(),
-              constAcc.get_pointer(), sycl::private_ptr<T>(&priv));
+              globalAcc
+                  .template get_multi_ptr<sycl::access::decorated::legacy>(),
+              localAcc.get_pointer(), constAcc.get_pointer(),
+              sycl::private_ptr<T>(&priv));
           resAcc[0] = pass;
+#endif
         });
       });
     }

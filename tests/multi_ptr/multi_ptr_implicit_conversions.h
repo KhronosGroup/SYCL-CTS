@@ -75,7 +75,7 @@ class run_implicit_convert_tests {
 
   template <typename src_multi_ptr_t, typename dest_multi_ptr_t>
   void preform_implicit_conversion_test() {
-    auto queue = sycl_cts::util::get_cts_object::queue();
+    auto queue = once_per_unit::get_queue();
     T value = user_def_types::get_init_value_helper<T>(expected_val);
     bool res = false;
 
@@ -155,9 +155,7 @@ class run_implicit_convert_tests {
             test_device_code(priv_val_mptr);
           });
         } else {
-          auto expected_val_acc =
-              expected_val_buffer.template get_access<sycl::access_mode::read>(
-                  cgh);
+          auto expected_val_acc = expected_val_buffer.template get_access(cgh);
           cgh.single_task<kname>([=] { test_device_code(expected_val_acc); });
         }
       });
