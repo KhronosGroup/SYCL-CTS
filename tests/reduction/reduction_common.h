@@ -33,7 +33,13 @@ namespace reduction_common {
 constexpr bool with_property{true};
 constexpr bool without_property{false};
 
-constexpr size_t number_iterations{7};
+// The buffer prepared from get_buffer will be the sequence 0, 1, ...,
+// number_iterations-1. This number should be small enough to prevent
+// overflow issues. (e.g. in a half multiplication reduction, for
+// number_iterations >= 10, then a left-to-right reduction results in
+// 0, while a right-to-left reduction results in nan because 9! * 0 =
+// inf * 0 = nan.)
+constexpr size_t number_iterations{4};
 
 constexpr int identity_value{0};
 
