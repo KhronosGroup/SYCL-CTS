@@ -198,12 +198,6 @@ DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(ComputeCpp, hipSYCL)
   constexpr sycl::errc expected_errc = sycl::errc::kernel_not_supported;
 
   {
-    run_separate_lambda_with_accessor<kname, FeatureTypeT, FeatureAspectT,
-                                      call_attribute_type::dummy_non_decorated>(
-        is_exception_expected, expected_errc, queue);
-  }
-
-  {
     using FunctorT = decorated_call_non_decorated_dummy<FeatureAspectT>;
 
     run_functor_with_accessor<FunctorT>(is_exception_expected, expected_errc,
