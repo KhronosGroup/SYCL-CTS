@@ -65,39 +65,75 @@ We should check that the allocating memory is actually available for all
 work-items in the work-group and the allocated objects are being created
 correctly.
 
+To test correctly initialization of the custom type object after call of _(2)_ 
+the custom type should have default constructor which initializes custom type
+data members by predefined known values.
+Apart from the default constructor the custom type should provide constructors
+taking one, two and three arguments to provide better testing for the args
+parameter pack to _(1)_.
+
 === Test description
 
 ==== Check initial value of allocated object and the type of returned value
 
 Define and submit a work-group data parallel SYCL kernel with work group size
-1.
+`n`.
 
 For the `group_local_memory(Group g, Args&&... args)` in kernel scope do the
 following:
 
 * Allocate local memory for an object of type `T`
-* Pass the initial value to the allocated object constructor through the `args`
-  parameter pack
+* Pass the chosen set of initial values to the constructor of type `T` through
+  the `args` parameter pack
 * Check the type of allocating function return value
-* Check that returned value is equal to the predefined initial value
+* Check the allocated object of type `T` has the predefined initial value
+
+For the custom type test should be performed for sets of initial values
+containing one, two and three values.
 
 For the `group_local_memory_for_overwrite(Group g)` in kernel scope do the
 following:
 
 * Allocate local memory for an object of type `T`
 * Check the type of allocating function return value
+* If the `T` is the custom type, check that object default constructor
+  was called, by comparing the allocated object data members with expected
+  values
+
+==== Check correctly initialization with different set of initial values in each work-group
+
+Define and submit a work-group data parallel SYCL kernel with work group size
+`n` and total execution range `num_work_group x n`.
+
+In kernel scope do the following:
+
+* Allocate local memory for an object of type `T` using function _(1)_
+* Each work-group chooses a different set of initial values used to
+  construct `T`
+* All work-items in a group pass the same set of initial values through the
+  `args` parameter pack
+* Work-items in each group check that the object of type `T` has the expected
+  initial value
+
+For the custom type test should be performed for sets of initial values
+containing one, two and three values.
 
 ==== Check availability of local memory by all work-items in the work-group
 
 Define and submit a work-group data parallel SYCL kernel with work group size
-n.
+`n`.
 
 In kernel scope do the following:
 
 * Allocate local memory for an `array[n]` of objects of type `T`
-* Assign the value `val` which is defined as `nd_item.get_local_linear_id()`
-  to the `array[(n - 1) - val]` (where n is work group size)
+* Assign the value `nd_item.get_local_linear_id() & 1` to the 
+  `array[(n - 1) - nd_item.get_local_linear_id()]` (where `n` is work group size)
 * Use group barrier to synchronize all work-items
-* Check the value `array[val]` is equal to `(n - 1) - val` for each work-item
+* Check the value `array[nd_item.get_local_linear_id()]` is equal to
+  `(n - 1) - nd_item.get_local_linear_id()` for each work-item
 
 Perform that test for allocating function _(1)_ and _(2)_.
+
+To perform this test with an object of the custom type, the custom type must
+provide a conversion constructor from `size_t` and
+`operator==(const CustomType&)`.
