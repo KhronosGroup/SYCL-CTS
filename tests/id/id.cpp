@@ -284,7 +284,7 @@ TEMPLATE_TEST_CASE_SIG("id supports get() and operator[]", "[id]", ((int D), D),
   }
 }
 
-DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(DPCPP)
+DISABLED_FOR_TEMPLATE_TEST_CASE_SIG(DPCPP, hipSYCL)
 ("id provides static constexpr member 'dimensions'", "[id]", ((int D), D), 1, 2,
  3)({
   CHECK(std::is_same_v<decltype(sycl::id<D>::dimensions), const int>);
