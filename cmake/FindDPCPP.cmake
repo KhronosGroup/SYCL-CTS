@@ -17,6 +17,15 @@ else()
         PATH_SUFFIXES bin)
 endif()
 
+string(FIND ${DPCPP_CXX_EXECUTABLE} "clang" cxx_find)
+if (${cxx_find} GREATER -1)
+  if (DEFINED ENV{OPENCL_CTS_SPIRV_TOOL_VERSION})
+    if ($ENV{OPENCL_CTS_SPIRV_TOOL_VERSION} STREQUAL "clang-16" )
+      set(DPCPP_FLAGS "-Xclang=-no-opaque-pointers;${DPCPP_FLAGS}")
+    endif()
+  endif()
+endif()
+
 # Set SYCL compilation mode, SYCL 2020 standard version and user provided flags
 set(DPCPP_FLAGS "-fsycl;-sycl-std=2020;${DPCPP_FLAGS}")
 # Set target triple(s) if specified
