@@ -37,23 +37,54 @@ Note that `T` must be convertible to `float`
 
 == Tests
 
+=== Size
+
+`bfloat16` must occupy 2 bytes of memory, check that `sizeof(bfloat16) == 2`.
+This check is required to calculate dynamic range.
+
 === Constructors
 
 `bfloat16()` +
-`bfloat16(const bfloat16 &)`
+`bfloat16(const bfloat16 &)` +
+`~bfloat16()`
 
 Check that:
 
 * `std::is_default_constructible_v<bfloat16> == true`.
 * `std::is_copy_constructible_v<bfloat16> == true`.
+* `std::is_default_destructible_v<bfloat16> == true`.
 
 `bfloat16(const float &a)` +
-`bfloat16(const sycl::half &a)`
+`bfloat16 &operator=(const float &a)``
 
-Since `bfloat16` has 7 bits significand, epsilon value for this type is 2^-7, or 0.0078125. Therefore, objects created using these constructors must be in the range `(a - 0.0078125, a + 0.0078125)`. Create `bfloat16` object named `bf` and verify:
+* Create a `float` variable `f` equal to 1;
+* Create a `bfloat16` variable `bf1` passing `f` to the constructor;
+* Create a `bfloat16` variable `bf2` by assinging it to `f`;
+* Verify that:
+    ** `bf1 == f`
+    ** `bf2 == f`
 
-* `sizeof(bf) == 2`
-* `(bf > a - epsilon) && (bf < a + epsilon)`
+`bfloat16(const sycl::half &a)` +
+`bfloat16 &operator=(const sycl::half &a)`
+
+Same as above, but with `sycl::half` instead of `float`
+
+=== Dynamic range
+
+* Calculate the maximum and minimum positive values of `bfloat16`:
+    ** Create `std::bitset` with 16 bits to store maximum value;
+    ** Set all bits to 1;
+    ** Set bit 15 (sign bit) and bit 7 (special values) to 0;
+    ** Convert it to `bfloat16` variable `BFLT16_MAX`
+
+    ** Create `std::bitset` with 16 bits to store minimum value;
+    ** Set all bits to 0;
+    ** Set bit 8 to 0 to get minimum normal value;
+    ** Convert it to `bfloat16` variable `BFLT16_MIN`
+
+* Calculate `float` dynamic range equal to `log10(FLT_MAX / FLT_MIN)` or `log10(FLT_MAX) - log10(FLT_MIN)`;
+* Calculate `bfloat16` dynamic range equal to `log10(BFLT16_MIN) - log10(BFLT16_MIN)`;
+* Compare integer parts of computed values.
 
 === Conversion
 
@@ -102,7 +133,7 @@ OP is `+`, `-`, `*`, `/` +
 * Check results of arithmetic operations.
 * Check returned value type.
 
-OP is `==`, `!=`, `<`, `>`, `<=`, `>=` +
+OP is `==`, `!=`, `<`, `>`, `+<=+`, `>=` +
 `bool operatorOP(const bfloat16 &lhs, const bfloat16 &rhs)`
 
 * Check results of equality and inequality between two `bfloat16` objects.
