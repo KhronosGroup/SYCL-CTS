@@ -50,12 +50,12 @@ This check is required to calculate dynamic range.
 
 Check that:
 
-* `std::is_default_constructible_v<bfloat16> == true`.
-* `std::is_copy_constructible_v<bfloat16> == true`.
-* `std::is_default_destructible_v<bfloat16> == true`.
+* `std::is_default_constructible_v<bfloat16> == true`;
+* `std::is_copy_constructible_v<bfloat16> == true`;
+* `std::is_destructible_v<bfloat16> == true`.
 
 `bfloat16(const float &a)` +
-`bfloat16 &operator=(const float &a)``
+`bfloat16 &operator=(const float &a)`
 
 * Create a `float` variable `f` equal to 1;
 * Create a `bfloat16` variable `bf1` passing `f` to the constructor;
