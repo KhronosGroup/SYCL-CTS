@@ -34,6 +34,8 @@ void run_test() {
   range_index_space_id::check_members_test<sycl::h_item<Dim>, Dim>(type_name);
 }
 
+// FIXME: re-enable when sycl::h_item<>::dimensions is implemented
+// Issue link https://github.com/intel/llvm/issues/9786
 DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp)
 ("sycl::h_item members", "[h_item]")({
   run_test<1>();

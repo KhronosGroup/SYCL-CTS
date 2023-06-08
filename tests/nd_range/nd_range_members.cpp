@@ -34,6 +34,8 @@ void run_test() {
   range_index_space_id::check_members_test<sycl::nd_range<Dim>, Dim>(type_name);
 }
 
+// FIXME: re-enable when sycl::nd_range<>::dimensions is implemented
+// Issue link https://github.com/intel/llvm/issues/9786
 DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp)
 ("sycl::nd_range members", "[nd_range]")({
   run_test<1>();
