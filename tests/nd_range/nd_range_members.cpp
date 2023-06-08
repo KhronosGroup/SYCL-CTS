@@ -34,7 +34,7 @@ void run_test() {
   range_index_space_id::check_members_test<sycl::nd_range<Dim>, Dim>(type_name);
 }
 
-DISABLED_FOR_TEST_CASE(DPCPP)
+DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp)
 ("sycl::nd_range members", "[nd_range]")({
   run_test<1>();
   run_test<2>();
