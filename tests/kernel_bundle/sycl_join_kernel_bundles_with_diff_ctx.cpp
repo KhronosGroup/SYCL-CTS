@@ -21,15 +21,17 @@
 #include "../../util/sycl_exceptions.h"
 #include "../common/common.h"
 #include "kernel_bundle.h"
-#include "kernels.h"
+
+class simple_kernel1;
+class simple_kernel2;
 
 template <sycl::bundle_state bundle_state>
 void check_for_state(const sycl::context& first_ctx,
                      const sycl::context& second_ctx) {
   auto first_kb =
-      sycl::get_kernel_bundle<bundle_state>(first_ctx, first_ctx.get_devices());
-  auto second_kb = sycl::get_kernel_bundle<bundle_state>(
-      second_ctx, second_ctx.get_devices());
+      sycl::get_kernel_bundle<simple_kernel1, bundle_state>(first_ctx);
+  auto second_kb =
+      sycl::get_kernel_bundle<simple_kernel2, bundle_state>(second_ctx);
 
   std::vector<sycl::kernel_bundle<bundle_state>> kb_with_diff_ctx{first_kb,
                                                                   second_kb};
@@ -56,13 +58,13 @@ TEST_CASE("sycl::join kernel bundles with different contexts", "[sycl::join]") {
 
   sycl::context first_ctx(devices[0]);
   sycl::context second_ctx(devices[1]);
-  sycl::queue q{devices[0]};
+  sycl::queue q1{devices[0]};
+  sycl::queue q2{devices[1]};
+
+  sycl_cts::tests::kernel_bundle::define_kernel<simple_kernel1>(q1);
+  sycl_cts::tests::kernel_bundle::define_kernel<simple_kernel2>(q2);
 
   check_for_state<sycl::bundle_state::input>(first_ctx, second_ctx);
   check_for_state<sycl::bundle_state::object>(first_ctx, second_ctx);
   check_for_state<sycl::bundle_state::executable>(first_ctx, second_ctx);
-
-  define_kernel<simple_kernel_descriptor, sycl::bundle_state::executable>(q);
-  define_kernel<simple_kernel_descriptor_second,
-                sycl::bundle_state::executable>(q);
 }
