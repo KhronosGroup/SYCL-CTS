@@ -21,10 +21,8 @@
 #ifndef SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 #define SYCL_CTS_IMAGE_DEFAULT_IMAGE_H
 
-// Enable DPCPP when https://github.com/intel/llvm/issues/8304 been fixed
-#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) ||    \
-      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP) || \
-      defined(SYCL_CTS_COMPILING_WITH_DPCPP))
+#if !(defined(SYCL_CTS_COMPILING_WITH_HIPSYCL) || \
+      defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP))
 
 /**
  * Provides functionality to construct a default sampled_image and associated
