@@ -152,14 +152,11 @@ sycl::vec<convertType, N> rte(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {static_cast<convertType>(2),
-                              static_cast<convertType>(4),
-                              static_cast<convertType>(2),
-                              static_cast<convertType>(2),
-                              static_cast<convertType>(-2),
-                              static_cast<convertType>(-4),
-                              static_cast<convertType>(-2),
-                              static_cast<convertType>(-2)};
+    convertType vals[size] = {
+        static_cast<convertType>(2),  static_cast<convertType>(4),
+        static_cast<convertType>(2),  static_cast<convertType>(2),
+        static_cast<convertType>(-2), static_cast<convertType>(-4),
+        static_cast<convertType>(-2), static_cast<convertType>(-2)};
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
@@ -177,14 +174,11 @@ sycl::vec<convertType, N> rtz(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {static_cast<convertType>(2),
-                              static_cast<convertType>(3),
-                              static_cast<convertType>(1),
-                              static_cast<convertType>(2),
-                              static_cast<convertType>(-2),
-                              static_cast<convertType>(-3),
-                              static_cast<convertType>(-1),
-                              static_cast<convertType>(-2)};
+    convertType vals[size] = {
+        static_cast<convertType>(2),  static_cast<convertType>(3),
+        static_cast<convertType>(1),  static_cast<convertType>(2),
+        static_cast<convertType>(-2), static_cast<convertType>(-3),
+        static_cast<convertType>(-1), static_cast<convertType>(-2)};
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
@@ -202,14 +196,11 @@ sycl::vec<convertType, N> rtp(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {static_cast<convertType>(3),
-                              static_cast<convertType>(4),
-                              static_cast<convertType>(2),
-                              static_cast<convertType>(3),
-                              static_cast<convertType>(-2),
-                              static_cast<convertType>(-3),
-                              static_cast<convertType>(-1),
-                              static_cast<convertType>(-2)};
+    convertType vals[size] = {
+        static_cast<convertType>(3),  static_cast<convertType>(4),
+        static_cast<convertType>(2),  static_cast<convertType>(3),
+        static_cast<convertType>(-2), static_cast<convertType>(-3),
+        static_cast<convertType>(-1), static_cast<convertType>(-2)};
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
@@ -227,14 +218,11 @@ sycl::vec<convertType, N> rtn(sycl::vec<vecType, N> inputVec) {
   if constexpr (if_FP_to_non_FP_conv_v<vecType, convertType>) {
     const int size = 8;
     vecType floats[size] = {2.3f, 3.8f, 1.5f, 2.5f, -2.3f, -3.8f, -1.5f, -2.5f};
-    convertType vals[size] = {static_cast<convertType>(2),
-                              static_cast<convertType>(3),
-                              static_cast<convertType>(1),
-                              static_cast<convertType>(2),
-                              static_cast<convertType>(-3),
-                              static_cast<convertType>(-4),
-                              static_cast<convertType>(-2),
-                              static_cast<convertType>(-3)};
+    convertType vals[size] = {
+        static_cast<convertType>(2),  static_cast<convertType>(3),
+        static_cast<convertType>(1),  static_cast<convertType>(2),
+        static_cast<convertType>(-3), static_cast<convertType>(-4),
+        static_cast<convertType>(-2), static_cast<convertType>(-3)};
     sycl::vec<convertType, N> resVec;
     for (size_t i = 0; i < N; ++i) {
       vecType elem = getElement(inputVec, i);
