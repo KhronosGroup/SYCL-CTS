@@ -44,7 +44,7 @@ void set_success_operation(ResultArray& result) {
   result[index] = true;
 }
 
-std::string get_error_string(int code, const std::string& type_name) {
+inline std::string get_error_string(int code, const std::string& type_name) {
   return error_strings[code] + " for type T '" + type_name + "'";
 }
 
