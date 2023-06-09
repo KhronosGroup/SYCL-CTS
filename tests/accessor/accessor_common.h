@@ -663,7 +663,7 @@ void check_common_constructor(const sycl::range<Dimension>& r,
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf);
+          sycl::accessor res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
 
           if constexpr (AccType == accessor_type::generic_accessor) {
