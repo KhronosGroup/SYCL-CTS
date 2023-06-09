@@ -21,7 +21,7 @@
 #include "../common/common.h"
 #include "../common/type_list.h"
 
-#if SYCL_DEVICE_COPYABLE == 1
+#if defined(SYCL_DEVICE_COPYABLE) && (SYCL_DEVICE_COPYABLE == 1)
 class kernel_name;
 
 /** @brief User defined class, must satisfy the
@@ -114,9 +114,9 @@ TEST_CASE("is_device_copyable specialization for user defined class",
   user_def_type host_object(reference_object);
   user_def_type device_object;
   {
-    sycl::buffer<bool, 1> host_res_buf(&host_res, {1});
-    sycl::buffer<user_def_type, 1> host_data_buf(&host_object, {1});
-    sycl::buffer<user_def_type, 1> dev_data_buf(&device_object, {1});
+    sycl::buffer<bool> host_res_buf(&host_res, {1});
+    sycl::buffer<user_def_type> host_data_buf(&host_object, {1});
+    sycl::buffer<user_def_type> dev_data_buf(&device_object, {1});
 
     queue.submit([&](sycl::handler& cgh) {
       auto host_res_acc =
