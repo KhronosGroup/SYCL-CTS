@@ -19,8 +19,8 @@
 *******************************************************************************/
 
 #include "../common/common.h"
-#include "kernel_attributes.h"
 #include "../common/disabled_for_test_case.h"
+#include "kernel_attributes.h"
 
 using namespace kernel_attributes;
 
@@ -197,7 +197,7 @@ void run_tests_for_type() {
 }
 
 DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
-("Behavior of kernel attribute vec_type_hint", "[kernel]") ({
+("Behavior of kernel attribute vec_type_hint", "[kernel]")({
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   run_tests_for_type<int>();
   run_tests_for_type<float>();
