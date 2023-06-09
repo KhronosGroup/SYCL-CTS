@@ -78,7 +78,7 @@ void check_members_test(const std::string& type_name) {
             [=] { check_members<T, Dim>(res_acc); });
       });
     }
-    for (int i = 0; i < 2; /*check_count;*/ ++i) {
+    for (size_t i = 0; i < check_count; ++i) {
       INFO(get_error_string(i, type_name));
       CHECK(result[i]);
     }
@@ -87,7 +87,7 @@ void check_members_test(const std::string& type_name) {
                  "' and dim = " + std::to_string(Dim) + " on host";
   SECTION(section_name) {
     check_members<T, Dim>(result);
-    for (int i = 0; i < check_count; ++i) {
+    for (size_t i = 0; i < check_count; ++i) {
       INFO(get_error_string(i, type_name));
       CHECK(result[i]);
     }
