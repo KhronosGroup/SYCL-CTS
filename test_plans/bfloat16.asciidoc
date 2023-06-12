@@ -40,7 +40,7 @@ Note that `T` must be convertible to `float`
 === Size
 
 `bfloat16` must occupy 2 bytes of memory, check that `sizeof(bfloat16) == 2`.
-This check is required to calculate dynamic range.
+This check is required to calculate special values.
 
 === Constructors
 
