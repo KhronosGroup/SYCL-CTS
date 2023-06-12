@@ -71,7 +71,7 @@ Same as above, but with `sycl::half` instead of `float`
 
 === Special values
 
-Use `uint*_t` variables representing `bfloat16` and `float` the minimum positive normal and maximum values as shown in the code below
+Use `uint*_t` variables representing `bfloat16` and `float` the minimum positive normal value as shown in the code below
 
 [source,c++]
 ----
@@ -80,11 +80,38 @@ uint32_t float_bits    = 0b00000000100000000000000000000000;
 
 bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
 float float_min = sycl::bit_cast<float>(float_bits);
-
-// same for the maximum
 ----
 
-Verify that the minimum and maximum values of `bfloat16` type are equal to the minimum and maximum values of `float`. This comparison will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
+Verify that the minimum values of `bfloat16` type is equal to the minimum value of `float`. This comparison will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
+
+Use the same method to represent and check other IEEE 754 values, such as:
+
+Zero
+
+ * `bfloat16`: `0b0000000000000000`;
+ * `float`: `0b00000000000000000000000000000000`;
+ * Verify that these values are equal.
+
+Nan
+
+* `bflaot16`:                     +
+    `0b0111111111000001, // qNan` +
+    `0b1111111111000001,`         +
+    `0b0111111110000001, // sNan` +
+    `0b1111111110000001`
+* `float`:                                        +
+    `0b01111111110000000000000000000001, // qNan` +
+    `0b11111111110000000000000000000001,`         +
+    `0b01111111100000000000000000000001, // sNan` +
+    `0b11111111100000000000000000000001`
+
+* Verify that `std::isnan()` is `true`` for these values.
+
+Inf
+
+* `bfloat16`: `0b1111111111111111` and `0b0111111111111111`
+* `float`: `0b01111111100000000000000000000000` and `0b11111111100000000000000000000000`
+* Verify that `std::isinf()` is `true` for these values.
 
 === Conversion
 
