@@ -69,22 +69,22 @@ Check that:
 
 Same as above, but with `sycl::half` instead of `float`
 
-=== Dynamic range
+=== Special values
 
-* Calculate the maximum and minimum positive values of `bfloat16`:
-    ** Create `std::bitset` with 16 bits to store maximum value;
-    ** Set all bits to 1;
-    ** Set bit 15 (sign bit) and bit 7 (special values) to 0;
-    ** Convert it to `bfloat16` variable `BFLT16_MAX`
+Use `uint*_t` variables representing `bfloat16` and `float` the minimum positive normal and maximum values as shown in the code below
 
-    ** Create `std::bitset` with 16 bits to store minimum value;
-    ** Set all bits to 0;
-    ** Set bit 8 to 0 to get minimum normal value;
-    ** Convert it to `bfloat16` variable `BFLT16_MIN`
+[source,c++]
+----
+uint16_t bfloat16_bits = 0b0000000010000000;
+uint32_t float_bits    = 0b00000000100000000000000000000000;
 
-* Calculate `float` dynamic range equal to `log10(FLT_MAX / FLT_MIN)` or `log10(FLT_MAX) - log10(FLT_MIN)`;
-* Calculate `bfloat16` dynamic range equal to `log10(BFLT16_MIN) - log10(BFLT16_MIN)`;
-* Compare integer parts of computed values.
+bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
+float float_min = sycl::bit_cast<float>(float_bits);
+
+// same for the maximum
+----
+
+Verify that the minimum and maximum values of `bfloat16` type are equal to the minimum and maximum values of `float`. This comparison will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
 
 === Conversion
 
