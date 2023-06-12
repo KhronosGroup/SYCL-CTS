@@ -71,47 +71,64 @@ Same as above, but with `sycl::half` instead of `float`
 
 === Special values
 
-Use `uint*_t` variables representing `bfloat16` and `float` the minimum positive normal value as shown in the code below
+Use `uint*_t` variables representing `bfloat16` and `float` values in bitset format.
 
-[source,c++]
+==== Minimum positive normal value
+
+[source, c++]
 ----
-uint16_t bfloat16_bits = 0b0000000010000000;
-uint32_t float_bits    = 0b00000000100000000000000000000000;
+    uint16_t bfloat16_bits = 0b0000000010000000;
+    uint32_t float_bits    = 0b00000000100000000000000000000000;
 
-bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
-float float_min = sycl::bit_cast<float>(float_bits);
+    bfloat16 bf_min = sycl::bit_cast<bfloat16>(bfloat16_bits);
+    float float_min = sycl::bit_cast<float>(float_bits);
 ----
 
-Verify that the minimum values of `bfloat16` type is equal to the minimum value of `float`. This comparison will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
+Verify that the minimum values of `bfloat16` type is equal to the minimum value of `float` by using the `bfloat16` operator `==`.
 
-Use the same method to represent and check other IEEE 754 values, such as:
+==== Zero
 
-Zero
+[source, c++]
+----
+    uint16_t bfloat16_bits = 0b0000000000000000;
+    uint32_t float_bits = 0b00000000000000000000000000000000;
 
- * `bfloat16`: `0b0000000000000000`;
- * `float`: `0b00000000000000000000000000000000`;
- * Verify that these values are equal.
+    bfloat16 bf_zero = sycl::bit_cast<bfloat16>(bfloat16_bits);
+    float float_zero = sycl::bit_cast<float>(float_bits);
+----
+    Verify that `bf_zero == float_zero`.
 
-Nan
+==== NaN
 
-* `bflaot16`:                     +
-    `0b0111111111000001, // qNan` +
-    `0b1111111111000001,`         +
-    `0b0111111110000001, // sNan` +
-    `0b1111111110000001`
-* `float`:                                        +
-    `0b01111111110000000000000000000001, // qNan` +
-    `0b11111111110000000000000000000001,`         +
-    `0b01111111100000000000000000000001, // sNan` +
-    `0b11111111100000000000000000000001`
+[source, c++]
+----
+    uint16_t bfloat16_bits[4] = {
+        0b0111111111000001, // qNaN
+        0b1111111111000001,
+        0b0111111110000001, // sNaN
+        0b1111111110000001};
 
-* Verify that `std::isnan()` is `true`` for these values.
+    bfloat16 bf_nan[4];
+    for (int i = 0; i < 4; i++) {
+        bf_nan[i] = sycl::bit_cast<bfloat16>(bfloat16_bits[i]);
+    }
+----
+    Verify that `std::isnan(bf_nan)` is `true` for all elements.
 
-Inf
+==== Infinity
 
-* `bfloat16`: `0b1111111110000000` and `0b0111111110000000`
-* `float`: `0b01111111100000000000000000000000` and `0b11111111100000000000000000000000`
-* Verify that `std::isinf()` is `true` for these values.
+[source, c++]
+----
+    uint16_t bfloat16_bits[2] = {
+        0b0111111110000000,
+        0b1111111110000000};
+
+    bfloat16 bf_inf_0 = sycl::bit_cast<bfloat16>(bfloat16_bits[0]);
+    bfloat16 bf_inf_1 = sycl::bit_cast<bfloat16>(bfloat16_bits[1]);
+----
+     Verify that `std::isinf(bf_inf_0)` and `std::isinf(bf_inf_1)` are `true`.
+
+These tests will fail if the implementation does not use an 8 bit exponent and 7 bit significand for `bfloat16`.
 
 === Conversion
 
@@ -166,7 +183,7 @@ OP is `==`, `!=`, `<`, `>`, `+<=+`, `>=` +
 * Check results of equality and inequality between two `bfloat16` objects.
 * Check returned type is `bool`.
 
-OP is `==`, `!=`, `<`, `>`, `<=`, `>=` +
+OP is `==`, `!=`, `<`, `>`, `+<=+`, `>=` +
 `template <typename T>` +
 `bool operatorOP(const bfloat16 &lhs, const T &rhs)` +
 `template <typename T>` +
