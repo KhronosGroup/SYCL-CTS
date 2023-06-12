@@ -28,6 +28,8 @@
 
 #include <atomic>
 
+constexpr size_t max_size = 32768;
+
 namespace atomic_ref_stress_test {
 using namespace sycl_cts;
 
@@ -52,8 +54,9 @@ class atomicity_device_scope {
             queue, MemoryOrder, MemoryScope))
       return;
     T val{};
-    const size_t size =
-        queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    const size_t size = std::min<size_t>(
+        queue.get_device().get_info<sycl::info::device::max_compute_units>(),
+        max_size);
     {
       sycl::buffer buf{&val, {1}};
       queue.submit([&](sycl::handler &cgh) {
@@ -65,7 +68,12 @@ class atomicity_device_scope {
         });
       });
     }
-    CHECK(val == size * 2);
+    bool res;
+    if constexpr (std::is_floating_point_v<T>)
+      res = atomic_ref::tests::common::compare_floats<T>(val, size * 2);
+    else
+      res = (val == size * 2);
+    CHECK(res);
   }
 };
 
@@ -90,8 +98,9 @@ class atomicity_work_group_scope {
             queue, MemoryOrder, MemoryScope))
       return;
     constexpr size_t group_range = 4;
-    const size_t local_range =
-        queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    const size_t local_range = std::min<size_t>(
+        queue.get_device().get_info<sycl::info::device::max_work_group_size>(),
+        max_size);
     std::array<T, group_range> vals;
     vals.fill(0);
     {
@@ -114,8 +123,13 @@ class atomicity_work_group_scope {
           })
           .wait_and_throw();
     }
-    CHECK(std::all_of(vals.cbegin(), vals.cend(),
-                      [=](T i) { return i == -T(local_range * 2); }));
+    CHECK(std::all_of(vals.cbegin(), vals.cend(), [=](T i) {
+      if constexpr (std::is_floating_point_v<T>)
+        return atomic_ref::tests::common::compare_floats(i,
+                                                         -T(local_range * 2));
+      else
+        return i == -T(local_range * 2);
+    }));
   }
 };
 
@@ -204,7 +218,7 @@ class ordering {
       return;
     size_t local_range =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
-    constexpr size_t global_range = 32768;
+    constexpr size_t global_range = max_size;
     if (local_range > global_range) local_range = global_range;
     sycl::nd_range<1> nd_range(global_range, local_range);
     std::array<bool, global_range> res;

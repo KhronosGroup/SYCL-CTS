@@ -82,12 +82,7 @@ TEMPLATE_LIST_TEST_CASE("Group and sub-group reduce functions with init",
 
   // check types to only print warning once
   if constexpr (std::is_same_v<T, double> && std::is_same_v<U, double>) {
-#if defined(SYCL_CTS_COMPILING_WITH_DPCPP)
-    // Link to issue https://github.com/intel/llvm/issues/8341
-    WARN(
-        "DPCPP cannot handle cases of different types. "
-        "Skipping such test cases.");
-#elif defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
+#if defined(SYCL_CTS_COMPILING_WITH_COMPUTECPP)
     WARN(
         "ComputeCpp cannot handle cases of different types. "
         "Skipping such test cases.");
