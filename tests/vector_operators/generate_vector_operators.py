@@ -1252,8 +1252,7 @@ subscript_operator_test_template = Template("""
     for (int i = 0; i < ${size}; ++i) {
       if (subscriptVec1[i] != data[i] || subscriptVec2[i] != data[i]
 // FIXME: re-enable when subscript operator for swizzle vec is implemented
-// link to issue: https://github.com/intel/llvm/issues/8880
-#if !SYCL_CTS_COMPILING_WITH_DPCPP && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
+#if !SYCL_CTS_COMPILING_WITH_COMPUTECPP
         || subscriptVec1.${swizzle}[i] != data[i]
         || subscriptVec2.${swizzle}[i] != data[i]
 #endif

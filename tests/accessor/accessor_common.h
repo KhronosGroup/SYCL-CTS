@@ -197,6 +197,12 @@ inline auto get_conformance_type_pack() {
 #endif  // SYCL_CTS_ENABLE_FULL_CONFORMANCE
 }
 
+/**
+ * @brief Function helps run every test for all types in full conformabce mode
+ *        or for reduce types in regular mode
+ * @tparam action Functor template for test to run
+ * @tparam actionArgsT Parameter pack to use for functor template instantiation
+ */
 template <template <typename, typename...> class action,
           typename... actionArgsT>
 void common_run_tests() {

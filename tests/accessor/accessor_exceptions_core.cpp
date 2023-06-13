@@ -13,9 +13,7 @@
 #include "../common/disabled_for_test_case.h"
 
 // FIXME: re-enable when sycl::accessor is implemented
-// Issue link https://github.com/intel/llvm/issues/8876
-#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP && \
-    !SYCL_CTS_COMPILING_WITH_DPCPP
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL && !SYCL_CTS_COMPILING_WITH_COMPUTECPP
 
 #include "accessor_exceptions.h"
 
@@ -26,16 +24,16 @@ using namespace accessor_tests_common;
 namespace accessor_exceptions_test_core {
 using namespace sycl_cts;
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("Generic sycl::accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests, generic_accessor>(); });
+ "[accessor]")({ common_run_tests<run_tests_with_types, generic_accessor>(); });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::local_accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests, local_accessor>(); });
+ "[accessor]")({ common_run_tests<run_tests_with_types, local_accessor>(); });
 
-DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp, DPCPP)
+DISABLED_FOR_TEST_CASE(hipSYCL, ComputeCpp)
 ("sycl::host_accessor constructor exceptions test. Core types.",
- "[accessor]")({ common_run_tests<run_tests, host_accessor>(); });
+ "[accessor]")({ common_run_tests<run_tests_with_types, host_accessor>(); });
 
 }  // namespace accessor_exceptions_test_core

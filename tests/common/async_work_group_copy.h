@@ -27,8 +27,7 @@
 template <size_t bufferSize, typename T,
           sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
-    sycl::multi_ptr<T, addressSpace> ptr) {
-
+    sycl::multi_ptr<T, addressSpace, sycl::access::decorated::yes> ptr) {
   sycl_cts::util::array<T, bufferSize> result;
 
   /** We use bool values because bool can be converted to the integral
@@ -60,8 +59,7 @@ sycl_cts::util::array<T, bufferSize> create_async_wg_copy_input(
 template <size_t bufferSize, bool value, typename T,
           sycl::access::address_space addressSpace>
 sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
-    sycl::multi_ptr<T, addressSpace> ptr) {
-
+    sycl::multi_ptr<T, addressSpace, sycl::access::decorated::yes> ptr) {
   sycl_cts::util::array<T, bufferSize> result;
 
   auto iteratorPtr = ptr;
@@ -79,7 +77,7 @@ sycl_cts::util::array<T, bufferSize> create_async_wg_copy_fixed(
  *        Stride is always 1 for the local_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(sycl::local_ptr<T>) {
+inline size_t get_async_wg_copy_stride(sycl::decorated_local_ptr<T>) {
   return 1;
 }
 /**
@@ -87,7 +85,7 @@ inline size_t get_async_wg_copy_stride(sycl::local_ptr<T>) {
  *        Stride is always the given one for the global_ptr
  */
 template <size_t stride, typename T>
-inline size_t get_async_wg_copy_stride(sycl::global_ptr<T>) {
+inline size_t get_async_wg_copy_stride(sycl::decorated_global_ptr<T>) {
   return stride;
 }
 
@@ -129,16 +127,16 @@ bool check_async_wg_copy_impl(instanceT&& instance,
 
   // Verify source not changed
   for (size_t i = 0; i < bufferSize; ++i) {
-    succeed &= check_equal_values(*input, referenceInput[i]);
+    succeed &= check_equal_values(*input.get_raw(), referenceInput[i]);
     ++input;
   }
   // Verify elements copied to the destination at the right places
   input = srcPtr;
   for (size_t i = 0; i < numElements; ++i) {
-    succeed &= check_equal_values(*output, *input);
+    succeed &= check_equal_values(*output.get_raw(), *input.get_raw());
     ++output;
     for (size_t j = 1; j < dstStride; ++j) {
-      succeed &= check_equal_values(*output,
+      succeed &= check_equal_values(*output.get_raw(),
                                     referenceOutput[i * dstStride + j]);
       ++output;
     }
@@ -146,7 +144,7 @@ bool check_async_wg_copy_impl(instanceT&& instance,
   }
   // Verify destination changed in scope only
   for (size_t i = numElements * dstStride; i < bufferSize; ++i) {
-    succeed &= check_equal_values(*output, referenceOutput[i]);
+    succeed &= check_equal_values(*output.get_raw(), referenceOutput[i]);
     ++output;
   }
   return succeed;
@@ -211,9 +209,10 @@ struct check_wait_for {
    * @param dstPtr Pointer to the destination buffer to use for call
    * @param events Storage for device event instances
    */
-  template <typename instanceT, typename T, typename ... eventsT>
-  returnT operator()(instanceT&& instance, sycl::local_ptr<T> srcPtr,
-                     sycl::global_ptr<T> dstPtr, eventsT ... events) const {
+  template <typename instanceT, typename T, typename... eventsT>
+  returnT operator()(instanceT&& instance, sycl::decorated_local_ptr<T> srcPtr,
+                     sycl::decorated_global_ptr<T> dstPtr,
+                     eventsT... events) const {
     constexpr size_t nEvents = sizeof...(eventsT);
     constexpr size_t stride = nEvents;
     constexpr size_t numElements = bufferSize / stride;
@@ -256,7 +255,7 @@ struct check_wait_for {
     auto output = dstPtr;
 
     for (size_t i = 0; i < numElements; ++i) {
-      succeed &= check_equal_values(*output, referenceInput[i]);
+      succeed &= check_equal_values(*output.get_raw(), referenceInput[i]);
       ++output;
     }
     return succeed;
@@ -313,9 +312,7 @@ void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
     auto accGlobal =
         buf.template get_access<sycl::access_mode::read_write>(cgh);
     auto accLocal =
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::local>(
-            sycl::range<1>(BUFFER_SIZE), cgh);
+        sycl::local_accessor<T, 1>(sycl::range<1>(BUFFER_SIZE), cgh);
 
     kernelInvokeT{}(
         cgh, workGroupRange, workItemRange,
@@ -323,12 +320,15 @@ void test_async_wg_copy(sycl::queue &queue, sycl_cts::util::logger &log,
           // Each work-group uses its own part of global buffer,
           // single work-item per work-group
           using difference_type =
-              typename sycl::global_ptr<T>::difference_type;
+              typename sycl::decorated_global_ptr<T>::difference_type;
           const auto globalBufferOffset =
               static_cast<difference_type>(index * BUFFER_SIZE);
 
-          auto ptrGlobal = accGlobal.get_pointer() + globalBufferOffset;
-          auto ptrLocal = accLocal.get_pointer();
+          auto ptrGlobal =
+              accGlobal.template get_multi_ptr<sycl::access::decorated::yes>() +
+              globalBufferOffset;
+          auto ptrLocal =
+              accLocal.template get_multi_ptr<sycl::access::decorated::yes>();
 
           if (!check_async_wg_copy<BUFFER_SIZE>(instance, ptrLocal, ptrGlobal)){
             const size_t resultIndex =
@@ -419,9 +419,7 @@ void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
     auto accGlobal =
         buf.template get_access<sycl::access_mode::read_write>(cgh);
     auto accLocal =
-        sycl::accessor<T, 1, sycl::access_mode::read_write,
-                           sycl::target::local>(
-            sycl::range<1>(BUFFER_SIZE), cgh);
+        sycl::local_accessor<T, 1>(sycl::range<1>(BUFFER_SIZE), cgh);
 
     auto events =
         sycl::accessor<sycl::device_event, 1,
@@ -436,12 +434,15 @@ void test_wait_for(sycl::queue &queue, sycl_cts::util::logger &log,
           // Each work-group uses its own part of global buffer,
           // single work-item per work-group
           using difference_type =
-              typename sycl::global_ptr<T>::difference_type;
+              typename sycl::decorated_global_ptr<T>::difference_type;
           const auto globalBufferOffset =
               static_cast<difference_type>(index * BUFFER_SIZE);
 
-          auto ptrGlobal = accGlobal.get_pointer() + globalBufferOffset;
-          auto ptrLocal = accLocal.get_pointer();
+          auto ptrGlobal =
+              accGlobal.template get_multi_ptr<sycl::access::decorated::yes>() +
+              globalBufferOffset;
+          auto ptrLocal =
+              accLocal.template get_multi_ptr<sycl::access::decorated::yes>();
 
           if (!run_variadic<check_wait_for<BUFFER_SIZE>>::with<1>(events,
                   instance, ptrLocal, ptrGlobal)){

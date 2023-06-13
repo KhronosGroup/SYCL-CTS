@@ -21,6 +21,7 @@
 *******************************************************************************/
 
 #include "../common/common.h"
+#include "../common/disabled_for_test_case.h"
 #include "../common/get_cts_string.h"
 #include "multi_ptr_common.h"
 
@@ -47,8 +48,10 @@ class check_multi_ptr_deduction {
 
   template <access::address_space space>
   void check_for_space() {
-    check_for_mode<access::mode::read, space>();
-    check_for_mode<access::mode::write, space>();
+    if constexpr (space == global) {
+      check_for_mode<access::mode::read, space>();
+      check_for_mode<access::mode::write, space>();
+    }
     check_for_mode<access::mode::read_write, space>();
   }
 
@@ -61,27 +64,50 @@ class check_multi_ptr_deduction {
 
   template <int dims, access::mode Mode, access::address_space accessor_space>
   void check_for_dims() {
+    using ElementType = std::conditional_t<
+        Mode == access::mode::read && accessor_space == global, const T, T>;
     using acc_t = std::conditional_t<accessor_space == global,
                                      accessor<T, dims, Mode, target::device>,
                                      local_accessor<T, dims>>;
-
-    acc_t _accessor;
-    multi_ptr mptr(_accessor);
-
+    bool res = false;
+    T data{user_def_types::get_init_value_helper<T>(0)};
+    auto r = sycl_cts::util::get_cts_object::range<dims>::get(1, 1, 1);
+    {
+      sycl::buffer<bool, 1> buf_res(&res, {1});
+      sycl::buffer<T, dims> buf_data(&data, r);
+      auto queue = once_per_unit::get_queue();
+      queue
+          .submit([&](sycl::handler& cgh) {
+            acc_t _accessor;
+            if constexpr (accessor_space == global)
+              acc_t(buf_data, cgh);
+            else
+              acc_t(r, cgh);
+            auto acc_res = buf_res.get_access(cgh);
+            cgh.single_task([=] {
+              auto mptr = multi_ptr(_accessor);
+              acc_res[0] = std::is_same_v<decltype(mptr),
+                                          multi_ptr<ElementType, accessor_space,
+                                                    access::decorated::no>>;
+            });
+          })
+          .wait_and_throw();
+    }
     std::string mode_str{sycl_cts::get_cts_string::for_mode<Mode>()};
     std::string space_str{(accessor_space == global) ? "global" : "local"};
     std::string fail_str{"Incorrect deduction with type " + type_name + " in " +
                          std::to_string(dims) + " dimensions and " + mode_str +
                          " mode in " + space_str + " space "};
-
     INFO(fail_str);
-    CHECK(std::is_same_v<decltype(mptr),
-                         multi_ptr<T, accessor_space, access::decorated::no>>);
+    CHECK(res);
   }
 };
 
-TEST_CASE("multi_ptr deduction guides", "[test_multi_ptr]") {
+// FIXME: re-enable when deduction guide for read is implemented
+// Issue link https://github.com/intel/llvm/issues/9692
+DISABLED_FOR_TEST_CASE(DPCPP)
+("multi_ptr deduction guides", "[test_multi_ptr]")({
   for_all_types<check_multi_ptr_deduction>(deduction::vector_types);
   for_all_types<check_multi_ptr_deduction>(deduction::scalar_types);
-}
+});
 }  // namespace multi_ptr_deduction_guides

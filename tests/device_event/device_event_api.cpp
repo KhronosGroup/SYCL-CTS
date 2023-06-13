@@ -68,21 +68,24 @@ class TEST_NAME : public util::test_base {
 
           auto globalAcc = buf.get_access<sycl::access_mode::read_write>(cgh);
           auto errorAcc = errBuf.get_access<sycl::access_mode::write>(cgh);
-          auto localAcc =
-              sycl::accessor<int, 1, sycl::access_mode::read_write,
-                  sycl::target::local>(dataRange, cgh);
+          auto localAcc = sycl::local_accessor<int, 1>(dataRange, cgh);
 
           cgh.parallel_for<class device_event_wait>(
               sycl::nd_range<1>(range, range),
               [=](sycl::nd_item<1> ndItem) {
+// FIXME: re-enable when sycl::access::decorated and get_multi_ptr is
+// implemented
+#if !SYCL_CTS_COMPILING_WITH_HIPSYCL
                 // Run asynchronous copy for full buffer
-                sycl::device_event deviceEvent =
-                    ndItem.async_work_group_copy(localAcc.get_pointer(),
-                                                 globalAcc.get_pointer(),
-                                                 bufferSize);
+                sycl::device_event deviceEvent = ndItem.async_work_group_copy(
+                    localAcc
+                        .template get_multi_ptr<sycl::access::decorated::yes>(),
+                    globalAcc
+                        .template get_multi_ptr<sycl::access::decorated::yes>(),
+                    bufferSize);
 
                 deviceEvent.wait();
-
+#endif
                 // Check sample was updated
                 if (localAcc[sampleIndex] != referenceValue) {
                   errorAcc[0] = true;
