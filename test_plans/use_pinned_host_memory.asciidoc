@@ -1,0 +1,58 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for use_pinned_host_memory
+
+This is a test plan for the buffer property described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_use_pinned_host_memory_property.asciidoc[sycl_ext_oneapi_use_pinned_host_memory]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Types coverage
+
+All of the tests described below are performed using each of the following `typename T`:
+
+* `int`
+* `float`
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_USE_PINNED_HOST_MEMORY_PROPERTY` so they can be skipped
+if feature is not supported.
+
+== Tests
+
+=== buffer constructors without host data
+
+Check that the following constructors can create objects without any exceptions thrown:
+
+* `buffer(const range<Dimensions>& bufferRange, const property_list& propList)`;
+* `buffer(const range<Dimensions>& bufferRange, AllocatorT allocator, const property_list& propList)`,
+
+Where:
+
+* `Dimensions` from 1 to 3;
+* `AllocatorT` - `sycl::buffer_allocator` and `std::allocator`;
+* `bufferRange` - `sycl::range<Dimensions>{1}`;
+* `propList` - `sycl::property_list{use_pinned_host_memory()}`.
+
+=== buffer constructors with host data
+
+Check that all `buffer` constructors with host data parameter, such as `T*`, `Container`, `InputIterator` and `std::shared_ptr<T>&` throw an `errc::invalid` exception when trying to create `buffer` object. For example:
+
+[source, c++]
+----
+property_list pl = {use_pinned_host_memory()};
+std::array<T, 10> arr;
+
+try {
+    buffer<T, 1> buf(arr.data(), range{10}, pl); // (T*, range, prop) constructor
+    // tests failed, no exceptions thrown
+} catch ...
+----
+
