@@ -18,7 +18,7 @@
 //  limitations under the License.
 //
 *******************************************************************************/
-#include "handler_invoke_api.hpp"
+#include "handler_invoke_api.h"
 
 TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
   using handler = sycl::handler;

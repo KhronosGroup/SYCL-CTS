@@ -19,7 +19,7 @@
 //
 *******************************************************************************/
 #include "../common/disabled_for_test_case.h"
-#include "handler_invoke_api.hpp"
+#include "handler_invoke_api.h"
 
 // FIXME: re-enable when https://github.com/intel/llvm/issues/9839 has fixed
 DISABLED_FOR_TEST_CASE(DPCPP)
