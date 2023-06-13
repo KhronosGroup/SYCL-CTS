@@ -21,9 +21,10 @@
 #include "../common/disabled_for_test_case.h"
 #include "handler_invoke_api.h"
 
-// FIXME: re-enable when https://github.com/intel/llvm/issues/9839 has been
-// fixed
-DISABLED_FOR_TEST_CASE(DPCPP)
+// FIXME: re-enable for dpcpp when https://github.com/intel/llvm/issues/9839 has
+// been fixed, re-enable for computecpp when parallel_for(range<1>, id<1>,
+// func(size_t)) will be implemented in computecpp
+DISABLED_FOR_TEST_CASE(DPCPP, ComputeCpp)
 ("handler.parallel_for(range) with size_t", "[handler]")({
   using handler = sycl::handler;
 
