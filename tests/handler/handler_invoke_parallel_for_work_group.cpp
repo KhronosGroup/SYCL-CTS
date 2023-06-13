@@ -30,7 +30,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
 
   /* parallel_for_work_group (range) */
   check_api_call("parallel_for_work_group(range, lambda)", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for_work_group<
                        class parallel_for_work_group_1range_kernel>(
                        constants.defaultRange, [=](sycl::group<1> group) {
@@ -41,14 +41,14 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
                  });
   check_api_call(
       "parallel_for_work_group(range, functor)", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<parallel_for_work_group_dynamic_functor>(
             constants.defaultRange,
             parallel_for_work_group_dynamic_functor(acc));
       });
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call("parallel_for_work_group(range, lambda), no kernel name",
-                 queue, [&](handler &cgh, accessor_t acc) {
+                 queue, [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for_work_group(
                        constants.defaultRange, [=](sycl::group<1> group) {
                          // cannot instantiate functor as parallel_for_work_item
@@ -57,7 +57,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
                        });
                  });
   check_api_call("parallel_for_work_group(range, functor), no kernel name",
-                 queue, [&](handler &cgh, accessor_t acc) {
+                 queue, [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for_work_group(
                        constants.defaultRange,
                        parallel_for_work_group_dynamic_functor(acc));
@@ -67,7 +67,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   /* parallel_for_work_group (range) with kernel_handler*/
   check_api_call(
       "parallel_for_work_group(range, lambda) with kernel handler", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<
             class parallel_for_work_group_1range_kernel_with_kern_handler>(
             constants.defaultRange,
@@ -80,7 +80,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
       });
   check_api_call(
       "parallel_for_work_group(range, functor) with kernel handler", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<
             parallel_for_work_group_dynamic_with_kern_handler_functor>(
             constants.defaultRange,
@@ -90,7 +90,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   check_api_call(
       "parallel_for_work_group(range, lambda) with kernel handler, no kernel "
       "name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(
             constants.defaultRange,
             [=](sycl::group<1> group, sycl::kernel_handler kh) {
@@ -103,7 +103,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   check_api_call(
       "parallel_for_work_group(range, functor) with kernel functor, no kernel "
       "name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(
             constants.defaultRange,
             parallel_for_work_group_dynamic_with_kern_handler_functor(acc));
@@ -112,7 +112,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
 
   /* parallel_for_work_group (range, range) */
   check_api_call("parallel_for_work_group(range, range, lambda)", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for_work_group<
                        class parallel_for_work_group_2range_kernel>(
                        constants.numWorkGroups, constants.workGroupSize,
@@ -124,7 +124,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
                  });
   check_api_call(
       "parallel_for_work_group(range, range, functor)", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<parallel_for_work_group_fixed_functor>(
             constants.numWorkGroups, constants.workGroupSize,
             parallel_for_work_group_fixed_functor(acc));
@@ -132,7 +132,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call(
       "parallel_for_work_group(range, range, lambda), no kernel name", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(
             constants.numWorkGroups, constants.workGroupSize,
             [=](sycl::group<1> group) {
@@ -143,7 +143,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
       });
   check_api_call(
       "parallel_for_work_group(range, range, functor), no kernel name", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(constants.numWorkGroups,
                                     constants.workGroupSize,
                                     parallel_for_work_group_fixed_functor(acc));
@@ -153,7 +153,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   /* parallel_for_work_group (range, range) with kernel handler */
   check_api_call(
       "parallel_for_work_group(range, range, lambda) with kernel handler",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<
             class parallel_for_work_group_2range_kernel_with_kern_handler>(
             constants.numWorkGroups, constants.workGroupSize,
@@ -166,7 +166,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
       });
   check_api_call(
       "parallel_for_work_group(range, range, functor) with kernel handler",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group<
             parallel_for_work_group_fixed_with_kern_handler_functor>(
             constants.numWorkGroups, constants.workGroupSize,
@@ -176,7 +176,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   check_api_call(
       "parallel_for_work_group(range, range, lambda) with kernel handler, no "
       "kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(
             constants.numWorkGroups, constants.workGroupSize,
             [=](sycl::group<1> group, sycl::kernel_handler kh) {
@@ -189,7 +189,7 @@ TEST_CASE("handler.parallel_for_work_group() test", "[handler]") {
   check_api_call(
       "parallel_for_work_group(range, range, functor) with kernel handler, no "
       "kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for_work_group(
             constants.numWorkGroups, constants.workGroupSize,
             parallel_for_work_group_fixed_with_kern_handler_functor(acc));

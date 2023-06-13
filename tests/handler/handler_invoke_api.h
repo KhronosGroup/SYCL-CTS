@@ -53,7 +53,7 @@ class CustomNdItem {
   sycl::nd_item<1> item;
 
  public:
-  CustomNdItem(const sycl::nd_item<1> &rt_item) : item(rt_item) {}
+  CustomNdItem(const sycl::nd_item<1>& rt_item) : item(rt_item) {}
   sycl::id<1> get_global_id() { return item.get_global_id(); }
   size_t get_global_id(int dim) { return item.get_global_id(dim); }
 };
@@ -269,15 +269,15 @@ struct parallel_for_work_group_fixed_with_kern_handler_functor {
  * their corresponding global work item id.
  */
 template <class kernel_wrapper>
-void check_api_call(std::string methodName, sycl::queue &queue,
-                    kernel_wrapper &&kernelWrapper, size_t startIndex = 0,
+void check_api_call(std::string methodName, sycl::queue& queue,
+                    kernel_wrapper&& kernelWrapper, size_t startIndex = 0,
                     size_t numModified = defaultNumModified) {
   INFO("Check " << methodName);
   // Initialize buffer with a canary value we can recognize again below.
   std::vector<int> result(bufferSize, 12345);
   {
     auto buf = sycl::buffer<int, 1>(result.data(), result.size());
-    queue.submit([&](sycl::handler &cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       auto acc = buf.get_access<sycl::access_mode::read_write>(cgh);
       kernelWrapper(cgh, acc);
     });

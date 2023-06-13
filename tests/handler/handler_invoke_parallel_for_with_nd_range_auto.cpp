@@ -30,7 +30,7 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
 
   /* parallel_for over nd_range with auto */
   check_api_call("parallel_for(nd_range, lambda) with auto", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for<class parallel_for_nd_range_auto_kernel>(
                        constants.ndRange, [=](auto ndItem) {
                          parallel_for_nd_range_auto_functor f(acc);
@@ -39,20 +39,20 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
                  });
   check_api_call(
       "parallel_for(nd_range, functor) with auto", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<class parallel_for_nd_range_auto_functor_kernel>(
             constants.ndRange, parallel_for_nd_range_auto_functor(acc));
       });
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call("parallel_for(nd_range, lambda) with auto, no kernel name",
-                 queue, [&](handler &cgh, accessor_t acc) {
+                 queue, [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for(constants.ndRange, [=](auto ndItem) {
                      parallel_for_nd_range_auto_functor f(acc);
                      f(ndItem);
                    });
                  });
   check_api_call("parallel_for(nd_range, functor) with auto, no kernel name",
-                 queue, [&](handler &cgh, accessor_t acc) {
+                 queue, [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for(constants.ndRange,
                                     parallel_for_nd_range_auto_functor(acc));
                  });
@@ -62,7 +62,7 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   check_api_call(
       "parallel_for(nd_range, lambda) with auto and offset", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<class parallel_for_nd_range_offset_auto_kernel>(
             constants.offsetNdRange, [=](auto ndItem) {
               parallel_for_nd_range_auto_functor f(acc);
@@ -72,7 +72,7 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
       constants.offset[0], constants.offsetRange[0]);
   check_api_call(
       "parallel_for(nd_range, functor) with auto and offset", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_offset_auto_functor_kernel>(
             constants.offsetNdRange, parallel_for_nd_range_auto_functor(acc));
@@ -82,7 +82,7 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
   check_api_call(
       "parallel_for(nd_range, lambda) with auto and offset, no kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetNdRange, [=](auto ndItem) {
           parallel_for_nd_range_auto_functor f(acc);
           f(ndItem);
@@ -92,7 +92,7 @@ TEST_CASE("handler.parallel_for(nd_range) with auto", "[handler]") {
   check_api_call(
       "parallel_for(nd_range, functor) with auto and offset, no kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetNdRange,
                          parallel_for_nd_range_auto_functor(acc));
       },

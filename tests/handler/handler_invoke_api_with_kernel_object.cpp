@@ -37,7 +37,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
     {
       using k_name = kernel_test_class0;
       check_api_call("single_task<kernel_test_class>()", queue,
-                     [&](handler &cgh, accessor_t acc) {
+                     [&](handler& cgh, accessor_t acc) {
                        cgh.single_task<k_name>([=]() {
                          for (size_t i = 0; i < constants.defaultRange[0];
                               ++i) {
@@ -57,7 +57,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
     {
       using k_name = kernel_test_class1;
       check_api_call("parallel_for(range, kernel) with id", queue,
-                     [&](handler &cgh, accessor_t acc) {
+                     [&](handler& cgh, accessor_t acc) {
                        cgh.parallel_for<k_name>(
                            constants.defaultRange,
                            [=](sycl::id<1> id) { acc[id] = id[0]; });
@@ -69,7 +69,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
       using k_name = kernel_test_class2;
       check_api_call(
           "parallel_for(range, offset, kernel) with id", queue,
-          [&](handler &cgh, accessor_t acc) {
+          [&](handler& cgh, accessor_t acc) {
             cgh.parallel_for<k_name>(constants.offsetRange, constants.offset,
                                      [=](sycl::id<1> id) { acc[id] = id[0]; });
           },
@@ -80,7 +80,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
     {
       using k_name = kernel_test_class3;
       check_api_call("parallel_for(range, kernel) with item", queue,
-                     [&](handler &cgh, accessor_t acc) {
+                     [&](handler& cgh, accessor_t acc) {
                        cgh.parallel_for<k_name>(
                            constants.defaultRange,
                            [=](sycl::item<1> item) { acc[item] = item[0]; });
@@ -92,7 +92,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
       using k_name = kernel_test_class4;
       check_api_call(
           "parallel_for(range, offset, kernel) with item", queue,
-          [&](handler &cgh, accessor_t acc) {
+          [&](handler& cgh, accessor_t acc) {
             cgh.parallel_for<k_name>(
                 constants.offsetRange, constants.offset,
                 [=](sycl::item<1> item) { acc[item] = item[0]; });
@@ -104,7 +104,7 @@ TEST_CASE("handler_invoke_api with kernel object", "[handler]") {
     {
       using k_name = kernel_test_class5;
       check_api_call("parallel_for(nd_range, kernel);", queue,
-                     [&](handler &cgh, accessor_t acc) {
+                     [&](handler& cgh, accessor_t acc) {
                        cgh.parallel_for<k_name>(constants.ndRange,
                                                 [=](sycl::nd_item<1> ndItem) {
                                                   acc[ndItem.get_global_id()] =

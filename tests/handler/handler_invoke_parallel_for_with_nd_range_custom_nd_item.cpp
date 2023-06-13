@@ -31,7 +31,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
   /* parallel_for over nd_range without with custom nd_item */
   check_api_call(
       "parallel_for(nd_range, lambda) with custom nd_item", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<class parallel_for_nd_range_custom_nd_item_kernel>(
             constants.ndRange, [=](CustomNdItem ndItem) {
               parallel_for_nd_range_custom_nd_item_functor f(acc);
@@ -40,7 +40,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       });
   check_api_call(
       "parallel_for(nd_range, functor) with custom nd_item", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_custom_nd_item_functor_kernel>(
             constants.ndRange,
@@ -49,7 +49,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call(
       "parallel_for(nd_range, lambda) with custom nd_item, no kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.ndRange, [=](CustomNdItem ndItem) {
           parallel_for_nd_range_custom_nd_item_functor f(acc);
           f(ndItem);
@@ -57,7 +57,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       });
   check_api_call(
       "parallel_for(nd_range, functor) with custom nd_item, no kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.ndRange,
                          parallel_for_nd_range_custom_nd_item_functor(acc));
       });
@@ -67,7 +67,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   check_api_call(
       "parallel_for(nd_range, lambda) with custom nd_item and offset", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_offset_custom_nd_item_kernel>(
             constants.offsetNdRange, [=](CustomNdItem ndItem) {
@@ -78,7 +78,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       constants.offset[0], constants.offsetRange[0]);
   check_api_call(
       "parallel_for(nd_range, functor) with custom nd_item and offset", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_offset_custom_nd_item_functor_kernel>(
             constants.offsetNdRange,
@@ -90,7 +90,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       "parallel_for(nd_range, lambda) with custom nd_item and offset, no "
       "kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetNdRange, [=](CustomNdItem ndItem) {
           parallel_for_nd_range_custom_nd_item_functor f(acc);
           f(ndItem);
@@ -101,7 +101,7 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       "parallel_for(nd_range, functor) with custom nd_item and offset, no "
       "kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetNdRange,
                          parallel_for_nd_range_custom_nd_item_functor(acc));
       },

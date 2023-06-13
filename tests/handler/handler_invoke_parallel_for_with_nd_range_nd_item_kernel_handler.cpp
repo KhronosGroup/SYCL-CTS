@@ -32,7 +32,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
   /* parallel_for over nd_range with nd_item */
   check_api_call(
       "parallel_for(nd_range, lambda) with nd_item and kernel_handler", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<class parallel_for_nd_range_nd_item_kern_hand_kernel>(
             constants.ndRange,
             [=](sycl::nd_item<1> ndItem, sycl::kernel_handler kh) {
@@ -42,7 +42,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
       });
   check_api_call(
       "parallel_for(nd_range, functor) with nd_item and kernel_handler", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_nd_item_kern_hand_functor_kernel>(
             constants.ndRange,
@@ -52,7 +52,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
   check_api_call(
       "parallel_for(nd_range, lambda) with nd_item and kernel_handler, no "
       "kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.ndRange, [=](sycl::nd_item<1> ndItem,
                                                 sycl::kernel_handler kh) {
           parallel_for_nd_range_nd_item_functor_with_kernel_handler f(acc);
@@ -62,7 +62,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
   check_api_call(
       "parallel_for(nd_range, functor) with nd_item and kernel_handler, no "
       "kernel name",
-      queue, [&](handler &cgh, accessor_t acc) {
+      queue, [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(
             constants.ndRange,
             parallel_for_nd_range_nd_item_functor_with_kernel_handler(acc));
@@ -74,7 +74,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
   check_api_call(
       "parallel_for(nd_range, lambda) with nd_item, kernel_handler and offset",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class parallel_for_nd_range_offset_nd_item_kern_hand_kernel>(
             constants.offsetNdRange,
@@ -87,7 +87,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
   check_api_call(
       "parallel_for(nd_range, functor) with nd_item, kernel_handler and offset",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<
             class
             parallel_for_nd_range_offset_nd_item_kern_hand_functor_kernel>(
@@ -100,7 +100,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
       "parallel_for(nd_range, lambda) with nd_item, kernel_handler and offset, "
       "no kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetNdRange, [=](sycl::nd_item<1> ndItem,
                                                       sycl::kernel_handler kh) {
           parallel_for_nd_range_nd_item_functor_with_kernel_handler f(acc);
@@ -112,7 +112,7 @@ TEST_CASE("handler.parallel_for(nd_range) with nd_item and kernel_handler",
       "parallel_for(nd_range, functor) with nd_item, kernel_handler and "
       "offset, no kernel name",
       queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(
             constants.offsetNdRange,
             parallel_for_nd_range_nd_item_functor_with_kernel_handler(acc));

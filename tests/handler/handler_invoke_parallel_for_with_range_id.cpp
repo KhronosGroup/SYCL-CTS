@@ -30,7 +30,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
 
   /* parallel_for with id */
   check_api_call("parallel_for(range, lambda) with id", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for<class parallel_for_range_id_kernel>(
                        constants.defaultRange, [=](sycl::id<1> id) {
                          parallel_for_range_id_functor<use_offset::no> f(acc);
@@ -39,13 +39,13 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
                  });
   check_api_call(
       "parallel_for(range, functor) with id", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         using functor = parallel_for_range_id_functor<use_offset::no>;
         cgh.parallel_for<functor>(constants.defaultRange, functor(acc));
       });
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call("parallel_for(range, lambda) with id, no kernel name", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for(
                        constants.defaultRange, [=](sycl::id<1> id) {
                          parallel_for_range_id_functor<use_offset::no> f(acc);
@@ -53,7 +53,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
                        });
                  });
   check_api_call("parallel_for(range, functor) with id, no kernel name", queue,
-                 [&](handler &cgh, accessor_t acc) {
+                 [&](handler& cgh, accessor_t acc) {
                    cgh.parallel_for(
                        constants.defaultRange,
                        parallel_for_range_id_functor<use_offset::no>(acc));
@@ -64,7 +64,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
   check_api_call(
       "parallel_for(range, id, lambda) with id", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for<class parallel_for_range_offset_id_kernel>(
             constants.offsetRange, constants.offset, [=](sycl::id<1> id) {
               parallel_for_range_id_functor<use_offset::yes> f(acc);
@@ -74,7 +74,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
       constants.offset[0], constants.offsetRange[0]);
   check_api_call(
       "parallel_for(range, id, functor) with id", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         using functor = parallel_for_range_id_functor<use_offset::yes>;
         cgh.parallel_for<functor>(constants.offsetRange, constants.offset,
                                   functor(acc));
@@ -83,7 +83,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
 #if SYCL_CTS_ENABLE_FEATURE_SET_FULL
   check_api_call(
       "parallel_for(range, id, lambda) with id, no kernel name", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(
             constants.offsetRange, constants.offset, [=](sycl::id<1> id) {
               parallel_for_range_id_functor<use_offset::yes> f(acc);
@@ -93,7 +93,7 @@ TEST_CASE("handler.parallel_for(range) with id", "[handler]") {
       constants.offset[0], constants.offsetRange[0]);
   check_api_call(
       "parallel_for(range, id, functor) with id, no kernel name", queue,
-      [&](handler &cgh, accessor_t acc) {
+      [&](handler& cgh, accessor_t acc) {
         cgh.parallel_for(constants.offsetRange, constants.offset,
                          parallel_for_range_id_functor<use_offset::yes>(acc));
       },
