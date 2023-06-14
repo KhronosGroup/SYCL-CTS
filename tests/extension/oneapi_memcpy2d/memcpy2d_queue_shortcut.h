@@ -106,7 +106,7 @@ class run_queue_shortcut_tests {
                                   dest_pitch, region_width, region_height,
                                   {event1, event2});
 
-        queue.wait();
+        queue.wait_and_throw();
         copy_destination_to_host_result<DestPtrType>(dst3.get(), result,
                                                      result_size, queue);
 
@@ -140,7 +140,7 @@ class run_queue_shortcut_tests {
       queue.ext_oneapi_copy2d(src_address, dest_pitch, dest_address, dest_pitch,
                               region_width, region_height, {event1, event2});
 
-      queue.wait();
+      queue.wait_and_throw();
       copy_destination_to_host_result<DestPtrType>(dst3.get(), result,
                                                    result_size, queue);
 
@@ -175,7 +175,7 @@ class run_queue_shortcut_tests {
         queue.ext_oneapi_memset2d(dest_address, dest_pitch, value, region_width,
                                   region_height, {event1, event2});
 
-        queue.wait();
+        queue.wait_and_throw();
         copy_destination_to_host_result<DestPtrType>(dst1.get(), result,
                                                      result_size, queue);
         for_index([&](size_t index) {
@@ -222,7 +222,7 @@ class run_queue_shortcut_tests {
       queue.ext_oneapi_fill2d(dest_address, dest_pitch, value, region_width,
                               region_height, {event1, event2});
 
-      queue.wait();
+      queue.wait_and_throw();
       copy_destination_to_host_result<DestPtrType>(dst1.get(), result,
                                                    result_size, queue);
       for_index([&](size_t index) {
