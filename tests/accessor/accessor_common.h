@@ -442,7 +442,7 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf);
+          sycl::accessor res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
