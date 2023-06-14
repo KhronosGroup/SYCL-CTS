@@ -41,6 +41,9 @@ Where:
 * `bufferRange` - `sycl::range<Dimensions>{1}`;
 * `propList` - `sycl::property_list{use_pinned_host_memory()}`.
 
+Verify that `buffer::has_property<use_pinned_host_memory>()` returns true;
+Verify that `buffer::get_property<use_pinned_host_memory>()` does not throw any exceptions.
+
 === buffer constructors with host data
 
 Check that all `buffer` constructors with host data parameter, such as `T*`, `Container`, `InputIterator` and `std::shared_ptr<T>&` throw an `errc::invalid` exception when trying to create `buffer` object. For example:
