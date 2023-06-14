@@ -18,9 +18,13 @@
 //  limitations under the License.
 //
 *******************************************************************************/
+#include "../common/disabled_for_test_case.h"
 #include "handler_invoke_api.h"
 
-TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
+// FIXME: re-enable for computecpp when handler.parallel_for(nd_item,
+// func(CustomNdItem)) will be implemented in computecpp
+DISABLED_FOR_TEST_CASE(ComputeCpp)
+("handler.parallel_for(nd_range) with custom nd_item", "[handler]")({
   using handler = sycl::handler;
 
   TestConstants constants;
@@ -108,4 +112,4 @@ TEST_CASE("handler.parallel_for(nd_range) with custom nd_item", "[handler]") {
       constants.offset[0], constants.offsetRange[0]);
 #endif  // SYCL_CTS_ENABLE_FEATURE_SET_FULL
 #endif  // SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-}
+});
