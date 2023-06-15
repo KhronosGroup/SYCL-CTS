@@ -170,7 +170,7 @@ TEST_CASE("Function with SYCL_EXTERNAL is defined in the same translation unit",
   test_host(same_unit_host);
   test_device<kernel_same_unit>();
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
 
@@ -181,7 +181,7 @@ TEST_CASE(
   test_host(simple_separate_unit_host);
   test_device<kernel_simple_separate_unit>();
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
 
@@ -191,7 +191,7 @@ TEST_CASE("Function with SYCL_EXTERNAL is declared with keyword extern",
   test_host(extern_separate_unit_host);
   test_device<kernel_extern_separate_unit>();
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
 
@@ -210,7 +210,7 @@ TEST_CASE("Function with SYCL_EXTERNAL that decalred before attribute",
     test_device<kernel_before_aspect, sycl::aspect::accelerator>();
   }
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
 
@@ -229,7 +229,7 @@ TEST_CASE("Function with SYCL_EXTERNAL that decalred between attributes",
     test_device<kernel_between_aspects, sycl::aspect::accelerator>();
   }
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
 
@@ -248,6 +248,6 @@ TEST_CASE("Function with SYCL_EXTERNAL that decalred after attribute",
     test_device<kernel_after_aspect, sycl::aspect::accelerator>();
   }
 #else
-  SKIP("SYCL_EXTERNAL is not supported")
+  SKIP("SYCL_EXTERNAL is not supported");
 #endif
 }
