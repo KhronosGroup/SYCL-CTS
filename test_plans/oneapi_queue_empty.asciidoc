@@ -5,7 +5,7 @@
 
 This is a test plan for the extension adding a new API that tells whether a
 queue is empty. The extension is described in
-https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_local_memory.asciidoc[sycl_ext_oneapi_local_memory.asciidoc].
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_queue_empty.asciidoc[sycl_ext_oneapi_queue_empty.asciidoc].
 
 == Testing scope
 
@@ -13,14 +13,6 @@ https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_o
 
 All of the tests described below are performed only on the default device that
 is selected on the CTS command line.
-
-[NOTE]
-====
-Currently the extension support for OpenCL backend is limited, API 
-introduced by this extension can be called only for `in-order` queues which
-doesn’t have `discard_events` property. So the queue used for the tests should
-be created with `in-order` property if backend is OpenCL.
-====
 
 === Feature test macro
 
@@ -53,9 +45,11 @@ queue are completed and `false` otherwise.
 ===== Test 1:
 
 * Create queue
-* Define and submit two kernels performing some actions in long loop
+* Define and submit two kernels performing some actions in long loop, save
+  returned event E
 * Call `ext_oneapi_empty()`
-* Check that returned value is `false`
+* If `E.get_info<command_execution_status>() != complete` check that returned
+  value of `ext_oneapi_empty()` is `false`
 * Call `wait()` for the queue
 * Call `ext_oneapi_empty()` again
 * Check that returned value is `true`
@@ -70,7 +64,8 @@ queue are completed and `false` otherwise.
 * Submit kernel `A` and `B`, save events `Ea` and `Eb`
 * Call `wait()` for event `Ea`
 * Call `ext_oneapi_empty()`
-* Check that returned value is `false`
+* If `Eb.get_info<command_execution_status>() != complete` check that returned
+  value of `ext_oneapi_empty()` is `false`
 * Call `wait()` for event `Eb`
 * Call `ext_oneapi_empty()` again
 * Check that returned value is `true`
