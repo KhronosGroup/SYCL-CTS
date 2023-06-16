@@ -26,29 +26,29 @@ Perform the test shown in this code snippet:
 
 [source, c++]
 ----
-  property_list pl{ext::oneapi::property::usm::device_read_only()};
+property_list pl{ext::oneapi::property::usm::device_read_only()};
 
-  int *ptr = malloc_shared<int>(1, queue);
-  int *ptr_read_only = malloc_device<int>(1, queue, pl);
+int *ptr = malloc_shared<int>(1, queue);
+int *ptr_read_only = malloc_device<int>(1, queue, pl);
 
+queue.submit([&](handler& cgh) {
+  cgh.single_task([=] {
+    *ptr = *ptr_read_only;
+  });
+});
+
+int var;
+{
+  buffer buf(&var, {1});
   queue.submit([&](handler& cgh) {
+    auto acc = buf.template get_access<access_mode::write>(cgh);
     cgh.single_task([=] {
-      *ptr = *ptr_read_only;
+      acc[0] = *ptr_read_only;
     });
   });
+}
 
-  int var;
-  {
-    buffer buf(&var, {1});
-    queue.submit([&](handler& cgh) {
-      auto acc = buf.template get_access<access_mode::write>(cgh);
-      cgh.single_task([=] {
-        acc[0] = *ptr_read_only;
-      });
-    });
-  }
-
-  if (var != *ptr) { /* tests failed */ }
+if (var != *ptr) { /* tests failed */ }
 ----
 
 Check that `var` has the same value as `ptr`, which means that this property allows memory to be accessed on the device.
@@ -87,13 +87,18 @@ Perform the same test as shown above but replace `malloc_host` with `malloc_shar
 === usm_allocator
 
 * Create `usm_allocator` with `usm_device_read_only` property using all combinations of
+
   ** constructors:
+
     *** `usm_allocator(context&, device&, property_list&)`;
-    *** `usm_allocator(queue&, property_list&)`. +
+    *** `usm_allocator(queue&, property_list&)`.
+
   ** allocator kinds
+
     *** `usm::alloc::host`;
     *** `usm::alloc::device`;
-    *** `usm::alloc::shared` .
+    *** `usm::alloc::shared`.
+
 * Check that `usm_allocator::has_property<device_read_only>()` returns `true`;
 * Check that `usm_allocator::get_property<device_read_only>()` does not throw any exceptions;
 * Call `usm_allocator::allocate()` member function for each object and make sure it does not throw any exceptions.
@@ -101,6 +106,7 @@ Perform the same test as shown above but replace `malloc_host` with `malloc_shar
 === other allocations
 
 Verify that the property can be passed to each function without causing an error by calling all overloads of those functions:
+
 * `sycl::malloc_device()`;
 * `sycl::aligned_alloc_device()`;
 * `sycl::malloc_host()`;
