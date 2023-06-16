@@ -45,7 +45,7 @@ queue are completed and `false` otherwise.
 ===== Test 1:
 
 * Create queue
-* Define and submit two kernels performing some actions in long loop, save
+* Define and submit a kernel performing some actions in long loop, save
   returned event E
 * Call `ext_oneapi_empty()`
 * If `E.get_info<command_execution_status>() != complete` check that returned
