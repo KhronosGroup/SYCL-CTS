@@ -95,14 +95,17 @@ Perform the same test as shown above but replace `malloc_host` with `malloc_shar
     *** `usm::alloc::device`;
     *** `usm::alloc::shared` .
 * Check that `usm_allocator::has_property<device_read_only>()` returns `true`;
-* Check that `usm_allocator::get_property<device_read_only>()` does not throw any exceptions.
+* Check that `usm_allocator::get_property<device_read_only>()` does not throw any exceptions;
+* Call `usm_allocator::allocate()` member function for each object and make sure it does not throw any exceptions.
 
 === other allocations
 
-Verify that calling these functions does not cause compilation failures or exceptions:
-
-* `auto *ptr = aligned_alloc_device(1, queue, {device_read_only()})`
-* `auto *ptr = aligned_alloc_host(1, queue, {device_read_only()})`
-* `auto *ptr = aligned_alloc_shared(1, queue, {device_read_only()})`
-* `auto *ptr = malloc(1, queue, {device_read_only()})`
-* `auto *ptr = aligned_alloc(1, queue, {device_read_only()})`
+Verify that the property can be passed to each function without causing an error by calling all overloads of those functions:
+* `sycl::malloc_device()`;
+* `sycl::aligned_alloc_device()`;
+* `sycl::malloc_host()`;
+* `sycl::aligned_alloc_host()`;
+* `sycl::malloc_shared()`;
+* `sycl::aligned_alloc_shared()`;
+* `sycl::malloc()`;
+* `sycl::alligned_alloc()`.
