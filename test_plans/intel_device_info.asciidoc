@@ -18,21 +18,9 @@ is selected on the CTS command line.
 All of the tests should use `#ifdef SYCL_EXT_INTEL_DEVICE_INFO` so they can be skipped
 if feature is not supported.
 
-== Initial setup
-
-[source, c++]
-----
-auto devices = device::get_devices();
-
-std::for_each(devices.cbegin(), devices.cend(), [](const auto& dev) {
-  /* tests */
-});
-----
-
-Get available devices by calling `get_devices()` and run the code in the sections below for each device.
-Code should consist checking if device has aspect for this `info` and checking type.
-
 == Tests
+
+Run the code in the sections below to check if device has aspect for this `info` and check type of `get_info()` with this `info`.
 
 === Device ID
 [source, c++]
@@ -139,4 +127,4 @@ if (dev.has(aspect::ext_intel_memory_bus_width)) {
 }
 ----
 
-These tests will verify that `ext::intel::info::device` and `aspect` namespaces has these information descriptors and the return type of `get_info()`.
+These tests will verify that `ext::intel::info::device` and `aspect` namespaces has these information descriptors.
