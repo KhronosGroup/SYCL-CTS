@@ -1,0 +1,142 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for Intel's Extensions for Device Information
+
+This is a test plan for the APIs described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_intel_device_info.md[sycl_ext_intel_device_info]
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_INTEL_DEVICE_INFO` so they can be skipped
+if feature is not supported.
+
+== Initial setup
+
+[source, c++]
+----
+auto devices = device::get_devices();
+
+std::for_each(devices.cbegin(), devices.cend(), [](const auto& dev) {
+  /* tests */
+});
+----
+
+Get available devices by calling `get_devices()` and run the code in the sections below for each device.
+Code should consist checking if device has aspect for this `info` and checking type.
+
+== Tests
+
+=== Device ID
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_device_id)) {
+    auto ID = dev.get_info<ext::intel::info::device::device_id>();
+    if (!std::is_same_v<decltype(ID), uint32_t>) { /* test failed */ }
+}
+----
+=== Device UUID
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_device_info_uuid)) {
+    auto UUID = dev.get_info<ext::intel::info::device::uuid>();
+    if (!std::is_same_v<decltype(UUID), std::array<unsigned char, 16>>) { /* test failed */ }
+}
+----
+=== PCI Address
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_pci_address)) {
+    auto BDF = dev.get_info<ext::intel::info::device::pci_address>();
+    if (!std::is_same_v<decltype(BDF), std::string>) { /* test failed */ }
+}
+----
+=== Intel GPU Execution Unit SIMD Width
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_eu_simd_width)) {
+    auto euSimdWidth = dev.get_info<ext::intel::info::device::gpu_eu_simd_width>();
+    if (!std::is_same_v<decltype(euSimdWidth), uint32_t>) { /* test failed */ }
+}
+----
+=== Intel GPU Execution Unit Count
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_eu_count)) {
+    auto euCount = dev.get_info<ext::intel::info::device::gpu_eu_count>();
+    if (!std::is_same_v<decltype(euCount), uint32_t>) { /* test failed */ }
+}
+----
+=== Intel GPU Number of Slices
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_slices)) {
+    auto slices = dev.get_info<ext::intel::info::device::gpu_slices>();
+    if (!std::is_same_v<decltype(slices), uint32_t>) { /* test failed */ }
+}
+----
+=== Intel GPU Number of Subslices per Slice
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_subslices_per_slice)) {
+    auto subslices = dev.get_info<ext::intel::info::device::gpu_subslices_per_slice>();
+    if (!std::is_same_v<decltype(subslices), uint32_t>) { /* test failed */ }
+}
+----
+=== Intel GPU Number of Execution Units per Subslice
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_eu_count_per_subslice)) {
+    auto euCount = dev.get_info<ext::intel::info::device::gpu_eu_count_per_subslice>();
+    if (!std::is_same_v<decltype(euCount), uint32_t>) { /* test failed */ }
+}
+----
+=== Intel GPU Number of hardware threads per EU
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_gpu_hw_threads_per_eu)) {
+    auto threadsCount = dev.get_info<ext::intel::info::device::gpu_hw_threads_per_eu>();
+    if (!std::is_same_v<decltype(threadsCount), uint32_t>) { /* test failed */ }
+}
+----
+=== Maximum Memory Bandwidth
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_max_mem_bandwidth)) {
+    auto maxBW = dev.get_info<ext::intel::info::device::max_mem_bandwidth>();
+    if (!std::is_same_v<decltype(maxBW), uint64_t>) { /* test failed */ }
+}
+----
+=== Free Global Memory
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_free_memory)) {
+    auto FreeMemory = dev.get_info<ext::intel::info::device::free_memory>();
+    if (!std::is_same_v<decltype(FreeMemory), uint64_t>) { /* test failed */ }
+}
+----
+=== Memory Clock Rate
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_memory_clock_rate)) {
+    auto MemoryClockRate = dev.get_info<ext::intel::info::device::memory_clock_rate>();
+    if (!std::is_same_v<decltype(MemoryClockRate), uint32_t>) { /* test failed */ }
+}
+----
+=== Memory Bus Width
+[source, c++]
+----
+if (dev.has(aspect::ext_intel_memory_bus_width)) {
+    auto MemoryBusWidth = dev.get_info<ext::intel::info::device::memory_bus_width>();
+    if (!std::is_same_v<decltype(MemoryBusWidth), uint32_t>) { /* test failed */ }
+}
+----
+
+These tests will verify that `ext::intel::info::device` and `aspect` namespaces has these information descriptors and the return type of `get_info()`.
