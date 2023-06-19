@@ -96,7 +96,6 @@ Perform the same test as shown above but replace `malloc_host` with `malloc_shar
   ** allocator kinds
 
     *** `usm::alloc::host`;
-    *** `usm::alloc::device`;
     *** `usm::alloc::shared`.
 
 * Check that `usm_allocator::has_property<device_read_only>()` returns `true`;
