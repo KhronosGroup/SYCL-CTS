@@ -116,33 +116,33 @@ void check_by_value_semantics(ResultArray& result, sycl::range<dim>& ls,
 #endif
     set_success_operation<op_codes::ctor_range>(
         result, nd_range.get_group_range()[i] == gs[i] / ls[i]);
-    }
-    sycl::nd_range<dim> copy(nd_range);
-    for (int i = 0; i < dim; i++) {
-      set_success_operation<op_codes::ctor_copy>(
-          result, copy.get_global_range()[i] == gs[i]);
-      set_success_operation<op_codes::ctor_copy>(
-          result, copy.get_local_range()[i] == ls[i]);
+  }
+  sycl::nd_range<dim> copy(nd_range);
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::ctor_copy>(
+        result, copy.get_global_range()[i] == gs[i]);
+    set_success_operation<op_codes::ctor_copy>(
+        result, copy.get_local_range()[i] == ls[i]);
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      set_success_operation<op_codes::ctor_copy>(
-          result, copy.get_offset()[i] == offset[i]);
+    set_success_operation<op_codes::ctor_copy>(
+        result, copy.get_offset()[i] == offset[i]);
 #endif
-      set_success_operation<op_codes::ctor_copy>(
-          result, copy.get_group_range()[i] == gs[i] / ls[i]);
-    }
-    sycl::nd_range<dim> copy_assign(gs, ls);
-    copy_assign = copy;
-    for (int i = 0; i < dim; i++) {
-      set_success_operation<op_codes::assign_copy>(
-          result, copy_assign.get_global_range()[i] == gs[i]);
-      set_success_operation<op_codes::assign_copy>(
-          result, copy_assign.get_local_range()[i] == ls[i]);
+    set_success_operation<op_codes::ctor_copy>(
+        result, copy.get_group_range()[i] == gs[i] / ls[i]);
+  }
+  sycl::nd_range<dim> copy_assign(gs, ls);
+  copy_assign = copy;
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::assign_copy>(
+        result, copy_assign.get_global_range()[i] == gs[i]);
+    set_success_operation<op_codes::assign_copy>(
+        result, copy_assign.get_local_range()[i] == ls[i]);
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      set_success_operation<op_codes::assign_copy>(
-          result, copy_assign.get_offset()[i] == offset[i]);
+    set_success_operation<op_codes::assign_copy>(
+        result, copy_assign.get_offset()[i] == offset[i]);
 #endif
-      set_success_operation<op_codes::assign_copy>(
-          result, copy_assign.get_group_range()[i] == gs[i] / ls[i]);
+    set_success_operation<op_codes::assign_copy>(
+        result, copy_assign.get_group_range()[i] == gs[i] / ls[i]);
     }
     sycl::nd_range<dim> move(std::move(copy_assign));
     for (int i = 0; i < dim; i++) {
