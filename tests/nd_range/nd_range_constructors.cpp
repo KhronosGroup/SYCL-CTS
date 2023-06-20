@@ -188,6 +188,9 @@ void check_on_host() {
 }
 
 template <int dim, bool with_offset>
+class Kernel;
+
+template <int dim, bool with_offset>
 void check_on_device() {
   bool result[error_count];
   std::fill(result, result + error_count, true);
@@ -197,7 +200,7 @@ void check_on_device() {
     queue
         .submit([&](sycl::handler& cgh) {
           auto res_acc = res_buf.get_access(cgh);
-          cgh.single_task([=] {
+          cgh.single_task<Kernel<dim, with_offset>>([=] {
             auto local_range = get_local_range<dim>();
             auto global_range = get_global_range<dim>();
             check_by_value_semantics<dim, with_offset>(res_acc, local_range,
