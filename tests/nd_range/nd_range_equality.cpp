@@ -84,6 +84,9 @@ void test_equality_on_host() {
 }
 
 template <int numDims>
+class Kernel;
+
+template <int numDims>
 void check_equality_on_device(const sycl::nd_range<numDims>& a,
                               const sycl::nd_range<numDims>& other) {
   bool result[error_count];
@@ -93,7 +96,7 @@ void check_equality_on_device(const sycl::nd_range<numDims>& a,
     queue
         .submit([&](sycl::handler& cgh) {
           auto res_acc = res_buf.get_access(cgh);
-          cgh.single_task([=] {
+          cgh.single_task<Kernel<numDims>>([=] {
             common_by_value_semantics::check_equality(a, other, res_acc);
           });
         })

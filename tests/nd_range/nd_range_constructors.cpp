@@ -143,35 +143,35 @@ void check_by_value_semantics(ResultArray& result, sycl::range<dim>& ls,
 #endif
     set_success_operation<op_codes::assign_copy>(
         result, copy_assign.get_group_range()[i] == gs[i] / ls[i]);
-    }
-    sycl::nd_range<dim> move(std::move(copy_assign));
-    for (int i = 0; i < dim; i++) {
-      set_success_operation<op_codes::ctor_move>(
-          result, move.get_global_range()[i] == gs[i]);
-      set_success_operation<op_codes::ctor_move>(
-          result, move.get_local_range()[i] == ls[i]);
+  }
+  sycl::nd_range<dim> move(std::move(copy_assign));
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::ctor_move>(
+        result, move.get_global_range()[i] == gs[i]);
+    set_success_operation<op_codes::ctor_move>(
+        result, move.get_local_range()[i] == ls[i]);
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      set_success_operation<op_codes::ctor_move>(
-          result, move.get_offset()[i] == offset[i]);
+    set_success_operation<op_codes::ctor_move>(
+        result, move.get_offset()[i] == offset[i]);
 #endif
-      set_success_operation<op_codes::ctor_move>(
-          result, move.get_group_range()[i] == gs[i] / ls[i]);
-    }
-    sycl::nd_range<dim> move_assign(gs, ls);
-    ;
-    move_assign = std::move(move);
-    for (int i = 0; i < dim; i++) {
-      set_success_operation<op_codes::assign_move>(
-          result, move_assign.get_global_range()[i] == gs[i]);
-      set_success_operation<op_codes::assign_move>(
-          result, move_assign.get_local_range()[i] == ls[i]);
+    set_success_operation<op_codes::ctor_move>(
+        result, move.get_group_range()[i] == gs[i] / ls[i]);
+  }
+  sycl::nd_range<dim> move_assign(gs, ls);
+  ;
+  move_assign = std::move(move);
+  for (int i = 0; i < dim; i++) {
+    set_success_operation<op_codes::assign_move>(
+        result, move_assign.get_global_range()[i] == gs[i]);
+    set_success_operation<op_codes::assign_move>(
+        result, move_assign.get_local_range()[i] == ls[i]);
 #if SYCL_CTS_ENABLE_DEPRECATED_FEATURES_TESTS
-      set_success_operation<op_codes::assign_move>(
-          result, move_assign.get_offset()[i] == offset[i]);
+    set_success_operation<op_codes::assign_move>(
+        result, move_assign.get_offset()[i] == offset[i]);
 #endif
-      set_success_operation<op_codes::assign_move>(
-          result, move_assign.get_group_range()[i] == gs[i] / ls[i]);
-    }
+    set_success_operation<op_codes::assign_move>(
+        result, move_assign.get_group_range()[i] == gs[i] / ls[i]);
+  }
 }
 
 template <int dim, bool with_offset>
