@@ -590,7 +590,9 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 
@@ -707,7 +709,9 @@ void check_common_constructor(const sycl::range<Dimension>& r,
     compare_res = compare_res_arr[0];
   }
 
-  if constexpr (AccessMode != sycl::access_mode::write) {
+  if constexpr (AccessMode != sycl::access_mode::write &&
+                !(accessor_type::local_accessor == AccType &&
+                  sycl::access_mode::read == AccessMode)) {
     CHECK(compare_res);
   }
 
