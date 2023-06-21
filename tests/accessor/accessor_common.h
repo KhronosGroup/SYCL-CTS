@@ -391,7 +391,8 @@ void check_def_constructor(GetAccFunctorT get_accessor_functor) {
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::host_accessor res_acc(res_buf);
+          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+              res_acc(res_buf, cgh);
           auto acc = get_accessor_functor();
           check_empty_accessor_constructor_post_conditions(acc, res_acc, false);
         })
@@ -438,7 +439,8 @@ void check_zero_length_buffer_constructor(GetAccFunctorT get_accessor_functor) {
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf, cgh);
+          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+              res_acc(res_buf);
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (Target == sycl::target::host_task) {
             cgh.host_task([=] {
@@ -547,7 +549,8 @@ void check_zero_dim_constructor(GetAccFunctorT get_accessor_functor,
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf, cgh);
+          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+              res_acc(res_buf, cgh);
 
           auto acc = get_accessor_functor(data_buf, cgh);
           if constexpr (AccType == accessor_type::generic_accessor) {
@@ -664,7 +667,8 @@ void check_common_constructor(GetAccFunctorT get_accessor_functor,
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf, cgh);
+          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+              res_acc(res_buf, cgh);
           auto acc = get_accessor_functor(data_buf, cgh);
 
           if constexpr (AccType == accessor_type::generic_accessor) {
@@ -967,7 +971,8 @@ void check_no_init_prop(GetAccFunctorT get_accessor_functor) {
 
     queue
         .submit([&](sycl::handler& cgh) {
-          sycl::accessor res_acc(res_buf, cgh);
+          sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+              res_acc(res_buf, cgh);
 
           auto acc = get_accessor_functor(data_buf, cgh);
 
@@ -1346,7 +1351,8 @@ void check_linearization() {
             sycl::accessor<T, dims, AccessMode, Target> acc(data_buf, cgh);
 
             if constexpr (Target == sycl::target::device) {
-              sycl::accessor res_acc(res_buf, cgh);
+              sycl::accessor<bool, 1, sycl::access_mode::read_write, Target>
+                  res_acc(res_buf, cgh);
               cgh.single_task([=] {
                 sycl::id<dims> id{};
                 for (auto& elem : acc) {
