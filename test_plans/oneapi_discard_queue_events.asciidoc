@@ -1,0 +1,103 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl extension oneapi discard queue events
+
+This is a test plan for the extension adding
+`ext::oneapi::property::queue::discard_events` property for `sycl::queue`. The
+extension is described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_discard_queue_events.asciidoc[sycl_ext_oneapi_discard_queue_events.asciidoc].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_DISCARD_QUEUE_EVENTS` so they can
+be skipped if feature is not supported.
+
+== Tests
+
+Extension introduces new `ext::oneapi::property::queue::discard_events`
+property for `sycl::queue` and new enumerator value for the
+`sycl::info::event_command_status` enumeration. When the queue is created
+with the `discard_events` property the queue member functions returning
+events will return _invalid_ events.
+Behavior of some _invalid_ event member functions is different from the default
+event behavior and needs to be tested. The behavior when _invalid_ event is
+passed into `handler::depends_on()` function is also different and needs to be
+tested. Also we should check correct kernel execution submitted to the queue
+constructed with the `ext::oneapi::property::queue::discard_events` property.
+
+=== Test description
+
+==== Event member functions
+
+* Create a queue with property list that includes `discard_events` property
+* Submit a kernel to the queue, save a returned event
+* Call `get_wait_list()` for the event object
+* Check that an exception with the `errc::invalid` error code is thrown
+* Call `wait()` for the event object
+* Check that an exception with the `errc::invalid` error code is thrown
+* Call the static version of `wait()` function and passed the saved event 
+  object to it
+* Check that an exception with the `errc::invalid` error code is thrown
+* Call `wait_and_throw()` for the event object
+* Check that an exception with the `errc::invalid` error code is thrown
+* Call the static version of `wait_and_throw()` function and passed the saved
+  event object to it
+* Check that an exception with the `errc::invalid` error code is thrown
+* Call `get_info<info::event::command_execution_status>()` for the event object
+* Check returned value type is `sycl::info::event_command_status` and returned
+  value is `sycl::info::event_command_status::ext_oneapi_unknown`
+
+Perform the test for two cases when queue property list includes also
+`in-order` property and doesn't.
+
+==== Handler member functions
+
+* Create a queue with property list that includes `discard_events` and
+  `in-order` properties
+* Submit a kernel to the queue, save a returned event
+* Submit a command group that call `handler::depends_on(event)` on the saved
+  event
+* Check that an exception with the `errc::invalid` error code is thrown
+* Submit a command group that call `handler::depends_on(vector<event>)` on the
+  saved event
+* Check that an exception with the `errc::invalid` error code is thrown
+
+Perform the test for two cases when queue property list includes also
+`in-order` property and doesn't.
+
+==== Simultaneously using `discard_events` and `enable_profiling` properties
+
+According to the specification `discard_events` property is incompatible with
+`enable_profiling`. We should check that attempts to construct a queue with both properties raises `errc::invalid`.
+
+* Create a queue with property list that includes `discard_events` and
+  `enable_profiling` properties
+* Check that an exception with the `errc::invalid` error code is thrown
+
+==== Kernel execution check
+
+Do all of the following twice, with a queue constructed with `discard_events`
+and with a queue constructed with both `discard_events` and `in_order`:
+
+* Submit a `single_task` kernel, wait on the queue, validate that the kernel
+  ran
+* Submit a simple `parallel_for` kernel, wait on the queue, validate that the
+  kernel ran
+* Submit an `nd-range` kernel, wait on the queue, validate that the kernel ran
+* Submit a `single_task` kernel using assert (where the assert does not
+  trigger), wait on the queue, validate that the kernel ran
+* Submit a `single_task` kernel using stream, wait on the kernel, validate that
+  the kernel ran
+* Submit a `single_task` kernel using a buffer accessor, wait on the kernel,
+  validate that the kernel ran
+
+If the `SYCL_EXT_ONEAPI_ASSERT` macro isn't defined test with kernel using
+assert can be skipped.
