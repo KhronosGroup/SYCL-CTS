@@ -24,40 +24,6 @@
 #include <limits>
 #include <type_traits>
 
-/**
- Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator. */
-template <typename AccumulatorT, typename OperatorT>
-using is_legal_operator = std::bool_constant<
-    (std::is_same_v<OperatorT, sycl::plus<AccumulatorT>> &&
-     std::is_arithmetic_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::multiplies<AccumulatorT>> &&
-     std::is_arithmetic_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::bit_and<AccumulatorT>> &&
-     std::is_integral_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::bit_or<AccumulatorT>> &&
-     std::is_integral_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::bit_xor<AccumulatorT>> &&
-     std::is_integral_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::logical_and<AccumulatorT>> &&
-     std::is_same_v<std::remove_cv_t<AccumulatorT>, bool>) ||
-    (std::is_same_v<OperatorT, sycl::logical_or<AccumulatorT>> &&
-     std::is_same_v<std::remove_cv_t<AccumulatorT>, bool>) ||
-    (std::is_same_v<OperatorT, sycl::minimum<AccumulatorT>> &&
-     std::is_integral_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::minimum<AccumulatorT>> &&
-     (std::is_floating_point_v<AccumulatorT> ||
-      std::is_same_v<std::remove_cv_t<AccumulatorT>, sycl::half>)) ||
-    (std::is_same_v<OperatorT, sycl::maximum<AccumulatorT>> &&
-     std::is_integral_v<AccumulatorT>) ||
-    (std::is_same_v<OperatorT, sycl::maximum<AccumulatorT>> &&
-     (std::is_floating_point_v<AccumulatorT> ||
-      std::is_same_v<std::remove_cv_t<AccumulatorT>, sycl::half>))>;
-/**
- Checks whether \p AccumulatorT and \p OperatorT form a valid SYCL operator. */
-template <typename AccumulatorT, typename OperatorT>
-inline constexpr bool is_legal_operator_v{
-    is_legal_operator<AccumulatorT, OperatorT>::value};
-
 /** plus */
 template <
     typename AccumulatorT, typename OperatorT,
