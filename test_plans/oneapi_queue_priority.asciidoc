@@ -1,0 +1,55 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl extension oneapi queue priority
+
+This is a test plan for the extension adding new properties for `sycl::queue`.
+The new properties define priority for queue execution. The extension is
+described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_oneapi_queue_priority.asciidoc[sycl_ext_oneapi_queue_priority.asciidoc].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_ONEAPI_QUEUE_PRIORITY` so they can
+be skipped if feature is not supported.
+
+== Tests
+
+Extension introduces the following new properties for the `sycl::queue` class:
+
+* `ext::oneapi::property::queue::priority_normal`
+* `ext::oneapi::property::queue::priority_low`
+* `ext::oneapi::property::queue::priority_high`
+
+These properties are hints and may safely be ignored by an implementation. We
+should check correct kernel execution submitted to the queue constructed with
+each of the introduced properties. Passing multiple different priorities to the
+queue constructor causes a synchronous exception with the `errc::invalid` error
+code will be thrown, it also should be checked.
+
+=== Test description
+
+==== Kernel execution check
+
+Do the following for each new property:
+
+* Create a queue with priority property
+* Submit a `single_task` kernel, wait on the queue, validate that the kernel
+  ran
+* Submit a simple `parallel_for` kernel, wait on the queue, validate that the
+  kernel ran
+* Submit an `nd-range` kernel, wait on the queue, validate that the kernel ran
+
+==== Using multiple different priorities for the same queue
+
+Do the following with all combinations of different priority properties:
+
+* Create a queue with multiple different priorities
+* Check an exception with the `errc::invalid` error code is thrown
