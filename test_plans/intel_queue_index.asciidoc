@@ -1,0 +1,70 @@
+:sectnums:
+:xrefstyle: short
+
+= Test plan for sycl extension intel queue index
+
+This is a test plan for the extension exposes an "index" to a device’s work
+submission queue. The extension is described in
+https://github.com/intel/llvm/blob/sycl/sycl/doc/extensions/supported/sycl_ext_intel_queue_index.asciidoc[sycl_ext_intel_queue_index.asciidoc].
+
+== Testing scope
+
+=== Device coverage
+
+All of the tests described below are performed only on the default device that
+is selected on the CTS command line.
+
+=== Feature test macro
+
+All of the tests should use `#ifdef SYCL_EXT_INTEL_QUEUE_INDEX` so they can be
+skipped if feature is not supported.
+
+== Tests
+
+The extension introduces a new device information descriptor
+`max_compute_queue_indices` that represents the number queue indices that are
+available for the device. Also the extension adds a new queue property
+`compute_index` which can be specified to the queue constructor via the
+`property_list` parameter. Need to check availability of the new introduced
+entities. The specification states using a queue index that is out of range for
+the queue’s device results an exception with `errc::invalid` error code is
+thrown, that needs to be checked.  We also should check correct kernel
+execution submitted to the queue constructed with `compute_index` property.
+
+=== Test description
+
+==== New device information descriptor
+
+* Create a device
+* Query the number of available queue indices for the device using `get_info()`
+  device member function with `max_compute_queue_indices` as template parameter
+* Check that the type of the returned value is `int`
+* Check the return value greater or equal to 1
+
+==== New queue property
+
+* Create an object of `compute_index` type with the predefined value
+* Call `get_index()` member function of `compute_index` object
+* Check that the type of the returned value is `int`
+* Check the return value is equal to the expected
+
+==== Incorrect queue index
+
+* Create a device
+* Query the number of available queue indices for the device
+* Create a queue with a queue index that is less than 0 
+* Check that an exception with `errc::invalid` error code is thrown
+* Create a queue with a queue index that is greater than or equal to the max
+  queue index available for the device
+* Check that an exception with `errc::invalid` error code is thrown
+
+==== Kernel execution check
+
+Do the following for each queue index available for the device:
+
+* Create a queue with one of the available queue index
+* Submit a `single_task` kernel, wait on the queue, validate that the kernel
+  ran
+* Submit a simple `parallel_for` kernel, wait on the queue, validate that the
+  kernel ran
+* Submit an `nd-range` kernel, wait on the queue, validate that the kernel ran
